@@ -1,0 +1,3 @@
+OWL API (for OWL 2.0), svn r1042
+Date: 2009-03-01
+Available at: http://owlapi.svn.sourceforge.net/svnroot/owlapi/owl1_1/trunk

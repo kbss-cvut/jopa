@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/aterm-java-1.6.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-cli.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-core.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-datatypes.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-dig.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-el.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-explanation.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-ic.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-jena.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-modularity.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-owlapi.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-pellint.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-query.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-rules.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/pellet-test.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/servlet.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
