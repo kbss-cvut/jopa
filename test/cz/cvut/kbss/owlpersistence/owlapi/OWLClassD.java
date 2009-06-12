@@ -4,16 +4,16 @@ import java.net.URI;
 
 import cz.cvut.kbss.owlpersistence.Id;
 import cz.cvut.kbss.owlpersistence.OWLClass;
-import cz.cvut.kbss.owlpersistence.OWLDataProperty;
+import cz.cvut.kbss.owlpersistence.OWLObjectProperty;
 
-@OWLClass(uri = "http://OWLClassA")
-public class OWLClassA {
+@OWLClass(uri = "http://OWLClassD")
+public class OWLClassD {
 
 	@Id
 	private URI uri;
 
-	@OWLDataProperty(uri = "http://A-stringAttribute")
-	private String stringAttribute;
+	@OWLObjectProperty(uri = "http://hasA")
+	private OWLClassA owlClassA;
 
 	/**
 	 * @param uri
@@ -30,11 +30,11 @@ public class OWLClassA {
 		return uri;
 	}
 
-	public void setStringAttribute(String stringAttribute) {
-		this.stringAttribute = stringAttribute;
+	public void setOwlClassA(OWLClassA owlClassA) {
+		this.owlClassA = owlClassA;
 	}
 
-	public String getStringAttribute() {
-		return stringAttribute;
+	public OWLClassA getOwlClassA() {
+		return owlClassA;
 	}
 }

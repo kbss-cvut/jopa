@@ -24,6 +24,9 @@ public interface EntityManager {
 
 	public void remove(final Object object);
 
+	// Determine whether the EntityManager is open.
+	public boolean isOpen();
+
 	// Query createNamedQuery(String name)
 	// Create an instance of Query for executing a named query (in the Java
 	// Persistence query language or in native SQL).
@@ -48,8 +51,6 @@ public interface EntityManager {
 	// Get an instance, whose state may be lazily fetched.
 	// EntityTransaction getTransaction()
 	// Returns the resource-level transaction object.
-	// boolean isOpen()
-	// Determine whether the EntityManager is open.
 	// void joinTransaction()
 	// Indicate to the EntityManager that a JTA transaction is active.
 	// void lock(Object entity, LockModeType lockMode)
