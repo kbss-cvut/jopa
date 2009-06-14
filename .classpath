@@ -20,5 +20,8 @@
 	<classpathentry kind="lib" path="lib/pellet/pellet-rules.jar"/>
 	<classpathentry kind="lib" path="lib/pellet/pellet-test.jar"/>
 	<classpathentry kind="lib" path="lib/pellet/servlet.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/owlapi/owlapi-bin.jar"/>
+	<classpathentry kind="lib" path="lib/pellet/owlapi/owlapi-src.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

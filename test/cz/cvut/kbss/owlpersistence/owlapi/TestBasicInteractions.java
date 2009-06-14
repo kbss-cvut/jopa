@@ -101,7 +101,7 @@ public class TestBasicInteractions extends TestCase {
 		final URI pkC = URI.create("http://newC-1");
 		c.setUri(pkC);
 
-		c.setList(Collections.singletonList(a));
+		c.setReferencedList(Collections.singletonList(a));
 
 		pc.persist(c);
 		pc.persist(a);
@@ -128,7 +128,7 @@ public class TestBasicInteractions extends TestCase {
 		OWLClassC c = new OWLClassC();
 		final URI pkC = URI.create("http://newC-2");
 		c.setUri(pkC);
-		c.setList(list);
+		c.setReferencedList(list);
 
 		pc.persist(c);
 

@@ -3,7 +3,6 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mindswap.pellet.owlapi.Reasoner;
-import org.semanticweb.owl.inference.OWLReasonerException;
 
 public class ReasoningThread implements Runnable {
 
@@ -28,14 +27,16 @@ public class ReasoningThread implements Runnable {
 			return;
 		}
 
-		while (!stopInferencing) {
-			try {
-				r.realise();
-			} catch (OWLReasonerException e) {
-				LOG.error(e, e);
-			}
-		}
+//		while (!stopInferencing) {
+//			try {
+//				r.realise();
+//			} catch (OWLReasonerException e) {
+//				LOG.error(e, e);
+//			}
+//		}
 
+		// TODO
+		
 		running = false;
 	}
 

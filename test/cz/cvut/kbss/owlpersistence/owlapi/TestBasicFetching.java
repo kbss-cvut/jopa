@@ -62,7 +62,9 @@ public class TestBasicFetching extends TestCase {
 		URI uriC = URI.create("http://newC");
 		c.setUri(uriC);
 
-		c.setList(Arrays.asList(a, a2));
+		c.setReferencedList(Arrays.asList(a, a2));
+
+		c.setSimpleList(Arrays.asList(a, a2));
 
 		pc.persist(a);
 		pc.persist(a2);
@@ -89,7 +91,9 @@ public class TestBasicFetching extends TestCase {
 
 		final OWLClassC cX = pc.find(OWLClassC.class, uriC);
 
-		assertEquals(cX.getList().size(), 2);
+		assertEquals(cX.getReferencedList().size(), 2);
+
+		assertEquals(cX.getSimpleList().size(), 2);
 
 		pc.close();
 	}

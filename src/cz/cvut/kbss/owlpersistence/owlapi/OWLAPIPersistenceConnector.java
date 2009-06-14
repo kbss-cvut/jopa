@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,6 +60,7 @@ import cz.cvut.kbss.owlpersistence.EntityManager;
 import cz.cvut.kbss.owlpersistence.Id;
 import cz.cvut.kbss.owlpersistence.OWLClass;
 import cz.cvut.kbss.owlpersistence.OWLPersistenceException;
+import cz.cvut.kbss.owlpersistence.OWLSequence;
 
 public class OWLAPIPersistenceConnector implements EntityManager {
 
@@ -756,22 +758,45 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		return clazz;
 	}
 
-	private void saveOWLObjectProperty(Object o, Field f, URI uri)
+	private void saveOWLObjectProperty(Object o, Field field, URI uri)
 			throws IllegalArgumentException, IllegalAccessException {
-		f.setAccessible(true);
+		field.setAccessible(true);
 
 		final OWLIndividual subject = m.getOWLDataFactory().getOWLIndividual(
 				(URI) getId(o.getClass()).get(o));
 
-		Object value = f.get(o);
+		Object value = field.get(o);
 
-		if (f.getType().isAssignableFrom(List.class)) {
-			Class<?> clazz = getCollectionErasureType((ParameterizedType) f
+		if (field.getType().isAssignableFrom(List.class)) {
+
+			final OWLSequence seq = field.getAnnotation(OWLSequence.class);
+
+			if (seq == null) {
+				throw new OWLPersistenceException(
+						"Lists must be annotated with OWLSequence annotation.");
+			}
+
+			Class<?> clazz = getCollectionErasureType((ParameterizedType) field
 					.getGenericType());
 
-			setList(o, clazz, op(uri), List.class.cast(value), false);
-		} else if (f.getType().isAssignableFrom(Set.class)) {
-			Class<?> clazz = getCollectionErasureType((ParameterizedType) f
+			switch (seq.type()) {
+			case referenced:
+				setReferencedList(o, clazz, List.class.cast(value), op(uri),
+						c(URI.create(seq.ClassOWLListURI())), op(URI.create(seq
+								.ObjectPropertyHasContentsURI())), op(URI
+								.create(seq.ObjectPropertyHasNextURI())));
+				break;
+			case simple:
+				setSimpleList(o, clazz, List.class.cast(value), op(uri), op(URI
+						.create(seq.ObjectPropertyHasNextURI())));
+				break;
+			default:
+				throw new OWLPersistenceException("Unknown sequence type : "
+						+ seq.type());
+			}
+
+		} else if (field.getType().isAssignableFrom(Set.class)) {
+			Class<?> clazz = getCollectionErasureType((ParameterizedType) field
 					.getGenericType());
 			Set set = Set.class.cast(value);
 
@@ -884,18 +909,19 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		return label;
 	}
 
-	protected <T> List<T> getList(final OWLIndividual i, final Class<T> t,
-			final OWLObjectProperty p) {
+	protected <T> List<T> getReferencedList(final OWLIndividual i,
+			final Class<T> t, final OWLObjectProperty hasSequence,
+			final org.semanticweb.owl.model.OWLClass owlList,
+			final OWLObjectProperty hasContents, final OWLObjectProperty hasNext) {
 		final List<T> lst = new ArrayList<T>();
 
-		final OWLIndividual seq = r.getRelatedIndividual(i, p);
+		final OWLIndividual seq = r.getRelatedIndividual(i, hasSequence);
 
 		if (seq == null) {
-			return new ArrayList<T>();
+			return lst;
 		}
 
-		OWLIndividual o = r.getRelatedIndividual(seq,
-				op(SequencesVocabulary.p_hasContents));
+		OWLIndividual o = r.getRelatedIndividual(seq, hasContents);
 		org.semanticweb.owl.model.OWLDescription c = f.getOWLObjectOneOf(seq);
 
 		while (o != null) {
@@ -905,19 +931,13 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 				lst.add(this.create(t, o));
 			}
 
-			c = f
-					.getOWLObjectSomeRestriction(
-							f
-									.getOWLObjectPropertyInverse(op(SequencesVocabulary.p_hasNext)),
-							c);
+			c = f.getOWLObjectSomeRestriction(f
+					.getOWLObjectPropertyInverse(hasNext), c);
 
-			final Collection<OWLIndividual> co = this.r
-					.getIndividuals(
-							f
-									.getOWLObjectSomeRestriction(
-											f
-													.getOWLObjectPropertyInverse(op(SequencesVocabulary.p_hasContents)),
-											c), false);
+			final Collection<OWLIndividual> co = this.r.getIndividuals(f
+					.getOWLObjectSomeRestriction(f
+							.getOWLObjectPropertyInverse(hasContents), c),
+					false);
 
 			if (co.isEmpty()) {
 				o = null;
@@ -927,6 +947,25 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		}
 		;
 
+		return lst;
+	}
+
+	protected <T> List<T> getSimpleList(final OWLIndividual i,
+			final Class<T> t, final OWLObjectProperty hasSequence,
+			final OWLObjectProperty hasNext) {
+		final List<T> lst = new ArrayList<T>();
+
+		OWLIndividual o = r.getRelatedIndividual(i, hasSequence);
+
+		while (o != null) {
+			if (entities.containsKey(o.getURI())) {
+				lst.add((T) entities.get(o.getURI()));
+			} else {
+				lst.add(this.create(t, o));
+			}
+
+			o = this.r.getRelatedIndividual(o, hasNext);
+		}
 		return lst;
 	}
 
@@ -944,7 +983,8 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		return uri;
 	}
 
-	OWLIndividual createOWLList(final String testName, final boolean commit) {
+	OWLIndividual createOWLList(final String testName,
+			final org.semanticweb.owl.model.OWLClass owlList) {
 		final OWLDataFactory f = m.getOWLDataFactory();
 
 		final NumberFormat nf = NumberFormat.getIntegerInstance();
@@ -953,27 +993,21 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		final OWLIndividual i = f.getOWLIndividual(createNewID(testName
 				+ "-SEQ"));
 
-		final OWLIndividualAxiom ax = f.getOWLClassAssertionAxiom(i, f
-				.getOWLClass(SequencesVocabulary.c_OWLList));
+		final OWLIndividualAxiom ax = f.getOWLClassAssertionAxiom(i, owlList);
 
 		addChange(new AddAxiom(o, ax));
-
-		if (commit) {
-			storeToModel();
-		}
 
 		return i;
 	}
 
 	protected void removeList(final Object object, final OWLObjectProperty p,
-			boolean commit) {
+			OWLObjectProperty hasNext) {
 		OWLIndividual seq = r.getRelatedIndividual(f
 				.getOWLIndividual(getURIForEntity(object)), p);
 
 		while (seq != null) {
 
-			final OWLIndividual next = r.getRelatedIndividual(seq,
-					op(SequencesVocabulary.p_hasNext));
+			final OWLIndividual next = r.getRelatedIndividual(seq, hasNext);
 
 			for (final OWLAxiom a : o.getReferencingAxioms(seq)) {
 				addChange(new RemoveAxiom(o, a));
@@ -981,21 +1015,23 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 
 			seq = next;
 		}
-
-		if (commit) {
-			storeToModel();
-		}
 	}
 
-	protected <T> void setList(final Object o, final Class<T> t,
-			final OWLObjectProperty p, List<T> sequence, final boolean commit) {
-		removeList(o, p, false);
+	protected <T> void setReferencedList(final Object o, final Class<T> t,
+			List<T> sequence, final OWLObjectProperty hasSequence,
+			final org.semanticweb.owl.model.OWLClass owlList,
+			final OWLObjectProperty hasContents, final OWLObjectProperty hasNext) {
+		removeList(o, hasSequence, hasNext);
 
 		final URI uri = getURIForEntity(o);
 
 		final OWLIndividual seq = createOWLList(uri.toString().substring(
-				uri.toString().lastIndexOf("/") + 1), false);
-		setObjectProperty(f.getOWLIndividual(uri), p, seq, false);
+				uri.toString().lastIndexOf("/") + 1), owlList);
+		setObjectProperty(f.getOWLIndividual(uri), hasSequence, seq, false);
+
+		if (sequence == null) {
+			return;
+		}
 
 		if (!sequence.isEmpty()) {
 
@@ -1003,28 +1039,52 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 					.getOWLIndividual(getURIForEntity(sequence.get(sequence
 							.size() - 1)));
 
-			OWLDescription d = f.getOWLObjectSomeRestriction(
-					op(SequencesVocabulary.p_hasContents), f
-							.getOWLObjectOneOf(oi));
+			OWLDescription d = f.getOWLObjectSomeRestriction(hasContents, f
+					.getOWLObjectOneOf(oi));
 
 			for (int i = sequence.size() - 2; i >= 0; i--) {
 				final OWLIndividual oi2 = f
 						.getOWLIndividual(getURIForEntity(sequence.get(i)));
 
 				d = f.getOWLObjectIntersectionOf(f.getOWLObjectSomeRestriction(
-						op(SequencesVocabulary.p_hasNext), d), f
-						.getOWLObjectSomeRestriction(
-								op(SequencesVocabulary.p_hasContents), f
-										.getOWLObjectOneOf(oi2)));
+						hasNext, d), f.getOWLObjectSomeRestriction(hasContents,
+						f.getOWLObjectOneOf(oi2)));
 			}
 
 			final OWLIndividualAxiom ax = f.getOWLClassAssertionAxiom(seq, d);
 
 			addChange(new AddAxiom(this.o, ax));
 		}
+	}
 
-		if (commit) {
-			storeToModel();
+	protected <T> void setSimpleList(final Object o, final Class<T> t,
+			List<T> sequence, final OWLObjectProperty hasSequence,
+			final OWLObjectProperty hasNext) {
+		removeList(o, hasSequence, hasNext);
+
+		if (sequence == null) {
+			return;
+		}
+
+		final URI uri = getURIForEntity(o);
+
+		final Iterator<T> iter = sequence.iterator();
+
+		if (!iter.hasNext()) {
+			return;
+		}
+
+		OWLIndividual next = f.getOWLIndividual(getURIForEntity(iter.next()));
+
+		setObjectProperty(f.getOWLIndividual(uri), hasSequence, next, false);
+
+		while (iter.hasNext()) {
+			final OWLIndividual next2 = f.getOWLIndividual(getURIForEntity(iter
+					.next()));
+
+			setObjectProperty(next, hasNext, next2, false);
+
+			next = next2;
 		}
 	}
 
@@ -1082,15 +1142,31 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 					o.getClass()).get(o));
 
 			if (cls.isAssignableFrom(List.class)) {
-				if (field.getGenericType() instanceof ParameterizedType) {
-					;
-				} else {
-					new String();
+				final OWLSequence seq = field.getAnnotation(OWLSequence.class);
+
+				if (seq == null) {
+					throw new OWLPersistenceException(
+							"Lists must be annotated with OWLSequence annotation.");
 				}
 
 				Class<?> clazz = getCollectionErasureType((ParameterizedType) field
 						.getGenericType());
-				value = getList(ii, clazz, op(uri));
+
+				switch (seq.type()) {
+				case referenced:
+					value = getReferencedList(ii, clazz, op(uri), c(URI
+							.create(seq.ClassOWLListURI())), op(URI.create(seq
+							.ObjectPropertyHasContentsURI())), op(URI
+							.create(seq.ObjectPropertyHasNextURI())));
+					break;
+				case simple:
+					value = getSimpleList(ii, clazz, op(uri), op(URI.create(seq
+							.ObjectPropertyHasNextURI())));
+					break;
+				default:
+					throw new OWLPersistenceException(
+							"Unknown sequence type : " + seq.type());
+				}
 			} else if (cls.isAssignableFrom(Set.class)) {
 				Class<?> clazz = getCollectionErasureType((ParameterizedType) field
 						.getGenericType());
@@ -1169,7 +1245,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 						.getAnnotation(cz.cvut.kbss.owlpersistence.RDFSLabel.class);
 
 				field.setAccessible(true);
-				
+
 				try {
 					if (label != null) {
 						processLabel(field);

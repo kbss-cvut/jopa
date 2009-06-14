@@ -6,6 +6,8 @@ import java.util.List;
 import cz.cvut.kbss.owlpersistence.Id;
 import cz.cvut.kbss.owlpersistence.OWLClass;
 import cz.cvut.kbss.owlpersistence.OWLObjectProperty;
+import cz.cvut.kbss.owlpersistence.OWLSequence;
+import cz.cvut.kbss.owlpersistence.OWLSequenceType;
 
 @OWLClass(uri = "http://OWLClassC")
 public class OWLClassC {
@@ -13,30 +15,36 @@ public class OWLClassC {
 	@Id
 	private URI uri;
 
-	@OWLObjectProperty(uri = "http://B-hasSequence")
-	private List<OWLClassA> list;
+	@OWLSequence
+	@OWLObjectProperty(uri = "http://B-hasReferencedSequence")
+	private List<OWLClassA> referencedList;
 
-	/**
-	 * @param uri
-	 *            the uri to set
-	 */
+	@OWLSequence(type = OWLSequenceType.simple, ObjectPropertyHasNextURI = "http://B-hasSimpleNext")
+	@OWLObjectProperty(uri = "http://B-hasSimpleSequence")
+	private List<OWLClassA> simplelist;
+
 	public void setUri(URI uri) {
 		this.uri = uri;
 	}
 
-	/**
-	 * @return the uri
-	 */
 	public URI getUri() {
 		return uri;
 	}
 
-	public void setList(List<OWLClassA> list) {
-		this.list = list;
+	public void setReferencedList(List<OWLClassA> list) {
+		this.referencedList = list;
 	}
 
-	public List<OWLClassA> getList() {
-		return list;
+	public List<OWLClassA> getReferencedList() {
+		return referencedList;
+	}
+
+	public void setSimpleList(List<OWLClassA> simplelist) {
+		this.simplelist = simplelist;
+	}
+
+	public List<OWLClassA> getSimpleList() {
+		return simplelist;
 	}
 
 }
