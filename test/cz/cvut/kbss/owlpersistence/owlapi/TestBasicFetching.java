@@ -1,7 +1,10 @@
 package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import cz.cvut.kbss.owlpersistence.EntityManager;
 
@@ -93,7 +96,40 @@ public class TestBasicFetching extends TestCase {
 
 		assertEquals(cX.getReferencedList().size(), 2);
 
-		assertEquals(cX.getSimpleList().size(), 2);
+		assertEquals(2, cX.getSimpleList().size());
+
+		pc.close();
+	}
+
+	public void testFetchHugeReferences() {
+		EntityManager pc = TestEnvironment
+				.getPersistenceConnector("TestBasicFetching-testFetchHugeReferences");
+
+		OWLClassC c = new OWLClassC();
+		URI uriC = URI.create("http://newC");
+		c.setUri(uriC);
+
+		List<OWLClassA> list = new ArrayList<OWLClassA>();
+		for (int i = 0; i < 100; i++) {
+			OWLClassA a = new OWLClassA();
+			URI uriA = URI.create("http://newA-" + i);
+			a.setUri(uriA);
+			a.setStringAttribute("new-value");
+			list.add(a);
+			pc.persist(a);
+		}
+
+		c.setReferencedList(list);
+
+		pc.persist(c);
+
+		pc.flush();
+
+		pc.clear();
+
+		final OWLClassC cX = pc.find(OWLClassC.class, uriC);
+
+//		assertEquals(100, cX.getReferencedList().size());
 
 		pc.close();
 	}
