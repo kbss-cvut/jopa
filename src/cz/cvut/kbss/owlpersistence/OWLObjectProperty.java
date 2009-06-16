@@ -10,14 +10,16 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface OWLObjectProperty {
-	
+
 	/**
 	 * URI of the resource
 	 * 
 	 * @return URI of the referenced class
 	 */
 	String uri();
-	
-	CascadeType[] cascadeType() default {CascadeType.ALL};
-	
+
+	CascadeType[] cascadeType() default { CascadeType.ALL };
+
+	FetchType fetchType() default FetchType.LAZY;
+
 }

@@ -124,7 +124,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		try {
 			return getClass().getClassLoader().getResource(name).toURI();
 		} catch (URISyntaxException ex) {
-			LOG.error(ex,ex);
+			LOG.error(ex, ex);
 		}
 		return null;
 	}
@@ -695,8 +695,6 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 				Class<?> clazz = getCollectionErasureType((ParameterizedType) field
 						.getGenericType());
 
-				
-								
 				Object value = null;
 				switch (seq.type()) {
 				case referenced:
@@ -838,7 +836,8 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 
 	protected void removeList(final Object object, final OWLObjectProperty p,
 			OWLObjectProperty hasNext) {
-		OWLIndividual seq = r.getRelatedIndividual(instanceCache.get(object), p);
+		OWLIndividual seq = r
+				.getRelatedIndividual(instanceCache.get(object), p);
 
 		while (seq != null) {
 
@@ -1050,7 +1049,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 	}
 
 	@Override
-	public void remove(Object object) {		
+	public void remove(Object object) {
 		URI uri;
 		if (instanceCache.containsKey(object)) {
 			uri = instanceCache.remove(object).getURI();
@@ -1067,7 +1066,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		if (cache.containsKey(cls)) {
 			return cache.get(cls);
 		}
-		
+
 		if (cls.getAnnotation(OWLClass.class) == null) {
 			throw new OWLPersistenceException();
 		}
@@ -1081,7 +1080,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 				throw new OWLPersistenceException(
 						"Primitive types cannot be used for field types");
 			}
-			
+
 			if (i != null) {
 				if (c2.idField != null || (!field.getType().equals(URI.class))) {
 					throw new OWLPersistenceException();

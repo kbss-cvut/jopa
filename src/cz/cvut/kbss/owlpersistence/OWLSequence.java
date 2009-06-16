@@ -45,4 +45,6 @@ public @interface OWLSequence {
 	String ObjectPropertyHasNextURI() default SequencesVocabulary.s_p_hasNext;
 
 	CascadeType[] cascadeType() default { CascadeType.ALL };
+
+	FetchType[] fetchType() default FetchType.LAZY;
 }

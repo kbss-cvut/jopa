@@ -23,5 +23,6 @@
 	<classpathentry kind="lib" path="lib/pellet/owlapi/owlapi-bin.jar"/>
 	<classpathentry kind="lib" path="lib/pellet/owlapi/owlapi-src.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
+	<classpathentry kind="lib" path="lib/javaassist/javassist.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
