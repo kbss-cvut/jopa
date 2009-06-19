@@ -1,6 +1,7 @@
 package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.net.URI;
+import java.util.Collections;
 
 import cz.cvut.kbss.owlpersistence.EntityManager;
 
@@ -16,14 +17,23 @@ public class TestLazyLoading {
 
 		a.setStringAttribute("new-value");
 
+		OWLClassC c = new OWLClassC();
+		URI uriC = URI.create("http://newC");
+		c.setUri(uriC);
+
+		c.setReferencedList(Collections.singletonList(a));
+		
 		pc.persist(a);
+		pc.persist(c);
 
 		pc.flush();
 
 		pc.clear();
 
-		final OWLClassA aX = pc.find(OWLClassA.class, uri);
+		final OWLClassC aX = pc.find(OWLClassC.class, uriC);
 
+		System.out.println(aX.getReferencedList());
+		
 		pc.close();
 	}
 }

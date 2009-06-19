@@ -21,7 +21,7 @@ public class TestEnvironment {
 	public static String dir = "testResults";
 
 	public static EntityManager getPersistenceConnector(String name) {
-		final OWLAPIPersistenceConnector pc = new OWLAPIPersistenceConnector();
+		final OWLAPIPersistenceConnector pc = (OWLAPIPersistenceConnector) OWLPersistence.getEntityManager();
 
 		final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
 		try {

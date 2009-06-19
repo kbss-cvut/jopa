@@ -5,6 +5,7 @@ import java.util.List;
 
 import cz.cvut.kbss.owlpersistence.Id;
 import cz.cvut.kbss.owlpersistence.OWLClass;
+import cz.cvut.kbss.owlpersistence.OWLObjectProperty;
 import cz.cvut.kbss.owlpersistence.OWLSequence;
 import cz.cvut.kbss.owlpersistence.OWLSequenceType;
 
@@ -14,10 +15,12 @@ public class OWLClassC {
 	@Id
 	private URI uri;
 
-	@OWLSequence(ObjectPropertyHasSequence = "http://B-hasReferencedSequence")
+	@OWLSequence
+	@OWLObjectProperty(uri="http://B-hasReferencedSequence")
 	private List<OWLClassA> referencedList;
 
-	@OWLSequence(ObjectPropertyHasSequence = "http://B-hasSimpleSequence", type = OWLSequenceType.simple, ObjectPropertyHasNextURI = "http://B-hasSimpleNext")
+	@OWLSequence(type = OWLSequenceType.simple, ObjectPropertyHasNextURI = "http://B-hasSimpleNext")
+	@OWLObjectProperty(uri = "http://B-hasSimpleSequence")
 	private List<OWLClassA> simplelist;
 
 	public void setUri(URI uri) {

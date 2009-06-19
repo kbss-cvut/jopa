@@ -12,7 +12,9 @@ import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.NotFoundException;
+import cz.cvut.kbss.owlpersistence.FetchType;
 import cz.cvut.kbss.owlpersistence.OWLClass;
+import cz.cvut.kbss.owlpersistence.OWLSequence;
 
 public class LazyLoadingTransformer implements ClassFileTransformer {
 
@@ -109,14 +111,18 @@ public class LazyLoadingTransformer implements ClassFileTransformer {
 
 	private void doSetter(CtBehavior method) throws NotFoundException,
 			CannotCompileException {
-		System.out.println("Field setter : " + method.getName().substring(3).toLowerCase());
 		method.insertBefore("System.out.println(\"Setting\");");
 	}
 
-	private void doGetter(CtBehavior method) throws NotFoundException,
+	private void doGetter(CtBehavior getter) throws NotFoundException,
 			CannotCompileException {
-		System.out.println("Field getter : " + method.getName().substring(3).toLowerCase());
-		method.insertBefore("this." + method.getName().substring(3).toLowerCase() + "=\"URI.create(\"http://x\");\"");
-		method.insertBefore("System.out.println(\"Getting\");");
+//		gmethod.insertBefore("this."
+//				+ method.getName().substring(3).toLowerCase()
+//				+ "=\"URI.create(\"http://x\");\"");
+//		if (FetchType.LAZY.equals(seq.fetchType())) {
+			System.out.println("Registering lazy initialization fetcher for "+ getter.getName().substring(3).toLowerCase());
+//			getter.insertBefore(seq.fetchType()."System.out.println(\"Getting\");");
+//			
+//		} 		
 	}
 }

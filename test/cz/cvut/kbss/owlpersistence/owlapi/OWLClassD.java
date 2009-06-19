@@ -2,6 +2,7 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.net.URI;
 
+import cz.cvut.kbss.owlpersistence.FetchType;
 import cz.cvut.kbss.owlpersistence.Id;
 import cz.cvut.kbss.owlpersistence.OWLClass;
 import cz.cvut.kbss.owlpersistence.OWLObjectProperty;
@@ -12,7 +13,7 @@ public class OWLClassD {
 	@Id
 	private URI uri;
 
-	@OWLObjectProperty(uri = "http://hasA")
+	@OWLObjectProperty(uri = "http://hasA", fetchType=FetchType.EAGER)
 	private OWLClassA owlClassA;
 
 	/**
