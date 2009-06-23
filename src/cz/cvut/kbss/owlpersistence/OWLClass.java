@@ -18,5 +18,5 @@ public @interface OWLClass {
 	 */
 	String uri();
 	
-	
+	boolean mutable() default true;	
 }

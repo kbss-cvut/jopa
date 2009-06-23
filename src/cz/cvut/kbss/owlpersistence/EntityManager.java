@@ -1,5 +1,7 @@
 package cz.cvut.kbss.owlpersistence;
 
+import java.lang.reflect.Field;
+
 // fake of the entity manager
 public interface EntityManager {
 
@@ -26,6 +28,10 @@ public interface EntityManager {
 
 	// Determine whether the EntityManager is open.
 	public boolean isOpen();
+	
+	void loadObjectReference(final Object o, final Field fa);
+
+	void saveReference(final Object o, final Field fa);
 
 	// Query createNamedQuery(String name)
 	// Create an instance of Query for executing a named query (in the Java

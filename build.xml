@@ -26,7 +26,7 @@
 			<classpath path="${build.dir}" />
 		</javac>
 
-		<echo>Jaring Test Manager ...</echo>
+		<echo>Jaring OWLPersistence Library ...</echo>
 		<delete dir="${dist.dir}" />
 		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.dir}/owlpersistence-agent.jar" basedir="${build.dir}">
