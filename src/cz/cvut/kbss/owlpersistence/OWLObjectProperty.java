@@ -21,5 +21,7 @@ public @interface OWLObjectProperty {
 	CascadeType[] cascadeType() default { CascadeType.ALL };
 
 	FetchType fetchType() default FetchType.LAZY;
+	
+	boolean reasoningRequired() default true;
 
 }

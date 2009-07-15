@@ -1,4 +1,4 @@
-package cz.cvut.kbss.owlpersistence.aspectj;
+package cz.cvut.kbss.owlpersistence;
 
 import java.lang.reflect.Field;
 

@@ -17,7 +17,10 @@ public interface EntityManager {
 
 	public <T> T find(final Class<T> entityClass, final Object primaryKey);
 
-	// Make an entity instance managed and persistent.
+	/**
+	 * Makes an entity instance managed and persistent. After calling persist(e), the call to contains(e) return true.
+	 * 
+	 */
 	public void persist(final Object entity);
 
 	public void flush();

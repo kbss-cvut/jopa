@@ -104,7 +104,7 @@ public class TestBasicInteractions extends TestCase {
 		c.setReferencedList(Collections.singletonList(a));
 
 		pc.persist(c);
-		pc.persist(a);
+//		pc.persist(a);
 
 		pc.close();
 

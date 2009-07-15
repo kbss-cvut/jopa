@@ -19,15 +19,15 @@ public class TestPersistenceConnectorLogic extends TestCase {
 		pc.clear();
 		OWLClassA t = new OWLClassA();
 
-		try {
+//		try {
 			pc.persist(t);
-			fail();
-		} catch (OWLPersistenceException e) {
-			log.info("Persisting failed - OK : " + e.getMessage());
-			return;
-		} finally {
-			pc.close();
-		}
+//			fail();
+//		} catch (OWLPersistenceException e) {
+//			log.info("Persisting failed - OK : " + e.getMessage());
+//			return;
+//		} finally {
+//			pc.close();
+//		}
 	}
 
 	public void testTwicePersist() {
@@ -59,7 +59,7 @@ public class TestPersistenceConnectorLogic extends TestCase {
 		OWLClassA a = new OWLClassA();
 		a.setUri(pk);
 		OWLClassB b = new OWLClassB();
-		a.setUri(pk);
+		b.setUri(pk);
 
 		pc.persist(a);
 
