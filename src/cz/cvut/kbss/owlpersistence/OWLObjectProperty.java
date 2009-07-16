@@ -18,7 +18,7 @@ public @interface OWLObjectProperty {
 	 */
 	String uri();
 
-	CascadeType[] cascadeType() default { CascadeType.ALL };
+	CascadeType[] cascadeType() default {};
 
 	FetchType fetchType() default FetchType.LAZY;
 	

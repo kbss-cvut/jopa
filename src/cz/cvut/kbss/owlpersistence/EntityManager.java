@@ -32,7 +32,7 @@ public interface EntityManager {
 	// Determine whether the EntityManager is open.
 	public boolean isOpen();
 	
-	void loadObjectReference(final Object o, final Field fa);
+	void loadReference(final Object o, final Field fa);
 
 	void saveReference(final Object o, final Field fa);
 
