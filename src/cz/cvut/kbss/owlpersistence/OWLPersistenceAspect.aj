@@ -35,7 +35,7 @@ public aspect OWLPersistenceAspect {
 				if (log.isDebugEnabled()) {
 					log
 							.debug("*** Saving " + field.getName() + " of "
-									+ object);
+									+ object.getClass() + ":" + object.hashCode());
 				}
 				m.saveReference(object, field);
 			}
@@ -56,8 +56,9 @@ public aspect OWLPersistenceAspect {
 			if (m.contains(object)) {
 				if (log.isDebugEnabled()) {
 					log.debug("*** Fetching " + field.getName() + " of "
-							+ object);
+							+ object.getClass() + ":" + object.hashCode());
 				}
+				
 				m.loadReference(object, field);
 			}
 		} catch (NoSuchFieldException e) {

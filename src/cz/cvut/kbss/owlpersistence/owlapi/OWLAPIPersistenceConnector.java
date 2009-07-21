@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +32,6 @@ import org.mindswap.pellet.owlapi.PelletReasonerFactory;
 import org.mindswap.pellet.owlapi.Reasoner;
 import org.semanticweb.owl.apibinding.OWLManager;
 import org.semanticweb.owl.inference.OWLReasoner;
-import org.semanticweb.owl.inference.OWLReasonerException;
 import org.semanticweb.owl.io.PhysicalURIInputSource;
 import org.semanticweb.owl.model.AddAxiom;
 import org.semanticweb.owl.model.OWLAnnotation;
@@ -46,7 +43,6 @@ import org.semanticweb.owl.model.OWLDataFactory;
 import org.semanticweb.owl.model.OWLDataPropertyExpression;
 import org.semanticweb.owl.model.OWLDataType;
 import org.semanticweb.owl.model.OWLDescription;
-import org.semanticweb.owl.model.OWLException;
 import org.semanticweb.owl.model.OWLIndividual;
 import org.semanticweb.owl.model.OWLIndividualAxiom;
 import org.semanticweb.owl.model.OWLLabelAnnotation;
@@ -56,7 +52,6 @@ import org.semanticweb.owl.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owl.model.OWLOntology;
 import org.semanticweb.owl.model.OWLOntologyChange;
 import org.semanticweb.owl.model.OWLOntologyChangeException;
-import org.semanticweb.owl.model.OWLOntologyChangeListener;
 import org.semanticweb.owl.model.OWLOntologyChangeVisitor;
 import org.semanticweb.owl.model.OWLOntologyManager;
 import org.semanticweb.owl.model.OWLOntologyStorageException;
@@ -98,26 +93,21 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 	private Map<OWLIndividual, Object> managedEntities = new HashMap<OWLIndividual, Object>();
 	private Map<Object, OWLIndividual> instanceCache = new HashMap<Object, OWLIndividual>();
 
+	private Set<Object> toRefresh = new HashSet<Object>();
+
 	private final Map<Class<?>, Set<?>> allInmutable = new HashMap<Class<?>, Set<?>>();
 
 	private Map<Class<?>, OWLClassAnnotation> cache = new HashMap<Class<?>, OWLClassAnnotation>();
 
 	private URI physicalUri;
 	private String mapping = "mapping";
-
 	private OWLOntology o;
 	private OWLOntologyManager m;
 	private OWLDataFactory f;
 	private Reasoner r;
 	private PelletReasonerFactory rf = new PelletReasonerFactory();
 
-	private ReasoningThread t;
-
-	private final Executor e = Executors.newSingleThreadExecutor();
-
 	private final List<OWLOntologyChange> changes = new ArrayList<OWLOntologyChange>();
-
-	private boolean transactionRunning = false;
 
 	OWLAPIPersistenceConnector() {
 	}
@@ -226,25 +216,9 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		}
 
 		try {
-			// m.reloadOntology(o.getURI());
 			r = rf.createReasoner(m);
 			r.loadOntologies(m.getOntologies());
-
 			r.realise();
-
-			t = new ReasoningThread();
-
-			m.addOntologyChangeListener(new OWLOntologyChangeListener() {
-
-				@Override
-				public void ontologiesChanged(
-						List<? extends OWLOntologyChange> arg0)
-						throws OWLException {
-					// e.execute(t);
-					t.run();
-				}
-			});
-
 		} catch (Exception e) {
 			LOG.error(e, e);
 		}
@@ -256,16 +230,6 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		if (changes.isEmpty()) {
 			return;
 		}
-		// e.execute(new Runnable() {
-		// public void run() {
-		// while (transactionRunning) {
-		// try {
-		// Thread.sleep(100);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
 
 		System.out.println("TRANSACTION DONE - CHANGING");
 
@@ -279,19 +243,18 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 				}
 
 				m.applyChanges(changes);
-				changes.clear();
 
-				for (final Object o : new HashSet(instanceCache.keySet())) {
-					refresh(o);
-				}
+				// r.clearOntologies();
+				// r.loadOntologies(m.getOntologies());
+				// r.realise();
+				//				
+				r.ontologiesChanged(changes);
+				changes.clear();
+				toRefresh.addAll(instanceCache.keySet());
 			} catch (OWLOntologyChangeException e) {
 				LOG.error(e, e);
-			} finally {
-				// r.refresh();
 			}
 		}
-		// }
-		// });
 	}
 
 	private void setObjectProperty(final OWLIndividual src,
@@ -483,6 +446,36 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		return null;
 	}
 
+	private void _persistIdentity(final Object ob) throws Exception {
+		if (contains(ob)) {
+			throw new OWLPersistenceException(
+					"An entity is already within the persistence context : "
+							+ instanceCache.get(ob));
+		}
+
+		final Field idField = getId(ob.getClass());
+
+		URI id = (URI) idField.get(ob);
+
+		if (id == null) {
+			id = createNewID(ob.getClass().getSimpleName());
+
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("New Id generated= " + id);
+			}
+
+			idField.set(ob, id);
+		} else if (o.containsIndividualReference(id)) {
+			throw new OWLPersistenceException("An entity with URI " + id
+					+ " is already persisted within the context.");
+		}
+
+		final OWLIndividual i = f.getOWLIndividual(id);
+
+		managedEntities.put(i, ob);
+		instanceCache.put(ob, i);
+	}
+
 	/**
 	 * This method takes an OWLClass instance and saves it to the persistence
 	 * context.
@@ -500,46 +493,26 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 			LOG.debug("Persisting " + entity);
 		}
 
-		if (contains(entity)) {
-			throw new OWLPersistenceException(
-					"An entity is already within the persistence context : "
-							+ instanceCache.get(entity));
+		final Collection<Object> objects = collectCascadedGraph(entity,
+				CascadeType.PERSIST);
+
+		if (LOG.isTraceEnabled()) {
+			LOG.trace("Collected for persisting : " + objects);
 		}
 
 		try {
-			final Field idField = getId(entity.getClass());
-
-			URI id = (URI) idField.get(entity);
-
-			if (id == null) {
-				if (LOG.isTraceEnabled()) {
-					LOG.trace("Generating new ID for " + entity + " ...");
-				}
-
-				id = createNewID(entity.getClass().getSimpleName());
-
-				if (LOG.isTraceEnabled()) {
-					LOG.trace("Done. Id= " + id);
-				}
-
-				idField.set(entity, id);
-			} else if (o.containsIndividualReference(id)) {
-				throw new OWLPersistenceException("An entity with URI " + id
-						+ " is already persisted within the context.");
+			for (final Object ob : objects) {
+				_persistIdentity(ob);
 			}
-
-			final OWLIndividual i = f.getOWLIndividual(id);
-
-			managedEntities.put(i, entity);
-			instanceCache.put(entity, i);
-
-			saveInitialObjectToModel(entity);
-
-			storeToModel();
+			for (final Object ob : objects) {
+				saveInitialObjectToModel(ob);
+			}
 		} catch (Exception e) {
 			throw new OWLPersistenceException(
 					"A problem occured when persisting " + entity, e);
 		}
+
+		storeToModel();
 	}
 
 	@Override
@@ -548,6 +521,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		instanceCache.clear();
 		cache.clear();
 		allInmutable.clear();
+		toRefresh.clear();
 	}
 
 	@Override
@@ -608,7 +582,12 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 					"The object must be persisted so as to allow refresh.");
 		}
 
-		loadObjectFromModel(object, true);
+		if (toRefresh.contains(object)) {
+			loadObjectFromModel(object, true);
+		} else {
+			LOG.warn("Object not refreshed : " + object
+					+ " because it is up-to-date.");
+		}
 	}
 
 	@Override
@@ -642,6 +621,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 				addChanges(r.getChanges());
 			}
 		}
+
 		storeToModel();
 	}
 
@@ -681,7 +661,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 						cz.cvut.kbss.owlpersistence.OWLObjectProperty.class)
 						.cascadeType());
 
-				if (!ct.contains(CascadeType.ALL) && !ct.contains(t)) {
+				if (!ct.contains(CascadeType.ALL) && !ct.contains(type)) {
 					continue;
 				}
 
@@ -725,10 +705,53 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		storeToModel();
 	}
 
-	public void _saveReference(Object object, Field field) {
-		boolean orig = transactionRunning;
-		transactionRunning = true;
+	private void _saveList(final Object object, final Field field,
+			final Object value) {
+		// TODO cascading
 
+		final OWLSequence seq = field.getAnnotation(OWLSequence.class);
+
+		if (seq == null) {
+			throw new OWLPersistenceException(
+					"Lists must be annotated with OWLSequence annotation.");
+		}
+
+		Class<?> clazz = getCollectionErasureType((ParameterizedType) field
+				.getGenericType());
+
+		final List lst = List.class.cast(value);
+
+		if (lst != null) {
+			for (final Object li : lst) {
+				if (!contains(li)) {
+					persist(li);
+				}
+			}
+		}
+
+		final OWLObjectProperty hasSequenceProperty = op(URI.create(field
+				.getAnnotation(
+						cz.cvut.kbss.owlpersistence.OWLObjectProperty.class)
+				.uri()));
+
+		switch (seq.type()) {
+		case referenced:
+			setReferencedList(object, clazz, lst, hasSequenceProperty, c(URI
+					.create(seq.ClassOWLListURI())), op(URI.create(seq
+					.ObjectPropertyHasContentsURI())), op(URI.create(seq
+					.ObjectPropertyHasNextURI())));
+			break;
+		case simple:
+			setSimpleList(object, clazz, lst, hasSequenceProperty, op(URI
+					.create(seq.ObjectPropertyHasNextURI())));
+			break;
+		default:
+			throw new OWLPersistenceException("Unknown sequence type : "
+					+ seq.type());
+		}
+	}
+
+	public void _saveReference(Object object, Field field) {
 		try {
 			OWLIndividual subject = instanceCache.get(object);
 
@@ -755,51 +778,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 						.getAnnotation(cz.cvut.kbss.owlpersistence.OWLObjectProperty.class);
 
 				if (field.getType().isAssignableFrom(List.class)) {
-					// TODO cascading
-
-					final OWLSequence seq = field
-							.getAnnotation(OWLSequence.class);
-
-					if (seq == null) {
-						throw new OWLPersistenceException(
-								"Lists must be annotated with OWLSequence annotation.");
-					}
-
-					Class<?> clazz = getCollectionErasureType((ParameterizedType) field
-							.getGenericType());
-
-					final List lst = List.class.cast(value);
-
-					if (lst != null) {
-						for (final Object li : lst) {
-							if (!contains(li)) {
-								persist(li);
-							}
-						}
-					}
-
-					final OWLObjectProperty hasSequenceProperty = op(URI
-							.create(field
-									.getAnnotation(
-											cz.cvut.kbss.owlpersistence.OWLObjectProperty.class)
-									.uri()));
-
-					switch (seq.type()) {
-					case referenced:
-						setReferencedList(object, clazz, lst,
-								hasSequenceProperty, c(URI.create(seq
-										.ClassOWLListURI())), op(URI.create(seq
-										.ObjectPropertyHasContentsURI())),
-								op(URI.create(seq.ObjectPropertyHasNextURI())));
-						break;
-					case simple:
-						setSimpleList(object, clazz, lst, hasSequenceProperty,
-								op(URI.create(seq.ObjectPropertyHasNextURI())));
-						break;
-					default:
-						throw new OWLPersistenceException(
-								"Unknown sequence type : " + seq.type());
-					}
+					_saveList(object, field, value);
 				} else if (field.getType().isAssignableFrom(Set.class)) {
 					// TODO cascading
 					Class<?> clazz = getCollectionErasureType((ParameterizedType) field
@@ -826,15 +805,14 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 					OWLIndividual o2;
 
 					if (value != null) {
-
-						boolean persistCascading = Arrays.asList(
-								ap.cascadeType()).contains(CascadeType.ALL)
-								|| Arrays.asList(ap.cascadeType()).contains(
-										CascadeType.PERSIST);
-
-						if (persistCascading && !contains(value)) {
-							persist(value);
-						}
+						// boolean persistCascading = Arrays.asList(
+						// ap.cascadeType()).contains(CascadeType.ALL)
+						// || Arrays.asList(ap.cascadeType()).contains(
+						// CascadeType.PERSIST);
+						//
+						// if (persistCascading && !contains(value)) {
+						// persist(value);
+						// }
 
 						o2 = m.getOWLDataFactory().getOWLIndividual(
 								(URI) getId(value.getClass()).get(value));
@@ -857,19 +835,20 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			if (!orig) {
-				transactionRunning = false;
-			}
 		}
 	}
 
 	public void loadReference(Object object, Field field) {
-		try {
-			_loadReference(object, field, true);
-		} catch (Exception e) {
-			LOG.error(e, e);
-		}
+		//		
+		// if (toRefresh.contains(object)) {
+		refresh(object);
+		// }
+		//
+		// try {
+		// _loadReference(object, field, true);
+		// } catch (Exception e) {
+		// LOG.error(e, e);
+		// }
 	}
 
 	private String getLabel(final OWLIndividual i) {
@@ -946,8 +925,6 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace("Saving initial object to model " + object);
 		}
-		boolean orig = transactionRunning;
-		transactionRunning = true;
 
 		final Class<?> cls = object.getClass();
 
@@ -971,10 +948,6 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 
 		for (final Field field : ca.objectFields) {
 			_saveReference(object, field);
-		}
-
-		if (!orig) {
-			transactionRunning = false;
 		}
 	}
 
@@ -1078,6 +1051,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 
 		if (!all) {
 			if (p.fetchType().equals(FetchType.LAZY)) {
+				toRefresh.add(object);
 				return;
 			}
 		}
@@ -1381,15 +1355,23 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 
 	private <N extends Enum<N>> N getEnum(final Class<N> cls,
 			final OWLIndividual i) {
-		for (final Field t : cls.getDeclaredFields()) {
-			if (t.isEnumConstant()) {
-				final cz.cvut.kbss.owlpersistence.OWLIndividual ii = t
-						.getAnnotation(cz.cvut.kbss.owlpersistence.OWLIndividual.class);
-				if (ii.uri().equalsIgnoreCase(i.getURI().toString())) {
-					return Enum.valueOf(cls, t.getName());
+		final Field id = getId(cls);
+
+		try {
+			for (final N t : cls.getEnumConstants()) {
+				URI uri;
+				uri = (URI) id.get(t);
+
+				if (uri.equals(i.getURI())) {
+					return t;
 				}
 			}
+		} catch (IllegalArgumentException e) {
+			throw new OWLPersistenceException(e);
+		} catch (IllegalAccessException e) {
+			throw new OWLPersistenceException(e);
 		}
+
 		throw new OWLPersistenceException("Unknown enum constant = " + i);
 	}
 
@@ -1554,21 +1536,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 						"Primitive types cannot be used for field types");
 			}
 
-			Id i = field.getAnnotation(Id.class);
-
-			if (i != null) {
-				if (LOG.isTraceEnabled()) {
-					LOG.trace("       Id annotation : " + i);
-				}
-
-				if (c2.idField != null || (!field.getType().equals(URI.class))) {
-					throw new OWLPersistenceException();
-				} else {
-					field.setAccessible(true);
-					c2.idField = field;
-				}
-				continue;
-			}
+			c2.idField = getId(cls);
 
 			cz.cvut.kbss.owlpersistence.RDFSLabel label = field
 					.getAnnotation(cz.cvut.kbss.owlpersistence.RDFSLabel.class);
@@ -1614,11 +1582,27 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 			}
 		}
 
-		if (cls.isEnum()) {
-			for (final Object e : cls.getEnumConstants()) {
-				System.out.println(e + " : "
-						+ Arrays.asList(e.getClass().getAnnotations()));
+		try {
+			if (cls.isEnum()) {
+				for (final Object e : cls.getEnumConstants()) {
+					final Field idField = getId(e.getClass());
+					URI id = (URI) idField.get(e);
+
+					if (id == null) {
+						throw new OWLPersistenceException(
+								"An enum individual must have an id specified");
+					}
+
+					final OWLIndividual i = f.getOWLIndividual(id);
+
+					managedEntities.put(i, e);
+					instanceCache.put(e, i);
+				}
 			}
+		} catch (IllegalArgumentException e1) {
+			throw new OWLPersistenceException(e1);
+		} catch (IllegalAccessException e1) {
+			throw new OWLPersistenceException(e1);
 		}
 
 		cache.put(cls, c2);
@@ -1627,7 +1611,19 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 	}
 
 	private Field getId(final Class<?> c) {
-		return processOWLClass(c).idField;
+		if (cache.containsKey(c)) {
+			return processOWLClass(c).idField;
+		} else {
+			for (final Field field : c.getDeclaredFields()) {
+				Id i = field.getAnnotation(Id.class);
+
+				if (i != null) {
+					field.setAccessible(true);
+					return field;
+				}
+			}
+			return null;
+		}
 	}
 
 	private class OWLClassAnnotation {
@@ -1636,48 +1632,4 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		List<Field> dataFields = new ArrayList<Field>();
 		List<Field> objectFields = new ArrayList<Field>();
 	}
-
-	class ReasoningThread implements Runnable {
-
-		private boolean running;
-
-		public ReasoningThread() {
-			this.running = false;
-		}
-
-		@Override
-		public void run() {
-			if (running) {
-				return;
-			}
-
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Running reasoner.");
-			}
-
-			synchronized (r) {
-				try {
-					r.clearOntologies();
-					r.loadOntologies(m.getOntologies());
-					r.realise();
-				} catch (OWLReasonerException e) {
-					LOG.error(e, e);
-				}
-			}
-
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Done, refreshing objects.");
-			}
-
-			for (final Object o : new HashSet<Object>(
-					OWLAPIPersistenceConnector.this.managedEntities.values())) {
-				refresh(o);
-			}
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Done.");
-			}
-			running = false;
-		}
-	}
-
 }
