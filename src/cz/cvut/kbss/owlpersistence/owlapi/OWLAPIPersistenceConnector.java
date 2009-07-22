@@ -465,7 +465,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 			}
 
 			idField.set(ob, id);
-		} else if (o.containsIndividualReference(id)) {
+		} else if (o.containsIndividualReference(id) && !ob.getClass().isEnum()) {
 			throw new OWLPersistenceException("An entity with URI " + id
 					+ " is already persisted within the context.");
 		}
@@ -493,20 +493,24 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 			LOG.debug("Persisting " + entity);
 		}
 
-		final Collection<Object> objects = collectCascadedGraph(entity,
-				CascadeType.PERSIST);
-
-		if (LOG.isTraceEnabled()) {
-			LOG.trace("Collected for persisting : " + objects);
-		}
+		// final Collection<Object> objects = collectCascadedGraph(entity,
+		// CascadeType.PERSIST);
+		//
+		// // remove already persisted objects - these need not get a new
+		// identity
+		// objects.removeAll(instanceCache.keySet());
+		//
+		// if (LOG.isTraceEnabled()) {
+		// LOG.trace("Collected for persisting : " + objects);
+		// }
 
 		try {
-			for (final Object ob : objects) {
-				_persistIdentity(ob);
-			}
-			for (final Object ob : objects) {
-				saveInitialObjectToModel(ob);
-			}
+			// for (final Object ob : objects) {
+			_persistIdentity(entity);
+			// }
+			// save all references that are of cascadeType ALL or PERSIST
+			saveInitialObjectToModel(entity, false);
+
 		} catch (Exception e) {
 			throw new OWLPersistenceException(
 					"A problem occured when persisting " + entity, e);
@@ -584,6 +588,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 
 		if (toRefresh.contains(object)) {
 			loadObjectFromModel(object, true);
+			toRefresh.remove(object);
 		} else {
 			LOG.warn("Object not refreshed : " + object
 					+ " because it is up-to-date.");
@@ -604,15 +609,8 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 			return;
 		}
 
-		final Collection<Object> collected = collectCascadedGraph(object,
-				CascadeType.REMOVE);
-
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("To remove : " + collected);
-		}
-
-		for (final Object ox : collected) {
-			synchronized (ox) {
+		new CascadeExplorer() {
+			protected void explore(Object ox) {
 				final OWLIndividual i = instanceCache.remove(ox);
 				managedEntities.remove(i);
 				OWLEntityRemover r = new OWLEntityRemover(m, Collections
@@ -620,76 +618,9 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 				r.visit(i);
 				addChanges(r.getChanges());
 			}
-		}
+		}.start(this, object, CascadeType.REMOVE);
 
 		storeToModel();
-	}
-
-	private Collection<Object> collectCascadedGraph(final Object o,
-			final CascadeType type) {
-		final Set<Object> set = new HashSet<Object>();
-
-		_collectCascadedGraph(o, set, new HashSet<Field>(), type);
-
-		return set;
-	}
-
-	private void _collectCascadedGraph(final Object o,
-			final Collection<Object> objects, final Set<Field> fields,
-			final CascadeType type) {
-
-		// Object is already marked
-		if (objects.contains(o)) {
-			return;
-		}
-
-		objects.add(o);
-
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("Collecting " + o + ", cache = " + cache);
-		}
-
-		final OWLClassAnnotation a = processOWLClass(o.getClass());
-
-		try {
-			for (final Field field : a.objectFields) {
-				if (fields.contains(field)) {
-					continue;
-				}
-
-				final List<CascadeType> ct = Arrays.asList(field.getAnnotation(
-						cz.cvut.kbss.owlpersistence.OWLObjectProperty.class)
-						.cascadeType());
-
-				if (!ct.contains(CascadeType.ALL) && !ct.contains(type)) {
-					continue;
-				}
-
-				fields.add(field);
-
-				final Collection col;
-
-				if (field.getType().isAssignableFrom(List.class)
-						|| field.getType().isAssignableFrom(Set.class)) {
-					col = Collection.class.cast(field.get(o));
-				} else {
-					col = Collections.singleton(field.get(o));
-				}
-
-				if (col != null) {
-					for (final Object o2 : col) {
-						if (o2 == null) {
-							continue;
-						}
-						_collectCascadedGraph(o2, objects, fields, type);
-					}
-				}
-			}
-		} catch (IllegalArgumentException e) {
-			throw new OWLPersistenceException(e);
-		} catch (IllegalAccessException e) {
-			throw new OWLPersistenceException(e);
-		}
 	}
 
 	@Override
@@ -698,143 +629,128 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 	}
 
 	/**
-	 * CascadeType - ALL, PERSIST, REMOVE
+	 * Saves the reference. Force.
 	 */
 	public void saveReference(Object object, Field field) {
-		_saveReference(object, field);
-		storeToModel();
+		try {
+			_saveReference(object, field, true);
+			storeToModel();
+			toRefresh.add(object);
+			refresh(object);
+		} catch (Exception e) {
+			throw new OWLPersistenceException(e);
+		}
 	}
 
-	private void _saveList(final Object object, final Field field,
-			final Object value) {
-		// TODO cascading
-
-		final OWLSequence seq = field.getAnnotation(OWLSequence.class);
-
-		if (seq == null) {
-			throw new OWLPersistenceException(
-					"Lists must be annotated with OWLSequence annotation.");
-		}
-
-		Class<?> clazz = getCollectionErasureType((ParameterizedType) field
-				.getGenericType());
-
-		final List lst = List.class.cast(value);
+	private void checkCascadeOrPersisted(final CascadeType[] ct,
+			final Collection<Object> lst) {
+		boolean cascade = (Arrays.asList(ct).contains(CascadeType.ALL) || Arrays
+				.asList(ct).contains(CascadeType.PERSIST));
 
 		if (lst != null) {
 			for (final Object li : lst) {
 				if (!contains(li)) {
-					persist(li);
+					if (cascade || li.getClass().isEnum()) {
+						persist(li);
+					} else {
+						throw new OWLPersistenceException(
+								"The entity is not persisted, neither has cascade type of ALL or PERSIST");
+					}
 				}
 			}
-		}
-
-		final OWLObjectProperty hasSequenceProperty = op(URI.create(field
-				.getAnnotation(
-						cz.cvut.kbss.owlpersistence.OWLObjectProperty.class)
-				.uri()));
-
-		switch (seq.type()) {
-		case referenced:
-			setReferencedList(object, clazz, lst, hasSequenceProperty, c(URI
-					.create(seq.ClassOWLListURI())), op(URI.create(seq
-					.ObjectPropertyHasContentsURI())), op(URI.create(seq
-					.ObjectPropertyHasNextURI())));
-			break;
-		case simple:
-			setSimpleList(object, clazz, lst, hasSequenceProperty, op(URI
-					.create(seq.ObjectPropertyHasNextURI())));
-			break;
-		default:
-			throw new OWLPersistenceException("Unknown sequence type : "
-					+ seq.type());
 		}
 	}
 
-	public void _saveReference(Object object, Field field) {
-		try {
-			OWLIndividual subject = instanceCache.get(object);
+	public void _saveReference(Object object, Field field, final boolean force)
+			throws Exception {
+		OWLIndividual subject = instanceCache.get(object);
 
-			Object value;
-			value = field.get(object);
-			if (LOG.isTraceEnabled()) {
-				LOG.trace("Saving " + field.getName() + " of " + object
-						+ " with value = " + value);
+		Object value;
+		value = field.get(object);
+		if (LOG.isTraceEnabled()) {
+			LOG.trace("Saving " + field.getName() + " of " + object
+					+ " with value = " + value);
+		}
+
+		if (field.getAnnotation(RDFSLabel.class) != null) {
+			if (value == null) {
+				setLabel(instanceCache.get(object), null);
+			} else {
+				setLabel(instanceCache.get(object), value.toString());
 			}
+		} else if (field.getAnnotation(OWLDataProperty.class) != null) {
+			setDataProperty(instanceCache.get(object), dp(URI.create(field
+					.getAnnotation(OWLDataProperty.class).uri())), value);
+		} else if (field
+				.getAnnotation(cz.cvut.kbss.owlpersistence.OWLObjectProperty.class) != null) {
 
-			if (field.getAnnotation(RDFSLabel.class) != null) {
-				if (value == null) {
-					setLabel(instanceCache.get(object), null);
-				} else {
-					setLabel(instanceCache.get(object), value.toString());
+			final cz.cvut.kbss.owlpersistence.OWLObjectProperty ap = field
+					.getAnnotation(cz.cvut.kbss.owlpersistence.OWLObjectProperty.class);
+
+			final OWLObjectProperty op = op(URI.create(ap.uri()));
+
+			if (field.getType().isAssignableFrom(List.class)) {
+				final OWLSequence seq = field.getAnnotation(OWLSequence.class);
+
+				if (seq == null) {
+					throw new OWLPersistenceException(
+							"Lists must be annotated with OWLSequence annotation.");
 				}
-			} else if (field.getAnnotation(OWLDataProperty.class) != null) {
-				setDataProperty(instanceCache.get(object), dp(URI.create(field
-						.getAnnotation(OWLDataProperty.class).uri())), value);
-			} else if (field
-					.getAnnotation(cz.cvut.kbss.owlpersistence.OWLObjectProperty.class) != null) {
 
-				final cz.cvut.kbss.owlpersistence.OWLObjectProperty ap = field
-						.getAnnotation(cz.cvut.kbss.owlpersistence.OWLObjectProperty.class);
+				Class<?> clazz = getCollectionErasureType((ParameterizedType) field
+						.getGenericType());
 
-				if (field.getType().isAssignableFrom(List.class)) {
-					_saveList(object, field, value);
-				} else if (field.getType().isAssignableFrom(Set.class)) {
-					// TODO cascading
-					Class<?> clazz = getCollectionErasureType((ParameterizedType) field
-							.getGenericType());
-					final URI pURI = URI
-							.create(field
-									.getAnnotation(
-											cz.cvut.kbss.owlpersistence.OWLObjectProperty.class)
-									.uri());
+				final List lst = List.class.cast(value);
 
-					removeAllObjectProperties(subject, op(pURI));
+				checkCascadeOrPersisted(ap.cascadeType(), lst);
 
-					Set set = Set.class.cast(value);
-					if (set != null) {
-						for (Object element : set) {
-							final OWLIndividual objectValue = m
-									.getOWLDataFactory().getOWLIndividual(
-											(URI) getId(clazz).get(element));
-
-							addObjectProperty(subject, op(pURI), objectValue);
-						}
-					}
-				} else {
-					OWLIndividual o2;
-
-					if (value != null) {
-						// boolean persistCascading = Arrays.asList(
-						// ap.cascadeType()).contains(CascadeType.ALL)
-						// || Arrays.asList(ap.cascadeType()).contains(
-						// CascadeType.PERSIST);
-						//
-						// if (persistCascading && !contains(value)) {
-						// persist(value);
-						// }
-
-						o2 = m.getOWLDataFactory().getOWLIndividual(
-								(URI) getId(value.getClass()).get(value));
-					} else {
-						o2 = null;
-					}
-
-					setObjectProperty(
-							subject,
-							op(URI
-									.create(field
-											.getAnnotation(
-													cz.cvut.kbss.owlpersistence.OWLObjectProperty.class)
-											.uri())), o2);
+				switch (seq.type()) {
+				case referenced:
+					setReferencedList(object, clazz, lst, op, c(URI.create(seq
+							.ClassOWLListURI())), op(URI.create(seq
+							.ObjectPropertyHasContentsURI())), op(URI
+							.create(seq.ObjectPropertyHasNextURI())));
+					break;
+				case simple:
+					setSimpleList(object, clazz, lst, op, op(URI.create(seq
+							.ObjectPropertyHasNextURI())));
+					break;
+				default:
+					throw new OWLPersistenceException(
+							"Unknown sequence type : " + seq.type());
 				}
+			} else if (field.getType().isAssignableFrom(Set.class)) {
+				Class<?> clazz = getCollectionErasureType((ParameterizedType) field
+						.getGenericType());
+				removeAllObjectProperties(subject, op);
+
+				Set set = Set.class.cast(value);
+
+				checkCascadeOrPersisted(ap.cascadeType(), set);
+
+				if (set != null) {
+					for (Object element : set) {
+						final OWLIndividual objectValue = m.getOWLDataFactory()
+								.getOWLIndividual(
+										(URI) getId(clazz).get(element));
+
+						addObjectProperty(subject, op, objectValue);
+					}
+				}
+			} else {
+				OWLIndividual o2;
+
+				if (value != null) {
+					checkCascadeOrPersisted(ap.cascadeType(), Collections
+							.singleton(value));
+					o2 = m.getOWLDataFactory().getOWLIndividual(
+							(URI) getId(value.getClass()).get(value));
+				} else {
+					o2 = null;
+				}
+
+				setObjectProperty(subject, op, o2);
 			}
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 
@@ -921,9 +837,10 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		}
 	}
 
-	private void saveInitialObjectToModel(final Object object) {
-		if (LOG.isTraceEnabled()) {
-			LOG.trace("Saving initial object to model " + object);
+	private void saveInitialObjectToModel(final Object object, final boolean all)
+			throws Exception {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Saving initial object to model " + object);
 		}
 
 		final Class<?> cls = object.getClass();
@@ -939,15 +856,15 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		final OWLClassAnnotation ca = processOWLClass(cls);
 
 		if (ca.label != null) {
-			_saveReference(object, ca.label);
+			_saveReference(object, ca.label, false);
 		}
 
 		for (final Field field : ca.dataFields) {
-			_saveReference(object, field);
+			_saveReference(object, field, false);
 		}
 
 		for (final Field field : ca.objectFields) {
-			_saveReference(object, field);
+			_saveReference(object, field, false);
 		}
 	}
 
@@ -978,29 +895,31 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		}
 	}
 
-	private void _loadReference(Object object, Field field, boolean all) {
-		OWLIndividual subject = instanceCache.get(object);
-
-		try {
-
-			if (field.getAnnotation(RDFSLabel.class) != null) {
-				field.set(object, getLabel(instanceCache.get(object)));
-			} else if (field.getAnnotation(OWLDataProperty.class) != null) {
-				_loadDataReference(object, field);
-			} else if (field
-					.getAnnotation(cz.cvut.kbss.owlpersistence.OWLObjectProperty.class) != null) {
-				_loadObjectReference(object, field, all);
-			} else {
-				throw new IllegalArgumentException("Unknown field : " + field);
-			}
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+	//
+	// private void _loadReference(Object object, Field field, boolean all) {
+	// OWLIndividual subject = instanceCache.get(object);
+	//
+	// try {
+	//
+	// if (field.getAnnotation(RDFSLabel.class) != null) {
+	// field.set(object, getLabel(instanceCache.get(object)));
+	// } else if (field.getAnnotation(OWLDataProperty.class) != null) {
+	// _loadDataReference(object, field);
+	// } else if (field
+	// .getAnnotation(cz.cvut.kbss.owlpersistence.OWLObjectProperty.class) !=
+	// null) {
+	// _loadObjectReference(object, field, all);
+	// } else {
+	// throw new IllegalArgumentException("Unknown field : " + field);
+	// }
+	// } catch (IllegalArgumentException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// } catch (IllegalAccessException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	// }
 
 	private void _loadDataReference(Object object, Field field)
 			throws IllegalAccessException {
@@ -1327,14 +1246,12 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		}
 
 		Object nextO = iter.next();
-		saveInitialObjectToModel(nextO);
 
 		OWLIndividual next = instanceCache.get(nextO);
 		setObjectProperty(instanceCache.get(o), hasSequence, next);
 
 		while (iter.hasNext()) {
 			nextO = iter.next();
-			saveInitialObjectToModel(nextO);
 
 			final OWLIndividual next2 = instanceCache.get(nextO);
 			setObjectProperty(next, hasNext, next2);
@@ -1507,7 +1424,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		}
 	}
 
-	private OWLClassAnnotation processOWLClass(final Class<?> cls) {
+	OWLClassAnnotation processOWLClass(final Class<?> cls) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace("processOWLClass : " + cls);
 		}
@@ -1626,7 +1543,7 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 		}
 	}
 
-	private class OWLClassAnnotation {
+	class OWLClassAnnotation {
 		Field idField = null;
 		Field label = null;
 		List<Field> dataFields = new ArrayList<Field>();
