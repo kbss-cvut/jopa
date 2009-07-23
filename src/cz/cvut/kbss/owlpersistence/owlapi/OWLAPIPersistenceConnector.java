@@ -125,7 +125,8 @@ public class OWLAPIPersistenceConnector implements EntityManager {
 	}
 
 	public void connect(String connectionString) {
-		m = null;
+		m= null;
+		clear();
 
 		if (new File(connectionString).exists()) {
 			loadModel(new File(connectionString).toURI());
