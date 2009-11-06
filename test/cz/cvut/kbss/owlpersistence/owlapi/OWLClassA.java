@@ -6,13 +6,13 @@ import cz.cvut.kbss.owlpersistence.Id;
 import cz.cvut.kbss.owlpersistence.OWLClass;
 import cz.cvut.kbss.owlpersistence.OWLDataProperty;
 
-@OWLClass(uri = "http://OWLClassA")
+@OWLClass(iri = "http://OWLClassA")
 public class OWLClassA {
 
 	@Id
 	private URI uri;
 
-	@OWLDataProperty(uri = "http://A-stringAttribute")
+	@OWLDataProperty(iri = "http://A-stringAttribute")
 	private String stringAttribute;
 
 	/**

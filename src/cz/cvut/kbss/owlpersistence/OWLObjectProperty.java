@@ -16,7 +16,7 @@ public @interface OWLObjectProperty {
 	 * 
 	 * @return URI of the referenced class
 	 */
-	String uri();
+	String iri();
 
 	CascadeType[] cascadeType() default {};
 

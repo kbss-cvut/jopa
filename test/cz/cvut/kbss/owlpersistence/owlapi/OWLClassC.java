@@ -9,18 +9,18 @@ import cz.cvut.kbss.owlpersistence.OWLObjectProperty;
 import cz.cvut.kbss.owlpersistence.OWLSequence;
 import cz.cvut.kbss.owlpersistence.OWLSequenceType;
 
-@OWLClass(uri = "http://OWLClassC")
+@OWLClass(iri = "http://OWLClassC")
 public class OWLClassC {
 
 	@Id
 	private URI uri;
 
 	@OWLSequence
-	@OWLObjectProperty(uri="http://B-hasReferencedSequence")
+	@OWLObjectProperty(iri="http://B-hasReferencedSequence")
 	private List<OWLClassA> referencedList;
 
-	@OWLSequence(type = OWLSequenceType.simple, ObjectPropertyHasNextURI = "http://B-hasSimpleNext")
-	@OWLObjectProperty(uri = "http://B-hasSimpleSequence")
+	@OWLSequence(type = OWLSequenceType.simple, ObjectPropertyHasNextIRI = "http://B-hasSimpleNext")
+	@OWLObjectProperty(iri = "http://B-hasSimpleSequence")
 	private List<OWLClassA> simplelist;
 
 	public void setUri(URI uri) {

@@ -4,7 +4,7 @@ import cz.cvut.kbss.owlpersistence.EntityManager;
 
 public class OWLPersistence {
 
-	private final static EntityManager em = new OWLAPIPersistenceConnector();
+	private static EntityManager em = new OWLAPIPersistenceConnector();
 
 	public static EntityManager getEntityManager() {
 		return em;

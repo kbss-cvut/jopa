@@ -1,21 +1,15 @@
 package cz.cvut.kbss.owlpersistence;
 
 import java.lang.reflect.Field;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import cz.cvut.kbss.owlpersistence.owlapi.OWLPersistence;
-import cz.cvut.kbss.owlpersistence.EntityManager;
-import cz.cvut.kbss.owlpersistence.OWLClass;
-import cz.cvut.kbss.owlpersistence.OWLObjectProperty;
-import cz.cvut.kbss.owlpersistence.OWLDataProperty;
-import cz.cvut.kbss.owlpersistence.RDFSLabel;
 
 public aspect OWLPersistenceAspect {
 
-	private static final Log log = LogFactory
-			.getLog(OWLPersistenceAspect.class);
+	private static final Logger log = Logger
+			.getLogger(OWLPersistenceAspect.class.getName());
 
 	pointcut getter() : get( @(OWLObjectProperty || OWLDataProperty) * * ) && within(@OWLClass *);
 
@@ -32,15 +26,14 @@ public aspect OWLPersistenceAspect {
 			field.setAccessible(true);
 
 			if (m.contains(object)) {
-				if (log.isDebugEnabled()) {
-					log
-							.debug("*** Saving " + field.getName() + " of "
-									+ object.getClass() + ":" + object.hashCode());
+				if (log.isLoggable(Level.CONFIG)) {
+					log.config("*** Saving " + field.getName() + " of "
+							+ object.getClass() + ":" + object.hashCode());
 				}
 				m.saveReference(object, field);
 			}
 		} catch (NoSuchFieldException e) {
-			log.error(e, e);
+			log.log(Level.SEVERE, e.getMessage(), e);
 		}
 
 	}
@@ -54,15 +47,15 @@ public aspect OWLPersistenceAspect {
 			field.setAccessible(true);
 
 			if (m.contains(object)) {
-				if (log.isDebugEnabled()) {
-					log.debug("*** Fetching " + field.getName() + " of "
+				if (log.isLoggable(Level.CONFIG)) {
+					log.config("*** Fetching " + field.getName() + " of "
 							+ object.getClass() + ":" + object.hashCode());
 				}
-				
+
 				m.loadReference(object, field);
 			}
 		} catch (NoSuchFieldException e) {
-			log.error(e, e);
+			log.log(Level.SEVERE, e.getMessage(), e);
 		}
 	}
 }

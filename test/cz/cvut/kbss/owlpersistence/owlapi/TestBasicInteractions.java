@@ -5,15 +5,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.commons.logging.Log;
+import java.util.logging.Logger;
 
 import cz.cvut.kbss.owlpersistence.EntityManager;
 
 import junit.framework.TestCase;
 
 public class TestBasicInteractions extends TestCase {
-	private Log log = TestEnvironment.getLog();
+	private Logger log = TestEnvironment.getLogger();
 
 	public void testPersistFound() {
 		EntityManager pc = TestEnvironment

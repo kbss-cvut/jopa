@@ -7,13 +7,13 @@ import cz.cvut.kbss.owlpersistence.Id;
 import cz.cvut.kbss.owlpersistence.OWLClass;
 import cz.cvut.kbss.owlpersistence.OWLObjectProperty;
 
-@OWLClass(uri = "http://OWLClassD")
+@OWLClass(iri = "http://OWLClassD")
 public class OWLClassD {
 
 	@Id
 	private URI uri;
 
-	@OWLObjectProperty(uri = "http://hasA", fetchType=FetchType.EAGER)
+	@OWLObjectProperty(iri = "http://hasA", fetchType=FetchType.EAGER)
 	private OWLClassA owlClassA;
 
 	/**

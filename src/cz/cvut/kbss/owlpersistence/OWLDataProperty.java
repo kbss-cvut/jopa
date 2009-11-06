@@ -16,7 +16,7 @@ public @interface OWLDataProperty {
 	 * 
 	 * @return URI of the referenced class
 	 */
-	String uri();
+	String iri();
 	
     boolean reasoningRequired() default true;
 }

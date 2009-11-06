@@ -1,17 +1,15 @@
 package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.net.URI;
+import java.util.logging.Logger;
 
-import org.apache.commons.logging.Log;
-
+import junit.framework.TestCase;
 import cz.cvut.kbss.owlpersistence.EntityManager;
 import cz.cvut.kbss.owlpersistence.OWLPersistenceException;
 
-import junit.framework.TestCase;
-
 public class TestPersistenceConnectorLogic extends TestCase {
 
-	private Log log = TestEnvironment.getLog();
+	private Logger log = TestEnvironment.getLogger();
 
 	public void testPersistWithoutPK() {
 		EntityManager pc = TestEnvironment
@@ -19,15 +17,15 @@ public class TestPersistenceConnectorLogic extends TestCase {
 		pc.clear();
 		OWLClassA t = new OWLClassA();
 
-//		try {
-			pc.persist(t);
-//			fail();
-//		} catch (OWLPersistenceException e) {
-//			log.info("Persisting failed - OK : " + e.getMessage());
-//			return;
-//		} finally {
-//			pc.close();
-//		}
+		// try {
+		pc.persist(t);
+		// fail();
+		// } catch (OWLPersistenceException e) {
+		// log.info("Persisting failed - OK : " + e.getMessage());
+		// return;
+		// } finally {
+		// pc.close();
+		// }
 	}
 
 	public void testTwicePersist() {

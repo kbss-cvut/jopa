@@ -16,7 +16,7 @@ public @interface OWLClass {
 	 * 
 	 * @return URI of the referenced class
 	 */
-	String uri();
+	String iri();
 	
 	boolean mutable() default true;	
 }

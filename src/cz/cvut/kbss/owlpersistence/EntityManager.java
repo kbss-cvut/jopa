@@ -2,6 +2,8 @@ package cz.cvut.kbss.owlpersistence;
 
 import java.lang.reflect.Field;
 
+import cz.cvut.kbss.owl2query.simpleversion.model.QueryResult;
+
 // fake of the entity manager
 public interface EntityManager {
 
@@ -18,7 +20,8 @@ public interface EntityManager {
 	public <T> T find(final Class<T> entityClass, final Object primaryKey);
 
 	/**
-	 * Makes an entity instance managed and persistent. After calling persist(e), the call to contains(e) return true.
+	 * Makes an entity instance managed and persistent. After calling
+	 * persist(e), the call to contains(e) return true.
 	 * 
 	 */
 	public void persist(final Object entity);
@@ -31,7 +34,9 @@ public interface EntityManager {
 
 	// Determine whether the EntityManager is open.
 	public boolean isOpen();
-	
+
+	public QueryResult<? extends Object> executeNativeQuery(final String query);
+
 	void loadReference(final Object o, final Field fa);
 
 	void saveReference(final Object o, final Field fa);
