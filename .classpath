@@ -2,11 +2,17 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="src" path="runtime"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="lib/owlapi/owlapi-bin.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/owlapi/owlapi-src.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/owlapi/owlapi-bin.jar" sourcepath="lib/owlapi/owlapi-src.jar"/>
+	<classpathentry kind="lib" path="lib/codemodel-2.2.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/owl2query"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-6-sun-1.6.0.16">
+		<attributes>
+			<attribute name="owner.project.facets" value="jst.java"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
