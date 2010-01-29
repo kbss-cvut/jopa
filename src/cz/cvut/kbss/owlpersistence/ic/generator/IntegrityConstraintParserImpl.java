@@ -10,12 +10,15 @@ import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLClassExpressionVisitor;
 import org.semanticweb.owlapi.model.OWLDataAllValuesFrom;
 import org.semanticweb.owlapi.model.OWLDataExactCardinality;
+import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDataHasValue;
 import org.semanticweb.owlapi.model.OWLDataMaxCardinality;
 import org.semanticweb.owlapi.model.OWLDataMinCardinality;
+import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
 import org.semanticweb.owlapi.model.OWLDataRange;
 import org.semanticweb.owlapi.model.OWLDataSomeValuesFrom;
+import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLObjectAllValuesFrom;
 import org.semanticweb.owlapi.model.OWLObjectComplementOf;
@@ -26,11 +29,14 @@ import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
 import org.semanticweb.owlapi.model.OWLObjectMaxCardinality;
 import org.semanticweb.owlapi.model.OWLObjectMinCardinality;
 import org.semanticweb.owlapi.model.OWLObjectOneOf;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
 import org.semanticweb.owlapi.model.OWLObjectUnionOf;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
+import org.semanticweb.owlapi.reasoner.NodeSet;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import cz.cvut.kbss.owlpersistence.ic.internalmodel.OWLPersistenceAnnotation;
 import cz.cvut.kbss.owlpersistence.ic.internalmodel.OWLPersistenceAnnotationFactory;
@@ -38,8 +44,8 @@ import cz.cvut.kbss.owlpersistence.ic.internalmodel.OWLPersistenceAnnotationFact
 public class IntegrityConstraintParserImpl implements IntegrityConstraintParser {
 
 	@Override
-	public Set<OWLPersistenceAnnotation> parse(OWLAxiom a, OWLOntology o)
-			throws UnsupportedICException {
+	public Set<OWLPersistenceAnnotation> parse(OWLAxiom a, OWLReasoner r,
+			OWLOntology o) throws UnsupportedICException {
 		if (!a.isOfType(AxiomType.SUBCLASS_OF)) {
 			throw new UnsupportedICException("Unsupported axiom type : "
 					+ a.getAxiomType());
@@ -56,14 +62,13 @@ public class IntegrityConstraintParserImpl implements IntegrityConstraintParser 
 		final OWLClass subjClass = ax.getSubClass().asOWLClass();
 
 		try {
-			return processSubClassOfAxiom(subjClass, ax.getSuperClass());
+			return processSubClassOfAxiom(subjClass, ax.getSuperClass(), r, o);
 		} catch (RuntimeException e) {
 			throw new UnsupportedICException(e.getMessage(), e);
 		}
 	}
 
-	private void ensureDatatype(final OWLDataRange r)
-			throws RuntimeException {
+	private void ensureDatatype(final OWLDataRange r) throws RuntimeException {
 		if (!r.isDatatype()) {
 			throw new RuntimeException("Data ranges not supported: " + r);
 		}
@@ -106,15 +111,18 @@ public class IntegrityConstraintParserImpl implements IntegrityConstraintParser 
 	}
 
 	private void ensureCardinality(int c) {
-		if (c != 1) {
+		if (c > 1) {
 			throw new RuntimeException(
-					"Cardinality constraints != 1 not supported : " + c);
+					"Cardinality constraints > 1 not supported : " + c);
 		}
 	}
 
 	private Set<OWLPersistenceAnnotation> processSubClassOfAxiom(
-			final OWLClass subjClass, final OWLClassExpression superClass) {
+			final OWLClass subjClass, final OWLClassExpression superClass,
+			final OWLReasoner r, final OWLOntology o) {
 		final Set<OWLPersistenceAnnotation> set = new HashSet<OWLPersistenceAnnotation>();
+
+		final OWLDataFactory f = o.getOWLOntologyManager().getOWLDataFactory();
 
 		superClass.accept(new OWLClassExpressionVisitor() {
 
@@ -124,10 +132,9 @@ public class IntegrityConstraintParserImpl implements IntegrityConstraintParser 
 				ensureDataProperty(arg0.getProperty());
 				ensureCardinality(arg0.getCardinality());
 
-				set.add(OWLPersistenceAnnotationFactory
-						.datatypeParticipationConstraint(subjClass, arg0
-								.getProperty().asOWLDataProperty(), arg0
-								.getFiller().asOWLDatatype(), 0, 1));
+				processDataCardinality(0, arg0
+						.getCardinality(), arg0.getProperty()
+						.asOWLDataProperty(), arg0.getFiller().asOWLDatatype());
 			}
 
 			@Override
@@ -136,10 +143,48 @@ public class IntegrityConstraintParserImpl implements IntegrityConstraintParser 
 				ensureDataProperty(arg0.getProperty());
 				ensureCardinality(arg0.getCardinality());
 
-				set.add(OWLPersistenceAnnotationFactory
-						.datatypeParticipationConstraint(subjClass, arg0
-								.getProperty().asOWLDataProperty(), arg0
-								.getFiller().asOWLDatatype(), 1, 1));
+				processDataCardinality(arg0.getCardinality(), arg0
+						.getCardinality(), arg0.getProperty()
+						.asOWLDataProperty(), arg0.getFiller().asOWLDatatype());
+			}
+
+			private void processDataCardinality(final int minCardinality,
+					final int maxCardinality, OWLDataProperty p,
+					final OWLDatatype c) {
+
+				final Set<OWLDatatype> validRanges = new HashSet<OWLDatatype>();
+
+				for (final OWLDatatype cc : o.getDatatypesInSignature()) {
+					if (r.isEntailed(f.getOWLDataPropertyRangeAxiom(p, cc))) {
+						validRanges.add(cc);
+					}
+				}
+
+				if (validRanges.isEmpty()) {
+					validRanges.add(c);
+				}
+
+				// infer cardinality
+				for (final OWLDatatype cc : validRanges) {
+					if ((maxCardinality > 1)
+							&& r.isEntailed(f.getOWLSubClassOfAxiom(subjClass,
+									f.getOWLDataMaxCardinality(1, p
+											.asOWLDataProperty(), cc)))
+							|| r.isEntailed(f
+									.getOWLFunctionalDataPropertyAxiom(p
+											.asOWLDataProperty()))) {
+
+						set.add(OWLPersistenceAnnotationFactory
+								.datatypeParticipationConstraint(subjClass, p,
+										cc, minCardinality, 1));
+					} else {
+						// must be consistent
+
+						set.add(OWLPersistenceAnnotationFactory
+								.datatypeParticipationConstraint(subjClass, p,
+										cc, minCardinality, maxCardinality));
+					}
+				}
 			}
 
 			@Override
@@ -148,10 +193,15 @@ public class IntegrityConstraintParserImpl implements IntegrityConstraintParser 
 				ensureDataProperty(arg0.getProperty());
 				ensureCardinality(arg0.getCardinality());
 
-				set.add(OWLPersistenceAnnotationFactory
-						.datatypeParticipationConstraint(subjClass, arg0
-								.getProperty().asOWLDataProperty(), arg0
-								.getFiller().asOWLDatatype(), 1, null));
+				if (!arg0.getFiller().isDatatype()) {
+					throw new RuntimeException(
+							"Data fillers in cardinality/existential restrictions must be plain datatypes.");
+				}
+
+				processDataCardinality(arg0.getCardinality(),
+						Integer.MAX_VALUE, arg0.getProperty()
+								.asOWLDataProperty(), arg0.getFiller()
+								.asOWLDatatype());
 			}
 
 			@Override
@@ -175,10 +225,8 @@ public class IntegrityConstraintParserImpl implements IntegrityConstraintParser 
 				ensureDatatype(arg0.getFiller());
 				ensureDataProperty(arg0.getProperty());
 
-				set.add(OWLPersistenceAnnotationFactory
-						.datatypeParticipationConstraint(subjClass, arg0
-								.getProperty().asOWLDataProperty(), arg0
-								.getFiller().asOWLDatatype(), 1, null));
+				processDataCardinality(1, Integer.MAX_VALUE, arg0.getProperty()
+						.asOWLDataProperty(), arg0.getFiller().asOWLDatatype());
 			}
 
 			@Override
@@ -218,16 +266,55 @@ public class IntegrityConstraintParserImpl implements IntegrityConstraintParser 
 								.getFiller().asOWLClass(), 1, 1));
 			}
 
+			private void processObjectMinCardinality(final int cardinality,
+					OWLObjectProperty p, final OWLClass c) {
+
+				// infer range
+				// TODO only most specific
+				final NodeSet<OWLClass> nSet = r.getObjectPropertyRanges(p,
+						false);
+
+				final Set<OWLClass> validRanges = new HashSet<OWLClass>();
+
+				for (final OWLClass cc : nSet.getFlattened()) {
+					if (r.isEntailed(f.getOWLSubClassOfAxiom(cc, c))) {
+						validRanges.add(cc);
+					}
+				}
+
+				if (validRanges.isEmpty()) {
+					validRanges.add(c);
+				}
+
+				// infer cardinality
+				for (final OWLClass cc : validRanges) {
+					if (r.isEntailed(f.getOWLSubClassOfAxiom(subjClass, f
+							.getOWLObjectMaxCardinality(cardinality, p
+									.asOWLObjectProperty(), cc)))
+							|| r.isEntailed(f
+									.getOWLFunctionalObjectPropertyAxiom(p
+											.asOWLObjectProperty()))) {
+						set.add(OWLPersistenceAnnotationFactory
+								.classParticipationConstraint(subjClass, p, cc,
+										cardinality, cardinality));
+					} else {
+						// must be consistent
+						set.add(OWLPersistenceAnnotationFactory
+								.classParticipationConstraint(subjClass, p, cc,
+										cardinality, Integer.MAX_VALUE));
+					}
+				}
+			}
+
 			@Override
 			public void visit(OWLObjectMinCardinality arg0) {
 				ensureClass(arg0.getFiller());
 				ensureObjectProperty(arg0.getProperty());
 				ensureCardinality(arg0.getCardinality());
 
-				set.add(OWLPersistenceAnnotationFactory
-						.classParticipationConstraint(subjClass, arg0
-								.getProperty().asOWLObjectProperty(), arg0
-								.getFiller().asOWLClass(), 1, null));
+				processObjectMinCardinality(arg0.getCardinality(), arg0
+						.getProperty().asOWLObjectProperty(), arg0.getFiller()
+						.asOWLClass());
 			}
 
 			@Override
@@ -238,7 +325,7 @@ public class IntegrityConstraintParserImpl implements IntegrityConstraintParser 
 				set.add(OWLPersistenceAnnotationFactory
 						.namedIndividualParticipationConstraint(subjClass, arg0
 								.getProperty().asOWLObjectProperty(), arg0
-								.getValue().asNamedIndividual()));
+								.getValue().asOWLNamedIndividual()));
 			}
 
 			@Override
@@ -252,10 +339,8 @@ public class IntegrityConstraintParserImpl implements IntegrityConstraintParser 
 				ensureClass(arg0.getFiller());
 				ensureObjectProperty(arg0.getProperty());
 
-				set.add(OWLPersistenceAnnotationFactory
-						.classParticipationConstraint(subjClass, arg0
-								.getProperty().asOWLObjectProperty(), arg0
-								.getFiller().asOWLClass(), 1, null));
+				processObjectMinCardinality(1, arg0.getProperty()
+						.asOWLObjectProperty(), arg0.getFiller().asOWLClass());
 			}
 
 			@Override
@@ -278,8 +363,8 @@ public class IntegrityConstraintParserImpl implements IntegrityConstraintParser 
 
 			@Override
 			public void visit(OWLClass arg0) {
-				throw new RuntimeException(
-						"OWLClass expressions not supported yet.");
+				set.add(OWLPersistenceAnnotationFactory
+						.subClassOfSpecification(subjClass, arg0));
 			}
 		});
 		return set;

@@ -8,7 +8,61 @@
 	<propertyfile file="build.properties" />
 
 	<path id="owlpersistence.lib">
-		<fileset dir="lib" includes="**/*.jar" />
+		<pathelement location="lib/codemodel-2.2.jar" />
+		<pathelement location="lib/jopt-simple/jopt-simple-3.2.jar" />
+		<pathelement location="lib/pellet/aterm-java-1.6.jar" />
+		<pathelement location="lib/pellet/pellet-cli.jar" />
+		<pathelement location="lib/pellet/pellet-core.jar" />
+		<pathelement location="lib/pellet/pellet-datatypes.jar" />
+		<pathelement location="lib/pellet/pellet-dig.jar" />
+		<pathelement location="lib/pellet/pellet-el.jar" />
+		<pathelement location="lib/pellet/pellet-explanation.jar" />
+		<pathelement location="lib/pellet/pellet-ic.jar" />
+		<pathelement location="lib/pellet/pellet-jena.jar" />
+		<pathelement location="lib/pellet/pellet-modularity.jar" />
+		<pathelement location="lib/pellet/pellet-owlapiv3.jar" />
+		<pathelement location="lib/pellet/pellet-pellint.jar" />
+		<pathelement location="lib/pellet/pellet-query.jar" />
+		<pathelement location="lib/pellet/pellet-rules.jar" />
+		<pathelement location="lib/pellet/pellet-test.jar" />
+		<pathelement location="lib/pellet/servlet.jar" />
+		<pathelement location="lib/pellet/owlapiv3/owlapi-bin.jar" />
+		<pathelement location="lib/pellet/xsdlib/relaxngDatatype.jar" />
+		<pathelement location="lib/pellet/xsdlib/xsdlib.jar" />
+		<pathelement location="lib/pellet/jena/antlr-2.7.5.jar" />
+		<pathelement location="lib/pellet/jena/arq-2.8.1.jar" />
+		<pathelement location="lib/pellet/jena/arq-extra.jar" />
+		<pathelement location="lib/pellet/jena/arq.jar" />
+		<pathelement location="lib/pellet/jena/commons-logging-1.1.1.jar" />
+		<pathelement location="lib/pellet/jena/concurrent.jar" />
+		<pathelement location="lib/pellet/jena/icu4j_3_4.jar" />
+		<pathelement location="lib/pellet/jena/icu4j-3.4.4.jar" />
+		<pathelement location="lib/pellet/jena/iri-0.7.jar" />
+		<pathelement location="lib/pellet/jena/iri.jar" />
+		<pathelement location="lib/pellet/jena/jena-2.6.2-tests.jar" />
+		<pathelement location="lib/pellet/jena/jena-2.6.2.jar" />
+		<pathelement location="lib/pellet/jena/jena.jar" />
+		<pathelement location="lib/pellet/jena/jenatest.jar" />
+		<pathelement location="lib/pellet/jena/json.jar" />
+		<pathelement location="lib/pellet/jena/junit-4.5.jar" />
+		<pathelement location="lib/pellet/jena/junit.jar" />
+		<pathelement location="lib/pellet/jena/log4j-1.2.12.jar" />
+		<pathelement location="lib/pellet/jena/log4j-1.2.13.jar" />
+		<pathelement location="lib/pellet/jena/lucene-core-2.3.1.jar" />
+		<pathelement location="lib/pellet/jena/slf4j-api-1.5.6.jar" />
+		<pathelement location="lib/pellet/jena/slf4j-log4j12-1.5.6.jar" />
+		<pathelement location="lib/pellet/jena/stax-api-1.0.1.jar" />
+		<pathelement location="lib/pellet/jena/stax-api-1.0.jar" />
+		<pathelement location="lib/pellet/jena/wstx-asl-3.0.0.jar" />
+		<pathelement location="lib/pellet/jena/wstx-asl-3.2.9.jar" />
+		<pathelement location="lib/pellet/jena/xercesImpl-2.7.1.jar" />
+		<pathelement location="lib/pellet/jena/xercesImpl.jar" />
+		<pathelement location="lib/pellet/jena/xml-apis.jar" />
+		<pathelement location="lib/pellet/jetty/commons-logging-api.jar" />
+		<pathelement location="lib/pellet/jetty/jetty.jar" />
+		<pathelement location="lib/pellet/jgrapht/jgrapht-jdk1.5.jar" />
+		<pathelement location="lib/pellet/junit/junit.jar" />
+		<pathelement location="lib/owl2query/owl2query.jar" />
 	</path>
 
 	<pathconvert property="lib.manifest.classpath" pathsep=" " refid="owlpersistence.lib">
@@ -18,20 +72,23 @@
 		</chainedmapper>
 	</pathconvert>
 
-	<target name="build-agent-jar" description="Makes an agent distribution.">
+	<target name="compile">
 		<delete dir="${build.dir}" />
 		<mkdir dir="${build.dir}" />
-		<javac srcdir="src" destdir="${build.dir}" optimize="true" compiler="${build.compiler}">
+
+		<javac srcdir="src" destdir="${build.dir}" optimize="true" compiler="${build.compiler}" excludes="cz/cvut/kbss/owlpersistence/ic/**,cz/cvut/kbss/owlpersistence/owlapi/fresh/**">
 			<classpath refid="owlpersistence.lib" />
 			<classpath path="${build.dir}" />
 		</javac>
+	</target>
 
+	<target name="build-agent-jar" description="Makes an agent distribution.">
 		<echo>Jaring OWLPersistence Library ...</echo>
 		<delete dir="${dist.dir}" />
 		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.dir}/owlpersistence-agent.jar" basedir="${build.dir}">
 			<manifest>
-				<attribute name="Premain-Class" value="cz.cvut.kbss.owlpersistence.owlapi.instrumentation.LazyLoadingTransformer" />
+				<attribute name="Premain-Class" value="cz.cvut.kbss.owlpersistence.owlapi.EntityLoadingAspect" />
 				<attribute name="Class-Path" value="${lib.manifest.classpath}" />
 			</manifest>
 		</jar>

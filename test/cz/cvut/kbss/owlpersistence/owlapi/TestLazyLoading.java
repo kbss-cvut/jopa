@@ -3,7 +3,7 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 import java.net.URI;
 import java.util.Collections;
 
-import cz.cvut.kbss.owlpersistence.EntityManager;
+import cz.cvut.kbss.owlpersistence.model.EntityManager;
 
 public class TestLazyLoading {
 
@@ -22,7 +22,7 @@ public class TestLazyLoading {
 		c.setUri(uriC);
 
 		c.setReferencedList(Collections.singletonList(a));
-		
+
 		pc.persist(a);
 		pc.persist(c);
 
@@ -33,7 +33,7 @@ public class TestLazyLoading {
 		final OWLClassC aX = pc.find(OWLClassC.class, uriC);
 
 		System.out.println(aX.getReferencedList());
-		
+
 		pc.close();
 	}
 }

@@ -2,10 +2,10 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.net.URI;
 
-import cz.cvut.kbss.owlpersistence.FetchType;
-import cz.cvut.kbss.owlpersistence.Id;
-import cz.cvut.kbss.owlpersistence.OWLClass;
-import cz.cvut.kbss.owlpersistence.OWLObjectProperty;
+import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
+import cz.cvut.kbss.owlpersistence.model.annotations.Id;
+import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
+import cz.cvut.kbss.owlpersistence.model.annotations.OWLObjectProperty;
 
 @OWLClass(iri = "http://OWLClassD")
 public class OWLClassD {
@@ -13,7 +13,7 @@ public class OWLClassD {
 	@Id
 	private URI uri;
 
-	@OWLObjectProperty(iri = "http://hasA", fetchType=FetchType.EAGER)
+	@OWLObjectProperty(iri = "http://hasA", fetchType = FetchType.EAGER)
 	private OWLClassA owlClassA;
 
 	/**

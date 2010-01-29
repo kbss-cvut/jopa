@@ -118,4 +118,20 @@ public class OWLPersistenceAnnotationFactory {
 		};
 
 	}
+
+	public static SubClassOfSpecification subClassOfSpecification(
+			final OWLClass subClass, final OWLClass superClass) {
+		return new SubClassOfSpecification() {
+
+			@Override
+			public OWLClass getSuperClass() {
+				return superClass;
+			}
+
+			@Override
+			public OWLClass getSubClass() {
+				return subClass;
+			}
+		};
+	}
 }

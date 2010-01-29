@@ -4,8 +4,8 @@ import java.net.URI;
 import java.util.logging.Logger;
 
 import junit.framework.TestCase;
-import cz.cvut.kbss.owlpersistence.EntityManager;
-import cz.cvut.kbss.owlpersistence.OWLPersistenceException;
+import cz.cvut.kbss.owlpersistence.model.EntityManager;
+import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
 
 public class TestPersistenceConnectorLogic extends TestCase {
 
@@ -17,15 +17,15 @@ public class TestPersistenceConnectorLogic extends TestCase {
 		pc.clear();
 		OWLClassA t = new OWLClassA();
 
-		// try {
-		pc.persist(t);
-		// fail();
-		// } catch (OWLPersistenceException e) {
-		// log.info("Persisting failed - OK : " + e.getMessage());
-		// return;
-		// } finally {
-		// pc.close();
-		// }
+		try {
+			pc.persist(t);
+			fail();
+		} catch (OWLPersistenceException e) {
+			log.info("Persisting failed - OK : " + e.getMessage());
+			return;
+		} finally {
+			pc.close();
+		}
 	}
 
 	public void testTwicePersist() {
@@ -40,9 +40,9 @@ public class TestPersistenceConnectorLogic extends TestCase {
 
 		try {
 			pc.persist(t);
-			fail();
 		} catch (OWLPersistenceException e) {
-			log.info("Persisting failed - OK : " + e.getMessage());
+			fail();
+			log.info("Persisting failed : " + e.getMessage());
 			return;
 		} finally {
 			pc.close();

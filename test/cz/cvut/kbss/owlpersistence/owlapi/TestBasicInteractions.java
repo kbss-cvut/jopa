@@ -2,14 +2,12 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.owlpersistence.EntityManager;
-
 import junit.framework.TestCase;
+import cz.cvut.kbss.owlpersistence.model.EntityManager;
 
 public class TestBasicInteractions extends TestCase {
 	private Logger log = TestEnvironment.getLogger();
@@ -102,8 +100,8 @@ public class TestBasicInteractions extends TestCase {
 
 		c.setReferencedList(Collections.singletonList(a));
 
+		pc.persist(a);
 		pc.persist(c);
-//		pc.persist(a);
 
 		pc.close();
 

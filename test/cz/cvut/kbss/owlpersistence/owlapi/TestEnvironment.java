@@ -1,20 +1,26 @@
 package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.io.OWLXMLOntologyFormat;
+import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyFormat;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.UnknownOWLOntologyException;
 
-import cz.cvut.kbss.owlpersistence.EntityManager;
+import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
+
+import cz.cvut.kbss.owlpersistence.Persistence;
+import cz.cvut.kbss.owlpersistence.model.EntityManager;
 
 public class TestEnvironment {
 	public static final Logger log = Logger
@@ -23,36 +29,39 @@ public class TestEnvironment {
 	public static String dir = "testResults";
 
 	public static EntityManager getPersistenceConnector(String name) {
-		final OWLAPIPersistenceConnector pc = (OWLAPIPersistenceConnector) OWLPersistence
-				.getEntityManager();
-
-		final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
 		try {
-			OWLOntology o = m
-					.createOntology(IRI
-							.create("http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/"
-									+ name));
+			final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
+			final IRI iri = IRI
+					.create("http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/"
+							+ name);
+			OWLOntology o = m.createOntology(iri);
 			final File url = new File(dir + "/" + name + ".owl");
 
-			m.setPhysicalURIForOntology(o, url.toURI());
-			m.saveOntology(o);
+			m.saveOntology(o,new OWLXMLOntologyFormat(), url.toURI());
 
-			pc.connect(Collections.singletonMap("ontologyURI", url.toURI()
-					.toURL().toString()));
-			return pc;
+			final Map<String, String> params = new HashMap<String, String>();
+
+			params.put("javax.persistence.provider",
+					EntityManagerFactoryImpl.class.getName());
+
+			params.put(OWLAPIPersistenceProperties.USE_OLD_OWLAPIV3, "true");
+			params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
+					.getAbsolutePath());
+			params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
+					OWLAPIPersistenceProvider.class.getName());
+			params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
+					PelletReasonerFactory.class.getName());
+
+			return Persistence.createEntityManagerFactory("context-name",
+					params).createEntityManager();
 		} catch (OWLOntologyCreationException e) {
 			log.log(Level.SEVERE, e.getMessage(), e);
-			return null;
 		} catch (UnknownOWLOntologyException e) {
 			log.log(Level.SEVERE, e.getMessage(), e);
-			return null;
 		} catch (OWLOntologyStorageException e) {
 			log.log(Level.SEVERE, e.getMessage(), e);
-			return null;
-		} catch (MalformedURLException e) {
-			log.log(Level.SEVERE, e.getMessage(), e);
-			return null;
 		}
+		return null;
 	}
 
 	public static Logger getLogger() {

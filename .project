@@ -30,9 +30,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>runtime</name>
+			<name>eclipselink</name>
 			<type>2</type>
-			<location>/home/kremen/fel/projects/utam/internal-svn/utam-failures/impl/runtime</location>
+			<location>/home/kremen/work/java/eclipselink</location>
 		</link>
 	</linkedResources>
 </projectDescription>

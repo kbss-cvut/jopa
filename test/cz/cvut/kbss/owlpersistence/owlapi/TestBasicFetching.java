@@ -3,17 +3,15 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
-import cz.cvut.kbss.owlpersistence.EntityManager;
-
 import junit.framework.TestCase;
+import cz.cvut.kbss.owlpersistence.model.EntityManager;
 
 public class TestBasicFetching extends TestCase {
 
 	public void testFetchSimpleData() {
-		EntityManager pc = TestEnvironment
+		EntityManager em = TestEnvironment
 				.getPersistenceConnector("TestBasicFetching-testFetchSimpleData");
 
 		OWLClassA a = new OWLClassA();
@@ -22,23 +20,23 @@ public class TestBasicFetching extends TestCase {
 
 		a.setStringAttribute("new-value");
 
-		pc.persist(a);
+		em.persist(a);
 
-		assertTrue(pc.contains(a));
+		assertTrue(em.contains(a));
 
-		pc.flush();
+		em.flush();
 
-		pc.clear();
+		em.clear();
 
-		assertFalse(pc.contains(a));
+		assertFalse(em.contains(a));
 
-		final OWLClassA aX = pc.find(OWLClassA.class, uri);
+		final OWLClassA aX = em.find(OWLClassA.class, uri);
 
 		assertNotNull(aX);
 
 		assertEquals(aX.getStringAttribute(), "new-value");
 
-		pc.close();
+		em.close();
 	}
 
 	public void testFetchReferences() {
@@ -66,7 +64,6 @@ public class TestBasicFetching extends TestCase {
 		c.setUri(uriC);
 
 		c.setReferencedList(Arrays.asList(a, a2));
-
 		c.setSimpleList(Arrays.asList(a, a2));
 
 		pc.persist(a);
@@ -94,7 +91,7 @@ public class TestBasicFetching extends TestCase {
 
 		final OWLClassC cX = pc.find(OWLClassC.class, uriC);
 
-		assertEquals(cX.getReferencedList().size(), 2);
+		assertEquals(2, cX.getReferencedList().size());
 
 		assertEquals(2, cX.getSimpleList().size());
 
@@ -129,8 +126,12 @@ public class TestBasicFetching extends TestCase {
 
 		final OWLClassC cX = pc.find(OWLClassC.class, uriC);
 
-//		assertEquals(100, cX.getReferencedList().size());
+		// assertEquals(100, cX.getReferencedList().size());
 
 		pc.close();
+	}
+
+	public static void main(String[] args) {
+		new TestBasicFetching().testFetchSimpleData();
 	}
 }
