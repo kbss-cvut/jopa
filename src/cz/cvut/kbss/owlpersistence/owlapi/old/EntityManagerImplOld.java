@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -31,6 +32,7 @@ import org.semanticweb.owlapi.model.AddOntologyAnnotation;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+import org.semanticweb.owlapi.model.OWLAnnotationValue;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
@@ -557,6 +559,47 @@ public class EntityManagerImplOld extends AbstractEntityManager {
 	public boolean isLoaded(final Object object, final String attributeName) {
 		// TODO
 		return false;
+	}
+
+	@Override
+	public Query createQuery(String qlString) {
+		return _createQuery(qlString, false);
+	}
+
+	@Override
+	public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
+		return _createTypedQuery(qlString, resultClass, false);
+	}
+
+	@Override
+	public Query createNativeQuery(String sparql) {
+		return _createQuery(sparql, true);
+	}
+
+	@Override
+	public <T> TypedQuery<T> createNativeQuery(String sparql,
+			Class<T> resultClass) {
+		return _createTypedQuery(sparql, resultClass, true);
+	}
+
+	@Override
+	public <T> T unwrap(Class<T> cls) {
+		if (cls.equals(this.getClass())) {
+			return cls.cast(this);
+		} else if (OWLOntologyManager.class.isAssignableFrom(cls)) {
+			return cls.cast(m);
+		} else if (OWLDataFactory.class.isAssignableFrom(cls)) {
+			return cls.cast(m.getOWLDataFactory());
+		} else if (OWLOntology.class.isAssignableFrom(cls)) {
+			return cls.cast(o);
+		}
+
+		throw new OWLPersistenceException();
+	}
+
+	@Override
+	public Object getDelegate() {
+		return unwrap(EntityManagerImplOld.class);
 	}
 
 	synchronized void addChanges(final Collection<OWLOntologyChange> c) {
@@ -1601,27 +1644,6 @@ public class EntityManagerImplOld extends AbstractEntityManager {
 		}
 
 		return t.cast(o);
-	}
-
-	@Override
-	public Query createQuery(String qlString) {
-		return _createQuery(qlString, false);
-	}
-
-	@Override
-	public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
-		return _createTypedQuery(qlString, resultClass, false);
-	}
-
-	@Override
-	public Query createNativeQuery(String sparql) {
-		return _createQuery(sparql, true);
-	}
-
-	@Override
-	public <T> TypedQuery<T> createNativeQuery(String sparql,
-			Class<T> resultClass) {
-		return _createTypedQuery(sparql, resultClass, true);
 	}
 
 	private Query _createQuery(String string, boolean sparql) {

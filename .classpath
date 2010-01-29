@@ -8,7 +8,6 @@
 	<classpathentry kind="lib" path="lib/jopt-simple/jopt-simple-3.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="lib" path="lib/pellet/aterm-java-1.6.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet-core.jar"/>
 	<classpathentry kind="lib" path="lib/pellet/pellet-datatypes.jar"/>
 	<classpathentry kind="lib" path="lib/pellet/pellet-dig.jar"/>
 	<classpathentry kind="lib" path="lib/pellet/pellet-el.jar"/>
@@ -62,7 +61,7 @@
 			<attribute name="owner.project.facets" value="jst.java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/owlapi/owlapi-bin.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/owl2query"/>
+	<classpathentry kind="lib" path="lib/pellet/owlapiv3/owlapi-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

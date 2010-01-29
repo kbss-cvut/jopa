@@ -83,6 +83,7 @@ import cz.cvut.kbss.owlpersistence.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.owlpersistence.owlapi.OneLevelCascadeExplorer;
 import cz.cvut.kbss.owlpersistence.owlapi.QueryImpl;
 import cz.cvut.kbss.owlpersistence.owlapi.TypedQueryImpl;
+import cz.cvut.kbss.owlpersistence.owlapi.old.EntityManagerImplOld;
 
 /**
  * TODO lazy initialization TODO enums
@@ -1618,7 +1619,21 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 	private <T> TypedQuery<T> _createTypedQuery(String string, Class<T> cls,
 			boolean sparql) {
-		return new TypedQueryImpl<T>(string, cls, new OWLAPIv3OWL2OntologyNew(m,
-				merged, r), sparql, this);
+		return new TypedQueryImpl<T>(string, cls, new OWLAPIv3OWL2OntologyNew(
+				m, merged, r), sparql, this);
+	}
+
+	@Override
+	public <T> T unwrap(Class<T> cls) {
+		if (cls.equals(this.getClass())) {
+			return cls.cast(this);
+		}
+
+		throw new OWLPersistenceException();
+	}
+
+	@Override
+	public Object getDelegate() {
+		return unwrap(EntityManagerImplOld.class);
 	}
 }

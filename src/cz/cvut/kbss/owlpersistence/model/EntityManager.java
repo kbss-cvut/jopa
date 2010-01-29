@@ -240,7 +240,8 @@ public interface EntityManager {
 	 *            the class of the resulting instance(s)
 	 * @return the new query instance
 	 */
-	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass);
+	public <T> TypedQuery<T> createNativeQuery(String sqlString,
+			Class<T> resultClass);
 
 	// /**
 	// * Create an instance of Query for executing a native SQL query.
@@ -265,13 +266,13 @@ public interface EntityManager {
 	// */
 	// public void joinTransaction();
 
-	// TODO JPA 2.0 <T> T unwrap(Class<T> cls)
+	public <T> T unwrap(Class<T> cls);
 
-	// /**
-	// * Return the underlying provider object for the EntityManager, if
-	// * available. The result of this method is implementation specific.
-	// */
-	// public Object getDelegate();
+	/**
+	 * Return the underlying provider object for the EntityManager, if
+	 * available. The result of this method is implementation specific.
+	 */
+	public Object getDelegate();
 
 	/**
 	 * Close an application-managed EntityManager. After the close method has
