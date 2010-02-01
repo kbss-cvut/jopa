@@ -179,7 +179,7 @@ public class OWL2JavaTransformer {
 			newName=name + "" + (++i);
 		}
 		
-		final JFieldVar fvId = cls.field(JMod.PRIVATE, fieldType, newName);
+		final JFieldVar fvId = cls.field(JMod.PROTECTED, fieldType, newName);
 		final String fieldName = fvId.name().substring(0, 1).toUpperCase()
 				+ fvId.name().substring(1);
 		final JMethod mSetId = cls.method(JMod.PUBLIC, void.class, "set"
