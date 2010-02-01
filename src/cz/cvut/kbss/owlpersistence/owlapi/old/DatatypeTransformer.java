@@ -52,7 +52,7 @@ public class DatatypeTransformer {
 	}
 
 	public static Object transform(final OWLLiteral l) {
-		if (l.isTyped() && l.asOWLStringLiteral().getDatatype().isBuiltIn())
+		if (l.isTyped() && l.asOWLStringLiteral().getDatatype().isBuiltIn()) {
 			switch (l.asOWLStringLiteral().getDatatype().getBuiltInDatatype()) {
 			case XSD_SHORT:
 				return Short.parseShort(l.getLiteral());
@@ -84,8 +84,11 @@ public class DatatypeTransformer {
 				}
 			}
 
-		throw new IllegalArgumentException("Unsupported datatype: "
-				+ l.asOWLStringLiteral().getDatatype());
+			throw new IllegalArgumentException("Unsupported datatype: "
+					+ l.asOWLStringLiteral().getDatatype());
+		}
+
+		throw new OWLPersistenceException();
 	}
 
 	public static boolean isSupportedJavaType(Class<?> dt) {
