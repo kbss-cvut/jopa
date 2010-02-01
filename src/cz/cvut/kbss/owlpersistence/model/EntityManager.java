@@ -32,9 +32,7 @@ public interface EntityManager {
 	 * @param entity
 	 * @return the instance that the state was merged to
 	 * @throws IllegalArgumentException
-	 *             if instance is not an
-	 * 
-	 *             entity or is a removed entity
+	 *             if instance is not an entity or is a removed entity
 	 * @throws TransactionRequiredException
 	 *             if invoked on a container-managed entity manager of type
 	 *             PersistenceContextType.TRANSACTION and there is no
@@ -47,9 +45,7 @@ public interface EntityManager {
 	 * 
 	 * @param entity
 	 * @throws IllegalArgumentException
-	 *             if not an entity
-	 * 
-	 *             or if a detached entity
+	 *             if not an entity or if a detached entity
 	 * @throws TransactionRequiredException
 	 *             if invoked on a container-managed entity manager of type
 	 *             PersistenceContextType.TRANSACTION and there is no
