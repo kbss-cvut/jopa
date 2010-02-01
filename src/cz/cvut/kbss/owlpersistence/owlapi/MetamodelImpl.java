@@ -81,6 +81,8 @@ public class MetamodelImpl implements Metamodel {
 		final EntityTypeImpl<X> c2 = new EntityTypeImpl<X>(cls.getSimpleName(),
 				cls, IRI.create(c.iri()));
 
+		typeMap.put(cls, c2);
+
 		for (final Field field : cls.getDeclaredFields()) {
 			if (LOG.isLoggable(Level.FINE)) {
 				LOG.fine("   processing field : " + field);
@@ -212,7 +214,6 @@ public class MetamodelImpl implements Metamodel {
 		// } catch (IllegalAccessException e1) {
 		// throw new OWLPersistenceException(e1);
 		// }
-		typeMap.put(cls, c2);
 	}
 
 	private Class<?> getSetOrListErasureType(final ParameterizedType cls) {
