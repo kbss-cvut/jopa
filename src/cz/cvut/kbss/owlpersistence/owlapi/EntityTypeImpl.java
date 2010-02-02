@@ -8,6 +8,7 @@ import java.util.Set;
 import cz.cvut.kbss.owlpersistence.model.IRI;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Attribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.CollectionAttribute;
+import cz.cvut.kbss.owlpersistence.model.metamodel.DirectTypesSpecification;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EntityType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.IdentifiableType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Identifier;
@@ -31,6 +32,8 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 
 	private Identifier identifier;
 
+	private DirectTypesSpecification<X, ?> directTypes;
+
 	public EntityTypeImpl(String name, Class<X> javaType, final IRI iri) {
 		this.name = name;
 		this.javaType = javaType;
@@ -40,6 +43,10 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 	// void addAttribute(final String name, final Attribute<? super X, ?> a) {
 	// attributeMap.put(name, a);
 	// }
+
+	void addDirectTypes(DirectTypesSpecification<X, ?> a) {
+		this.directTypes = a;
+	}
 
 	void addDeclaredAttribute(final String name, final Attribute<X, ?> a) {
 		declaredAttributeMap.put(name, a);
@@ -395,5 +402,10 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 	@Override
 	public Identifier getIdentifier() {
 		return identifier;
+	}
+
+	@Override
+	public DirectTypesSpecification<? super X, ?> getTypes() {
+		return directTypes;
 	}
 }

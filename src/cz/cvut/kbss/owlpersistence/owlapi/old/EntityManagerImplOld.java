@@ -2,6 +2,7 @@ package cz.cvut.kbss.owlpersistence.owlapi.old;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,6 +10,7 @@ import org.semanticweb.owlapi.inference.OWLReasoner;
 import org.semanticweb.owlapi.inference.OWLReasonerException;
 import org.semanticweb.owlapi.inference.OWLReasonerFactory;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLIndividual;
@@ -144,5 +146,20 @@ public class EntityManagerImplOld extends AbstractEntityManagerImpl {
 		} catch (OWLReasonerException e) {
 			throw new OWLPersistenceException(e);
 		}
+	}
+
+	@Override
+	protected Set<OWLClass> getTypes(OWLNamedIndividual i, boolean direct) {
+		final Set<OWLClass> set = new HashSet<OWLClass>();
+
+		try {
+			for (final Set<OWLClass> s : r.getTypes(i, direct)) {
+				set.addAll(s);
+			}
+		} catch (OWLReasonerException e) {
+			e.printStackTrace();
+		}
+
+		return set;
 	}
 }

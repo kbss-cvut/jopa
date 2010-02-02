@@ -25,6 +25,7 @@ import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLSequence;
+import cz.cvut.kbss.owlpersistence.model.annotations.Types;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Attribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EmbeddableType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EntityType;
@@ -93,12 +94,6 @@ public class MetamodelImpl implements Metamodel {
 						"Primitive types cannot be used for field types");
 			}
 
-			OWLObjectProperty oop = field
-					.getAnnotation(OWLObjectProperty.class);
-			OWLDataProperty odp = field.getAnnotation(OWLDataProperty.class);
-			OWLAnnotationProperty oap = field
-					.getAnnotation(OWLAnnotationProperty.class);
-
 			final Class<?> cxx;
 
 			if (Collection.class.isAssignableFrom(field.getType())) {
@@ -107,6 +102,24 @@ public class MetamodelImpl implements Metamodel {
 			} else {
 				cxx = field.getType();
 			}
+			field.setAccessible(true);
+
+			Types tt = field.getAnnotation(Types.class);
+			if (tt != null) {
+				if (!Set.class.isAssignableFrom(field.getType())) {
+					throw new OWLPersistenceException(
+							"The Types element must be a set of Strings.");
+				}
+				c2.addDirectTypes(new DirectTypesSpecificationImpl(c2, tt
+						.fetchType(), field, cxx));
+				continue;
+			}
+
+			OWLObjectProperty oop = field
+					.getAnnotation(OWLObjectProperty.class);
+			OWLDataProperty odp = field.getAnnotation(OWLDataProperty.class);
+			OWLAnnotationProperty oap = field
+					.getAnnotation(OWLAnnotationProperty.class);
 
 			cz.cvut.kbss.owlpersistence.model.metamodel.Type<?> type = null;
 			PersistentAttributeType t = null;
@@ -166,7 +179,6 @@ public class MetamodelImpl implements Metamodel {
 					a = new SingularAttributeImpl(c2, false, field.getName(),
 							iri, type, field, t, cascadeTypes, fetchType);
 				}
-				field.setAccessible(true);
 				c2.addDeclaredAttribute(field.getName(), a);
 
 				continue;
@@ -180,9 +192,6 @@ public class MetamodelImpl implements Metamodel {
 				if (!validIdClasses.contains(field.getType())) {
 					throw new IllegalArgumentException("NOT YET SUPPORTED");
 				}
-
-				field.setAccessible(true);
-
 				c2.setIdentifier(new IRIIdentifierImpl(field));
 			}
 		}

@@ -29,6 +29,7 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -67,6 +68,7 @@ import cz.cvut.kbss.owlpersistence.model.TypedQuery;
 import cz.cvut.kbss.owlpersistence.model.annotations.CascadeType;
 import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Attribute;
+import cz.cvut.kbss.owlpersistence.model.metamodel.DirectTypesSpecification;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EntityType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.ListAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
@@ -217,6 +219,12 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 						.getOWLClass(IRI.create(e.getIRI().toString())), ii);
 
 				addChange(new AddAxiom(o, aa));
+
+				final DirectTypesSpecification<?, ?> types = e.getTypes();
+
+				if (types != null) {
+					_saveDirectTypes(entity, types);
+				}
 
 				for (final Attribute<?, ?> a : e.getAttributes()) {
 					_saveReference(entity, a, false);
@@ -984,6 +992,37 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
+	private void _saveDirectTypes(Object object, DirectTypesSpecification spec)
+			throws Exception {
+		OWLNamedIndividual subject = managed.get(object);
+		Object value = spec.getJavaField().get(object);
+
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Saving types of " + object + " with value = " + value);
+		}
+
+		final EntityType<?> type = emf.getMetamodel().entity(object.getClass());
+		final OWLClass myClass = f.getOWLClass(IRI.create(type.getIRI()
+				.toString()));
+
+		for (final OWLClass ox : getTypes(subject, false)) {
+			if (ox.equals(myClass)) {
+				continue;
+			}
+
+			addChange(new RemoveAxiom(o, f.getOWLClassAssertionAxiom(ox,
+					subject)));
+		}
+
+		Set<String> set = (Set<String>) Set.class.cast(value);
+		if (set != null) {
+			for (final String x : set) {
+				addChange(new AddAxiom(o, f.getOWLClassAssertionAxiom(f
+						.getOWLClass(IRI.create(x)), subject)));
+			}
+		}
+	}
+
 	private void _saveReference(Object object, Attribute<?, ?> attribute,
 			final boolean force) throws Exception {
 		OWLNamedIndividual subject = managed.get(object);
@@ -1130,6 +1169,23 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 			// ca.label.setAccessible(true);
 			// ca.label.set(object, getLabel(instanceCache.get(object)));
 			// }
+
+			DirectTypesSpecification<?, ?> ts = type.getTypes();
+
+			if (ts != null) {
+				Set<Object> set = new HashSet<Object>();
+
+				for (OWLClass col : getTypes(managed.get(object), true)) {
+					if (type.getIRI().toString()
+							.equals(col.getIRI().toString())) {
+						continue;
+					}
+
+					set.add(col.getIRI().toString());
+				}
+
+				ts.getJavaField().set(object, set);
+			}
 
 			for (final Attribute<?, ?> field : type.getAttributes()) {
 				_loadReference(object, field, force);
@@ -1645,4 +1701,7 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 	protected abstract void setupReasonerFactory(final String rfClass);
 
 	protected abstract void reinitReasoner();
+
+	protected abstract Set<OWLClass> getTypes(final OWLNamedIndividual i,
+			boolean direct);
 }

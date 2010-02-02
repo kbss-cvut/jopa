@@ -2,12 +2,17 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.semanticweb.owlapi.util.OWLClassLiteralCollector;
+
 import junit.framework.TestCase;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
+import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
 
 public class TestBasicInteractions extends TestCase {
 	private Logger log = TestEnvironment.getLogger();
@@ -131,4 +136,26 @@ public class TestBasicInteractions extends TestCase {
 
 		pc.close();
 	}
+	
+	public void testTypes() {
+		EntityManager pc = TestEnvironment
+				.getPersistenceConnector("TestBasicInteractions-testTypes");
+
+		OWLClassA a = new OWLClassA();
+		final URI pkA = URI.create("http://newA");
+		a.setUri(pkA);
+
+		a.setTypes(new HashSet<String>(Arrays.asList("http://classA","http://classB","http://classC")));
+		
+		pc.persist(a);
+		pc.flush();
+		pc.clear();
+		
+		OWLClassA ax  = pc.find(OWLClassA.class, pkA);
+		
+		assertEquals(ax.getTypes().size(), 3);		
+
+		pc.close();
+	}
+
 }

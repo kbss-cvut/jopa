@@ -19,4 +19,7 @@ public interface EntityType<X> extends IdentifiableType<X>, Bindable<X> {
 	IRI getIRI();
 
 	Identifier getIdentifier();
+
+	DirectTypesSpecification<? super X, ?> getTypes();
+
 }

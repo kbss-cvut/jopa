@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLIndividual;
@@ -89,7 +90,8 @@ public class EntityManagerImpl extends AbstractEntityManagerImpl {
 
 	@Override
 	protected void createReasoner() {
-		r = f.createReasoner(merged);
+		r = f.createReasoner(o);
+		r.prepareReasoner();
 	}
 
 	@Override
@@ -120,5 +122,15 @@ public class EntityManagerImpl extends AbstractEntityManagerImpl {
 		} catch (ClassNotFoundException e) {
 			throw new OWLPersistenceException(e);
 		}
+	}
+
+	@Override
+	protected void reinitReasoner() {
+		// nothing TODO
+	}
+
+	@Override
+	protected Set<OWLClass> getTypes(OWLNamedIndividual i, boolean direct) {
+		return r.getTypes(i,direct);
 	}
 }

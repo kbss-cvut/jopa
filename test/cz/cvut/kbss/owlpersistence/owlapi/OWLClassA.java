@@ -1,14 +1,19 @@
 package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.net.URI;
+import java.util.Set;
 
 import cz.cvut.kbss.owlpersistence.model.annotations.Id;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.owlpersistence.model.annotations.Types;
 
 @OWLClass(iri = "http://OWLClassA")
 public class OWLClassA {
 
+	@Types
+	private Set<String> types;
+	
 	@Id
 	private URI uri;
 
@@ -36,5 +41,13 @@ public class OWLClassA {
 
 	public String getStringAttribute() {
 		return stringAttribute;
+	}
+
+	public void setTypes(Set<String> types) {
+		this.types = types;
+	}
+
+	public Set<String> getTypes() {
+		return types;
 	}
 }

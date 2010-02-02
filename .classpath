@@ -62,7 +62,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="lib/pellet/owlapiv3/owlapi-bin.jar"/>
-	<classpathentry kind="lib" path="lib/owlapi/owlapi-bin.jar"/>
+	<classpathentry kind="lib" path="lib/owlapi/owlapi-bin.jar" sourcepath="lib/owlapi/owlapi-src.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/owl2query"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
