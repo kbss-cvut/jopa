@@ -142,7 +142,7 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 		
 		
 		if (ontologyFile != null) {
-			loadFromFile(URI.create(ontologyFile), mappingFileURI);
+			loadFromFile(new File(ontologyFile), mappingFileURI);
 		} else if (ontologyURI != null) {
 			loadModel(ontologyURI, mappingFileURI);
 		} else {
@@ -667,7 +667,7 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	private boolean loadFromFile(final URI file, final String mappingFileURI) {
+	private boolean loadFromFile(final File file, final String mappingFileURI) {
 		if (LOG.isLoggable(Level.INFO)) {
 			LOG.info("Loading model from file='" + file + "', mappingFileURI='"
 					+ mappingFileURI + "'.");
@@ -693,7 +693,7 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 			m.addIRIMapper(setupMappings(mapping));
 			LOG.info("Mapping file succesfully parsed.");
 
-			o = loadOntologyFromOntologyDocument(file);
+			o = loadOntologyFromOntologyDocument(file.toURI());
 			merged = new OWLOntologyMerger(m).createMergedOntology(m, IRI
 					.create("http://temporary"));
 			LOG.info("Ontology " + file + " succesfully loaded.");
