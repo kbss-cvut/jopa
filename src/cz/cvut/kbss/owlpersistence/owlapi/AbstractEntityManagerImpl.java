@@ -779,7 +779,7 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 			URI physicalURI = mapping.get(URI.create(ontologyURI));
 			System.out.println("Physical URI = " + physicalURI);
 			if (physicalURI != null) {
-				o = m.loadOntologyFromPhysicalURI(physicalURI);
+				o = loadOntologyFromOntologyDocument(physicalURI);
 			} else {
 				o = m.loadOntology(IRI.create(ontologyURI));
 			}
