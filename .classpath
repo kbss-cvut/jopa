@@ -61,7 +61,8 @@
 			<attribute name="owner.project.facets" value="jst.java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/owl2query"/>
 	<classpathentry kind="lib" path="lib/pellet/owlapiv3/owlapi-bin.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="lib" path="lib/owlapi/owlapi-bin.jar"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/owl2query"/>
+	<classpathentry kind="output" path="build"/>
 </classpath>

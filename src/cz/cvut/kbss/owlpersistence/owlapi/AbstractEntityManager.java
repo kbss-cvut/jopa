@@ -11,4 +11,5 @@ public abstract class AbstractEntityManager implements EntityManager {
 
 	public abstract boolean isLoaded(final Object object,
 			final String attributeName);
+
 }
