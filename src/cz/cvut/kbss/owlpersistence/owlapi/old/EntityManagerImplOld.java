@@ -1,6 +1,5 @@
 package cz.cvut.kbss.owlpersistence.owlapi.old;
 
-import java.io.File;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
@@ -136,4 +135,14 @@ public class EntityManagerImplOld extends AbstractEntityManagerImpl {
 		}
 	}
 
+	@Override
+	protected void reinitReasoner() {
+		try {
+			r.clearOntologies();
+			r.loadOntologies(m.getOntologies());
+			r.realise();
+		} catch (OWLReasonerException e) {
+			throw new OWLPersistenceException(e);
+		}
+	}
 }

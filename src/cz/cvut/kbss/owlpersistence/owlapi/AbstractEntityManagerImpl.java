@@ -54,7 +54,6 @@ import org.semanticweb.owlapi.model.RemoveImport;
 import org.semanticweb.owlapi.model.RemoveOntologyAnnotation;
 import org.semanticweb.owlapi.model.SetOntologyID;
 import org.semanticweb.owlapi.model.UnknownOWLOntologyException;
-import org.semanticweb.owlapi.reasoner.OWLReasonerException;
 import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
@@ -83,15 +82,23 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 	private static final Logger LOG = Logger
 			.getLogger(AbstractEntityManagerImpl.class.getName());
 
-	// /**
-	// * A collection of all entities that are currently managed by OWL
-	// * Persistence. This collection includes also newly added entities.
-	// */
+	/**
+	 * A collection of all entities that are currently managed by the
+	 * persistence context. This collection includes also newly added entities
+	 * that are not persistent yet.
+	 */
 	private final Map<Object, OWLNamedIndividual> managed = new HashMap<Object, OWLNamedIndividual>();
+
+	/**
+	 * A collection of all entities that are currently removed from the
+	 * persistence context.
+	 */
 	private final Map<Object, OWLNamedIndividual> removed = new HashMap<Object, OWLNamedIndividual>();
 
-	private final Map<Object, List<OWLOntologyChange>> removeChanges = new HashMap<Object, List<OWLOntologyChange>>();
-	private final List<OWLOntologyChange> changes = new ArrayList<OWLOntologyChange>();
+	private final Map<Object, List<OWLOntologyChange>> removeChanges = Collections
+			.synchronizedMap(new HashMap<Object, List<OWLOntologyChange>>());
+	private final List<OWLOntologyChange> allChanges = Collections
+			.synchronizedList(new ArrayList<OWLOntologyChange>());
 
 	// private Set<Object> toRefresh = new HashSet<Object>();
 	//
@@ -131,6 +138,11 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 				.get(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY);
 		final String reasonerFactoryClass = map
 				.get(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS);
+		final String languageTag = map.get(OWLAPIPersistenceProperties.LANG);
+
+		if (languageTag != null) {
+			lang = languageTag;
+		}
 
 		try {
 			setupReasonerFactory(reasonerFactoryClass);
@@ -139,8 +151,6 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 					+ reasonerFactoryClass + "'.", e);
 		}
 
-		
-		
 		if (ontologyFile != null) {
 			loadFromFile(new File(ontologyFile), mappingFileURI);
 		} else if (ontologyURI != null) {
@@ -236,7 +246,7 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 			break;
 		case REMOVED:
 			managed.put(entity, removed.remove(entity));
-			removeChanges.remove(entity);
+			allChanges.removeAll(removeChanges.remove(entity));
 			break;
 		}
 	}
@@ -333,6 +343,7 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 			OWLEntityRemover r = new OWLEntityRemover(m, Collections
 					.singleton(o));
 			r.visit(removed.get(object));
+			allChanges.addAll(r.getChanges());
 			removeChanges.put(object, r.getChanges());
 		case REMOVED:
 			new OneLevelCascadeExplorer() {
@@ -413,8 +424,42 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 			LOG.config("Flushing ...");
 		}
 
-		storeToModel();
-		write();
+		synchronized (allChanges) {
+			if (allChanges.isEmpty()) {
+				return;
+			}
+
+			try {
+				if (LOG.isLoggable(Level.FINE)) {
+					LOG.fine("CHANGESET: ");
+					for (final OWLOntologyChange c : allChanges) {
+						LOG.fine("         " + c);
+					}
+				}
+
+				m.applyChanges(allChanges);
+
+				reinitReasoner();
+				allChanges.clear();
+				removeChanges.clear();
+
+				if (LOG.isLoggable(Level.INFO)) {
+					LOG.info("Writing model.");
+				}
+
+				m.saveOntology(o);
+
+				if (LOG.isLoggable(Level.INFO)) {
+					LOG.info("Model succesfully stored.");
+				}
+			} catch (OWLOntologyChangeException e) {
+				clear();
+			} catch (UnknownOWLOntologyException e) {
+				throw new OWLPersistenceException(e);
+			} catch (OWLOntologyStorageException e) {
+				throw new OWLPersistenceException(e);
+			}
+		}
 	}
 
 	@Override
@@ -445,10 +490,8 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 
 	@Override
 	public void clear() {
-		// managedEntities.clear();
 		managed.clear();
-		// allInmutable.clear();
-		// toRefresh.clear();
+		removed.clear();
 	}
 
 	@Override
@@ -596,7 +639,7 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 
 	synchronized void addChanges(final Collection<OWLOntologyChange> c) {
 		for (final OWLOntologyChange cc : c) {
-			if (changes.contains(cc)) {
+			if (allChanges.contains(cc)) {
 				continue;
 			}
 
@@ -605,20 +648,20 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 				@Override
 				public void visit(AddAxiom arg0) {
 					final RemoveAxiom ax = new RemoveAxiom(o, arg0.getAxiom());
-					if (changes.contains(ax)) {
-						changes.remove(ax);
+					if (allChanges.contains(ax)) {
+						allChanges.remove(ax);
 					} else {
-						changes.add(arg0);
+						allChanges.add(arg0);
 					}
 				}
 
 				@Override
 				public void visit(RemoveAxiom arg0) {
 					final AddAxiom ax = new AddAxiom(o, arg0.getAxiom());
-					if (changes.contains(ax)) {
-						changes.remove(ax);
+					if (allChanges.contains(ax)) {
+						allChanges.remove(ax);
 					} else {
-						changes.add(arg0);
+						allChanges.add(arg0);
 					}
 				}
 
@@ -756,39 +799,6 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 		return true;
 	}
 
-	synchronized void storeToModel() {
-		if (changes.isEmpty() && removeChanges.isEmpty()) {
-			return;
-		}
-
-		System.out.println("TRANSACTION DONE - CHANGING");
-
-		try {
-			if (LOG.isLoggable(Level.FINE)) {
-				LOG.fine("Applying changes: ");
-				for (final OWLOntologyChange c : changes) {
-					LOG.fine("   " + c);
-				}
-			}
-
-			m.applyChanges(changes);
-
-			for (Object key : removeChanges.keySet()) {
-				m.applyChanges(removeChanges.get(key));
-			}
-
-			// r.clearOntologies();
-			// r.loadOntologies(m.getOntologies());
-			// r.realise();
-			//				
-			// r.ontologiesChanged(changes);
-			changes.clear();
-			// toRefresh.addAll(managed.keySet());
-		} catch (OWLOntologyChangeException e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-		}
-	}
-
 	private void setObjectProperty(final OWLNamedIndividual src,
 			final org.semanticweb.owlapi.model.OWLObjectProperty p,
 			OWLNamedIndividual i) throws InterruptedException {
@@ -894,20 +904,6 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 			final Object object) {
 		addChange(new AddAxiom(o, f.getOWLDataPropertyAssertionAxiom(property,
 				i, getOWLObject(object))));
-	}
-
-	private void write() {
-		ensureOpen();
-
-		try {
-			LOG.info("Writing model.");
-			m.saveOntology(o);
-			LOG.info("Model succesfully stored.");
-		} catch (UnknownOWLOntologyException e) {
-			throw new OWLPersistenceException(e);
-		} catch (OWLOntologyStorageException e) {
-			throw new OWLPersistenceException(e);
-		}
 	}
 
 	private org.semanticweb.owlapi.model.OWLAnnotationProperty ap(final IRI uri) {
@@ -1647,4 +1643,6 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 	protected abstract OWL2Ontology<OWLObject> getQueryOntology();
 
 	protected abstract void setupReasonerFactory(final String rfClass);
+
+	protected abstract void reinitReasoner();
 }

@@ -9,7 +9,6 @@ public interface OWLAPIPersistenceProperties extends PersistenceProperties {
 	public static final String MAPPING_FILE_URI_KEY = "cz.cvut.owlpersistence.mappingFileURI";
 	public static final String REASONER_FACTORY_CLASS = "cz.cvut.owlpersistence.reasonerFactoryClass";
 	public static final String USE_OLD_OWLAPIV3 = "cz.cvut.owlpersistence.useoldowlapiv3";
-
 	public static final String LANG = "cz.cvut.owlpersistence.lang";
 
 }
