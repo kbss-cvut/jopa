@@ -366,40 +366,6 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 
 	}
 
-	// // NEW
-	// @Deprecated
-	// public <T> Collection<T> findAll(Class<T> t) {
-	// ensureOpen();
-	// if (LOG.isLoggable(Level.CONFIG)) {
-	// LOG.config("Finding all " + t);
-	// }
-	// final OWLClass clsA = t.getAnnotation(OWLClass.class);
-	//
-	// if (!clsA.mutable() && allInmutable.containsKey(t)) {
-	// return (Collection<T>) allInmutable.get(t);
-	// }
-	//
-	// final Set<T> set = new HashSet<T>();
-	//
-	// final org.semanticweb.owlapi.model.OWLClass cls = f.getOWLClass(IRI
-	// .create(clsA.iri()));
-	//
-	// try {
-	// for (final OWLNamedIndividual i : r.getInstances(cls, false)
-	// .getFlattened()) {
-	// set.add(get(t, i));
-	// }
-	// } catch (Exception e) {
-	// LOG.log(Level.SEVERE, e.getMessage(), e);
-	// }
-	//
-	// if (!clsA.mutable()) {
-	// allInmutable.put(t, set);
-	// }
-	//
-	// return set;
-	// }
-
 	@Override
 	public <T> T find(Class<T> t, Object primaryKey) {
 		ensureOpen();
@@ -578,9 +544,7 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 
 		try {
 			_saveReference(object, a, true);
-			// storeToModel();
 			// toRefresh.add(object);
-			// refresh(object);
 		} catch (Exception e) {
 			throw new OWLPersistenceException(e);
 		}
