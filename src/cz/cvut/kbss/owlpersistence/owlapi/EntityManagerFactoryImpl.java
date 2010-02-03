@@ -6,9 +6,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
-
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.model.EntityManagerFactory;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
@@ -27,16 +24,16 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 
 	private MetamodelImpl metamodel = null;
 
-	private OWLOntologyManager m;
+	// private OWLOntologyManager m;
 
 	public EntityManagerFactoryImpl(final Map<String, String> properties) {
 		this.properties = properties;
-		this.m = OWLManager.createOWLOntologyManager();
+		// this.m = OWLManager.createOWLOntologyManager();
 	}
 
-	public OWLOntologyManager getOWLOntologyManager() {
-		return m;
-	}
+	// public OWLOntologyManager getOWLOntologyManager() {
+	// return m;
+	// }
 
 	@Override
 	public void close() {
@@ -66,11 +63,14 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		newMap.putAll(properties);
 		newMap.putAll(map);
 
-//		if (!newMap
-//				.containsKey(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS)) {
-//			newMap.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
-//					OWLAPIIdentityReasonerFactory.class.getName());
-//		}
+		// if (!newMap
+		// .containsKey(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS)) {
+		// newMap.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
+		// OWLAPIIdentityReasonerFactory.class.getName());
+		// }
+
+		String dbConnection = newMap
+				.get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
 
 		String s = newMap.get(OWLAPIPersistenceProperties.USE_OLD_OWLAPIV3);
 

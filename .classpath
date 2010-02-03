@@ -6,6 +6,7 @@
 	<classpathentry kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/codemodel-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/jopt-simple/jopt-simple-3.2.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/owldb-2.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="lib" path="lib/pellet/aterm-java-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/pellet/pellet-datatypes.jar"/>
@@ -66,5 +67,18 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/owl2query"/>
 	<classpathentry kind="lib" path="lib/hermit/HermiT.jar"/>
 	<classpathentry kind="lib" path="lib/hermit/org.semanticweb.HermiT.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/antlr-2.7.6.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/c3p0-0.9.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/commons-collections-3.2.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/hibernate3.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/javassist-3.9.0.GA.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/jgroups-all-2.2.8.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/jta-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/oscache-2.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/slf4j-api-1.5.8.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/slf4j-jdk14-1.5.8.jar"/>
+	<classpathentry kind="lib" path="lib/owldb/jdbc/postgresql-8.4-701.jdbc4.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

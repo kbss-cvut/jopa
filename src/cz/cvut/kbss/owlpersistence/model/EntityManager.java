@@ -1,5 +1,9 @@
 package cz.cvut.kbss.owlpersistence.model;
 
+import javax.persistence.EntityExistsException;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.PersistenceException;
+
 import cz.cvut.kbss.owlpersistence.NonJPA;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
 import cz.cvut.kbss.owlpersistence.model.query.Query;

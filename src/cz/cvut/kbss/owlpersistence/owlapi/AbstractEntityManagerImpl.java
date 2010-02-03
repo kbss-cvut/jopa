@@ -1,8 +1,6 @@
 package cz.cvut.kbss.owlpersistence.owlapi;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.text.NumberFormat;
@@ -18,10 +16,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.AddOntologyAnnotation;
@@ -133,16 +131,15 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 	public AbstractEntityManagerImpl(final EntityManagerFactoryImpl emf,
 			final Map<String, String> map) {
 		this.emf = emf;
-		this.m = emf.getOWLOntologyManager();
 
 		final String ontologyURI = map
 				.get(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY);
-		final String ontologyFile = map
-				.get(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY);
 		final String mappingFileURI = map
 				.get(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY);
 		final String reasonerFactoryClass = map
 				.get(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS);
+		// final String dbConnection = map
+		// .get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
 		final String languageTag = map.get(OWLAPIPersistenceProperties.LANG);
 
 		if (languageTag != null) {
@@ -156,9 +153,11 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 					+ reasonerFactoryClass + "'.", e);
 		}
 
-		if (ontologyFile != null) {
-			loadFromFile(new File(ontologyFile), mappingFileURI);
-		} else if (ontologyURI != null) {
+		// TODO
+		// if (ontologyURI != null && dbConnection != null) {
+		// loadFromDB(ontologyURI, dbConnection);
+		// } else
+		if (ontologyURI != null) {
 			loadModel(ontologyURI, mappingFileURI);
 		} else {
 			throw new IllegalArgumentException(
@@ -814,47 +813,16 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	private boolean loadFromFile(final File file, final String mappingFileURI) {
-		if (LOG.isLoggable(Level.INFO)) {
-			LOG.info("Loading model from file='" + file + "', mappingFileURI='"
-					+ mappingFileURI + "'.");
+	private Map<URI, URI> getMappings(String mappingFileURI) {
+		final Map<URI, URI> mapping;
+		if (mappingFileURI != null) {
+			mapping = MappingFileParser.getMappings(new File(URI
+					.create(mappingFileURI)));
+		} else {
+			mapping = new HashMap<URI, URI>();
 		}
 
-		f = m.getOWLDataFactory();
-
-		final Map<URI, URI> mapping = new HashMap<URI, URI>();
-
-		try {
-			if (mappingFileURI != null) {
-				String s;
-				final BufferedReader r = new BufferedReader(
-						new InputStreamReader(URI.create(mappingFileURI)
-								.toURL().openStream()));
-
-				while ((s = r.readLine()) != null) {
-					final StringTokenizer t = new StringTokenizer(s, " ");
-					mapping.put(URI.create(t.nextElement().toString()), URI
-							.create(t.nextElement().toString()));
-				}
-			}
-			m.addIRIMapper(setupMappings(mapping));
-			LOG.info("Mapping file succesfully parsed.");
-
-			o = loadOntologyFromOntologyDocument(file.toURI());
-			merged = new OWLOntologyMerger(m).createMergedOntology(m, IRI
-					.create("http://temporary"));
-			LOG.info("Ontology " + file + " succesfully loaded.");
-		} catch (Exception e) {
-			LOG.log(Level.SEVERE, null, e);
-		}
-		try {
-			createReasoner();
-			// r.realise(); // TODO
-		} catch (Exception e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-		}
-
-		return true;
+		return mapping;
 	}
 
 	private boolean loadModel(final String ontologyURI,
@@ -863,18 +831,11 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 			LOG.info("Loading model ontologyURI='" + ontologyURI
 					+ "', mappingFileURI='" + mappingFileURI + "'.");
 		}
-
+		this.m = OWLManager.createOWLOntologyManager();
 		f = m.getOWLDataFactory();
 
 		try {
-			final Map<URI, URI> mapping;
-			if (mappingFileURI != null) {
-				mapping = MappingFileParser.getMappings(new File(URI
-						.create(mappingFileURI)));
-			} else {
-				mapping = new HashMap<URI, URI>();
-			}
-
+			final Map<URI, URI> mapping = getMappings(mappingFileURI);
 			LOG.info("Found mappings = " + mapping);
 
 			m.addIRIMapper(setupMappings(mapping));
@@ -884,6 +845,8 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 			System.out.println("Physical URI = " + physicalURI);
 			if (physicalURI != null) {
 				o = loadOntologyFromOntologyDocument(physicalURI);
+			} else if (ontologyURI.startsWith("file:")) {
+				o = loadOntologyFromOntologyDocument(URI.create(ontologyURI));
 			} else {
 				o = m.loadOntology(IRI.create(ontologyURI));
 			}

@@ -5,9 +5,9 @@ import java.lang.reflect.Field;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
-import cz.cvut.kbss.owlpersistence.model.annotations.Types;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.owlpersistence.model.annotations.Types;
 
 public aspect BeanListenerAspect {
 

@@ -2,6 +2,8 @@ package cz.cvut.kbss.owlpersistence.model.query;
 
 import java.util.List;
 
+import javax.persistence.PersistenceException;
+
 public interface Query {
 	/**
 	 * Execute a SELECT query and return the query results as an untyped List.

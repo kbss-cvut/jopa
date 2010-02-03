@@ -43,8 +43,11 @@ public class TestEnvironment {
 					EntityManagerFactoryImpl.class.getName());
 
 			params.put(OWLAPIPersistenceProperties.USE_OLD_OWLAPIV3, "true");
-			params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
-					.getAbsolutePath());
+//			params.put(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION,
+//					"jdbc:postgresql://localhost/strufail_owlapi");
+			params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, url.toURI().toString());
+			// params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
+			// .getAbsolutePath());
 			params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
 					OWLAPIPersistenceProvider.class.getName());
 			params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,

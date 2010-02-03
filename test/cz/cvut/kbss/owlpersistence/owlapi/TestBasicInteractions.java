@@ -8,11 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.semanticweb.owlapi.util.OWLClassLiteralCollector;
-
 import junit.framework.TestCase;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
-import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
 
 public class TestBasicInteractions extends TestCase {
 	private Logger log = TestEnvironment.getLogger();
