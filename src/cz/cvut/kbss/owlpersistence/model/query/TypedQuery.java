@@ -1,4 +1,4 @@
-package cz.cvut.kbss.owlpersistence.model;
+package cz.cvut.kbss.owlpersistence.model.query;
 
 import java.util.List;
 

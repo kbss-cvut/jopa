@@ -2,6 +2,8 @@ package cz.cvut.kbss.owlpersistence.model;
 
 import cz.cvut.kbss.owlpersistence.NonJPA;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
+import cz.cvut.kbss.owlpersistence.model.query.Query;
+import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
 
 public interface EntityManager {
 

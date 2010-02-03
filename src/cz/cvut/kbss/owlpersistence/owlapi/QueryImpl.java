@@ -14,8 +14,8 @@ import cz.cvut.kbss.owl2query.simpleversion.model.QueryResult;
 import cz.cvut.kbss.owl2query.simpleversion.model.ResultBinding;
 import cz.cvut.kbss.owl2query.simpleversion.model.Variable;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
-import cz.cvut.kbss.owlpersistence.model.Query;
 import cz.cvut.kbss.owlpersistence.model.Thing;
+import cz.cvut.kbss.owlpersistence.model.query.Query;
 import cz.cvut.kbss.owlpersistence.owlapi.old.DatatypeTransformer;
 
 public class QueryImpl implements Query {

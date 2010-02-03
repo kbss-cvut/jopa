@@ -66,8 +66,6 @@ import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 import cz.cvut.kbss.owl2query.simpleversion.model.OWL2Ontology;
 import cz.cvut.kbss.owlpersistence.model.EntityTransaction;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
-import cz.cvut.kbss.owlpersistence.model.Query;
-import cz.cvut.kbss.owlpersistence.model.TypedQuery;
 import cz.cvut.kbss.owlpersistence.model.annotations.CascadeType;
 import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Attribute;
@@ -77,6 +75,8 @@ import cz.cvut.kbss.owlpersistence.model.metamodel.ListAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
 import cz.cvut.kbss.owlpersistence.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.SingularAttribute;
+import cz.cvut.kbss.owlpersistence.model.query.Query;
+import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
 import cz.cvut.kbss.owlpersistence.util.MappingFileParser;
 
 /**

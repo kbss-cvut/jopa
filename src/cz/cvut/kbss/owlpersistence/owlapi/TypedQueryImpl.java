@@ -12,8 +12,8 @@ import cz.cvut.kbss.owl2query.simpleversion.model.OWL2Ontology;
 import cz.cvut.kbss.owl2query.simpleversion.model.QueryResult;
 import cz.cvut.kbss.owl2query.simpleversion.model.ResultBinding;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
-import cz.cvut.kbss.owlpersistence.model.Query;
-import cz.cvut.kbss.owlpersistence.model.TypedQuery;
+import cz.cvut.kbss.owlpersistence.model.query.Query;
+import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
 
 public class TypedQueryImpl<T> implements TypedQuery<T> {
 
