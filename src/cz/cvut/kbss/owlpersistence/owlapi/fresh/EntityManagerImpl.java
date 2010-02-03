@@ -55,12 +55,14 @@ public class EntityManagerImpl extends AbstractEntityManagerImpl {
 	@Override
 	protected Set<OWLLiteral> getDataPropertyValues(OWLNamedIndividual i,
 			OWLDataProperty e) {
+		r.flush();
 		return r.getDataPropertyValues(i, e);
 	}
 
 	@Override
 	protected Set<OWLNamedIndividual> getObjectPropertyValues(
 			OWLNamedIndividual i, OWLObjectProperty e) {
+		r.flush();
 		return r.getObjectPropertyValues(i, e).getFlattened();
 	}
 
@@ -97,6 +99,7 @@ public class EntityManagerImpl extends AbstractEntityManagerImpl {
 	@Override
 	protected Set<OWLNamedIndividual> getInstances(OWLClassExpression ce,
 			boolean direct) {
+		r.flush();
 		return r.getInstances(ce, direct).getFlattened();
 	}
 
@@ -106,6 +109,10 @@ public class EntityManagerImpl extends AbstractEntityManagerImpl {
 
 			@Override
 			public IRI getDocumentIRI(IRI arg0) {
+				if (!map.containsKey(arg0.toURI())) {
+					return arg0;
+				}
+				
 				return IRI.create(map.get(arg0.toURI()));
 			}
 		};
@@ -127,10 +134,12 @@ public class EntityManagerImpl extends AbstractEntityManagerImpl {
 	@Override
 	protected void reinitReasoner() {
 		// nothing TODO
+//		createReasoner();
 	}
 
 	@Override
 	protected Set<OWLClass> getTypes(OWLNamedIndividual i, boolean direct) {
-		return r.getTypes(i,direct);
+		r.flush();
+		return r.getTypes(i,direct).getFlattened();
 	}
 }

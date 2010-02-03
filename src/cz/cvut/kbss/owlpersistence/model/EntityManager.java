@@ -1,5 +1,6 @@
 package cz.cvut.kbss.owlpersistence.model;
 
+import cz.cvut.kbss.owlpersistence.NonJPA;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
 
 public interface EntityManager {
@@ -304,6 +305,18 @@ public interface EntityManager {
 	 * @since JPA 2.0
 	 */
 	public EntityManagerFactory getEntityManagerFactory();
+
+	/**
+	 * Returns a label for the given IRI. The label is returned with the following preference:
+	 *    1) label in the language specified for the entity manager
+	 *    2) label without language tag
+	 *    3) any (unspecified) label
+	 * 
+	 * @param iri
+	 * @return
+	 */
+	@NonJPA
+	public String getLabel(final String iri);
 
 	// TODO JPA 2.0 public CriteriaBuilder getCriteriaBuilder();
 	public Metamodel getMetamodel();

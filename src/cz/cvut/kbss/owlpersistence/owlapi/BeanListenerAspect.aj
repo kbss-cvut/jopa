@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
+import cz.cvut.kbss.owlpersistence.model.annotations.Types;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLObjectProperty;
 
@@ -14,9 +15,9 @@ public aspect BeanListenerAspect {
 	// Logger.getLogger(BeanListenerAspect.class
 	// .getName());
 
-	pointcut getter() : get( @(OWLObjectProperty || OWLDataProperty) * * ) && within(@OWLClass *);
+	pointcut getter() : get( @(OWLObjectProperty || OWLDataProperty || Types) * * ) && within(@OWLClass *);
 
-	pointcut setter() : set( @(OWLObjectProperty || OWLDataProperty || OWLAnnotationProperty) * * ) && within(@OWLClass *);
+	pointcut setter() : set( @(OWLObjectProperty || OWLDataProperty || OWLAnnotationProperty || Types) * * ) && within(@OWLClass *);
 
 	after() : setter()  {
 		try {

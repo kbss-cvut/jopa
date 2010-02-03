@@ -7,12 +7,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.io.OWLXMLOntologyFormat;
-import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyFormat;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.UnknownOWLOntologyException;
@@ -37,7 +34,8 @@ public class TestEnvironment {
 			OWLOntology o = m.createOntology(iri);
 			final File url = new File(dir + "/" + name + ".owl");
 
-			m.saveOntology(o,new OWLXMLOntologyFormat(), url.toURI());
+			m.saveOntology(o, url.toURI());
+			// m.saveOntology(o, IRI.create(url.toURI()));
 
 			final Map<String, String> params = new HashMap<String, String>();
 

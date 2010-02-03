@@ -27,7 +27,10 @@ import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.AddOntologyAnnotation;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+import org.semanticweb.owlapi.model.OWLAnnotationValueVisitor;
+import org.semanticweb.owlapi.model.OWLAnonymousIndividual;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
@@ -591,11 +594,36 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 		// refresh(object);
 		// }
 
+		final EntityType<?> et = getMetamodel().entity(object.getClass());
+
 		try {
-			_loadReference(object, getMetamodel().entity(object.getClass())
-					.getAttribute(field.getName()), true);
+			if (et.getTypes() != null
+					&& et.getTypes().getJavaField().equals(field)) {
+				_loadTypesReference(object, et.getTypes(), true);
+			} else {
+				_loadReference(object, et.getAttribute(field.getName()), true);
+			}
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
+		}
+	}
+
+	private void _loadTypesReference(final Object object,
+			final DirectTypesSpecification<?, ?> ts, boolean force)
+			throws IllegalAccessException {
+		if (ts != null) {
+			Set<Object> set = new HashSet<Object>();
+
+			for (OWLClass col : getTypes(managed.get(object), true)) {
+				if (getMetamodel().entity(object.getClass()).getIRI()
+						.toString().equals(col.getIRI().toString())) {
+					continue;
+				}
+
+				set.add(col.getIRI().toString());
+			}
+
+			ts.getJavaField().set(object, set);
 		}
 	}
 
@@ -643,6 +671,74 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 	@Override
 	public Object getDelegate() {
 		return unwrap(AbstractEntityManagerImpl.class);
+	}
+
+	@Override
+	public String getLabel(String iri) {
+		String label = null;
+
+		for (final OWLAnnotationAssertionAxiom ax : merged
+				.getAnnotationAssertionAxioms(IRI.create(iri))) {
+
+			OWLAnnotation a = ax.getAnnotation();
+			if (a.getProperty().equals(
+					f.getOWLAnnotationProperty(OWLRDFVocabulary.RDFS_LABEL
+							.getIRI()))) {
+				final LanguageResolverVisitor v = new LanguageResolverVisitor();
+				a.getValue().accept(v);
+
+				if (v.getLang().equals(lang)) {
+					return v.getValue();
+				}
+
+				if (v.getLang().isEmpty() || (v.getLang() == null)
+						|| (label == null)) {
+					label = v.getValue();
+				}
+			}
+		}
+
+		if (LOG.isLoggable(Level.WARNING)) {
+			LOG.warning("No label found for " + iri + ", using IRI itself.");
+		}
+
+		return iri;
+	}
+
+	class LanguageResolverVisitor implements OWLAnnotationValueVisitor {
+
+		String value = null;
+		String lang = null;
+
+		@Override
+		public void visit(OWLStringLiteral sl) {
+			value = sl.getLiteral();
+			lang = sl.getLang();
+		}
+
+		@Override
+		public void visit(OWLTypedLiteral sl) {
+			value = sl.getLiteral();
+		}
+
+		@Override
+		public void visit(OWLAnonymousIndividual arg0) {
+			// not supported - silently ignore
+		}
+
+		@Override
+		public void visit(IRI arg0) {
+			// not supported - silently ignore
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public String getLang() {
+			return lang;
+		}
+
 	}
 
 	synchronized void addChanges(final Collection<OWLOntologyChange> c) {
@@ -1173,18 +1269,7 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 			DirectTypesSpecification<?, ?> ts = type.getTypes();
 
 			if (ts != null) {
-				Set<Object> set = new HashSet<Object>();
-
-				for (OWLClass col : getTypes(managed.get(object), true)) {
-					if (type.getIRI().toString()
-							.equals(col.getIRI().toString())) {
-						continue;
-					}
-
-					set.add(col.getIRI().toString());
-				}
-
-				ts.getJavaField().set(object, set);
+				_loadTypesReference(object, ts, force);
 			}
 
 			for (final Attribute<?, ?> field : type.getAttributes()) {
@@ -1197,7 +1282,6 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 
 	private void _loadReference(Object object, Attribute<?, ?> field,
 			boolean all) {
-		OWLNamedIndividual subject = managed.get(object);
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Loading " + field + " reference of " + object);
 		}
@@ -1639,7 +1723,7 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 						.config("Datatype : "
 								+ c.asOWLStringLiteral().getDatatype());
 			}
-			v = c.asOWLStringLiteral().getDatatype().getBuiltInDatatype();
+			v = asOWLTypedLiteral(c).getDatatype().getBuiltInDatatype();
 		}
 
 		Object o = transform(c);

@@ -32,7 +32,7 @@ public class DatatypeTransformer {
 		map.put(OWL2Datatype.XSD_ANY_URI, URI.class);
 	}
 
-	public static Class<?> transformOWLType(final OWLDatatype dt) {
+	public static <T> Class<T> transformOWLType(final OWLDatatype dt) {
 		Class<?> type = null;
 
 		if (dt.isBuiltIn()) {
