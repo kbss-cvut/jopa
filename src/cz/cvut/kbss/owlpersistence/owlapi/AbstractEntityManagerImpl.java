@@ -108,7 +108,6 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 	// private final Map<Class<?>, Set<?>> allInmutable = new HashMap<Class<?>,
 	// Set<?>>();
 	//
-	// private URI physicalUri;
 	protected OWLOntology o;
 	protected OWLOntology merged;
 	protected OWLDataFactory f;
@@ -858,7 +857,6 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 		}
 		try {
 			createReasoner();
-			// r.realise(); // TODO
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
 		}
@@ -1222,13 +1220,6 @@ public abstract class AbstractEntityManagerImpl extends AbstractEntityManager {
 		final EntityType<?> type = emf.getMetamodel().entity(cls);
 
 		try {
-			// TODO
-			// // type.get ANNOTATION
-			// if (ca.label != null) {
-			// ca.label.setAccessible(true);
-			// ca.label.set(object, getLabel(instanceCache.get(object)));
-			// }
-
 			DirectTypesSpecification<?, ?> ts = type.getTypes();
 
 			if (ts != null) {
