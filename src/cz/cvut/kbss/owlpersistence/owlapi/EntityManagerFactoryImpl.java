@@ -11,8 +11,6 @@ import cz.cvut.kbss.owlpersistence.model.EntityManagerFactory;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
 import cz.cvut.kbss.owlpersistence.model.PersistenceUnitUtil;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
-import cz.cvut.kbss.owlpersistence.owlapi.fresh.EntityManagerImpl;
-import cz.cvut.kbss.owlpersistence.owlapi.old.EntityManagerImplOld;
 
 public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		PersistenceUnitUtil {
@@ -72,15 +70,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		String dbConnection = newMap
 				.get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
 
-		String s = newMap.get(OWLAPIPersistenceProperties.USE_OLD_OWLAPIV3);
-
-		final AbstractEntityManager c;
-
-		if (s != null && Boolean.parseBoolean(s)) {
-			c = new EntityManagerImplOld(this, newMap);
-		} else {
-			c = new EntityManagerImpl(this, newMap);
-		}
+		final AbstractEntityManager c = new EntityManagerImpl(this, newMap);
 
 		em.add(c);
 		return c;

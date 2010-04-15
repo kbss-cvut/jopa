@@ -65,7 +65,6 @@ public class MetamodelImpl implements Metamodel {
 
 	<X> void processOWLClass(final Class<X> cls) {
 		if (typeMap.containsKey(cls)) {
-			// TODO reload
 			return;
 		}
 
@@ -160,7 +159,7 @@ public class MetamodelImpl implements Metamodel {
 							.getAnnotation(OWLSequence.class);
 
 					if (os == null) {
-						throw new OWLPersistenceException();
+						throw new OWLPersistenceException("Expected OWLSequence annotation.");
 					}
 
 					a = new ListAttributeImpl(c2, field.getName(), iri,

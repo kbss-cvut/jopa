@@ -16,7 +16,6 @@ import cz.cvut.kbss.owl2query.simpleversion.model.Variable;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.model.Thing;
 import cz.cvut.kbss.owlpersistence.model.query.Query;
-import cz.cvut.kbss.owlpersistence.owlapi.old.DatatypeTransformer;
 
 public class QueryImpl implements Query {
 
@@ -52,7 +51,7 @@ public class QueryImpl implements Query {
 			for (final Variable<OWLObject> v : l.getResultVars()) {
 				final ResultBinding<OWLObject> b = i.next();
 
-				final OWLObject o = b.getValue(v).asGroundTerm()
+				final OWLObject o = b.get(v).asGroundTerm()
 						.getWrappedObject();
 
 				if (o instanceof OWLLiteral) {

@@ -8,9 +8,9 @@ public class EntityTransactionImpl implements EntityTransaction {
 
 	private boolean active;
 
-	private AbstractEntityManagerImpl em;
+	private AbstractEntityManager em;
 
-	public EntityTransactionImpl(final AbstractEntityManagerImpl o) {
+	public EntityTransactionImpl(final AbstractEntityManager o) {
 		this.em = o;
 	}
 

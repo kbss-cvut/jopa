@@ -40,10 +40,6 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 			throw new NotYetImplementedException();
 		}
 
-		System.out.println("classes=" + r.getClasses());
-		System.out.println("object properties=" + r.getObjectProperties());
-		System.out.println("data properties=" + r.getDataProperties());
-
 		final List<T> list = new ArrayList<T>();
 
 		final QueryResult<OWLObject> l = OWL2QueryEngine.<OWLObject> exec(s, r);
@@ -54,8 +50,8 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 			if (classT != null) {
 				final ResultBinding<OWLObject> b = i.next();
 
-				final OWLNamedIndividual o = (OWLNamedIndividual) b.getValue(
-						b.getAllVariables().iterator().next()).asGroundTerm()
+				final OWLNamedIndividual o = (OWLNamedIndividual) b.get(
+						b.keySet().iterator().next()).asGroundTerm()
 						.getWrappedObject();
 
 				list.add(em.find(classT, o.getIRI().toString()));

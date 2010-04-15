@@ -14,8 +14,6 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.UnknownOWLOntologyException;
 
-import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
-
 import cz.cvut.kbss.owlpersistence.Persistence;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
 
@@ -25,6 +23,9 @@ public class TestEnvironment {
 
 	public static String dir = "testResults";
 
+	private static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
+//	private static final String REASONER_FACTORY_CLASS = "org.semanticweb.HermiT.Reasoner$ReasonerFactory";
+	
 	public static EntityManager getPersistenceConnector(String name) {
 		try {
 			final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
@@ -34,24 +35,23 @@ public class TestEnvironment {
 			OWLOntology o = m.createOntology(iri);
 			final File url = new File(dir + "/" + name + ".owl");
 
-			m.saveOntology(o, url.toURI());
-			// m.saveOntology(o, IRI.create(url.toURI()));
+			m.saveOntology(o, IRI.create(url.toURI()));
 
 			final Map<String, String> params = new HashMap<String, String>();
 
 			params.put("javax.persistence.provider",
 					EntityManagerFactoryImpl.class.getName());
 
-			params.put(OWLAPIPersistenceProperties.USE_OLD_OWLAPIV3, "true");
-//			params.put(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION,
-//					"jdbc:postgresql://localhost/strufail_owlapi");
-			params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, url.toURI().toString());
+			// params.put(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION,
+			// "jdbc:postgresql://localhost/strufail_owlapi");
+			params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, url
+					.toURI().toString());
 			// params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
 			// .getAbsolutePath());
 			params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
 					OWLAPIPersistenceProvider.class.getName());
 			params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
-					PelletReasonerFactory.class.getName());
+					REASONER_FACTORY_CLASS);
 
 			return Persistence.createEntityManagerFactory("context-name",
 					params).createEntityManager();

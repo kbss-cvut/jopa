@@ -39,6 +39,37 @@ public class TestBasicFetching extends TestCase {
 		em.close();
 	}
 
+	public void testChangeValue() {
+		EntityManager em = TestEnvironment
+				.getPersistenceConnector("TestBasicFetching-testChangeDataValue");
+
+		OWLClassA a = new OWLClassA();
+		URI uri = URI.create("http://newA");
+		a.setUri(uri);
+
+		a.setStringAttribute("old-value");
+
+		em.persist(a);
+
+		assertTrue(em.contains(a));
+
+		em.flush();
+
+		em.clear();
+
+		assertFalse(em.contains(a));
+
+		final OWLClassA aX = em.find(OWLClassA.class, uri);
+
+		assertNotNull(aX);
+
+		aX.setStringAttribute("new-value");
+
+		assertEquals(aX.getStringAttribute(), "new-value");
+
+		em.close();
+	}
+
 	public void testFetchReferences() {
 		EntityManager pc = TestEnvironment
 				.getPersistenceConnector("TestBasicFetching-testFetchSimpleReference");

@@ -2,56 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
-	<classpathentry kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="lib" path="lib/codemodel-2.2.jar"/>
-	<classpathentry kind="lib" path="lib/jopt-simple/jopt-simple-3.2.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/owldb-2.0.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry kind="lib" path="lib/pellet/aterm-java-1.6.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet-datatypes.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet-dig.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet-el.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet-explanation.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet-jena.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet-modularity.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet-owlapiv3.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet-pellint.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet-query.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet-rules.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/pellet-test.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/servlet.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/xsdlib/relaxngDatatype.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/xsdlib/xsdlib.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/antlr-2.7.5.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/arq-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/arq-extra.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/arq.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/commons-logging-1.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/concurrent.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/icu4j-3.4.4.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/iri-0.7.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/iri.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/jena-2.6.2-tests.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/jena-2.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/jena.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/jenatest.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/json.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/junit-4.5.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/junit.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/log4j-1.2.13.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/lucene-core-2.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/slf4j-api-1.5.6.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/slf4j-log4j12-1.5.6.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/stax-api-1.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/wstx-asl-3.2.9.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/xercesImpl-2.7.1.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/xercesImpl.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jena/xml-apis.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jetty/commons-logging-api.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jetty/jetty.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/jgrapht/jgrapht-jdk1.5.jar"/>
-	<classpathentry kind="lib" path="lib/pellet/junit/junit.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/com.sun.enterprise.jst.server.runtimeTarget/GlassFish v2.1 Java EE 5">
 		<attributes>
 			<attribute name="owner.project.facets" value="jst.utility"/>
@@ -62,23 +15,18 @@
 			<attribute name="owner.project.facets" value="jst.java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="lib" path="lib/pellet/owlapiv3/owlapi-bin.jar"/>
-	<classpathentry kind="lib" path="lib/owlapi/owlapi-bin.jar" sourcepath="lib/owlapi/owlapi-src.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/owl2query"/>
-	<classpathentry kind="lib" path="lib/hermit/HermiT.jar"/>
-	<classpathentry kind="lib" path="lib/hermit/org.semanticweb.HermiT.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/antlr-2.7.6.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/c3p0-0.9.1.2.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/commons-collections-3.2.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/commons-logging-1.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/dom4j-1.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/hibernate3.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/javassist-3.9.0.GA.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/jgroups-all-2.2.8.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/jta-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/oscache-2.4.1.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/slf4j-api-1.5.8.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/hibernate/3.3.2.GA/lib/slf4j-jdk14-1.5.8.jar"/>
-	<classpathentry kind="lib" path="lib/owldb/jdbc/postgresql-8.4-701.jdbc4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/owlapi/owlapi-bin.jar" sourcepath="lib/owlapi/owlapi-src.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="../"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/hermit/HermiT.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="../"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jopt-simple/jopt-simple-3.2.jar" sourcepath="lib/jopt-simple/jopt-simple-3.2-sources.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
