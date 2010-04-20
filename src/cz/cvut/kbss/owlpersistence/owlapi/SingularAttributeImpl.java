@@ -130,4 +130,9 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
 	public FetchType getFetchType() {
 		return fetchType;
 	}
+
+	@Override
+	public String toString() {
+		return "SingularAttribute[" + name + "]";
+	}
 }

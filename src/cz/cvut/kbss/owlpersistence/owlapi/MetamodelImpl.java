@@ -132,7 +132,7 @@ public class MetamodelImpl implements Metamodel {
 				}
 				t = PersistentAttributeType.OBJECT;
 				iri = IRI.create(oop.iri());
-				cascadeTypes = oop.cascadeType();
+				cascadeTypes = oop.cascade();
 				processOWLClass(cxx);
 				type = typeMap.get(cxx);
 			} else if (odp != null) {

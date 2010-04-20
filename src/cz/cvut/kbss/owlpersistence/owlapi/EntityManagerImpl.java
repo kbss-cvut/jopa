@@ -83,15 +83,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			.getName());
 	private OWLReasonerFactory rf;
 	private OWLReasoner r;
-	protected OWLDataFactory f;
-	// private Set<Object> toRefresh = new HashSet<Object>();
-	//
-	// private final Map<Class<?>, Set<?>> allInmutable = new HashMap<Class<?>,
-	// Set<?>>();
-	//
-	protected OWLOntology o;
-	protected OWLOntology merged;
-	protected OWLOntologyManager m;
+	private OWLDataFactory f;
+	private OWLOntology o;
+	private OWLOntology merged;
+	private OWLOntologyManager m;
 	private EntityManagerFactoryImpl emf;
 	/**
 	 * A collection of all entities that are currently managed by the
@@ -155,32 +150,34 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			}
 			this.m = OWLManager.createOWLOntologyManager();
 			f = m.getOWLDataFactory();
-			
+
 			try {
 				final Map<URI, URI> mapping = getMappings(mappingFileURI);
 				LOG.info("Found mappings = " + mapping);
-			
+
 				m.addIRIMapper(new OWLOntologyIRIMapper() {
-				
+
 					@Override
 					public IRI getDocumentIRI(IRI arg0) {
 						if (!mapping.containsKey(arg0.toURI())) {
 							return arg0;
 						}
-				
+
 						return IRI.create(mapping.get(arg0.toURI()));
 					}
 				});
 				LOG.info("Mapping file succesfully parsed.");
-			
+
 				URI physicalURI = mapping.get(URI.create(ontologyURI));
-			
+
 				if (physicalURI == null) {
 					physicalURI = URI.create(ontologyURI);
 				}
-			
+
 				if (physicalURI != null) {
-					o = m.loadOntologyFromOntologyDocument(new File(physicalURI));
+					o = m
+							.loadOntologyFromOntologyDocument(new File(
+									physicalURI));
 				} else if (ontologyURI.startsWith("file:")) {
 					o = m.loadOntologyFromOntologyDocument(new File(URI
 							.create(ontologyURI)));
@@ -607,7 +604,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	public void loadReference(Object object, Field field) {
 
 		flush();
-		
+
 		final EntityType<?> et = getMetamodel().entity(object.getClass());
 
 		try {
@@ -1028,8 +1025,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	private void _saveDirectTypes(Object object, DirectTypesSpecification<?, ?> spec)
-			throws Exception {
+	private void _saveDirectTypes(Object object,
+			DirectTypesSpecification<?, ?> spec) throws Exception {
 		OWLNamedIndividual subject = managed.get(object);
 		Object value = spec.getJavaField().get(object);
 
@@ -1541,11 +1538,24 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
+	/**
+	 * An OWLNamedIndividual might be represented by different Java objects to
+	 * implement multiple inheritance and polymorphism.
+	 * 
+	 * However, for each Java class and an identifier, there is at most one
+	 * instance in the entitymanager.
+	 */
 	private <T> T get(final Class<T> cls, final OWLNamedIndividual i) {
+		LOG.finest("Getting " + i + " of " + cls);
 		if (managed.containsValue(i)) {
 			for (Object o : managed.keySet()) {
 				if (managed.get(o).equals(i)) {
-					return cls.cast(o);
+					if (cls.equals(o.getClass())) {
+						LOG.fine("Found " + o + ", casting to " + cls);
+						return cls.cast(o);
+					} else {
+						return create(cls, i);						
+					}
 				}
 			}
 			throw new OWLPersistenceException();

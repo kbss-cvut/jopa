@@ -25,9 +25,9 @@ public @interface OWLObjectProperty {
 	 */
 	String fillerIri() default "http://www.w3.org/2002/07/owl#Thing";
 
-	CascadeType[] cascadeType() default {};
+	CascadeType[] cascade() default {};
 
-	FetchType fetchType() default FetchType.LAZY;
+	FetchType fetch() default FetchType.LAZY;
 
 	/**
 	 * minimal cardinality

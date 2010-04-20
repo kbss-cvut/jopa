@@ -13,7 +13,7 @@ public class OWLClassD {
 	@Id
 	private URI uri;
 
-	@OWLObjectProperty(iri = "http://hasA", fetchType = FetchType.EAGER)
+	@OWLObjectProperty(iri = "http://hasA", fetch = FetchType.EAGER)
 	private OWLClassA owlClassA;
 
 	/**

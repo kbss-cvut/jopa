@@ -25,4 +25,10 @@ public class SetAttributeImpl<X, V> extends PluralAttributeImpl<X, Set<V>, V>
 	public CollectionType getCollectionType() {
 		return CollectionType.SET;
 	}
+
+	@Override
+	public String toString() {
+		return "SetAttribute[" + getName() + "]";
+	}
+
 }

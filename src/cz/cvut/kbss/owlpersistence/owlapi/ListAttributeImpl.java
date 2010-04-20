@@ -61,4 +61,10 @@ public class ListAttributeImpl<X, V> extends PluralAttributeImpl<X, List<V>, V>
 	public OWLSequenceType getSequenceType() {
 		return owlSequenceType;
 	}
+
+	@Override
+	public String toString() {
+		return "ListAttribute[" + getName() + "]";
+	}
+
 }
