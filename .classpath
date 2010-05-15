@@ -10,11 +10,6 @@
 			<attribute name="owner.project.facets" value="jst.utility"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-6-sun-1.6.0.16">
-		<attributes>
-			<attribute name="owner.project.facets" value="jst.java"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/owl2query"/>
 	<classpathentry exported="true" kind="lib" path="lib/owlapi/owlapi-bin.jar" sourcepath="lib/owlapi/owlapi-src.jar">
 		<attributes>
@@ -28,5 +23,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/jopt-simple/jopt-simple-3.2.jar" sourcepath="lib/jopt-simple/jopt-simple-3.2-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

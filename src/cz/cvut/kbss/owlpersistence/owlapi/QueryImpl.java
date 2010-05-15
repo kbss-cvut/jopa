@@ -1,6 +1,7 @@
 package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -14,16 +15,15 @@ import cz.cvut.kbss.owl2query.simpleversion.model.QueryResult;
 import cz.cvut.kbss.owl2query.simpleversion.model.ResultBinding;
 import cz.cvut.kbss.owl2query.simpleversion.model.Variable;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
-import cz.cvut.kbss.owlpersistence.model.Thing;
 import cz.cvut.kbss.owlpersistence.model.query.Query;
 
-public class QueryImpl implements Query {
+public class QueryImpl implements Query<List<String>> {
 
 	final String s;
 	final boolean sparql;
 	final OWL2Ontology<OWLObject> r;
 	final EntityManager em;
-
+	
 	// sparql=false -> abstract syntax
 	public QueryImpl(final String s, OWL2Ontology<OWLObject> r,
 			final boolean sparql, final EntityManager em) {
@@ -34,31 +34,29 @@ public class QueryImpl implements Query {
 	}
 
 	@Override
-	public List<Object> getResultList() {
+	public List<List<String>> getResultList() {
 		if (!sparql) {
 			throw new NotYetImplementedException();
 		}
 
-		final List<Object> list = new ArrayList<Object>();
+		final List<List<String>> list = new ArrayList<List<String>>();
 
 		final QueryResult<OWLObject> l = OWL2QueryEngine.<OWLObject> exec(s, r);
 
 		for (final Iterator<ResultBinding<OWLObject>> i = l.iterator(); i
 				.hasNext();) {
-			final List<Object> solution = new ArrayList<Object>();
+			final List<String> solution = new ArrayList<String>();
 			list.add(solution);
 
 			for (final Variable<OWLObject> v : l.getResultVars()) {
 				final ResultBinding<OWLObject> b = i.next();
 
-				final OWLObject o = b.get(v).asGroundTerm()
-						.getWrappedObject();
+				final OWLObject o = b.get(v).asGroundTerm().getWrappedObject();
 
 				if (o instanceof OWLLiteral) {
-					solution.add(DatatypeTransformer.transform((OWLLiteral) o));
+					solution.add(""+DatatypeTransformer.transform((OWLLiteral) o));
 				} else if (o instanceof OWLEntity) {
-					solution.add(em.find(Thing.class, ((OWLEntity) o).getIRI()
-							.toString()));
+					solution.add(((OWLEntity) o).getIRI().toString());
 				}
 			}
 		}
@@ -66,13 +64,19 @@ public class QueryImpl implements Query {
 	}
 
 	@Override
-	public Object getSingleResult() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String> getSingleResult() {
+		List<List<String>> list = getResultList();
+		
+		if ( list!= null && !list.isEmpty() ) {
+			return list.iterator().next();
+		} else {
+			return Collections.emptyList();
+		}
+		
 	}
 
 	@Override
-	public Query setMaxResults(int maxResult) {
+	public Query<List<String>> setMaxResults(int maxResult) {
 		// TODO Auto-generated method stub
 		return null;
 	}

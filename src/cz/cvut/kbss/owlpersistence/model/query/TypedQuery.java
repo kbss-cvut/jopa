@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.persistence.PersistenceException;
 
-public interface TypedQuery<X> extends Query {
+public interface TypedQuery<ResultElement> extends Query<ResultElement> {
 	/**
 	 * Execute a SELECT query and return the query results as a typed List.
 	 * 
@@ -38,6 +38,6 @@ public interface TypedQuery<X> extends Query {
 	 * 
 	 *             is rolled back
 	 */
-	List<X> getResultList();
+	List<ResultElement> getResultList();
 
 }

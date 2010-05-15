@@ -62,7 +62,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 	}
 
 	@Override
-	public Object getSingleResult() {
+	public T getSingleResult() {
 		// TODO Auto-generated method stub
 		return null;
 	}

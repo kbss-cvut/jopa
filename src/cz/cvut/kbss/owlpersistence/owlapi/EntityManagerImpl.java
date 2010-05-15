@@ -657,7 +657,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public Query createNativeQuery(String sparql) {
+	public Query<List<String>> createNativeQuery(String sparql) {
 		return new QueryImpl(sparql, new OWLAPIv3OWL2Ontology(m, merged, r),
 				true, this);
 	}
@@ -1554,7 +1554,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 						LOG.fine("Found " + o + ", casting to " + cls);
 						return cls.cast(o);
 					} else {
-						return create(cls, i);						
+						return create(cls, i);
 					}
 				}
 			}

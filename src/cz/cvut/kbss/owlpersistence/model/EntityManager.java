@@ -1,5 +1,7 @@
 package cz.cvut.kbss.owlpersistence.model;
 
+import java.util.List;
+
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.PersistenceException;
@@ -225,17 +227,16 @@ public interface EntityManager {
 	// resultClass)
 
 	/**
-	 * Create an instance of Query for executing a native SQL statement, e.g.,
-	 * for update or delete.
+	 * Create an instance of Query for executing a native SPARQL-DL query in SPARQL syntax.
 	 * 
 	 * @param sqlString
 	 *            a native SQL query string
 	 * @return the new query instance
 	 */
-	public Query createNativeQuery(String sqlString);
+	public Query<List<String>> createNativeQuery(String sqlString);
 
 	/**
-	 * Create an instance of Query for executing a native SQL query.
+	 * Create an instance of Query for executing a native SPARQL-DL query returning only specific object type.
 	 * 
 	 * @param sqlString
 	 *            a native SQL query string

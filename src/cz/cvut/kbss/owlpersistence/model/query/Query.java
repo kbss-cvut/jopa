@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.persistence.PersistenceException;
 
-public interface Query {
+public interface Query<ResultElement> {
 	/**
 	 * Execute a SELECT query and return the query results as an untyped List.
 	 * 
@@ -27,9 +27,9 @@ public interface Query {
 	 *             if the query execution exceeds the query timeout value set
 	 *             and the transaction is rolled back
 	 */
-	List getResultList();
+	List<ResultElement> getResultList();
 
-	Object getSingleResult();
+	ResultElement getSingleResult();
 
 	/**
 	 * Set the maximum number of results to retrieve.
@@ -39,6 +39,6 @@ public interface Query {
 	 * @throws IllegalArgumentException
 	 *             if the argument is negative
 	 */
-	Query setMaxResults(int maxResult);
+	Query<ResultElement> setMaxResults(int maxResult);
 
 }
