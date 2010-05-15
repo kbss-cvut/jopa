@@ -590,14 +590,51 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 */
 	public void saveReference(Object object, Field field) {
 
-		Attribute<?, ?> a = getMetamodel().entity(object.getClass())
-				.getAttribute(field.getName());
+		final EntityType<?> et = getMetamodel().entity(object.getClass());
 
 		try {
-			_saveReference(object, a, true);
-			// toRefresh.add(object);
+			if (et.getTypes() != null
+					&& et.getTypes().getJavaField().equals(field)) {
+				_saveTypesReference(object, et.getTypes(), true);
+			} else {
+				_saveReference(object, et.getAttribute(field.getName()), true);
+			}
 		} catch (Exception e) {
-			throw new OWLPersistenceException(e);
+			LOG.log(Level.SEVERE, e.getMessage(), e);
+		}
+	}
+
+	private void _saveTypesReference(final Object object,
+			final DirectTypesSpecification<?, ?> ts, boolean force)
+			throws IllegalAccessException {
+
+		OWLNamedIndividual subject = managed.get(object);
+
+		Object value = ts.getJavaField().get(object);
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Saving direct types of " + object + " with value = "
+					+ value);
+		}
+
+		final EntityType<?> et = getMetamodel().entity(object.getClass());
+		
+		for( OWLClass c : r.getTypes(subject, true).getFlattened() ) {
+			if ( c.getIRI().equals(et.getIRI()) ) {
+				continue;
+			}
+			
+			addChange(new RemoveAxiom(o, m.getOWLDataFactory().getOWLClassAssertionAxiom(c, subject)));
+		}
+		
+		Set set = Set.class.cast(value);
+		if (set != null) {
+			for (Object element : set) {
+				final OWLClass objectValue = m.getOWLDataFactory().getOWLClass(
+						IRI.create(element + ""));
+
+				addChange(new AddAxiom(o, m.getOWLDataFactory()
+						.getOWLClassAssertionAxiom(objectValue, subject)));
+			}
 		}
 	}
 

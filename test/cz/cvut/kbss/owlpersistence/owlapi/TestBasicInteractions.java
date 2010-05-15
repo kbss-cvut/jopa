@@ -150,6 +150,7 @@ public class TestBasicInteractions extends TestCase {
 		
 		OWLClassA ax  = pc.find(OWLClassA.class, pkA);
 		
+		assertEquals(a.getTypes().size(), 3);		
 		assertEquals(ax.getTypes().size(), 3);		
 
 		pc.close();
