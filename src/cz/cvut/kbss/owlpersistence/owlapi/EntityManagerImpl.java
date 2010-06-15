@@ -61,6 +61,8 @@ import org.semanticweb.owlapi.util.OWLOntologyMerger;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
+import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
+
 import cz.cvut.kbss.owl2query.simpleversion.model.owlapi.OWLAPIv3OWL2Ontology;
 import cz.cvut.kbss.owlpersistence.model.EntityTransaction;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
@@ -76,6 +78,7 @@ import cz.cvut.kbss.owlpersistence.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.owlpersistence.model.query.Query;
 import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
 import cz.cvut.kbss.owlpersistence.util.MappingFileParser;
+import de.fraunhofer.iitb.owldb.OWLDBManager;
 
 public class EntityManagerImpl extends AbstractEntityManager {
 
@@ -117,8 +120,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				.get(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY);
 		final String reasonerFactoryClass = map
 				.get(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS);
-		// final String dbConnection = map
-		// .get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
+		final String dbConnection = map
+				.get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
 		final String languageTag = map.get(OWLAPIPersistenceProperties.LANG);
 
 		if (languageTag != null) {
@@ -139,19 +142,48 @@ public class EntityManagerImpl extends AbstractEntityManager {
 					+ reasonerFactoryClass + "'.", e);
 		}
 
-		// TODO
-		// if (ontologyURI != null && dbConnection != null) {
-		// loadFromDB(ontologyURI, dbConnection);
-		// } else
-		if (ontologyURI != null) {
-			if (LOG.isLoggable(Level.INFO)) {
-				LOG.info("Loading model ontologyURI='" + ontologyURI
-						+ "', mappingFileURI='" + mappingFileURI + "'.");
-			}
-			this.m = OWLManager.createOWLOntologyManager();
-			f = m.getOWLDataFactory();
+		if (ontologyURI == null) {
+			throw new IllegalArgumentException(
+					"Either a document URL or an ontology URI must be specified.");
+		}
 
-			try {
+		if (LOG.isLoggable(Level.INFO)) {
+			LOG.info("Loading model ontologyURI='" + ontologyURI
+					+ "', mappingFileURI='" + mappingFileURI + "'.");
+		}
+		try {
+
+			if (dbConnection != null) {
+				LOG.info("Using database backend: " + dbConnection);
+				this.m = OWLDBManager
+						.createOWLOntologyManager(OWLDataFactoryImpl
+								.getInstance());
+				this.f = m.getOWLDataFactory();
+
+				final Map<URI, URI> mapping = getMappings(mappingFileURI);
+				LOG.info("Found mappings = " + mapping);
+
+				m.addIRIMapper(new OWLOntologyIRIMapper() {
+					@Override
+					public IRI getDocumentIRI(IRI arg0) {
+						if (!mapping.containsKey(arg0.toURI())) {
+							return arg0;
+						}
+
+						return IRI.create(mapping.get(arg0.toURI()));
+					}
+				});
+				LOG.info("Mapping file succesfully parsed.");			
+				o = m.loadOntology(IRI.create(dbConnection));
+				merged = new OWLOntologyMerger(m).createMergedOntology(m, IRI
+						.create("http://temporary"));
+				LOG.info("Ontology " + ontologyURI + " succesfully loaded.");
+				LOG.info("INDS: "+o.getIndividualsInSignature().size());
+				m.saveOntology(o);
+			} else {
+				this.m = OWLManager.createOWLOntologyManager();
+				this.f = m.getOWLDataFactory();
+
 				final Map<URI, URI> mapping = getMappings(mappingFileURI);
 				LOG.info("Found mappings = " + mapping);
 
@@ -187,18 +219,15 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				merged = new OWLOntologyMerger(m).createMergedOntology(m, IRI
 						.create("http://temporary"));
 				LOG.info("Ontology " + ontologyURI + " succesfully loaded.");
-			} catch (Exception e) {
-				LOG.log(Level.SEVERE, null, e);
 			}
-			try {
-				r = rf.createReasoner(o);
-				r.prepareReasoner();
-			} catch (Exception e) {
-				LOG.log(Level.SEVERE, e.getMessage(), e);
-			}
-		} else {
-			throw new IllegalArgumentException(
-					"Either a document URL or an ontology URI must be specified.");
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, null, e);
+		}
+		try {
+			r = rf.createReasoner(o);
+			r.prepareReasoner();
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, e.getMessage(), e);
 		}
 
 		this.open = true;
@@ -466,14 +495,15 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 				m.applyChanges(allChanges);
 
-				allChanges.clear();
-				removeChanges.clear();
-
 				if (LOG.isLoggable(Level.INFO)) {
-					LOG.info("Writing model.");
+					LOG.info("Writing model to " + m.getOntologyDocumentIRI(o)
+							+ " using " + m.getOntologyFormat(o));
 				}
 
 				m.saveOntology(o);
+
+				allChanges.clear();
+				removeChanges.clear();
 
 				if (LOG.isLoggable(Level.INFO)) {
 					LOG.info("Model succesfully stored.");
@@ -617,15 +647,16 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 
 		final EntityType<?> et = getMetamodel().entity(object.getClass());
-		
-		for( OWLClass c : r.getTypes(subject, true).getFlattened() ) {
-			if ( c.getIRI().equals(et.getIRI()) ) {
+
+		for (OWLClass c : r.getTypes(subject, true).getFlattened()) {
+			if (c.getIRI().equals(et.getIRI())) {
 				continue;
 			}
-			
-			addChange(new RemoveAxiom(o, m.getOWLDataFactory().getOWLClassAssertionAxiom(c, subject)));
+
+			addChange(new RemoveAxiom(o, m.getOWLDataFactory()
+					.getOWLClassAssertionAxiom(c, subject)));
 		}
-		
+
 		Set set = Set.class.cast(value);
 		if (set != null) {
 			for (Object element : set) {
@@ -986,19 +1017,19 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	private org.semanticweb.owlapi.model.OWLAnnotationProperty ap(final IRI uri) {
-		return OWLManager.getOWLDataFactory().getOWLAnnotationProperty(uri);
+		return f.getOWLAnnotationProperty(uri);
 	}
 
 	private org.semanticweb.owlapi.model.OWLDataProperty dp(final IRI uri) {
-		return OWLManager.getOWLDataFactory().getOWLDataProperty(uri);
+		return f.getOWLDataProperty(uri);
 	}
 
 	private org.semanticweb.owlapi.model.OWLObjectProperty op(final IRI uri) {
-		return OWLManager.getOWLDataFactory().getOWLObjectProperty(uri);
+		return f.getOWLObjectProperty(uri);
 	}
 
 	private org.semanticweb.owlapi.model.OWLClass c(final IRI uri) {
-		return OWLManager.getOWLDataFactory().getOWLClass(uri);
+		return f.getOWLClass(uri);
 	}
 
 	private void ensureOpen() {

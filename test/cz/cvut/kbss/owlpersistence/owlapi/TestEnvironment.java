@@ -24,9 +24,15 @@ public class TestEnvironment {
 	public static String dir = "testResults";
 
 	private static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
-//	private static final String REASONER_FACTORY_CLASS = "org.semanticweb.HermiT.Reasoner$ReasonerFactory";
-	
+
+	// private static final String REASONER_FACTORY_CLASS =
+	// "org.semanticweb.HermiT.Reasoner$ReasonerFactory";
+
 	public static EntityManager getPersistenceConnector(String name) {
+		return getPersistenceConnector(name, false);
+	}
+
+	public static EntityManager getPersistenceConnector(String name, boolean db) {
 		try {
 			final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
 			final IRI iri = IRI
@@ -42,14 +48,16 @@ public class TestEnvironment {
 			params.put("javax.persistence.provider",
 					EntityManagerFactoryImpl.class.getName());
 
-			// params.put(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION,
-			// "jdbc:postgresql://localhost/strufail_owlapi");
+			if (db) {
+				params.put(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION,
+						"jdbc:postgresql://localhost/strufail_owlapi");
+			}
 			params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, url
 					.toURI().toString());
-			// params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
-			// .getAbsolutePath());
 			params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
 					OWLAPIPersistenceProvider.class.getName());
+			// params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
+			// .getAbsolutePath());
 			params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
 					REASONER_FACTORY_CLASS);
 

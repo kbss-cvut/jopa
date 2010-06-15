@@ -22,16 +22,9 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 
 	private MetamodelImpl metamodel = null;
 
-	// private OWLOntologyManager m;
-
 	public EntityManagerFactoryImpl(final Map<String, String> properties) {
 		this.properties = properties;
-		// this.m = OWLManager.createOWLOntologyManager();
 	}
-
-	// public OWLOntologyManager getOWLOntologyManager() {
-	// return m;
-	// }
 
 	@Override
 	public void close() {
@@ -60,15 +53,6 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 
 		newMap.putAll(properties);
 		newMap.putAll(map);
-
-		// if (!newMap
-		// .containsKey(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS)) {
-		// newMap.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
-		// OWLAPIIdentityReasonerFactory.class.getName());
-		// }
-
-		String dbConnection = newMap
-				.get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
 
 		final AbstractEntityManager c = new EntityManagerImpl(this, newMap);
 
