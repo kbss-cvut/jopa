@@ -83,8 +83,7 @@ public class IntegrityConstraintParserImpl implements IntegrityConstraintParser 
 	private OWLDataFactory f;
 
 	private void notSupported(final OWLObject o) {
-//		throw new UnsupportedICException("Not supported in IC's : " + o);
-		System.out.println("Unsupported IC: " + o);
+		System.out.println("Ignoring Unsupported Constraint: " + o);
 	}
 
 	@Override
@@ -226,7 +225,8 @@ public class IntegrityConstraintParserImpl implements IntegrityConstraintParser 
 
 			@Override
 			public void visit(OWLObjectPropertyRangeAxiom axiom) {
-				notSupported(axiom);
+				ic.addAll(processParticipationConstraint(f.getOWLThing(), f
+						.getOWLObjectMaxCardinality(1, axiom.getProperty())));
 			}
 
 			@Override
