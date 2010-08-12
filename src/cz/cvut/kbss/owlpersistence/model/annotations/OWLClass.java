@@ -19,5 +19,5 @@ public @interface OWLClass {
 	 */
 	String iri();
 	
-	boolean mutable() default true;	
+//	boolean mutable() default true;	
 }

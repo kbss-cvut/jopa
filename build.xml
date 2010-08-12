@@ -2,7 +2,6 @@
 <project name="OWLPersistence" default="build-agent-jar">
 	<property environment="env" />
 	<property file="build.properties" />
-	<property name="version" value="0.1" />
 	<property name="build.compiler" value="javac1.6" />
 
 	<propertyfile file="build.properties" />

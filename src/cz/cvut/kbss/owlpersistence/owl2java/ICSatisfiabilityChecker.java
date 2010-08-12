@@ -3,9 +3,13 @@ package cz.cvut.kbss.owlpersistence.owl2java;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
+import cz.cvut.kbss.owlpersistence.model.ic.DataDomainConstraint;
 import cz.cvut.kbss.owlpersistence.model.ic.DataParticipationConstraint;
+import cz.cvut.kbss.owlpersistence.model.ic.DataRangeConstraint;
 import cz.cvut.kbss.owlpersistence.model.ic.IntegrityConstraintVisitor;
+import cz.cvut.kbss.owlpersistence.model.ic.ObjectDomainConstraint;
 import cz.cvut.kbss.owlpersistence.model.ic.ObjectParticipationConstraint;
+import cz.cvut.kbss.owlpersistence.model.ic.ObjectRangeConstraint;
 
 public class ICSatisfiabilityChecker implements IntegrityConstraintVisitor {
 
@@ -39,4 +43,27 @@ public class ICSatisfiabilityChecker implements IntegrityConstraintVisitor {
 		return result;
 	}
 
+	@Override
+	public void visit(ObjectDomainConstraint cpc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visit(ObjectRangeConstraint cpc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visit(DataDomainConstraint cpc) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visit(DataRangeConstraint cpc) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -17,25 +17,5 @@ public @interface OWLDataProperty {
 	 * @return IRI of the data property
 	 */
 	String iri();
-
-	/**
-	 * IRI of the property filler
-	 * 
-	 * @return IRI of the property filler
-	 */
-	String fillerIri() default "http://www.w3.org/2000/01/rdf-schema#Literal";
-
-	/**
-	 * minimal cardinality
-	 * 
-	 * @return minimal cardinality
-	 */
-	int min() default 0;
-
-	/**
-	 * maximal cardinality
-	 * 
-	 * @return maximal cardinality
-	 */
-	int max() default Integer.MAX_VALUE;
+	
 }

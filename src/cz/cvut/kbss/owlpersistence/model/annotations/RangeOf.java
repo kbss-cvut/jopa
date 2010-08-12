@@ -9,7 +9,12 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Constraints {
+public @interface RangeOf {
 
-	ParticipationConstraint[] value() default {};
+	/**
+	 * IRI of the object property
+	 * 
+	 * @return IRI of the object property
+	 */
+	String owlPropertyIRI();
 }

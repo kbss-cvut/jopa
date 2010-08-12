@@ -18,28 +18,7 @@ public @interface OWLObjectProperty {
 	 */
 	String iri();
 
-	/**
-	 * IRI of the property filler
-	 * 
-	 * @return IRI of the property filler
-	 */
-	String fillerIri() default "http://www.w3.org/2002/07/owl#Thing";
-
 	CascadeType[] cascade() default {};
 
 	FetchType fetch() default FetchType.LAZY;
-
-	/**
-	 * minimal cardinality
-	 * 
-	 * @return minimal cardinality
-	 */
-	int min() default 0;
-
-	/**
-	 * maximal cardinality
-	 * 
-	 * @return maximal cardinality
-	 */
-	int max() default Integer.MAX_VALUE;
 }

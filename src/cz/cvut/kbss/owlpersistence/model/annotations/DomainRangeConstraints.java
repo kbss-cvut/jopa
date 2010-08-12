@@ -8,9 +8,10 @@ import java.lang.annotation.Target;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface Properties {
+@Target(ElementType.TYPE)
+public @interface DomainRangeConstraints {
+	
+	DomainOf[] domainOf() default {};
 
-	FetchType fetchType() default FetchType.LAZY;
-
+	RangeOf[] rangeOf() default {};
 }

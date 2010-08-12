@@ -50,7 +50,7 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 	private static AbstractEntityManager find(Object o) {
 		for (final EntityManagerFactoryImpl emfi : emfs) {
 			for (final AbstractEntityManager emi : emfi.getEntityManagers()) {
-				if (emi.isOpen() &&  emi.contains(o)) {
+				if (emi.isOpen() && emi.contains(o)) {
 					return emi;
 				}
 			}

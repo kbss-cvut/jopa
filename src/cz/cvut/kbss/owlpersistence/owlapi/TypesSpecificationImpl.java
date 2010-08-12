@@ -3,17 +3,17 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 import java.lang.reflect.Field;
 
 import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
-import cz.cvut.kbss.owlpersistence.model.metamodel.DirectTypesSpecification;
+import cz.cvut.kbss.owlpersistence.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.owlpersistence.model.metamodel.ManagedType;
 
-public class DirectTypesSpecificationImpl<X, Y> implements
-		DirectTypesSpecification<X, Y> {
+public class TypesSpecificationImpl<X, Y> implements
+		TypesSpecification<X, Y> {
 	private final ManagedType<X> declaringType;
 	private final FetchType fetchType;
 	private final Field javaField;
 	private Class<Y> javaType;
 
-	public DirectTypesSpecificationImpl(final ManagedType<X> declaringType,
+	public TypesSpecificationImpl(final ManagedType<X> declaringType,
 			final FetchType fetchType, final Field javaField,
 			final Class<Y> javaType) {
 

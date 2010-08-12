@@ -34,9 +34,12 @@ import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLIndividualAxiom;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -62,18 +65,23 @@ import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
-
+import cz.cvut.kbss.owl2query.simpleversion.engine.OWL2QueryEngine;
+import cz.cvut.kbss.owl2query.simpleversion.model.OWL2Ontology;
 import cz.cvut.kbss.owl2query.simpleversion.model.owlapi.OWLAPIv3OWL2Ontology;
+import cz.cvut.kbss.owl2query.simpleversion.model.owlapi.OWLAPIv3QueryFactory;
 import cz.cvut.kbss.owlpersistence.model.EntityTransaction;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
 import cz.cvut.kbss.owlpersistence.model.annotations.CascadeType;
 import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
+import cz.cvut.kbss.owlpersistence.model.annotations.Id;
+import cz.cvut.kbss.owlpersistence.model.ic.IntegrityConstraint;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Attribute;
-import cz.cvut.kbss.owlpersistence.model.metamodel.DirectTypesSpecification;
+import cz.cvut.kbss.owlpersistence.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EntityType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.ListAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
 import cz.cvut.kbss.owlpersistence.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.owlpersistence.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.owlpersistence.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.owlpersistence.model.query.Query;
 import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
@@ -131,13 +139,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		try {
 			this.rf = (OWLReasonerFactory) Class.forName(reasonerFactoryClass)
 					.newInstance();
-		} catch (InstantiationException e) {
-			throw new OWLPersistenceException("Error instantiating factory '"
-					+ reasonerFactoryClass + "'.", e);
-		} catch (IllegalAccessException e) {
-			throw new OWLPersistenceException("Error instantiating factory '"
-					+ reasonerFactoryClass + "'.", e);
-		} catch (ClassNotFoundException e) {
+		} catch (Exception e) {
 			throw new OWLPersistenceException("Error instantiating factory '"
 					+ reasonerFactoryClass + "'.", e);
 		}
@@ -173,12 +175,12 @@ public class EntityManagerImpl extends AbstractEntityManager {
 						return IRI.create(mapping.get(arg0.toURI()));
 					}
 				});
-				LOG.info("Mapping file succesfully parsed.");			
+				LOG.info("Mapping file succesfully parsed.");
 				o = m.loadOntology(IRI.create(dbConnection));
 				merged = new OWLOntologyMerger(m).createMergedOntology(m, IRI
 						.create("http://temporary"));
 				LOG.info("Ontology " + ontologyURI + " succesfully loaded.");
-				LOG.info("INDS: "+o.getIndividualsInSignature().size());
+				LOG.info("INDS: " + o.getIndividualsInSignature().size());
 				m.saveOntology(o);
 			} else {
 				this.m = OWLManager.createOWLOntologyManager();
@@ -259,21 +261,34 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				Object id = idField.get(entity);
 
 				IRI idx = null;
-				if (idField.getType().equals(String.class)) {
-					idx = IRI.create((String) id);
-				} else if (idField.getType().equals(URI.class)) {
-					idx = IRI.create((URI) id);
+
+				if (id == null) {
+					if (idField.getAnnotation(Id.class).generated()) {
+						idx = createNewID(entity.getClass().getSimpleName());
+
+						System.out.println("Generated: " + idx);
+						if (idField.getType().equals(String.class)) {
+							idField.set(entity, idx.toString());
+						} else if (idField.getType().equals(URI.class)) {
+							idField.set(entity, idx.toURI());
+						}
+					}
+				} else {
+					if (idField.getType().equals(String.class)) {
+						idx = IRI.create((String) id);
+					} else if (idField.getType().equals(URI.class)) {
+						idx = IRI.create((URI) id);
+					}
 				}
 
 				if (idx == null) {
-					idx = createNewID(entity.getClass().getSimpleName());
+					throw new OWLPersistenceException(
+							"The id for entity "
+									+ entity
+									+ " is null and it is not specified as 'generated' ");
+				}
 
-					if (LOG.isLoggable(Level.FINE)) {
-						LOG.fine("New Id generated= " + id);
-					}
-
-					idField.set(entity, id);
-				} else if ((o.containsIndividualInSignature(idx, true) || (managed
+				if ((o.containsIndividualInSignature(idx, true) || (managed
 						.values().contains(f.getOWLNamedIndividual(idx))))
 						&& !entity.getClass().isEnum()) {
 					throw new OWLPersistenceException("An entity with URI "
@@ -292,7 +307,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 				addChange(new AddAxiom(o, aa));
 
-				final DirectTypesSpecification<?, ?> types = e.getTypes();
+				final TypesSpecification<?, ?> types = e.getTypes();
 
 				if (types != null) {
 					_saveDirectTypes(entity, types);
@@ -312,7 +327,18 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
 					try {
 						Object ox = at.getJavaField().get(o);
-						if (ox != null) {
+						System.out.println("object=" + o + ", attribute="
+								+ at.getName() + ", value=" + ox);
+
+						if (ox == null) {
+							return;
+						}
+
+						if (at.isCollection()) {
+							for (final Object ox2 : (Collection<?>) ox) {
+								persist(ox2);
+							}
+						} else {
 							persist(ox);
 						}
 					} catch (Exception e) {
@@ -623,8 +649,15 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		final EntityType<?> et = getMetamodel().entity(object.getClass());
 
 		try {
-			if (et.getTypes() != null
+			if (et.getProperties() != null
+					&& et.getProperties().getJavaField().equals(field)) {
+				// TODO check invalid property bindings
+
+				_savePropertiesReference(object, et.getProperties(), true);
+			} else if (et.getTypes() != null
 					&& et.getTypes().getJavaField().equals(field)) {
+				// TODO check invalid type bindings
+
 				_saveTypesReference(object, et.getTypes(), true);
 			} else {
 				_saveReference(object, et.getAttribute(field.getName()), true);
@@ -635,7 +668,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	private void _saveTypesReference(final Object object,
-			final DirectTypesSpecification<?, ?> ts, boolean force)
+			final TypesSpecification<?, ?> ts, boolean force)
 			throws IllegalAccessException {
 
 		OWLNamedIndividual subject = managed.get(object);
@@ -648,8 +681,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 		final EntityType<?> et = getMetamodel().entity(object.getClass());
 
+		// TODO replace reasoner with plain syntactic ontology changes
 		for (OWLClass c : r.getTypes(subject, true).getFlattened()) {
-			if (c.getIRI().equals(et.getIRI())) {
+			if (c.getIRI().equals(et.getIRI()) || c.equals(f.getOWLThing())) {
 				continue;
 			}
 
@@ -669,8 +703,112 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	public void loadReference(Object object, Field field) {
+	private void _savePropertiesReference(final Object object,
+			final PropertiesSpecification<?, ?> ts, boolean force)
+			throws IllegalAccessException {
 
+		OWLNamedIndividual subject = managed.get(object);
+
+		Object value = ts.getJavaField().get(object);
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Saving other properties of " + object + " with value = "
+					+ value);
+		}
+
+		final EntityType<?> et = getMetamodel().entity(object.getClass());
+
+		for (final OWLObjectPropertyAssertionAxiom ax : o
+				.getObjectPropertyAssertionAxioms(subject)) {
+			if (ax.getProperty().isAnonymous()) {
+				continue;
+			}
+
+			boolean found = false;
+			for (final Attribute<?, ?> a : et.getAttributes()) {
+				if (a.getIRI().equals(
+						ax.getProperty().asOWLObjectProperty().getIRI())) {
+					found = true;
+					break;
+				}
+			}
+
+			if (found) {
+				continue;
+			}
+
+			addChange(new RemoveAxiom(o, m.getOWLDataFactory()
+					.getOWLObjectPropertyAssertionAxiom(ax.getProperty(),
+							subject, ax.getObject())));
+
+		}
+
+		for (final OWLDataPropertyAssertionAxiom ax : o
+				.getDataPropertyAssertionAxioms(subject)) {
+			if (ax.getProperty().isAnonymous()) {
+				continue;
+			}
+
+			boolean found = false;
+			for (final Attribute<?, ?> a : et.getAttributes()) {
+				if (a.getIRI().equals(
+						ax.getProperty().asOWLDataProperty().getIRI())) {
+					found = true;
+					break;
+				}
+			}
+
+			if (found) {
+				continue;
+			}
+
+			addChange(new RemoveAxiom(o, m.getOWLDataFactory()
+					.getOWLDataPropertyAssertionAxiom(ax.getProperty(),
+							subject, ax.getObject())));
+
+		}
+
+		Map map = Map.class.cast(value);
+		if (map != null) {
+			for (Object element : map.keySet()) {
+				final Object valueSet = map.get(element);
+
+				if (!Set.class.isAssignableFrom(valueSet.getClass())) {
+					throw new OWLPersistenceException(
+							"EntityManagerImpl : invalid @Properties type, must be Map<String,Set<String>>");
+				}
+
+				final IRI propIRI = IRI.create(element + "");
+
+				if (o.containsDataPropertyInSignature(propIRI)) {
+					final OWLDataProperty prop = m.getOWLDataFactory()
+							.getOWLDataProperty(IRI.create(element + ""));
+
+					for (final Object ox : Set.class.cast(valueSet)) {
+						final OWLLiteral objX = getOWLObject(ox);
+
+						addChange(new AddAxiom(o, m.getOWLDataFactory()
+								.getOWLDataPropertyAssertionAxiom(prop,
+										subject, objX)));
+					}
+				} else {
+					// default object property
+					final OWLObjectProperty prop = m.getOWLDataFactory()
+							.getOWLObjectProperty(IRI.create(element + ""));
+
+					for (final Object ox : Set.class.cast(valueSet)) {
+						final OWLNamedIndividual objX = f
+								.getOWLNamedIndividual(IRI.create(ox + ""));
+
+						addChange(new AddAxiom(o, m.getOWLDataFactory()
+								.getOWLObjectPropertyAssertionAxiom(prop,
+										subject, objX)));
+					}
+				}
+			}
+		}
+	}
+
+	public void loadReference(Object object, Field field) {
 		flush();
 
 		final EntityType<?> et = getMetamodel().entity(object.getClass());
@@ -679,6 +817,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			if (et.getTypes() != null
 					&& et.getTypes().getJavaField().equals(field)) {
 				_loadTypesReference(object, et.getTypes(), true);
+			} else if (et.getProperties() != null
+					&& et.getProperties().getJavaField().equals(field)) {
+				_loadPropertiesReference(object, et.getProperties(), true);
 			} else {
 				_loadReference(object, et.getAttribute(field.getName()), true);
 			}
@@ -688,7 +829,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	private void _loadTypesReference(final Object object,
-			final DirectTypesSpecification<?, ?> ts, boolean force)
+			final TypesSpecification<?, ?> ts, boolean force)
 			throws IllegalAccessException {
 		if (ts != null) {
 			Set<Object> set = new HashSet<Object>();
@@ -705,6 +846,79 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			}
 
 			ts.getJavaField().set(object, set);
+		}
+	}
+
+	private void _loadPropertiesReference(final Object object,
+			final PropertiesSpecification<?, ?> ts, boolean force)
+			throws IllegalAccessException {
+		if (ts != null) {
+			r.flush();
+
+			final EntityType<?> et = getMetamodel().entity(object.getClass());
+			
+			Map<String,Set<String>> map = new HashMap<String, Set<String>>();
+
+			for (final OWLObjectPropertyAssertionAxiom ax : o
+					.getObjectPropertyAssertionAxioms(managed.get(object))) {
+				if (ax.getProperty().isAnonymous()) {
+					continue;
+				}
+
+				final IRI propIRI = ax.getProperty().asOWLObjectProperty().getIRI();
+				
+				boolean found = false;
+				for (final Attribute<?, ?> a : et.getAttributes()) {
+					if (a.getIRI().toString().equals(propIRI.toString()
+							)) {
+						found = true;
+						break;
+					}
+				}
+
+				if (found) {
+					continue;
+				}
+				
+				Set<String> set = map.get(propIRI.toString());
+				if ( set == null) {
+					set = new HashSet<String>();
+					map.put(propIRI.toString(), set);
+				}
+				
+				set.add(ax.getObject().asOWLNamedIndividual().getIRI().toString());
+			}
+						
+			for (final OWLDataPropertyAssertionAxiom ax : o
+					.getDataPropertyAssertionAxioms(managed.get(object))) {
+				if (ax.getProperty().isAnonymous()) {
+					continue;
+				}
+
+				final IRI propIRI = ax.getProperty().asOWLDataProperty().getIRI();
+				
+				boolean found = false;
+				for (final Attribute<?, ?> a : et.getAttributes()) {
+					if (a.getIRI().equals(propIRI
+							)) {
+						found = true;
+						break;
+					}
+				}
+
+				if (found) {
+					continue;
+				}
+
+				Set<String> set = map.get(propIRI.toString());
+				if ( set == null) {
+					set = new HashSet<String>();
+					map.put(propIRI.toString(), set);
+				}
+				
+				set.add(DatatypeTransformer.transform(ax.getObject()).toString());
+			}			
+			ts.getJavaField().set(object, map);
 		}
 	}
 
@@ -1093,8 +1307,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	private void _saveDirectTypes(Object object,
-			DirectTypesSpecification<?, ?> spec) throws Exception {
+	private void _saveDirectTypes(Object object, TypesSpecification<?, ?> spec)
+			throws Exception {
 		OWLNamedIndividual subject = managed.get(object);
 		Object value = spec.getJavaField().get(object);
 
@@ -1265,7 +1479,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		final EntityType<?> type = emf.getMetamodel().entity(cls);
 
 		try {
-			DirectTypesSpecification<?, ?> ts = type.getTypes();
+			TypesSpecification<?, ?> ts = type.getTypes();
 
 			if (ts != null) {
 				_loadTypesReference(object, ts, force);
@@ -1479,15 +1693,25 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 		String base = o.getOntologyID().getOntologyIRI().toString() + "#i_"
 				+ name;
-		IRI uri = IRI.create(base);
+		IRI iri = IRI.create(base);
 
 		int i = 1;
 
-		while (o.containsIndividualInSignature(uri, true)) {
-			uri = IRI.create(base + "_" + (i++));
+		while (o.containsIndividualInSignature(iri, true)
+				|| containsIndividual(iri)) {
+			iri = IRI.create(base + "_" + (i++));
 		}
 
-		return uri;
+		return iri;
+	}
+
+	private boolean containsIndividual(final IRI iri) {
+		for (OWLNamedIndividual i : managed.values()) {
+			if (i.getIRI().equals(iri)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private OWLNamedIndividual createOWLList(final String testName,
@@ -1763,4 +1987,18 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		return new TypedQueryImpl<T>(string, cls, new OWLAPIv3OWL2Ontology(m,
 				merged, r), sparql, this);
 	}
+
+	class ICEvaluator {
+		public boolean isSatisfied(IntegrityConstraint check) {
+
+			OWL2Ontology<OWLObject> ont = new OWLAPIv3OWL2Ontology(m, o, r);
+			OWLAPIv3QueryFactory fact = new OWLAPIv3QueryFactory(m, o);
+
+			ICQueryGenerator v = new ICQueryGenerator(fact, ont);
+			check.accept(v);
+
+			return OWL2QueryEngine.exec(v.getQuery()).isEmpty();
+		}
+
+	};
 }

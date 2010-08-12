@@ -8,13 +8,14 @@ import java.util.Set;
 import cz.cvut.kbss.owlpersistence.model.IRI;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Attribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.CollectionAttribute;
-import cz.cvut.kbss.owlpersistence.model.metamodel.DirectTypesSpecification;
+import cz.cvut.kbss.owlpersistence.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EntityType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.IdentifiableType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Identifier;
 import cz.cvut.kbss.owlpersistence.model.metamodel.ListAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.MapAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.owlpersistence.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.owlpersistence.model.metamodel.SetAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.SingularAttribute;
 
@@ -32,7 +33,9 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 
 	private Identifier identifier;
 
-	private DirectTypesSpecification<X, ?> directTypes;
+	private TypesSpecification<X, ?> directTypes;
+
+	private PropertiesSpecification<X, ?> properties;
 
 	public EntityTypeImpl(String name, Class<X> javaType, final IRI iri) {
 		this.name = name;
@@ -44,8 +47,12 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 	// attributeMap.put(name, a);
 	// }
 
-	void addDirectTypes(DirectTypesSpecification<X, ?> a) {
+	void addDirectTypes(TypesSpecification<X, ?> a) {
 		this.directTypes = a;
+	}
+
+	void addOtherProperties(PropertiesSpecification<X, ?> a) {
+		this.properties = a;
 	}
 
 	void addDeclaredAttribute(final String name, final Attribute<X, ?> a) {
@@ -405,7 +412,12 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 	}
 
 	@Override
-	public DirectTypesSpecification<? super X, ?> getTypes() {
+	public TypesSpecification<? super X, ?> getTypes() {
 		return directTypes;
+	}
+
+	@Override
+	public PropertiesSpecification<? super X, ?> getProperties() {
+		return properties;
 	}
 }

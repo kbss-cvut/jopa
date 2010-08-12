@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,7 +76,7 @@ public class MetamodelImpl implements Metamodel {
 		final OWLClass c = cls.getAnnotation(OWLClass.class);
 
 		if (c == null) {
-			throw new OWLPersistenceException();
+			throw new OWLPersistenceException("The class "+cls+" is not an OWLPersistence entity !");
 		}
 
 		final EntityTypeImpl<X> c2 = new EntityTypeImpl<X>(cls.getSimpleName(),
@@ -109,7 +110,18 @@ public class MetamodelImpl implements Metamodel {
 					throw new OWLPersistenceException(
 							"The Types element must be a set of Strings.");
 				}
-				c2.addDirectTypes(new DirectTypesSpecificationImpl(c2, tt
+				c2.addDirectTypes(new TypesSpecificationImpl(c2, tt
+						.fetchType(), field, cxx));
+				continue;
+			}
+
+			cz.cvut.kbss.owlpersistence.model.annotations.Properties properties = field.getAnnotation(cz.cvut.kbss.owlpersistence.model.annotations.Properties.class);
+			if (properties != null) {
+				if (!Map.class.isAssignableFrom(field.getType())) {
+					throw new OWLPersistenceException(
+							"The Types element must be a Map<String,Set<String>>.");
+				}
+				c2.addOtherProperties(new PropertiesSpecificationImpl(c2, properties
 						.fetchType(), field, cxx));
 				continue;
 			}

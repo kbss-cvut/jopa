@@ -10,4 +10,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Id {
+	/**
+	 * Generates the id whenever it is null.
+	 * 
+	 * @return
+	 */
+	boolean generated() default false; 
 }

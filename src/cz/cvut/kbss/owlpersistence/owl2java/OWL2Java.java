@@ -14,6 +14,8 @@ public class OWL2Java {
 	private static final Logger LOG = Logger
 			.getLogger(OWL2Java.class.getName());
 
+	public static final String VERSION = "0.1";
+
 	// CLI map
 	private static final Map<COMMAND, OptionParser> map = new HashMap<COMMAND, OptionParser>();
 
@@ -47,7 +49,7 @@ public class OWL2Java {
 	}
 
 	private enum COMMAND {
-		help, list, transform;
+		help, list, transform, version;
 	}
 
 	private static void printHelp(COMMAND cc) {
@@ -73,6 +75,9 @@ public class OWL2Java {
 			System.out
 					.println("Syntax: OWL2Java transform <ontology_uri> [ <options> ].");
 			System.out.println("");
+			break;
+		case version:
+			System.out.println("Prints the version of the OWL2Java tool.");
 			break;
 		}
 
@@ -143,10 +148,12 @@ public class OWL2Java {
 				break;
 			}
 
-			oj
-					.transform(os.valueOf("c").toString(), os.valueOf("p")
-							.toString(), os.valueOf("d").toString());
+			oj.transform(os.valueOf("c").toString(),
+					os.valueOf("p").toString(), os.valueOf("d").toString());
 
+			break;
+		case version:
+			System.out.println("OWL2Java version " + VERSION);
 			break;
 		default:
 			System.out.println("Unknown command '" + args[0]

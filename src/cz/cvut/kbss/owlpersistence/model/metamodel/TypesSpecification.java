@@ -12,7 +12,7 @@ import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
  * @param <E>
  *            The element type of the represented Set
  */
-public interface DirectTypesSpecification<X, Y> {
+public interface TypesSpecification<X, E> {
 
 	/**
 	 * Return the managed type representing the type in which the attribute was
@@ -27,7 +27,7 @@ public interface DirectTypesSpecification<X, Y> {
 	 * 
 	 * @return Java type
 	 */
-	Class<Y> getJavaType();
+	Class<E> getJavaType();
 
 	/**
 	 * Return the java.lang.reflect.Member for the represented attribute.

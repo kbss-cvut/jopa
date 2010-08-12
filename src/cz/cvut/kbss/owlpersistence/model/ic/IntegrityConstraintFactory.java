@@ -7,41 +7,56 @@ import org.semanticweb.owlapi.model.OWLObjectProperty;
 
 public class IntegrityConstraintFactory {
 
-	public static IntegrityConstraint MinDataParticipationConstraint(
+	public static DataParticipationConstraint MinDataParticipationConstraint(
 			final OWLClass s, final OWLDataProperty p, final OWLDatatype o,
 			final int card) {
 		return new DataParticipationConstraintImpl(s, p, o, card, -1);
 	}
 
-	public static IntegrityConstraint MaxDataParticipationConstraint(
+	public static DataParticipationConstraint MaxDataParticipationConstraint(
 			final OWLClass s, final OWLDataProperty p, final OWLDatatype o,
 			final int card) {
 		return new DataParticipationConstraintImpl(s, p, o, Integer.MIN_VALUE,
 				card);
 	}
 
-	public static IntegrityConstraint DataParticipationConstraint(
+	public static DataParticipationConstraint DataParticipationConstraint(
 			final OWLClass s, final OWLDataProperty p, final OWLDatatype o,
 			final int min, int max) {
 		return new DataParticipationConstraintImpl(s, p, o, min, max);
 	}
 
-	public static IntegrityConstraint MinObjectParticipationConstraint(
+	public static ObjectParticipationConstraint MinObjectParticipationConstraint(
 			final OWLClass s, final OWLObjectProperty p, final OWLClass o,
 			final int card) {
 		return new ObjectParticipationConstraintImpl(s, p, o, card, -1);
 	}
 
-	public static IntegrityConstraint MaxObjectParticipationConstraint(
+	public static ObjectParticipationConstraint MaxObjectParticipationConstraint(
 			final OWLClass s, final OWLObjectProperty p, final OWLClass o,
 			final int card) {
 		return new ObjectParticipationConstraintImpl(s, p, o,
 				Integer.MIN_VALUE, card);
 	}
 
-	public static IntegrityConstraint ObjectParticipationConstraint(
+	public static ObjectParticipationConstraint ObjectParticipationConstraint(
 			final OWLClass s, final OWLObjectProperty p, final OWLClass o,
 			final int min, int max) {
 		return new ObjectParticipationConstraintImpl(s, p, o, min, max);
+	}
+
+	public static ObjectDomainConstraint ObjectPropertyDomainConstraint(
+			final OWLObjectProperty p, final OWLClass s) {
+		return new ObjectDomainConstraintImpl(p, s);
+	}
+
+	public static ObjectRangeConstraint ObjectPropertyRangeConstraint(
+			final OWLClass subj, final OWLObjectProperty p, final OWLClass s) {
+		return new ObjectRangeConstraintImpl(subj, p, s);
+	}
+
+	public static DataDomainConstraint DataPropertyDomainConstraint(
+			final OWLDataProperty p, final OWLClass s) {
+		return new DataDomainConstraintImpl(p, s);
 	}
 }

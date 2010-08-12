@@ -8,9 +8,12 @@ import java.lang.annotation.Target;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface Properties {
-
-	FetchType fetchType() default FetchType.LAZY;
-
+@Target(ElementType.TYPE)
+public @interface DomainOf {
+	/**
+	 * IRI of the object/data property
+	 * 
+	 * @return IRI of the object/data property
+	 */
+	String owlPropertyIRI();
 }

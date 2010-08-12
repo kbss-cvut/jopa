@@ -9,8 +9,7 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Properties {
+public @interface ParticipationConstraints {
 
-	FetchType fetchType() default FetchType.LAZY;
-
+	ParticipationConstraint[] value() default {};
 }

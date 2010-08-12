@@ -1,5 +1,6 @@
 package cz.cvut.kbss.owlpersistence.model.metamodel;
 
+import cz.cvut.kbss.owlpersistence.NonJPA;
 import cz.cvut.kbss.owlpersistence.model.IRI;
 
 /**
@@ -16,10 +17,15 @@ public interface EntityType<X> extends IdentifiableType<X>, Bindable<X> {
 	 */
 	String getName();
 
+	@NonJPA
 	IRI getIRI();
 
+	@NonJPA
 	Identifier getIdentifier();
 
-	DirectTypesSpecification<? super X, ?> getTypes();
+	@NonJPA
+	TypesSpecification<? super X, ?> getTypes();
 
+	@NonJPA
+	PropertiesSpecification<? super X, ?> getProperties();
 }
