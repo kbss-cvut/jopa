@@ -5,6 +5,7 @@ import cz.cvut.kbss.owlpersistence.UnusedJPA;
 import cz.cvut.kbss.owlpersistence.model.IRI;
 import cz.cvut.kbss.owlpersistence.model.annotations.CascadeType;
 import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
+import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraint;
 
 /**
  * Represents an attribute of a Java type.
@@ -120,6 +121,9 @@ public interface Attribute<X, Y> {
 	@NonJPA
 	IRI getIRI();
 
+	@NonJPA
+	boolean isInferred();
+
 	/**
 	 * Return the set of cascadetypes specified for this attribute.
 	 * 
@@ -155,4 +159,6 @@ public interface Attribute<X, Y> {
 	 *         collection-valued
 	 */
 	boolean isCollection();
+
+	ParticipationConstraint[] getConstraints();
 }

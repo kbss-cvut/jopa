@@ -16,4 +16,10 @@ public @interface OWLAnnotationProperty {
 	 * @return IRI of the annotation property
 	 */
 	String iri();
+
+	/**
+	 * Denotes a member that is inferred (true) using the OWL reasoner or just
+	 * asserted (false).
+	 */
+	boolean inferred() default false;
 }

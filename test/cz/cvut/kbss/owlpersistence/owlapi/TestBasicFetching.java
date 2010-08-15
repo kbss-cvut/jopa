@@ -15,7 +15,7 @@ public class TestBasicFetching extends TestCase {
 				.getPersistenceConnector("TestBasicFetching-testFetchSimpleData");
 
 		OWLClassA a = new OWLClassA();
-		URI uri = URI.create("http://newA");
+		URI uri = URI.create("http://new#A");
 		a.setUri(uri);
 
 		a.setStringAttribute("new-value");
@@ -44,7 +44,7 @@ public class TestBasicFetching extends TestCase {
 				.getPersistenceConnector("TestBasicFetching-testChangeDataValue");
 
 		OWLClassA a = new OWLClassA();
-		URI uri = URI.create("http://newA");
+		URI uri = URI.create("http://new#A");
 		a.setUri(uri);
 
 		a.setStringAttribute("old-value");
@@ -75,23 +75,23 @@ public class TestBasicFetching extends TestCase {
 				.getPersistenceConnector("TestBasicFetching-testFetchSimpleReference");
 
 		OWLClassA a = new OWLClassA();
-		URI uriA = URI.create("http://newA");
+		URI uriA = URI.create("http://new#A");
 		a.setUri(uriA);
 
 		a.setStringAttribute("new-value");
 
 		OWLClassD d = new OWLClassD();
-		URI uriD = URI.create("http://newD");
+		URI uriD = URI.create("http://new#D");
 		d.setUri(uriD);
 
 		d.setOwlClassA(a);
 
 		// more references
 		OWLClassA a2 = new OWLClassA();
-		URI uriA2 = URI.create("http://newA2");
+		URI uriA2 = URI.create("http://new#A2");
 		a2.setUri(uriA2);
 		OWLClassC c = new OWLClassC();
-		URI uriC = URI.create("http://newC");
+		URI uriC = URI.create("http://new#C");
 		c.setUri(uriC);
 
 		c.setReferencedList(Arrays.asList(a, a2));
@@ -134,13 +134,13 @@ public class TestBasicFetching extends TestCase {
 				.getPersistenceConnector("TestBasicFetching-testFetchHugeReferences");
 
 		OWLClassC c = new OWLClassC();
-		URI uriC = URI.create("http://newC");
+		URI uriC = URI.create("http://new#C");
 		c.setUri(uriC);
 
 		List<OWLClassA> list = new ArrayList<OWLClassA>();
 		for (int i = 0; i < 100; i++) {
 			OWLClassA a = new OWLClassA();
-			URI uriA = URI.create("http://newA-" + i);
+			URI uriA = URI.create("http://new#A-" + i);
 			a.setUri(uriA);
 			a.setStringAttribute("new-value");
 			list.add(a);
@@ -157,7 +157,7 @@ public class TestBasicFetching extends TestCase {
 
 		final OWLClassC cX = pc.find(OWLClassC.class, uriC);
 
-		// assertEquals(100, cX.getReferencedList().size());
+		assertEquals(100, cX.getReferencedList().size());
 
 		pc.close();
 	}

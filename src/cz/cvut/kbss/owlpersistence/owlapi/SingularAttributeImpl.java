@@ -6,6 +6,7 @@ import java.lang.reflect.Member;
 import cz.cvut.kbss.owlpersistence.model.IRI;
 import cz.cvut.kbss.owlpersistence.model.annotations.CascadeType;
 import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
+import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.owlpersistence.model.metamodel.ManagedType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Type;
@@ -30,10 +31,15 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
 
 	private final FetchType fetchType;
 
+	private boolean inferred;
+
+	private ParticipationConstraint[] constraints;
+
 	SingularAttributeImpl(ManagedType<X> declaringType, boolean id,
 			String name, IRI iri, Type<T> type, Field m,
 			final PersistentAttributeType pat,
-			final CascadeType[] cascadeTypes, final FetchType fetchType) {
+			final CascadeType[] cascadeTypes, final FetchType fetchType,
+			final boolean inferred, final ParticipationConstraint[] constraints) {
 		this.id = id;
 		this.name = name;
 		this.type = type;
@@ -43,6 +49,8 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
 		this.iri = iri;
 		this.cascadeTypes = cascadeTypes;
 		this.fetchType = fetchType;
+		this.inferred = inferred;
+		this.constraints = constraints;
 	}
 
 	@Override
@@ -134,5 +142,17 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
 	@Override
 	public String toString() {
 		return "SingularAttribute[" + name + "]";
+	}
+
+	public void setInferred(boolean inferred) {
+		this.inferred = inferred;
+	}
+
+	public boolean isInferred() {
+		return inferred;
+	}
+
+	public ParticipationConstraint[] getConstraints() {
+		return constraints;
 	}
 }

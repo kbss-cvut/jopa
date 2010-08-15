@@ -8,7 +8,7 @@ import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.owlpersistence.model.annotations.Types;
 
-@OWLClass(iri = "http://OWLClassA")
+@OWLClass(iri = "http://new.owl#OWLClassA")
 public class OWLClassA {
 
 	@Types

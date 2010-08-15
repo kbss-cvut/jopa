@@ -6,6 +6,7 @@ import java.util.Set;
 import cz.cvut.kbss.owlpersistence.model.IRI;
 import cz.cvut.kbss.owlpersistence.model.annotations.CascadeType;
 import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
+import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.owlpersistence.model.metamodel.ManagedType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.SetAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Type;
@@ -16,9 +17,10 @@ public class SetAttributeImpl<X, V> extends PluralAttributeImpl<X, Set<V>, V>
 	SetAttributeImpl(ManagedType<X> declaringType, String name, IRI iri,
 			Class<Set<V>> collectionType, Type<V> elementType, Field member,
 			PersistentAttributeType pat, final CascadeType[] cascadeTypes,
-			final FetchType fetchType) {
+			final FetchType fetchType, boolean inferred,
+			ParticipationConstraint[] constraints) {
 		super(declaringType, name, iri, collectionType, elementType, member,
-				pat, cascadeTypes, fetchType);
+				pat, cascadeTypes, fetchType, inferred, constraints);
 	}
 
 	@Override

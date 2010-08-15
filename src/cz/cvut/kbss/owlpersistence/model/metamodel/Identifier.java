@@ -6,4 +6,6 @@ public interface Identifier {
 	public Field getJavaField();
 
 	public void accept(IdentifierVisitor i);
+	
+	public boolean isGenerated();
 }

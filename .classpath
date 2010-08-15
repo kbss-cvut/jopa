@@ -5,11 +5,8 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="lib" path="lib/codemodel-2.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/owldb/owldb-2.0Alpha2.jar" sourcepath="/home/kremen/programs/owldb-2.0Alpha2/src">
-		<attributes>
-			<attribute name="org.eclipse.jst.component.dependency" value="../"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="lib" path="lib/owldb/owldb-2.0Beta1.jar"/>
+	<classpathentry kind="lib" path="dist/owlpersistence-0.2/owlpersistence-agent.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/com.sun.enterprise.jst.server.runtimeTarget/GlassFish v2.1 Java EE 5">
 		<attributes>
 			<attribute name="owner.project.facets" value="jst.utility"/>

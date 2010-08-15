@@ -41,4 +41,7 @@ public interface PropertiesSpecification<X, E> {
 	 */
 	@NonJPA
 	FetchType getFetchType();
+	
+	@NonJPA
+	boolean isInferred();
 }

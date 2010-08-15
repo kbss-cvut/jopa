@@ -21,4 +21,10 @@ public @interface OWLObjectProperty {
 	CascadeType[] cascade() default {};
 
 	FetchType fetch() default FetchType.LAZY;
+	
+	/**
+	 * Denotes a member that is inferred (true) using the OWL reasoner or just
+	 * asserted (false).
+	 */
+	boolean inferred() default false;
 }

@@ -10,6 +10,7 @@ import java.util.Set;
 import cz.cvut.kbss.owlpersistence.model.IRI;
 import cz.cvut.kbss.owlpersistence.model.annotations.CascadeType;
 import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
+import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.owlpersistence.model.metamodel.ManagedType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Type;
@@ -34,10 +35,15 @@ public class PluralAttributeImpl<X, C, E> implements PluralAttribute<X, C, E> {
 
 	private final FetchType fetchType;
 
+	private boolean inferred;
+
+	private ParticipationConstraint[] constraints;
+
 	PluralAttributeImpl(ManagedType<X> declaringType, String name, IRI iri,
 			Class<C> collectionType, Type<E> elementType, Field member,
 			PersistentAttributeType pat, CascadeType[] cascadeTypes,
-			FetchType fetchType) {
+			FetchType fetchType, boolean inferred,
+			ParticipationConstraint[] constraints) {
 		this.name = name;
 		this.elementType = elementType;
 		this.member = member;
@@ -47,6 +53,8 @@ public class PluralAttributeImpl<X, C, E> implements PluralAttribute<X, C, E> {
 		this.iri = iri;
 		this.cascadeTypes = cascadeTypes;
 		this.fetchType = fetchType;
+		this.inferred = inferred;
+		this.constraints = constraints;
 	}
 
 	@Override
@@ -137,5 +145,13 @@ public class PluralAttributeImpl<X, C, E> implements PluralAttribute<X, C, E> {
 	@Override
 	public FetchType getFetchType() {
 		return fetchType;
+	}
+
+	public boolean isInferred() {
+		return inferred;
+	}
+
+	public ParticipationConstraint[] getConstraints() {
+		return constraints;
 	}
 }

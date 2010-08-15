@@ -42,4 +42,6 @@ public interface TypesSpecification<X, E> {
 	 */
 	@NonJPA
 	FetchType getFetchType();
+	
+	boolean isInferred();
 }

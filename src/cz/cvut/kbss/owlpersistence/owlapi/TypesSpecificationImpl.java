@@ -12,15 +12,17 @@ public class TypesSpecificationImpl<X, Y> implements
 	private final FetchType fetchType;
 	private final Field javaField;
 	private Class<Y> javaType;
+	private boolean inferred;
 
 	public TypesSpecificationImpl(final ManagedType<X> declaringType,
 			final FetchType fetchType, final Field javaField,
-			final Class<Y> javaType) {
+			final Class<Y> javaType, boolean inferred) {
 
 		this.declaringType = declaringType;
 		this.fetchType = fetchType;
 		this.javaField = javaField;
 		this.javaType = javaType;
+		this.inferred = inferred;
 	}
 
 	@Override
@@ -41,6 +43,10 @@ public class TypesSpecificationImpl<X, Y> implements
 	@Override
 	public Class<Y> getJavaType() {
 		return javaType;
+	}
+
+	public boolean isInferred() {
+		return inferred;
 	}
 
 }

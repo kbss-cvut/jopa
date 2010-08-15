@@ -5,7 +5,7 @@ package cz.cvut.kbss.owlpersistence.model.annotations;
  * 
  * @author kremen
  */
-public enum OWLSequenceType {
+public enum SequenceType {
 	/**
 	 * Used for simple (nonreferenced) sequences.
 	 * 

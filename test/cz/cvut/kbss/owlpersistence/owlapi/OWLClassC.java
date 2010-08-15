@@ -6,20 +6,20 @@ import java.util.List;
 import cz.cvut.kbss.owlpersistence.model.annotations.Id;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.owlpersistence.model.annotations.OWLSequence;
-import cz.cvut.kbss.owlpersistence.model.annotations.OWLSequenceType;
+import cz.cvut.kbss.owlpersistence.model.annotations.Sequence;
+import cz.cvut.kbss.owlpersistence.model.annotations.SequenceType;
 
-@OWLClass(iri = "http://OWLClassC")
+@OWLClass(iri = "http://new.owl#OWLClassC")
 public class OWLClassC {
 
 	@Id
 	private URI uri;
 
-	@OWLSequence
+	@Sequence
 	@OWLObjectProperty(iri = "http://B-hasReferencedSequence")
 	private List<OWLClassA> referencedList;
 
-	@OWLSequence(type = OWLSequenceType.simple, ObjectPropertyHasNextIRI = "http://B-hasSimpleNext")
+	@Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://B-hasSimpleNext")
 	@OWLObjectProperty(iri = "http://B-hasSimpleSequence")
 	private List<OWLClassA> simplelist;
 

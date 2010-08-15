@@ -12,5 +12,10 @@ import java.lang.annotation.Target;
 public @interface Properties {
 
 	FetchType fetchType() default FetchType.LAZY;
-
+	
+	/**
+	 * Denotes a member that is inferred (true) using the OWL reasoner or just
+	 * asserted (false).
+	 */
+//	boolean inferred() default false;
 }

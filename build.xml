@@ -75,7 +75,7 @@
 		<delete dir="${build.dir}" />
 		<mkdir dir="${build.dir}" />
 
-		<javac srcdir="src" destdir="${build.dir}" optimize="true" compiler="${build.compiler}" excludes="cz/cvut/kbss/owlpersistence/ic/**,cz/cvut/kbss/owlpersistence/owlapi/fresh/**">
+		<javac srcdir="src" destdir="${build.dir}" optimize="true" compiler="${build.compiler}" includes="*.java">
 			<classpath refid="owlpersistence.lib" />
 			<classpath path="${build.dir}" />
 		</javac>

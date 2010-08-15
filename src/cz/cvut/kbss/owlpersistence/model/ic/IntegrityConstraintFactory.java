@@ -16,7 +16,7 @@ public class IntegrityConstraintFactory {
 	public static DataParticipationConstraint MaxDataParticipationConstraint(
 			final OWLClass s, final OWLDataProperty p, final OWLDatatype o,
 			final int card) {
-		return new DataParticipationConstraintImpl(s, p, o, Integer.MIN_VALUE,
+		return new DataParticipationConstraintImpl(s, p, o, 0,
 				card);
 	}
 
@@ -36,7 +36,7 @@ public class IntegrityConstraintFactory {
 			final OWLClass s, final OWLObjectProperty p, final OWLClass o,
 			final int card) {
 		return new ObjectParticipationConstraintImpl(s, p, o,
-				Integer.MIN_VALUE, card);
+				0, card);
 	}
 
 	public static ObjectParticipationConstraint ObjectParticipationConstraint(

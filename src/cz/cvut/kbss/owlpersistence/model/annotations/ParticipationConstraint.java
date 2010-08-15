@@ -33,4 +33,5 @@ public @interface ParticipationConstraint {
 	 * @return maximal cardinality
 	 */
 	int max() default -1;
+	
 }

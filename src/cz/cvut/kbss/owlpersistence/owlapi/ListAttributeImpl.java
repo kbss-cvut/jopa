@@ -6,7 +6,8 @@ import java.util.List;
 import cz.cvut.kbss.owlpersistence.model.IRI;
 import cz.cvut.kbss.owlpersistence.model.annotations.CascadeType;
 import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
-import cz.cvut.kbss.owlpersistence.model.annotations.OWLSequenceType;
+import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.owlpersistence.model.annotations.SequenceType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.ListAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.ManagedType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Type;
@@ -20,16 +21,17 @@ public class ListAttributeImpl<X, V> extends PluralAttributeImpl<X, List<V>, V>
 
 	private final IRI owlPropertyHasContents;
 
-	private final OWLSequenceType owlSequenceType;
+	private final SequenceType owlSequenceType;
 
 	ListAttributeImpl(ManagedType<X> declaringType, String name, IRI iri,
 			Class<List<V>> collectionType, Type<V> elementType, Field member,
 			PersistentAttributeType pat, CascadeType[] cascadetypes,
 			final IRI owlListClass, final IRI owlObjectPropertyHasNext,
-			final IRI owlPropertyHasContent,
-			final OWLSequenceType sequenceType, final FetchType fetchType) {
+			final IRI owlPropertyHasContent, final SequenceType sequenceType,
+			final FetchType fetchType, boolean inferred,
+			ParticipationConstraint[] constraints) {
 		super(declaringType, name, iri, collectionType, elementType, member,
-				pat, cascadetypes, fetchType);
+				pat, cascadetypes, fetchType, inferred, constraints);
 
 		this.owlListClass = owlListClass;
 		this.owlObjectPropertyHasNext = owlObjectPropertyHasNext;
@@ -58,7 +60,7 @@ public class ListAttributeImpl<X, V> extends PluralAttributeImpl<X, List<V>, V>
 	}
 
 	@Override
-	public OWLSequenceType getSequenceType() {
+	public SequenceType getSequenceType() {
 		return owlSequenceType;
 	}
 

@@ -310,14 +310,12 @@
 		<subclass name="org.semanticweb.owlapi.model.OWLIndividual"
 			abstract="true">
 			<subclass name="OWLIndividualImpl" abstract="true">
-				<subclass name="OWLAnonymousIndividualImpl" abstract="true">
-					<subclass name="de.fraunhofer.iitb.owldb.util.OWLAnonymousIndividualFixImpl" >
-						<join fetch="select" table="OWLAnonymousIndividual">
-							<key column="id" />
-	 						<property access="field" generated="never" name="nodeId" unique-key="IndividualUnique" not-null="true"
-								type="de.fraunhofer.iitb.owldb.util.NodeIDStringType" />
-						</join>
-					</subclass>
+				<subclass name="OWLAnonymousIndividualImpl">
+					<join fetch="select" table="OWLAnonymousIndividual">
+						<key column="id" />
+ 						<property access="field" generated="never" name="nodeId" unique-key="IndividualUnique" not-null="true"
+							type="de.fraunhofer.iitb.owldb.util.NodeIDStringType" />
+					</join>
 				</subclass>
 				<subclass name="OWLNamedIndividualImpl" >
 					<join fetch="select" table="OWLNamedIndividual">

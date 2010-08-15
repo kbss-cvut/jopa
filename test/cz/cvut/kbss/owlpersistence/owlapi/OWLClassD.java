@@ -6,14 +6,19 @@ import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
 import cz.cvut.kbss.owlpersistence.model.annotations.Id;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraints;
 
-@OWLClass(iri = "http://OWLClassD")
+@OWLClass(iri = "http://new.owl#OWLClassD")
 public class OWLClassD {
 
 	@Id
 	private URI uri;
 
 	@OWLObjectProperty(iri = "http://hasA", fetch = FetchType.EAGER)
+//	@ParticipationConstraints({
+//		@ParticipationConstraint(owlObjectIRI="http://new.owl#OWLClassA", min=1, max=1)
+//	})
 	private OWLClassA owlClassA;
 
 	/**

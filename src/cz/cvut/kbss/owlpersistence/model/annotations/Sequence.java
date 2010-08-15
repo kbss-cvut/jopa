@@ -8,16 +8,15 @@ import java.lang.annotation.Target;
 
 import cz.cvut.kbss.owlpersistence.model.SequencesVocabulary;
 
-
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface OWLSequence {
+public @interface Sequence {
 
 	/**
 	 * Defines the type of the sequence.
 	 */
-	OWLSequenceType type() default OWLSequenceType.referenced;
+	SequenceType type() default SequenceType.referenced;
 
 	/**
 	 * URI of the class that represents the 'OWLList' concept.
@@ -25,7 +24,7 @@ public @interface OWLSequence {
 	 * Relevant only for REFERENCED type.
 	 */
 	String ClassOWLListIRI() default SequencesVocabulary.s_c_OWLList;
-
+	
 	/**
 	 * URI of the object property that represents the 'hasContents' role.
 	 * 

@@ -10,5 +10,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Types {
+
 	FetchType fetchType() default FetchType.LAZY;
+	
+	/**
+	 * Denotes a member that is inferred (true) using the OWL reasoner or just
+	 * asserted (false).
+	 */
+	boolean inferred() default false;
 }

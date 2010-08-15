@@ -52,7 +52,9 @@ public class DatatypeTransformer {
 	}
 
 	public static Object transform(final OWLLiteral l) {
-		if (l.getDatatype().isBuiltIn())
+		if (l.isOWLStringLiteral()) {
+			return l.getLiteral();
+		} else if (l.getDatatype().isBuiltIn())
 			switch (l.getDatatype().getBuiltInDatatype()) {
 			case XSD_SHORT:
 				return Short.parseShort(l.getLiteral());

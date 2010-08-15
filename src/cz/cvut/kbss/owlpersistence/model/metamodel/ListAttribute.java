@@ -2,7 +2,7 @@ package cz.cvut.kbss.owlpersistence.model.metamodel;
 
 import cz.cvut.kbss.owlpersistence.NonJPA;
 import cz.cvut.kbss.owlpersistence.model.IRI;
-import cz.cvut.kbss.owlpersistence.model.annotations.OWLSequenceType;
+import cz.cvut.kbss.owlpersistence.model.annotations.SequenceType;
 
 /**
  * Instances of the type ListAttribute represent persistent
@@ -17,7 +17,7 @@ public interface ListAttribute<X, E> extends
 		PluralAttribute<X, java.util.List<E>, E> {
 
 	@NonJPA
-	public OWLSequenceType getSequenceType();
+	public SequenceType getSequenceType();
 
 	@NonJPA
 	public IRI getOWLListClass();

@@ -48,9 +48,9 @@ public class QueryImpl implements Query<List<String>> {
 			final List<String> solution = new ArrayList<String>();
 			list.add(solution);
 
+			final ResultBinding<OWLObject> b = i.next();
+			
 			for (final Variable<OWLObject> v : l.getResultVars()) {
-				final ResultBinding<OWLObject> b = i.next();
-
 				final OWLObject o = b.get(v).asGroundTerm().getWrappedObject();
 
 				if (o instanceof OWLLiteral) {

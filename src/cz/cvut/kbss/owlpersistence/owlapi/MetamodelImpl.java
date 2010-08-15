@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,8 +24,12 @@ import cz.cvut.kbss.owlpersistence.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.owlpersistence.model.annotations.OWLSequence;
+import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraints;
+import cz.cvut.kbss.owlpersistence.model.annotations.Sequence;
 import cz.cvut.kbss.owlpersistence.model.annotations.Types;
+import cz.cvut.kbss.owlpersistence.model.ic.IntegrityConstraint;
+import cz.cvut.kbss.owlpersistence.model.ic.IntegrityConstraintFactory;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Attribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EmbeddableType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EntityType;
@@ -76,7 +79,8 @@ public class MetamodelImpl implements Metamodel {
 		final OWLClass c = cls.getAnnotation(OWLClass.class);
 
 		if (c == null) {
-			throw new OWLPersistenceException("The class "+cls+" is not an OWLPersistence entity !");
+			throw new OWLPersistenceException("The class " + cls
+					+ " is not an OWLPersistence entity !");
 		}
 
 		final EntityTypeImpl<X> c2 = new EntityTypeImpl<X>(cls.getSimpleName(),
@@ -110,19 +114,23 @@ public class MetamodelImpl implements Metamodel {
 					throw new OWLPersistenceException(
 							"The Types element must be a set of Strings.");
 				}
-				c2.addDirectTypes(new TypesSpecificationImpl(c2, tt
-						.fetchType(), field, cxx));
+				c2.addDirectTypes(new TypesSpecificationImpl(c2,
+						tt.fetchType(), field, cxx, tt.inferred()));
 				continue;
 			}
 
-			cz.cvut.kbss.owlpersistence.model.annotations.Properties properties = field.getAnnotation(cz.cvut.kbss.owlpersistence.model.annotations.Properties.class);
+			cz.cvut.kbss.owlpersistence.model.annotations.Properties properties = field
+					.getAnnotation(cz.cvut.kbss.owlpersistence.model.annotations.Properties.class);
 			if (properties != null) {
 				if (!Map.class.isAssignableFrom(field.getType())) {
 					throw new OWLPersistenceException(
 							"The Types element must be a Map<String,Set<String>>.");
 				}
-				c2.addOtherProperties(new PropertiesSpecificationImpl(c2, properties
-						.fetchType(), field, cxx));
+				c2.addOtherProperties(new PropertiesSpecificationImpl(c2,
+						properties.fetchType(), field, cxx, true)); // only
+																	// inferred
+				// @Properties annotation is supported to preserve Domain/Range
+				// constraints
 				continue;
 			}
 
@@ -137,6 +145,21 @@ public class MetamodelImpl implements Metamodel {
 			IRI iri = null;
 			CascadeType[] cascadeTypes = new CascadeType[] {};
 			FetchType fetchType = FetchType.LAZY;
+			boolean inferred = false;
+
+			ParticipationConstraint[] ics = null;
+			ParticipationConstraints cons = field
+					.getAnnotation(ParticipationConstraints.class);
+			if (cons != null) {
+				if ( cons.value() != null ) {
+					ics = cons.value();
+				}				
+			}
+
+			if ( ics ==null) {
+			ics = new ParticipationConstraint[]{};
+			}
+
 
 			if (oop != null) {
 				if (LOG.isLoggable(Level.FINE)) {
@@ -147,6 +170,7 @@ public class MetamodelImpl implements Metamodel {
 				cascadeTypes = oop.cascade();
 				processOWLClass(cxx);
 				type = typeMap.get(cxx);
+				inferred = oop.inferred();
 			} else if (odp != null) {
 				if (LOG.isLoggable(Level.FINE)) {
 					LOG.fine("     Data property: " + odp);
@@ -154,6 +178,7 @@ public class MetamodelImpl implements Metamodel {
 				t = PersistentAttributeType.DATA;
 				iri = IRI.create(odp.iri());
 				type = BasicTypeImpl.get(cxx);
+				inferred = odp.inferred();
 			} else if (oap != null) {
 				if (LOG.isLoggable(Level.FINE)) {
 					LOG.fine("     Annotation property: " + oap);
@@ -161,17 +186,18 @@ public class MetamodelImpl implements Metamodel {
 				t = PersistentAttributeType.ANNOTATION;
 				iri = IRI.create(oap.iri());
 				type = BasicTypeImpl.get(cxx);
+				inferred = oap.inferred();
 			}
 
 			final Attribute<X, ?> a;
 
 			if (t != null) {
 				if (field.getType().isAssignableFrom(List.class)) {
-					final OWLSequence os = field
-							.getAnnotation(OWLSequence.class);
+					final Sequence os = field.getAnnotation(Sequence.class);
 
 					if (os == null) {
-						throw new OWLPersistenceException("Expected OWLSequence annotation.");
+						throw new OWLPersistenceException(
+								"Expected OWLSequence annotation.");
 					}
 
 					a = new ListAttributeImpl(c2, field.getName(), iri,
@@ -179,16 +205,18 @@ public class MetamodelImpl implements Metamodel {
 									.create(os.ClassOWLListIRI()), IRI
 									.create(os.ObjectPropertyHasNextIRI()), IRI
 									.create(os.ObjectPropertyHasContentsIRI()),
-							os.type(), fetchType);
+							os.type(), fetchType, inferred,ics);
 				} else if (field.getType().isAssignableFrom(Set.class)) {
 					processOWLClass(cxx);
 					a = new SetAttributeImpl(c2, field.getName(), iri,
-							Set.class, type, field, t, cascadeTypes, fetchType);
+							Set.class, type, field, t, cascadeTypes, fetchType,
+							inferred,ics);
 				} else if (field.getType().isAssignableFrom(Map.class)) {
 					throw new IllegalArgumentException("NOT YET SUPPORTED");
 				} else {
 					a = new SingularAttributeImpl(c2, false, field.getName(),
-							iri, type, field, t, cascadeTypes, fetchType);
+							iri, type, field, t, cascadeTypes, fetchType,
+							inferred,ics);
 				}
 				c2.addDeclaredAttribute(field.getName(), a);
 
@@ -203,7 +231,7 @@ public class MetamodelImpl implements Metamodel {
 				if (!validIdClasses.contains(field.getType())) {
 					throw new IllegalArgumentException("NOT YET SUPPORTED");
 				}
-				c2.setIdentifier(new IRIIdentifierImpl(field));
+				c2.setIdentifier(new IRIIdentifierImpl(field, id.generated()));
 			}
 		}
 
