@@ -118,6 +118,14 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	private String lang = "en";
 	private EntityTransaction tx = null;
 
+	public OWLOntology getWorkingOntology() {
+		return workingOnt;
+	}
+	
+	public OWLReasoner getReasoner() {
+		return r;
+	}
+	
 	public EntityManagerImpl(EntityManagerFactoryImpl emf,
 			Map<String, String> map) {
 		this.emf = emf;

@@ -197,7 +197,7 @@ public class MetamodelImpl implements Metamodel {
 
 					if (os == null) {
 						throw new OWLPersistenceException(
-								"Expected OWLSequence annotation.");
+								"Expected OWLSequence annotation for " + field.getName());
 					}
 
 					a = new ListAttributeImpl(c2, field.getName(), iri,
