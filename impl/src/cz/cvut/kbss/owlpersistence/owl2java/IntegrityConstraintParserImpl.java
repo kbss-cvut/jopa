@@ -820,11 +820,13 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 			
 			@Override
 			public Card getCard() {
+				System.out.println("GETCARD clazz="+clazz+", prop="+prop+" ics="+ics);
 				if (ics.isEmpty()) {
 					return Card.NO;
 				}
 
 				for (ObjectParticipationConstraint opc : getParticipationConstraints()) {
+					System.out.println("   OPC=" + opc.getSubject() + " : " + opc.getPredicate() + " : " + opc.getMin() + " : " + opc.getMax() );
 					if (!clazz.equals(opc.getSubject())
 							&& prop.equals(opc.getPredicate())) {
 						continue;
@@ -844,8 +846,10 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 
 			@Override
 			public OWLClass getFiller() {
+				System.out.println("GETFILLER clazz="+clazz+", prop="+prop+" ics="+ics);
 				for( final IntegrityConstraint ic : ics ) {
 					if ( ic instanceof ObjectRangeConstraint ) {
+						System.out.println("         FOUND OR clazz="+((ObjectRangeConstraint) ic).getRange());
 						return ((ObjectRangeConstraint) ic).getRange();
 					}
 				}
