@@ -8,7 +8,6 @@ import java.util.Set;
 import cz.cvut.kbss.owlpersistence.model.IRI;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Attribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.CollectionAttribute;
-import cz.cvut.kbss.owlpersistence.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EntityType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.IdentifiableType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Identifier;
@@ -18,6 +17,7 @@ import cz.cvut.kbss.owlpersistence.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.owlpersistence.model.metamodel.SetAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.SingularAttribute;
+import cz.cvut.kbss.owlpersistence.model.metamodel.TypesSpecification;
 
 public class EntityTypeImpl<X> implements EntityType<X> {
 

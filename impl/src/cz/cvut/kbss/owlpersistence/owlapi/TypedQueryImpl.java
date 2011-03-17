@@ -7,10 +7,10 @@ import java.util.List;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObject;
 
-import cz.cvut.kbss.owl2query.simpleversion.engine.OWL2QueryEngine;
-import cz.cvut.kbss.owl2query.simpleversion.model.OWL2Ontology;
-import cz.cvut.kbss.owl2query.simpleversion.model.QueryResult;
-import cz.cvut.kbss.owl2query.simpleversion.model.ResultBinding;
+import cz.cvut.kbss.owl2query.engine.OWL2QueryEngine;
+import cz.cvut.kbss.owl2query.model.OWL2Ontology;
+import cz.cvut.kbss.owl2query.model.QueryResult;
+import cz.cvut.kbss.owl2query.model.ResultBinding;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.model.query.Query;
 import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;

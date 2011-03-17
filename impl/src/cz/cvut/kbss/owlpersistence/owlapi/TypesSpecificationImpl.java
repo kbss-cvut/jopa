@@ -3,8 +3,8 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 import java.lang.reflect.Field;
 
 import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
-import cz.cvut.kbss.owlpersistence.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.owlpersistence.model.metamodel.ManagedType;
+import cz.cvut.kbss.owlpersistence.model.metamodel.TypesSpecification;
 
 public class TypesSpecificationImpl<X, Y> implements
 		TypesSpecification<X, Y> {

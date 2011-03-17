@@ -7,5 +7,10 @@
         <wb-resource deploy-path="/" source-path="/test"/>
         <wb-resource deploy-path="/" source-path="/eclipselink"/>
         <wb-resource deploy-path="/" source-path="/mock"/>
+        <wb-resource deploy-path="/" source-path="/owl2java/src"/>
+        <wb-resource deploy-path="/" source-path="/impl/src"/>
+        <wb-resource deploy-path="/" source-path="/api/src"/>
+        <wb-resource deploy-path="/" source-path="/owlapi-utils/src"/>
+        <wb-resource deploy-path="/" source-path="/owldb/src"/>
     </wb-module>
 </project-modules>

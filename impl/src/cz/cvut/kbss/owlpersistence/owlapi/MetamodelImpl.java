@@ -28,14 +28,12 @@ import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.owlpersistence.model.annotations.Sequence;
 import cz.cvut.kbss.owlpersistence.model.annotations.Types;
-import cz.cvut.kbss.owlpersistence.model.ic.IntegrityConstraint;
-import cz.cvut.kbss.owlpersistence.model.ic.IntegrityConstraintFactory;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Attribute;
+import cz.cvut.kbss.owlpersistence.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EmbeddableType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EntityType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.ManagedType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
-import cz.cvut.kbss.owlpersistence.model.metamodel.Attribute.PersistentAttributeType;
 
 public class MetamodelImpl implements Metamodel {
 

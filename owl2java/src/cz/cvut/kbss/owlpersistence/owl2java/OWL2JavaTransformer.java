@@ -612,8 +612,6 @@ public class OWL2JavaTransformer {
 				final ClassDataPropertyComputer comp = context.parser
 						.getClassDataPropertyComputer(clazz, prop, merged);
 
-				System.out.println("DP: " + prop);
-				
 				if (Card.NO.equals(comp.getCard())) {
 					continue;
 				}

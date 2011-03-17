@@ -48,26 +48,23 @@ import org.semanticweb.owlapi.model.OWLOntologyChangeVisitor;
 import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
-import org.semanticweb.owlapi.model.OWLStringLiteral;
-import org.semanticweb.owlapi.model.OWLTypedLiteral;
 import org.semanticweb.owlapi.model.RemoveAxiom;
 import org.semanticweb.owlapi.model.RemoveImport;
 import org.semanticweb.owlapi.model.RemoveOntologyAnnotation;
 import org.semanticweb.owlapi.model.SetOntologyID;
 import org.semanticweb.owlapi.model.UnknownOWLOntologyException;
+import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
-import org.semanticweb.owlapi.reasoner.OWLReasonerException;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
-import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
-import cz.cvut.kbss.owl2query.simpleversion.engine.OWL2QueryEngine;
-import cz.cvut.kbss.owl2query.simpleversion.model.OWL2Ontology;
-import cz.cvut.kbss.owl2query.simpleversion.model.owlapi.OWLAPIv3OWL2Ontology;
-import cz.cvut.kbss.owl2query.simpleversion.model.owlapi.OWLAPIv3QueryFactory;
+import cz.cvut.kbss.owl2query.engine.OWL2QueryEngine;
+import cz.cvut.kbss.owl2query.model.OWL2Ontology;
+import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3OWL2Ontology;
+import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3QueryFactory;
 import cz.cvut.kbss.owlpersistence.model.EntityTransaction;
 import cz.cvut.kbss.owlpersistence.model.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
@@ -86,7 +83,6 @@ import cz.cvut.kbss.owlpersistence.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.owlpersistence.model.query.Query;
 import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
 import cz.cvut.kbss.owlpersistence.util.MappingFileParser;
-import de.fraunhofer.iitb.owldb.OWLDBManager;
 
 public class EntityManagerImpl extends AbstractEntityManager {
 
@@ -157,52 +153,38 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 			if (dbConnection != null) {
 				LOG.info("Using database backend: " + dbConnection);
-				this.m = OWLDBManager
-						.createOWLOntologyManager(OWLDataFactoryImpl
-								.getInstance());
-				this.f = m.getOWLDataFactory();
+				// TODO
+//				this.m = Class.forName(OWLDBManagerclassName) 
+//						.createOWLOntologyManager(OWLDataFactoryImpl
+//								.getInstance());
 
-				final Map<URI, URI> mapping = getMappings(mappingFileURI);
-				LOG.info("Found mappings = " + mapping);
-
-				m.addIRIMapper(new OWLOntologyIRIMapper() {
-					@Override
-					public IRI getDocumentIRI(IRI arg0) {
-						if (!mapping.containsKey(arg0.toURI())) {
-							return arg0;
-						}
-
-						return IRI.create(mapping.get(arg0.toURI()));
-					}
-				});
-				LOG.info("Mapping file succesfully parsed.");
-				workingOnt = m.loadOntology(IRI.create(dbConnection));
-				reasoningOnt = new OWLOntologyMerger(m).createMergedOntology(m,
-						IRI.create("http://temporary"));
-				LOG.info("Ontology " + ontologyURI + " succesfully loaded.");
-				LOG.info("INDS: "
-						+ workingOnt.getIndividualsInSignature().size());
-				m.saveOntology(workingOnt);
 			} else {
 				this.m = OWLManager.createOWLOntologyManager();
-				this.f = m.getOWLDataFactory();
+			}
 
-				final Map<URI, URI> mapping = getMappings(mappingFileURI);
-				LOG.info("Found mappings = " + mapping);
+			this.f = m.getOWLDataFactory();
 
-				m.addIRIMapper(new OWLOntologyIRIMapper() {
+			final Map<URI, URI> mapping = getMappings(mappingFileURI);
+			LOG.info("Found mappings = " + mapping);
 
-					@Override
-					public IRI getDocumentIRI(IRI arg0) {
-						if (!mapping.containsKey(arg0.toURI())) {
-							return arg0;
-						}
-
-						return IRI.create(mapping.get(arg0.toURI()));
+			m.addIRIMapper(new OWLOntologyIRIMapper() {
+				@Override
+				public IRI getDocumentIRI(IRI arg0) {
+					if (!mapping.containsKey(arg0.toURI())) {
+						return arg0;
 					}
-				});
-				LOG.info("Mapping file succesfully parsed.");
 
+					return IRI.create(mapping.get(arg0.toURI()));
+				}
+			});
+			LOG.info("Mapping file succesfully parsed.");
+
+			if (dbConnection != null) {
+				// workingOnt = m.loadOntology(IRI.create(dbConnection));
+				// LOG.info("INDS: "
+				// + workingOnt.getIndividualsInSignature().size());
+				// m.saveOntology(workingOnt);
+			} else {
 				URI physicalURI = mapping.get(URI.create(ontologyURI));
 
 				if (physicalURI == null) {
@@ -218,16 +200,16 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				} else {
 					workingOnt = m.loadOntology(IRI.create(ontologyURI));
 				}
-				reasoningOnt = new OWLOntologyMerger(m).createMergedOntology(m,
-						IRI.create("http://temporary"));
-				LOG.info("Ontology " + ontologyURI + " succesfully loaded.");
 			}
+			reasoningOnt = new OWLOntologyMerger(m).createMergedOntology(m, IRI
+					.create("http://temporary"));
+			LOG.info("Ontology " + ontologyURI + " succesfully loaded.");
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, null, e);
 		}
 		try {
 			r = rf.createReasoner(reasoningOnt);
-			r.prepareReasoner();
+			r.precomputeInferences(InferenceType.CLASS_ASSERTIONS);
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
 		}
@@ -761,17 +743,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		String lang = null;
 
 		@Override
-		public void visit(OWLStringLiteral sl) {
-			value = sl.getLiteral();
-			lang = sl.getLang();
-		}
-
-		@Override
-		public void visit(OWLTypedLiteral sl) {
-			value = sl.getLiteral();
-		}
-
-		@Override
 		public void visit(OWLAnonymousIndividual arg0) {
 			// not supported - silently ignore
 		}
@@ -789,6 +760,11 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			return lang;
 		}
 
+		@Override
+		public void visit(OWLLiteral sl) {
+			value = sl.getLiteral();
+			lang = sl.getLang();
+		}
 	}
 
 	synchronized void addChanges(final Collection<OWLOntologyChange> c) {
@@ -961,10 +937,12 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	private IRI createNewID(final String name) {
-//		System.out.println("CREATING NEW ID=" + name);
-//		System.out.println("    workingOnt=" + workingOnt);
-//		System.out.println("    workingOnt.getOntologyID=" + workingOnt.getOntologyID());
-//		System.out.println("    workingOnt.getOntologyID.getOntologyIRI=" + workingOnt.getOntologyID());
+		// System.out.println("CREATING NEW ID=" + name);
+		// System.out.println("    workingOnt=" + workingOnt);
+		// System.out.println("    workingOnt.getOntologyID=" +
+		// workingOnt.getOntologyID());
+		// System.out.println("    workingOnt.getOntologyID.getOntologyIRI=" +
+		// workingOnt.getOntologyID());
 		final String base = workingOnt.getOntologyID().getOntologyIRI()
 				.toString()
 				+ "#i_" + name;
@@ -1102,11 +1080,11 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 		OWL2Datatype v = OWL2Datatype.XSD_STRING;
 
-		if (c.isOWLTypedLiteral()) {
+		if (!c.isRDFPlainLiteral()) {
 			if (LOG.isLoggable(Level.CONFIG)) {
-				LOG.config("Datatype : " + c.asOWLTypedLiteral().getDatatype());
+				LOG.config("Datatype : " + c.getDatatype());
 			}
-			v = c.asOWLTypedLiteral().getDatatype().getBuiltInDatatype();
+			v = c.getDatatype().getBuiltInDatatype();
 		}
 
 		Object o = DatatypeTransformer.transform(c);

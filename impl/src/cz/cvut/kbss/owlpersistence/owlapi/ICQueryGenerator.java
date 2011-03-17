@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.semanticweb.owlapi.model.OWLObject;
 
-import cz.cvut.kbss.owl2query.simpleversion.model.OWL2Ontology;
-import cz.cvut.kbss.owl2query.simpleversion.model.OWL2Query;
-import cz.cvut.kbss.owl2query.simpleversion.model.OWL2QueryFactory;
-import cz.cvut.kbss.owl2query.simpleversion.model.Term;
-import cz.cvut.kbss.owl2query.simpleversion.model.Variable;
+import cz.cvut.kbss.owl2query.model.OWL2Ontology;
+import cz.cvut.kbss.owl2query.model.OWL2Query;
+import cz.cvut.kbss.owl2query.model.OWL2QueryFactory;
+import cz.cvut.kbss.owl2query.model.Term;
+import cz.cvut.kbss.owl2query.model.Variable;
 import cz.cvut.kbss.owlpersistence.model.ic.DataDomainConstraint;
 import cz.cvut.kbss.owlpersistence.model.ic.DataParticipationConstraint;
 import cz.cvut.kbss.owlpersistence.model.ic.DataRangeConstraint;

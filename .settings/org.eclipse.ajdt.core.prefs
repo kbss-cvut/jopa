@@ -39,3 +39,4 @@ org.aspectj.ajdt.core.complier.lint.aspectExcludedByConfiguration=ignore
 org.eclipse.ajdt.core.builder.incrementalCompilationOptimizations=true
 org.eclipse.ajdt.core.compiler.nonStandardOptions=
 org.eclipse.ajdt.core.compiler.useProjectSettings=true
+org.eclipse.ajdt.ui.outJar=dist/jopa.jar 
