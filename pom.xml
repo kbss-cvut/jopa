@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>cz.cvut.kbss</groupId>
+	<artifactId>jopa</artifactId>
+	<packaging>pom</packaging>
+	<version>0.3</version>
+	<name>Jopa - main project</name>
+	<url>http://sourceforge.net/projects/jopa</url>
+
+	<modules>
+		<module>api</module>
+		<module>owlapi-utils</module>
+		<module>impl</module>
+	</modules>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/copyleft/lesser.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<build>
+		<finalName>jopa-${project.version}</finalName>
+		<directory>target</directory>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<aggregate>true</aggregate>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2.1</version>
+				<configuration>
+					<descriptors>
+						<descriptor>jopa-bin.xml</descriptor>
+					</descriptors>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<!-- Generate one javadoc for everything -->
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<aggregate>true</aggregate>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
+
+	<scm>
+		<connection>scm:svn:https://krizik.felk.cvut.cz/svnkbss/projects/jopa/trunk/</connection>
+		<developerConnection>scm:svn:https://krizik.felk.cvut.cz/svnkbss/projects/jopa/trunk/</developerConnection>
+		<url>https://krizik.felk.cvut.cz/svnkbss/projects/jopa/trunk/</url>
+	</scm>
+</project>
