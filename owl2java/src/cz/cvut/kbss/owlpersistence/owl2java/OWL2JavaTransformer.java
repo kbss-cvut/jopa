@@ -22,7 +22,6 @@ import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChangeException;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
@@ -104,15 +103,12 @@ public class OWL2JavaTransformer {
 			return name;
 		}
 
-		
 		public void visit(IRI iri) {
 		}
 
-		
 		public void visit(OWLAnonymousIndividual individual) {
 		}
 
-		
 		public void visit(OWLLiteral literal) {
 			name = literal.getLiteral();
 		}
@@ -120,94 +116,91 @@ public class OWL2JavaTransformer {
 
 	private final ValidContextAnnotationValueVisitor v = new ValidContextAnnotationValueVisitor();
 
-	public OWL2JavaTransformer(final String owlOntologyName,
-			final String mappingFile) {
-		try {
-			// reader
-			final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
+	public void setOntology(final OWLOntology merged, boolean includeImports) {
 
-			if (mappingFile != null) {
-				LOG.info("Using mapping file '" + mappingFile + "'.");
+		f = merged.getOWLOntologyManager().getOWLDataFactory();
 
-				final Map<URI, URI> map = MappingFileParser
-						.getMappings(new File(mappingFile));
-				m.addIRIMapper(new OWLOntologyIRIMapper() {
+		LOG.info("Parsing integrity constraints");
+		// final IntegrityConstraintParserImpl icp = new
+		// IntegrityConstraintParserImpl();
 
-					
-					public org.semanticweb.owlapi.model.IRI getDocumentIRI(
-							org.semanticweb.owlapi.model.IRI ontologyIRI) {
-						final URI value = map.get(ontologyIRI.toURI());
+		// final Set<OWLAxiom> ics = new HashSet<OWLAxiom>();
 
-						if (value == null) {
-							return null;
-						} else {
-							return org.semanticweb.owlapi.model.IRI
-									.create(value);
-						}
-					}
-				});
-				LOG.info("Mapping file succesfully parsed.");
+		for (final OWLAxiom a : merged.getAxioms()) {
+			for (final OWLAnnotation p : a.getAnnotations()) {
+				if (!p.getProperty().getIRI().equals(pIsIntegrityConstraintFor)) {
+					continue;
+				}
+
+				p.getValue().accept(v);
+				final String icContextName = v.getName();
+				if (icContextName == null) {
+					continue;
+				}
+
+				ContextDefinition ctx = contexts.get(icContextName);
+
+				if (ctx == null) {
+					ctx = new ContextDefinition();
+					contexts.put(icContextName, ctx);
+				}
+
+				LOG.config("Found IC " + a + " for context " + icContextName);
+				ctx.classes.addAll(a.getClassesInSignature());
+				ctx.objectProperties.addAll(a.getObjectPropertiesInSignature());
+				ctx.dataProperties.addAll(a.getDataPropertiesInSignature());
+				ctx.axioms.add(a);
+				// ics.add(a);
 			}
+		}
 
-			LOG.info("Loading ontology " + owlOntologyName + " ... ");
-			m.setSilentMissingImportsHandling(false);
+		for (final ContextDefinition ctx : contexts.values()) {
+			ctx.parser.parse();
+		}
+
+		LOG.info("Integrity constraints succesfully parsed.");
+	}
+
+	public void setOntology(final String owlOntologyName,
+			final String mappingFile, boolean includeImports) {
+		// reader
+		final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
+
+		if (mappingFile != null) {
+			LOG.info("Using mapping file '" + mappingFile + "'.");
+
+			final Map<URI, URI> map = MappingFileParser.getMappings(new File(
+					mappingFile));
+			m.addIRIMapper(new OWLOntologyIRIMapper() {
+
+				public org.semanticweb.owlapi.model.IRI getDocumentIRI(
+						org.semanticweb.owlapi.model.IRI ontologyIRI) {
+					final URI value = map.get(ontologyIRI.toURI());
+
+					if (value == null) {
+						return null;
+					} else {
+						return org.semanticweb.owlapi.model.IRI.create(value);
+					}
+				}
+			});
+			LOG.info("Mapping file succesfully parsed.");
+		}
+
+		LOG.info("Loading ontology " + owlOntologyName + " ... ");
+		m.setSilentMissingImportsHandling(false);
+
+		try {
 			m.loadOntology(org.semanticweb.owlapi.model.IRI
 					.create(owlOntologyName));
 			merged = new OWLOntologyMerger(m)
 					.createMergedOntology(m, org.semanticweb.owlapi.model.IRI
 							.create("http://generated"));
-
-			f = m.getOWLDataFactory();
-
-			LOG.info("Parsing integrity constraints");
-			// final IntegrityConstraintParserImpl icp = new
-			// IntegrityConstraintParserImpl();
-
-			// final Set<OWLAxiom> ics = new HashSet<OWLAxiom>();
-
-			for (final OWLAxiom a : merged.getAxioms()) {
-				for (final OWLAnnotation p : a.getAnnotations()) {
-					if (!p.getProperty().getIRI().equals(
-							pIsIntegrityConstraintFor)) {
-						continue;
-					}
-
-					p.getValue().accept(v);
-					final String icContextName = v.getName();
-					if (icContextName == null) {
-						continue;
-					}
-
-					ContextDefinition ctx = contexts.get(icContextName);
-
-					if (ctx == null) {
-						ctx = new ContextDefinition();
-						contexts.put(icContextName, ctx);
-					}
-
-					LOG.config("Found IC " + a + " for context "
-							+ icContextName);
-					ctx.classes.addAll(a.getClassesInSignature());
-					ctx.objectProperties.addAll(a
-							.getObjectPropertiesInSignature());
-					ctx.dataProperties.addAll(a.getDataPropertiesInSignature());
-					ctx.axioms.add(a);
-					// ics.add(a);
-				}
-			}
-
-			for (final ContextDefinition ctx : contexts.values()) {
-				ctx.parser.parse();
-			}
-
-			LOG.info("Integrity constraints succesfully parsed.");
-		} catch (OWLOntologyChangeException e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
 		} catch (OWLOntologyCreationException e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
-		} catch (UnsupportedICException e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
 		}
+
+		setOntology(merged, includeImports);
 	}
 
 	private JFieldVar addField(final String name, final JDefinedClass cls,
@@ -245,9 +238,8 @@ public class OWL2JavaTransformer {
 		try {
 			cls = cm._class(name);
 
-			cls
-					.annotate(
-							cz.cvut.kbss.owlpersistence.model.annotations.OWLClass.class)
+			cls.annotate(
+					cz.cvut.kbss.owlpersistence.model.annotations.OWLClass.class)
 					.param("iri", entities.get(clazz));
 
 			final JDocComment dc = cls.javadoc();
@@ -270,7 +262,7 @@ public class OWL2JavaTransformer {
 			final JClass ftId = cm.ref(String.class);
 			final JFieldVar fvId = addField("id", cls, ftId);
 			JAnnotationUse a = fvId.annotate(Id.class);
-			
+
 			a.param("generated", true);
 
 			// @Properties public final Map<String,Set<String>> properties;
@@ -329,8 +321,10 @@ public class OWL2JavaTransformer {
 		for (final OWLEntity c : col) {
 			String prefix = "";
 
-			if (c.isOWLClass() || c.isOWLDatatype()) {
+			if (c.isOWLClass()) {
 				prefix = "c_";
+			} else if (c.isOWLDatatype()) {
+				prefix = "d_";
 			} else if (c.isOWLDataProperty() || c.isOWLObjectProperty()
 					|| c.isOWLAnnotationProperty()) {
 				prefix = "p_";
@@ -352,8 +346,8 @@ public class OWL2JavaTransformer {
 			final String sFieldName = "s_" + id;
 
 			final JFieldVar fv1 = voc.field(JMod.PUBLIC | JMod.STATIC
-					| JMod.FINAL, String.class, sFieldName, JExpr.lit(c
-					.getIRI().toString()));
+					| JMod.FINAL, String.class, sFieldName,
+					JExpr.lit(c.getIRI().toString()));
 			voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class, id, cm
 					.ref(IRI.class).staticInvoke("create").arg(fv1));
 
@@ -382,7 +376,7 @@ public class OWL2JavaTransformer {
 	// this.max = max;
 	// }
 	//
-	// 
+	//
 	// public void visit(ObjectParticipationConstraint cpc) {
 	// // if (!r.isEntailed(f.getOWLSubClassOfAxiom(s, cpc.getSubject()))
 	// // || !r.isEntailed(f.getOWLSubObjectPropertyOfAxiom(po, cpc
@@ -403,7 +397,7 @@ public class OWL2JavaTransformer {
 	// }
 	// }
 	//
-	// 
+	//
 	// public void visit(DataParticipationConstraint cpc) {
 	// // if (!r.isEntailed(f.getOWLSubClassOfAxiom(s, cpc.getSubject()))
 	// // || !r.isEntailed(f.getOWLSubDataPropertyOfAxiom(pd, cpc
@@ -557,14 +551,14 @@ public class OWL2JavaTransformer {
 			for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
 
 				final ClassObjectPropertyComputer comp = context.parser
-						.getClassObjectPropertyComputer(clazz, prop,merged);
+						.getClassObjectPropertyComputer(clazz, prop, merged);
 
 				if (Card.NO.equals(comp.getCard())) {
 					continue;
 				}
 
-				final JDefinedClass obj = ensureCreated(context, pkg, cm, comp
-						.getFiller());
+				final JDefinedClass obj = ensureCreated(context, pkg, cm,
+						comp.getFiller());
 
 				final String fieldName = validJavaID(prop.getIRI()
 						.getFragment());
@@ -594,9 +588,9 @@ public class OWL2JavaTransformer {
 					JAnnotationUse u = use.annotate(
 							ParticipationConstraint.class).param(
 					// "owlClassIRI",
-							// ic.getSubject().getIRI().toString()).param(
-							// "owlPropertyIRI",
-							// ic.getPredicate().getIRI().toString()).param(
+					// ic.getSubject().getIRI().toString()).param(
+					// "owlPropertyIRI",
+					// ic.getPredicate().getIRI().toString()).param(
 							"owlObjectIRI", entities.get(ic.getObject()));
 					if (ic.getMin() != 0) {
 						u = u.param("min", ic.getMin());
@@ -644,12 +638,13 @@ public class OWL2JavaTransformer {
 						use = fv.annotate(ParticipationConstraints.class)
 								.paramArray("value");
 					}
-					JAnnotationUse u = use.annotate(ParticipationConstraint.class).param(
+					JAnnotationUse u = use.annotate(
+							ParticipationConstraint.class).param(
 					// "owlClassIRI",
-							// ic.getSubject().getIRI().toString()).param(
-							// "owlPropertyIRI",
-							// ic.getPredicate().getIRI().toString()).param(
-							"owlObjectIRI", ic.getObject().getIRI().toString());
+					// ic.getSubject().getIRI().toString()).param(
+					// "owlPropertyIRI",
+					// ic.getPredicate().getIRI().toString()).param(
+							"owlObjectIRI", entities.get(ic.getObject()));
 					if (ic.getMin() != 0) {
 						u = u.param("min", ic.getMin());
 					}

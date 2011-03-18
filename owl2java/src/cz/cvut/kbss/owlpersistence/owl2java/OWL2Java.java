@@ -14,7 +14,7 @@ public class OWL2Java {
 	private static final Logger LOG = Logger
 			.getLogger(OWL2Java.class.getName());
 
-	public static final String VERSION = "0.1";
+	public static final String VERSION = "0.2";
 
 	// CLI map
 	private static final Map<COMMAND, OptionParser> map = new HashMap<COMMAND, OptionParser>();
@@ -34,8 +34,8 @@ public class OWL2Java {
 						.defaultsTo("generated");
 				accepts("c", "context name").withRequiredArg().ofType(
 						String.class);
-				accepts("d", "output directory").withRequiredArg().ofType(
-						String.class).defaultsTo(".");
+				accepts("d", "output directory").withRequiredArg()
+						.ofType(String.class).defaultsTo(".");
 			}
 		});
 		map.put(COMMAND.list, new OptionParser() {
@@ -115,31 +115,36 @@ public class OWL2Java {
 
 			break;
 		case list:
+			oj = new OWL2JavaTransformer();
 			if (os.has("m")) {
-				oj = new OWL2JavaTransformer(os.nonOptionArguments().get(
-						os.nonOptionArguments().size() - 1), os.valueOf("m")
-						.toString());
+				oj.setOntology(
+						os.nonOptionArguments().get(
+								os.nonOptionArguments().size() - 1), os
+								.valueOf("m").toString(), true);
 			} else {
-				oj = new OWL2JavaTransformer(os.nonOptionArguments().get(
-						os.nonOptionArguments().size() - 1), null);
+				oj.setOntology(
+						os.nonOptionArguments().get(
+								os.nonOptionArguments().size() - 1), null, true);
 			}
 
 			LOG.info("Available contexts: " + oj.listContexts());
 			break;
 		case transform:
 			if (!os.has("c")) {
-				LOG
-						.severe("The parameter '-c' is obligatory. Try the 'help' command for more details.");
+				LOG.severe("The parameter '-c' is obligatory. Try the 'help' command for more details.");
 				break;
 			}
 
+			oj = new OWL2JavaTransformer();
 			if (os.has("m")) {
-				oj = new OWL2JavaTransformer(os.nonOptionArguments().get(
-						os.nonOptionArguments().size() - 1), os.valueOf("m")
-						.toString());
+				oj.setOntology(
+						os.nonOptionArguments().get(
+								os.nonOptionArguments().size() - 1), os
+								.valueOf("m").toString(), true);
 			} else {
-				oj = new OWL2JavaTransformer(os.nonOptionArguments().get(
-						os.nonOptionArguments().size() - 1), null);
+				oj.setOntology(
+						os.nonOptionArguments().get(
+								os.nonOptionArguments().size() - 1), null, true);
 			}
 
 			if (!oj.listContexts().contains(os.valueOf("c"))) {
