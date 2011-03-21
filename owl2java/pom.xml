@@ -4,7 +4,7 @@
 
 	<groupId>cz.cvut.kbss</groupId>
 	<artifactId>jopa-owl2java</artifactId>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.2</version>
 	<packaging>jar</packaging>
 
 	<name>jopa:owl2java</name>

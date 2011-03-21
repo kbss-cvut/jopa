@@ -1,33 +1,53 @@
 <?xml version="1.0"?>
 <assembly>
-    <id>bin</id>
-    <formats>
-        <format>zip</format>
-    </formats>
-    <includeBaseDirectory>false</includeBaseDirectory>
-    <moduleSets>
-        <moduleSet>
-            <includes>
-                <!-- Modules to include in assembly -->
-                <include>jopa:api</include>
-                <include>jopa:impl</include>
-                <include>jopa:owl2java</include>
-                <include>jopa:owlapi-utils</include>
-            </includes>
-            <binaries>
-                <includeDependencies>false</includeDependencies>
-                <unpack>false</unpack>
-                <outputFileNameMapping>jopa-${artifactId}.${extension}</outputFileNameMapping>
-                 <dependencySets>
-                    <dependencySet>
-                        <outputDirectory>/</outputDirectory>
-                        <includes>
-                            <include>commons-lang:commons-lang</include>
-                            <include>antlr-runtime:antlr-runtime</include>
-                        </includes>
-                    </dependencySet>
-                </dependencySets>
-            </binaries>
-        </moduleSet>
-    </moduleSets>
+	<id>bin</id>
+	<formats>
+		<format>zip</format>
+		<format>tar.gz</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+	<moduleSets>
+		<moduleSet>
+
+			<!-- Enable access to all projects in the current multimodule build! -->
+			<useAllReactorProjects>true</useAllReactorProjects>
+
+			<!-- Now, select which projects to include in this module-set. -->
+			<includes>
+				<include>cz.cvut.kbss:jopa-api</include>
+			</includes>
+			<binaries>
+				<outputDirectory>/</outputDirectory>
+				<unpack>false</unpack>
+				<includeDependencies>true</includeDependencies>
+				<dependencySets>
+					<dependencySet>
+						<outputDirectory>/lib</outputDirectory>
+					</dependencySet>
+				</dependencySets>
+			</binaries>
+		</moduleSet>
+	</moduleSets>
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>lib</outputDirectory>
+		</dependencySet>
+	</dependencySets>
+	<fileSets>
+		<fileSet>
+			<directory>
+				.
+			</directory>
+			<outputDirectory>
+				/
+			</outputDirectory>
+			<includes>
+				<include>owl2java.sh</include>
+			</includes>
+		</fileSet>
+		<!-- fileSet> <directory> . </directory> <outputDirectory> lib </outputDirectory> 
+			<includes> <include>./api/target/jopa-api-0.2.jar</include> <include>./impl/target/jopa-impl-0.2.jar</include> 
+			<include>./owl2java/target/jopa-owl2java-0.2.jar</include> <include>./owlapi-utils/target/jopa-owlapi-utils-0.2.jar</include> 
+			</includes> </fileSet -->
+	</fileSets>
 </assembly>

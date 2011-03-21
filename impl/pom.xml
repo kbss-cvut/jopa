@@ -4,7 +4,7 @@
 
 	<groupId>cz.cvut.kbss</groupId>
 	<artifactId>jopa-impl</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.2</version>
 	<packaging>jar</packaging>
 
 	<name>jopa:impl</name>
@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>cz.cvut.kbss</groupId>
 			<artifactId>owl2query</artifactId>
-			<version>0.3-SNAPSHOT</version>
+			<version>0.3</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>

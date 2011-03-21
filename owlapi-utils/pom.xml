@@ -4,7 +4,7 @@
 
 	<groupId>cz.cvut.kbss</groupId>
 	<artifactId>jopa-owlapi-utils</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.2</version>
 	<packaging>jar</packaging>
 
 	<name>jopa:owlapi-utils</name>

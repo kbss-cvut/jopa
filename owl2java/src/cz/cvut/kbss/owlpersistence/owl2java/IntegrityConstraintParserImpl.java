@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAnnotationPropertyDomainAxiom;
@@ -720,7 +721,9 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 			}
 
 			public void visit(OWLObjectIntersectionOf arg0) {
-				notSupported(arg0);
+				for( final OWLClassExpression e : arg0.getOperands()) {
+					e.accept(this);
+				}
 			}
 
 			public void visit(OWLClass arg0) {
@@ -776,21 +779,20 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 				}
 
 				for (ObjectParticipationConstraint opc : getParticipationConstraints()) {
-					if (!(clazz.equals(opc.getSubject()) && prop
-							.getSubProperties(merged).contains(
-									opc.getPredicate()))) {
+					if (!(clazz.equals(opc.getSubject()) && prop.equals(opc
+							.getPredicate()))) {
 						continue;
 					}
 
-					if (!getFiller().getSubClasses(merged).contains(
-							opc.getObject())) {
-						continue;
+					OWLClass dt1 = getFiller();
+					OWLClass dt2 = opc.getObject();
+					if (dt1.equals(dt2)
+							|| dt2.equals(OWLManager.getOWLDataFactory()
+									.getOWLThing())) {
+						if (opc.getMax() == 1) {
+							return Card.ONE;
+						}
 					}
-
-					if (opc.getMax() == 1) {
-						return Card.ONE;
-					}
-
 				}
 				return Card.MULTIPLE;
 			}
@@ -846,8 +848,8 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 					OWLDatatype dt1 = getFiller();
 					OWLDatatype dt2 = opc.getObject();
 					if (dt1.equals(dt2)
-							|| dt2.equals(merged.getOWLOntologyManager()
-									.getOWLDataFactory().getTopDatatype())) {
+							|| dt2.equals(OWLManager.getOWLDataFactory()
+									.getTopDatatype())) {
 						if (opc.getMax() == 1) {
 							return Card.ONE;
 						}

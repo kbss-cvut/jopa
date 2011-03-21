@@ -46,11 +46,14 @@
 			</plugin>
 
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.2.1</version>
 				<configuration>
 					<descriptors>
-						<descriptor>jopa-bin.xml</descriptor>
+						<descriptor>
+							jopa-bin.xml
+               			</descriptor>
 					</descriptors>
 				</configuration>
 			</plugin>
