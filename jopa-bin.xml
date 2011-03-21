@@ -5,16 +5,15 @@
 		<format>zip</format>
 		<format>tar.gz</format>
 	</formats>
-	<includeBaseDirectory>false</includeBaseDirectory>
+	<!--includeBaseDirectory>false</includeBaseDirectory-->
 	<moduleSets>
 		<moduleSet>
-
 			<!-- Enable access to all projects in the current multimodule build! -->
-			<useAllReactorProjects>true</useAllReactorProjects>
+			<!--useAllReactorProjects>true</useAllReactorProjects-->
 
 			<!-- Now, select which projects to include in this module-set. -->
 			<includes>
-				<include>cz.cvut.kbss:jopa-api</include>
+				<!--include>cz.cvut.kbss:jopa-api</include-->
 			</includes>
 			<binaries>
 				<outputDirectory>/</outputDirectory>
@@ -22,32 +21,17 @@
 				<includeDependencies>true</includeDependencies>
 				<dependencySets>
 					<dependencySet>
+<useStrictFiltering/>
+
+
+						<useTransitiveDependencies>true</useTransitiveDependencies>
 						<outputDirectory>/lib</outputDirectory>
 					</dependencySet>
 				</dependencySets>
 			</binaries>
 		</moduleSet>
 	</moduleSets>
-	<dependencySets>
-		<dependencySet>
-			<outputDirectory>lib</outputDirectory>
-		</dependencySet>
-	</dependencySets>
-	<fileSets>
-		<fileSet>
-			<directory>
-				.
-			</directory>
-			<outputDirectory>
-				/
-			</outputDirectory>
-			<includes>
-				<include>owl2java.sh</include>
-			</includes>
-		</fileSet>
-		<!-- fileSet> <directory> . </directory> <outputDirectory> lib </outputDirectory> 
-			<includes> <include>./api/target/jopa-api-0.2.jar</include> <include>./impl/target/jopa-impl-0.2.jar</include> 
-			<include>./owl2java/target/jopa-owl2java-0.2.jar</include> <include>./owlapi-utils/target/jopa-owlapi-utils-0.2.jar</include> 
-			</includes> </fileSet -->
-	</fileSets>
+	<files>
+		<file><source>owl2java/owl2java.sh</source><outputDirectory>/</outputDirectory></file>
+	</files>
 </assembly>

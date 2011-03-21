@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>cz.cvut.kbss</groupId>
 			<artifactId>jopa-api</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>0.2</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
@@ -52,7 +52,7 @@
 		<dependency>
 			<groupId>cz.cvut.kbss</groupId>
 			<artifactId>jopa-owl2java</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>0.2</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>

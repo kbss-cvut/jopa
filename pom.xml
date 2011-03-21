@@ -5,13 +5,14 @@
 	<groupId>cz.cvut.kbss</groupId>
 	<artifactId>jopa</artifactId>
 	<packaging>pom</packaging>
-	<version>0.3</version>
+	<version>0.2</version>
 	<name>Jopa - main project</name>
 	<url>http://sourceforge.net/projects/jopa</url>
 
 	<modules>
 		<module>api</module>
 		<module>owlapi-utils</module>
+		<module>owl2java</module>
 		<module>impl</module>
 	</modules>
 
