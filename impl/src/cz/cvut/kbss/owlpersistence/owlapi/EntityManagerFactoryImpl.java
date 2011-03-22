@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2011 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.util.Collections;
@@ -26,7 +41,6 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		this.properties = properties;
 	}
 
-	@Override
 	public void close() {
 		open = false;
 
@@ -36,13 +50,11 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		}
 	}
 
-	@Override
 	public EntityManager createEntityManager() {
 		return this
 				.createEntityManager(Collections.<String, String> emptyMap());
 	}
 
-	@Override
 	public EntityManager createEntityManager(Map<String, String> map) {
 		if (!open) {
 			throw new IllegalStateException(
@@ -60,12 +72,10 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		return c;
 	}
 
-	@Override
 	public boolean isOpen() {
 		return open;
 	}
 
-	@Override
 	public Map<String, String> getProperties() {
 		return properties;
 	}
@@ -74,7 +84,6 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		return Collections.unmodifiableSet(em);
 	}
 
-	@Override
 	public Metamodel getMetamodel() {
 		if (metamodel == null) {
 			metamodel = new MetamodelImpl(this);
@@ -83,12 +92,10 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		return metamodel;
 	}
 
-	@Override
 	public PersistenceUnitUtil getPersistenceUnitUtil() {
 		return this;
 	}
 
-	@Override
 	public Object getIdentifier(Object entity) {
 		try {
 			return getMetamodel().entity(entity.getClass()).getIdentifier()
@@ -100,7 +107,6 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		}
 	}
 
-	@Override
 	public boolean isLoaded(Object entity, String attributeName) {
 		for (final AbstractEntityManager emi : em) {
 			if (emi.contains(entity)) {
@@ -115,7 +121,6 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		return false;
 	}
 
-	@Override
 	public boolean isLoaded(Object entity) {
 		return isLoaded(entity);
 	}

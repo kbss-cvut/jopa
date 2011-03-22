@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2011 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.io.File;
@@ -154,9 +169,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			if (dbConnection != null) {
 				LOG.info("Using database backend: " + dbConnection);
 				// TODO
-//				this.m = Class.forName(OWLDBManagerclassName) 
-//						.createOWLOntologyManager(OWLDataFactoryImpl
-//								.getInstance());
+				// this.m = Class.forName(OWLDBManagerclassName)
+				// .createOWLOntologyManager(OWLDataFactoryImpl
+				// .getInstance());
 
 			} else {
 				this.m = OWLManager.createOWLOntologyManager();
@@ -168,7 +183,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			LOG.info("Found mappings = " + mapping);
 
 			m.addIRIMapper(new OWLOntologyIRIMapper() {
-				@Override
 				public IRI getDocumentIRI(IRI arg0) {
 					if (!mapping.containsKey(arg0.toURI())) {
 						return arg0;
@@ -201,8 +215,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 					workingOnt = m.loadOntology(IRI.create(ontologyURI));
 				}
 			}
-			reasoningOnt = new OWLOntologyMerger(m).createMergedOntology(m, IRI
-					.create("http://temporary"));
+			reasoningOnt = new OWLOntologyMerger(m).createMergedOntology(m,
+					IRI.create("http://temporary"));
 			LOG.info("Ontology " + ontologyURI + " succesfully loaded.");
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, null, e);
@@ -228,7 +242,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 * @throws OWLPersistenceException
 	 *             whenever the entity is already persisted.
 	 */
-	@Override
 	public void persist(final Object entity) {
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Persisting " + entity);
@@ -266,8 +279,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 				final OWLNamedIndividual ii = managed.get(entity);
 
-				final OWLClassAssertionAxiom aa = f.getOWLClassAssertionAxiom(f
-						.getOWLClass(IRI.create(e.getIRI().toString())), ii);
+				final OWLClassAssertionAxiom aa = f.getOWLClassAssertionAxiom(
+						f.getOWLClass(IRI.create(e.getIRI().toString())), ii);
 
 				addChange(new AddAxiom(workingOnt, aa));
 
@@ -336,7 +349,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	@Override
 	public <T> T merge(final T entity) {
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Merging " + entity);
@@ -414,7 +426,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	@Override
 	public void remove(Object object) {
 		ensureOpen();
 
@@ -425,8 +436,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			throw new IllegalArgumentException();
 		case MANAGED:
 			removed.put(object, managed.remove(object));
-			OWLEntityRemover r = new OWLEntityRemover(m, Collections
-					.singleton(workingOnt));
+			OWLEntityRemover r = new OWLEntityRemover(m,
+					Collections.singleton(workingOnt));
 			r.visit(removed.get(object));
 			allChanges.addAll(r.getChanges());
 			removeChanges.put(object, r.getChanges());
@@ -442,7 +453,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 	}
 
-	@Override
 	public <T> T find(Class<T> t, Object primaryKey) {
 		ensureOpen();
 		if (LOG.isLoggable(Level.CONFIG)) {
@@ -467,7 +477,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		return null;
 	}
 
-	@Override
 	public void flush() {
 		ensureOpen();
 
@@ -514,7 +523,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	@Override
 	public void refresh(Object object) {
 		ensureOpen();
 
@@ -540,13 +548,11 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	@Override
 	public void clear() {
 		managed.clear();
 		removed.clear();
 	}
 
-	@Override
 	public void detach(Object entity) {
 		ensureOpen();
 
@@ -575,13 +581,11 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	@Override
 	public boolean contains(Object entity) {
 		ensureOpen();
 		return managed.containsKey(entity);
 	}
 
-	@Override
 	public void close() {
 		ensureOpen();
 		open = false;
@@ -591,22 +595,18 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		// r = null;
 	}
 
-	@Override
 	public boolean isOpen() {
 		return open;
 	}
 
-	@Override
 	public EntityTransaction getTransaction() {
 		return tx;
 	}
 
-	@Override
 	public EntityManagerFactoryImpl getEntityManagerFactory() {
 		return emf;
 	}
 
-	@Override
 	public Metamodel getMetamodel() {
 		return emf.getMetamodel();
 	}
@@ -662,30 +662,25 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		return false;
 	}
 
-	@Override
 	public Query<?> createQuery(String qlString) {
 		return new QueryImpl(qlString, new OWLAPIv3OWL2Ontology(m,
 				reasoningOnt, r), false, this);
 	}
 
-	@Override
 	public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
 		return _createTypedQuery(qlString, resultClass, false);
 	}
 
-	@Override
 	public Query<List<String>> createNativeQuery(String sparql) {
 		return new QueryImpl(sparql, new OWLAPIv3OWL2Ontology(m, reasoningOnt,
 				r), true, this);
 	}
 
-	@Override
 	public <T> TypedQuery<T> createNativeQuery(String sparql,
 			Class<T> resultClass) {
 		return _createTypedQuery(sparql, resultClass, true);
 	}
 
-	@Override
 	public <T> T unwrap(Class<T> cls) {
 		if (cls.equals(this.getClass())) {
 			return cls.cast(this);
@@ -700,12 +695,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		throw new OWLPersistenceException();
 	}
 
-	@Override
 	public Object getDelegate() {
 		return unwrap(EntityManagerImpl.class);
 	}
 
-	@Override
 	public String getLabel(String iri) {
 		String label = null;
 
@@ -742,12 +735,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		String value = null;
 		String lang = null;
 
-		@Override
 		public void visit(OWLAnonymousIndividual arg0) {
 			// not supported - silently ignore
 		}
 
-		@Override
 		public void visit(IRI arg0) {
 			// not supported - silently ignore
 		}
@@ -760,7 +751,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			return lang;
 		}
 
-		@Override
 		public void visit(OWLLiteral sl) {
 			value = sl.getLiteral();
 			lang = sl.getLang();
@@ -775,7 +765,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 			cc.accept(new OWLOntologyChangeVisitor() {
 
-				@Override
 				public void visit(AddAxiom arg0) {
 					final RemoveAxiom ax = new RemoveAxiom(workingOnt, arg0
 							.getAxiom());
@@ -786,7 +775,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 					}
 				}
 
-				@Override
 				public void visit(RemoveAxiom arg0) {
 					final AddAxiom ax = new AddAxiom(workingOnt, arg0
 							.getAxiom());
@@ -797,31 +785,26 @@ public class EntityManagerImpl extends AbstractEntityManager {
 					}
 				}
 
-				@Override
 				public void visit(SetOntologyID arg0) {
 					throw new UnsupportedOperationException(
 							"Changing ontology URI is not supported.");
 				}
 
-				@Override
 				public void visit(AddImport arg0) {
 					throw new UnsupportedOperationException(
 							"Adding ontology Import is not supported.");
 				}
 
-				@Override
 				public void visit(RemoveImport arg0) {
 					throw new UnsupportedOperationException(
 							"Removing ontology Import is not supported.");
 				}
 
-				@Override
 				public void visit(AddOntologyAnnotation arg0) {
 					throw new UnsupportedOperationException(
 							"Adding ontology annotation is not supported.");
 				}
 
-				@Override
 				public void visit(RemoveOntologyAnnotation arg0) {
 					throw new UnsupportedOperationException(
 							"Removing ontology annotation is not supported.");
@@ -1067,8 +1050,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		} else if (object instanceof Date) {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
 
-			return f.getOWLTypedLiteral(sdf.format(((Date) object)), f
-					.getOWLDatatype(OWL2Datatype.XSD_DATE_TIME.getIRI()));
+			return f.getOWLTypedLiteral(sdf.format(((Date) object)),
+					f.getOWLDatatype(OWL2Datatype.XSD_DATE_TIME.getIRI()));
 		} else {
 			return f.getOWLStringLiteral((String) object, lang);
 		}
@@ -1124,7 +1107,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	private void checkIC(Object object, Attribute<?, ?> attribute) {
-		System.out.println("CHECKING IC for " + object + ", attribute="
+		LOG.config("CHECKING IC for " + object + ", attribute="
 				+ attribute.getIRI());
 		try {
 			Object value = attribute.getJavaField().get(object);
@@ -1138,11 +1121,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				set = Collections.singleton(value);
 			}
 
-			System.out.println("    size=" + set.size());
+			LOG.config("    size=" + set.size());
 
 			for (ParticipationConstraint ic : attribute.getConstraints()) {
-				System.out
-						.println("         IC:" + ic.min() + " : " + ic.max());
+				LOG.config("         IC:" + ic.min() + " : " + ic.max());
 				if (set.size() < ic.min() || set.size() > ic.max()) {
 					throw new IntegrityConstraintViolatedException(
 							"Violated min=" + ic.min() + ", max=" + ic.max()
@@ -1211,14 +1193,14 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 					switch (la.getSequenceType()) {
 					case referenced:
-						setReferencedList(object, clazz2, lst, op, c(la
-								.getOWLListClass()), op(la
-								.getOWLPropertyHasContentsIRI()), op(la
-								.getOWLObjectPropertyHasNextIRI()));
+						setReferencedList(object, clazz2, lst, op,
+								c(la.getOWLListClass()),
+								op(la.getOWLPropertyHasContentsIRI()),
+								op(la.getOWLObjectPropertyHasNextIRI()));
 						break;
 					case simple:
-						setSimpleList(object, clazz2, lst, op, op(la
-								.getOWLObjectPropertyHasNextIRI()));
+						setSimpleList(object, clazz2, lst, op,
+								op(la.getOWLObjectPropertyHasNextIRI()));
 						break;
 					}
 					break;
@@ -1240,8 +1222,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				break;
 			case OBJECT:
 				if (value != null) {
-					checkCascadeOrPersisted(pa.getCascadeTypes(), Collections
-							.singleton(value));
+					checkCascadeOrPersisted(pa.getCascadeTypes(),
+							Collections.singleton(value));
 				}
 
 				setObjectPropertyObject(subject, f.getOWLObjectProperty(iri),
@@ -1440,8 +1422,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 							"collections of annotations are not supported yet.");
 				}
 				// TODO value of getAnnotationProperty
-				final OWLLiteral laObject = getAnnotationProperty(ii, ap(field
-						.getIRI()), field.isInferred());
+				final OWLLiteral laObject = getAnnotationProperty(ii,
+						ap(field.getIRI()), field.isInferred());
 
 				if (laObject != null) {
 					field.getJavaField().set(subject,
@@ -1455,8 +1437,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 							"collections of data property values are not supported yet.");
 				}
 
-				final OWLLiteral lObject = getDataProperty(ii, dp(field
-						.getIRI()), field.isInferred());
+				final OWLLiteral lObject = getDataProperty(ii,
+						dp(field.getIRI()), field.isInferred());
 
 				if (lObject != null) {
 					field.getJavaField().set(subject,
@@ -1496,10 +1478,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 					case SET:
 						Set<Object> set = new HashSet<Object>();
 
-						for (OWLIndividual col : getObjectProperties(ii, op(pa
-								.getIRI()), field.isInferred())) {
-							set.add(getJavaInstanceForOWLIndividual(pa
-									.getBindableJavaType(), col));
+						for (OWLIndividual col : getObjectProperties(ii,
+								op(pa.getIRI()), field.isInferred())) {
+							set.add(getJavaInstanceForOWLIndividual(
+									pa.getBindableJavaType(), col));
 						}
 
 						value = set;
@@ -1515,8 +1497,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 							op(field.getIRI()), field.isInferred());
 
 					if (iObject != null) {
-						value = getJavaInstanceForOWLIndividual(field
-								.getJavaType(), iObject);
+						value = getJavaInstanceForOWLIndividual(
+								field.getJavaType(), iObject);
 					}
 				}
 
@@ -1709,8 +1691,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	private void setObjectPropertyObject(final OWLNamedIndividual src,
 			final org.semanticweb.owlapi.model.OWLObjectProperty p,
 			Object object) throws InterruptedException {
-		setObjectProperty(src, p, f
-				.getOWLNamedIndividual(getIdentifier(object)));
+		setObjectProperty(src, p,
+				f.getOWLNamedIndividual(getIdentifier(object)));
 	}
 
 	private void setObjectProperty(final OWLNamedIndividual src,
@@ -1776,8 +1758,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		// TODO anonymous
 
 		OWLNamedIndividual seq = f.getOWLNamedIndividual(createNewID(uri
-				.getFragment()
-				+ "-SEQ"));
+				.getFragment() + "-SEQ"));
 
 		addChange(new AddAxiom(this.workingOnt, f.getOWLClassAssertionAxiom(
 				owlList, seq)));
@@ -1804,19 +1785,18 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		// seq)));
 
 		OWLNamedIndividual ind = managed.get(sequence.get(0));
-		addChange(new AddAxiom(this.workingOnt, f
-				.getOWLObjectPropertyAssertionAxiom(hasContents, seq, ind)));
+		addChange(new AddAxiom(this.workingOnt,
+				f.getOWLObjectPropertyAssertionAxiom(hasContents, seq, ind)));
 
 		for (int i = 1; i < sequence.size(); i++) {
 			OWLNamedIndividual seq2 = f.getOWLNamedIndividual(createNewID(uri
-					.getFragment()
-					+ "-SEQ" + i));
+					.getFragment() + "-SEQ" + i));
 
-			addChange(new AddAxiom(this.workingOnt, f
-					.getOWLObjectPropertyAssertionAxiom(hasNext, seq, seq2)));
+			addChange(new AddAxiom(this.workingOnt,
+					f.getOWLObjectPropertyAssertionAxiom(hasNext, seq, seq2)));
 
-			addChange(new AddAxiom(this.workingOnt, f
-					.getOWLObjectPropertyAssertionAxiom(hasContents, seq2,
+			addChange(new AddAxiom(this.workingOnt,
+					f.getOWLObjectPropertyAssertionAxiom(hasContents, seq2,
 							managed.get(sequence.get(i)))));
 
 			seq = seq2;

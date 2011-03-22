@@ -73,7 +73,7 @@
 		<resources>
 			<resource>
 				<directory>resources</directory>
-			</resource>
+			</resource>	
 		</resources>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
@@ -84,6 +84,13 @@
 				<configuration>
 					<source>1.5</source>
 					<target>1.5</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.mycila.maven-license-plugin</groupId>
+				<artifactId>maven-license-plugin</artifactId>
+				<configuration>
+					<header>../header.txt</header>
 				</configuration>
 			</plugin>
 		</plugins>

@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2011 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.lang.reflect.Field;
@@ -53,93 +68,93 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
 		this.constraints = constraints;
 	}
 
-	@Override
+	
 	public Type<T> getType() {
 		return type;
 	}
 
-	@Override
+	
 	public boolean isId() {
 		return id;
 	}
 
-	@Override
+	
 	public boolean isOptional() {
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
+	
 	public boolean isVersion() {
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
+	
 	public ManagedType<X> getDeclaringType() {
 		return dt;
 	}
 
-	@Override
+	
 	public Member getJavaMember() {
 		return m;
 	}
 
-	@Override
+	
 	public Class<T> getJavaType() {
 		return type.getJavaType();
 	}
 
-	@Override
+	
 	public String getName() {
 		return name;
 	}
 
-	@Override
+	
 	public cz.cvut.kbss.owlpersistence.model.metamodel.Attribute.PersistentAttributeType getPersistentAttributeType() {
 		return pat;
 	}
 
-	@Override
+	
 	public boolean isAssociation() {
 		return getPersistentAttributeType().equals(
 				PersistentAttributeType.OBJECT);
 	}
 
-	@Override
+	
 	public boolean isCollection() {
 		return false;
 	}
 
-	@Override
+	
 	public Class<T> getBindableJavaType() {
 		return type.getJavaType();
 	}
 
-	@Override
+	
 	public cz.cvut.kbss.owlpersistence.model.metamodel.Bindable.BindableType getBindableType() {
 		return BindableType.SINGULAR_ATTRIBUTE;
 	}
 
-	@Override
+	
 	public Field getJavaField() {
 		return m;
 	}
 
-	@Override
+	
 	public IRI getIRI() {
 		return iri;
 	}
 
-	@Override
+	
 	public CascadeType[] getCascadeTypes() {
 		return cascadeTypes;
 	}
 
-	@Override
+	
 	public FetchType getFetchType() {
 		return fetchType;
 	}
 
-	@Override
+	
 	public String toString() {
 		return "SingularAttribute[" + name + "]";
 	}

@@ -27,6 +27,20 @@
 		</repository>
 	</repositories>
 
+	<pluginRepositories>
+		<pluginRepository>
+			<id>mc-release</id>
+			<name>Local Maven repository of releases</name>
+			<url>http://mc-repo.googlecode.com/svn/maven2/releases</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.semanticweb</groupId>
@@ -35,13 +49,8 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-	<!--dependency>
-			<groupId>cz.cvut.kbss</groupId>
-			<artifactId>owl2query</artifactId>
-			<version>1.0-SNAPSHOT</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency-->
+		<!--dependency> <groupId>cz.cvut.kbss</groupId> <artifactId>owl2query</artifactId> 
+			<version>1.0-SNAPSHOT</version> <type>jar</type> <scope>compile</scope> </dependency -->
 	</dependencies>
 	<distributionManagement>
 		<repository>
@@ -95,6 +104,13 @@
 				<configuration>
 					<source>1.5</source>
 					<target>1.5</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.mycila.maven-license-plugin</groupId>
+				<artifactId>maven-license-plugin</artifactId>
+				<configuration>
+					<header>../header.txt</header>
 				</configuration>
 			</plugin>
 		</plugins>

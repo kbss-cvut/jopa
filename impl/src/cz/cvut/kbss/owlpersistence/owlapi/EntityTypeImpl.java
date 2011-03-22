@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2011 Czech Technical University in Prague
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.util.HashMap;
@@ -64,12 +79,11 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		this.identifier = identifier;
 	}
 
-	@Override
 	public String getName() {
 		return name;
 	}
 
-	// @Override
+	// 
 	// public <Y> SingularAttribute<X, Y> getDeclaredId(Class<Y> type) {
 	// for (final Attribute<X, ?> a : declaredAttributeMap.values()) {
 	// final SingularAttribute<X, Y> sa = (SingularAttribute<X, Y>) a;
@@ -82,7 +96,7 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 	// throw new IllegalArgumentException();
 	// }
 	//
-	// @Override
+	// 
 	// public <Y> SingularAttribute<? super X, Y> getId(Class<Y> type) {
 	// for (final Attribute<? super X, ?> a : attributeMap.values()) {
 	// final SingularAttribute<? super X, Y> sa = (SingularAttribute<? super X,
@@ -96,58 +110,49 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 	// throw new IllegalArgumentException();
 	// }
 	//
-	// @Override
+	// 
 	// public Type<?> getIdType() {
 	// return idField.getType();
 	// }
 
-	@Override
 	public <Y> SingularAttribute<X, Y> getDeclaredVersion(Class<Y> type) {
 		// TODO
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
 	public Set<SingularAttribute<? super X, ?>> getIdClassAttributes() {
 		// TODO
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
 	public IdentifiableType<? super X> getSupertype() {
 		// TODO
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
 	public <Y> SingularAttribute<? super X, Y> getVersion(Class<Y> type) {
 		// TODO
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
 	public boolean hasSingleIdAttribute() {
 		// TODO
 		return false;
 	}
 
-	@Override
 	public boolean hasVersionAttribute() {
 		// TODO
 		return false;
 	}
 
-	@Override
 	public Attribute<? super X, ?> getAttribute(String name) {
 		return attributeMap.get(name);
 	}
 
-	@Override
 	public Set<Attribute<? super X, ?>> getAttributes() {
 		return new HashSet<Attribute<? super X, ?>>(attributeMap.values());
 	}
 
-	@Override
 	public <E> CollectionAttribute<? super X, E> getCollection(String name,
 			Class<E> elementType) {
 		final CollectionAttribute<? super X, E> a = (CollectionAttribute<? super X, E>) getAttribute(name);
@@ -159,22 +164,18 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	@Override
 	public CollectionAttribute<? super X, ?> getCollection(String name) {
 		return getCollection(name, Object.class);
 	}
 
-	@Override
 	public Attribute<X, ?> getDeclaredAttribute(String name) {
 		return declaredAttributeMap.get(name);
 	}
 
-	@Override
 	public Set<Attribute<X, ?>> getDeclaredAttributes() {
 		return new HashSet<Attribute<X, ?>>(declaredAttributeMap.values());
 	}
 
-	@Override
 	public <E> CollectionAttribute<X, E> getDeclaredCollection(String name,
 			Class<E> elementType) {
 		final CollectionAttribute<X, E> a = (CollectionAttribute<X, E>) getDeclaredAttribute(name);
@@ -186,12 +187,10 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	@Override
 	public CollectionAttribute<X, ?> getDeclaredCollection(String name) {
 		return getDeclaredCollection(name, Object.class);
 	}
 
-	@Override
 	public <E> ListAttribute<X, E> getDeclaredList(String name,
 			Class<E> elementType) {
 		final ListAttribute<X, E> a = (ListAttribute<X, E>) getDeclaredAttribute(name);
@@ -203,12 +202,10 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	@Override
 	public ListAttribute<X, ?> getDeclaredList(String name) {
 		return getDeclaredList(name, Object.class);
 	}
 
-	@Override
 	public <K, V> MapAttribute<X, K, V> getDeclaredMap(String name,
 			Class<K> keyType, Class<V> valueType) {
 		final MapAttribute<X, K, V> a = (MapAttribute<X, K, V>) getDeclaredAttribute(name);
@@ -221,12 +218,10 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	@Override
 	public MapAttribute<X, ?, ?> getDeclaredMap(String name) {
 		return getDeclaredMap(name, Object.class, Object.class);
 	}
 
-	@Override
 	public Set<PluralAttribute<X, ?, ?>> getDeclaredPluralAttributes() {
 		final Set<PluralAttribute<X, ?, ?>> set = new HashSet<PluralAttribute<X, ?, ?>>();
 
@@ -239,7 +234,6 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return set;
 	}
 
-	@Override
 	public <E> SetAttribute<X, E> getDeclaredSet(String name,
 			Class<E> elementType) {
 		final SetAttribute<X, E> a = (SetAttribute<X, E>) getDeclaredAttribute(name);
@@ -251,12 +245,12 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	@Override
+	
 	public SetAttribute<X, ?> getDeclaredSet(String name) {
 		return getDeclaredSet(name, Object.class);
 	}
 
-	@Override
+	
 	public <Y> SingularAttribute<X, Y> getDeclaredSingularAttribute(
 			String name, Class<Y> type) {
 		final SingularAttribute<X, Y> a = (SingularAttribute<X, Y>) getDeclaredAttribute(name);
@@ -268,12 +262,12 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	@Override
+	
 	public SingularAttribute<X, ?> getDeclaredSingularAttribute(String name) {
 		return getDeclaredSingularAttribute(name, Object.class);
 	}
 
-	@Override
+	
 	public Set<SingularAttribute<X, ?>> getDeclaredSingularAttributes() {
 		final Set<SingularAttribute<X, ?>> set = new HashSet<SingularAttribute<X, ?>>();
 
@@ -286,7 +280,7 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return set;
 	}
 
-	@Override
+	
 	public <E> ListAttribute<? super X, E> getList(String name,
 			Class<E> elementType) {
 		final ListAttribute<? super X, E> a = (ListAttribute<? super X, E>) getAttribute(name);
@@ -298,12 +292,12 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	@Override
+	
 	public ListAttribute<? super X, ?> getList(String name) {
 		return getList(name, Object.class);
 	}
 
-	@Override
+	
 	public <K, V> MapAttribute<? super X, K, V> getMap(String name,
 			Class<K> keyType, Class<V> valueType) {
 		final MapAttribute<? super X, K, V> a = (MapAttribute<? super X, K, V>) getAttribute(name);
@@ -316,12 +310,12 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	@Override
+	
 	public MapAttribute<? super X, ?, ?> getMap(String name) {
 		return getMap(name, Object.class, Object.class);
 	}
 
-	@Override
+	
 	public Set<PluralAttribute<? super X, ?, ?>> getPluralAttributes() {
 		final Set<PluralAttribute<? super X, ?, ?>> set = new HashSet<PluralAttribute<? super X, ?, ?>>();
 
@@ -334,7 +328,7 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return set;
 	}
 
-	@Override
+	
 	public <E> SetAttribute<? super X, E> getSet(String name,
 			Class<E> elementType) {
 		final SetAttribute<? super X, E> a = (SetAttribute<? super X, E>) getAttribute(name);
@@ -346,12 +340,12 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	@Override
+	
 	public SetAttribute<? super X, ?> getSet(String name) {
 		return getSet(name, Object.class);
 	}
 
-	@Override
+	
 	public <Y> SingularAttribute<? super X, Y> getSingularAttribute(
 			String name, Class<Y> type) {
 		final Attribute<? super X, ?> a = getAttribute(name);
@@ -363,12 +357,12 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return (SingularAttribute<? super X, Y>) a;
 	}
 
-	@Override
+	
 	public SingularAttribute<? super X, ?> getSingularAttribute(String name) {
 		return getSingularAttribute(name, Object.class);
 	}
 
-	@Override
+	
 	public Set<SingularAttribute<? super X, ?>> getSingularAttributes() {
 		final Set<SingularAttribute<? super X, ?>> set = new HashSet<SingularAttribute<? super X, ?>>();
 
@@ -381,42 +375,42 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return set;
 	}
 
-	@Override
+	
 	public Class<X> getJavaType() {
 		return javaType;
 	}
 
-	@Override
+	
 	public cz.cvut.kbss.owlpersistence.model.metamodel.Type.PersistenceType getPersistenceType() {
 		return PersistenceType.ENTITY;
 	}
 
-	@Override
+	
 	public Class<X> getBindableJavaType() {
 		return getJavaType();
 	}
 
-	@Override
+	
 	public cz.cvut.kbss.owlpersistence.model.metamodel.Bindable.BindableType getBindableType() {
 		return BindableType.ENTITY_TYPE;
 	}
 
-	@Override
+	
 	public IRI getIRI() {
 		return iri;
 	}
 
-	@Override
+	
 	public Identifier getIdentifier() {
 		return identifier;
 	}
 
-	@Override
+	
 	public TypesSpecification<? super X, ?> getTypes() {
 		return directTypes;
 	}
 
-	@Override
+	
 	public PropertiesSpecification<? super X, ?> getProperties() {
 		return properties;
 	}
