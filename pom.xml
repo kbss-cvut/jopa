@@ -62,6 +62,18 @@
 					</descriptors>
 				</configuration>
 			</plugin>
+			
+			<plugin>
+				<groupId>org.nuiton</groupId>
+				<artifactId>maven-license-plugin</artifactId>
+				<version>3.0</version>
+				<configuration>
+				    <excludedArtifacts>
+					cz.cvut.kbss:jopa-api,cz.cvut.kbss:jopa-impl,cz.cvut.kbss:jopa-owl2java,cz.cvut.kbss:jopa-owlapi-utils
+				    </excludedArtifacts>
+				</configuration>
+			</plugin>
+			
 		</plugins>
 	</build>
 	<!-- Generate one javadoc for everything -->

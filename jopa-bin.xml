@@ -57,6 +57,10 @@
 	</fileSets>
 	<files>
 		<file>
+			<source>target/generated-sources/license/THIRD-PARTY.txt</source>
+			<outputDirectory>/</outputDirectory>
+		</file>
+		<file>
 			<source>owl2java/target/classes/owl2java.sh</source>
 			<outputDirectory>/</outputDirectory>
 		</file>
