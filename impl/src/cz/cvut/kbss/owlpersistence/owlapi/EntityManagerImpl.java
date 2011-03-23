@@ -1042,18 +1042,19 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 	private OWLLiteral javaType2owlLiteral(final Object object) {
 		if (object instanceof Integer) {
-			return f.getOWLTypedLiteral((Integer) object);
+			return f.getOWLLiteral((Integer) object);
 		} else if (object instanceof Boolean) {
-			return f.getOWLTypedLiteral((Boolean) object);
+			return f.getOWLLiteral((Boolean) object);
 		} else if (object instanceof Double) {
-			return f.getOWLTypedLiteral((Double) object);
+			return f.getOWLLiteral((Double) object);
+		} else if (object instanceof String) {
+			return f.getOWLLiteral((String) object, lang);
 		} else if (object instanceof Date) {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
-
-			return f.getOWLTypedLiteral(sdf.format(((Date) object)),
+			return f.getOWLLiteral(sdf.format(((Date) object)),
 					f.getOWLDatatype(OWL2Datatype.XSD_DATE_TIME.getIRI()));
 		} else {
-			return f.getOWLStringLiteral((String) object, lang);
+			throw new IllegalArgumentException();
 		}
 	}
 
@@ -1125,7 +1126,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 			for (ParticipationConstraint ic : attribute.getConstraints()) {
 				LOG.config("         IC:" + ic.min() + " : " + ic.max());
-				if (set.size() < ic.min() || set.size() > ic.max()) {
+				if (set.size() < ic.min()
+						|| (set.size() > ic.max() && ic.max() >= 0)) {
 					throw new IntegrityConstraintViolatedException(
 							"Violated min=" + ic.min() + ", max=" + ic.max()
 									+ ", for attribute=" + attribute
@@ -1163,7 +1165,24 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			switch (attribute.getPersistentAttributeType()) {
 			case ANNOTATION:
 			case DATA:
-				throw new NotYetImplementedException();
+				final OWLDataProperty dp = f.getOWLDataProperty(iri);
+				switch (pa.getCollectionType()) {
+				case SET:
+					Class<?> clazz = pa.getBindableJavaType();
+					removeAllDataProperties(subject, dp);
+					Set set = Set.class.cast(value);
+					if (set != null) {
+						for (Object element : set) {
+							addDataProperty(subject, dp, element);
+						}
+					}
+					break;
+				case LIST:
+				case COLLECTION:
+				case MAP:
+					throw new NotYetImplementedException();
+				}
+				break;
 			case OBJECT:
 				final OWLObjectProperty op = f.getOWLObjectProperty(iri);
 				switch (pa.getCollectionType()) {
@@ -1691,8 +1710,13 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	private void setObjectPropertyObject(final OWLNamedIndividual src,
 			final org.semanticweb.owlapi.model.OWLObjectProperty p,
 			Object object) throws InterruptedException {
-		setObjectProperty(src, p,
-				f.getOWLNamedIndividual(getIdentifier(object)));
+		OWLNamedIndividual i = null;
+
+		if (object != null) {
+			i = f.getOWLNamedIndividual(getIdentifier(object));
+		}
+
+		setObjectProperty(src, p, i);
 	}
 
 	private void setObjectProperty(final OWLNamedIndividual src,

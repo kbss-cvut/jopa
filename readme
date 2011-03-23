@@ -1,4 +1,43 @@
-To use this library You need:
-1) owlpersistence.jar
-2) to setup your classpath with lib/pellet, lib/commons-logging.jar, lib/aspectj/aspectjweaver.jar
-3) to run your program using "-javaagent:lib/aspectj/aspectjweaver.jar"
+JOPA - Java OWL persistence API
+===============================
+
+JOPA is a Java OWL persistence API aimed at efficient programatic access to OWL2 ontologies in Java. The system is based on integrity constraints [1] in OWL that JOPA uses to establish the contract between 
+a JOPA-enabled Java application and an OWL ontology. he system architecture is similar to JPA 2.0, see [2].
+
+IMPORTANT: The command line utility owl2java.sh as well as examples/ic-strufail-generate.sh require Java 1.5 or more on the path.
+
+---------------
+Example Project
+---------------
+The example project demonstrates usage of JOPA
+
+In the 'examples' directory, an example of usage is shown. The directory layout is as follows
+
+    - ic-strufail.owl - a set of predefined integrity constraints for the application StruFail ver 0.1. This file is NOT (and MUST NOT be handled as) an ordinary OWL ontology.  Instead
+                        it contains a set of OWL integrity constraints that provide an inteface between the StruFail application ver 0.1 and the ontology.
+
+    - example-strufail-data-default.owl (resp. example-strufail-data.owl) - an OWL ontology for StruFail (its. back end)
+    
+    - mapping - a mapping file for resolving logical ontology IRIs to the files in the file system.
+    
+    - ic-strufail-generate.sh - a script for generating the object model from the set of integrity constraints in ic-strufail.owl
+    
+    - src - source codes for the example application.
+
+Running the examples:
+    1) run 'cd examples'
+    2) run 'sh ic-strufail-generate.sh' - this command generates the Java classes corresponding to the integrity constraints in 'ic-strufail.owl'
+    3) the generated model is in the 'src' directory in the package 'example.modelstrufail'. You can open 'ic-strufail.owl' 
+       in your favorite OWL2 editor (e.g. Protege 4.1. - http://protege.stanford.edu) and see correspondence of the integrity constraints to the generated Java classes.
+    4) the example usage is shown in the Java class 'example/DemoApplication.java'. Before running the examples, You have to 
+	    - put all jars from the 'lib' directory to the Java classpath
+	    - download an OWLAPI 3.2.2 compliant OWL2 reasoner (e.g. Pellet http://clarkparsia.com/pellet, or HermiT http://hermit-reasoner.com/) and put it on your Java classpath. 
+	      Next, in 'example/DemoApplication.java', setup the correct class of the reasoner factory: params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS, "<REASONER-FACTORY-CLASS-FULL-NAME>");
+	    - download 'aspectjweaver.jar' http://repo1.maven.org/maven2/aspectj/aspectjweaver/1.5.0/ and run the examples with -javaagent:<path-to-aspectjweaver.jar> option
+	We encourage you to use a Java IDE for testing the examples (e.g. Netbeans 6.9.1 or Eclipse Helios ).
+    5) Please follow the comments in this Java class 'example/DemoApplication.java'.
+
+[1] J. Tao and E. Sirin, J. Bao, D. L. McGuinness, Integrity Constraints in OWL, The Twenty-Fourth AAAI Conference on Artiﬁcial Intelligence, 2010, cited 6/10/2010, available online at http://www.aaai.org/ocs
+/index.php/AAAI/AAAI10/paper/view/1931/2229
+
+[2] http://jcp.org/en/jsr/detail?id=317

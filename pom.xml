@@ -58,7 +58,8 @@
 					<descriptors>
 						<descriptor>
 							jopa-bin.xml
-               			</descriptor>
+						</descriptor>
+						<descriptor>jopa-src.xml</descriptor>
 					</descriptors>
 				</configuration>
 			</plugin>

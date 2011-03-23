@@ -164,15 +164,14 @@ public class MetamodelImpl implements Metamodel {
 			ParticipationConstraints cons = field
 					.getAnnotation(ParticipationConstraints.class);
 			if (cons != null) {
-				if ( cons.value() != null ) {
+				if (cons.value() != null) {
 					ics = cons.value();
-				}				
+				}
 			}
 
-			if ( ics ==null) {
-			ics = new ParticipationConstraint[]{};
+			if (ics == null) {
+				ics = new ParticipationConstraint[] {};
 			}
-
 
 			if (oop != null) {
 				if (LOG.isLoggable(Level.FINE)) {
@@ -214,22 +213,24 @@ public class MetamodelImpl implements Metamodel {
 					}
 
 					a = new ListAttributeImpl(c2, field.getName(), iri,
-							List.class, type, field, t, cascadeTypes, IRI
-									.create(os.ClassOWLListIRI()), IRI
-									.create(os.ObjectPropertyHasNextIRI()), IRI
-									.create(os.ObjectPropertyHasContentsIRI()),
-							os.type(), fetchType, inferred,ics);
+							List.class, type, field, t, cascadeTypes,
+							IRI.create(os.ClassOWLListIRI()), IRI.create(os
+									.ObjectPropertyHasNextIRI()), IRI.create(os
+									.ObjectPropertyHasContentsIRI()),
+							os.type(), fetchType, inferred, ics);
 				} else if (field.getType().isAssignableFrom(Set.class)) {
-					processOWLClass(cxx);
+					if (oop != null) {
+						processOWLClass(cxx);
+					}
 					a = new SetAttributeImpl(c2, field.getName(), iri,
 							Set.class, type, field, t, cascadeTypes, fetchType,
-							inferred,ics);
+							inferred, ics);
 				} else if (field.getType().isAssignableFrom(Map.class)) {
 					throw new IllegalArgumentException("NOT YET SUPPORTED");
 				} else {
 					a = new SingularAttributeImpl(c2, false, field.getName(),
 							iri, type, field, t, cascadeTypes, fetchType,
-							inferred,ics);
+							inferred, ics);
 				}
 				c2.addDeclaredAttribute(field.getName(), a);
 
@@ -300,7 +301,6 @@ public class MetamodelImpl implements Metamodel {
 	}
 
 	@SuppressWarnings("unchecked")
-	
 	public <X> EntityType<X> entity(Class<X> cls) {
 		if (!typeMap.containsKey(cls)) {
 			// TODO
@@ -310,27 +310,22 @@ public class MetamodelImpl implements Metamodel {
 		return (EntityType<X>) typeMap.get(cls);
 	}
 
-	
 	public <X> EmbeddableType<X> embeddable(Class<X> cls) {
 		throw new IllegalArgumentException("Embeddable entities not supported.");
 	}
 
-	
 	public Set<EmbeddableType<?>> getEmbeddables() {
 		return Collections.emptySet();
 	}
 
-	
 	public Set<EntityType<?>> getEntities() {
 		return new HashSet<EntityType<?>>(typeMap.values());
 	}
 
-	
 	public Set<ManagedType<?>> getManagedTypes() {
 		return new HashSet<ManagedType<?>>(typeMap.values());
 	}
 
-	
 	public <X> ManagedType<X> managedType(Class<X> cls) {
 		return entity(cls);
 	}

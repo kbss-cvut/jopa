@@ -51,7 +51,7 @@
 			</includes>
 		</fileSet>
 		<fileSet>
-			<directory>owl2java/examples</directory>
+			<directory>examples</directory>
 			<outputDirectory>/examples</outputDirectory>
 		</fileSet>
 	</fileSets>

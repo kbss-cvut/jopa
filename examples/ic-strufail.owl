@@ -21,15 +21,17 @@
      xmlns:failures="http://krizik.felk.cvut.cz/ontologies/2009/failures.owl#"
      xmlns:location="http://krizik.felk.cvut.cz/ontologies/2009/location.owl#"
      xmlns:people="http://krizik.felk.cvut.cz/ontologies/2009/people.owl#"
-     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:ic="http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:owl2xml="http://www.w3.org/2006/12/owl2-xml#"
      xmlns:typology="http://krizik.felk.cvut.cz/ontologies/2010/typology.owl#"
-     xmlns:buildings="http://krizik.felk.cvut.cz/ontologies/2009/buildings.owl#"
-     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:buildings="http://krizik.felk.cvut.cz/ontologies/2009/buildings.owl#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2010/ic-strufail.owl"/>
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2010/ic-strufail.owl">
+        <owl:imports rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/failures.owl"/>
+    </owl:Ontology>
     
 
 
@@ -247,6 +249,12 @@
 
     <owl:Class rdf:about="&buildings;Component">
         <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&failures;hasMaterial"/>
+                <owl:allValuesFrom rdf:resource="&typology;RawMaterial"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
@@ -259,12 +267,6 @@
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="&failures;hasMaterial"/>
-                <owl:allValuesFrom rdf:resource="&typology;RawMaterial"/>
-            </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
     <owl:Axiom>
@@ -272,17 +274,6 @@
         <owl:annotatedSource rdf:resource="&buildings;Component"/>
         <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
         <owl:annotatedTarget>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="&failures;hasMaterial"/>
-                <owl:allValuesFrom rdf:resource="&typology;RawMaterial"/>
-            </owl:Restriction>
-        </owl:annotatedTarget>
-    </owl:Axiom>
-    <owl:Axiom>
-        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
-        <owl:annotatedSource rdf:resource="&buildings;Component"/>
-        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
-        <owl:annotatedTarget>
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
@@ -295,6 +286,17 @@
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="&buildings;Component"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&failures;hasMaterial"/>
+                <owl:allValuesFrom rdf:resource="&typology;RawMaterial"/>
+            </owl:Restriction>
         </owl:annotatedTarget>
     </owl:Axiom>
     
@@ -307,13 +309,28 @@
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasFloodVulnerability"/>
-                        <owl:allValuesFrom rdf:resource="&failures;FloodVulnerability"/>
+                        <owl:onProperty rdf:resource="&failures;hasAddress"/>
+                        <owl:allValuesFrom rdf:resource="&location;Address"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasFloodVulnerability"/>
-                        <owl:onClass rdf:resource="&failures;FloodVulnerability"/>
+                        <owl:onProperty rdf:resource="&failures;hasAddress"/>
+                        <owl:onClass rdf:resource="&location;Address"/>
+                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&failures;hasDescription"/>
+                        <owl:allValuesFrom rdf:resource="&rdf;PlainLiteral"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&failures;hasDescription"/>
                         <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                        <owl:onDataRange rdf:resource="&rdf;PlainLiteral"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
@@ -336,31 +353,22 @@
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasAddress"/>
-                        <owl:allValuesFrom rdf:resource="&location;Address"/>
+                        <owl:onProperty rdf:resource="&failures;hasFloodVulnerability"/>
+                        <owl:allValuesFrom rdf:resource="&failures;FloodVulnerability"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasAddress"/>
-                        <owl:onClass rdf:resource="&location;Address"/>
+                        <owl:onProperty rdf:resource="&failures;hasFloodVulnerability"/>
+                        <owl:onClass rdf:resource="&failures;FloodVulnerability"/>
                         <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasDescription"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasDescription"/>
-                        <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&failures;hasMaterial"/>
+                <owl:allValuesFrom rdf:resource="&typology;RawMaterial"/>
+            </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
@@ -373,21 +381,15 @@
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
                         <owl:onProperty rdf:resource="&buildings;hasHistoricalEraSpecification"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
+                        <owl:allValuesFrom rdf:resource="&rdf;PlainLiteral"/>
                     </owl:Restriction>
                     <owl:Restriction>
                         <owl:onProperty rdf:resource="&buildings;hasHistoricalEraSpecification"/>
                         <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
+                        <owl:onDataRange rdf:resource="&rdf;PlainLiteral"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="&failures;hasMaterial"/>
-                <owl:allValuesFrom rdf:resource="&typology;RawMaterial"/>
-            </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
     <owl:Axiom>
@@ -399,12 +401,12 @@
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
                         <owl:onProperty rdf:resource="&buildings;hasHistoricalEraSpecification"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
+                        <owl:allValuesFrom rdf:resource="&rdf;PlainLiteral"/>
                     </owl:Restriction>
                     <owl:Restriction>
                         <owl:onProperty rdf:resource="&buildings;hasHistoricalEraSpecification"/>
                         <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
+                        <owl:onDataRange rdf:resource="&rdf;PlainLiteral"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
@@ -415,27 +417,16 @@
         <owl:annotatedSource rdf:resource="&buildings;Structure"/>
         <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
         <owl:annotatedTarget>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="&failures;hasExposure"/>
-                <owl:allValuesFrom rdf:resource="&failures;FloodExposure"/>
-            </owl:Restriction>
-        </owl:annotatedTarget>
-    </owl:Axiom>
-    <owl:Axiom>
-        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
-        <owl:annotatedSource rdf:resource="&buildings;Structure"/>
-        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
-        <owl:annotatedTarget>
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasDescription"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;string"/>
+                        <owl:onProperty rdf:resource="&failures;hasFloodVulnerability"/>
+                        <owl:allValuesFrom rdf:resource="&failures;FloodVulnerability"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasDescription"/>
-                        <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minQualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;string"/>
+                        <owl:onProperty rdf:resource="&failures;hasFloodVulnerability"/>
+                        <owl:onClass rdf:resource="&failures;FloodVulnerability"/>
+                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
@@ -460,13 +451,13 @@
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasAddress"/>
-                        <owl:allValuesFrom rdf:resource="&location;Address"/>
+                        <owl:onProperty rdf:resource="&failures;hasDescription"/>
+                        <owl:allValuesFrom rdf:resource="&rdf;PlainLiteral"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasAddress"/>
-                        <owl:onClass rdf:resource="&location;Address"/>
-                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                        <owl:onProperty rdf:resource="&failures;hasDescription"/>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                        <owl:onDataRange rdf:resource="&rdf;PlainLiteral"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
@@ -499,16 +490,27 @@
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasFloodVulnerability"/>
-                        <owl:allValuesFrom rdf:resource="&failures;FloodVulnerability"/>
+                        <owl:onProperty rdf:resource="&failures;hasAddress"/>
+                        <owl:allValuesFrom rdf:resource="&location;Address"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasFloodVulnerability"/>
-                        <owl:onClass rdf:resource="&failures;FloodVulnerability"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                        <owl:onProperty rdf:resource="&failures;hasAddress"/>
+                        <owl:onClass rdf:resource="&location;Address"/>
+                        <owl:maxQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxQualifiedCardinality>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="&buildings;Structure"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&failures;hasExposure"/>
+                <owl:allValuesFrom rdf:resource="&failures;FloodExposure"/>
+            </owl:Restriction>
         </owl:annotatedTarget>
     </owl:Axiom>
     
@@ -535,27 +537,13 @@
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasManifestation"/>
-                        <owl:someValuesFrom rdf:resource="&typology;Manifestation"/>
+                        <owl:onProperty rdf:resource="&failures;hasInsertionTime"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;dateTime"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasManifestation"/>
-                        <owl:allValuesFrom rdf:resource="&typology;Manifestation"/>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasAttachment"/>
-                        <owl:allValuesFrom rdf:resource="&failures;InformationResource"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasAttachment"/>
-                        <owl:onClass rdf:resource="&failures;InformationResource"/>
-                        <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:minQualifiedCardinality>
+                        <owl:onProperty rdf:resource="&failures;hasInsertionTime"/>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                        <owl:onDataRange rdf:resource="&xsd;dateTime"/>
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
@@ -576,6 +564,59 @@
             </owl:Class>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&failures;hasManifestation"/>
+                <owl:allValuesFrom rdf:resource="&typology;Manifestation"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&failures;hasAttachment"/>
+                        <owl:allValuesFrom rdf:resource="&failures;InformationResource"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&failures;hasAttachment"/>
+                        <owl:onClass rdf:resource="&failures;InformationResource"/>
+                        <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:minQualifiedCardinality>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&failures;hasReporter"/>
+                <owl:onClass rdf:resource="&people;Person"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="&failures;Failure"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&failures;hasAttachment"/>
+                        <owl:allValuesFrom rdf:resource="&failures;InformationResource"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&failures;hasAttachment"/>
+                        <owl:onClass rdf:resource="&failures;InformationResource"/>
+                        <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:minQualifiedCardinality>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="&failures;Failure"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
@@ -589,15 +630,39 @@
                     </owl:Restriction>
                 </owl:intersectionOf>
             </owl:Class>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="&failures;Failure"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&failures;isFailureOf"/>
+                        <owl:allValuesFrom rdf:resource="&buildings;Structure"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&failures;isFailureOf"/>
+                        <owl:onClass rdf:resource="&buildings;Structure"/>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="&failures;Failure"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="&failures;hasReporter"/>
-                <owl:onClass rdf:resource="&people;Person"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onProperty rdf:resource="&failures;hasManifestation"/>
+                <owl:allValuesFrom rdf:resource="&typology;Manifestation"/>
             </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
+        </owl:annotatedTarget>
+    </owl:Axiom>
     <owl:Axiom>
         <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
         <owl:annotatedSource rdf:resource="&failures;Failure"/>
@@ -622,90 +687,11 @@
         <owl:annotatedSource rdf:resource="&failures;Failure"/>
         <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
         <owl:annotatedTarget>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasInsertionTime"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;dateTime"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasInsertionTime"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;dateTime"/>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:annotatedTarget>
-    </owl:Axiom>
-    <owl:Axiom>
-        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
-        <owl:annotatedSource rdf:resource="&failures;Failure"/>
-        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
-        <owl:annotatedTarget>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&failures;hasReporter"/>
                 <owl:onClass rdf:resource="&people;Person"/>
                 <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
             </owl:Restriction>
-        </owl:annotatedTarget>
-    </owl:Axiom>
-    <owl:Axiom>
-        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
-        <owl:annotatedSource rdf:resource="&failures;Failure"/>
-        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
-        <owl:annotatedTarget>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasManifestation"/>
-                        <owl:someValuesFrom rdf:resource="&typology;Manifestation"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasManifestation"/>
-                        <owl:allValuesFrom rdf:resource="&typology;Manifestation"/>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:annotatedTarget>
-    </owl:Axiom>
-    <owl:Axiom>
-        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
-        <owl:annotatedSource rdf:resource="&failures;Failure"/>
-        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
-        <owl:annotatedTarget>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasAttachment"/>
-                        <owl:allValuesFrom rdf:resource="&failures;InformationResource"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;hasAttachment"/>
-                        <owl:onClass rdf:resource="&failures;InformationResource"/>
-                        <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:minQualifiedCardinality>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:annotatedTarget>
-    </owl:Axiom>
-    <owl:Axiom>
-        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
-        <owl:annotatedSource rdf:resource="&failures;Failure"/>
-        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
-        <owl:annotatedTarget>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;isFailureOf"/>
-                        <owl:allValuesFrom rdf:resource="&buildings;Structure"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&failures;isFailureOf"/>
-                        <owl:onClass rdf:resource="&buildings;Structure"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
         </owl:annotatedTarget>
     </owl:Axiom>
     
@@ -735,38 +721,40 @@
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&failures;hasDescriptionNumber"/>
-                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="&xsd;string"/>
+                <owl:allValuesFrom rdf:resource="&rdf;PlainLiteral"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&location;hasStreet"/>
-                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+                <owl:allValuesFrom rdf:resource="&rdf;PlainLiteral"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&location;hasStreet"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&rdf;PlainLiteral"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&failures;hasDescriptionNumber"/>
-                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&rdf;PlainLiteral"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&location;hasCity"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&rdf;PlainLiteral"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&location;hasCity"/>
-                <owl:allValuesFrom rdf:resource="&xsd;string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="&location;hasStreet"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+                <owl:allValuesFrom rdf:resource="&rdf;PlainLiteral"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
@@ -776,8 +764,20 @@
         <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
         <owl:annotatedTarget>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="&failures;hasDescriptionNumber"/>
-                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+                <owl:onProperty rdf:resource="&location;hasStreet"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&rdf;PlainLiteral"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="&location;Address"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&location;hasStreet"/>
+                <owl:allValuesFrom rdf:resource="&rdf;PlainLiteral"/>
             </owl:Restriction>
         </owl:annotatedTarget>
     </owl:Axiom>
@@ -788,7 +788,8 @@
         <owl:annotatedTarget>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&location;hasCity"/>
-                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&rdf;PlainLiteral"/>
             </owl:Restriction>
         </owl:annotatedTarget>
     </owl:Axiom>
@@ -800,7 +801,7 @@
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&failures;hasDescriptionNumber"/>
                 <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="&xsd;string"/>
+                <owl:onDataRange rdf:resource="&rdf;PlainLiteral"/>
             </owl:Restriction>
         </owl:annotatedTarget>
     </owl:Axiom>
@@ -810,19 +811,8 @@
         <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
         <owl:annotatedTarget>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="&location;hasStreet"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </owl:annotatedTarget>
-    </owl:Axiom>
-    <owl:Axiom>
-        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
-        <owl:annotatedSource rdf:resource="&location;Address"/>
-        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
-        <owl:annotatedTarget>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="&location;hasStreet"/>
-                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+                <owl:onProperty rdf:resource="&failures;hasDescriptionNumber"/>
+                <owl:allValuesFrom rdf:resource="&rdf;PlainLiteral"/>
             </owl:Restriction>
         </owl:annotatedTarget>
     </owl:Axiom>
@@ -833,7 +823,7 @@
         <owl:annotatedTarget>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&location;hasCity"/>
-                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+                <owl:allValuesFrom rdf:resource="&rdf;PlainLiteral"/>
             </owl:Restriction>
         </owl:annotatedTarget>
     </owl:Axiom>
@@ -847,11 +837,11 @@
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&location;hasLatitude"/>
+                        <owl:onProperty rdf:resource="&location;hasAltitude"/>
                         <owl:allValuesFrom rdf:resource="&xsd;double"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&location;hasLatitude"/>
+                        <owl:onProperty rdf:resource="&location;hasAltitude"/>
                         <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
                         <owl:onDataRange rdf:resource="&xsd;double"/>
                     </owl:Restriction>
@@ -877,11 +867,11 @@
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&location;hasAltitude"/>
+                        <owl:onProperty rdf:resource="&location;hasLatitude"/>
                         <owl:allValuesFrom rdf:resource="&xsd;double"/>
                     </owl:Restriction>
                     <owl:Restriction>
-                        <owl:onProperty rdf:resource="&location;hasAltitude"/>
+                        <owl:onProperty rdf:resource="&location;hasLatitude"/>
                         <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
                         <owl:onDataRange rdf:resource="&xsd;double"/>
                     </owl:Restriction>
@@ -897,6 +887,26 @@
             <owl:Class>
                 <owl:intersectionOf rdf:parseType="Collection">
                     <owl:Restriction>
+                        <owl:onProperty rdf:resource="&location;hasLatitude"/>
+                        <owl:allValuesFrom rdf:resource="&xsd;double"/>
+                    </owl:Restriction>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&location;hasLatitude"/>
+                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                        <owl:onDataRange rdf:resource="&xsd;double"/>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="&location;GPSPosition"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <owl:Restriction>
                         <owl:onProperty rdf:resource="&location;hasLongitude"/>
                         <owl:allValuesFrom rdf:resource="&xsd;double"/>
                     </owl:Restriction>
@@ -922,26 +932,6 @@
                     </owl:Restriction>
                     <owl:Restriction>
                         <owl:onProperty rdf:resource="&location;hasAltitude"/>
-                        <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
-                        <owl:onDataRange rdf:resource="&xsd;double"/>
-                    </owl:Restriction>
-                </owl:intersectionOf>
-            </owl:Class>
-        </owl:annotatedTarget>
-    </owl:Axiom>
-    <owl:Axiom>
-        <ic:isIntegrityConstraintFor>strufail-0.1</ic:isIntegrityConstraintFor>
-        <owl:annotatedSource rdf:resource="&location;GPSPosition"/>
-        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
-        <owl:annotatedTarget>
-            <owl:Class>
-                <owl:intersectionOf rdf:parseType="Collection">
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&location;hasLatitude"/>
-                        <owl:allValuesFrom rdf:resource="&xsd;double"/>
-                    </owl:Restriction>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&location;hasLatitude"/>
                         <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
                         <owl:onDataRange rdf:resource="&xsd;double"/>
                     </owl:Restriction>

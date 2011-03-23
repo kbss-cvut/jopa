@@ -31,6 +31,7 @@ public class DatatypeTransformer {
 	private static Map<OWL2Datatype, Class<?>> map = new HashMap<OWL2Datatype, Class<?>>();
 
 	static {
+		map.put(OWL2Datatype.RDF_PLAIN_LITERAL, String.class);
 		map.put(OWL2Datatype.XSD_STRING, String.class);
 		map.put(OWL2Datatype.RDF_XML_LITERAL, String.class);
 		map.put(OWL2Datatype.XSD_INT, Integer.class);
@@ -49,11 +50,7 @@ public class DatatypeTransformer {
 		Class<?> type = null;
 
 		if (dt.isBuiltIn()) {
-			if (OWL2Datatype.RDF_PLAIN_LITERAL.getIRI().equals(dt.getIRI())) {
-				type = Object.class;
-			} else {
-				type = map.get(dt.getBuiltInDatatype());
-			}
+			type = map.get(dt.getBuiltInDatatype());
 		}
 
 		if (type == null) {
