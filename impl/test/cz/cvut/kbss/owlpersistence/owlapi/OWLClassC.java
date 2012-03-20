@@ -18,6 +18,7 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 import java.net.URI;
 import java.util.List;
 
+import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
 import cz.cvut.kbss.owlpersistence.model.annotations.Id;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLObjectProperty;
@@ -31,7 +32,7 @@ public class OWLClassC {
 	private URI uri;
 
 	@Sequence
-	@OWLObjectProperty(iri = "http://B-hasReferencedSequence")
+	@OWLObjectProperty(iri = "http://B-hasReferencedSequence",fetch=FetchType.EAGER)
 	private List<OWLClassA> referencedList;
 
 	@Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://B-hasSimpleNext")

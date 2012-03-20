@@ -20,12 +20,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
-import cz.cvut.kbss.owlpersistence.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.owlpersistence.model.annotations.Types;
 import cz.cvut.kbss.owlpersistence.model.annotations.Properties;
+import cz.cvut.kbss.owlpersistence.sessions.CloneBuilderImpl;
 
 public aspect BeanListenerAspect {
 
@@ -33,25 +33,24 @@ public aspect BeanListenerAspect {
 			.getName());
 
 	pointcut getter() : get( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
-
-	pointcut setter() : set( @(OWLObjectProperty || OWLDataProperty || OWLAnnotationProperty || Types || Properties) * * ) && within(@OWLClass *);
-
-	after() : setter()  {
+	
+	pointcut setter() : get( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
+	
+	before() : setter() {
+		final Object object = thisJoinPoint.getTarget();
+		Field field;
 		try {
-			final Object object = thisJoinPoint.getTarget();
-			final Field field = object.getClass().getDeclaredField(
+			field = object.getClass().getDeclaredField(
 					thisJoinPoint.getSignature().getName());
-
-			field.setAccessible(true);
-
-			if (LOG.isLoggable(Level.CONFIG)) {
-				LOG.config("*** Saving " + field.getName() + " of "
-						+ object.getClass() + ":" + object.hashCode());
-			}
-			OWLAPIPersistenceProvider.saveReference(object, field);
 		} catch (NoSuchFieldException e) {
-			// log.log(Level.SEVERE, e.getMessage(), e);
+			LOG.log(Level.SEVERE, e.getMessage(), e);
 			throw new OWLPersistenceException();
+		} catch (SecurityException e) {
+			LOG.log(Level.SEVERE, e.getMessage(), e);
+			throw new OWLPersistenceException();
+		}
+		if (CloneBuilderImpl.isFieldInferred(field)) {
+			throw new OWLPersistenceException("Modifying inferred attributes is forbidden.");
 		}
 	}
 
@@ -70,9 +69,14 @@ public aspect BeanListenerAspect {
 
 			OWLAPIPersistenceProvider.loadReference(object, field);
 		} catch (NoSuchFieldException e) {
-			// log.log(Level.SEVERE, e.getMessage(), e);
+			LOG.log(Level.SEVERE, e.getMessage(), e);
 			throw new OWLPersistenceException();
-
+		} catch (IllegalArgumentException e) {
+			LOG.log(Level.SEVERE, e.getMessage(), e);
+			throw new OWLPersistenceException();
+		} catch (IllegalAccessException e) {
+			LOG.log(Level.SEVERE, e.getMessage(), e);
+			throw new OWLPersistenceException();
 		}
 	}
 }

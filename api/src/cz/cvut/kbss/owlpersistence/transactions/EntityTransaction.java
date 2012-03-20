@@ -13,8 +13,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cz.cvut.kbss.owlpersistence.model;
+package cz.cvut.kbss.owlpersistence.transactions;
 
+/**
+ * Taken from javax.persistence.EntityTransacion
+ * 
+ * @author kidney
+ *
+ */
 public interface EntityTransaction {
 
 	public void begin();

@@ -72,7 +72,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">old-value</http:A-stringAttribute>
+        <http:A-stringAttribute>old-value</http:A-stringAttribute>
     </owl:NamedIndividual>
 </rdf:RDF>
 

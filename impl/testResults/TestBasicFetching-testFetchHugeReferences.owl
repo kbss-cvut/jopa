@@ -1015,7 +1015,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-0">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1024,7 +1024,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-1">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1033,7 +1033,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-10">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1042,7 +1042,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-11">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1051,7 +1051,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-12">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1060,7 +1060,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-13">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1069,7 +1069,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-14">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1078,7 +1078,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-15">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1087,7 +1087,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-16">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1096,7 +1096,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-17">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1105,7 +1105,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-18">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1114,7 +1114,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-19">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1123,7 +1123,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-2">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1132,7 +1132,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-20">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1141,7 +1141,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-21">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1150,7 +1150,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-22">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1159,7 +1159,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-23">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1168,7 +1168,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-24">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1177,7 +1177,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-25">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1186,7 +1186,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-26">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1195,7 +1195,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-27">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1204,7 +1204,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-28">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1213,7 +1213,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-29">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1222,7 +1222,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-3">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1231,7 +1231,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-30">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1240,7 +1240,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-31">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1249,7 +1249,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-32">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1258,7 +1258,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-33">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1267,7 +1267,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-34">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1276,7 +1276,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-35">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1285,7 +1285,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-36">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1294,7 +1294,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-37">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1303,7 +1303,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-38">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1312,7 +1312,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-39">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1321,7 +1321,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-4">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1330,7 +1330,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-40">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1339,7 +1339,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-41">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1348,7 +1348,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-42">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1357,7 +1357,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-43">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1366,7 +1366,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-44">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1375,7 +1375,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-45">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1384,7 +1384,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-46">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1393,7 +1393,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-47">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1402,7 +1402,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-48">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1411,7 +1411,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-49">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1420,7 +1420,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-5">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1429,7 +1429,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-50">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1438,7 +1438,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-51">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1447,7 +1447,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-52">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1456,7 +1456,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-53">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1465,7 +1465,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-54">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1474,7 +1474,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-55">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1483,7 +1483,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-56">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1492,7 +1492,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-57">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1501,7 +1501,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-58">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1510,7 +1510,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-59">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1519,7 +1519,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-6">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1528,7 +1528,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-60">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1537,7 +1537,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-61">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1546,7 +1546,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-62">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1555,7 +1555,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-63">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1564,7 +1564,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-64">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1573,7 +1573,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-65">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1582,7 +1582,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-66">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1591,7 +1591,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-67">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1600,7 +1600,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-68">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1609,7 +1609,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-69">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1618,7 +1618,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-7">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1627,7 +1627,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-70">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1636,7 +1636,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-71">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1645,7 +1645,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-72">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1654,7 +1654,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-73">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1663,7 +1663,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-74">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1672,7 +1672,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-75">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1681,7 +1681,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-76">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1690,7 +1690,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-77">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1699,7 +1699,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-78">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1708,7 +1708,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-79">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1717,7 +1717,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-8">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1726,7 +1726,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-80">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1735,7 +1735,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-81">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1744,7 +1744,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-82">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1753,7 +1753,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-83">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1762,7 +1762,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-84">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1771,7 +1771,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-85">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1780,7 +1780,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-86">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1789,7 +1789,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-87">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1798,7 +1798,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-88">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1807,7 +1807,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-89">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1816,7 +1816,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-9">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1825,7 +1825,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-90">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1834,7 +1834,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-91">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1843,7 +1843,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-92">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1852,7 +1852,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-93">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1861,7 +1861,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-94">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1870,7 +1870,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-95">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1879,7 +1879,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-96">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1888,7 +1888,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-97">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1897,7 +1897,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-98">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1906,7 +1906,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A-99">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
     </owl:NamedIndividual>
     
 

@@ -17,12 +17,14 @@ package cz.cvut.kbss.owlpersistence.model;
 
 import java.util.List;
 
+import javax.persistence.EntityTransaction;
 import javax.transaction.TransactionRequiredException;
 
 import cz.cvut.kbss.owlpersistence.NonJPA;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
 import cz.cvut.kbss.owlpersistence.model.query.Query;
 import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
+import cz.cvut.kbss.owlpersistence.sessions.UnitOfWork;
 
 public interface EntityManager {
 
@@ -240,7 +242,8 @@ public interface EntityManager {
 	// resultClass)
 
 	/**
-	 * Create an instance of Query for executing a native SPARQL-DL query in SPARQL syntax.
+	 * Create an instance of Query for executing a native SPARQL-DL query in
+	 * SPARQL syntax.
 	 * 
 	 * @param sqlString
 	 *            a native SQL query string
@@ -249,7 +252,8 @@ public interface EntityManager {
 	public Query<List<String>> createNativeQuery(String sqlString);
 
 	/**
-	 * Create an instance of Query for executing a native SPARQL-DL query returning only specific object type.
+	 * Create an instance of Query for executing a native SPARQL-DL query
+	 * returning only specific object type.
 	 * 
 	 * @param sqlString
 	 *            a native SQL query string
@@ -319,7 +323,7 @@ public interface EntityManager {
 	 * @throws IllegalStateException
 	 *             if invoked on a JTA EntityManager.
 	 */
-	public EntityTransaction getTransaction();
+	public javax.persistence.EntityTransaction getTransaction();
 
 	/**
 	 * @since JPA 2.0
@@ -327,10 +331,9 @@ public interface EntityManager {
 	public EntityManagerFactory getEntityManagerFactory();
 
 	/**
-	 * Returns a label for the given IRI. The label is returned with the following preference:
-	 *    1) label in the language specified for the entity manager
-	 *    2) label without language tag
-	 *    3) any (unspecified) label
+	 * Returns a label for the given IRI. The label is returned with the
+	 * following preference: 1) label in the language specified for the entity
+	 * manager 2) label without language tag 3) any (unspecified) label
 	 * 
 	 * @param iri
 	 * @return
@@ -340,4 +343,35 @@ public interface EntityManager {
 
 	// TODO JPA 2.0 public CriteriaBuilder getCriteriaBuilder();
 	public Metamodel getMetamodel();
+
+	/**
+	 * Return the UnitOfWork that holds the current persistence context.
+	 * INTERNAL.
+	 * 
+	 * @return UnitOfWork
+	 */
+	public UnitOfWork getCurrentPersistenceContext();
+
+	/**
+	 * Remove the current persistence context UnitOfWork. INTERNAL.
+	 */
+	public void removeCurrentPersistenceContext();
+
+	/**
+	 * Let the managing server session know that a transaction has been started.
+	 * INTERNAL.
+	 * 
+	 * @param t
+	 *            The entity transaction that was started.
+	 */
+	public void transactionStarted(EntityTransaction t);
+
+	/**
+	 * Let the managing server session know that a transaction has finished
+	 * successfully. INTERNAL.
+	 * 
+	 * @param t
+	 *            The committed entity transaction.
+	 */
+	public void transactionCommitted(EntityTransaction t);
 }

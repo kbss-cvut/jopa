@@ -54,16 +54,22 @@ public class MetamodelImpl implements Metamodel {
 
 	private static final Logger LOG = Logger.getLogger(Metamodel.class
 			.getName());
+	private static final String ASPECTJ_CLASS = "org.aspectj.weaver.loadtime.Agent";
 
 	private final Map<Class<?>, EntityType<?>> typeMap = new HashMap<Class<?>, EntityType<?>>();
 
+	private final Set<Class<?>> inferredClasses = new HashSet<Class<?>>();
+
 	@SuppressWarnings(value = "unused")
 	private EntityManagerFactoryImpl emf;
+
+	private boolean shouldUseAspectJ;
 
 	private static final Set<Class<?>> entities = new HashSet<Class<?>>();
 
 	MetamodelImpl(final EntityManagerFactoryImpl emf) {
 		this.emf = emf;
+		this.shouldUseAspectJ = true;
 		build();
 	}
 
@@ -71,9 +77,24 @@ public class MetamodelImpl implements Metamodel {
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Building metamodel ... ");
 		}
+		checkForWeaver();
 
 		for (final Class<?> entity : entities) {
 			processOWLClass(entity);
+		}
+	}
+
+	/**
+	 * Check the class path for aspectj weaver, which is vital for using lazy
+	 * loading.
+	 */
+	private void checkForWeaver() {
+		try {
+			Class<?> c = MetamodelImpl.class.getClassLoader().loadClass(ASPECTJ_CLASS);
+			this.shouldUseAspectJ = true;
+		} catch (ClassNotFoundException e) {
+			this.shouldUseAspectJ = false;
+			LOG.info("AspectJ weaver not found. Lazy loading will be disabled.");
 		}
 	}
 
@@ -199,6 +220,10 @@ public class MetamodelImpl implements Metamodel {
 				iri = IRI.create(oap.iri());
 				type = BasicTypeImpl.get(cxx);
 				inferred = oap.inferred();
+			}
+
+			if (inferred) {
+				inferredClasses.add(cls);
 			}
 
 			final Attribute<X, ?> a;
@@ -328,5 +353,13 @@ public class MetamodelImpl implements Metamodel {
 
 	public <X> ManagedType<X> managedType(Class<X> cls) {
 		return entity(cls);
+	}
+
+	public Set<Class<?>> getInferredClasses() {
+		return this.inferredClasses;
+	}
+
+	public boolean shouldUseAspectJ() {
+		return shouldUseAspectJ;
 	}
 }

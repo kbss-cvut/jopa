@@ -41,8 +41,8 @@ public interface Metamodel {
 	 * 
 	 * @param cls
 	 *            the type of the represented managed class
-	 *@return the metamodel managed type
-	 *@throws IllegalArgumentException
+	 * @return the metamodel managed type
+	 * @throws IllegalArgumentException
 	 *             if not a managed class
 	 */
 	@UnusedJPA
@@ -54,8 +54,8 @@ public interface Metamodel {
 	 * 
 	 * @param cls
 	 *            the type of the represented embeddable class
-	 *@return the metamodel embeddable type
-	 *@throws IllegalArgumentException
+	 * @return the metamodel embeddable type
+	 * @throws IllegalArgumentException
 	 *             if not an embeddable class
 	 */
 	@UnusedJPA
@@ -87,4 +87,23 @@ public interface Metamodel {
 	@UnusedJPA
 	@Deprecated
 	Set<EmbeddableType<?>> getEmbeddables();
+
+	/**
+	 * Get the set of classes that contain inferred attributes. These classes
+	 * are handled specially since inferred attributes can be influenced by
+	 * changes to any other attributes in any other entity.
+	 * 
+	 * @return The set of classes with inferred attributes.
+	 */
+	public Set<Class<?>> getInferredClasses();
+
+	/**
+	 * Returns true if the persistence can and should use AspectJ for weaving
+	 * entities and their properties. AspectJ is essential to lazy loading
+	 * functionality, this without it all entities and their properties should
+	 * be eager loaded.
+	 * 
+	 * @return True if AspectJ is available and should be used.
+	 */
+	public boolean shouldUseAspectJ();
 }

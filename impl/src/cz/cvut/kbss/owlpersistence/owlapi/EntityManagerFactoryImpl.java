@@ -26,6 +26,7 @@ import cz.cvut.kbss.owlpersistence.model.EntityManagerFactory;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
 import cz.cvut.kbss.owlpersistence.model.PersistenceUnitUtil;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
+import cz.cvut.kbss.owlpersistence.sessions.ServerSession;
 
 public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		PersistenceUnitUtil {
@@ -34,6 +35,8 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 
 	private final Set<AbstractEntityManager> em = new HashSet<AbstractEntityManager>();
 	private final Map<String, String> properties;
+
+	private ServerSession serverSession;
 
 	private MetamodelImpl metamodel = null;
 
@@ -66,10 +69,39 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		newMap.putAll(properties);
 		newMap.putAll(map);
 
-		final AbstractEntityManager c = new EntityManagerImpl(this, newMap);
+		initServerSession(newMap);
+
+		final AbstractEntityManager c = new EntityManagerImpl(this, newMap,
+				this.serverSession);
 
 		em.add(c);
 		return c;
+	}
+
+	/**
+	 * Initializes the server session if necessary.
+	 * 
+	 * @param newMap
+	 *            Map of properties. These properties specify primarily the
+	 *            connection to the underlying ontology.
+	 */
+	private void initServerSession(Map<String, String> newMap) {
+		if (this.serverSession == null) {
+			this.serverSession = new ServerSession(newMap, getMetamodel());
+		}
+	}
+
+	/**
+	 * The server session should by initialized by now, but to make sure, there
+	 * is default initialization with an empty properties map.
+	 * 
+	 * @return The ServerSession for this factory.
+	 */
+	public ServerSession getServerSession() {
+		if (this.serverSession == null) {
+			this.initServerSession(Collections.<String, String> emptyMap());
+		}
+		return this.serverSession;
 	}
 
 	public boolean isOpen() {

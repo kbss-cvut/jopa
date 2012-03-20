@@ -20,8 +20,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import cz.cvut.kbss.owlpersistence.accessors.OWLOntologyAccessor;
 import cz.cvut.kbss.owlpersistence.model.EntityManagerFactory;
 import cz.cvut.kbss.owlpersistence.model.LoadState;
+import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
 import cz.cvut.kbss.owlpersistence.model.PersistenceProvider;
 import cz.cvut.kbss.owlpersistence.model.ProviderUtil;
 
@@ -33,7 +35,6 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 	public OWLAPIPersistenceProvider() {
 	}
 
-	
 	public EntityManagerFactory createEntityManagerFactory(String emName,
 			Map map) {
 		final EntityManagerFactoryImpl emf = new EntityManagerFactoryImpl(map);
@@ -41,22 +42,18 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 		return emf;
 	}
 
-	
 	public ProviderUtil getProviderUtil() {
 		return this;
 	}
 
-	
 	public LoadState isLoaded(Object entity) {
 		return LoadState.UNKNOWN;
 	}
 
-	
 	public LoadState isLoadedWithReference(Object entity, String attributeName) {
 		return LoadState.UNKNOWN;
 	}
 
-	
 	public LoadState isLoadedWithoutReference(Object entity,
 			String attributeName) {
 		return LoadState.UNKNOWN;
@@ -74,19 +71,34 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 		return null;
 	}
 
-	static void loadReference(Object o, Field f) {
-		final AbstractEntityManager ei = find(o);
+	static void loadReference(Object o, Field f)
+			throws IllegalArgumentException, IllegalAccessException {
+		final EntityManagerImpl ei = (EntityManagerImpl) find(o);
 
 		if (ei != null) {
-			ei.loadReference(o, f);
+			Object managedOrig = ei.getCurrentPersistenceContext().getOriginal(
+					o);
+			if (managedOrig == null) {
+				throw new OWLPersistenceException(
+						"Entity not managed in the current persistence context.");
+			}
+			Object val = f.get(managedOrig);
+			if (val != null) {
+				return;
+			}
+			OWLOntologyAccessor accessor = (OWLOntologyAccessor) ei
+					.getServerSession().getOntologyAccessor();
+			accessor.loadReference(o, f);
 		}
 	}
 
 	static void saveReference(Object o, Field f) {
-		final AbstractEntityManager ei = find(o);
+		final EntityManagerImpl ei = (EntityManagerImpl) find(o);
 
 		if (ei != null) {
-			ei.saveReference(o, f);
+			OWLOntologyAccessor accessor = (OWLOntologyAccessor) ei
+					.getServerSession().getOntologyAccessor();
+			accessor.saveReference(o, f, ei.getCurrentPersistenceContext());
 		}
 	}
 }

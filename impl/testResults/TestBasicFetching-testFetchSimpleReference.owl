@@ -157,7 +157,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#A">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute xml:lang="en">new-value</http:A-stringAttribute>
+        <http:A-stringAttribute>new-value</http:A-stringAttribute>
         <http:B-hasSimpleNext rdf:resource="http://new#A2"/>
     </owl:NamedIndividual>
     

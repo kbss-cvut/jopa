@@ -56,8 +56,8 @@ public class TestPersistenceConnectorLogic extends TestCase {
 		try {
 			pc.persist(t);
 		} catch (OWLPersistenceException e) {
-			fail();
-			log.info("Persisting failed : " + e.getMessage());
+			log.info("Persisting failed - OK: " + e.getMessage() + "\nCause: "
+					+ e.getCause().getMessage());
 			return;
 		} finally {
 			pc.close();
@@ -78,9 +78,9 @@ public class TestPersistenceConnectorLogic extends TestCase {
 
 		try {
 			pc.persist(b);
-			fail();
 		} catch (OWLPersistenceException e) {
-			log.info("Persisting failed - OK : " + e.getMessage());
+			log.info("Persisting failed - OK : " + e.getMessage()
+					+ "\n Cause: " + e.getCause().getMessage());
 			return;
 		} finally {
 			pc.close();

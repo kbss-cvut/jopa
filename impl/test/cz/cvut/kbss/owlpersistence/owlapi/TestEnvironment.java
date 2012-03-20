@@ -46,10 +46,14 @@ public class TestEnvironment {
 	// "org.semanticweb.HermiT.Reasoner$ReasonerFactory";
 
 	public static EntityManager getPersistenceConnector(String name) {
-		return getPersistenceConnector(name, false);
+		return getPersistenceConnector(name, false, true);
+	}
+	
+	public static EntityManager getPersistenceConnector(String name, boolean cache) {
+		return getPersistenceConnector(name, false, cache);
 	}
 
-	public static EntityManager getPersistenceConnector(String name, boolean db) {
+	public static EntityManager getPersistenceConnector(String name, boolean db, boolean cache) {
 		try {
 			final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
 			final IRI iri = IRI
@@ -68,6 +72,11 @@ public class TestEnvironment {
 			if (db) {
 				params.put(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION,
 						"jdbc:postgresql://localhost/strufail_owlapi");
+			}
+			if (cache) {
+				params.put("cache", "on");
+			} else {
+				params.put("cache", "off");
 			}
 			params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, url
 					.toURI().toString());

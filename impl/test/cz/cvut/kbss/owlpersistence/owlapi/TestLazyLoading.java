@@ -16,10 +16,11 @@
 package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import junit.framework.TestCase;
-
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
 
 public class TestLazyLoading extends TestCase {
@@ -38,7 +39,9 @@ public class TestLazyLoading extends TestCase {
 		URI uriC = URI.create("http://newC");
 		c.setUri(uriC);
 
-		c.setReferencedList(Collections.singletonList(a));
+		List<OWLClassA> tmp = new ArrayList<OWLClassA>();
+		tmp.add(a);
+		c.setReferencedList(tmp);
 
 		pc.persist(a);
 		pc.persist(c);
@@ -50,6 +53,7 @@ public class TestLazyLoading extends TestCase {
 		final OWLClassC aX = pc.find(OWLClassC.class, uriC);
 
 		System.out.println(aX.getReferencedList());
+		assertNotNull(aX.getReferencedList());
 
 		pc.close();
 	}

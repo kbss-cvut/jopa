@@ -18,20 +18,17 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.persistence.EntityTransaction;
+import javax.persistence.TransactionRequiredException;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AddAxiom;
@@ -40,63 +37,44 @@ import org.semanticweb.owlapi.model.AddOntologyAnnotation;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
-import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAnnotationValueVisitor;
 import org.semanticweb.owlapi.model.OWLAnonymousIndividual;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
-import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
-import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyChangeException;
 import org.semanticweb.owlapi.model.OWLOntologyChangeVisitor;
 import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.RemoveAxiom;
 import org.semanticweb.owlapi.model.RemoveImport;
 import org.semanticweb.owlapi.model.RemoveOntologyAnnotation;
 import org.semanticweb.owlapi.model.SetOntologyID;
-import org.semanticweb.owlapi.model.UnknownOWLOntologyException;
 import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
-import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
-import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
 import cz.cvut.kbss.owl2query.engine.OWL2QueryEngine;
 import cz.cvut.kbss.owl2query.model.OWL2Ontology;
 import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3OWL2Ontology;
 import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3QueryFactory;
-import cz.cvut.kbss.owlpersistence.model.EntityTransaction;
-import cz.cvut.kbss.owlpersistence.model.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
+import cz.cvut.kbss.owlpersistence.model.OWLPersistentObjectException;
 import cz.cvut.kbss.owlpersistence.model.annotations.CascadeType;
-import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
-import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.owlpersistence.model.ic.IntegrityConstraint;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Attribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EntityType;
-import cz.cvut.kbss.owlpersistence.model.metamodel.ListAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
-import cz.cvut.kbss.owlpersistence.model.metamodel.PluralAttribute;
-import cz.cvut.kbss.owlpersistence.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.owlpersistence.model.metamodel.SingularAttribute;
-import cz.cvut.kbss.owlpersistence.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.owlpersistence.model.query.Query;
 import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
+import cz.cvut.kbss.owlpersistence.sessions.ServerSession;
+import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.owlpersistence.transactions.EntityTransactionWrapper;
+import cz.cvut.kbss.owlpersistence.transactions.TransactionWrapper;
 import cz.cvut.kbss.owlpersistence.util.MappingFileParser;
 
 public class EntityManagerImpl extends AbstractEntityManager {
@@ -121,117 +99,121 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 * persistence context.
 	 */
 	private final Map<Object, OWLNamedIndividual> removed = new HashMap<Object, OWLNamedIndividual>();
-	private final Map<Object, List<OWLOntologyChange>> removeChanges = Collections
-			.synchronizedMap(new HashMap<Object, List<OWLOntologyChange>>());
 	private final List<OWLOntologyChange> allChanges = Collections
 			.synchronizedList(new ArrayList<OWLOntologyChange>());
 	private boolean open;
 	private String lang = "en";
-	private EntityTransaction tx = null;
+
+	private TransactionWrapper transaction;
+	private UnitOfWorkImpl persistenceContext;
+	private ServerSession serverSession;
 
 	public EntityManagerImpl(EntityManagerFactoryImpl emf,
-			Map<String, String> map) {
+			Map<String, String> map, ServerSession serverSession) {
 		this.emf = emf;
+		this.serverSession = serverSession;
+//
+//		final String ontologyURI = map
+//				.get(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY);
+//		final String mappingFileURI = map
+//				.get(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY);
+//		final String reasonerFactoryClass = map
+//				.get(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS);
+//		final String dbConnection = map
+//				.get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
+//		final String languageTag = map.get(OWLAPIPersistenceProperties.LANG);
+//
+//		if (languageTag != null) {
+//			lang = languageTag;
+//		}
+//
+//		try {
+//			this.rf = (OWLReasonerFactory) Class.forName(reasonerFactoryClass)
+//					.newInstance();
+//		} catch (Exception e) {
+//			throw new OWLPersistenceException("Error instantiating factory '"
+//					+ reasonerFactoryClass + "'.", e);
+//		}
+//
+//		if (ontologyURI == null) {
+//			throw new IllegalArgumentException(
+//					"Either a document URL or an ontology URI must be specified.");
+//		}
+//
+//		if (LOG.isLoggable(Level.INFO)) {
+//			LOG.info("Loading model ontologyURI='" + ontologyURI
+//					+ "', mappingFileURI='" + mappingFileURI + "'.");
+//		}
+//		try {
+//
+//			if (dbConnection != null) {
+//				LOG.info("Using database backend: " + dbConnection);
+//				// TODO
+//				// this.m = Class.forName(OWLDBManagerclassName)
+//				// .createOWLOntologyManager(OWLDataFactoryImpl
+//				// .getInstance());
+//
+//			} else {
+//				this.m = OWLManager.createOWLOntologyManager();
+//			}
+//
+//			this.f = m.getOWLDataFactory();
+//
+//			final Map<URI, URI> mapping = getMappings(mappingFileURI);
+//			LOG.info("Found mappings = " + mapping);
+//
+//			m.addIRIMapper(new OWLOntologyIRIMapper() {
+//				public IRI getDocumentIRI(IRI arg0) {
+//					if (!mapping.containsKey(arg0.toURI())) {
+//						return arg0;
+//					}
+//
+//					return IRI.create(mapping.get(arg0.toURI()));
+//				}
+//			});
+//			LOG.info("Mapping file succesfully parsed.");
+//
+//			if (dbConnection != null) {
+//				// workingOnt = m.loadOntology(IRI.create(dbConnection));
+//				// LOG.info("INDS: "
+//				// + workingOnt.getIndividualsInSignature().size());
+//				// m.saveOntology(workingOnt);
+//			} else {
+//				URI physicalURI = mapping.get(URI.create(ontologyURI));
+//
+//				if (physicalURI == null) {
+//					physicalURI = URI.create(ontologyURI);
+//				}
+//
+//				if (physicalURI != null) {
+//					workingOnt = m.loadOntologyFromOntologyDocument(new File(
+//							physicalURI));
+//				} else if (ontologyURI.startsWith("file:")) {
+//					workingOnt = m.loadOntologyFromOntologyDocument(new File(
+//							URI.create(ontologyURI)));
+//				} else {
+//					workingOnt = m.loadOntology(IRI.create(ontologyURI));
+//				}
+//			}
+//			reasoningOnt = new OWLOntologyMerger(m).createMergedOntology(m,
+//					IRI.create("http://temporary"));
+//			LOG.info("Ontology " + ontologyURI + " succesfully loaded.");
+//		} catch (Exception e) {
+//			LOG.log(Level.SEVERE, null, e);
+//		}
+//		try {
+//			r = rf.createReasoner(reasoningOnt);
+//			r.precomputeInferences(InferenceType.CLASS_ASSERTIONS);
+//		} catch (Exception e) {
+//			LOG.log(Level.SEVERE, e.getMessage(), e);
+//		}
 
-		final String ontologyURI = map
-				.get(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY);
-		final String mappingFileURI = map
-				.get(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY);
-		final String reasonerFactoryClass = map
-				.get(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS);
-		final String dbConnection = map
-				.get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
-		final String languageTag = map.get(OWLAPIPersistenceProperties.LANG);
-
-		if (languageTag != null) {
-			lang = languageTag;
-		}
-
-		try {
-			this.rf = (OWLReasonerFactory) Class.forName(reasonerFactoryClass)
-					.newInstance();
-		} catch (Exception e) {
-			throw new OWLPersistenceException("Error instantiating factory '"
-					+ reasonerFactoryClass + "'.", e);
-		}
-
-		if (ontologyURI == null) {
-			throw new IllegalArgumentException(
-					"Either a document URL or an ontology URI must be specified.");
-		}
-
-		if (LOG.isLoggable(Level.INFO)) {
-			LOG.info("Loading model ontologyURI='" + ontologyURI
-					+ "', mappingFileURI='" + mappingFileURI + "'.");
-		}
-		try {
-
-			if (dbConnection != null) {
-				LOG.info("Using database backend: " + dbConnection);
-				// TODO
-				// this.m = Class.forName(OWLDBManagerclassName)
-				// .createOWLOntologyManager(OWLDataFactoryImpl
-				// .getInstance());
-
-			} else {
-				this.m = OWLManager.createOWLOntologyManager();
-			}
-
-			this.f = m.getOWLDataFactory();
-
-			final Map<URI, URI> mapping = getMappings(mappingFileURI);
-			LOG.info("Found mappings = " + mapping);
-
-			m.addIRIMapper(new OWLOntologyIRIMapper() {
-				public IRI getDocumentIRI(IRI arg0) {
-					if (!mapping.containsKey(arg0.toURI())) {
-						return arg0;
-					}
-
-					return IRI.create(mapping.get(arg0.toURI()));
-				}
-			});
-			LOG.info("Mapping file succesfully parsed.");
-
-			if (dbConnection != null) {
-				// workingOnt = m.loadOntology(IRI.create(dbConnection));
-				// LOG.info("INDS: "
-				// + workingOnt.getIndividualsInSignature().size());
-				// m.saveOntology(workingOnt);
-			} else {
-				URI physicalURI = mapping.get(URI.create(ontologyURI));
-
-				if (physicalURI == null) {
-					physicalURI = URI.create(ontologyURI);
-				}
-
-				if (physicalURI != null) {
-					workingOnt = m.loadOntologyFromOntologyDocument(new File(
-							physicalURI));
-				} else if (ontologyURI.startsWith("file:")) {
-					workingOnt = m.loadOntologyFromOntologyDocument(new File(
-							URI.create(ontologyURI)));
-				} else {
-					workingOnt = m.loadOntology(IRI.create(ontologyURI));
-				}
-			}
-			reasoningOnt = new OWLOntologyMerger(m).createMergedOntology(m,
-					IRI.create("http://temporary"));
-			LOG.info("Ontology " + ontologyURI + " succesfully loaded.");
-		} catch (Exception e) {
-			LOG.log(Level.SEVERE, null, e);
-		}
-		try {
-			r = rf.createReasoner(reasoningOnt);
-			r.precomputeInferences(InferenceType.CLASS_ASSERTIONS);
-		} catch (Exception e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-		}
+		this.setTransactionWrapper();
 
 		this.open = true;
 	}
 
-	private enum State {
+	public enum State {
 		NEW, MANAGED, DETACHED, REMOVED;
 	}
 
@@ -267,37 +249,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 									+ entity
 									+ " is null and it is not specified as 'generated' ");
 				}
-
-				if ((workingOnt.containsIndividualInSignature(id, true) || (managed
-						.values().contains(f.getOWLNamedIndividual(id))))
-						&& !entity.getClass().isEnum()) {
-					throw new OWLPersistenceException("An entity with URI "
-							+ id + " is already persisted within the context.");
-				}
-
-				managed.put(entity, f.getOWLNamedIndividual(id));
-
-				final OWLNamedIndividual ii = managed.get(entity);
-
-				final OWLClassAssertionAxiom aa = f.getOWLClassAssertionAxiom(
-						f.getOWLClass(IRI.create(e.getIRI().toString())), ii);
-
-				addChange(new AddAxiom(workingOnt, aa));
-
-				final TypesSpecification<?, ?> types = e.getTypes();
-				if (types != null) {
-					_saveTypesReference(entity, types);
-				}
-
-				final PropertiesSpecification<?, ?> properties = e
-						.getProperties();
-				if (properties != null) {
-					_savePropertiesReference(entity, properties);
-				}
-
-				for (final Attribute<?, ?> a : e.getAttributes()) {
-					_saveReference(entity, a);
-				}
+				getCurrentPersistenceContext().registerNewObject(id, entity);
 
 			} catch (Exception e) {
 				throw new OWLPersistenceException(
@@ -333,18 +285,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			}.start(this, entity, CascadeType.PERSIST);
 			break;
 		case DETACHED:
-			final Object id1 = getEntityManagerFactory()
-					.getPersistenceUnitUtil().getIdentifier(entity);
-			for (final Object o : managed.keySet()) {
-				if (id1 == getEntityManagerFactory().getPersistenceUnitUtil()
-						.getIdentifier(o)) {
-					throw new IllegalArgumentException();
-				}
-			}
-			break;
+			throw new OWLPersistentObjectException("Detached entity passed to persist: " + entity.getClass().getName());
 		case REMOVED:
-			managed.put(entity, removed.remove(entity));
-			allChanges.removeAll(removeChanges.remove(entity));
+			getCurrentPersistenceContext().revertObject(entity);
 			break;
 		}
 	}
@@ -374,6 +317,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 						at.getJavaField().set(merged, at.getJavaField().get(o));
 					}
 				};
+				return entity;
 			} catch (InstantiationException e) {
 				throw new OWLPersistenceException(e);
 			} catch (IllegalAccessException e) {
@@ -391,21 +335,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		case DETACHED:
 			final T merged;
 
-			final OWLNamedIndividual ind = f
-					.getOWLNamedIndividual(getIdentifier(entity));
+			getCurrentPersistenceContext().mergeDetached(entity);
 
-			if (!managed.values().contains(ind)) {
-				merged = create(clz, ind);
-			} else {
-				T x = null;
-				for (Object o : managed.keySet()) {
-					if (managed.get(o).equals(ind)) {
-						x = clz.cast(o);
-						break;
-					}
-				}
-				merged = x;
-			}
+			merged = entity; // TODO Check if this is right
 
 			new OneLevelCascadeExplorer() {
 				@Override
@@ -420,6 +352,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 					at.getJavaField().set(merged, at.getJavaField().get(o));
 				}
 			};
+			return entity;
 		case REMOVED:
 		default:
 			throw new IllegalArgumentException();
@@ -431,16 +364,14 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 		switch (getState(object)) {
 		case NEW:
+			// New objects are also registered, so they have to be removed
+			getCurrentPersistenceContext().removeObject(object);
 			break;
 		case DETACHED:
 			throw new IllegalArgumentException();
 		case MANAGED:
-			removed.put(object, managed.remove(object));
-			OWLEntityRemover r = new OWLEntityRemover(m,
-					Collections.singleton(workingOnt));
-			r.visit(removed.get(object));
-			allChanges.addAll(r.getChanges());
-			removeChanges.put(object, r.getChanges());
+			getCurrentPersistenceContext().removeObject(object);
+			break;
 		case REMOVED:
 			new OneLevelCascadeExplorer() {
 				@Override
@@ -454,27 +385,18 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	public <T> T find(Class<T> t, Object primaryKey) {
+		if (primaryKey == null) {
+			return null;
+		}
 		ensureOpen();
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Finding " + t + " with key " + primaryKey);
 		}
 		final IRI uri = IRI.create(primaryKey.toString());
 
-		OWLNamedIndividual i = f.getOWLNamedIndividual(uri);
+		T ob = getCurrentPersistenceContext().readObject(t, uri);
 
-		if (managed.containsValue(i)) {
-			for (Object o : managed.keySet()) {
-				if (managed.get(o).equals(i)) {
-					return t.cast(o);
-				}
-			}
-		}
-
-		if (workingOnt.containsIndividualInSignature(uri, true)) {
-			return create(t, i);
-		}
-
-		return null;
+		return ob;
 	}
 
 	public void flush() {
@@ -483,44 +405,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Flushing ...");
 		}
-
-		synchronized (allChanges) {
-			if (allChanges.isEmpty()) {
-				return;
-			}
-
-			try {
-				if (LOG.isLoggable(Level.FINE)) {
-					LOG.fine("CHANGESET: ");
-					for (final OWLOntologyChange c : allChanges) {
-						LOG.fine("         " + c);
-					}
-				}
-
-				m.applyChanges(allChanges);
-
-				if (LOG.isLoggable(Level.INFO)) {
-					LOG.info("Writing model to "
-							+ m.getOntologyDocumentIRI(workingOnt) + " using "
-							+ m.getOntologyFormat(workingOnt));
-				}
-
-				m.saveOntology(workingOnt);
-
-				allChanges.clear();
-				removeChanges.clear();
-
-				if (LOG.isLoggable(Level.INFO)) {
-					LOG.info("Model succesfully stored.");
-				}
-			} catch (OWLOntologyChangeException e) {
-				clear();
-			} catch (UnknownOWLOntologyException e) {
-				throw new OWLPersistenceException(e);
-			} catch (OWLOntologyStorageException e) {
-				throw new OWLPersistenceException(e);
-			}
+		if (getTransaction().isActive()) {
+			throw new TransactionRequiredException();
 		}
+		this.getCurrentPersistenceContext().writeUncommittedChanges();
 	}
 
 	public void refresh(Object object) {
@@ -532,13 +420,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		case REMOVED:
 			throw new IllegalArgumentException();
 		case MANAGED:
-			// if (toRefresh.contains(object)) {
-			loadObjectFromModel(object, true);
-			// toRefresh.remove(object);
-			// } else {
-			// LOG.warning("Object not refreshed : " + object
-			// + " because it is up-to-date.");
-			// }
+			this.getCurrentPersistenceContext().revertObject(object);
 			new OneLevelCascadeExplorer() {
 				@Override
 				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
@@ -551,6 +433,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	public void clear() {
 		managed.clear();
 		removed.clear();
+		getCurrentPersistenceContext().clear();
+		this.serverSession.releaseObjectCache();
 	}
 
 	public void detach(Object entity) {
@@ -558,7 +442,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 		switch (getState(entity)) {
 		case MANAGED:
-			managed.remove(entity);
+			getCurrentPersistenceContext().unregisterObject(entity);
 			new OneLevelCascadeExplorer() {
 				@Override
 				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
@@ -567,7 +451,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			}.start(this, entity, CascadeType.DETACH);
 			break;
 		case REMOVED:
-			removed.remove(entity);
+			getCurrentPersistenceContext().unregisterObject(entity);
 			new OneLevelCascadeExplorer() {
 				@Override
 				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
@@ -583,24 +467,21 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 	public boolean contains(Object entity) {
 		ensureOpen();
-		return managed.containsKey(entity);
+		return getCurrentPersistenceContext().contains(entity);
 	}
 
 	public void close() {
 		ensureOpen();
+		removeCurrentPersistenceContext();
 		open = false;
-		// flush();
-		// m = null;
-		// o = null;
-		// r = null;
 	}
 
 	public boolean isOpen() {
 		return open;
 	}
 
-	public EntityTransaction getTransaction() {
-		return tx;
+	public javax.persistence.EntityTransaction getTransaction() {
+		return transaction.getTransaction();
 	}
 
 	public EntityManagerFactoryImpl getEntityManagerFactory() {
@@ -609,52 +490,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 	public Metamodel getMetamodel() {
 		return emf.getMetamodel();
-	}
-
-	/**
-	 * Saves the reference. Force.
-	 */
-	public void saveReference(Object object, Field field) {
-
-		final EntityType<?> et = getMetamodel().entity(object.getClass());
-
-		try {
-			if (et.getProperties() != null
-					&& et.getProperties().getJavaField().equals(field)) {
-				// TODO check invalid property bindings
-
-				_savePropertiesReference(object, et.getProperties());
-			} else if (et.getTypes() != null
-					&& et.getTypes().getJavaField().equals(field)) {
-				// TODO check invalid type bindings
-
-				_saveTypesReference(object, et.getTypes());
-			} else {
-				_saveReference(object, et.getAttribute(field.getName()));
-			}
-		} catch (Exception e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-		}
-	}
-
-	public void loadReference(Object object, Field field) {
-		flush();
-
-		final EntityType<?> et = getMetamodel().entity(object.getClass());
-
-		try {
-			if (et.getTypes() != null
-					&& et.getTypes().getJavaField().equals(field)) {
-				_loadTypesReference(object, et.getTypes(), true);
-			} else if (et.getProperties() != null
-					&& et.getProperties().getJavaField().equals(field)) {
-				_loadPropertiesReference(object, et.getProperties(), true);
-			} else {
-				_loadReference(object, et.getAttribute(field.getName()), true);
-			}
-		} catch (Exception e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-		}
 	}
 
 	public boolean isLoaded(final Object object, final String attributeName) {
@@ -825,38 +660,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	private State getState(Object entity) {
-		final Object identifier = getEntityManagerFactory()
-				.getPersistenceUnitUtil().getIdentifier(entity);
-
-		if (managed.containsKey(entity)) {
-			return State.MANAGED;
-		} else if (removed.containsKey(entity)) {
-			return State.REMOVED;
-		} else if (identifier != null
-				&& managed.containsValue(IRI.create(identifier.toString()))) {
-			return State.DETACHED;
-		} else {
-			return State.NEW;
-		}
-	}
-
-	private void checkCascadeOrPersisted(final CascadeType[] ct,
-			final Collection<Object> lst) {
-		final boolean cascade = (Arrays.asList(ct).contains(CascadeType.ALL) || Arrays
-				.asList(ct).contains(CascadeType.PERSIST));
-
-		if (lst != null) {
-			for (final Object li : lst) {
-				if (!contains(li)) {
-					if (cascade || li.getClass().isEnum()) {
-						persist(li);
-					} else {
-						throw new OWLPersistenceException(
-								"The entity is not persisted, neither has cascade type of ALL or PERSIST");
-					}
-				}
-			}
-		}
+		return getCurrentPersistenceContext().getState(entity);
 	}
 
 	@Override
@@ -883,40 +687,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 
 		return mapping;
-	}
-
-	private <T> T create(final Class<T> realClass, OWLIndividual ii) {
-		final Field id = getId(realClass);
-
-		if (ii.isAnonymous()) {
-			throw new OWLPersistenceException(
-					"Only named individuals are supported: " + ii);
-		}
-
-		OWLNamedIndividual i = ii.asOWLNamedIndividual();
-
-		if (id == null) {
-			throw new OWLPersistenceException("The id is not defined : "
-					+ realClass + " is not a valid OWL persistence class.");
-		}
-
-		if (LOG.isLoggable(Level.CONFIG))
-			LOG.config("Creating a new instance of " + i);
-
-		T cc = null;
-		try {
-			cc = (T) realClass.newInstance();
-		} catch (Exception e) {
-			throw new OWLPersistenceException(e);
-		}
-
-		setIdentifier(cc, i.getIRI());
-
-		managed.put(cc, i);
-
-		loadObjectFromModel(cc, false);
-
-		return cc;
 	}
 
 	private IRI createNewID(final String name) {
@@ -989,1105 +759,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				.getJavaField();
 	}
 
-	private <N extends Enum<N>> N getEnum(final Class<N> cls,
-			final OWLIndividual ii) {
-		if (ii.isAnonymous()) {
-			throw new OWLPersistenceException(
-					"Only named individuals are supported: " + ii);
-		}
-
-		OWLNamedIndividual i = ii.asOWLNamedIndividual();
-
-		for (final N object : cls.getEnumConstants()) {
-			if (getIdentifier(object).equals(i.getIRI())) {
-				return object;
-			}
-		}
-
-		throw new OWLPersistenceException("Unknown enum constant = " + i);
-	}
-
-	/**
-	 * TODO
-	 * 
-	 * An OWLNamedIndividual might be represented by different Java objects to
-	 * implement multiple inheritance and polymorphism.
-	 * 
-	 * However, for each Java class and an identifier, there is at most one
-	 * instance in the entitymanager.
-	 */
-	private <T> T getJavaInstanceForOWLIndividual(final Class<T> cls,
-			final OWLIndividual i) {
-		if (LOG.isLoggable(Level.FINEST))
-			LOG.finest("Getting " + i + " of " + cls);
-		if (managed.containsValue(i)) {
-			for (Object o : managed.keySet()) {
-				if (managed.get(o).equals(i)) {
-					if (cls.equals(o.getClass())) {
-						if (LOG.isLoggable(Level.FINE))
-							LOG.fine("Found " + o + ", casting to " + cls);
-						return cls.cast(o);
-					} else {
-						return create(cls, i);
-					}
-				}
-			}
-			throw new OWLPersistenceException();
-		} else if (cls.isEnum()) {
-			return cls.cast(getEnum(cls.asSubclass(Enum.class), i));
-		} else {
-			return create(cls, i);
-		}
-	}
-
-	private OWLLiteral javaType2owlLiteral(final Object object) {
-		if (object instanceof Integer) {
-			return f.getOWLLiteral((Integer) object);
-		} else if (object instanceof Boolean) {
-			return f.getOWLLiteral((Boolean) object);
-		} else if (object instanceof Double) {
-			return f.getOWLLiteral((Double) object);
-		} else if (object instanceof String) {
-			return f.getOWLLiteral((String) object, lang);
-		} else if (object instanceof Date) {
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
-			return f.getOWLLiteral(sdf.format(((Date) object)),
-					f.getOWLDatatype(OWL2Datatype.XSD_DATE_TIME.getIRI()));
-		} else {
-			throw new IllegalArgumentException();
-		}
-	}
-
-	private <T> T owlLiteral2javaType(Class<T> t, OWLLiteral c) {
-		if (LOG.isLoggable(Level.CONFIG)) {
-			LOG.config("Transforming OWLLiteral '" + c + ", to class " + t);
-		}
-		OWL2Datatype v = OWL2Datatype.XSD_STRING;
-
-		if (!c.isRDFPlainLiteral()) {
-			if (LOG.isLoggable(Level.CONFIG)) {
-				LOG.config("Datatype : " + c.getDatatype());
-			}
-			v = c.getDatatype().getBuiltInDatatype();
-		}
-
-		Object o = DatatypeTransformer.transform(c);
-
-		if (o == null) {
-			throw new OWLPersistenceException("The type is not supported : "
-					+ v);
-		}
-
-		if (!t.isAssignableFrom(o.getClass())) {
-			throw new OWLPersistenceException("The field type '" + t
-					+ "' cannot be established from the declared data type '"
-					+ v + "'. The declared class is " + o.getClass());
-		}
-
-		return t.cast(o);
-	}
-
-	private org.semanticweb.owlapi.model.OWLAnnotationProperty ap(
-			final cz.cvut.kbss.owlpersistence.model.IRI uri) {
-		return f.getOWLAnnotationProperty(IRI.create(uri.toString()));
-	}
-
-	private org.semanticweb.owlapi.model.OWLDataProperty dp(
-			final cz.cvut.kbss.owlpersistence.model.IRI uri) {
-		return f.getOWLDataProperty(IRI.create(uri.toString()));
-	}
-
-	private org.semanticweb.owlapi.model.OWLObjectProperty op(
-			final cz.cvut.kbss.owlpersistence.model.IRI uri) {
-		return f.getOWLObjectProperty(IRI.create(uri.toString()));
-	}
-
-	private org.semanticweb.owlapi.model.OWLClass c(
-			final cz.cvut.kbss.owlpersistence.model.IRI uri) {
-		return f.getOWLClass(IRI.create(uri.toString()));
-	}
-
-	private void checkIC(Object object, Attribute<?, ?> attribute) {
-		LOG.config("CHECKING IC for " + object + ", attribute="
-				+ attribute.getIRI());
-		try {
-			Object value = attribute.getJavaField().get(object);
-			Collection<?> set;
-
-			if (value == null) {
-				set = Collections.emptySet();
-			} else if (attribute.isCollection()) {
-				set = (Collection<?>) value;
-			} else {
-				set = Collections.singleton(value);
-			}
-
-			LOG.config("    size=" + set.size());
-
-			for (ParticipationConstraint ic : attribute.getConstraints()) {
-				LOG.config("         IC:" + ic.min() + " : " + ic.max());
-				if (set.size() < ic.min()
-						|| (set.size() > ic.max() && ic.max() >= 0)) {
-					throw new IntegrityConstraintViolatedException(
-							"Violated min=" + ic.min() + ", max=" + ic.max()
-									+ ", for attribute=" + attribute
-									+ " of object=" + managed.get(object));
-				}
-				// TODO FILLER
-			}
-		} catch (IllegalAccessException e) {
-			throw new OWLPersistenceException(e);
-		}
-	}
-
-	private void _saveReference(Object object, Attribute<?, ?> attribute)
-			throws Exception {
-		if (attribute.isInferred()) {
-			throw new OWLPersistenceException(
-					"Inferred fields must not be set externally.");
-		}
-
-		checkIC(object, attribute);
-
-		OWLNamedIndividual subject = managed.get(object);
-
-		Object value = attribute.getJavaField().get(object);
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Saving " + attribute.getName() + " of " + object
-					+ " with value = " + value);
-		}
-
-		final IRI iri = IRI.create(attribute.getIRI().toString());
-
-		if (attribute.isCollection()) {
-			final PluralAttribute<?, ?, ?> pa = (PluralAttribute<?, ?, ?>) attribute;
-
-			switch (attribute.getPersistentAttributeType()) {
-			case ANNOTATION:
-			case DATA:
-				final OWLDataProperty dp = f.getOWLDataProperty(iri);
-				switch (pa.getCollectionType()) {
-				case SET:
-					Class<?> clazz = pa.getBindableJavaType();
-					removeAllDataProperties(subject, dp);
-					Set set = Set.class.cast(value);
-					if (set != null) {
-						for (Object element : set) {
-							addDataProperty(subject, dp, element);
-						}
-					}
-					break;
-				case LIST:
-				case COLLECTION:
-				case MAP:
-					throw new NotYetImplementedException();
-				}
-				break;
-			case OBJECT:
-				final OWLObjectProperty op = f.getOWLObjectProperty(iri);
-				switch (pa.getCollectionType()) {
-				case SET:
-					Class<?> clazz = pa.getBindableJavaType();
-					removeAllObjectProperties(subject, op);
-					Set set = Set.class.cast(value);
-					checkCascadeOrPersisted(attribute.getCascadeTypes(), set);
-					if (set != null) {
-						for (Object element : set) {
-							final OWLNamedIndividual objectValue = m
-									.getOWLDataFactory().getOWLNamedIndividual(
-											IRI.create((String) getId(clazz)
-													.get(element)));
-
-							addObjectProperty(subject, op, objectValue);
-						}
-					}
-					break;
-				case LIST:
-					final ListAttribute<?, ?> la = (ListAttribute<?, ?>) attribute;
-					Class<?> clazz2 = pa.getBindableJavaType();
-
-					final List lst = List.class.cast(value);
-
-					checkCascadeOrPersisted(la.getCascadeTypes(), lst);
-
-					switch (la.getSequenceType()) {
-					case referenced:
-						setReferencedList(object, clazz2, lst, op,
-								c(la.getOWLListClass()),
-								op(la.getOWLPropertyHasContentsIRI()),
-								op(la.getOWLObjectPropertyHasNextIRI()));
-						break;
-					case simple:
-						setSimpleList(object, clazz2, lst, op,
-								op(la.getOWLObjectPropertyHasNextIRI()));
-						break;
-					}
-					break;
-				case COLLECTION:
-				case MAP:
-					throw new NotYetImplementedException();
-				}
-			}
-		} else {
-			final SingularAttribute<?, ?> pa = (SingularAttribute<?, ?>) attribute;
-
-			switch (attribute.getPersistentAttributeType()) {
-			case ANNOTATION:
-				setAnnotationProperty(subject, f.getOWLAnnotationProperty(iri),
-						value);
-				break;
-			case DATA:
-				setDataProperty(subject, f.getOWLDataProperty(iri), value);
-				break;
-			case OBJECT:
-				if (value != null) {
-					checkCascadeOrPersisted(pa.getCascadeTypes(),
-							Collections.singleton(value));
-				}
-
-				setObjectPropertyObject(subject, f.getOWLObjectProperty(iri),
-						value);
-				break;
-			}
-		}
-	}
-
-	private void _saveTypesReference(Object object,
-			TypesSpecification<?, ?> spec) throws Exception {
-		if (spec.isInferred()) {
-			throw new OWLPersistenceException(
-					"Inferred fields must not be set externally.");
-		}
-
-		OWLNamedIndividual subject = managed.get(object);
-		Object value = spec.getJavaField().get(object);
-
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Saving types of " + object + " with value = " + value);
-		}
-
-		final EntityType<?> type = emf.getMetamodel().entity(object.getClass());
-		final OWLClass myClass = f.getOWLClass(IRI.create(type.getIRI()
-				.toString()));
-
-		for (final OWLClassExpression ox : subject.getTypes(workingOnt)) {
-			if (ox.equals(myClass) || ox.isAnonymous()) {
-				continue;
-			}
-
-			addChange(new RemoveAxiom(workingOnt, f.getOWLClassAssertionAxiom(
-					ox, subject)));
-		}
-
-		Set<String> set = (Set<String>) Set.class.cast(value);
-		if (set != null) {
-			for (final String x : set) {
-				addChange(new AddAxiom(workingOnt, f.getOWLClassAssertionAxiom(
-						f.getOWLClass(IRI.create(x)), subject)));
-			}
-		}
-	}
-
-	private void _savePropertiesReference(final Object object,
-			final PropertiesSpecification<?, ?> ts)
-			throws IllegalAccessException {
-		OWLNamedIndividual subject = managed.get(object);
-
-		Object value = ts.getJavaField().get(object);
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Saving other properties of " + object + " with value = "
-					+ value);
-		}
-
-		final EntityType<?> et = getMetamodel().entity(object.getClass());
-
-		for (final OWLObjectPropertyAssertionAxiom ax : workingOnt
-				.getObjectPropertyAssertionAxioms(subject)) {
-			if (ax.getProperty().isAnonymous()) {
-				continue;
-			}
-
-			boolean found = false;
-			for (final Attribute<?, ?> a : et.getAttributes()) {
-				if (a.getIRI().equals(
-						ax.getProperty().asOWLObjectProperty().getIRI())) {
-					found = true;
-					break;
-				}
-			}
-
-			if (found) {
-				continue;
-			}
-
-			addChange(new RemoveAxiom(workingOnt, m.getOWLDataFactory()
-					.getOWLObjectPropertyAssertionAxiom(ax.getProperty(),
-							subject, ax.getObject())));
-
-		}
-
-		for (final OWLDataPropertyAssertionAxiom ax : workingOnt
-				.getDataPropertyAssertionAxioms(subject)) {
-			if (ax.getProperty().isAnonymous()) {
-				continue;
-			}
-
-			boolean found = false;
-			for (final Attribute<?, ?> a : et.getAttributes()) {
-				if (a.getIRI().equals(
-						ax.getProperty().asOWLDataProperty().getIRI())) {
-					found = true;
-					break;
-				}
-			}
-
-			if (found) {
-				continue;
-			}
-
-			addChange(new RemoveAxiom(workingOnt, m.getOWLDataFactory()
-					.getOWLDataPropertyAssertionAxiom(ax.getProperty(),
-							subject, ax.getObject())));
-
-		}
-
-		Map map = Map.class.cast(value);
-		if (map != null) {
-			for (Object element : map.keySet()) {
-				final Object valueSet = map.get(element);
-
-				if (!Set.class.isAssignableFrom(valueSet.getClass())) {
-					throw new OWLPersistenceException(
-							"EntityManagerImpl : invalid @Properties type, must be Map<String,Set<String>>");
-				}
-
-				final IRI propIRI = IRI.create(element + "");
-
-				if (workingOnt.containsDataPropertyInSignature(propIRI)) {
-					final OWLDataProperty prop = m.getOWLDataFactory()
-							.getOWLDataProperty(IRI.create(element + ""));
-
-					for (final Object ox : Set.class.cast(valueSet)) {
-						final OWLLiteral objX = javaType2owlLiteral(ox);
-
-						addChange(new AddAxiom(workingOnt, m
-								.getOWLDataFactory()
-								.getOWLDataPropertyAssertionAxiom(prop,
-										subject, objX)));
-					}
-				} else {
-					// default object property
-					final OWLObjectProperty prop = m.getOWLDataFactory()
-							.getOWLObjectProperty(IRI.create(element + ""));
-
-					for (final Object ox : Set.class.cast(valueSet)) {
-						final OWLNamedIndividual objX = f
-								.getOWLNamedIndividual(IRI.create(ox + ""));
-
-						addChange(new AddAxiom(workingOnt, m
-								.getOWLDataFactory()
-								.getOWLObjectPropertyAssertionAxiom(prop,
-										subject, objX)));
-					}
-				}
-			}
-		}
-	}
-
-	private void loadObjectFromModel(final Object object, boolean force) {
-		if (LOG.isLoggable(Level.CONFIG)) {
-			LOG.config("Fetching " + object + " from ontology");
-		}
-		final Class<?> cls = object.getClass();
-		final EntityType<?> type = emf.getMetamodel().entity(cls);
-
-		try {
-			final TypesSpecification<?, ?> types = type.getTypes();
-
-			if (types != null) {
-				_loadTypesReference(object, types, force);
-			}
-
-			final PropertiesSpecification<?, ?> properties = type
-					.getProperties();
-
-			if (properties != null) {
-				_loadPropertiesReference(object, properties, force);
-			}
-
-			for (final Attribute<?, ?> field : type.getAttributes()) {
-				_loadReference(object, field, force);
-			}
-		} catch (Exception e) {
-			throw new OWLPersistenceException(e);
-		}
-	}
-
-	// TODO
-	private void _loadReference(Object subject, Attribute<?, ?> field,
-			boolean all) {
-		if (LOG.isLoggable(Level.CONFIG)) {
-			LOG.config("Loading " + field + " reference of " + subject);
-		}
-
-		try {
-			Object value = null;
-			final OWLNamedIndividual ii = managed.get(subject);
-
-			switch (field.getPersistentAttributeType()) {
-			case ANNOTATION:
-				if (field.isCollection()) {
-					throw new UnsupportedOperationException(
-							"collections of annotations are not supported yet.");
-				}
-				// TODO value of getAnnotationProperty
-				final OWLLiteral laObject = getAnnotationProperty(ii,
-						ap(field.getIRI()), field.isInferred());
-
-				if (laObject != null) {
-					field.getJavaField().set(subject,
-							owlLiteral2javaType(field.getJavaType(), laObject));
-
-				}
-				break;
-			case DATA:
-				if (field.isCollection()) {
-					throw new UnsupportedOperationException(
-							"collections of data property values are not supported yet.");
-				}
-
-				final OWLLiteral lObject = getDataProperty(ii,
-						dp(field.getIRI()), field.isInferred());
-
-				if (lObject != null) {
-					field.getJavaField().set(subject,
-							owlLiteral2javaType(field.getJavaType(), lObject));
-
-				}
-
-				break;
-			case OBJECT:
-				if (!all && field.getFetchType().equals(FetchType.LAZY)) {
-					// toRefresh.add(object);
-					break;
-				}
-
-				if (field.isCollection()) {
-					final PluralAttribute<?, ?, ?> pa = (PluralAttribute<?, ?, ?>) field;
-
-					switch (pa.getCollectionType()) {
-					case LIST:
-						final ListAttribute<?, ?> la = (ListAttribute<?, ?>) pa;
-						final Class<?> clazz = la.getBindableJavaType();
-						switch (la.getSequenceType()) {
-						case referenced:
-							value = getReferencedList(ii, clazz,
-									op(pa.getIRI()), c(la.getOWLListClass()),
-									op(la.getOWLPropertyHasContentsIRI()),
-									op(la.getOWLObjectPropertyHasNextIRI()),
-									field.isInferred());
-							break;
-						case simple:
-							value = getSimpleList(ii, clazz, op(pa.getIRI()),
-									op(la.getOWLObjectPropertyHasNextIRI()),
-									field.isInferred());
-							break;
-						}
-						break;
-					case SET:
-						Set<Object> set = new HashSet<Object>();
-
-						for (OWLIndividual col : getObjectProperties(ii,
-								op(pa.getIRI()), field.isInferred())) {
-							set.add(getJavaInstanceForOWLIndividual(
-									pa.getBindableJavaType(), col));
-						}
-
-						value = set;
-						break;
-					case COLLECTION:
-					case MAP:
-						throw new IllegalArgumentException(
-								"NOT YET IMPLEMENTED");
-					}
-				} else {
-					// TODO
-					final OWLIndividual iObject = getObjectProperty(ii,
-							op(field.getIRI()), field.isInferred());
-
-					if (iObject != null) {
-						value = getJavaInstanceForOWLIndividual(
-								field.getJavaType(), iObject);
-					}
-				}
-
-				if (LOG.isLoggable(Level.CONFIG)) {
-					LOG.config("Fetched property '" + field.getIRI()
-							+ "' into field " + field.getJavaField()
-							+ "' of object " + ii + ", value = " + value);
-				}
-				field.getJavaField().set(subject, value);
-
-				break;
-			}
-		} catch (IllegalArgumentException e) {
-			throw new OWLPersistenceException(e);
-		} catch (IllegalAccessException e) {
-			throw new OWLPersistenceException(e);
-		} catch (InterruptedException e) {
-			throw new OWLPersistenceException(e);
-		}
-		checkIC(subject, field);
-	}
-
-	private void _loadTypesReference(final Object object,
-			final TypesSpecification<?, ?> ts, boolean force)
-			throws IllegalAccessException {
-		Set<Object> set = new HashSet<Object>();
-		final OWLNamedIndividual subject = managed.get(object);
-
-		final String iri = getMetamodel().entity(object.getClass()).getIRI()
-				.toString();
-
-		if (ts.isInferred()) {
-			r.flush();
-
-			for (OWLClass col : r.getTypes(subject, false).getFlattened()) {
-				if (iri.equals(col.getIRI().toString())) {
-					continue;
-				}
-
-				set.add(col.getIRI().toString());
-			}
-
-		} else {
-			for (OWLClassExpression col : subject.getTypes(workingOnt)) {
-				if (col.isAnonymous()
-						|| iri.equals(col.asOWLClass().getIRI().toString())) {
-					continue;
-				}
-
-				set.add(col.asOWLClass().getIRI().toString());
-			}
-
-		}
-
-		ts.getJavaField().set(object, set);
-	}
-
-	private void _loadPropertiesReference(final Object object,
-			final PropertiesSpecification<?, ?> ts, boolean force) {
-		final EntityType<?> et = getMetamodel().entity(object.getClass());
-		Map<String, Set<String>> map = new HashMap<String, Set<String>>();
-		final OWLNamedIndividual subject = managed.get(object);
-		if (ts.isInferred()) {
-			r.flush();
-
-			for (final OWLObjectProperty prop : workingOnt
-					.getObjectPropertiesInSignature()) {
-
-				boolean found = false;
-				for (final Attribute<?, ?> a : et.getAttributes()) {
-					if (prop.getIRI().toString().equals(a.getIRI().toString())) {
-						found = true;
-						break;
-					}
-				}
-
-				if (found) {
-					continue;
-				}
-
-				Set<String> set = new HashSet<String>();
-
-				for (final OWLNamedIndividual iObject : r
-						.getObjectPropertyValues(subject, prop).getFlattened()) {
-					set.add(iObject.getIRI().toString());
-				}
-
-				if (!set.isEmpty()) {
-					map.put(prop.getIRI().toString(), set);
-				}
-			}
-
-			for (final OWLDataProperty prop : workingOnt
-					.getDataPropertiesInSignature()) {
-				boolean found = false;
-				for (final Attribute<?, ?> a : et.getAttributes()) {
-					if (prop.getIRI().toString().equals(a.getIRI().toString())) {
-						found = true;
-						break;
-					}
-				}
-
-				if (found) {
-					continue;
-				}
-
-				Set<String> set = new HashSet<String>();
-
-				for (final OWLLiteral iObject : r.getDataPropertyValues(
-						subject, prop)) {
-					set.add(iObject.getLiteral());
-				}
-
-				if (!set.isEmpty()) {
-					map.put(prop.getIRI().toString(), set);
-				}
-			}
-		} else {
-			for (final OWLObjectPropertyAssertionAxiom ax : workingOnt
-					.getObjectPropertyAssertionAxioms(managed.get(object))) {
-				if (ax.getProperty().isAnonymous()) {
-					continue;
-				}
-
-				final IRI propIRI = ax.getProperty().asOWLObjectProperty()
-						.getIRI();
-
-				boolean found = false;
-				for (final Attribute<?, ?> a : et.getAttributes()) {
-					if (a.getIRI().toString().equals(propIRI.toString())) {
-						found = true;
-						break;
-					}
-				}
-
-				if (found) {
-					continue;
-				}
-
-				Set<String> set = map.get(propIRI.toString());
-				if (set == null) {
-					set = new HashSet<String>();
-					map.put(propIRI.toString(), set);
-				}
-
-				set.add(ax.getObject().asOWLNamedIndividual().getIRI()
-						.toString());
-			}
-
-			for (final OWLDataPropertyAssertionAxiom ax : workingOnt
-					.getDataPropertyAssertionAxioms(managed.get(object))) {
-				if (ax.getProperty().isAnonymous()) {
-					continue;
-				}
-
-				final IRI propIRI = ax.getProperty().asOWLDataProperty()
-						.getIRI();
-
-				boolean found = false;
-				for (final Attribute<?, ?> a : et.getAttributes()) {
-					if (a.getIRI().equals(propIRI)) {
-						found = true;
-						break;
-					}
-				}
-
-				if (found) {
-					continue;
-				}
-
-				Set<String> set = map.get(propIRI.toString());
-				if (set == null) {
-					set = new HashSet<String>();
-					map.put(propIRI.toString(), set);
-				}
-
-				set.add(DatatypeTransformer.transform(ax.getObject())
-						.toString());
-			}
-		}
-		try {
-			ts.getJavaField().set(object, map);
-		} catch (IllegalArgumentException e) {
-			throw new OWLPersistenceException(e);
-		} catch (IllegalAccessException e) {
-			throw new OWLPersistenceException(e);
-		}
-	}
-
-	private void setObjectPropertyObject(final OWLNamedIndividual src,
-			final org.semanticweb.owlapi.model.OWLObjectProperty p,
-			Object object) throws InterruptedException {
-		OWLNamedIndividual i = null;
-
-		if (object != null) {
-			i = f.getOWLNamedIndividual(getIdentifier(object));
-		}
-
-		setObjectProperty(src, p, i);
-	}
-
-	private void setObjectProperty(final OWLNamedIndividual src,
-			final org.semanticweb.owlapi.model.OWLObjectProperty p,
-			OWLIndividual i) throws InterruptedException {
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("setObjectProperty '" + p + "' of " + src + " to " + i);
-		}
-
-		removeAllObjectProperties(src, p);
-		if (i != null) {
-			addObjectProperty(src, p, i);
-		}
-	}
-
-	private void setDataProperty(final OWLNamedIndividual i,
-			final org.semanticweb.owlapi.model.OWLDataProperty p, Object s)
-			throws InterruptedException {
-		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("setDataProperty '" + p + "' of " + i.getIRI() + " to "
-					+ s);
-		}
-
-		removeAllDataProperties(i, p);
-		if (s != null) {
-			addDataProperty(i, p, s);
-		}
-	}
-
-	private void setAnnotationProperty(final OWLNamedIndividual r,
-			org.semanticweb.owlapi.model.OWLAnnotationProperty ap,
-			Object literalAnnotation) {
-
-		final Collection<OWLOntologyChange> ac = new HashSet<OWLOntologyChange>();
-
-		for (OWLAnnotation annotation : r.getAnnotations(workingOnt, ap)) {
-			ac.add(new RemoveAxiom(workingOnt, f
-					.getOWLAnnotationAssertionAxiom(r.getIRI(), annotation)));
-		}
-
-		if (literalAnnotation != null) {
-			ac.add(new AddAxiom(workingOnt, f.getOWLAnnotationAssertionAxiom(r
-					.getIRI(), f.getOWLAnnotation(ap,
-					javaType2owlLiteral(literalAnnotation)))));
-		}
-
-		addChanges(ac);
-	}
-
-	private <T> void setReferencedList(final Object o, final Class<T> t,
-			List<T> sequence,
-			final org.semanticweb.owlapi.model.OWLObjectProperty hasSequence,
-			final org.semanticweb.owlapi.model.OWLClass owlList,
-			final org.semanticweb.owlapi.model.OWLObjectProperty hasContents,
-			final org.semanticweb.owlapi.model.OWLObjectProperty hasNext)
-			throws InterruptedException {
-		if (LOG.isLoggable(Level.FINE))
-			LOG.fine("Setting referenced list " + o + ", sequence=" + sequence);
-		removeList(o, hasSequence, hasNext);
-
-		final IRI uri = managed.get(o).getIRI();
-
-		// TODO anonymous
-
-		OWLNamedIndividual seq = f.getOWLNamedIndividual(createNewID(uri
-				.getFragment() + "-SEQ"));
-
-		addChange(new AddAxiom(this.workingOnt, f.getOWLClassAssertionAxiom(
-				owlList, seq)));
-
-		setObjectProperty(f.getOWLNamedIndividual(uri), hasSequence, seq);
-
-		if (sequence == null || sequence.isEmpty()) {
-			return;
-		}
-
-		// final OWLNamedIndividual oi = managed.get(sequence
-		// .get(sequence.size() - 1));
-		//
-		// OWLClassExpression d = f.getOWLObjectSomeValuesFrom(hasContents, f
-		// .getOWLObjectOneOf(oi));
-		//
-		// for (int i = sequence.size() - 2; i >= 0; i--) {
-		// d = f.getOWLObjectIntersectionOf(f.getOWLObjectSomeValuesFrom(
-		// hasNext, d), f.getOWLObjectSomeValuesFrom(hasContents, f
-		// .getOWLObjectOneOf(managed.get(sequence.get(i)))));
-		// }
-		// addChange(new AddAxiom(this.workingOnt,
-		// f.getOWLClassAssertionAxiom(d,
-		// seq)));
-
-		OWLNamedIndividual ind = managed.get(sequence.get(0));
-		addChange(new AddAxiom(this.workingOnt,
-				f.getOWLObjectPropertyAssertionAxiom(hasContents, seq, ind)));
-
-		for (int i = 1; i < sequence.size(); i++) {
-			OWLNamedIndividual seq2 = f.getOWLNamedIndividual(createNewID(uri
-					.getFragment() + "-SEQ" + i));
-
-			addChange(new AddAxiom(this.workingOnt,
-					f.getOWLObjectPropertyAssertionAxiom(hasNext, seq, seq2)));
-
-			addChange(new AddAxiom(this.workingOnt,
-					f.getOWLObjectPropertyAssertionAxiom(hasContents, seq2,
-							managed.get(sequence.get(i)))));
-
-			seq = seq2;
-		}
-	}
-
-	private <T> void setSimpleList(final Object o, final Class<T> t,
-			List<T> sequence,
-			final org.semanticweb.owlapi.model.OWLObjectProperty hasSequence,
-			final org.semanticweb.owlapi.model.OWLObjectProperty hasNext)
-			throws InterruptedException {
-		if (LOG.isLoggable(Level.FINE))
-			LOG.fine("Setting simple list " + o + ", sequence=" + sequence);
-
-		removeList(o, hasSequence, hasNext);
-
-		if (sequence == null) {
-			return;
-		}
-
-		final Iterator<T> iter = sequence.iterator();
-
-		if (!iter.hasNext()) {
-			return;
-		}
-
-		OWLNamedIndividual next = managed.get(iter.next());
-		setObjectProperty(managed.get(o), hasSequence, next);
-
-		while (iter.hasNext()) {
-			final OWLNamedIndividual next2 = managed.get(iter.next());
-			setObjectProperty(next, hasNext, next2);
-			next = next2;
-		}
-	}
-
-	private void addObjectProperty(final OWLNamedIndividual subject,
-			final org.semanticweb.owlapi.model.OWLObjectProperty property,
-			final OWLIndividual object) {
-		addChange(new AddAxiom(workingOnt, m.getOWLDataFactory()
-				.getOWLObjectPropertyAssertionAxiom(property, subject, object)));
-	}
-
-	private void addDataProperty(final OWLNamedIndividual i,
-			final org.semanticweb.owlapi.model.OWLDataProperty property,
-			final Object object) {
-		addChange(new AddAxiom(workingOnt, f.getOWLDataPropertyAssertionAxiom(
-				property, i, javaType2owlLiteral(object))));
-	}
-
-	private void removeAllObjectProperties(final OWLNamedIndividual subject,
-			final org.semanticweb.owlapi.model.OWLObjectProperty property)
-			throws InterruptedException {
-		final Collection<? extends OWLIndividual> objects = getObjectProperties(
-				subject, property, false);
-
-		if (objects != null) {
-			for (final OWLIndividual object : objects) {
-				addChange(new RemoveAxiom(workingOnt, m.getOWLDataFactory()
-						.getOWLObjectPropertyAssertionAxiom(property, subject,
-								object)));
-			}
-		}
-	}
-
-	private void removeAllDataProperties(final OWLNamedIndividual i,
-			final org.semanticweb.owlapi.model.OWLDataProperty property)
-			throws InterruptedException {
-		final Collection<OWLLiteral> cc = getDataProperties(i, property, false);
-
-		if (cc != null) {
-			for (final OWLLiteral s : cc) {
-				final OWLAxiom axx = m.getOWLDataFactory()
-						.getOWLDataPropertyAssertionAxiom(property, i, s);
-				addChange(new RemoveAxiom(workingOnt, axx));
-			}
-		}
-	}
-
-	/**
-	 * Removes the list as if it was simple.
-	 * 
-	 * @param object
-	 * @param hasSequence
-	 * @param hasNext
-	 * @throws OWLReasonerException
-	 */
-	private void removeList(final Object object,
-			final org.semanticweb.owlapi.model.OWLObjectProperty hasSequence,
-			org.semanticweb.owlapi.model.OWLObjectProperty hasNext)
-			throws InterruptedException {
-		OWLIndividual iSequence = getObjectProperty(managed.get(object),
-				hasSequence, false);
-
-		// TODO cascading properly
-
-		while (iSequence != null) {
-			for (final OWLAxiom a : workingOnt.getReferencingAxioms(iSequence
-					.asOWLAnonymousIndividual())) {
-				addChange(new RemoveAxiom(workingOnt, a));
-			}
-
-			iSequence = getObjectProperty(iSequence, hasNext, false);
-		}
-	}
-
-	private Collection<? extends OWLIndividual> getObjectProperties(
-			final OWLNamedIndividual subject,
-			final org.semanticweb.owlapi.model.OWLObjectProperty property,
-			boolean inferred) {
-		Collection<? extends OWLIndividual> objects;
-		if (inferred) {
-			r.flush();
-			objects = r.getObjectPropertyValues(subject, property)
-					.getFlattened();
-			if (objects == null) {
-				objects = Collections.emptyList();
-			}
-		} else {
-			objects = subject.getObjectPropertyValues(property, workingOnt);
-		}
-		return objects;
-	}
-
-	private Collection<OWLLiteral> getDataProperties(
-			final OWLNamedIndividual subject,
-			final org.semanticweb.owlapi.model.OWLDataProperty property,
-			boolean inferred) {
-		Collection<OWLLiteral> objects;
-		if (inferred) {
-			r.flush();
-			objects = r.getDataPropertyValues(subject, property);
-			if (objects == null) {
-				objects = Collections.emptyList();
-			}
-		} else {
-			objects = subject.getDataPropertyValues(property, workingOnt);
-		}
-		return objects;
-	}
-
-	private OWLIndividual getObjectProperty(final OWLIndividual subject,
-			final org.semanticweb.owlapi.model.OWLObjectProperty property,
-			boolean inferred) throws InterruptedException {
-		for (final OWLObjectPropertyAssertionAxiom axiom : this.workingOnt
-				.getObjectPropertyAssertionAxioms(subject)) {
-			if (axiom.getProperty().equals(property)
-					&& axiom.getSubject().equals(subject)) {
-				return axiom.getObject();
-			}
-		}
-
-		OWLNamedIndividual inferredObject = null;
-		if (inferred && subject.isNamed()) {
-			r.flush();
-			final Set<OWLNamedIndividual> inferredObjects = r
-					.getObjectPropertyValues(subject.asOWLNamedIndividual(),
-							property).getFlattened();
-
-			if (inferredObjects != null) {
-				if (inferredObjects.size() == 1) {
-					inferredObject = inferredObjects.iterator().next();
-				} else {
-					throw new IntegrityConstraintViolatedException(
-							inferredObjects + " should be of size 1, but is "
-									+ inferredObjects.size());
-				}
-			}
-		}
-
-		return inferredObject;
-	}
-
-	private OWLLiteral getDataProperty(final OWLNamedIndividual subject,
-			final org.semanticweb.owlapi.model.OWLDataProperty property,
-			boolean inferred) throws InterruptedException {
-		for (final OWLDataPropertyAssertionAxiom axiom : this.workingOnt
-				.getDataPropertyAssertionAxioms(subject)) {
-			if (axiom.getProperty().equals(property)
-					&& axiom.getSubject().equals(subject)) {
-				return axiom.getObject();
-			}
-		}
-
-		OWLLiteral inferredObject = null;
-		if (inferred) {
-			r.flush();
-			final Set<OWLLiteral> inferredObjects = r.getDataPropertyValues(
-					subject, property);
-
-			if (inferredObjects != null) {
-				if (inferredObjects.size() == 1) {
-					inferredObject = inferredObjects.iterator().next();
-				} else {
-					throw new IntegrityConstraintViolatedException(
-							inferredObjects + " should be of size 1, but is "
-									+ inferredObjects.size());
-				}
-			}
-		}
-
-		return inferredObject;
-	}
-
-	private OWLLiteral getAnnotationProperty(final OWLNamedIndividual i,
-			final OWLAnnotationProperty p, boolean inferred) {
-		OWLLiteral literal = null;
-
-		for (final OWLOntology o2 : m.getOntologies()) {
-			for (final OWLAnnotation a : i.getAnnotations(o2, p)) {
-				if (a.getValue() instanceof OWLLiteral) {
-					literal = (OWLLiteral) a.getValue();
-
-					if (literal.hasLang(lang)) {
-						break;
-					}
-				}
-			}
-		}
-		LOG.warning("Label requested, but label annotation not found: ");
-		return literal;
-	}
-
-	private <T> List<T> getReferencedList(final OWLNamedIndividual subject,
-			final Class<T> type,
-			final org.semanticweb.owlapi.model.OWLObjectProperty hasSequence,
-			final org.semanticweb.owlapi.model.OWLClass owlList,
-			final org.semanticweb.owlapi.model.OWLObjectProperty hasContents,
-			final org.semanticweb.owlapi.model.OWLObjectProperty hasNext,
-			boolean inferred) throws InterruptedException {
-		final List<T> lst = new ArrayList<T>();
-
-		OWLIndividual seq = getObjectProperty(subject, hasSequence, inferred);
-
-		while (seq != null) {
-			OWLIndividual iContent = getObjectProperty(seq, hasContents,
-					inferred);
-
-			if (iContent == null) {
-				break;
-				// TODO
-				// throw new
-				// IntegrityConstraintViolatedException("No content specified for a list.");
-			}
-
-			lst.add(getJavaInstanceForOWLIndividual(type, iContent));
-			seq = getObjectProperty(seq, hasNext, inferred);
-		}
-		return lst;
-	}
-
-	private <T> List<T> getSimpleList(final OWLNamedIndividual subject,
-			final Class<T> type,
-			final org.semanticweb.owlapi.model.OWLObjectProperty hasSequence,
-			final org.semanticweb.owlapi.model.OWLObjectProperty hasNext,
-			boolean inferred) throws InterruptedException {
-		final List<T> lst = new ArrayList<T>();
-
-		OWLIndividual o = getObjectProperty(subject, hasSequence, inferred);
-
-		while (o != null) {
-			lst.add(getJavaInstanceForOWLIndividual(type, o));
-			o = getObjectProperty(o, hasNext, inferred);
-		}
-		return lst;
-	}
-
 	private <T> TypedQuery<T> _createTypedQuery(String string, Class<T> cls,
 			boolean sparql) {
 		return new TypedQueryImpl<T>(string, cls, new OWLAPIv3OWL2Ontology(m,
@@ -2107,5 +778,43 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			return OWL2QueryEngine.exec(v.getQuery()).isEmpty();
 		}
 
+	}
+
+	public UnitOfWorkImpl getCurrentPersistenceContext() {
+		if (this.persistenceContext == null) {
+			this.persistenceContext = (UnitOfWorkImpl) this.serverSession
+					.acquireClientSession().acquireUnitOfWork();
+		}
+		return this.persistenceContext;
+	}
+
+	public ServerSession getServerSession() {
+		return this.emf.getServerSession();
+	}
+
+	/**
+	 * Called from EntityTransaction in case of a rollback. Releasing the UoW is
+	 * up to the EntityTransaction.
+	 */
+	public void removeCurrentPersistenceContext() {
+		this.persistenceContext = null;
+	}
+
+	public void transactionStarted(EntityTransaction t) {
+		this.serverSession.transactionStarted(t, this);
+	}
+
+	public void transactionCommitted(EntityTransaction t) {
+		this.serverSession.transactionCommitted(t);
+	}
+
+	/**
+	 * Since we support only EntityTransactions, we set the TransactionWrapper
+	 * to EntityTransactionWrapper. In the future, if JTA transactions are
+	 * supported, JTATransactionWrapper should be set instead of the
+	 * EntityTransactionWrapper.
+	 */
+	private void setTransactionWrapper() {
+		this.transaction = new EntityTransactionWrapper(this);
 	}
 }

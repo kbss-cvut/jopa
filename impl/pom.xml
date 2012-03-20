@@ -34,6 +34,7 @@
 			<version>1.6</version>
 			<type>jar</type>
 			<scope>test</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.mindswap</groupId>
@@ -41,6 +42,7 @@
 			<version>2.2.2</version>
 			<type>jar</type>
 			<scope>test</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.mindswap</groupId>
@@ -48,6 +50,7 @@
 			<version>2.2.2</version>
 			<type>jar</type>
 			<scope>test</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.mindswap</groupId>
@@ -55,6 +58,7 @@
 			<version>2.2.2</version>
 			<type>jar</type>
 			<scope>test</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.mindswap</groupId>
@@ -62,6 +66,7 @@
 			<version>2.2.2</version>
 			<type>jar</type>
 			<scope>test</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.mindswap</groupId>
@@ -69,6 +74,7 @@
 			<version>2.2.2</version>
 			<type>jar</type>
 			<scope>test</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.mindswap</groupId>
@@ -76,6 +82,7 @@
 			<version>2.2.2</version>
 			<type>jar</type>
 			<scope>test</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.mindswap</groupId>
@@ -83,6 +90,7 @@
 			<version>2.2.2</version>
 			<type>jar</type>
 			<scope>test</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.mindswap</groupId>
@@ -90,6 +98,7 @@
 			<version>2.2.2</version>
 			<type>jar</type>
 			<scope>test</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.semanticweb</groupId>
@@ -97,6 +106,7 @@
 			<version>3.2.2</version>
 			<type>jar</type>
 			<scope>compile</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>cz.cvut.kbss</groupId>
@@ -104,6 +114,7 @@
 			<version>0.3</version>
 			<type>jar</type>
 			<scope>compile</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>cz.cvut.kbss</groupId>
@@ -111,6 +122,7 @@
 			<version>0.2</version>
 			<type>jar</type>
 			<scope>compile</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>cz.cvut.kbss</groupId>
@@ -118,17 +130,22 @@
 			<version>0.2</version>
 			<type>jar</type>
 			<scope>compile</scope>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjrt</artifactId>
 			<version>1.6.2</version>
+			<type>jar</type>
+			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.5</version>
+			<type>jar</type>
 			<scope>test</scope>
+			<optional>false</optional>
 		</dependency>
 	</dependencies>
 	<distributionManagement>
