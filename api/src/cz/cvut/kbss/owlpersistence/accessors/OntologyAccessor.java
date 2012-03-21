@@ -6,6 +6,9 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
+import cz.cvut.kbss.owlpersistence.model.EntityManager;
+import cz.cvut.kbss.owlpersistence.model.query.Query;
+import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
 import cz.cvut.kbss.owlpersistence.sessions.UnitOfWork;
 
 /**
@@ -54,6 +57,50 @@ public interface OntologyAccessor {
 	 * @return The object with specified uri or null
 	 */
 	public <T> T readEntity(Class<T> cls, Object uri);
+
+	/**
+	 * Create an instance of Query for executing a Java Persistence query
+	 * language statement.
+	 * 
+	 * @param qlString
+	 *            a Java Persistence query string
+	 * @param em
+	 *            The calling EntityManager instance.
+	 * @return the new query instance
+	 * @throws IllegalArgumentException
+	 *             if query string is not valid
+	 */
+	public Query<?> createQuery(String qlString, final EntityManager em);
+
+	/**
+	 * Create an instance of Query for executing typed Java Persistence query
+	 * language statement.
+	 * 
+	 * @param query
+	 *            The query to execute.
+	 * @param resultClass
+	 *            Expected result class.
+	 * @param sparql
+	 *            True if the query is a Sparql query.
+	 * @param em
+	 *            The calling EntityManager instance.
+	 * @return
+	 */
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass,
+			boolean sparql, final EntityManager em);
+
+	/**
+	 * Create an instance of Query for executing a native SPARQL-DL query in
+	 * SPARQL syntax.
+	 * 
+	 * @param sparql
+	 *            a native SQL query string
+	 * @param em
+	 *            The calling EntityManager instance.
+	 * @return the new query instance
+	 */
+	public Query<List<String>> createNativeQuery(String sparql,
+			final EntityManager em);
 
 	/**
 	 * Write the given OWLOntologyChange list. This method should not be used,

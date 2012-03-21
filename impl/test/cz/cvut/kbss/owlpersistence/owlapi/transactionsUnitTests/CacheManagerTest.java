@@ -14,7 +14,10 @@ import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import cz.cvut.kbss.owlpersistence.accessors.OntologyAccessor;
+import cz.cvut.kbss.owlpersistence.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
+import cz.cvut.kbss.owlpersistence.model.query.Query;
+import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassA;
 import cz.cvut.kbss.owlpersistence.sessions.CacheManagerImpl;
 import cz.cvut.kbss.owlpersistence.sessions.ServerSession;
@@ -90,6 +93,7 @@ public class CacheManagerTest {
 		assertEquals(testObject, mngr.getObject(testObject));
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testGetObjectByValue() {
 		this.mngr.addObjectIntoCache(testObject);
@@ -194,6 +198,18 @@ public class CacheManagerTest {
 		}
 
 		public void persistExistingEntity(Object entity, UnitOfWork uow) {
+		}
+
+		public Query<?> createQuery(String qlString, final EntityManager em) {
+			return null;
+		}
+
+		public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, boolean sparql, final EntityManager em) {
+			return null;
+		}
+
+		public Query<List<String>> createNativeQuery(String sqlString, final EntityManager em) {
+			return null;
 		}
 		
 	}

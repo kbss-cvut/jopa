@@ -64,11 +64,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		return null;
 	}
 
-	public Vector<?> executeQuery(String sparqlQuery) {
-		// TODO Auto-generated method stub
-		return this.parent.executeQuery(sparqlQuery);
-	}
-
 	public Vector<?> readAllObjects(Class<?> domainClass) {
 		// TODO Auto-generated method stub
 		return this.parent.readAllObjects(domainClass);
@@ -663,7 +658,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	}
 
 	public Object revertObject(Object object) {
-		ObjectChangeSet chSet = new ObjectChangeSetImpl(object, getOriginal(object), false, null);
+		ObjectChangeSet chSet = new ObjectChangeSetImpl(object,
+				getOriginal(object), false, null);
 		try {
 			getChangeManager().calculateChanges(chSet);
 		} catch (IllegalAccessException e) {

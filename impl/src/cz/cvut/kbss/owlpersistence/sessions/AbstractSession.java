@@ -1,10 +1,14 @@
 package cz.cvut.kbss.owlpersistence.sessions;
 
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.owlpersistence.accessors.OntologyAccessor;
+import cz.cvut.kbss.owlpersistence.model.EntityManager;
+import cz.cvut.kbss.owlpersistence.model.query.Query;
+import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
 
 /**
  * This is the implementation of the basic Session operations. Other more
@@ -39,6 +43,27 @@ public abstract class AbstractSession implements Session {
 			this.liveObjectCache = new CacheManagerImpl(this);
 		}
 		return this.liveObjectCache;
+	}
+	
+	public Query<?> createQuery(String qlString, final EntityManager em) {
+		if (qlString == null || qlString.equalsIgnoreCase("")) {
+			return null;
+		}
+		return getOntologyAccessor().createQuery(qlString, em);
+	}
+	
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, boolean sparql, final EntityManager em) {
+		if (query == null || query.equalsIgnoreCase("") || resultClass == null) {
+			return null;
+		}
+		return getOntologyAccessor().createQuery(query, resultClass, sparql, em);
+	}
+	
+	public Query<List<String>> createNativeQuery(String sparql, final EntityManager em) {
+		if (sparql == null || sparql.equalsIgnoreCase("")) {
+			return null;
+		}
+		return getOntologyAccessor().createNativeQuery(sparql, em);
 	}
 
 	/**

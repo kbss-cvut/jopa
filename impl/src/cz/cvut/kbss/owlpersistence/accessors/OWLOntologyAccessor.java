@@ -48,6 +48,8 @@ import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
+import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3OWL2Ontology;
+import cz.cvut.kbss.owlpersistence.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.model.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
 import cz.cvut.kbss.owlpersistence.model.annotations.CascadeType;
@@ -61,9 +63,13 @@ import cz.cvut.kbss.owlpersistence.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.owlpersistence.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.owlpersistence.model.query.Query;
+import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
 import cz.cvut.kbss.owlpersistence.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.owlpersistence.owlapi.NotYetImplementedException;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.owlpersistence.owlapi.QueryImpl;
+import cz.cvut.kbss.owlpersistence.owlapi.TypedQueryImpl;
 import cz.cvut.kbss.owlpersistence.sessions.AbstractSession;
 import cz.cvut.kbss.owlpersistence.sessions.UnitOfWork;
 import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkImpl;
@@ -1841,4 +1847,20 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 		}
 	}
 
+	public synchronized Query<?> createQuery(String qlString, EntityManager em) {
+		return new QueryImpl(qlString, new OWLAPIv3OWL2Ontology(
+				ontologyManager, reasoningOnt, reasoner), false, em);
+	}
+
+	public synchronized <T> TypedQuery<T> createQuery(String query, Class<T> resultClass,
+			boolean sparql, EntityManager em) {
+		return new TypedQueryImpl<T>(query, resultClass,
+				new OWLAPIv3OWL2Ontology(ontologyManager, reasoningOnt,
+						reasoner), sparql, em);
+	}
+
+	public synchronized Query<List<String>> createNativeQuery(String sparql, EntityManager em) {
+		return new QueryImpl(sparql, new OWLAPIv3OWL2Ontology(ontologyManager,
+				reasoningOnt, reasoner), true, em);
+	}
 }
