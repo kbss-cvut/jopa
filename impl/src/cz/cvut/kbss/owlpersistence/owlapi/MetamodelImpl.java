@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.reflections.Reflections;
+
 import cz.cvut.kbss.owlpersistence.model.IRI;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
 import cz.cvut.kbss.owlpersistence.model.annotations.CascadeType;
@@ -55,12 +57,12 @@ public class MetamodelImpl implements Metamodel {
 	private static final Logger LOG = Logger.getLogger(Metamodel.class
 			.getName());
 	private static final String ASPECTJ_CLASS = "org.aspectj.weaver.loadtime.Agent";
+	private static final String ENTITY_LOCATION_PARAM = "location";
 
 	private final Map<Class<?>, EntityType<?>> typeMap = new HashMap<Class<?>, EntityType<?>>();
 
 	private final Set<Class<?>> inferredClasses = new HashSet<Class<?>>();
 
-	@SuppressWarnings(value = "unused")
 	private EntityManagerFactoryImpl emf;
 
 	private boolean shouldUseAspectJ;
@@ -79,6 +81,8 @@ public class MetamodelImpl implements Metamodel {
 		}
 		checkForWeaver();
 
+		loadEntities();
+
 		for (final Class<?> entity : entities) {
 			processOWLClass(entity);
 		}
@@ -90,11 +94,12 @@ public class MetamodelImpl implements Metamodel {
 	 */
 	private void checkForWeaver() {
 		try {
-			Class<?> c = MetamodelImpl.class.getClassLoader().loadClass(ASPECTJ_CLASS);
+			Class<?> c = MetamodelImpl.class.getClassLoader().loadClass(
+					ASPECTJ_CLASS);
 			this.shouldUseAspectJ = true;
 		} catch (ClassNotFoundException e) {
 			this.shouldUseAspectJ = false;
-			LOG.info("AspectJ weaver not found. Lazy loading will be disabled.");
+			LOG.config("AspectJ weaver not found. Lazy loading will be disabled.");
 		}
 	}
 
@@ -319,6 +324,17 @@ public class MetamodelImpl implements Metamodel {
 		}
 
 		return (Class<?>) type;
+	}
+
+	private void loadEntities() {
+		final String loc = emf.getProperties().get(ENTITY_LOCATION_PARAM);
+		if (loc == null) {
+			LOG.warning("Cannot discover entity classes. No location specified.");
+			return;
+		}
+		Reflections reflections = new Reflections(loc);
+		Set<Class<?>> ents = reflections.getTypesAnnotatedWith(OWLClass.class);
+		entities.addAll(ents);
 	}
 
 	public static void addClass(final Class<?> c) {

@@ -147,6 +147,11 @@
 			<scope>test</scope>
 			<optional>false</optional>
 		</dependency>
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>0.9.5</version>
+		</dependency>
 	</dependencies>
 	<distributionManagement>
 		<repository>

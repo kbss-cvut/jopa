@@ -406,8 +406,8 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 			this.changeList.clear();
 		}
 		try {
-			if (LOG.isLoggable(Level.INFO)) {
-				LOG.info("Saving working ontology...");
+			if (LOG.isLoggable(Level.CONFIG)) {
+				LOG.config("Saving working ontology...");
 			}
 			this.ontologyManager.saveOntology(this.workingOnt);
 		} catch (OWLOntologyStorageException e) {
@@ -1497,6 +1497,9 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 			lst.add(getJavaInstanceForOWLIndividual(type, iContent, iri));
 			seq = getObjectProperty(seq, hasNext, inferred);
 		}
+		if (lst.isEmpty()) {
+			return null; // Return null if there are no referenced entities
+		}
 		return lst;
 	}
 
@@ -1719,6 +1722,9 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 			lst.add(getJavaInstanceForOWLIndividual(type, o, iri));
 			o = getObjectProperty(o, hasNext, inferred);
 		}
+		if (lst.isEmpty()) {
+			return null; // Return null if there are no entities in the list
+		}
 		return lst;
 	}
 
@@ -1852,14 +1858,15 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 				ontologyManager, reasoningOnt, reasoner), false, em);
 	}
 
-	public synchronized <T> TypedQuery<T> createQuery(String query, Class<T> resultClass,
-			boolean sparql, EntityManager em) {
+	public synchronized <T> TypedQuery<T> createQuery(String query,
+			Class<T> resultClass, boolean sparql, EntityManager em) {
 		return new TypedQueryImpl<T>(query, resultClass,
 				new OWLAPIv3OWL2Ontology(ontologyManager, reasoningOnt,
 						reasoner), sparql, em);
 	}
 
-	public synchronized Query<List<String>> createNativeQuery(String sparql, EntityManager em) {
+	public synchronized Query<List<String>> createNativeQuery(String sparql,
+			EntityManager em) {
 		return new QueryImpl(sparql, new OWLAPIv3OWL2Ontology(ontologyManager,
 				reasoningOnt, reasoner), true, em);
 	}

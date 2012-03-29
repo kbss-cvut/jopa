@@ -8,6 +8,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.Set;
 import java.util.Vector;
 
@@ -207,13 +208,17 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	}
 
 	public void commit() {
-		LOG.info("UnitOfWork commit started.");
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("UnitOfWork commit started.");
+		}
 		if (!isActive()) {
 			throw new OWLPersistenceException(
 					"Cannot commit inactive Unit of Work!");
 		}
 		commitUnitOfWork();
-		LOG.info("UnitOfWork commit finished.");
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("UnitOfWork commit finished.");
+		}
 	}
 
 	/**
@@ -654,7 +659,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		writeUncommittedChanges();
 		this.clear();
 		this.isActive = false;
-		LOG.info("UnitOfWork released.");
+		if (LOG.isLoggable(Level.CONFIG)) {
+			LOG.config("UnitOfWork released.");
+		}
 	}
 
 	public Object revertObject(Object object) {

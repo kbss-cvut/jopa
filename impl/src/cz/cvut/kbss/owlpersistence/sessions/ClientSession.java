@@ -33,8 +33,8 @@ public class ClientSession extends AbstractSession {
 	@Override
 	public UnitOfWork acquireUnitOfWork() {
 		UnitOfWork uow = new UnitOfWorkImpl(this);
-		if (LOG.isLoggable(Level.INFO)) {
-			LOG.info("UnitOfWork acquired.");
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("UnitOfWork acquired.");
 		}
 		return uow;
 	}

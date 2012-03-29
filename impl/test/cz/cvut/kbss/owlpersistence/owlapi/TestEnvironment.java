@@ -35,8 +35,8 @@ import cz.cvut.kbss.owlpersistence.model.EntityManager;
 
 @Ignore
 public class TestEnvironment {
-	public static final Logger log = Logger
-			.getLogger(TestEnvironment.class.getName());
+	public static final Logger log = Logger.getLogger(TestEnvironment.class
+			.getName());
 
 	public static String dir = "testResults";
 
@@ -48,12 +48,14 @@ public class TestEnvironment {
 	public static EntityManager getPersistenceConnector(String name) {
 		return getPersistenceConnector(name, false, true);
 	}
-	
-	public static EntityManager getPersistenceConnector(String name, boolean cache) {
+
+	public static EntityManager getPersistenceConnector(String name,
+			boolean cache) {
 		return getPersistenceConnector(name, false, cache);
 	}
 
-	public static EntityManager getPersistenceConnector(String name, boolean db, boolean cache) {
+	public static EntityManager getPersistenceConnector(String name,
+			boolean db, boolean cache) {
 		try {
 			final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
 			final IRI iri = IRI
@@ -78,6 +80,8 @@ public class TestEnvironment {
 			} else {
 				params.put("cache", "off");
 			}
+			/* Set location of the entities (package) */
+			params.put("location", "cz.cvut.kbss.owlpersistence.owlapi");
 			params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, url
 					.toURI().toString());
 			params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,

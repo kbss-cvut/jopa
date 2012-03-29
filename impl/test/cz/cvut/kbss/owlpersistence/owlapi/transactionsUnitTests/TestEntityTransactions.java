@@ -354,7 +354,7 @@ public class TestEntityTransactions {
 		final OWLClassC res = pc.find(OWLClassC.class, testC.getUri());
 		assertNotNull(res);
 		assertEquals(classes.size(), res.getSimpleList().size());
-		assertTrue(res.getReferencedList().isEmpty());
+		assertNull(res.getReferencedList());
 	}
 	
 	@Test
