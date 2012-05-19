@@ -21,8 +21,6 @@ import cz.cvut.kbss.owlpersistence.model.annotations.FetchType;
 import cz.cvut.kbss.owlpersistence.model.annotations.Id;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
 import cz.cvut.kbss.owlpersistence.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraint;
-import cz.cvut.kbss.owlpersistence.model.annotations.ParticipationConstraints;
 
 @OWLClass(iri = "http://new.owl#OWLClassD")
 public class OWLClassD {

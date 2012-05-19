@@ -48,6 +48,8 @@ import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
+import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
+
 import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3OWL2Ontology;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.model.IntegrityConstraintViolatedException;
@@ -74,6 +76,9 @@ import cz.cvut.kbss.owlpersistence.sessions.AbstractSession;
 import cz.cvut.kbss.owlpersistence.sessions.UnitOfWork;
 import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.owlpersistence.util.MappingFileParser;
+import de.fraunhofer.iitb.owldb.OWLDBManager;
+import de.fraunhofer.iitb.owldb.OWLDBOntologyFormat;
+import de.fraunhofer.iitb.owldb.OWLDBOntologyOutputTarget;
 
 public class OWLOntologyAccessor implements OntologyAccessor {
 
@@ -84,6 +89,7 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 	private OWLOntology workingOnt;
 	private OWLOntology reasoningOnt;
 	private OWLOntologyManager ontologyManager;
+	private IRI ontologyIRI;
 
 	private OWLReasonerFactory reasonerFactory;
 
@@ -137,9 +143,10 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 			if (dbConnection != null) {
 				LOG.info("Using database backend: " + dbConnection);
 				// TODO
-				// this.m = Class.forName(OWLDBManagerclassName)
-				// .createOWLOntologyManager(OWLDataFactoryImpl
-				// .getInstance());
+				this.ontologyManager = OWLDBManager
+						.createOWLOntologyManager(OWLDataFactoryImpl
+								.getInstance());
+				this.ontologyIRI = IRI.create(dbConnection);
 
 			} else {
 				this.ontologyManager = OWLManager.createOWLOntologyManager();
@@ -162,10 +169,16 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 			LOG.info("Mapping file succesfully parsed.");
 
 			if (dbConnection != null) {
-				// workingOnt = m.loadOntology(IRI.create(dbConnection));
-				// LOG.info("INDS: "
-				// + workingOnt.getIndividualsInSignature().size());
-				// m.saveOntology(workingOnt);
+				this.workingOnt = ontologyManager.loadOntology(ontologyIRI);
+				LOG.info("INDS: "
+						+ workingOnt.getIndividualsInSignature().size());
+				// We must select the OWLDBOntologyFormat when storing in a
+				// database
+				final OWLDBOntologyFormat format = new OWLDBOntologyFormat();
+				// Lets create a target with the provided target IRI
+				final OWLDBOntologyOutputTarget target = new OWLDBOntologyOutputTarget(
+						ontologyIRI);
+				this.ontologyManager.saveOntology(workingOnt, format, target);
 			} else {
 				URI physicalURI = mapping.get(URI.create(ontologyURI));
 
@@ -409,7 +422,17 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 			if (LOG.isLoggable(Level.CONFIG)) {
 				LOG.config("Saving working ontology...");
 			}
-			this.ontologyManager.saveOntology(this.workingOnt);
+			if (ontologyIRI != null) {
+				// We must select the OWLDBOntologyFormat when storing in a
+				// database
+				final OWLDBOntologyFormat format = new OWLDBOntologyFormat();
+				// Lets create a target with the provided target IRI
+				final OWLDBOntologyOutputTarget target = new OWLDBOntologyOutputTarget(
+						ontologyIRI);
+				this.ontologyManager.saveOntology(workingOnt, format, target);
+			} else {
+				this.ontologyManager.saveOntology(workingOnt);
+			}
 		} catch (OWLOntologyStorageException e) {
 			e.printStackTrace();
 			throw new OWLPersistenceException("Error when saving ontology.", e);

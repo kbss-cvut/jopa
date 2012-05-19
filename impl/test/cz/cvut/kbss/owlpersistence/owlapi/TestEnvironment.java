@@ -73,7 +73,7 @@ public class TestEnvironment {
 
 			if (db) {
 				params.put(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION,
-						"jdbc:postgresql://localhost/strufail_owlapi");
+						"jdbc:postgresql://localhost/owldb");
 			}
 			if (cache) {
 				params.put("cache", "on");
