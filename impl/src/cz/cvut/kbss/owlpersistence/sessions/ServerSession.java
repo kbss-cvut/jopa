@@ -11,6 +11,7 @@ import javax.persistence.EntityTransaction;
 
 import cz.cvut.kbss.owlpersistence.accessors.OWLOntologyAccessor;
 import cz.cvut.kbss.owlpersistence.accessors.OntologyAccessor;
+import cz.cvut.kbss.owlpersistence.accessors.OntologyAccessorFactory;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.model.metamodel.EntityType;
 import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
@@ -40,9 +41,10 @@ public class ServerSession extends AbstractSession {
 		this.managedClasses = Collections.emptySet();
 	}
 
-	public ServerSession(Map<String, String> properties, Metamodel metamodel) {
+	public ServerSession(Map<String, String> properties, Metamodel metamodel,
+			OntologyAccessorFactory factory) {
 		this.managedClasses = processTypes(metamodel.getEntities());
-		initialize(properties, metamodel);
+		initialize(properties, metamodel, factory);
 	}
 
 	/**
@@ -68,9 +70,13 @@ public class ServerSession extends AbstractSession {
 	 *            Map of setup properties.
 	 * @param metamodel
 	 *            Metamodel of the managed classes and their attributes.
+	 * @param factory
+	 *            Factory for creating ontology accessors.
 	 */
-	private void initialize(Map<String, String> properties, Metamodel metamodel) {
-		this.accessor = new OWLOntologyAccessor(properties, metamodel, this);
+	private void initialize(Map<String, String> properties,
+			Metamodel metamodel, OntologyAccessorFactory factory) {
+		this.accessor = factory.createOntologyAccessor(properties, metamodel,
+				this);
 		String cache = properties.get(CACHE_PROPERTY);
 		if (cache == null || cache.equals("on")) {
 			CacheManagerImpl cm = (CacheManagerImpl) getLiveObjectCache();
