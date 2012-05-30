@@ -2,109 +2,10 @@
 <rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testPersistEntityWithCascade#"
      xml:base="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testPersistEntityWithCascade"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:new="http://new.owl#"
-     xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
     <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testPersistEntityWithCascade"/>
-    
-
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Datatypes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    
-
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Object Properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    
-
-
-    <!-- http://hasA -->
-
-    <owl:ObjectProperty rdf:about="http://hasA"/>
-    
-
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Data properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    
-
-
-    <!-- http://A-stringAttribute -->
-
-    <owl:DatatypeProperty rdf:about="http://A-stringAttribute"/>
-    
-
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Classes
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    
-
-
-    <!-- http://new.owl#OWLClassA -->
-
-    <owl:Class rdf:about="http://new.owl#OWLClassA"/>
-    
-
-
-    <!-- http://new.owl#OWLClassD -->
-
-    <owl:Class rdf:about="http://new.owl#OWLClassD"/>
-    
-
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Individuals
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    
-
-
-    <!-- http://referencedEntityURI -->
-
-    <owl:NamedIndividual rdf:about="http://referencedEntityURI">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>testStringAttribute</http:A-stringAttribute>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://testEntityURI -->
-
-    <owl:NamedIndividual rdf:about="http://testEntityURI">
-        <rdf:type rdf:resource="http://new.owl#OWLClassD"/>
-        <http:hasA rdf:resource="http://referencedEntityURI"/>
-    </owl:NamedIndividual>
 </rdf:RDF>
 
 

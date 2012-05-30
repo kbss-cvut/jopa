@@ -50,13 +50,7 @@ public class OWLDBOntologyAccessor extends OWLOntologyAccessor {
 		parseMappings(mappingFileURI, ontologyURI);
 
 		this.workingOnt = ontologyManager.loadOntology(IRI.create(ontologyURI));
-		// We must select the OWLDBOntologyFormat when storing in a
-		// database
-		final OWLDBOntologyFormat format = new OWLDBOntologyFormat();
-		// Lets create a target with the provided target IRI
-		final OWLDBOntologyOutputTarget target = new OWLDBOntologyOutputTarget(
-				ontologyIRI);
-		this.ontologyManager.saveOntology(workingOnt, format, target);
+		saveOntology();
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("INDS: " + workingOnt.getIndividualsInSignature().size());
 		}

@@ -244,6 +244,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				getCurrentPersistenceContext().registerNewObject(id, entity);
 
 			} catch (Exception e) {
+				if (getTransaction().isActive()) {
+					getTransaction().setRollbackOnly();
+				}
 				throw new OWLPersistenceException(
 						"A problem occured when persisting " + entity, e);
 			}
@@ -268,6 +271,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 							persist(ox);
 						}
 					} catch (Exception e) {
+						if (getTransaction().isActive()) {
+							getTransaction().setRollbackOnly();
+						}
 						throw new OWLPersistenceException(
 								"A problem occured when persisting attribute "
 										+ at.getName() + " of with value " + o
