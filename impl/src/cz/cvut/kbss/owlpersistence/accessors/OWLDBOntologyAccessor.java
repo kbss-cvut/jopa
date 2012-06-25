@@ -51,6 +51,10 @@ public class OWLDBOntologyAccessor extends OWLOntologyAccessor {
 		parseMappings(mappingFileURI, ontologyURI);
 
 		this.workingOnt = ontologyManager.loadOntology(IRI.create(ontologyURI));
+		// Use this to pass properties to ontology
+		// final Properties props = new Properties();
+		// this.workingOnt = ((OWLDBOntologyManager)
+		// ontologyManager).loadOntology(IRI.create(ontologyURI), props);
 		saveOntology();
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("INDS: " + workingOnt.getIndividualsInSignature().size());

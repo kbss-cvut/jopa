@@ -23,16 +23,17 @@ public class FileOWLDBPerformanceTest {
 			.getLogger(FileOWLDBPerformanceTest.class.getName());
 	private static final int COUNT = 1000;
 	private static final int FIND_CNT = COUNT / 10;
+	private static final String IRI_PREFIX = "http://classA";
 
 	private static List<OWLClassA> entitiesA;
-	private static List<Integer> ids;
+	private static List<URI> ids;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		entitiesA = new ArrayList<OWLClassA>(COUNT);
 		for (int i = 0; i < COUNT; i++) {
 			final OWLClassA a = new OWLClassA();
-			final URI pk = URI.create(Integer.toString(i));
+			final URI pk = URI.create(IRI_PREFIX + Integer.toString(i));
 			final String strAtt = "StringAttribute";
 			a.setUri(pk);
 			a.setStringAttribute(strAtt);
@@ -41,12 +42,13 @@ public class FileOWLDBPerformanceTest {
 			types.add("TypeTwo");
 			types.add("TypeThree");
 			a.setTypes(types);
+			entitiesA.add(a);
 		}
 		final Random rand = new Random();
-		ids = new ArrayList<Integer>();
+		ids = new ArrayList<URI>();
 		for (int i = 0; i < FIND_CNT; i++) {
 			final Integer id = rand.nextInt(COUNT);
-			ids.add(id);
+			ids.add(URI.create(IRI_PREFIX + id));
 		}
 	}
 
@@ -65,9 +67,10 @@ public class FileOWLDBPerformanceTest {
 		LOG.config("Testing OWLDB ontology access performance. Persisting "
 				+ COUNT + " entities.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"OWLDBOntologyPerformanceTest-Persist", true, true);
+				"owldb", true, true);
 
 		persistEntities(em);
+		em.getEntityManagerFactory().close();
 	}
 
 	/**
@@ -98,7 +101,7 @@ public class FileOWLDBPerformanceTest {
 	public void testOWLDBOntologyPerformanceRead() {
 		LOG.config("Search for several randomly chosen entities and measure OWLDB ontology performance.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"OWLDBOntologyPerformanceTest-Find", true, false);
+				"owldb", true, false);
 		persistEntities(em);
 
 		findEntities(em);
@@ -106,7 +109,7 @@ public class FileOWLDBPerformanceTest {
 
 	private void findEntities(final EntityManager em) {
 		em.clear();
-		for (Integer id : ids) {
+		for (URI id : ids) {
 			final OWLClassA a = em.find(OWLClassA.class, id);
 			assertNotNull(a);
 		}

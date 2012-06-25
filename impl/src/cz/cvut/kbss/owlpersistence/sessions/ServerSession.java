@@ -150,7 +150,9 @@ public class ServerSession extends AbstractSession {
 		if (!runningTransactions.isEmpty()) {
 			LOG.warning("There are still transactions running. Marking them for rollback.");
 			for (EntityTransaction t : getRunningTransactions().keySet()) {
-				t.setRollbackOnly();
+				if (t.isActive()) {
+					t.setRollbackOnly();
+				}
 			}
 		}
 		accessor.close();

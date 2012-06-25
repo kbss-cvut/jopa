@@ -103,9 +103,7 @@ public class EntityTransactionsTest {
 	@BeforeClass
 	public static void setupBeforeClass() {
 		index = 100;
-		pc = TestEnvironment.getPersistenceConnector(
-				"TestPersistenceConnectorLogic-testOWLDBTransactions", true,
-				true);
+		pc = TestEnvironment.getPersistenceConnector("owldb", true, true);
 	}
 
 	@Test

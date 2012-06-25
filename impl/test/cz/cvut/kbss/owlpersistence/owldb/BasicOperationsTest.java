@@ -15,8 +15,8 @@ public class BasicOperationsTest {
 
 	@Test
 	public void testFetchSimpleData() {
-		EntityManager em = TestEnvironment.getPersistenceConnector(
-				"TestBasicFetching-testFetchSimpleData", true, true);
+		EntityManager em = TestEnvironment.getPersistenceConnector("owldb",
+				true, true);
 
 		OWLClassA a = new OWLClassA();
 		URI uri = URI.create("http://new#A");
@@ -39,14 +39,13 @@ public class BasicOperationsTest {
 
 		assertEquals(aX.getStringAttribute(), "new-value");
 
-		em.close();
 		em.getEntityManagerFactory().close();
 	}
 
 	@Test
 	public void testPersistEntity() {
-		EntityManager em = TestEnvironment.getPersistenceConnector(
-				"TestBasicFetching-testPersistEntity", true, true);
+		EntityManager em = TestEnvironment.getPersistenceConnector("owldb",
+				true, true);
 		final OWLClassA a = new OWLClassA();
 		final URI uri = URI.create("persistA");
 		a.setUri(uri);
@@ -61,14 +60,14 @@ public class BasicOperationsTest {
 		final OWLClassA aX = em.find(OWLClassA.class, uri);
 		assertNotNull(aX);
 		assertEquals(str, aX.getStringAttribute());
-		em.close();
+
 		em.getEntityManagerFactory().close();
 	}
 
 	@Test
 	public void testPersistRelationship() {
-		EntityManager em = TestEnvironment.getPersistenceConnector(
-				"TestBasicFetching-testPersistRelationship", true, true);
+		EntityManager em = TestEnvironment.getPersistenceConnector("owldb",
+				true, true);
 		final OWLClassA a = new OWLClassA();
 		final URI uri = URI.create("persistA");
 		a.setUri(uri);
@@ -88,14 +87,14 @@ public class BasicOperationsTest {
 		assertNotNull(dX);
 		assertNotNull(dX.getOwlClassA());
 		assertEquals(uri, dX.getOwlClassA().getUri());
-		em.close();
+
 		em.getEntityManagerFactory().close();
 	}
 
 	@Test
 	public void testRemoveEntity() {
-		EntityManager em = TestEnvironment.getPersistenceConnector(
-				"TestBasicFetching-testRemoveEntity", true, true);
+		EntityManager em = TestEnvironment.getPersistenceConnector("owldb",
+				true, true);
 		final OWLClassA a = new OWLClassA();
 		final URI uri = URI.create("persistA");
 		a.setUri(uri);

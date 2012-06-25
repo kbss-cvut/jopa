@@ -57,24 +57,31 @@ public class TestEnvironment {
 	public static EntityManager getPersistenceConnector(String name,
 			boolean db, boolean cache) {
 		try {
-			final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
-			final IRI iri = IRI
-					.create("http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/"
-							+ name);
-			OWLOntology o = m.createOntology(iri);
-			final File url = new File(dir + "/" + name + ".owl");
-
-			m.saveOntology(o, IRI.create(url.toURI()));
-
 			final Map<String, String> params = new HashMap<String, String>();
+
+			if (!db) {
+				// Ontology stored in file
+				final OWLOntologyManager m = OWLManager
+						.createOWLOntologyManager();
+				final IRI iri = IRI
+						.create("http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/"
+								+ name);
+				OWLOntology o = m.createOntology(iri);
+				final File url = new File(dir + "/" + name + ".owl");
+
+				m.saveOntology(o, IRI.create(url.toURI()));
+				params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, url
+						.toURI().toString());
+			} else {
+				// OWLDB ontology access
+				final String dbUri = "jdbc:postgresql://localhost/" + name;
+				params.put(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION,
+						dbUri);
+				params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, dbUri);
+			}
 
 			params.put("javax.persistence.provider",
 					EntityManagerFactoryImpl.class.getName());
-
-			if (db) {
-				params.put(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION,
-						"jdbc:postgresql://localhost/owldb");
-			}
 			if (cache) {
 				params.put("cache", "on");
 			} else {
@@ -82,8 +89,6 @@ public class TestEnvironment {
 			}
 			/* Set location of the entities (package) */
 			params.put("location", "cz.cvut.kbss.owlpersistence.owlapi");
-			params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, url
-					.toURI().toString());
 			params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
 					OWLAPIPersistenceProvider.class.getName());
 			// params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
