@@ -152,4 +152,9 @@ public interface OntologyAccessor {
 	 */
 	public IRI getIdentifier(Object object);
 
+	/**
+	 * Write all pending changes and close the ontology connection.
+	 */
+	public void close();
+
 }

@@ -2,10 +2,300 @@
 <rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#"
      xml:base="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:new="http://new.owl#"
+     xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+     xmlns:sequences="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:sequences2="http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#">
     <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Datatypes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://B-hasReferencedSequence -->
+
+    <owl:ObjectProperty rdf:about="http://B-hasReferencedSequence"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#hasNext -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#hasNext"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://A-stringAttribute -->
+
+    <owl:DatatypeProperty rdf:about="http://A-stringAttribute"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#OWLList -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#OWLList"/>
+    
+
+
+    <!-- http://new.owl#OWLClassA -->
+
+    <owl:Class rdf:about="http://new.owl#OWLClassA"/>
+    
+
+
+    <!-- http://new.owl#OWLClassC -->
+
+    <owl:Class rdf:about="http://new.owl#OWLClassC"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://refA1 -->
+
+    <owl:NamedIndividual rdf:about="http://refA1">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+        <http:A-stringAttribute>strAttForRefA_1</http:A-stringAttribute>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://refA10 -->
+
+    <owl:NamedIndividual rdf:about="http://refA10">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+        <http:A-stringAttribute>strAttForRefA_10</http:A-stringAttribute>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://refA2 -->
+
+    <owl:NamedIndividual rdf:about="http://refA2">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+        <http:A-stringAttribute>strAttForRefA_2</http:A-stringAttribute>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://refA3 -->
+
+    <owl:NamedIndividual rdf:about="http://refA3">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+        <http:A-stringAttribute>strAttForRefA_3</http:A-stringAttribute>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://refA4 -->
+
+    <owl:NamedIndividual rdf:about="http://refA4">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+        <http:A-stringAttribute>strAttForRefA_4</http:A-stringAttribute>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://refA5 -->
+
+    <owl:NamedIndividual rdf:about="http://refA5">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+        <http:A-stringAttribute>strAttForRefA_5</http:A-stringAttribute>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://refA6 -->
+
+    <owl:NamedIndividual rdf:about="http://refA6">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+        <http:A-stringAttribute>strAttForRefA_6</http:A-stringAttribute>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://refA7 -->
+
+    <owl:NamedIndividual rdf:about="http://refA7">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+        <http:A-stringAttribute>strAttForRefA_7</http:A-stringAttribute>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://refA8 -->
+
+    <owl:NamedIndividual rdf:about="http://refA8">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+        <http:A-stringAttribute>strAttForRefA_8</http:A-stringAttribute>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://refA9 -->
+
+    <owl:NamedIndividual rdf:about="http://refA9">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+        <http:A-stringAttribute>strAttForRefA_9</http:A-stringAttribute>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://testC -->
+
+    <owl:NamedIndividual rdf:about="http://testC">
+        <rdf:type rdf:resource="http://new.owl#OWLClassC"/>
+        <http:B-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ_1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ1_1 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ1_1">
+        <sequences:hasContents rdf:resource="http://refA2"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ2_1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ2_1 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ2_1">
+        <sequences:hasContents rdf:resource="http://refA3"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ3_1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ3_1 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ3_1">
+        <sequences:hasContents rdf:resource="http://refA4"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ4_1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ4_1 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ4_1">
+        <sequences:hasContents rdf:resource="http://refA5"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ5_1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ5_1 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ5_1">
+        <sequences:hasContents rdf:resource="http://refA6"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ6_1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ6_1 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ6_1">
+        <sequences:hasContents rdf:resource="http://refA7"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ7_1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ7_1 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ7_1">
+        <sequences:hasContents rdf:resource="http://refA8"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ8_1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ8_1 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ8_1">
+        <sequences:hasContents rdf:resource="http://refA9"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ9_1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ9_1 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ9_1">
+        <sequences:hasContents rdf:resource="http://refA10"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ_1 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ_1">
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#OWLList"/>
+        <sequences:hasContents rdf:resource="http://refA1"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ1_1"/>
+    </owl:NamedIndividual>
 </rdf:RDF>
 
 

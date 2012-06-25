@@ -55,6 +55,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 			// TODO try-catch
 			m.close();
 		}
+		serverSession.close();
 	}
 
 	public EntityManager createEntityManager() {

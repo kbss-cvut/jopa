@@ -12,6 +12,7 @@ import cz.cvut.kbss.owlpersistence.model.metamodel.Metamodel;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.owlpersistence.sessions.Session;
 import de.fraunhofer.iitb.owldb.OWLDBManager;
+import de.fraunhofer.iitb.owldb.OWLDBOntology;
 import de.fraunhofer.iitb.owldb.OWLDBOntologyFormat;
 import de.fraunhofer.iitb.owldb.OWLDBOntologyOutputTarget;
 
@@ -65,6 +66,13 @@ public class OWLDBOntologyAccessor extends OWLOntologyAccessor {
 		final OWLDBOntologyOutputTarget target = new OWLDBOntologyOutputTarget(
 				ontologyIRI);
 		this.ontologyManager.saveOntology(workingOnt, format, target);
+	}
+
+	@Override
+	public void close() {
+		super.close();
+		// Not the nicest way, but OWLDB gives us no other chance
+		((OWLDBOntology) workingOnt).destroyConnection();
 	}
 
 }

@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassA;
+import cz.cvut.kbss.owlpersistence.owlapi.OWLClassD;
 import cz.cvut.kbss.owlpersistence.owlapi.TestEnvironment;
 
 public class BasicOperationsTest {
@@ -39,6 +40,84 @@ public class BasicOperationsTest {
 		assertEquals(aX.getStringAttribute(), "new-value");
 
 		em.close();
+		em.getEntityManagerFactory().close();
+	}
+
+	@Test
+	public void testPersistEntity() {
+		EntityManager em = TestEnvironment.getPersistenceConnector(
+				"TestBasicFetching-testPersistEntity", true, true);
+		final OWLClassA a = new OWLClassA();
+		final URI uri = URI.create("persistA");
+		a.setUri(uri);
+		final String str = "PersistTestString";
+		a.setStringAttribute(str);
+		em.getTransaction().begin();
+		em.persist(a);
+		em.getTransaction().commit();
+
+		em.clear();
+
+		final OWLClassA aX = em.find(OWLClassA.class, uri);
+		assertNotNull(aX);
+		assertEquals(str, aX.getStringAttribute());
+		em.close();
+		em.getEntityManagerFactory().close();
+	}
+
+	@Test
+	public void testPersistRelationship() {
+		EntityManager em = TestEnvironment.getPersistenceConnector(
+				"TestBasicFetching-testPersistRelationship", true, true);
+		final OWLClassA a = new OWLClassA();
+		final URI uri = URI.create("persistA");
+		a.setUri(uri);
+		final String str = "PersistTestString";
+		a.setStringAttribute(str);
+		final OWLClassD d = new OWLClassD();
+		d.setOwlClassA(a);
+		final URI dUri = URI.create("persistD");
+		d.setUri(dUri);
+		em.getTransaction().begin();
+		em.persist(a);
+		em.persist(d);
+		em.getTransaction().commit();
+		em.clear();
+
+		final OWLClassD dX = em.find(OWLClassD.class, dUri);
+		assertNotNull(dX);
+		assertNotNull(dX.getOwlClassA());
+		assertEquals(uri, dX.getOwlClassA().getUri());
+		em.close();
+		em.getEntityManagerFactory().close();
+	}
+
+	@Test
+	public void testRemoveEntity() {
+		EntityManager em = TestEnvironment.getPersistenceConnector(
+				"TestBasicFetching-testRemoveEntity", true, true);
+		final OWLClassA a = new OWLClassA();
+		final URI uri = URI.create("persistA");
+		a.setUri(uri);
+		em.getTransaction().begin();
+		em.persist(a);
+		em.getTransaction().commit();
+
+		em.clear();
+		assertFalse(em.contains(a));
+
+		final OWLClassA aX = em.find(OWLClassA.class, uri);
+		assertNotNull(aX);
+		em.getTransaction().begin();
+		em.remove(aX);
+		em.getTransaction().commit();
+
+		em.clear();
+		final OWLClassA res = em.find(OWLClassA.class, uri);
+		assertNull(res);
+
+		em.clear();
+		em.getEntityManagerFactory().close();
 	}
 
 }

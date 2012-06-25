@@ -1875,4 +1875,16 @@ public abstract class OWLOntologyAccessor implements OntologyAccessor {
 		return new QueryImpl(sparql, new OWLAPIv3OWL2Ontology(ontologyManager,
 				reasoningOnt, reasoner), true, em);
 	}
+
+	public void close() {
+		if (!changeList.isEmpty()) {
+			writeChanges(changeList);
+		}
+		try {
+			saveOntology();
+		} catch (OWLOntologyStorageException e) {
+			LOG.severe("Error while saving ontology");
+			e.printStackTrace();
+		}
+	}
 }

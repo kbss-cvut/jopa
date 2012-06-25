@@ -24,7 +24,7 @@ import cz.cvut.kbss.owlpersistence.sessions.ServerSession;
 import cz.cvut.kbss.owlpersistence.sessions.UnitOfWork;
 
 public class CacheManagerTest {
-	
+
 	private SessionStub session;
 	private OWLClassA testObject;
 	private CacheManagerImpl mngr;
@@ -47,7 +47,7 @@ public class CacheManagerTest {
 		Object uri = mngr.getIRIOfObject(testObject);
 		assertEquals(IRI.create(testObject.getUri()), uri);
 	}
-	
+
 	@Test
 	public void testAddObjectWithDuplicateIRI() {
 		this.mngr.addObjectIntoCache(testObject);
@@ -92,7 +92,7 @@ public class CacheManagerTest {
 		this.mngr.addObjectIntoCache(testObject);
 		assertEquals(testObject, mngr.getObject(testObject));
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	@Test
 	public void testGetObjectByValue() {
@@ -129,7 +129,7 @@ public class CacheManagerTest {
 		Object res = mngr.getIRIOfObject(testObject);
 		assertEquals(iri, res);
 	}
-	
+
 	@Test
 	public void testReleaseCache() {
 		this.mngr.addObjectIntoCache(testObject);
@@ -147,18 +147,18 @@ public class CacheManagerTest {
 		this.mngr.removeObjectFromCacheByIRI(IRI.create(testObject.getUri()));
 		assertNull(mngr.getObjectByIRI(IRI.create(testObject.getUri())));
 	}
-	
+
 	private class SessionStub extends ServerSession {
-		
+
 		public SessionStub(AccessorStub accessor) {
 			this.accessor = accessor;
 		}
-		
+
 		public OntologyAccessor getOntologyAccessor() {
 			return this.accessor;
 		}
 	}
-	
+
 	private class AccessorStub implements OntologyAccessor {
 
 		public void persistEntity(Object entity, UnitOfWork uow) {
@@ -175,7 +175,7 @@ public class CacheManagerTest {
 		}
 
 		public void writeChange(OWLOntologyChange change) {
-			
+
 		}
 
 		public void saveWorkingOntology() {
@@ -204,14 +204,19 @@ public class CacheManagerTest {
 			return null;
 		}
 
-		public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, boolean sparql, final EntityManager em) {
+		public <T> TypedQuery<T> createQuery(String query,
+				Class<T> resultClass, boolean sparql, final EntityManager em) {
 			return null;
 		}
 
-		public Query<List<String>> createNativeQuery(String sqlString, final EntityManager em) {
+		public Query<List<String>> createNativeQuery(String sqlString,
+				final EntityManager em) {
 			return null;
 		}
-		
+
+		public void close() {
+		}
+
 	}
 
 }

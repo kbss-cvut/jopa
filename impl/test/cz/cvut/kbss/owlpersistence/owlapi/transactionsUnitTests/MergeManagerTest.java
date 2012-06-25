@@ -187,12 +187,17 @@ public class MergeManagerTest {
 			return null;
 		}
 
-		public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, boolean sparql, final EntityManager em) {
+		public <T> TypedQuery<T> createQuery(String query,
+				Class<T> resultClass, boolean sparql, final EntityManager em) {
 			return null;
 		}
 
-		public Query<List<String>> createNativeQuery(String sqlString, final EntityManager em) {
+		public Query<List<String>> createNativeQuery(String sqlString,
+				final EntityManager em) {
 			return null;
+		}
+
+		public void close() {
 		}
 	}
 }

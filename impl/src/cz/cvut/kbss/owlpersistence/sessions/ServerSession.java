@@ -9,7 +9,6 @@ import java.util.Vector;
 
 import javax.persistence.EntityTransaction;
 
-import cz.cvut.kbss.owlpersistence.accessors.OWLOntologyAccessor;
 import cz.cvut.kbss.owlpersistence.accessors.OntologyAccessor;
 import cz.cvut.kbss.owlpersistence.accessors.OntologyAccessorFactory;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
@@ -143,8 +142,18 @@ public class ServerSession extends AbstractSession {
 		// TODO
 	}
 
-	public void disconnect() {
-		// TODO
+	/**
+	 * Close the server session and all connections to the underlying data
+	 * source.
+	 */
+	public void close() {
+		if (!runningTransactions.isEmpty()) {
+			LOG.warning("There are still transactions running. Marking them for rollback.");
+			for (EntityTransaction t : getRunningTransactions().keySet()) {
+				t.setRollbackOnly();
+			}
+		}
+		accessor.close();
 	}
 
 	public void releaseClientSession(ClientSession session) {
