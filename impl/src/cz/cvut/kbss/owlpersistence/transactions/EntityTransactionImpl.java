@@ -1,5 +1,6 @@
 package cz.cvut.kbss.owlpersistence.transactions;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.persistence.RollbackException;
@@ -7,13 +8,14 @@ import javax.persistence.RollbackException;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.sessions.AbstractSession;
 
-public class EntityTransactionImpl implements javax.persistence.EntityTransaction {
-	
+public class EntityTransactionImpl implements
+		javax.persistence.EntityTransaction {
+
 	private static final Logger LOG = Logger.getLogger(AbstractSession.class
 			.getName());
 
 	private boolean active = false;
-	
+
 	private boolean rollbackOnly = false;
 
 	private EntityTransactionWrapper wrapper;
@@ -39,28 +41,35 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 		em.transactionStarted(this);
 		LOG.info("EntityTransaction begin.");
 	}
+
 	/**
 	 * Commit the current transaction.
-	 * @throws IllegalStateException when the transaction is not active
+	 * 
+	 * @throws IllegalStateException
+	 *             when the transaction is not active
 	 */
 	public void commit() {
 		if (!this.isActive()) {
-			throw new IllegalStateException("Cannot commit inactive transaction!");
+			throw new IllegalStateException(
+					"Cannot commit inactive transaction!");
 		}
 		try {
-			LOG.info("EntityTransaction commit started.");
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.fine("EntityTransaction commit started.");
+			}
 			if (this.wrapper.transactionUOW != null) {
 				if (!this.rollbackOnly) {
 					this.wrapper.transactionUOW.commit();
-				}
-				else {
-					throw new RollbackException("Trying to commit transaction marked as rollback only.");
+				} else {
+					throw new RollbackException(
+							"Trying to commit transaction marked as rollback only.");
 				}
 			}
 		} catch (RuntimeException ex) {
 			ex.printStackTrace();
 			if (this.wrapper.transactionUOW != null) {
-				this.wrapper.getEntityManager().removeCurrentPersistenceContext();
+				this.wrapper.getEntityManager()
+						.removeCurrentPersistenceContext();
 				this.wrapper.transactionUOW.release();
 				this.wrapper.transactionUOW.getParent().release();
 			}
@@ -68,21 +77,27 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 			this.active = false;
 			this.rollbackOnly = false;
 			if (wrapper.transactionUOW.shouldReleaseAfterCommit()) {
-				this.wrapper.getEntityManager().removeCurrentPersistenceContext();
+				this.wrapper.getEntityManager()
+						.removeCurrentPersistenceContext();
 			}
 			this.wrapper.setTransactionUOW(null);
 			this.wrapper.getEntityManager().transactionCommitted(this);
-			LOG.info("EntityTransaction commit finished.");
+			if (LOG.isLoggable(Level.CONFIG)) {
+				LOG.config("EntityTransaction commit finished.");
+			}
 		}
 	}
-	
+
 	/**
 	 * Roll back the current transaction. Dismiss any changes made.
-	 * @throws IllegalStateException when the transaction is not active
+	 * 
+	 * @throws IllegalStateException
+	 *             when the transaction is not active
 	 */
 	public void rollback() {
 		if (!this.isActive()) {
-			throw new IllegalStateException("Cannot rollback inactive transaction!");
+			throw new IllegalStateException(
+					"Cannot rollback inactive transaction!");
 		}
 		if (wrapper.getTransactionUOW() != null) {
 			this.wrapper.transactionUOW.release();
@@ -92,28 +107,36 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 		this.rollbackOnly = false;
 		this.wrapper.getEntityManager().removeCurrentPersistenceContext();
 		this.wrapper.setTransactionUOW(null);
-		LOG.info("EntityTransaction rolled back.");
+		if (LOG.isLoggable(Level.CONFIG)) {
+			LOG.config("EntityTransaction rolled back.");
+		}
 	}
 
 	/**
-	 * Mark this transaction as rollback only. I. e. the only possible outcome of
-	 * this transaction is rollback.
-	 * @throws IllegalStateException when the transaction is not active
+	 * Mark this transaction as rollback only. I. e. the only possible outcome
+	 * of this transaction is rollback.
+	 * 
+	 * @throws IllegalStateException
+	 *             when the transaction is not active
 	 */
 	public void setRollbackOnly() {
 		if (!this.isActive()) {
-			throw new IllegalStateException("Cannot set rollbackOnly on inactive transaction!");
+			throw new IllegalStateException(
+					"Cannot set rollbackOnly on inactive transaction!");
 		}
 		this.rollbackOnly = true;
 	}
 
 	/**
 	 * Is is this transaction marked as rollbackOnly?
-	 * @throws IllegalStateException when the transacion is not active
+	 * 
+	 * @throws IllegalStateException
+	 *             when the transacion is not active
 	 */
 	public boolean getRollbackOnly() {
 		if (!this.isActive()) {
-			throw new IllegalStateException("Accessing rollbackOnly on inactive transaction!");
+			throw new IllegalStateException(
+					"Accessing rollbackOnly on inactive transaction!");
 		}
 		return this.rollbackOnly;
 	}
@@ -131,5 +154,5 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 		}
 		super.finalize();
 	}
-	
+
 }

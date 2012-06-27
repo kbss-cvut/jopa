@@ -14,6 +14,9 @@ import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import cz.cvut.kbss.owlpersistence.accessors.OntologyAccessor;
+import cz.cvut.kbss.owlpersistence.model.EntityManager;
+import cz.cvut.kbss.owlpersistence.model.query.Query;
+import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassB;
 import cz.cvut.kbss.owlpersistence.sessions.CloneBuilderImpl;
 import cz.cvut.kbss.owlpersistence.sessions.MergeManager;
@@ -42,7 +45,7 @@ public class MergeManagerTest {
 				.acquireUnitOfWork();
 		this.cloneBuilder = new CloneBuilderStub(uow);
 		mm = new MergeManagerImpl(uow);
-		//Set the stub as the clone builder
+		// Set the stub as the clone builder
 		Field builder = mm.getClass().getDeclaredField("builder");
 		builder.setAccessible(true);
 		builder.set(mm, cloneBuilder);
@@ -61,7 +64,8 @@ public class MergeManagerTest {
 		orig.setUri(pk);
 		orig.setStringAttribute("ANiceAttribute");
 		final OWLClassB clone = (OWLClassB) cloneBuilder.buildClone(orig);
-		final ObjectChangeSetImpl chs = new ObjectChangeSetImpl(orig, clone, false, uow.getUowChangeSet());
+		final ObjectChangeSetImpl chs = new ObjectChangeSetImpl(orig, clone,
+				false, uow.getUowChangeSet());
 		clone.setStringAttribute("AnotherStringAttribute");
 		this.mm.mergeChangesOnObject(clone, chs);
 		assertEquals(clone.getStringAttribute(), orig.getStringAttribute());
@@ -75,21 +79,25 @@ public class MergeManagerTest {
 		final OWLClassB objTwo = new OWLClassB();
 		final URI pkTwo = URI.create("http://objTwo");
 		objTwo.setUri(pkTwo);
-		this.uow.getLiveObjectCache().addObjectIntoCache(objOne, IRI.create(objOne.getUri()));
-		this.uow.getLiveObjectCache().addObjectIntoCache(objTwo, IRI.create(objTwo.getUri()));
+		this.uow.getLiveObjectCache().addObjectIntoCache(objOne,
+				IRI.create(objOne.getUri()));
+		this.uow.getLiveObjectCache().addObjectIntoCache(objTwo,
+				IRI.create(objTwo.getUri()));
 		Object cloneOne = this.uow.registerExistingObject(objOne);
 		Object cloneTwo = this.uow.registerExistingObject(objTwo);
 		this.uow.removeObject(cloneTwo);
-		((OWLClassB)cloneOne).setStringAttribute("testAtt");
+		((OWLClassB) cloneOne).setStringAttribute("testAtt");
 		this.uow.getUowChangeSet().addDeletedObject(objTwo, cloneTwo);
-		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(objOne, cloneOne, false, null);
+		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(objOne,
+				cloneOne, false, null);
 		this.uow.getUowChangeSet().addObjectChangeSet(ochs);
 		this.mm.mergeChangesFromChangeSet(uow.getUowChangeSet());
 		this.uow.clear();
 		assertFalse(uow.contains(cloneTwo));
-		assertEquals(((OWLClassB)cloneOne).getStringAttribute(), objOne.getStringAttribute());
+		assertEquals(((OWLClassB) cloneOne).getStringAttribute(),
+				objOne.getStringAttribute());
 	}
-	
+
 	@Test
 	public void testMergeChangesFromChangeSetWithNew() {
 		final OWLClassB objOne = new OWLClassB();
@@ -97,10 +105,12 @@ public class MergeManagerTest {
 		objOne.setUri(pk);
 		objOne.setStringAttribute("ABeautifulAttribute");
 		final Object clone = cloneBuilder.buildClone(objOne);
-		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(objOne, clone, true, null);
+		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(objOne, clone,
+				true, null);
 		this.uow.getUowChangeSet().addNewObjectChangeSet(ochs);
 		this.mm.mergeChangesFromChangeSet(uow.getUowChangeSet());
-		assertTrue(uow.getLiveObjectCache().containsObjectByIRI(IRI.create(objOne.getUri())));
+		assertTrue(uow.getLiveObjectCache().containsObjectByIRI(
+				IRI.create(objOne.getUri())));
 	}
 
 	@Test
@@ -109,7 +119,8 @@ public class MergeManagerTest {
 		final URI pk = URI.create("http://newOnesUri");
 		newOne.setUri(pk);
 		final Object clone = cloneBuilder.buildClone(newOne);
-		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(newOne, clone, true, null);
+		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(newOne, clone,
+				true, null);
 		this.mm.mergeNewObject(ochs);
 		assertTrue(uow.getLiveObjectCache().containsObject(newOne));
 	}
@@ -131,40 +142,36 @@ public class MergeManagerTest {
 			return clone;
 		}
 	}
-	
+
 	private class AccessorStub implements OntologyAccessor {
 
 		public void persistEntity(Object entity, UnitOfWork uow) {
-			// TODO Auto-generated method stub
-			
 		}
+
 		public void removeEntity(Object entity) {
-			// TODO Auto-generated method stub
-			
 		}
+
 		public <T> T readEntity(Class<T> cls, Object uri) {
-			// TODO Auto-generated method stub
 			return null;
 		}
+
 		public void writeChanges(List<OWLOntologyChange> changes) {
-			// TODO Auto-generated method stub
-			
 		}
+
 		public void writeChange(OWLOntologyChange change) {
-			// TODO Auto-generated method stub
-			
 		}
+
 		public void saveWorkingOntology() {
-			// TODO Auto-generated method stub		
 		}
+
 		public boolean isInOntologySignature(IRI uri, boolean searchImports) {
-			// TODO Auto-generated method stub
 			return false;
 		}
+
 		public OWLNamedIndividual getOWLNamedIndividual(IRI identifier) {
-			// TODO Auto-generated method stub
 			return null;
 		}
+
 		/**
 		 * This is the only method we need.
 		 */
@@ -172,9 +179,25 @@ public class MergeManagerTest {
 			OWLClassB ob = (OWLClassB) object;
 			return IRI.create(ob.getUri());
 		}
+
 		public void persistExistingEntity(Object entity, UnitOfWork uow) {
-			// TODO Auto-generated method stub
-			
-		}	
+		}
+
+		public Query<?> createQuery(String qlString, final EntityManager em) {
+			return null;
+		}
+
+		public <T> TypedQuery<T> createQuery(String query,
+				Class<T> resultClass, boolean sparql, final EntityManager em) {
+			return null;
+		}
+
+		public Query<List<String>> createNativeQuery(String sqlString,
+				final EntityManager em) {
+			return null;
+		}
+
+		public void close() {
+		}
 	}
 }

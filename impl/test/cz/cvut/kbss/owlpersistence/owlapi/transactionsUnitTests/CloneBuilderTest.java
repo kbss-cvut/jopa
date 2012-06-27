@@ -1,10 +1,7 @@
 package cz.cvut.kbss.owlpersistence.owlapi.transactionsUnitTests;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,7 +24,7 @@ import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkImpl;
 
 public class CloneBuilderTest extends TestCase {
 
-	private static Class<CloneBuilderImpl> cloneBuilderClass = CloneBuilderImpl.class;
+//	private static Class<CloneBuilderImpl> cloneBuilderClass = CloneBuilderImpl.class;
 
 	private Logger log = TestEnvironment.getLogger();
 	CloneBuilderImpl builder;

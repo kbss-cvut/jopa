@@ -1,6 +1,11 @@
 package cz.cvut.kbss.owlpersistence.sessions;
 
+import java.util.List;
 import java.util.Vector;
+
+import cz.cvut.kbss.owlpersistence.model.EntityManager;
+import cz.cvut.kbss.owlpersistence.model.query.Query;
+import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
 
 public interface Session {
 
@@ -17,13 +22,48 @@ public interface Session {
 	public void release();
 
 	/**
-	 * Execute the given SPARQL 1.1 query.
+	 * Create an instance of Query for executing a Java Persistence query
+	 * language statement.
+	 * 
+	 * @param qlString
+	 *            a Java Persistence query string
+	 * @param em
+	 *            The calling EntityManager instance.
+	 * @return the new query instance
+	 * @throws IllegalArgumentException
+	 *             if query string is not valid
+	 */
+	public Query<?> createQuery(String qlString, final EntityManager em);
+
+	/**
+	 * Create an instance of Query for executing typed Java Persistence query
+	 * language statement.
 	 * 
 	 * @param query
-	 *            Query
-	 * @return Vector Returns a Vector of records.
+	 *            A Java Persistence query.
+	 * @param resultClass
+	 *            Result type.
+	 * @param sparql
+	 *            True if the specified query is a Sparql query.
+	 * @param em
+	 *            The calling EntityManager instance.
+	 * @return The new query instance.
 	 */
-	public Vector<?> executeQuery(String sparqlQuery);
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass,
+			boolean sparql, final EntityManager em);
+
+	/**
+	 * Create an instance of Query for executing a native SPARQL-DL query in
+	 * SPARQL syntax.
+	 * 
+	 * @param sparql
+	 *            a native SQL query string
+	 * @param em
+	 *            The calling EntityManager instance.
+	 * @return the new query instance
+	 */
+	public Query<List<String>> createNativeQuery(String sparql,
+			final EntityManager em);
 
 	/**
 	 * Reads all objects of the specified class from the ontology.

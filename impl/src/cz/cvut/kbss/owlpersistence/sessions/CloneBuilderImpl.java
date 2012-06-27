@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
@@ -41,7 +42,9 @@ public class CloneBuilderImpl implements CloneBuilder {
 	}
 
 	public Object buildClone(final Object original) {
-		log.config("Cloning object...");
+		if (log.isLoggable(Level.CONFIG)) {
+			log.config("Cloning object...");
+		}
 		if (original == null) {
 			return null;
 		}
@@ -108,7 +111,9 @@ public class CloneBuilderImpl implements CloneBuilder {
 						continue;
 					}
 					Object toAssign = null;
-					if (attValue != null && uow.getManagedTypes().contains(attValue.getClass())) {
+					if (attValue != null
+							&& uow.getManagedTypes().contains(
+									attValue.getClass())) {
 						toAssign = uow.registerExistingObject(attValue);
 					} else {
 						toAssign = buildClone(attValue);

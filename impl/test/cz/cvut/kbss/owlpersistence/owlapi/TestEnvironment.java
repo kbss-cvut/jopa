@@ -35,8 +35,8 @@ import cz.cvut.kbss.owlpersistence.model.EntityManager;
 
 @Ignore
 public class TestEnvironment {
-	public static final Logger log = Logger
-			.getLogger(TestEnvironment.class.getName());
+	public static final Logger log = Logger.getLogger(TestEnvironment.class
+			.getName());
 
 	public static String dir = "testResults";
 
@@ -48,45 +48,54 @@ public class TestEnvironment {
 	public static EntityManager getPersistenceConnector(String name) {
 		return getPersistenceConnector(name, false, true);
 	}
-	
-	public static EntityManager getPersistenceConnector(String name, boolean cache) {
+
+	public static EntityManager getPersistenceConnector(String name,
+			boolean cache) {
 		return getPersistenceConnector(name, false, cache);
 	}
 
-	public static EntityManager getPersistenceConnector(String name, boolean db, boolean cache) {
+	public static EntityManager getPersistenceConnector(String name,
+			boolean db, boolean cache) {
 		try {
-			final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
-			final IRI iri = IRI
-					.create("http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/"
-							+ name);
-			OWLOntology o = m.createOntology(iri);
-			final File url = new File(dir + "/" + name + ".owl");
-
-			m.saveOntology(o, IRI.create(url.toURI()));
-
 			final Map<String, String> params = new HashMap<String, String>();
+
+			if (!db) {
+				// Ontology stored in file
+				final OWLOntologyManager m = OWLManager
+						.createOWLOntologyManager();
+				final IRI iri = IRI
+						.create("http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/"
+								+ name);
+				OWLOntology o = m.createOntology(iri);
+				final File url = new File(dir + "/" + name + ".owl");
+
+				m.saveOntology(o, IRI.create(url.toURI()));
+				params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, url
+						.toURI().toString());
+			} else {
+				// OWLDB ontology access
+				final String dbUri = "jdbc:postgresql://localhost/" + name;
+				params.put(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION,
+						dbUri);
+				params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, dbUri);
+			}
 
 			params.put("javax.persistence.provider",
 					EntityManagerFactoryImpl.class.getName());
-
-			if (db) {
-				params.put(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION,
-						"jdbc:postgresql://localhost/strufail_owlapi");
-			}
 			if (cache) {
 				params.put("cache", "on");
 			} else {
 				params.put("cache", "off");
 			}
-			params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, url
-					.toURI().toString());
+			/* Set location of the entities (package) */
+			params.put("location", "cz.cvut.kbss.owlpersistence.owlapi");
 			params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
 					OWLAPIPersistenceProvider.class.getName());
 			// params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
 			// .getAbsolutePath());
 			params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
 					REASONER_FACTORY_CLASS);
-
+			
 			return Persistence.createEntityManagerFactory("context-name",
 					params).createEntityManager();
 		} catch (OWLOntologyCreationException e) {

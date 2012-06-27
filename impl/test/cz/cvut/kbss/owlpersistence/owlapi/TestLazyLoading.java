@@ -17,7 +17,6 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import junit.framework.TestCase;

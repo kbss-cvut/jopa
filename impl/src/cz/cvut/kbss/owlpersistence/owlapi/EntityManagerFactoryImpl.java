@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import cz.cvut.kbss.owlpersistence.accessors.OntologyAccessorFactory;
+import cz.cvut.kbss.owlpersistence.accessors.OntologyAccessorFactoryImpl;
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.model.EntityManagerFactory;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
@@ -37,11 +39,13 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 	private final Map<String, String> properties;
 
 	private ServerSession serverSession;
+	private OntologyAccessorFactory accessorFactory;
 
 	private MetamodelImpl metamodel = null;
 
 	public EntityManagerFactoryImpl(final Map<String, String> properties) {
 		this.properties = properties;
+		this.accessorFactory = new OntologyAccessorFactoryImpl();
 	}
 
 	public void close() {
@@ -51,6 +55,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 			// TODO try-catch
 			m.close();
 		}
+		serverSession.close();
 	}
 
 	public EntityManager createEntityManager() {
@@ -87,7 +92,8 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 	 */
 	private void initServerSession(Map<String, String> newMap) {
 		if (this.serverSession == null) {
-			this.serverSession = new ServerSession(newMap, getMetamodel());
+			this.serverSession = new ServerSession(newMap, getMetamodel(),
+					accessorFactory);
 		}
 	}
 

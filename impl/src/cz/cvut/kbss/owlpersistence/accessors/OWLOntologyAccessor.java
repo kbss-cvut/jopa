@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
@@ -37,6 +36,7 @@ import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
@@ -48,6 +48,8 @@ import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
+import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3OWL2Ontology;
+import cz.cvut.kbss.owlpersistence.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.model.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
 import cz.cvut.kbss.owlpersistence.model.annotations.CascadeType;
@@ -61,52 +63,60 @@ import cz.cvut.kbss.owlpersistence.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.owlpersistence.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.owlpersistence.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.owlpersistence.model.query.Query;
+import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
 import cz.cvut.kbss.owlpersistence.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.owlpersistence.owlapi.NotYetImplementedException;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.owlpersistence.owlapi.QueryImpl;
+import cz.cvut.kbss.owlpersistence.owlapi.TypedQueryImpl;
 import cz.cvut.kbss.owlpersistence.sessions.AbstractSession;
+import cz.cvut.kbss.owlpersistence.sessions.Session;
 import cz.cvut.kbss.owlpersistence.sessions.UnitOfWork;
 import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.owlpersistence.util.MappingFileParser;
 
-public class OWLOntologyAccessor implements OntologyAccessor {
+public abstract class OWLOntologyAccessor implements OntologyAccessor {
 
-	private static final Logger LOG = Logger
+	protected static final Logger LOG = Logger
 			.getLogger(OWLOntologyAccessor.class.getName());
 
-	private OWLReasoner reasoner;
-	private OWLOntology workingOnt;
-	private OWLOntology reasoningOnt;
-	private OWLOntologyManager ontologyManager;
+	protected OWLReasoner reasoner;
+	protected OWLOntology workingOnt;
+	protected OWLOntology reasoningOnt;
+	protected OWLOntologyManager ontologyManager;
+	protected IRI ontologyIRI;
 
-	private OWLReasonerFactory reasonerFactory;
+	protected OWLReasonerFactory reasonerFactory;
 
-	private OWLDataFactory dataFactory;
+	protected OWLDataFactory dataFactory;
 
-	private Metamodel metamodel;
-	private String lang;
-	private AbstractSession session;
-	private boolean useAspectJ;
+	protected Metamodel metamodel;
+	protected String lang;
+	protected AbstractSession session;
+	protected boolean useAspectJ;
 
-	private List<OWLOntologyChange> changeList;
+	protected List<OWLOntologyChange> changeList;
+
+	protected OWLOntologyAccessor() {
+		super();
+	}
 
 	public OWLOntologyAccessor(Map<String, String> properties,
-			Metamodel metamodel, AbstractSession session) {
+			Metamodel metamodel, Session session) {
 		final String ontologyURI = properties
 				.get(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY);
 		final String mappingFileURI = properties
 				.get(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY);
 		final String reasonerFactoryClass = properties
 				.get(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS);
-		final String dbConnection = properties
-				.get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
 		final String languageTag = properties
 				.get(OWLAPIPersistenceProperties.LANG);
 		if (languageTag != null) {
 			this.lang = languageTag;
 		}
 		this.metamodel = metamodel;
-		this.session = session;
+		this.session = (AbstractSession) session;
 		this.useAspectJ = metamodel.shouldUseAspectJ();
 
 		try {
@@ -128,58 +138,8 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 		}
 		try {
 
-			if (dbConnection != null) {
-				LOG.info("Using database backend: " + dbConnection);
-				// TODO
-				// this.m = Class.forName(OWLDBManagerclassName)
-				// .createOWLOntologyManager(OWLDataFactoryImpl
-				// .getInstance());
+			initConnection(properties);
 
-			} else {
-				this.ontologyManager = OWLManager.createOWLOntologyManager();
-			}
-
-			this.dataFactory = this.ontologyManager.getOWLDataFactory();
-
-			final Map<URI, URI> mapping = getMappings(mappingFileURI);
-			LOG.info("Found mappings = " + mapping);
-
-			this.ontologyManager.addIRIMapper(new OWLOntologyIRIMapper() {
-				public IRI getDocumentIRI(IRI arg0) {
-					if (!mapping.containsKey(arg0.toURI())) {
-						return arg0;
-					}
-
-					return IRI.create(mapping.get(arg0.toURI()));
-				}
-			});
-			LOG.info("Mapping file succesfully parsed.");
-
-			if (dbConnection != null) {
-				// workingOnt = m.loadOntology(IRI.create(dbConnection));
-				// LOG.info("INDS: "
-				// + workingOnt.getIndividualsInSignature().size());
-				// m.saveOntology(workingOnt);
-			} else {
-				URI physicalURI = mapping.get(URI.create(ontologyURI));
-
-				if (physicalURI == null) {
-					physicalURI = URI.create(ontologyURI);
-				}
-
-				if (physicalURI != null) {
-					this.workingOnt = this.ontologyManager
-							.loadOntologyFromOntologyDocument(new File(
-									physicalURI));
-				} else if (ontologyURI.startsWith("file:")) {
-					this.workingOnt = this.ontologyManager
-							.loadOntologyFromOntologyDocument(new File(URI
-									.create(ontologyURI)));
-				} else {
-					this.workingOnt = this.ontologyManager.loadOntology(IRI
-							.create(ontologyURI));
-				}
-			}
 			this.reasoningOnt = new OWLOntologyMerger(this.ontologyManager)
 					.createMergedOntology(this.ontologyManager,
 							IRI.create("http://temporary"));
@@ -194,6 +154,44 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
 		}
 
+	}
+
+	/**
+	 * Initialize connection to ontology. This method is abstract because
+	 * different ontology storages require different connection initialization.
+	 * 
+	 * @param properties
+	 *            Map of properties.
+	 * @throws OWLOntologyCreationException
+	 * @throws OWLOntologyStorageException
+	 */
+	abstract protected void initConnection(Map<String, String> properties)
+			throws OWLOntologyCreationException, OWLOntologyStorageException;
+
+	/**
+	 * Parse mappings and return physical URI of the ontology.
+	 * 
+	 * @param mappingFileURI
+	 * @param ontologyURI
+	 * @return
+	 */
+	protected URI parseMappings(String mappingFileURI, String ontologyURI) {
+		final Map<URI, URI> mapping = getMappings(mappingFileURI);
+		LOG.info("Found mappings = " + mapping);
+
+		this.ontologyManager.addIRIMapper(new OWLOntologyIRIMapper() {
+			public IRI getDocumentIRI(IRI arg0) {
+				if (!mapping.containsKey(arg0.toURI())) {
+					return arg0;
+				}
+
+				return IRI.create(mapping.get(arg0.toURI()));
+			}
+		});
+		if (LOG.isLoggable(Level.CONFIG)) {
+			LOG.config("Mapping file succesfully parsed.");
+		}
+		return mapping.get(URI.create(ontologyURI));
 	}
 
 	/**
@@ -362,7 +360,13 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 					+ id.toString(), E);
 		} finally {
 			if (this.changeList != null) {
-				writeChanges(this.changeList);
+				try {
+					writeChanges(this.changeList);
+				} catch (Exception e) {
+					for (OWLOntologyChange ch : changeList) {
+						System.out.println(ch.toString());
+					}
+				}
 			}
 		}
 	}
@@ -400,15 +404,22 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 			this.changeList.clear();
 		}
 		try {
-			if (LOG.isLoggable(Level.INFO)) {
-				LOG.info("Saving working ontology...");
+			if (LOG.isLoggable(Level.CONFIG)) {
+				LOG.config("Saving working ontology...");
 			}
-			this.ontologyManager.saveOntology(this.workingOnt);
+			saveOntology();
 		} catch (OWLOntologyStorageException e) {
 			e.printStackTrace();
 			throw new OWLPersistenceException("Error when saving ontology.", e);
 		}
 	}
+
+	/**
+	 * Save the working ontology.
+	 * 
+	 * @throws OWLOntologyStorageException
+	 */
+	abstract protected void saveOntology() throws OWLOntologyStorageException;
 
 	/**
 	 * Returns true if the working ontology's signature already contains an
@@ -1491,6 +1502,9 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 			lst.add(getJavaInstanceForOWLIndividual(type, iContent, iri));
 			seq = getObjectProperty(seq, hasNext, inferred);
 		}
+		if (lst.isEmpty()) {
+			return null; // Return null if there are no referenced entities
+		}
 		return lst;
 	}
 
@@ -1713,6 +1727,9 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 			lst.add(getJavaInstanceForOWLIndividual(type, o, iri));
 			o = getObjectProperty(o, hasNext, inferred);
 		}
+		if (lst.isEmpty()) {
+			return null; // Return null if there are no entities in the list
+		}
 		return lst;
 	}
 
@@ -1841,4 +1858,33 @@ public class OWLOntologyAccessor implements OntologyAccessor {
 		}
 	}
 
+	public synchronized Query<?> createQuery(String qlString, EntityManager em) {
+		return new QueryImpl(qlString, new OWLAPIv3OWL2Ontology(
+				ontologyManager, reasoningOnt, reasoner), false, em);
+	}
+
+	public synchronized <T> TypedQuery<T> createQuery(String query,
+			Class<T> resultClass, boolean sparql, EntityManager em) {
+		return new TypedQueryImpl<T>(query, resultClass,
+				new OWLAPIv3OWL2Ontology(ontologyManager, reasoningOnt,
+						reasoner), sparql, em);
+	}
+
+	public synchronized Query<List<String>> createNativeQuery(String sparql,
+			EntityManager em) {
+		return new QueryImpl(sparql, new OWLAPIv3OWL2Ontology(ontologyManager,
+				reasoningOnt, reasoner), true, em);
+	}
+
+	public void close() {
+		if (!changeList.isEmpty()) {
+			writeChanges(changeList);
+		}
+		try {
+			saveOntology();
+		} catch (OWLOntologyStorageException e) {
+			LOG.severe("Error while saving ontology");
+			e.printStackTrace();
+		}
+	}
 }

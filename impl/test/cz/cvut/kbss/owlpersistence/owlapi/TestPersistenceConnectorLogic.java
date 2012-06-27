@@ -15,17 +15,21 @@
 
 package cz.cvut.kbss.owlpersistence.owlapi;
 
+import static org.junit.Assert.fail;
+
 import java.net.URI;
 import java.util.logging.Logger;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
 
-public class TestPersistenceConnectorLogic extends TestCase {
+public class TestPersistenceConnectorLogic {
 
 	private Logger log = TestEnvironment.getLogger();
 
+	@Test
 	public void testPersistWithoutPK() {
 		EntityManager pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testPersistWithoutPK");
