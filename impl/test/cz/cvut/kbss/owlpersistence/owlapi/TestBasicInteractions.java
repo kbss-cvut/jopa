@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import junit.framework.TestCase;
-import cz.cvut.kbss.owlpersistence.model.EntityManager;
+import cz.cvut.kbss.jopa.model.EntityManager;
 
 public class TestBasicInteractions extends TestCase {
 	private Logger log = TestEnvironment.getLogger();

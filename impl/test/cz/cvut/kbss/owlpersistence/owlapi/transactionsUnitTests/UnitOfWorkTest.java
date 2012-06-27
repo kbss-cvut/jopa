@@ -17,13 +17,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.semanticweb.owlapi.model.IRI;
 
-import cz.cvut.kbss.owlpersistence.owlapi.EntityManagerImpl;
-import cz.cvut.kbss.owlpersistence.owlapi.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl;
+import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassA;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassB;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassD;
 import cz.cvut.kbss.owlpersistence.owlapi.TestEnvironment;
-import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkImpl;
 
 public class UnitOfWorkTest {
 

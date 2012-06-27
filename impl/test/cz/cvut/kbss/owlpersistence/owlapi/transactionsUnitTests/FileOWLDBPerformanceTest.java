@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import cz.cvut.kbss.owlpersistence.model.EntityManager;
+import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassA;
 import cz.cvut.kbss.owlpersistence.owlapi.TestEnvironment;
 

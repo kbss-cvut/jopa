@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
-import cz.cvut.kbss.owlpersistence.model.EntityManager;
+import cz.cvut.kbss.jopa.model.EntityManager;
 
 public class TestBasicFetching extends TestCase {
 

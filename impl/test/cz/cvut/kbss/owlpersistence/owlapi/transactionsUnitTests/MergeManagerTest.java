@@ -13,19 +13,19 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import cz.cvut.kbss.owlpersistence.accessors.OntologyAccessor;
-import cz.cvut.kbss.owlpersistence.model.EntityManager;
-import cz.cvut.kbss.owlpersistence.model.query.Query;
-import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
+import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.query.Query;
+import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
+import cz.cvut.kbss.jopa.sessions.MergeManager;
+import cz.cvut.kbss.jopa.sessions.MergeManagerImpl;
+import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
+import cz.cvut.kbss.jopa.sessions.ServerSession;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassB;
-import cz.cvut.kbss.owlpersistence.sessions.CloneBuilderImpl;
-import cz.cvut.kbss.owlpersistence.sessions.MergeManager;
-import cz.cvut.kbss.owlpersistence.sessions.MergeManagerImpl;
-import cz.cvut.kbss.owlpersistence.sessions.ObjectChangeSet;
-import cz.cvut.kbss.owlpersistence.sessions.ObjectChangeSetImpl;
-import cz.cvut.kbss.owlpersistence.sessions.ServerSession;
-import cz.cvut.kbss.owlpersistence.sessions.UnitOfWork;
-import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkImpl;
 
 public class MergeManagerTest {
 

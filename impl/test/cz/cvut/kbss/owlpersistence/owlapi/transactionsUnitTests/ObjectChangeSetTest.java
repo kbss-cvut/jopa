@@ -8,12 +8,12 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import cz.cvut.kbss.owlpersistence.sessions.ChangeRecord;
-import cz.cvut.kbss.owlpersistence.sessions.ChangeRecordImpl;
-import cz.cvut.kbss.owlpersistence.sessions.ObjectChangeSet;
-import cz.cvut.kbss.owlpersistence.sessions.ObjectChangeSetImpl;
-import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkChangeSet;
-import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkChangeSetImpl;
+import cz.cvut.kbss.jopa.sessions.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.ChangeRecordImpl;
+import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSetImpl;
 
 public class ObjectChangeSetTest {
 

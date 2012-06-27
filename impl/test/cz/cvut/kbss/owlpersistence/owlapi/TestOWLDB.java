@@ -19,7 +19,7 @@ import java.net.URI;
 import java.util.logging.Logger;
 
 import junit.framework.TestCase;
-import cz.cvut.kbss.owlpersistence.model.EntityManager;
+import cz.cvut.kbss.jopa.model.EntityManager;
 
 //public class TestOWLDB extends TestCase {
 //

@@ -17,17 +17,17 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import cz.cvut.kbss.owlpersistence.model.OWLInferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.model.OWLInferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.sessions.ChangeManager;
+import cz.cvut.kbss.jopa.sessions.ChangeManagerImpl;
+import cz.cvut.kbss.jopa.sessions.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.CloneBuilder;
+import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
+import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassA;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassC;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassD;
-import cz.cvut.kbss.owlpersistence.sessions.ChangeManager;
-import cz.cvut.kbss.owlpersistence.sessions.ChangeManagerImpl;
-import cz.cvut.kbss.owlpersistence.sessions.ChangeRecord;
-import cz.cvut.kbss.owlpersistence.sessions.CloneBuilder;
-import cz.cvut.kbss.owlpersistence.sessions.CloneBuilderImpl;
-import cz.cvut.kbss.owlpersistence.sessions.ObjectChangeSet;
-import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkImpl;
 
 public class ChangeManagerTest {
 

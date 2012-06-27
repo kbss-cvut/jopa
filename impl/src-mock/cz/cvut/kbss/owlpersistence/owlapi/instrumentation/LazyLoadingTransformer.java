@@ -13,7 +13,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cz.cvut.kbss.owlpersistence.owlapi.instrumentation;
+package cz.cvut.kbss.jopa.owlapi.instrumentation;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
@@ -27,9 +27,9 @@ import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.NotFoundException;
-import cz.cvut.kbss.owlpersistence.FetchType;
-import cz.cvut.kbss.owlpersistence.OWLClass;
-import cz.cvut.kbss.owlpersistence.OWLSequence;
+import cz.cvut.kbss.jopa.FetchType;
+import cz.cvut.kbss.jopa.OWLClass;
+import cz.cvut.kbss.jopa.OWLSequence;
 
 public class LazyLoadingTransformer implements ClassFileTransformer {
 

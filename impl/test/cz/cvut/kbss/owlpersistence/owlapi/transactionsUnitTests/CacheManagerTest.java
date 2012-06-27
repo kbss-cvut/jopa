@@ -13,15 +13,15 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import cz.cvut.kbss.owlpersistence.accessors.OntologyAccessor;
-import cz.cvut.kbss.owlpersistence.model.EntityManager;
-import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
-import cz.cvut.kbss.owlpersistence.model.query.Query;
-import cz.cvut.kbss.owlpersistence.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
+import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.query.Query;
+import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.sessions.CacheManagerImpl;
+import cz.cvut.kbss.jopa.sessions.ServerSession;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassA;
-import cz.cvut.kbss.owlpersistence.sessions.CacheManagerImpl;
-import cz.cvut.kbss.owlpersistence.sessions.ServerSession;
-import cz.cvut.kbss.owlpersistence.sessions.UnitOfWork;
 
 public class CacheManagerTest {
 

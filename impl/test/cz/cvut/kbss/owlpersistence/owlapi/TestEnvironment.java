@@ -30,8 +30,11 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.UnknownOWLOntologyException;
 
-import cz.cvut.kbss.owlpersistence.Persistence;
-import cz.cvut.kbss.owlpersistence.model.EntityManager;
+import cz.cvut.kbss.jopa.Persistence;
+import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.owlapi.EntityManagerFactoryImpl;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProvider;
 
 @Ignore
 public class TestEnvironment {

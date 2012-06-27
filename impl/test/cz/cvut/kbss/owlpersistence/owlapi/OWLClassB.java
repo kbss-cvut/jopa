@@ -17,9 +17,9 @@ package cz.cvut.kbss.owlpersistence.owlapi;
 
 import java.net.URI;
 
-import cz.cvut.kbss.owlpersistence.model.annotations.Id;
-import cz.cvut.kbss.owlpersistence.model.annotations.OWLClass;
-import cz.cvut.kbss.owlpersistence.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
 @OWLClass(iri = "http://OWLClassB")
 public class OWLClassB {

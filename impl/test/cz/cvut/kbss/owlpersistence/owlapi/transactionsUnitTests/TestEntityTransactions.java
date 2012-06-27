@@ -11,9 +11,9 @@ import javax.persistence.EntityTransaction;
 
 import org.junit.Test;
 
-import cz.cvut.kbss.owlpersistence.model.EntityManager;
-import cz.cvut.kbss.owlpersistence.model.OWLPersistenceException;
-import cz.cvut.kbss.owlpersistence.model.OWLPersistentObjectException;
+import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.OWLPersistentObjectException;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassA;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassB;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassC;

@@ -6,7 +6,7 @@ import java.net.URI;
 
 import org.junit.Test;
 
-import cz.cvut.kbss.owlpersistence.model.EntityManager;
+import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassA;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassD;
 import cz.cvut.kbss.owlpersistence.owlapi.TestEnvironment;

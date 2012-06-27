@@ -142,7 +142,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>cz.cvut.kbss.owlpersistence.owl2java.OWL2Java</mainClass>
+							<mainClass>cz.cvut.kbss.jopa.owl2java.OWL2Java</mainClass>
 							<addClasspath>true</addClasspath>
 							<!-- classpathPrefix>lib/</classpathPrefix -->
 						</manifest>

@@ -14,13 +14,13 @@ import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
 
+import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
+import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSetImpl;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassA;
 import cz.cvut.kbss.owlpersistence.owlapi.TestEnvironment;
-import cz.cvut.kbss.owlpersistence.sessions.CloneBuilderImpl;
-import cz.cvut.kbss.owlpersistence.sessions.ObjectChangeSet;
-import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkChangeSet;
-import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkChangeSetImpl;
-import cz.cvut.kbss.owlpersistence.sessions.UnitOfWorkImpl;
 
 public class CloneBuilderTest extends TestCase {
 
