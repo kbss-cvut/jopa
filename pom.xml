@@ -5,7 +5,7 @@
 	<groupId>cz.cvut.kbss</groupId>
 	<artifactId>jopa</artifactId>
 	<packaging>pom</packaging>
-	<version>0.2</version>
+	<version>0.3-SNAPSHOT</version>
 	<name>Jopa - main project</name>
 	<url>http://sourceforge.net/projects/jopa</url>
 
