@@ -87,7 +87,7 @@
 		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.dir}/owlpersistence-agent.jar" basedir="${build.dir}">
 			<manifest>
-				<attribute name="Premain-Class" value="cz.cvut.kbss.owlpersistence.owlapi.EntityLoadingAspect" />
+				<attribute name="Premain-Class" value="cz.cvut.kbss.jopa.owlapi.EntityLoadingAspect" />
 				<attribute name="Class-Path" value="${lib.manifest.classpath}" />
 			</manifest>
 		</jar>

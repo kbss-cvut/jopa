@@ -191,7 +191,7 @@
 		<repository>
 			<id>krizik</id>
 			<name>KBSS Maven 2 Repository</name>
-			<url>http://krizik.felk.cvut.cz/m2repo</url>
+			<url>scp://krizik.felk.cvut.cz:/var/www/m2repo</url>
 		</repository>
 		<site>
 			<id>jopa</id>
@@ -276,8 +276,15 @@
 				</executions>
 			</plugin>
 		</plugins>
-	</build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>1.0-beta-6</version>
+			</extension>
+		</extensions>
 
+	</build>
 	<modules>
 	</modules>
 </project>

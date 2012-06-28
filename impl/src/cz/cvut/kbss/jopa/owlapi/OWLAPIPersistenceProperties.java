@@ -19,10 +19,10 @@ import cz.cvut.kbss.jopa.model.PersistenceProperties;
 
 public interface OWLAPIPersistenceProperties extends PersistenceProperties {
 
-	public static final String ONTOLOGY_URI_KEY = "cz.cvut.owlpersistence.ontologyURI";
-	public static final String ONTOLOGY_DB_CONNECTION = "cz.cvut.owlpersistence.ontologyDBConnection";
-	public static final String ONTOLOGY_FILE_KEY = "cz.cvut.owlpersistence.ontologyDocumentURI";
-	public static final String MAPPING_FILE_URI_KEY = "cz.cvut.owlpersistence.mappingFileURI";
-	public static final String REASONER_FACTORY_CLASS = "cz.cvut.owlpersistence.reasonerFactoryClass";
-	public static final String LANG = "cz.cvut.owlpersistence.lang";
+	public static final String ONTOLOGY_URI_KEY = "cz.cvut.jopa.ontologyURI";
+	public static final String ONTOLOGY_DB_CONNECTION = "cz.cvut.jopa.ontologyDBConnection";
+	public static final String ONTOLOGY_FILE_KEY = "cz.cvut.jopa.ontologyDocumentURI";
+	public static final String MAPPING_FILE_URI_KEY = "cz.cvut.jopa.mappingFileURI";
+	public static final String REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
+	public static final String LANG = "cz.cvut.jopa.lang";
 }

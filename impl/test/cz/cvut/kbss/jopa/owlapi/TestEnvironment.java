@@ -67,7 +67,7 @@ public class TestEnvironment {
 				final OWLOntologyManager m = OWLManager
 						.createOWLOntologyManager();
 				final IRI iri = IRI
-						.create("http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/"
+						.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
 								+ name);
 				OWLOntology o = m.createOntology(iri);
 				final File url = new File(dir + "/" + name + ".owl");
@@ -91,7 +91,7 @@ public class TestEnvironment {
 				params.put("cache", "off");
 			}
 			/* Set location of the entities (package) */
-			params.put("location", "cz.cvut.kbss.owlpersistence.owlapi");
+			params.put("location", "cz.cvut.kbss.jopa.owlapi");
 			params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
 					OWLAPIPersistenceProvider.class.getName());
 			// params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
