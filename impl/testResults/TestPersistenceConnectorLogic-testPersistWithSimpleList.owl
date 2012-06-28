@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#"
-     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList"
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:new="http://new.owl#"
      xmlns:http="http://"
@@ -8,7 +8,7 @@
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:sequences="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList"/>
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList"/>
     
 
 
@@ -213,14 +213,14 @@
     <owl:NamedIndividual rdf:about="http://testC">
         <rdf:type rdf:resource="http://new.owl#OWLClassC"/>
         <http:B-hasSimpleSequence rdf:resource="http://classA0"/>
-        <http:B-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#i_null-SEQ"/>
+        <http:B-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#i_null-SEQ"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#i_null-SEQ -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#i_null-SEQ -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#i_null-SEQ">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#i_null-SEQ">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#OWLList"/>
     </owl:NamedIndividual>
 </rdf:RDF>

@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testRollbackOnly#"
-     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testRollbackOnly"
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testRollbackOnly#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testRollbackOnly"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:new="http://new.owl#"
      xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testRollbackOnly"/>
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testRollbackOnly"/>
     
 
 
