@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -104,6 +105,11 @@ public class EntityTransactionsTest {
 	public static void setupBeforeClass() {
 		index = 100;
 		pc = TestEnvironment.getPersistenceConnector("owldb", true, true);
+	}
+
+	@AfterClass
+	public static void teardownAfterClass() {
+		pc.getEntityManagerFactory().close();
 	}
 
 	@Test

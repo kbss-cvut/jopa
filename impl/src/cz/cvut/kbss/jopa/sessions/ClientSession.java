@@ -6,32 +6,34 @@ import java.util.Vector;
 import java.util.logging.Level;
 
 import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 /**
- * ClientSession are bound to a single client and they provide the access
- * to the underlying ontology.
+ * ClientSession are bound to a single client and they provide the access to the
+ * underlying ontology.
+ * 
  * @author kidney
- *
+ * 
  */
 public class ClientSession extends AbstractSession {
-	//ClientSession by mela mit nejakou connection, pres kterou by rovnou
+	// ClientSession by mela mit nejakou connection, pres kterou by rovnou
 	// mohla pristupovat do ontologie
-	
+
 	protected ServerSession parent;
-	
+
 	/**
 	 * Default constructor. Should not be used.
 	 */
 	public ClientSession() {
 		super();
 	}
-	
+
 	public ClientSession(ServerSession parent) {
 		this.parent = parent;
 	}
-	
+
 	@Override
 	public UnitOfWork acquireUnitOfWork() {
 		UnitOfWork uow = new UnitOfWorkImpl(this);
@@ -48,18 +50,18 @@ public class ClientSession extends AbstractSession {
 	public void setParent(ServerSession parent) {
 		this.parent = parent;
 	}
-	
+
 	@Override
 	public void release() {
-		//Release connection
+		// Release connection
 		// TODO
 	}
-	
+
 	@Override
 	public void releaseObjectCache() {
 		this.parent.releaseObjectCache();
 	}
-	
+
 	public CacheManager getLiveObjectCache() {
 		return this.parent.getLiveObjectCache();
 	}
@@ -97,5 +99,10 @@ public class ClientSession extends AbstractSession {
 			return Collections.emptySet();
 		}
 		return this.parent.getManagedTypes();
+	}
+
+	@Override
+	Metamodel getMetamodel() {
+		return parent.getMetamodel();
 	}
 }

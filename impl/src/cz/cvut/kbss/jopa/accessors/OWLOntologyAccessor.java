@@ -245,6 +245,22 @@ public abstract class OWLOntologyAccessor implements OntologyAccessor {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 */
+	public void generateNewIRI(final Object entity) {
+		if (entity == null) {
+			throw new NullPointerException("Null passed to generateNewIRI");
+		}
+		final String name = entity.getClass().getSimpleName();
+		final IRI iri = createNewID(name);
+		if (iri == null) {
+			throw new OWLPersistenceException(
+					"Unable to generate id for entity: " + entity);
+		}
+		setIdentifier(entity, iri);
+	}
+
+	/**
 	 * Persists the given new entity.
 	 * 
 	 * @param entity

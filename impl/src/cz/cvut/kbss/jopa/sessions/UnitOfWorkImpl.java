@@ -8,9 +8,9 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
 
 import org.semanticweb.owlapi.model.IRI;
 
@@ -18,15 +18,9 @@ import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
-import cz.cvut.kbss.jopa.sessions.ChangeManager;
-import cz.cvut.kbss.jopa.sessions.CloneBuilder;
-import cz.cvut.kbss.jopa.sessions.CommitManager;
-import cz.cvut.kbss.jopa.sessions.MergeManager;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
@@ -162,7 +156,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 				throw new OWLPersistenceException(e);
 			} catch (OWLInferredAttributeModifiedException e) {
 				LOG.severe("Inferred attribute modified. This transaction won't be able to commit.");
-				this.entityManager.getTransaction().setRollbackOnly();
+				if (entityManager != null) {
+					entityManager.getTransaction().setRollbackOnly();
+				}
 			}
 		}
 	}
@@ -704,9 +700,21 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 *            Object The entity to persist
 	 */
 	public Object registerNewObject(IRI id, Object entity) {
-		if (id == null || entity == null) {
+		if (entity == null) {
 			throw new OWLPersistenceException(
 					"Cannot persist entity. IRI or entity is null!");
+		}
+		if (id == null) {
+			// Generate IRI if possible
+			final Class<?> cls = entity.getClass();
+			final EntityType<?> eType = getMetamodel().entity(cls);
+
+			if (eType.getIdentifier().isGenerated()) {
+				getOntologyAccessor().generateNewIRI(entity);
+			} else {
+				throw new OWLPersistenceException("The id for entity " + entity
+						+ " is null and it is not specified as 'generated' ");
+			}
 		}
 		if ((getOntologyAccessor().isInOntologySignature(id, true)
 				|| isObjectManaged(entity) || primaryKeyAlreadyUsed(id))
@@ -862,4 +870,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		postCommit();
 	}
 
+	@Override
+	Metamodel getMetamodel() {
+		return parent.getMetamodel();
+	}
 }

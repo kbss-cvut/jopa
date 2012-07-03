@@ -52,8 +52,9 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		open = false;
 
 		for (final EntityManager m : em) {
-			// TODO try-catch
-			m.close();
+			if (m.isOpen()) {
+				m.close();
+			}
 		}
 		serverSession.close();
 	}

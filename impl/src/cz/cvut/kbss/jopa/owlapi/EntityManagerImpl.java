@@ -15,7 +15,6 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,7 +56,6 @@ import cz.cvut.kbss.jopa.model.OWLPersistentObjectException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.ic.IntegrityConstraint;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -225,22 +223,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		switch (getState(entity)) {
 		case NEW:
 			try {
-				final Class<?> cls = entity.getClass();
-				final EntityType<?> e = getMetamodel().entity(cls);
-
 				IRI id = getIdentifier(entity);
 
-				if (id == null && e.getIdentifier().isGenerated()) {
-					id = createNewID(entity.getClass().getSimpleName());
-					setIdentifier(entity, id);
-				}
-
-				if (id == null) {
-					throw new OWLPersistenceException(
-							"The id for entity "
-									+ entity
-									+ " is null and it is not specified as 'generated' ");
-				}
 				getCurrentPersistenceContext().registerNewObject(id, entity);
 
 			} catch (Exception e) {
@@ -405,7 +389,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Flushing ...");
 		}
-		if (getTransaction().isActive()) {
+		if (!getTransaction().isActive()) {
 			throw new TransactionRequiredException();
 		}
 		this.getCurrentPersistenceContext().writeUncommittedChanges();
@@ -675,48 +659,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	// }
 	// }
 
-	private IRI createNewID(final String name) {
-		// System.out.println("CREATING NEW ID=" + name);
-		// System.out.println("    workingOnt=" + workingOnt);
-		// System.out.println("    workingOnt.getOntologyID=" +
-		// workingOnt.getOntologyID());
-		// System.out.println("    workingOnt.getOntologyID.getOntologyIRI=" +
-		// workingOnt.getOntologyID());
-		final String base = workingOnt.getOntologyID().getOntologyIRI()
-				.toString()
-				+ "#i_" + name;
-		IRI iri = IRI.create(base);
-
-		int i = 1;
-		while (workingOnt.containsIndividualInSignature(iri, true)
-				|| managed.values().contains(f.getOWLNamedIndividual(iri))) {
-			iri = IRI.create(base + "_" + (i++));
-		}
-
-		return iri;
-	}
-
-	private void setIdentifier(final Object object, final IRI iri) {
-		final Field idField = getId(object.getClass());
-
-		try {
-			if (iri == null) {
-				idField.set(object, null);
-			} else if (String.class.equals(idField.getType())) {
-				idField.set(object, iri.toString());
-			} else if (URI.class.equals(idField.getType())) {
-				idField.set(object, iri.toURI());
-			} else {
-				throw new OWLPersistenceException("Unknown identifier type: "
-						+ idField.getType());
-			}
-		} catch (IllegalArgumentException e) {
-			throw new OWLPersistenceException(e);
-		} catch (IllegalAccessException e) {
-			throw new OWLPersistenceException(e);
-		}
-	}
-
 	private IRI getIdentifier(final Object object) {
 		Object fieldValue = getEntityManagerFactory().getPersistenceUnitUtil()
 				.getIdentifier(object);
@@ -738,11 +680,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		} catch (IllegalArgumentException e) {
 			throw new OWLPersistenceException(e);
 		}
-	}
-
-	private <T> Field getId(final Class<T> realClass) {
-		return emf.getMetamodel().entity(realClass).getIdentifier()
-				.getJavaField();
 	}
 
 	private <T> TypedQuery<T> _createTypedQuery(String string, Class<T> cls,
@@ -769,6 +706,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		if (this.persistenceContext == null) {
 			this.persistenceContext = (UnitOfWorkImpl) this.serverSession
 					.acquireClientSession().acquireUnitOfWork();
+			persistenceContext.setEntityManager(this);
 		}
 		return this.persistenceContext;
 	}
