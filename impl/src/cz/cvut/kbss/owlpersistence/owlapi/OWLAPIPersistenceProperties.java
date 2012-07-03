@@ -20,6 +20,7 @@ import cz.cvut.kbss.owlpersistence.model.PersistenceProperties;
 public interface OWLAPIPersistenceProperties extends PersistenceProperties {
 
 	public static final String ONTOLOGY_URI_KEY = "cz.cvut.owlpersistence.ontologyURI";
+	public static final String ONTOLOGY_PHYSICAL_URI_KEY = "cz.cvut.owlpersistence.ontologyPhysicalLocation";
 	public static final String ONTOLOGY_DB_CONNECTION = "cz.cvut.owlpersistence.ontologyDBConnection";
 	public static final String ONTOLOGY_FILE_KEY = "cz.cvut.owlpersistence.ontologyDocumentURI";
 	public static final String MAPPING_FILE_URI_KEY = "cz.cvut.owlpersistence.mappingFileURI";

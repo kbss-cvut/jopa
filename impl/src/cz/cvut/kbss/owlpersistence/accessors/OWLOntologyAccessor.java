@@ -118,6 +118,7 @@ public abstract class OWLOntologyAccessor implements OntologyAccessor {
 		this.metamodel = metamodel;
 		this.session = (AbstractSession) session;
 		this.useAspectJ = metamodel.shouldUseAspectJ();
+		this.ontologyIRI = IRI.create(ontologyURI);
 
 		try {
 			this.reasonerFactory = (OWLReasonerFactory) Class.forName(
@@ -241,6 +242,22 @@ public abstract class OWLOntologyAccessor implements OntologyAccessor {
 		}
 
 		return mapping;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public void generateNewIRI(final Object entity) {
+		if (entity == null) {
+			throw new NullPointerException("Null passed to generateNewIRI");
+		}
+		final String name = entity.getClass().getSimpleName();
+		final IRI iri = createNewID(name);
+		if (iri == null) {
+			throw new OWLPersistenceException(
+					"Unable to generate id for entity: " + entity);
+		}
+		setIdentifier(entity, iri);
 	}
 
 	/**
@@ -1796,8 +1813,8 @@ public abstract class OWLOntologyAccessor implements OntologyAccessor {
 		IRI iri = IRI.create(base);
 
 		int i = 1;
-		while (this.workingOnt.containsIndividualInSignature(iri, true)
-				|| this.session.getLiveObjectCache().containsObjectByIRI(iri)) {
+		while (workingOnt.containsIndividualInSignature(iri, true)
+				|| session.getLiveObjectCache().containsObjectByIRI(iri)) {
 			iri = IRI.create(base + "_" + (i++));
 		}
 

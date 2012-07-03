@@ -199,5 +199,8 @@ public class MergeManagerTest {
 
 		public void close() {
 		}
+
+		public void generateNewIRI(Object entity) {
+		}
 	}
 }

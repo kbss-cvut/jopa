@@ -3,6 +3,7 @@ package cz.cvut.kbss.owlpersistence.accessors;
 import java.util.Map;
 import java.util.logging.Level;
 
+import org.semanticweb.owlapi.io.OWLOntologyCreationIOException;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
@@ -25,6 +26,8 @@ import de.fraunhofer.iitb.owldb.OWLDBOntologyOutputTarget;
  */
 public class OWLDBOntologyAccessor extends OWLOntologyAccessor {
 
+	private IRI ontologyDBURI;
+
 	public OWLDBOntologyAccessor(Map<String, String> properties,
 			Metamodel metamodel, Session session) {
 		super(properties, metamodel, session);
@@ -38,19 +41,24 @@ public class OWLDBOntologyAccessor extends OWLOntologyAccessor {
 		final String mappingFileURI = properties
 				.get(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY);
 		final String dbConnection = properties
-				.get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
+				.get(OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY);
 
+		ontologyDBURI = IRI.create(dbConnection);
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Using database backend: " + dbConnection);
 		}
 		this.ontologyManager = OWLDBManager
 				.createOWLOntologyManager(OWLDataFactoryImpl.getInstance());
-		this.ontologyIRI = IRI.create(dbConnection);
 		this.dataFactory = this.ontologyManager.getOWLDataFactory();
 
 		parseMappings(mappingFileURI, ontologyURI);
 
-		this.workingOnt = ontologyManager.loadOntology(IRI.create(ontologyURI));
+		try {
+			this.workingOnt = ontologyManager.loadOntology(IRI
+					.create(ontologyURI));
+		} catch (OWLOntologyCreationIOException e) {
+			ontologyManager.createOntology(ontologyDBURI);
+		}
 		// Use this to pass properties to ontology
 		// final Properties props = new Properties();
 		// this.workingOnt = ((OWLDBOntologyManager)
@@ -68,7 +76,7 @@ public class OWLDBOntologyAccessor extends OWLOntologyAccessor {
 		final OWLDBOntologyFormat format = new OWLDBOntologyFormat();
 		// Lets create a target with the provided target IRI
 		final OWLDBOntologyOutputTarget target = new OWLDBOntologyOutputTarget(
-				ontologyIRI);
+				ontologyDBURI);
 		this.ontologyManager.saveOntology(workingOnt, format, target);
 	}
 

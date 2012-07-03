@@ -1,14 +1,12 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleData#"
-     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleData"
-     xmlns:new2="http://new.owl#"
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testGenerateID#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testGenerateID"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:new="http://new#"
      xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleData"/>
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testGenerateID"/>
     
 
 
@@ -34,9 +32,9 @@
     
 
 
-    <!-- http://A-stringAttribute -->
+    <!-- http://E-stringAttribute -->
 
-    <owl:DatatypeProperty rdf:about="http://A-stringAttribute"/>
+    <owl:DatatypeProperty rdf:about="http://E-stringAttribute"/>
     
 
 
@@ -51,9 +49,9 @@
     
 
 
-    <!-- http://new.owl#OWLClassA -->
+    <!-- http://OWLClassE -->
 
-    <owl:Class rdf:about="http://new.owl#OWLClassA"/>
+    <owl:Class rdf:about="http://OWLClassE"/>
     
 
 
@@ -68,11 +66,11 @@
     
 
 
-    <!-- http://new#A -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testGenerateID#i_OWLClassE -->
 
-    <owl:NamedIndividual rdf:about="http://new#A">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testGenerateID#i_OWLClassE">
+        <rdf:type rdf:resource="http://OWLClassE"/>
+        <http:E-stringAttribute>someString</http:E-stringAttribute>
     </owl:NamedIndividual>
 </rdf:RDF>
 

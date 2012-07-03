@@ -1,9 +1,14 @@
 package cz.cvut.kbss.owlpersistence.owldb;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 
+import org.junit.After;
 import org.junit.Test;
 
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
@@ -13,10 +18,19 @@ import cz.cvut.kbss.owlpersistence.owlapi.TestEnvironment;
 
 public class BasicOperationsTest {
 
+	private EntityManager em;
+
+	@After
+	public void tearDown() throws Exception {
+		if (em != null) {
+			em.getEntityManagerFactory().close();
+		}
+	}
+
 	@Test
 	public void testFetchSimpleData() {
-		EntityManager em = TestEnvironment.getPersistenceConnector("owldb",
-				true, true);
+		em = TestEnvironment.getPersistenceConnector(
+				"OWLDBTestBasicOperations-FetchSimpleData", true, true);
 
 		OWLClassA a = new OWLClassA();
 		URI uri = URI.create("http://new#A");
@@ -38,14 +52,12 @@ public class BasicOperationsTest {
 		assertNotNull(aX);
 
 		assertEquals(aX.getStringAttribute(), "new-value");
-
-		em.getEntityManagerFactory().close();
 	}
 
 	@Test
 	public void testPersistEntity() {
-		EntityManager em = TestEnvironment.getPersistenceConnector("owldb",
-				true, true);
+		em = TestEnvironment.getPersistenceConnector(
+				"OWLDBTestBasicOperations-PersistEntity", true, true);
 		final OWLClassA a = new OWLClassA();
 		final URI uri = URI.create("persistA");
 		a.setUri(uri);
@@ -60,14 +72,12 @@ public class BasicOperationsTest {
 		final OWLClassA aX = em.find(OWLClassA.class, uri);
 		assertNotNull(aX);
 		assertEquals(str, aX.getStringAttribute());
-
-		em.getEntityManagerFactory().close();
 	}
 
 	@Test
 	public void testPersistRelationship() {
-		EntityManager em = TestEnvironment.getPersistenceConnector("owldb",
-				true, true);
+		em = TestEnvironment.getPersistenceConnector(
+				"OWLDBTestBasicOperations-PeristRelationship", true, true);
 		final OWLClassA a = new OWLClassA();
 		final URI uri = URI.create("persistA");
 		a.setUri(uri);
@@ -87,14 +97,12 @@ public class BasicOperationsTest {
 		assertNotNull(dX);
 		assertNotNull(dX.getOwlClassA());
 		assertEquals(uri, dX.getOwlClassA().getUri());
-
-		em.getEntityManagerFactory().close();
 	}
 
 	@Test
 	public void testRemoveEntity() {
-		EntityManager em = TestEnvironment.getPersistenceConnector("owldb",
-				true, true);
+		em = TestEnvironment.getPersistenceConnector(
+				"OWLDBTestBasicOperations-RemoveEntity", true, true);
 		final OWLClassA a = new OWLClassA();
 		final URI uri = URI.create("persistA");
 		a.setUri(uri);
@@ -114,9 +122,6 @@ public class BasicOperationsTest {
 		em.clear();
 		final OWLClassA res = em.find(OWLClassA.class, uri);
 		assertNull(res);
-
-		em.clear();
-		em.getEntityManagerFactory().close();
 	}
 
 }

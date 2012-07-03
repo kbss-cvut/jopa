@@ -217,6 +217,9 @@ public class CacheManagerTest {
 		public void close() {
 		}
 
+		public void generateNewIRI(Object entity) {
+		}
+
 	}
 
 }

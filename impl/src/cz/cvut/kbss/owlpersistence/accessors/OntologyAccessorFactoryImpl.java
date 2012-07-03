@@ -10,9 +10,9 @@ public class OntologyAccessorFactoryImpl implements OntologyAccessorFactory {
 
 	public OntologyAccessor createOntologyAccessor(
 			Map<String, String> properties, Metamodel metamodel, Session session) {
-		final String dbConnection = properties
-				.get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
-		if (dbConnection != null) {
+		final String ontologyLocation = properties
+				.get(OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY);
+		if (ontologyLocation.startsWith("jdbc")) {
 			return new OWLDBOntologyAccessor(properties, metamodel, session);
 		} else {
 			return new OWLFileOntologyAccessor(properties, metamodel, session);

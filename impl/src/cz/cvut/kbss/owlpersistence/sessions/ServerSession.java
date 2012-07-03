@@ -29,6 +29,7 @@ public class ServerSession extends AbstractSession {
 
 	private static final String CACHE_PROPERTY = "cache";
 
+	private final Metamodel metamodel;
 	private final Set<Class<?>> managedClasses;
 
 	protected OntologyAccessor accessor;
@@ -38,10 +39,12 @@ public class ServerSession extends AbstractSession {
 	public ServerSession() {
 		super();
 		this.managedClasses = Collections.emptySet();
+		this.metamodel = null;
 	}
 
 	public ServerSession(Map<String, String> properties, Metamodel metamodel,
 			OntologyAccessorFactory factory) {
+		this.metamodel = metamodel;
 		this.managedClasses = processTypes(metamodel.getEntities());
 		initialize(properties, metamodel, factory);
 	}
@@ -192,5 +195,10 @@ public class ServerSession extends AbstractSession {
 
 	public Set<Class<?>> getManagedTypes() {
 		return this.managedClasses;
+	}
+
+	@Override
+	Metamodel getMetamodel() {
+		return metamodel;
 	}
 }

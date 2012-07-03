@@ -31,6 +31,7 @@ public class OWLFileOntologyAccessor extends OWLOntologyAccessor {
 			throws OWLOntologyCreationException {
 		final String ontologyURI = properties
 				.get(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY);
+		final String ontologyLocation = properties.get(OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY);
 		final String mappingFileURI = properties
 				.get(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY);
 
@@ -38,6 +39,7 @@ public class OWLFileOntologyAccessor extends OWLOntologyAccessor {
 		this.dataFactory = this.ontologyManager.getOWLDataFactory();
 
 		URI physicalURI = parseMappings(mappingFileURI, ontologyURI);
+		// TODO Jak se tady pozna, jestli je treba ontologii vytvorit?
 
 		if (physicalURI == null) {
 			physicalURI = URI.create(ontologyURI);

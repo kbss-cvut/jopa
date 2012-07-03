@@ -67,7 +67,7 @@ public class FileOWLDBPerformanceTest {
 		LOG.config("Testing OWLDB ontology access performance. Persisting "
 				+ COUNT + " entities.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"owldb", true, true);
+				"OWLDBOntologyPerformanceTest-Persist", true, true);
 
 		persistEntities(em);
 		em.getEntityManagerFactory().close();
@@ -101,7 +101,7 @@ public class FileOWLDBPerformanceTest {
 	public void testOWLDBOntologyPerformanceRead() {
 		LOG.config("Search for several randomly chosen entities and measure OWLDB ontology performance.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"owldb", true, false);
+				"OWLDBOntologyPerformanceTest-Find", true, false);
 		persistEntities(em);
 
 		findEntities(em);

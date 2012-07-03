@@ -1,6 +1,11 @@
 package cz.cvut.kbss.owlpersistence.owlapi.transactionsUnitTests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -9,6 +14,7 @@ import java.util.logging.Logger;
 
 import javax.persistence.EntityTransaction;
 
+import org.junit.After;
 import org.junit.Test;
 
 import cz.cvut.kbss.owlpersistence.model.EntityManager;
@@ -18,15 +24,23 @@ import cz.cvut.kbss.owlpersistence.owlapi.OWLClassA;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassB;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassC;
 import cz.cvut.kbss.owlpersistence.owlapi.OWLClassD;
+import cz.cvut.kbss.owlpersistence.owlapi.OWLClassE;
 import cz.cvut.kbss.owlpersistence.owlapi.TestEnvironment;
 
 public class TestEntityTransactions {
 
-	private Logger log = TestEnvironment.getLogger();
+	private static final Logger log = TestEnvironment.getLogger();
 
 	private OWLClassC testC;
 	private List<OWLClassA> classes;
 	private List<OWLClassA> refList;
+
+	private EntityManager pc;
+
+	@After
+	public void tearDown() throws Exception {
+		pc.close();
+	}
 
 	public TestEntityTransactions() {
 		this.testC = new OWLClassC();
@@ -43,7 +57,8 @@ public class TestEntityTransactions {
 		this.refList = new ArrayList<OWLClassA>();
 		for (int i = 0; i < 10; i++) {
 			OWLClassA a = new OWLClassA();
-			final URI pkRA = URI.create("http://refA" + Integer.toString(i + 1));
+			final URI pkRA = URI
+					.create("http://refA" + Integer.toString(i + 1));
 			a.setUri(pkRA);
 			a.setStringAttribute("strAttForRefA_" + Integer.toString(i + 1));
 			this.refList.add(a);
@@ -56,7 +71,7 @@ public class TestEntityTransactions {
 	 */
 	@Test
 	public void testBeginAndCommitTransaction() {
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testBeginAndCommit");
 		pc.clear();
 		try {
@@ -66,14 +81,12 @@ public class TestEntityTransactions {
 			et.commit();
 		} catch (OWLPersistenceException e) {
 			log.info("Transaction acquisition failed: " + e.getMessage());
-		} finally {
-			pc.close();
 		}
 	}
 
 	@Test
 	public void testRollbackTransaction() {
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testRollback");
 		pc.clear();
 		final OWLClassB testEntity = new OWLClassB();
@@ -88,14 +101,12 @@ public class TestEntityTransactions {
 			log.severe("Test failed.");
 			e.printStackTrace();
 			fail();
-		} finally {
-			pc.close();
 		}
 	}
 
 	@Test
 	public void testSetRollbackOnly() {
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testRollbackOnly");
 		pc.clear();
 		final OWLClassA testEntity = new OWLClassA();
@@ -111,15 +122,13 @@ public class TestEntityTransactions {
 			e.printStackTrace();
 			log.severe(e.getMessage());
 			fail();
-		} finally {
-			pc.close();
 		}
 	}
 
 	@Test
 	public void testPersistEntity() {
 		log.info("Test: Persist entity");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testPersistEntity");
 		pc.clear();
 		final OWLClassA entity = new OWLClassA();
@@ -135,15 +144,13 @@ public class TestEntityTransactions {
 		} catch (OWLPersistenceException e) {
 			log.info("Persisting failed.");
 			fail();
-		} finally {
-			pc.close();
 		}
 	}
 
 	@Test
 	public void testPersistViolatingIC() {
 		log.info("Test: persist Entity with IC violation");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testPersistViolatingIC");
 		pc.clear();
 		final OWLClassB entityOne = new OWLClassB();
@@ -161,15 +168,13 @@ public class TestEntityTransactions {
 		} catch (OWLPersistenceException e) {
 			log.severe("Exception raised! Right.");
 			log.severe(e.getMessage() + "\n" + e.getCause().getMessage());
-		} finally {
-			pc.close();
 		}
 	}
 
 	@Test
 	public void testPersistNull() {
 		log.info("Test: persist a null object");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testPersistNull");
 		pc.clear();
 		final OWLClassA testEntity = new OWLClassA();
@@ -181,15 +186,13 @@ public class TestEntityTransactions {
 		} catch (OWLPersistenceException e) {
 			log.severe("Exception raised! Right.");
 			log.severe(e.getMessage());
-		} finally {
-			pc.close();
 		}
 	}
 
 	@Test
 	public void testPersistEntityWithCascade() {
 		log.info("Test: persistEntityWithCascade");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testPersistEntityWithCascade");
 		pc.clear();
 		final OWLClassD testEntity = new OWLClassD();
@@ -213,15 +216,42 @@ public class TestEntityTransactions {
 			log.info("Persist failed");
 			e.printStackTrace();
 			fail();
-		} finally {
-			pc.close();
 		}
+	}
+
+	@Test
+	public void testGenerateID() {
+		log.info("Test: generate IRI for entity.");
+		pc = TestEnvironment
+				.getPersistenceConnector("TestPersistenceConnectorLogic-testGenerateID");
+		final OWLClassE entity = new OWLClassE();
+		entity.setStringAttribute("someString");
+		pc.getTransaction().begin();
+		pc.persist(entity);
+		final URI pk = entity.getUri();
+		assertNotNull(pk);
+		pc.getTransaction().commit();
+
+		pc.clear();
+		assertNotNull(pc.find(OWLClassE.class, pk));
+	}
+
+	@Test(expected = OWLPersistenceException.class)
+	public void testGenerateIDNotGenerated() {
+		log.info("Test: try generating IRI for entity which has not set the generated option.");
+		pc = TestEnvironment
+				.getPersistenceConnector("TestPersistenceConnectorLogic-testGenerateIDNotGenerated");
+		final OWLClassB entity = new OWLClassB();
+		entity.setStringAttribute("stringAttribute");
+		pc.getTransaction().begin();
+		pc.persist(entity);
+		pc.getTransaction().commit();
 	}
 
 	@Test
 	public void testFindEntity() {
 		log.info("Test: Find entity");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testFindEntity");
 		pc.clear();
 		final OWLClassA entity = new OWLClassA();
@@ -238,15 +268,13 @@ public class TestEntityTransactions {
 		} catch (OWLPersistenceException e) {
 			log.info("Loading entity failed.");
 			fail();
-		} finally {
-			pc.close();
 		}
 	}
 
 	@Test
 	public void testFindNull() {
 		log.info("Test: Find null entity");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testFindNull");
 		pc.clear();
 		final OWLClassA res;
@@ -257,15 +285,13 @@ public class TestEntityTransactions {
 		} catch (OWLPersistenceException e) {
 			e.printStackTrace();
 			fail();
-		} finally {
-			pc.close();
 		}
 	}
 
 	@Test
 	public void testRemoveEntity() {
 		log.info("Test: Remove entity");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testRemoveEntity");
 		pc.clear();
 		OWLClassA entity = new OWLClassA();
@@ -287,15 +313,13 @@ public class TestEntityTransactions {
 			log.info("Remove failed with exception.");
 			e.printStackTrace();
 			fail();
-		} finally {
-			pc.close();
 		}
 	}
 
 	@Test
 	public void testMergeDetachedEntity() {
 		log.info("Test: Merge detached (detached during transaction)");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testMergeDetachedEntity");
 		OWLClassA entity = new OWLClassA();
 		final URI pk = URI.create("http://TestA");
@@ -320,7 +344,7 @@ public class TestEntityTransactions {
 	@Test
 	public void testMergeDetachedOutsideTransaction() {
 		log.info("Test: Merge detached (detached outside transaction)");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testMergeDetachedOutsideTransaction");
 		OWLClassA entity = new OWLClassA();
 		final URI pk = URI.create("http://TestA");
@@ -343,7 +367,7 @@ public class TestEntityTransactions {
 	@Test
 	public void testPersistSimpleList() {
 		log.info("Test: persist an entity containing simple list of referenced entites");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testPersistWithSimpleList");
 		pc.getTransaction().begin();
 		for (OWLClassA ent : classes) {
@@ -356,11 +380,11 @@ public class TestEntityTransactions {
 		assertEquals(classes.size(), res.getSimpleList().size());
 		assertNull(res.getReferencedList());
 	}
-	
+
 	@Test
 	public void testPersistEntityWithLists() {
 		log.info("Test: persist entity with referenced list and simple list");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testPersistEntityWithLists");
 		this.testC.setReferencedList(refList);
 		pc.getTransaction().begin();
@@ -374,14 +398,15 @@ public class TestEntityTransactions {
 		pc.getTransaction().commit();
 		final OWLClassC c = pc.find(OWLClassC.class, testC.getUri());
 		assertNotNull(c);
-		assertEquals(refList.get(0).getStringAttribute(), c.getReferencedList().get(0).getStringAttribute());
+		assertEquals(refList.get(0).getStringAttribute(), c.getReferencedList()
+				.get(0).getStringAttribute());
 		assertEquals(classes.get(5).getUri(), c.getSimpleList().get(5).getUri());
 	}
-	
+
 	@Test
 	public void testChangeReferenceInList() {
 		log.info("Test: change a reference in referenced list of an entity and persist this change");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testChangeReferenceInList");
 		this.testC.setReferencedList(refList);
 		pc.getTransaction().begin();
@@ -413,7 +438,7 @@ public class TestEntityTransactions {
 	@Test
 	public void testContainsMember() {
 		log.info("Test: does the EntityManager contain object which is a member of another object");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testContainsMember");
 		final OWLClassA a = new OWLClassA();
 		final URI pkOne = URI.create("http://testA");
@@ -435,7 +460,7 @@ public class TestEntityTransactions {
 	@Test
 	public void testRefreshEntity() {
 		log.info("Test: refresh the entity state.");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testRefreshEntity");
 		final OWLClassA a = new OWLClassA();
 		final URI pk = URI.create("http://testA");
@@ -454,7 +479,7 @@ public class TestEntityTransactions {
 	@Test(expected = OWLPersistentObjectException.class)
 	public void testPersistDetachedEntity() {
 		log.info("Test: persist detached entity.");
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testPersistDetachedEntity");
 		final OWLClassA a = new OWLClassA();
 		final URI pk = URI.create("http://testA");
