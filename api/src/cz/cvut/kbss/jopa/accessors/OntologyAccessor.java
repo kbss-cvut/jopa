@@ -21,6 +21,14 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 public interface OntologyAccessor {
 
 	/**
+	 * Generate and set a new IRI for the specified entity.
+	 * 
+	 * @param entity
+	 *            The entity IRI will be generated for.
+	 */
+	public void generateNewIRI(final Object entity);
+
+	/**
 	 * Persist the given entity. This method is used only for persisting new
 	 * entities.
 	 * 
