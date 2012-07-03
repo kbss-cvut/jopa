@@ -4,12 +4,17 @@
 
 	<groupId>cz.cvut.kbss</groupId>
 	<artifactId>jopa-owl2java</artifactId>
-	<version>0.2</version>
+	<version>0.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>jopa:owl2java</name>
 	<description>Java OWL Persistence API - OWL2Java generator</description>
 	<url>http://jopa.sourceforge.net</url>
+
+	<properties>
+		<jopa.version>0.3-SNAPSHOT</jopa.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
 	<profiles>
 	</profiles>
@@ -61,14 +66,14 @@
 		<dependency>
 			<groupId>cz.cvut.kbss</groupId>
 			<artifactId>jopa-api</artifactId>
-			<version>0.2</version>
+			<version>${jopa.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>cz.cvut.kbss</groupId>
 			<artifactId>jopa-owlapi-utils</artifactId>
-			<version>0.2</version>
+			<version>${jopa.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
@@ -86,9 +91,7 @@
 		</site>
 		<downloadUrl>http://sourceforge.net/projects/jopa/files/</downloadUrl>
 	</distributionManagement>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+
 
 	<developers>
 		<developer>
@@ -142,7 +145,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>cz.cvut.kbss.owlpersistence.owl2java.OWL2Java</mainClass>
+							<mainClass>cz.cvut.kbss.jopa.owl2java.OWL2Java</mainClass>
 							<addClasspath>true</addClasspath>
 							<!-- classpathPrefix>lib/</classpathPrefix -->
 						</manifest>

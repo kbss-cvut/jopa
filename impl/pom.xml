@@ -4,13 +4,16 @@
 
 	<groupId>cz.cvut.kbss</groupId>
 	<artifactId>jopa-impl</artifactId>
-	<version>0.2</version>
+	<version>0.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>jopa:impl</name>
 	<description>Java OWL Persistence api</description>
 	<url>http://jopa.sourceforge.net</url>
-
+	<properties>
+		<jopa.version>0.3-SNAPSHOT</jopa.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 	<profiles>
 	</profiles>
 	<repositories>
@@ -22,8 +25,18 @@
 			<url>http://krizik.felk.cvut.cz/m2repo</url>
 		</repository>
 		<repository>
+			<id>berkeley</id>
+			<name>Berkeley Maven 2 Repository</name>
+			<url>http://code.berkeleybop.org/maven/repository</url>
+		</repository>
+		<repository>
 			<id>jena</id>
 			<url>http://repo1.maven.org/maven2/com/hp/hpl/</url>
+		</repository>
+		<repository>
+			<id>repository.jboss.org-public</id>
+			<name>JBoss.org Maven repository</name>
+			<url>https://repository.jboss.org/nexus/content/groups/public</url>
 		</repository>
 	</repositories>
 
@@ -109,6 +122,14 @@
 			<optional>false</optional>
 		</dependency>
 		<dependency>
+			<groupId>de.fraunhofer.iitb</groupId>
+			<artifactId>owldb</artifactId>
+			<version>2.04</version>
+			<type>jar</type>
+			<scope>compile</scope>
+			<optional>false</optional>
+		</dependency>
+		<dependency>
 			<groupId>cz.cvut.kbss</groupId>
 			<artifactId>owl2query</artifactId>
 			<version>0.3</version>
@@ -119,7 +140,7 @@
 		<dependency>
 			<groupId>cz.cvut.kbss</groupId>
 			<artifactId>jopa-api</artifactId>
-			<version>0.2</version>
+			<version>${jopa.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 			<optional>false</optional>
@@ -127,10 +148,17 @@
 		<dependency>
 			<groupId>cz.cvut.kbss</groupId>
 			<artifactId>jopa-owl2java</artifactId>
-			<version>0.2</version>
+			<version>${jopa.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 			<optional>false</optional>
+		</dependency>
+		<dependency>
+			<groupId>cz.cvut.kbss</groupId>
+			<artifactId>owl2query</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<type>jar</type>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.aspectj</groupId>
@@ -152,12 +180,18 @@
 			<artifactId>reflections</artifactId>
 			<version>0.9.5</version>
 		</dependency>
+		<dependency>
+			<groupId>postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.1-901-1.jdbc4</version>
+			<scope>runtime</scope>
+		</dependency>
 	</dependencies>
 	<distributionManagement>
 		<repository>
 			<id>krizik</id>
 			<name>KBSS Maven 2 Repository</name>
-			<url>http://krizik.felk.cvut.cz/m2repo</url>
+			<url>scp://krizik.felk.cvut.cz:/var/www/m2repo</url>
 		</repository>
 		<site>
 			<id>jopa</id>
@@ -166,9 +200,7 @@
 		</site>
 		<downloadUrl>http://sourceforge.net/projects/jopa/files/</downloadUrl>
 	</distributionManagement>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+
 
 	<developers>
 		<developer>
@@ -192,6 +224,11 @@
 	</organization>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>resources</directory>
+			</resource>
+		</resources>
 		<testSourceDirectory>test</testSourceDirectory>
 		<plugins>
 			<plugin>
@@ -239,8 +276,15 @@
 				</executions>
 			</plugin>
 		</plugins>
-	</build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>1.0-beta-6</version>
+			</extension>
+		</extensions>
 
+	</build>
 	<modules>
 	</modules>
 </project>
