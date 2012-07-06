@@ -29,7 +29,8 @@ public class BasicOperationsTest {
 
 	@Test
 	public void testFetchSimpleData() {
-		em = TestEnvironment.getPersistenceConnector("owldb", true, true);
+		em = TestEnvironment.getPersistenceConnector(
+				"OWLDBTestBasicOperations-testFetchSimpleData", true, true);
 
 		OWLClassA a = new OWLClassA();
 		URI uri = URI.create("http://new#A");
@@ -55,7 +56,8 @@ public class BasicOperationsTest {
 
 	@Test
 	public void testPersistEntity() {
-		em = TestEnvironment.getPersistenceConnector("owldb", true, true);
+		em = TestEnvironment.getPersistenceConnector(
+				"OWLDBTestBasicOperations-testPersistEntity", true, true);
 		final OWLClassA a = new OWLClassA();
 		final URI uri = URI.create("persistA");
 		a.setUri(uri);
@@ -74,7 +76,8 @@ public class BasicOperationsTest {
 
 	@Test
 	public void testPersistRelationship() {
-		em = TestEnvironment.getPersistenceConnector("owldb", true, true);
+		em = TestEnvironment.getPersistenceConnector(
+				"OWLDBTestBasicOperations-testPersistRelationship", true, true);
 		final OWLClassA a = new OWLClassA();
 		final URI uri = URI.create("persistA");
 		a.setUri(uri);
@@ -98,7 +101,8 @@ public class BasicOperationsTest {
 
 	@Test
 	public void testRemoveEntity() {
-		em = TestEnvironment.getPersistenceConnector("owldb", true, true);
+		em = TestEnvironment.getPersistenceConnector(
+				"OWLDBTestBasicOperations-testRemoveEntity", true, true);
 		final OWLClassA a = new OWLClassA();
 		final URI uri = URI.create("persistA");
 		a.setUri(uri);

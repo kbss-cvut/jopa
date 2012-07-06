@@ -22,19 +22,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.junit.Ignore;
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.UnknownOWLOntologyException;
 
 import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.owlapi.EntityManagerFactoryImpl;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProvider;
 
 @Ignore
 public class TestEnvironment {
@@ -47,6 +39,9 @@ public class TestEnvironment {
 
 	// private static final String REASONER_FACTORY_CLASS =
 	// "org.semanticweb.HermiT.Reasoner$ReasonerFactory";
+	static {
+		Logger.getLogger("cz.cvut.kbss.jopa").setLevel(Level.CONFIG);
+	}
 
 	public static EntityManager getPersistenceConnector(String name) {
 		return getPersistenceConnector(name, false, true);
@@ -61,26 +56,25 @@ public class TestEnvironment {
 			boolean db, boolean cache) {
 		try {
 			final Map<String, String> params = new HashMap<String, String>();
-
+			final IRI iri = IRI
+					.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
+							+ name);
+			params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY,
+					iri.toString());
 			if (!db) {
-				// Ontology stored in file
-				final OWLOntologyManager m = OWLManager
-						.createOWLOntologyManager();
-				final IRI iri = IRI
-						.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
-								+ name);
-				OWLOntology o = m.createOntology(iri);
+				// Ontology stored in a file
 				final File url = new File(dir + "/" + name + ".owl");
+				final String physicalURI = url.getPath();
+				params.put(
+						OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
+						physicalURI);
 
-				m.saveOntology(o, IRI.create(url.toURI()));
-				params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, url
-						.toURI().toString());
 			} else {
 				// OWLDB ontology access
-				final String dbUri = "jdbc:postgresql://localhost/" + name;
-				params.put(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION,
+				final String dbUri = "jdbc:postgresql://localhost/owldb";
+				params.put(
+						OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
 						dbUri);
-				params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, dbUri);
 			}
 
 			params.put("javax.persistence.provider",
@@ -98,14 +92,10 @@ public class TestEnvironment {
 			// .getAbsolutePath());
 			params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
 					REASONER_FACTORY_CLASS);
-			
+
 			return Persistence.createEntityManagerFactory("context-name",
 					params).createEntityManager();
-		} catch (OWLOntologyCreationException e) {
-			log.log(Level.SEVERE, e.getMessage(), e);
 		} catch (UnknownOWLOntologyException e) {
-			log.log(Level.SEVERE, e.getMessage(), e);
-		} catch (OWLOntologyStorageException e) {
 			log.log(Level.SEVERE, e.getMessage(), e);
 		}
 		return null;

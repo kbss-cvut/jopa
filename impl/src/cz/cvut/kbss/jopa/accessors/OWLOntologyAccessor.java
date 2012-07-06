@@ -174,10 +174,16 @@ public abstract class OWLOntologyAccessor implements OntologyAccessor {
 	 * 
 	 * @param mappingFileURI
 	 * @param ontologyURI
+	 * @param additionalMapping
+	 *            Additional mapping, e. g. from properties passed to the
+	 *            accessor. This is optional, if you don't want to use it, pass
+	 *            an empty map.
 	 * @return
 	 */
-	protected URI parseMappings(String mappingFileURI, String ontologyURI) {
+	protected URI parseMappings(String mappingFileURI, String ontologyURI,
+			Map<URI, URI> additionalMapping) {
 		final Map<URI, URI> mapping = getMappings(mappingFileURI);
+		mapping.putAll(additionalMapping);
 		LOG.info("Found mappings = " + mapping);
 
 		this.ontologyManager.addIRIMapper(new OWLOntologyIRIMapper() {

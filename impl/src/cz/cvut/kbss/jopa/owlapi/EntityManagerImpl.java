@@ -727,8 +727,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		this.serverSession.transactionStarted(t, this);
 	}
 
-	public void transactionCommitted(EntityTransaction t) {
-		this.serverSession.transactionCommitted(t);
+	public void transactionFinished(EntityTransaction t) {
+		this.serverSession.transactionFinished(t);
 	}
 
 	/**

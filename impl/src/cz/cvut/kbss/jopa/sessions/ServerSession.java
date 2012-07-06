@@ -124,7 +124,7 @@ public class ServerSession extends AbstractSession {
 		return true;
 	}
 
-	public void transactionCommitted(EntityTransaction t) {
+	public void transactionFinished(EntityTransaction t) {
 		if (t == null) {
 			return;
 		}

@@ -81,7 +81,7 @@ public class EntityTransactionImpl implements
 						.removeCurrentPersistenceContext();
 			}
 			this.wrapper.setTransactionUOW(null);
-			this.wrapper.getEntityManager().transactionCommitted(this);
+			this.wrapper.getEntityManager().transactionFinished(this);
 			if (LOG.isLoggable(Level.CONFIG)) {
 				LOG.config("EntityTransaction commit finished.");
 			}
@@ -107,6 +107,7 @@ public class EntityTransactionImpl implements
 		this.rollbackOnly = false;
 		this.wrapper.getEntityManager().removeCurrentPersistenceContext();
 		this.wrapper.setTransactionUOW(null);
+		this.wrapper.getEntityManager().transactionFinished(this);
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("EntityTransaction rolled back.");
 		}

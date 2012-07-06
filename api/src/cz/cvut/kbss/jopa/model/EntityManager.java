@@ -373,5 +373,5 @@ public interface EntityManager {
 	 * @param t
 	 *            The committed entity transaction.
 	 */
-	public void transactionCommitted(EntityTransaction t);
+	public void transactionFinished(EntityTransaction t);
 }

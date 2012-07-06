@@ -22,6 +22,7 @@ public interface OWLAPIPersistenceProperties extends PersistenceProperties {
 	public static final String ONTOLOGY_URI_KEY = "cz.cvut.jopa.ontologyURI";
 	public static final String ONTOLOGY_DB_CONNECTION = "cz.cvut.jopa.ontologyDBConnection";
 	public static final String ONTOLOGY_FILE_KEY = "cz.cvut.jopa.ontologyDocumentURI";
+	public static final String ONTOLOGY_PHYSICAL_URI_KEY = "cz.cvut.jopa.ontologyPhysicalURI";
 	public static final String MAPPING_FILE_URI_KEY = "cz.cvut.jopa.mappingFileURI";
 	public static final String REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
 	public static final String LANG = "cz.cvut.jopa.lang";

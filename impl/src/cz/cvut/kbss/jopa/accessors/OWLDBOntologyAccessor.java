@@ -1,5 +1,7 @@
 package cz.cvut.kbss.jopa.accessors;
 
+import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -38,7 +40,7 @@ public class OWLDBOntologyAccessor extends OWLOntologyAccessor {
 		final String mappingFileURI = properties
 				.get(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY);
 		final String dbConnection = properties
-				.get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
+				.get(OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY);
 
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Using database backend: " + dbConnection);
@@ -48,7 +50,14 @@ public class OWLDBOntologyAccessor extends OWLOntologyAccessor {
 		this.ontologyIRI = IRI.create(dbConnection);
 		this.dataFactory = this.ontologyManager.getOWLDataFactory();
 
-		parseMappings(mappingFileURI, ontologyURI);
+		if (dbConnection != null && !dbConnection.isEmpty()) {
+			final Map<URI, URI> additional = Collections.singletonMap(
+					URI.create(ontologyURI), URI.create(dbConnection));
+			parseMappings(mappingFileURI, ontologyURI, additional);
+		} else {
+			parseMappings(mappingFileURI, ontologyURI,
+					Collections.<URI, URI> emptyMap());
+		}
 
 		this.workingOnt = ontologyManager.loadOntology(IRI.create(ontologyURI));
 		// Use this to pass properties to ontology
