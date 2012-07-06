@@ -15,6 +15,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassD;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
+import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
 
 public class BasicOperationsTest {
 
@@ -30,7 +31,8 @@ public class BasicOperationsTest {
 	@Test
 	public void testFetchSimpleData() {
 		em = TestEnvironment.getPersistenceConnector(
-				"OWLDBTestBasicOperations-testFetchSimpleData", true, true);
+				"OWLDBTestBasicOperations-testFetchSimpleData", Storage.OWLDB,
+				true);
 
 		OWLClassA a = new OWLClassA();
 		URI uri = URI.create("http://new#A");
@@ -57,7 +59,8 @@ public class BasicOperationsTest {
 	@Test
 	public void testPersistEntity() {
 		em = TestEnvironment.getPersistenceConnector(
-				"OWLDBTestBasicOperations-testPersistEntity", true, true);
+				"OWLDBTestBasicOperations-testPersistEntity", Storage.OWLDB,
+				true);
 		final OWLClassA a = new OWLClassA();
 		final URI uri = URI.create("persistA");
 		a.setUri(uri);
@@ -77,7 +80,8 @@ public class BasicOperationsTest {
 	@Test
 	public void testPersistRelationship() {
 		em = TestEnvironment.getPersistenceConnector(
-				"OWLDBTestBasicOperations-testPersistRelationship", true, true);
+				"OWLDBTestBasicOperations-testPersistRelationship",
+				Storage.OWLDB, true);
 		final OWLClassA a = new OWLClassA();
 		final URI uri = URI.create("persistA");
 		a.setUri(uri);
@@ -102,7 +106,8 @@ public class BasicOperationsTest {
 	@Test
 	public void testRemoveEntity() {
 		em = TestEnvironment.getPersistenceConnector(
-				"OWLDBTestBasicOperations-testRemoveEntity", true, true);
+				"OWLDBTestBasicOperations-testRemoveEntity", Storage.OWLDB,
+				true);
 		final OWLClassA a = new OWLClassA();
 		final URI uri = URI.create("persistA");
 		a.setUri(uri);

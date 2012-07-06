@@ -16,6 +16,7 @@ import org.junit.Test;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
+import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
 
 public class FileOWLDBPerformanceTest {
 
@@ -57,7 +58,7 @@ public class FileOWLDBPerformanceTest {
 		LOG.config("Testing file ontology access performance. Persisting "
 				+ COUNT + " entities.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"FileOntologyPerformanceTest-Persist", false, true);
+				"FileOntologyPerformanceTest-Persist", Storage.FILE, true);
 
 		persistEntities(em);
 	}
@@ -67,7 +68,7 @@ public class FileOWLDBPerformanceTest {
 		LOG.config("Testing OWLDB ontology access performance. Persisting "
 				+ COUNT + " entities.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"owldb", true, true);
+				"OWLDBOntologyPerformanceTest-Persist", Storage.OWLDB, true);
 
 		persistEntities(em);
 		em.getEntityManagerFactory().close();
@@ -91,7 +92,7 @@ public class FileOWLDBPerformanceTest {
 	public void testFileOntologyPerformanceRead() {
 		LOG.config("Search for several randomly chosen entities and measure file ontology performance.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"FileOntologyPerformanceTest-Find", false, false);
+				"FileOntologyPerformanceTest-Find", Storage.FILE, false);
 		persistEntities(em);
 
 		findEntities(em);
@@ -101,7 +102,7 @@ public class FileOWLDBPerformanceTest {
 	public void testOWLDBOntologyPerformanceRead() {
 		LOG.config("Search for several randomly chosen entities and measure OWLDB ontology performance.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"owldb", true, false);
+				"OWLDBOntologyPerformanceTest-Find", Storage.OWLDB, false);
 		persistEntities(em);
 
 		findEntities(em);

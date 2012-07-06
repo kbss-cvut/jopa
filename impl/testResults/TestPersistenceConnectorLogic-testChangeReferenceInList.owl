@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#"
-     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList"
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:new="http://new.owl#"
      xmlns:http="http://"
@@ -9,7 +9,7 @@
      xmlns:sequences="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:sequences2="http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#">
-    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList"/>
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList"/>
     
 
 
@@ -204,97 +204,97 @@
 
     <owl:NamedIndividual rdf:about="http://testC">
         <rdf:type rdf:resource="http://new.owl#OWLClassC"/>
-        <http:B-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ_1"/>
+        <http:B-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ_1"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ1_1 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ1_1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ1_1">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ1_1">
         <sequences:hasContents rdf:resource="http://refA2"/>
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ2_1"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ2_1"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ2_1 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ2_1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ2_1">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ2_1">
         <sequences:hasContents rdf:resource="http://refA3"/>
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ3_1"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ3_1"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ3_1 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ3_1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ3_1">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ3_1">
         <sequences:hasContents rdf:resource="http://refA4"/>
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ4_1"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ4_1"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ4_1 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ4_1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ4_1">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ4_1">
         <sequences:hasContents rdf:resource="http://refA5"/>
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ5_1"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ5_1"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ5_1 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ5_1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ5_1">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ5_1">
         <sequences:hasContents rdf:resource="http://refA6"/>
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ6_1"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ6_1"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ6_1 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ6_1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ6_1">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ6_1">
         <sequences:hasContents rdf:resource="http://refA7"/>
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ7_1"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ7_1"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ7_1 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ7_1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ7_1">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ7_1">
         <sequences:hasContents rdf:resource="http://refA8"/>
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ8_1"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ8_1"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ8_1 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ8_1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ8_1">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ8_1">
         <sequences:hasContents rdf:resource="http://refA9"/>
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ9_1"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ9_1"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ9_1 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ9_1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ9_1">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ9_1">
         <sequences:hasContents rdf:resource="http://refA10"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ_1 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ_1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ_1">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ_1">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#OWLList"/>
         <sequences:hasContents rdf:resource="http://refA1"/>
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ1_1"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testChangeReferenceInList#i_null-SEQ1_1"/>
     </owl:NamedIndividual>
 </rdf:RDF>
 

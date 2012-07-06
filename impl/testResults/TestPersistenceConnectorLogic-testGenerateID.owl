@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testGenerateID#"
-     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testGenerateID"
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testGenerateID"/>
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID"/>
     
 
 
@@ -66,9 +66,9 @@
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testGenerateID#i_OWLClassE -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#i_OWLClassE -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestPersistenceConnectorLogic-testGenerateID#i_OWLClassE">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#i_OWLClassE">
         <rdf:type rdf:resource="http://OWLClassE"/>
         <http:E-stringAttribute>someString</http:E-stringAttribute>
     </owl:NamedIndividual>

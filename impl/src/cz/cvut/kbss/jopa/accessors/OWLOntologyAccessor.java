@@ -1900,7 +1900,7 @@ public abstract class OWLOntologyAccessor implements OntologyAccessor {
 	}
 
 	public void close() {
-		if (!changeList.isEmpty()) {
+		if (changeList != null && !changeList.isEmpty()) {
 			writeChanges(changeList);
 		}
 		try {

@@ -6,13 +6,12 @@ import java.util.logging.Logger;
 import javax.persistence.RollbackException;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.sessions.AbstractSession;
 
 public class EntityTransactionImpl implements
 		javax.persistence.EntityTransaction {
 
-	private static final Logger LOG = Logger.getLogger(AbstractSession.class
-			.getName());
+	private static final Logger LOG = Logger
+			.getLogger(EntityTransactionImpl.class.getName());
 
 	private boolean active = false;
 
@@ -39,7 +38,9 @@ public class EntityTransactionImpl implements
 		this.wrapper.transactionUOW = em.getCurrentPersistenceContext();
 		this.active = true;
 		em.transactionStarted(this);
-		LOG.info("EntityTransaction begin.");
+		if (LOG.isLoggable(Level.CONFIG)) {
+			LOG.config("EntityTransaction begin.");
+		}
 	}
 
 	/**
@@ -54,7 +55,7 @@ public class EntityTransactionImpl implements
 					"Cannot commit inactive transaction!");
 		}
 		try {
-			if (LOG.isLoggable(Level.FINE)) {
+			if (LOG.isLoggable(Level.CONFIG)) {
 				LOG.fine("EntityTransaction commit started.");
 			}
 			if (this.wrapper.transactionUOW != null) {

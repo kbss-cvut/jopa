@@ -30,30 +30,38 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 
 @Ignore
 public class TestEnvironment {
-	public static final Logger log = Logger.getLogger(TestEnvironment.class
+	private static final Logger log = Logger.getLogger(TestEnvironment.class
 			.getName());
 
 	public static String dir = "testResults";
 
 	private static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
 
+	/**
+	 * True if the ontology file should be deleted before access to it is
+	 * initialized. This effectively means that the test will create the
+	 * ontology from scratch. Default value is true.
+	 */
+	public static boolean shouldDeleteOntologyFile = true;
+
 	// private static final String REASONER_FACTORY_CLASS =
 	// "org.semanticweb.HermiT.Reasoner$ReasonerFactory";
-	static {
-		Logger.getLogger("cz.cvut.kbss.jopa").setLevel(Level.CONFIG);
-	}
+
+	public static enum Storage {
+		OWLDB, FILE
+	};
 
 	public static EntityManager getPersistenceConnector(String name) {
-		return getPersistenceConnector(name, false, true);
+		return getPersistenceConnector(name, Storage.FILE, true);
 	}
 
 	public static EntityManager getPersistenceConnector(String name,
 			boolean cache) {
-		return getPersistenceConnector(name, false, cache);
+		return getPersistenceConnector(name, Storage.FILE, cache);
 	}
 
 	public static EntityManager getPersistenceConnector(String name,
-			boolean db, boolean cache) {
+			Storage storage, boolean cache) {
 		try {
 			final Map<String, String> params = new HashMap<String, String>();
 			final IRI iri = IRI
@@ -61,15 +69,19 @@ public class TestEnvironment {
 							+ name);
 			params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY,
 					iri.toString());
-			if (!db) {
+			switch (storage) {
+			case FILE:
 				// Ontology stored in a file
 				final File url = new File(dir + "/" + name + ".owl");
 				final String physicalURI = url.getPath();
+				if (url.exists() && shouldDeleteOntologyFile) {
+					url.delete();
+				}
 				params.put(
 						OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
 						physicalURI);
-
-			} else {
+				break;
+			case OWLDB:
 				// OWLDB ontology access
 				final String dbUri = "jdbc:postgresql://localhost/owldb";
 				params.put(

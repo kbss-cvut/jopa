@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.owlapi.OWLClassB;
 import cz.cvut.kbss.jopa.owlapi.OWLClassC;
 import cz.cvut.kbss.jopa.owlapi.OWLClassD;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
+import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
 
 public class EntityTransactionsTest {
 
@@ -104,7 +105,8 @@ public class EntityTransactionsTest {
 	@BeforeClass
 	public static void setupBeforeClass() {
 		index = 100;
-		pc = TestEnvironment.getPersistenceConnector("owldb", true, true);
+		pc = TestEnvironment.getPersistenceConnector(
+				"OWLDBPersistenceTest-transactions", Storage.OWLDB, true);
 	}
 
 	@AfterClass
