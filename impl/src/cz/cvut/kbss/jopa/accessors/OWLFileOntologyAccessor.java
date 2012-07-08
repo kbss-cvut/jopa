@@ -57,7 +57,7 @@ public class OWLFileOntologyAccessor extends OWLOntologyAccessor {
 					physicalURI = URI.create("file://"
 							+ ontoFile.getAbsolutePath());
 				} else {
-					physicalURI = URI.create(ontologyPhysicalURI);
+					physicalURI = URI.create("file://" + ontologyPhysicalURI);
 				}
 			} else if (ontologyURI.startsWith("file:")) {
 				physicalURI = URI.create(ontologyURI);

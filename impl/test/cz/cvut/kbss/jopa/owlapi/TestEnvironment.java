@@ -15,7 +15,10 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -33,7 +36,8 @@ public class TestEnvironment {
 	private static final Logger log = Logger.getLogger(TestEnvironment.class
 			.getName());
 
-	public static String dir = "testResults";
+	public static final String dir = "testResults";
+	public static final String dbUri = "jdbc:postgresql://localhost/owldb";
 
 	private static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
 
@@ -62,13 +66,12 @@ public class TestEnvironment {
 
 	public static EntityManager getPersistenceConnector(String name,
 			Storage storage, boolean cache) {
+		final Map<String, String> params = new HashMap<String, String>();
+		final IRI iri = IRI
+				.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
+						+ name);
+		params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, iri.toString());
 		try {
-			final Map<String, String> params = new HashMap<String, String>();
-			final IRI iri = IRI
-					.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
-							+ name);
-			params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY,
-					iri.toString());
 			switch (storage) {
 			case FILE:
 				// Ontology stored in a file
@@ -83,7 +86,6 @@ public class TestEnvironment {
 				break;
 			case OWLDB:
 				// OWLDB ontology access
-				final String dbUri = "jdbc:postgresql://localhost/owldb";
 				params.put(
 						OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
 						dbUri);
@@ -111,6 +113,72 @@ public class TestEnvironment {
 			log.log(Level.SEVERE, e.getMessage(), e);
 		}
 		return null;
+	}
+
+	public static EntityManager getPersistenceConnectorWithMappingFile(
+			final String name, final Storage storage, final boolean cache) {
+		final Map<String, String> params = new HashMap<String, String>();
+		final IRI iri = IRI
+				.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
+						+ name);
+		final String mappingFile = createMappingFile(name, iri, storage);
+		params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, iri.toString());
+		params.put(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY,
+				mappingFile);
+		if (cache) {
+			params.put("cache", "on");
+		} else {
+			params.put("cache", "off");
+		}
+		/* Set location of the entities (package) */
+		params.put("location", "cz.cvut.kbss.jopa.owlapi");
+		params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
+				OWLAPIPersistenceProvider.class.getName());
+		// params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
+		// .getAbsolutePath());
+		params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
+				REASONER_FACTORY_CLASS);
+
+		return Persistence.createEntityManagerFactory("context-name", params)
+				.createEntityManager();
+	}
+
+	private static String createMappingFile(final String name, final IRI iri,
+			final Storage storage) {
+		final File mappingFile = new File(dir + "/" + name + ".mapping");
+		if (mappingFile.exists()) {
+			mappingFile.delete();
+		}
+		final StringBuilder mapping = new StringBuilder();
+		mapping.append(iri.toString());
+		mapping.append(" > ");
+		switch (storage) {
+		case FILE:
+			final File onto = new File(name + ".owl");
+			if (shouldDeleteOntologyFile) {
+				// We have to use the dir here, since the context path is
+				// different
+				final File f = new File(dir + "/" + name + ".owl");
+				f.delete();
+			}
+			mapping.append(onto.getPath());
+			break;
+		case OWLDB:
+			mapping.append(dbUri);
+			break;
+		}
+
+		try {
+			mappingFile.createNewFile();
+
+			final BufferedWriter wr = new BufferedWriter(new FileWriter(
+					mappingFile));
+			wr.write(mapping.toString());
+			wr.close();
+		} catch (IOException e) {
+			log.log(Level.SEVERE, e.getMessage(), e);
+		}
+		return "file://" + mappingFile.getAbsolutePath();
 	}
 
 	public static Logger getLogger() {
