@@ -41,11 +41,13 @@ public class TestLazyLoading extends TestCase {
 		List<OWLClassA> tmp = new ArrayList<OWLClassA>();
 		tmp.add(a);
 		c.setReferencedList(tmp);
+		pc.getTransaction().begin();
 
 		pc.persist(a);
 		pc.persist(c);
 
 		pc.flush();
+		pc.getTransaction().commit();
 
 		pc.clear();
 

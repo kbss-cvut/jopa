@@ -8,6 +8,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -27,6 +31,10 @@ import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
 
 public class EntityTransactionsTest {
+
+	private static final String dbUrl = "jdbc:postgresql://localhost/owldb";
+	private static final String username = "owldb";
+	private static final String password = "owldb";
 
 	private static int index;
 	private static EntityManager pc;
@@ -103,8 +111,24 @@ public class EntityTransactionsTest {
 	}
 
 	@BeforeClass
-	public static void setupBeforeClass() {
+	public static void setupBeforeClass() throws Exception {
 		index = 100;
+		Connection con = null;
+		Statement st1 = null;
+		Statement st2 = null;
+		ResultSet rs = null;
+		con = DriverManager.getConnection(dbUrl, username, password);
+		st1 = con.createStatement();
+		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+		final String deleteStmt = "TRUNCATE ";
+		while (rs.next()) {
+			final String table = rs.getString(1);
+			st2 = con.createStatement();
+			st2.executeUpdate(deleteStmt + table + " CASCADE");
+			st2.close();
+			st2 = null;
+		}
+		st1.close();
 		pc = TestEnvironment.getPersistenceConnector(
 				"OWLDBPersistenceTest-transactions", Storage.OWLDB, true);
 	}

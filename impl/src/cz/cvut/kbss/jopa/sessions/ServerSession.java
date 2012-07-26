@@ -128,7 +128,7 @@ public class ServerSession extends AbstractSession {
 		if (t == null) {
 			return;
 		}
-		EntityManager em = getRunningTransactions().get(t);
+		EntityManager em = getRunningTransactions().remove(t);
 		if (em == null) {
 			return;
 		}

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleData#"
-     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleData"
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchSimpleData#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchSimpleData"
      xmlns:new2="http://new.owl#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:new="http://new#"
@@ -8,7 +8,7 @@
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleData"/>
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchSimpleData"/>
     
 
 

@@ -7,8 +7,13 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -19,7 +24,31 @@ import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
 
 public class BasicOperationsTest {
 
+	private static final String dbUrl = "jdbc:postgresql://localhost/owldb";
+	private static final String username = "owldb";
+	private static final String password = "owldb";
+
 	private static EntityManager em;
+
+	@Before
+	public void setup() throws Exception {
+		Connection con = null;
+		Statement st1 = null;
+		Statement st2 = null;
+		ResultSet rs = null;
+		con = DriverManager.getConnection(dbUrl, username, password);
+		st1 = con.createStatement();
+		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+		final String deleteStmt = "TRUNCATE ";
+		while (rs.next()) {
+			final String table = rs.getString(1);
+			st2 = con.createStatement();
+			st2.executeUpdate(deleteStmt + table + " CASCADE");
+			st2.close();
+			st2 = null;
+		}
+		st1.close();
+	}
 
 	@After
 	public void tearDown() throws Exception {

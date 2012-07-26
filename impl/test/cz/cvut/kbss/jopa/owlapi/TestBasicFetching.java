@@ -34,12 +34,13 @@ public class TestBasicFetching extends TestCase {
 		a.setUri(uri);
 
 		a.setStringAttribute("new-value");
+		em.getTransaction().begin();
 
 		em.persist(a);
 
 		assertTrue(em.contains(a));
 
-		em.flush();
+		em.getTransaction().commit();
 
 		em.clear();
 
@@ -63,12 +64,13 @@ public class TestBasicFetching extends TestCase {
 		a.setUri(uri);
 
 		a.setStringAttribute("old-value");
+		em.getTransaction().begin();
 
 		em.persist(a);
 
 		assertTrue(em.contains(a));
 
-		em.flush();
+		em.getTransaction().commit();
 
 		em.clear();
 
@@ -112,6 +114,7 @@ public class TestBasicFetching extends TestCase {
 		c.setReferencedList(Arrays.asList(a, a2));
 		c.setSimpleList(Arrays.asList(a, a2));
 
+		pc.getTransaction().begin();
 		pc.persist(a);
 		pc.persist(a2);
 		pc.persist(c);
@@ -120,7 +123,7 @@ public class TestBasicFetching extends TestCase {
 		assertTrue(pc.contains(a));
 		assertTrue(pc.contains(d));
 
-		pc.flush();
+		pc.getTransaction().commit();
 
 		pc.clear();
 
@@ -164,9 +167,11 @@ public class TestBasicFetching extends TestCase {
 
 		c.setReferencedList(list);
 
+		pc.getTransaction().begin();
 		pc.persist(c);
 
 		pc.flush();
+		pc.getTransaction().commit();
 
 		pc.clear();
 

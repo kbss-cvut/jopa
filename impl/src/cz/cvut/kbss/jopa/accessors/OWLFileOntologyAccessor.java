@@ -2,7 +2,6 @@ package cz.cvut.kbss.jopa.accessors;
 
 import java.io.File;
 import java.net.URI;
-import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -14,9 +13,7 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
-import cz.cvut.kbss.jopa.sessions.Session;
 
 /**
  * Ontology accessor using regular files.
@@ -24,11 +21,10 @@ import cz.cvut.kbss.jopa.sessions.Session;
  * @author kidney
  * 
  */
-public class OWLFileOntologyAccessor extends OWLOntologyAccessor {
+public class OWLFileOntologyAccessor extends AccessStrategy {
 
-	public OWLFileOntologyAccessor(Map<String, String> properties,
-			Metamodel metamodel, Session session) {
-		super(properties, metamodel, session);
+	protected OWLFileOntologyAccessor(final Map<String, String> properties) {
+		super(properties);
 	}
 
 	@Override
@@ -41,14 +37,11 @@ public class OWLFileOntologyAccessor extends OWLOntologyAccessor {
 				.get(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY);
 		final String ontologyPhysicalURI = properties
 				.get(OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY);
-		final String mappingFileURI = properties
-				.get(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY);
 
 		this.ontologyManager = OWLManager.createOWLOntologyManager();
 		this.dataFactory = this.ontologyManager.getOWLDataFactory();
 
-		URI physicalURI = parseMappings(mappingFileURI, ontologyURI,
-				Collections.<URI, URI> emptyMap());
+		URI physicalURI = parseMappings(ontologyURI);
 
 		if (physicalURI == null) {
 			if (ontologyPhysicalURI != null && !ontologyPhysicalURI.isEmpty()) {
@@ -70,7 +63,7 @@ public class OWLFileOntologyAccessor extends OWLOntologyAccessor {
 						+ physicalURI.toString());
 			}
 			try {
-				this.workingOnt = this.ontologyManager
+				this.workingOntology = ontologyManager
 						.loadOntologyFromOntologyDocument(new File(physicalURI));
 			} catch (OWLOntologyInputSourceException e) {
 				createOntology(ontologyURI, physicalURI);
@@ -79,7 +72,7 @@ public class OWLFileOntologyAccessor extends OWLOntologyAccessor {
 			if (LOG.isLoggable(Level.CONFIG)) {
 				LOG.config("Loading ontology from logical URI: " + ontologyURI);
 			}
-			this.workingOnt = this.ontologyManager.loadOntology(IRI
+			this.workingOntology = ontologyManager.loadOntology(IRI
 					.create(ontologyURI));
 		}
 
@@ -91,7 +84,7 @@ public class OWLFileOntologyAccessor extends OWLOntologyAccessor {
 					.create(ontologyURI));
 			ontologyManager.saveOntology(newOnto, IRI.create(physicalURI));
 			ontologyManager.removeOntology(newOnto);
-			this.workingOnt = this.ontologyManager
+			this.workingOntology = this.ontologyManager
 					.loadOntologyFromOntologyDocument(new File(physicalURI));
 		} catch (OWLOntologyCreationException e) {
 			throw new OWLPersistenceException("Unable to create ontology.", e);
@@ -100,9 +93,8 @@ public class OWLFileOntologyAccessor extends OWLOntologyAccessor {
 		}
 	}
 
-	@Override
 	protected void saveOntology() throws OWLOntologyStorageException {
-		this.ontologyManager.saveOntology(workingOnt);
+		ontologyManager.saveOntology(workingOntology);
 	}
 
 }

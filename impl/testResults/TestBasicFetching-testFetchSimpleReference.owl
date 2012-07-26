@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleReference#"
-     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleReference"
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchSimpleReference#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchSimpleReference"
      xmlns:new2="http://new#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:new="http://new.owl#"
@@ -10,7 +10,7 @@
      xmlns:sequences="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:sequences2="http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#">
-    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleReference"/>
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchSimpleReference"/>
     
 
 
@@ -135,19 +135,19 @@
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleReference#i_C-SEQ -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchSimpleReference#i_C-SEQ -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleReference#i_C-SEQ">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchSimpleReference#i_C-SEQ">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#OWLList"/>
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleReference#i_C-SEQ1"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchSimpleReference#i_C-SEQ1"/>
         <sequences:hasContents rdf:resource="http://new#A"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleReference#i_C-SEQ1 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchSimpleReference#i_C-SEQ1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleReference#i_C-SEQ1">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchSimpleReference#i_C-SEQ1">
         <sequences:hasContents rdf:resource="http://new#A2"/>
     </owl:NamedIndividual>
     
@@ -175,7 +175,7 @@
 
     <owl:NamedIndividual rdf:about="http://new#C">
         <rdf:type rdf:resource="http://new.owl#OWLClassC"/>
-        <http:B-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/owlpersistence-tests/TestBasicFetching-testFetchSimpleReference#i_C-SEQ"/>
+        <http:B-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchSimpleReference#i_C-SEQ"/>
         <http:B-hasSimpleSequence rdf:resource="http://new#A"/>
     </owl:NamedIndividual>
     

@@ -148,7 +148,7 @@ public class TestBasicInteractions extends TestCase {
 
 		pc.close();
 	}
-	
+
 	public void testTypes() {
 		EntityManager pc = TestEnvironment
 				.getPersistenceConnector("TestBasicInteractions-testTypes");
@@ -157,16 +157,19 @@ public class TestBasicInteractions extends TestCase {
 		final URI pkA = URI.create("http://newA");
 		a.setUri(pkA);
 
-		a.setTypes(new HashSet<String>(Arrays.asList("http://classA","http://classB","http://classC")));
-		
+		a.setTypes(new HashSet<String>(Arrays.asList("http://classA",
+				"http://classB", "http://classC")));
+
+		pc.getTransaction().begin();
 		pc.persist(a);
 		pc.flush();
+		pc.getTransaction().commit();
 		pc.clear();
-		
-		OWLClassA ax  = pc.find(OWLClassA.class, pkA);
-		
-		assertEquals(a.getTypes().size(), 3);		
-		assertEquals(ax.getTypes().size(), 3);		
+
+		OWLClassA ax = pc.find(OWLClassA.class, pkA);
+
+		assertEquals(a.getTypes().size(), 3);
+		assertEquals(ax.getTypes().size(), 3);
 
 		pc.close();
 	}
