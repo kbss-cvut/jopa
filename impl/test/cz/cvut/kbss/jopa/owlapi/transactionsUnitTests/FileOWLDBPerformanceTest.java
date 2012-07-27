@@ -106,6 +106,8 @@ public class FileOWLDBPerformanceTest {
 		persistEntities(em);
 
 		findEntities(em);
+		em.close();
+		em.getEntityManagerFactory().close();
 	}
 
 	private void findEntities(final EntityManager em) {
