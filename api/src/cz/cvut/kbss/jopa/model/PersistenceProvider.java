@@ -38,7 +38,7 @@ public interface PersistenceProvider {
 	 *         provider is not the right provider.
 	 */
 	public EntityManagerFactory createEntityManagerFactory(String emName,
-			Map map);
+			Map<String, String> map);
 
 	// TODO JPA 2.0
 	// public EntityManagerFactory

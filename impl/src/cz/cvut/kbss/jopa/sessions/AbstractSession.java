@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
+import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
@@ -91,13 +91,13 @@ public abstract class AbstractSession implements Session {
 	}
 
 	/**
-	 * Get the ontology accessor. An instance of ontology accessor is shared
-	 * among several client sessions. Server Session is responsible for
-	 * maintaining the accessor object.
+	 * Get the ontology accessor. Each client session has its own
+	 * TransactionOntologyAccessor and this accessor is valid only during a
+	 * single transaction.
 	 * 
-	 * @return The ontology accessor.
+	 * @return Transaction ontology accessor.
 	 */
-	public abstract OntologyAccessor getOntologyAccessor();
+	public abstract TransactionOntologyAccessor getOntologyAccessor();
 
 	/**
 	 * Get a set of all classes managed in this persistence unit - i. e. get all

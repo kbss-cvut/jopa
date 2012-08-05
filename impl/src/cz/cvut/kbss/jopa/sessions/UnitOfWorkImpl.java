@@ -14,7 +14,7 @@ import java.util.logging.Level;
 
 import org.semanticweb.owlapi.model.IRI;
 
-import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
+import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
@@ -231,6 +231,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	protected void commitUnitOfWork() {
 		commitToOntology();
 		mergeChangesIntoParent();
+		getOntologyAccessor().mergeToWorkingOntology();
 		postCommit();
 	}
 
@@ -238,6 +239,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 * Clean up after the commit.
 	 */
 	private void postCommit() {
+		getOntologyAccessor().close();
 		getNewObjectsCloneToOriginal().clear();
 		getNewObjectsOriginalToClone().clear();
 		getNewObjectsKeyToClone().clear();
@@ -857,7 +859,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	}
 
 	@Override
-	public OntologyAccessor getOntologyAccessor() {
+	public TransactionOntologyAccessor getOntologyAccessor() {
 		return this.parent.getOntologyAccessor();
 	}
 

@@ -11,11 +11,11 @@ import javax.persistence.EntityTransaction;
 
 import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
 import cz.cvut.kbss.jopa.accessors.OntologyAccessorFactory;
+import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 /**
  * The ServerSession is the primary interface for accessing the ontology. It
@@ -33,7 +33,11 @@ public class ServerSession extends AbstractSession {
 	private final Metamodel metamodel;
 	private final Set<Class<?>> managedClasses;
 
-	protected OntologyAccessor accessor;
+	// TODO To be removed
+	protected TransactionOntologyAccessor accessor;
+
+	private final OntologyAccessorFactory accessorFactory;
+	private OntologyAccessor ontologyAccessor;
 
 	private Map<EntityTransaction, EntityManager> runningTransactions;
 
@@ -41,13 +45,16 @@ public class ServerSession extends AbstractSession {
 		super();
 		this.managedClasses = Collections.emptySet();
 		this.metamodel = null;
+		this.ontologyAccessor = null;
+		this.accessorFactory = null;
 	}
 
 	public ServerSession(Map<String, String> properties, Metamodel metamodel,
 			OntologyAccessorFactory factory) {
 		this.metamodel = metamodel;
 		this.managedClasses = processTypes(metamodel.getEntities());
-		initialize(properties, metamodel, factory);
+		this.accessorFactory = factory;
+		initialize(properties, metamodel);
 	}
 
 	/**
@@ -76,10 +83,11 @@ public class ServerSession extends AbstractSession {
 	 * @param factory
 	 *            Factory for creating ontology accessors.
 	 */
-	private void initialize(Map<String, String> properties,
-			Metamodel metamodel, OntologyAccessorFactory factory) {
-		this.accessor = factory.createOntologyAccessor(properties, metamodel,
-				this);
+	private void initialize(Map<String, String> properties, Metamodel metamodel) {
+		this.ontologyAccessor = accessorFactory.createCentralAccessor(
+				properties, metamodel, this);
+		this.accessor = accessorFactory.createOntologyAccessor(properties,
+				metamodel, this);
 		String cache = properties.get(CACHE_PROPERTY);
 		if (cache == null || cache.equals("on")) {
 			CacheManagerImpl cm = (CacheManagerImpl) getLiveObjectCache();
@@ -105,8 +113,13 @@ public class ServerSession extends AbstractSession {
 		return acquireClientSession().acquireUnitOfWork();
 	}
 
-	public OntologyAccessor getOntologyAccessor() {
-		return this.accessor;
+	public TransactionOntologyAccessor getOntologyAccessor() {
+		return accessorFactory.createOntologyAccessor(
+				Collections.<String, String> emptyMap(), metamodel, this);
+	}
+
+	public OntologyAccessor getAccessor() {
+		return this.ontologyAccessor;
 	}
 
 	public Map<EntityTransaction, EntityManager> getRunningTransactions() {
@@ -201,5 +214,9 @@ public class ServerSession extends AbstractSession {
 	@Override
 	Metamodel getMetamodel() {
 		return metamodel;
+	}
+
+	public OntologyAccessorFactory getAccessorFactory() {
+		return accessorFactory;
 	}
 }

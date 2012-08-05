@@ -13,7 +13,7 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
+import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -143,7 +143,7 @@ public class MergeManagerTest {
 		}
 	}
 
-	private class AccessorStub implements OntologyAccessor {
+	private class AccessorStub implements TransactionOntologyAccessor {
 
 		public void persistEntity(Object entity, UnitOfWork uow) {
 		}
@@ -161,7 +161,7 @@ public class MergeManagerTest {
 		public void writeChange(OWLOntologyChange change) {
 		}
 
-		public void saveWorkingOntology() {
+		public void mergeToWorkingOntology() {
 		}
 
 		public boolean isInOntologySignature(IRI uri, boolean searchImports) {
@@ -201,6 +201,10 @@ public class MergeManagerTest {
 		}
 
 		public void generateNewIRI(Object entity) {
+		}
+
+		public boolean isOpen() {
+			return true;
 		}
 	}
 }

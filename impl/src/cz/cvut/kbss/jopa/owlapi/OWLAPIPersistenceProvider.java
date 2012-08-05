@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.accessors.OWLOntologyAccessor;
+import cz.cvut.kbss.jopa.accessors.OntologyAccessorImpl;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
@@ -36,7 +37,7 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 	}
 
 	public EntityManagerFactory createEntityManagerFactory(String emName,
-			Map map) {
+			Map<String, String> map) {
 		final EntityManagerFactoryImpl emf = new EntityManagerFactoryImpl(map);
 		emfs.add(emf);
 		return emf;
@@ -86,8 +87,8 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 			if (val != null) {
 				return;
 			}
-			OWLOntologyAccessor accessor = (OWLOntologyAccessor) ei
-					.getServerSession().getOntologyAccessor();
+			OntologyAccessorImpl accessor = (OntologyAccessorImpl) ei
+					.getServerSession().getAccessor();
 			accessor.loadReference(o, f);
 		}
 	}

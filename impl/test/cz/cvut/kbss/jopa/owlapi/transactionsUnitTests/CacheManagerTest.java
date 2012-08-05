@@ -13,7 +13,7 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
+import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Query;
@@ -154,12 +154,12 @@ public class CacheManagerTest {
 			this.accessor = accessor;
 		}
 
-		public OntologyAccessor getOntologyAccessor() {
+		public TransactionOntologyAccessor getOntologyAccessor() {
 			return this.accessor;
 		}
 	}
 
-	private class AccessorStub implements OntologyAccessor {
+	private class AccessorStub implements TransactionOntologyAccessor {
 
 		public void persistEntity(Object entity, UnitOfWork uow) {
 		}
@@ -178,7 +178,7 @@ public class CacheManagerTest {
 
 		}
 
-		public void saveWorkingOntology() {
+		public void mergeToWorkingOntology() {
 		}
 
 		public boolean isInOntologySignature(IRI uri, boolean searchImports) {
@@ -218,6 +218,10 @@ public class CacheManagerTest {
 		}
 
 		public void generateNewIRI(Object entity) {
+		}
+
+		public boolean isOpen() {
+			return true;
 		}
 
 	}

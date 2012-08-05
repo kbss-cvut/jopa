@@ -3,18 +3,14 @@ package cz.cvut.kbss.jopa.sessions;
 import java.util.Iterator;
 import java.util.Map;
 
-import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
-import cz.cvut.kbss.jopa.sessions.CommitManager;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
+import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 
 public class CommitManagerImpl implements CommitManager {
 
 	// Accessor to the underlying ontology
-	protected OntologyAccessor accessor;
+	protected TransactionOntologyAccessor accessor;
 
-	public CommitManagerImpl(OntologyAccessor accessor) {
+	public CommitManagerImpl(TransactionOntologyAccessor accessor) {
 		this.accessor = accessor;
 	}
 
@@ -55,7 +51,6 @@ public class CommitManagerImpl implements CommitManager {
 		if (changeSet.hasChanges()) {
 			this.commitManagedChanges(changeSet);
 		}
-		this.accessor.saveWorkingOntology();
 	}
 
 	/**

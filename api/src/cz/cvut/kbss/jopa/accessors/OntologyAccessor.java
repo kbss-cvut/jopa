@@ -4,16 +4,19 @@ import java.util.List;
 
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.model.query.Query;
-import cz.cvut.kbss.jopa.model.query.TypedQuery;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.model.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 
 /**
- * This interface defines basic methods for accessing, retrieving and writing
- * data into ontology.
+ * This interface defines the main access point to the ontology.
+ * 
+ * This accessor is shared by all existing entity manager sessions. Thus, all
+ * operations run on objects of this interface have to be preceded by acquiring
+ * a corresponding lock (read or write) and succeeded by releasing this lock.
+ * Failure to do so can result in undefined behavior.
  * 
  * @author kidney
  * 
@@ -21,148 +24,144 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 public interface OntologyAccessor {
 
 	/**
-	 * Generate and set a new IRI for the specified entity.
+	 * Acquire a read lock.
 	 * 
-	 * @param entity
-	 *            The entity IRI will be generated for.
+	 * Read locks are non-exclusive, i. e. multiple threads can simultaneously
+	 * acquire read locks and read the same data. If an exclusive lock is held
+	 * (see {@link #acquireWriteLock()}) the thread blocks until the exclusive
+	 * lock is released.
+	 * 
+	 * @return True if the lock was successfully acquired, false otherwise.
 	 */
-	public void generateNewIRI(final Object entity);
+	public boolean acquireReadLock();
 
 	/**
-	 * Persist the given entity. This method is used only for persisting new
-	 * entities.
-	 * 
-	 * @param entity
-	 *            The entity to persist.
-	 * @param uow
-	 *            The UnitOfWork which initiated the persist.
+	 * Release the previously acquired read lock.
 	 */
-	public void persistEntity(Object entity, UnitOfWork uow);
+	public void releaseReadLock();
 
 	/**
-	 * Persists the specified existing entity. This means persisting the new
-	 * state of an existing entity.
+	 * Acquire an exclusive write lock.
 	 * 
-	 * @param entity
-	 *            The entity to save.
-	 * @param uow
-	 *            The UnitOfWork which initiated the persist.
+	 * Acquiring write lock exclusively locks the accessor so the calling thread
+	 * can modify the data in the ontology. Since the write lock is exclusive,
+	 * if another thread already holds a lock (no matter whether exclusive or
+	 * non-exclusive), the calling thread waits until the lock is released.
+	 * 
+	 * @return True if the lock was successfully acquired, false otherwise.
 	 */
-	public void persistExistingEntity(Object entity, UnitOfWork uow);
+	public boolean acquireWriteLock();
 
 	/**
-	 * Remove the given entity from the ontology.
-	 * 
-	 * @param entity
+	 * Release the previously acquired write lock.
 	 */
-	public void removeEntity(Object entity);
+	public void releaseWriteLock();
 
 	/**
-	 * Load and reconstruct object with the given uri from the ontology.
+	 * Create and get a clone of the working ontology.
+	 * 
+	 * @return Clone of the working ontology.
+	 */
+	public OWLOntology cloneWorkingOntology();
+
+	/**
+	 * Write changes to the underlying ontology.
+	 * 
+	 * This method applies the specified changes to the underlying working
+	 * ontology and saves the working ontology. This operation effectively
+	 * propagates the changes to the ontology storage and makes the persistent.
+	 * 
+	 * @param changes
+	 *            List of changes to apply
+	 * @throws OWLPersistenceException
+	 *             If any exception occurs while writing the changes or
+	 *             persisting the ontology, it is wrapped in an
+	 *             OWLPersistenceException object and thrown out.
+	 */
+	public void writeChanges(final List<OWLOntologyChange> changes)
+			throws OWLPersistenceException;
+
+	/**
+	 * Load and reconstruct object with the given URI from the ontology.
 	 * 
 	 * @param uri
-	 *            Object
-	 * @return The object with specified uri or null
+	 *            URI of the entity to search for
+	 * @return The object with specified URI or null.
 	 */
 	public <T> T readEntity(Class<T> cls, Object uri);
 
 	/**
-	 * Create an instance of Query for executing a Java Persistence query
-	 * language statement.
+	 * Explicitly save the working ontology.
 	 * 
-	 * @param qlString
-	 *            a Java Persistence query string
-	 * @param em
-	 *            The calling EntityManager instance.
-	 * @return the new query instance
-	 * @throws IllegalArgumentException
-	 *             if query string is not valid
+	 * Note that saving the working ontology is usually not necessary, because
+	 * the only operation allowed to modify the working ontology (see
+	 * {@link #writeChanges(List)}) should save the working ontology explicitly.
+	 * This method is here just to make the API more flexible.
+	 * 
+	 * @throws OWLPersistenceException
+	 *             If any exception occurs while saving the working ontology.
 	 */
-	public Query<?> createQuery(String qlString, final EntityManager em);
+	public void saveWorkingOntology() throws OWLPersistenceException;
 
 	/**
-	 * Create an instance of Query for executing typed Java Persistence query
-	 * language statement.
+	 * Close the connection to the working ontology.
 	 * 
-	 * @param query
-	 *            The query to execute.
-	 * @param resultClass
-	 *            Expected result class.
-	 * @param sparql
-	 *            True if the query is a Sparql query.
-	 * @param em
-	 *            The calling EntityManager instance.
-	 * @return
+	 * @throws OWLPersistenceException
+	 *             If an exception is thrown while closing the connection to the
+	 *             ontology.
 	 */
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass,
-			boolean sparql, final EntityManager em);
+	public void close() throws OWLPersistenceException;
 
 	/**
-	 * Create an instance of Query for executing a native SPARQL-DL query in
-	 * SPARQL syntax.
+	 * Generate new identifier for the specified entity.
 	 * 
-	 * @param sparql
-	 *            a native SQL query string
-	 * @param em
-	 *            The calling EntityManager instance.
-	 * @return the new query instance
+	 * If the specified object is not entity or is already present in the
+	 * working ontology, null is returned.
+	 * 
+	 * @param entity
+	 *            The entity for which identifier should be generated
+	 * @return The new generated IRI.
 	 */
-	public Query<List<String>> createNativeQuery(String sparql,
-			final EntityManager em);
+	public IRI generateNewIdentifier(Object entity);
 
 	/**
-	 * Write the given OWLOntologyChange list. This method should not be used,
-	 * entity operations should be used instead.
+	 * Check if entity with the specified IRI is in the working ontology.
 	 * 
-	 * @param changes
-	 */
-	public void writeChanges(List<OWLOntologyChange> changes);
-
-	/**
-	 * Write the given OWLOntologyChange. This method should not be used, entity
-	 * operations should be used instead.
+	 * If the specified identifier is null, false is returned.
 	 * 
-	 * @param change
-	 */
-	public void writeChange(OWLOntologyChange change);
-
-	/**
-	 * Save the state of the working ontology.
-	 */
-	public void saveWorkingOntology();
-
-	/**
-	 * Is an entity with the given IRI in the ontology signature?
-	 * 
-	 * @param uri
-	 *            IRI
-	 * @param searchImports
+	 * @param identifier
+	 *            IRI of the entity to look for
+	 * @param shouldSearchImports
 	 *            This parameter specifies if the accessor should also search
 	 *            included ontologies.
-	 * @return
+	 * @return True if an individual with the specified IRI is in the ontology
+	 *         signature, false otherwise.
 	 */
-	public boolean isInOntologySignature(IRI uri, boolean searchImports);
+	public boolean isInOntologySignature(IRI identifier,
+			boolean shouldSearchImports);
 
 	/**
 	 * Get the OWLNamedIndividual with the specified IRI.
 	 * 
 	 * @param identifier
-	 * @return OWLNamedIndividual
+	 *            Identifier of the individual to search for
+	 * @return OWLNamedIndividual or null, if nothing is found
 	 */
 	public OWLNamedIndividual getOWLNamedIndividual(IRI identifier);
 
 	/**
-	 * Get the IRI identifier of the specified object.
+	 * Check if the integrity constraints are not violated.
 	 * 
-	 * @param object
-	 *            Object
-	 * @return IRI of the given object
+	 * 
+	 * @param entity
+	 *            The entity to check IC's for
+	 * @param id
+	 *            Identifier of the entity
+	 * @param attribute
+	 *            Attribute constraints will be checked for
+	 * @throws IntegrityConstraintsViolatedException
+	 *             If the integrity constraints are violated.
 	 */
-	public IRI getIdentifier(Object object);
-
-	/**
-	 * Write all pending changes and close the ontology connection.
-	 */
-	public void close();
-
+	public void checkIntegrityConstraints(Object entity, IRI id,
+			Attribute<?, ?> attribute);
 }

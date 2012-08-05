@@ -27,7 +27,6 @@ abstract class AccessStrategy {
 
 	protected static final Logger LOG = Logger.getLogger(AccessStrategy.class
 			.getName());
-	private static final String FILE_PREFIX = "file:";
 	private static final String OWLDB_PREFIX = "jdbc";
 
 	protected static Map<URI, URI> mapping;

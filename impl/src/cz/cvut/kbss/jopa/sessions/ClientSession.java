@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 
-import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
+import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
@@ -18,19 +18,20 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWork;
  * 
  */
 public class ClientSession extends AbstractSession {
-	// ClientSession by mela mit nejakou connection, pres kterou by rovnou
-	// mohla pristupovat do ontologie
 
-	protected ServerSession parent;
+	private final ServerSession parent;
+	private TransactionOntologyAccessor accessor;
 
 	/**
 	 * Default constructor. Should not be used.
 	 */
 	public ClientSession() {
 		super();
+		parent = null;
 	}
 
 	public ClientSession(ServerSession parent) {
+		super();
 		this.parent = parent;
 	}
 
@@ -47,14 +48,11 @@ public class ClientSession extends AbstractSession {
 		return parent;
 	}
 
-	public void setParent(ServerSession parent) {
-		this.parent = parent;
-	}
-
 	@Override
 	public void release() {
-		// Release connection
-		// TODO
+		if (accessor.isOpen()) {
+			accessor.close();
+		}
 	}
 
 	@Override
@@ -74,8 +72,12 @@ public class ClientSession extends AbstractSession {
 	}
 
 	@Override
-	public OntologyAccessor getOntologyAccessor() {
-		return getParent().getOntologyAccessor();
+	public TransactionOntologyAccessor getOntologyAccessor() {
+		// If the accessor is not set or is closed, acquire a new one
+		if (accessor == null || !accessor.isOpen()) {
+			this.accessor = parent.getOntologyAccessor();
+		}
+		return accessor;
 	}
 
 	public Vector<?> executeQuery(String sparqlQuery) {
