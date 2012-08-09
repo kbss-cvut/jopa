@@ -48,7 +48,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	protected EntityManager entityManager;
 
 	protected MergeManager mergeManager;
-	protected CommitManager commitManager;
 	protected CloneBuilder cloneBuilder;
 	protected ChangeManager changeManager;
 
@@ -63,6 +62,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 * This method returns null, since we don't support nested Units of Work
 	 * yet.
 	 */
+	@Override
 	public UnitOfWork acquireUnitOfWork() {
 		return null;
 	}
@@ -77,6 +77,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		return this.parent.readObject(domainClass);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public <T> T readObject(Class<T> cls, Object primaryKey) {
 		if (cls == null || primaryKey == null) {
 			return null;
@@ -267,23 +270,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 				this.uowChangeSet = new UnitOfWorkChangeSetImpl(this);
 			}
 			calculateChanges(this.uowChangeSet, getCloneMapping());
-			commitChangesToOntology(this.uowChangeSet);
 		}
-	}
-
-	/**
-	 * Commit any changes to the ontology.
-	 * 
-	 * @param changeSet
-	 *            UnitOfWorkChangeSet
-	 */
-	protected void commitChangesToOntology(UnitOfWorkChangeSet changeSet) {
-		if (!changeSet.hasChanges()) {
-			this.hasChanges = false;
-			return;
-		}
-		getCommitManager().commitChanges(changeSet);
-
 	}
 
 	/**
@@ -395,13 +382,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
 	public void setHasChanges(boolean hasChanges) {
 		this.hasChanges = hasChanges;
-	}
-
-	public CommitManager getCommitManager() {
-		if (this.commitManager == null) {
-			this.commitManager = new CommitManagerImpl(getOntologyAccessor());
-		}
-		return this.commitManager;
 	}
 
 	public Map<Object, Object> getCloneMapping() {
@@ -732,6 +712,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		getUsedPrimaryKeys().add(id);
 		getNewObjectsKeyToClone().put(id, clone);
 		this.hasNew = true;
+		getOntologyAccessor().persistEntity(entity, this);
 
 		return entity;
 	}
@@ -795,6 +776,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 				this.hasDeleted = true;
 			}
 		}
+		getOntologyAccessor().removeEntity(object);
 	}
 
 	/**

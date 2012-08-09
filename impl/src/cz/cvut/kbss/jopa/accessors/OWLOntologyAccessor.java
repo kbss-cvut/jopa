@@ -68,8 +68,6 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 	protected static final Logger LOG = Logger
 			.getLogger(OWLOntologyAccessor.class.getName());
 
-	protected AccessStrategy accessor;
-
 	protected Metamodel metamodel;
 	protected final String lang;
 	protected ServerSession session;
@@ -80,6 +78,12 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 	protected List<OWLOntologyChange> changeList;
 	private final List<OWLOntologyChange> transactionChanges;
 	private boolean open;
+
+	private OWLOntology workingOntology;
+	private OWLOntology reasoningOntology;
+	private OWLOntologyManager ontologyManager;
+	private OWLReasoner reasoner;
+	private OWLDataFactory dataFactory;
 
 	protected OWLOntologyAccessor() {
 		super();
@@ -97,7 +101,6 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 
 		this.centralAccessor = accessor;
 
-		this.accessor = AccessStrategy.getStrategy(properties);
 		this.transactionChanges = new ArrayList<OWLOntologyChange>();
 		this.open = true;
 	}
@@ -549,11 +552,9 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 				continue;
 			}
 
-			addChange(new RemoveAxiom(getWorkingOntology(),
-					getOntologyManager().getOWLDataFactory()
-							.getOWLObjectPropertyAssertionAxiom(
-									ax.getProperty(), individual,
-									ax.getObject())));
+			addChange(new RemoveAxiom(getWorkingOntology(), getDataFactory()
+					.getOWLObjectPropertyAssertionAxiom(ax.getProperty(),
+							individual, ax.getObject())));
 
 		}
 
@@ -699,8 +700,8 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 							uow);
 					if (set != null) {
 						for (Object element : set) {
-							final OWLNamedIndividual objectValue = getOntologyManager()
-									.getOWLDataFactory().getOWLNamedIndividual(
+							final OWLNamedIndividual objectValue = getDataFactory()
+									.getOWLNamedIndividual(
 											IRI.create((String) this.metamodel
 													.entity(clazz)
 													.getIdentifier()
@@ -856,9 +857,8 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 	private void addObjectProperty(final OWLNamedIndividual subject,
 			final org.semanticweb.owlapi.model.OWLObjectProperty property,
 			final OWLIndividual object) {
-		writeChange(new AddAxiom(getWorkingOntology(), getOntologyManager()
-				.getOWLDataFactory().getOWLObjectPropertyAssertionAxiom(
-						property, subject, object)));
+		writeChange(new AddAxiom(getWorkingOntology(), getDataFactory()
+				.getOWLObjectPropertyAssertionAxiom(property, subject, object)));
 	}
 
 	private void removeAllObjectProperties(final OWLNamedIndividual subject,
@@ -1272,23 +1272,23 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 	}
 
 	private OWLOntologyManager getOntologyManager() {
-		return accessor.getOntologyManager();
+		return ontologyManager;
 	}
 
 	private OWLReasoner getReasoner() {
-		return accessor.getReasoner();
+		return reasoner;
 	}
 
 	private OWLOntology getWorkingOntology() {
-		return accessor.getWorkingOntology();
+		return workingOntology;
 	}
 
 	private OWLOntology getReasoningOntology() {
-		return accessor.getReasoningOntology();
+		return reasoningOntology;
 	}
 
 	private OWLDataFactory getDataFactory() {
-		return accessor.getDataFactory();
+		return dataFactory;
 	}
 
 	public boolean isOpen() {

@@ -51,16 +51,16 @@ public class OWLDBOntologyAccessor extends AccessStrategy {
 		parseMappings(ontologyURI);
 
 		this.dataFactory = this.ontologyManager.getOWLDataFactory();
-		final IRI ontoIri = IRI.create(ontologyURI);
+		ontologyIri = IRI.create(ontologyURI);
 
 		try {
-			this.workingOntology = ontologyManager.loadOntology(ontoIri);
+			this.workingOntology = ontologyManager.loadOntology(ontologyIri);
 		} catch (OWLOntologyCreationException e) {
 			if (LOG.isLoggable(Level.CONFIG)) {
 				LOG.config("Ontology " + ontologyURI
 						+ " does not exist in the database. Creating...");
 			}
-			createOntology(ontoIri);
+			createOntology(ontologyIri);
 		}
 		// Use this to pass properties to ontology
 		// final Properties props = new Properties();

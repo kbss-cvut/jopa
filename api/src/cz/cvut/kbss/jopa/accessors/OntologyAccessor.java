@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
@@ -58,11 +57,14 @@ public interface OntologyAccessor {
 	public void releaseWriteLock();
 
 	/**
-	 * Create and get a clone of the working ontology.
+	 * Create and get a clone of the working ontology structures.
 	 * 
-	 * @return Clone of the working ontology.
+	 * This operation requires only read lock, since it does not modify existing
+	 * resources.
+	 * 
+	 * @return Clone of the working ontology structures.
 	 */
-	public OWLOntology cloneWorkingOntology();
+	public OntologyDataHolder cloneOntologyStructures();
 
 	/**
 	 * Write changes to the underlying ontology.

@@ -13,9 +13,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -28,12 +30,14 @@ import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyRenameException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
+import cz.cvut.kbss.jopa.accessors.OntologyDataHolder.DataHolderBuilder;
 import cz.cvut.kbss.jopa.model.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -111,9 +115,25 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 	/**
 	 * {@inheritDoc}
 	 */
-	public OWLOntology cloneWorkingOntology() {
-		// TODO clone the working ontology
-		return null;
+	public OntologyDataHolder cloneOntologyStructures() {
+		final Set<OWLAxiom> axioms = getWorkingOntology().getAxioms();
+		final OWLOntologyManager manager = OWLManager
+				.createOWLOntologyManager();
+		final OWLDataFactory factory = manager.getOWLDataFactory();
+		OWLOntology ontology = null;
+		try {
+			ontology = manager.createOntology(accessor.getOntologyIri());
+		} catch (OWLOntologyCreationException e) {
+			throw new OWLPersistenceException(
+					"Unable to clone working ontology.", e);
+		}
+		manager.addAxioms(ontology, axioms);
+		final OntologyDataHolder holder = new DataHolderBuilder()
+				.workingOntology(ontology)
+				.reasoningOntology(getReasoningOntology())
+				.ontologyManager(manager).dataFactory(factory)
+				.reasoner(getReasoner()).metamodel(metamodel).build();
+		return holder;
 	}
 
 	/**

@@ -56,6 +56,7 @@ public class OWLFileOntologyAccessor extends AccessStrategy {
 				physicalURI = URI.create(ontologyURI);
 			}
 		}
+		ontologyIri = IRI.create(ontologyURI);
 
 		if (physicalURI != null) {
 			if (LOG.isLoggable(Level.CONFIG)) {
@@ -66,7 +67,7 @@ public class OWLFileOntologyAccessor extends AccessStrategy {
 				this.workingOntology = ontologyManager
 						.loadOntologyFromOntologyDocument(new File(physicalURI));
 			} catch (OWLOntologyInputSourceException e) {
-				createOntology(ontologyURI, physicalURI);
+				createOntology(physicalURI);
 			}
 		} else {
 			if (LOG.isLoggable(Level.CONFIG)) {
@@ -78,10 +79,9 @@ public class OWLFileOntologyAccessor extends AccessStrategy {
 
 	}
 
-	private void createOntology(final String ontologyURI, final URI physicalURI) {
+	private void createOntology(final URI physicalURI) {
 		try {
-			final OWLOntology newOnto = ontologyManager.createOntology(IRI
-					.create(ontologyURI));
+			final OWLOntology newOnto = ontologyManager.createOntology(ontologyIri);
 			ontologyManager.saveOntology(newOnto, IRI.create(physicalURI));
 			ontologyManager.removeOntology(newOnto);
 			this.workingOntology = this.ontologyManager

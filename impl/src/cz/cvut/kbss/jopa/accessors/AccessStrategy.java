@@ -38,6 +38,8 @@ abstract class AccessStrategy {
 	protected OWLReasonerFactory reasonerFactory;
 	protected OWLDataFactory dataFactory;
 
+	protected IRI ontologyIri;
+
 	protected AccessStrategy() {
 		super();
 	}
@@ -47,6 +49,16 @@ abstract class AccessStrategy {
 		init(properties);
 	}
 
+	/**
+	 * Get initialized access strategy.
+	 * 
+	 * The access strategy is initialized according to the specified properties,
+	 * including the proper data storage.
+	 * 
+	 * @param properties
+	 *            Map of initialization properties
+	 * @return Initialized {@code AccessStrategy} object.
+	 */
 	static AccessStrategy getStrategy(final Map<String, String> properties) {
 		final String ontologyURI = properties
 				.get(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY);
@@ -159,6 +171,10 @@ abstract class AccessStrategy {
 
 	OWLDataFactory getDataFactory() {
 		return dataFactory;
+	}
+
+	IRI getOntologyIri() {
+		return ontologyIri;
 	}
 
 	/**
