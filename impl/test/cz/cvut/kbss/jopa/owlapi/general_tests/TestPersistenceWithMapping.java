@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.owlapi.transactionsUnitTests;
+package cz.cvut.kbss.jopa.owlapi.general_tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

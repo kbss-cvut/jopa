@@ -36,11 +36,8 @@ public class MergeManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		this.session = new ServerSession();
-		Field accessor = session.getClass().getDeclaredField("accessor");
 		AccessorStub sor = new AccessorStub();
-		accessor.setAccessible(true);
-		accessor.set(session, sor);
+		this.session = new ServerSessionStub(sor);
 		this.uow = (UnitOfWorkImpl) session.acquireClientSession()
 				.acquireUnitOfWork();
 		this.cloneBuilder = new CloneBuilderStub(uow);
@@ -79,10 +76,8 @@ public class MergeManagerTest {
 		final OWLClassB objTwo = new OWLClassB();
 		final URI pkTwo = URI.create("http://objTwo");
 		objTwo.setUri(pkTwo);
-		this.uow.getLiveObjectCache().add(IRI.create(objOne.getUri()),
-				objOne);
-		this.uow.getLiveObjectCache().add(IRI.create(objTwo.getUri()),
-				objTwo);
+		this.uow.getLiveObjectCache().add(IRI.create(objOne.getUri()), objOne);
+		this.uow.getLiveObjectCache().add(IRI.create(objTwo.getUri()), objTwo);
 		Object cloneOne = this.uow.registerExistingObject(objOne);
 		Object cloneTwo = this.uow.registerExistingObject(objTwo);
 		this.uow.removeObject(cloneTwo);
@@ -122,11 +117,12 @@ public class MergeManagerTest {
 		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(newOne, clone,
 				true, null);
 		this.mm.mergeNewObject(ochs);
-		assertTrue(uow.getLiveObjectCache().contains(newOne.getClass(),
-				newOne.getUri()));
+		final IRI iri = IRI.create(pk);
+		boolean res = uow.getLiveObjectCache().contains(newOne.getClass(), iri);
+		assertTrue(res);
 	}
 
-	private class CloneBuilderStub extends CloneBuilderImpl {
+	private static class CloneBuilderStub extends CloneBuilderImpl {
 
 		public CloneBuilderStub(UnitOfWorkImpl uow) {
 			super(uow);
@@ -144,7 +140,7 @@ public class MergeManagerTest {
 		}
 	}
 
-	private class AccessorStub implements TransactionOntologyAccessor {
+	private static class AccessorStub implements TransactionOntologyAccessor {
 
 		public void persistEntity(Object entity, UnitOfWork uow) {
 		}
@@ -206,6 +202,20 @@ public class MergeManagerTest {
 
 		public boolean isOpen() {
 			return true;
+		}
+	}
+
+	public static class ServerSessionStub extends ServerSession {
+
+		private final TransactionOntologyAccessor accessor;
+
+		public ServerSessionStub(TransactionOntologyAccessor accessor) {
+			this.accessor = accessor;
+		}
+
+		@Override
+		public TransactionOntologyAccessor getOntologyAccessor() {
+			return accessor;
 		}
 	}
 }

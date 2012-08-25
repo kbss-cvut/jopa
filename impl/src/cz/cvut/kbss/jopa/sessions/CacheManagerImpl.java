@@ -21,6 +21,7 @@ public class CacheManagerImpl implements CacheManager {
 	// only for a certain time and
 	// inactive objects should be then evicted)
 	// And implement proper locking strategy
+	// Also check how inheritance would work in this simple cache
 
 	private Set<Class<?>> inferredClasses;
 

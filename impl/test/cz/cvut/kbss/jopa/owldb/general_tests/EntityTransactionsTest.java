@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.owldb;
+package cz.cvut.kbss.jopa.owldb.general_tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

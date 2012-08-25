@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.owlapi.transactionsUnitTests;
+package cz.cvut.kbss.jopa.owlapi.general_tests;
 
 import java.net.URI;
 import java.util.HashSet;

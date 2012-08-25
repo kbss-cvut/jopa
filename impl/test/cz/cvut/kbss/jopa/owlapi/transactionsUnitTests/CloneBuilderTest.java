@@ -24,7 +24,8 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 public class CloneBuilderTest extends TestCase {
 
-//	private static Class<CloneBuilderImpl> cloneBuilderClass = CloneBuilderImpl.class;
+	// private static Class<CloneBuilderImpl> cloneBuilderClass =
+	// CloneBuilderImpl.class;
 
 	private Logger log = TestEnvironment.getLogger();
 	CloneBuilderImpl builder;
@@ -101,7 +102,7 @@ public class CloneBuilderTest extends TestCase {
 			assertEquals(it1.next(), it2.next());
 		}
 	}
-	
+
 	@Test
 	public void testCloneListCollection() {
 		final List<String> testList = new ArrayList<String>();
@@ -127,7 +128,7 @@ public class CloneBuilderTest extends TestCase {
 		String type = "A_type";
 		obj.setTypes(Collections.singleton(type));
 		try {
-			final OWLClassA result =  (OWLClassA) builder.buildClone(obj);
+			final OWLClassA result = (OWLClassA) builder.buildClone(obj);
 			assertEquals(1, result.getTypes().size());
 			assertEquals(type, result.getTypes().iterator().next());
 		} catch (SecurityException e) {

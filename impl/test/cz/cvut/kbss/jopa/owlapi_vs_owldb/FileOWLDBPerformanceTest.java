@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.owlapi.transactionsUnitTests;
+package cz.cvut.kbss.jopa.owlapi_vs_owldb;
 
 import static org.junit.Assert.assertNotNull;
 
