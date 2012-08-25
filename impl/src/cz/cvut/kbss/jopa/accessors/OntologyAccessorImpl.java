@@ -206,7 +206,8 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 
 		int i = 1;
 		while (getWorkingOntology().containsIndividualInSignature(iri, true)
-				|| this.session.getLiveObjectCache().containsObjectByIRI(iri)) {
+				|| this.session.getLiveObjectCache().contains(
+						entity.getClass(), iri)) {
 			iri = IRI.create(base + "_" + (i++));
 		}
 
@@ -654,8 +655,8 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 			final OWLIndividual i, IRI iri) {
 		if (LOG.isLoggable(Level.FINEST))
 			LOG.finest("Getting " + i + " of " + cls);
-		if (this.session.getLiveObjectCache().containsObjectByIRI(iri)) {
-			Object ob = this.session.getLiveObjectCache().getObjectByIRI(iri);
+		if (this.session.getLiveObjectCache().contains(cls, iri)) {
+			Object ob = this.session.getLiveObjectCache().get(cls, iri);
 			if (ob == null) {
 				throw new OWLPersistenceException();
 			}

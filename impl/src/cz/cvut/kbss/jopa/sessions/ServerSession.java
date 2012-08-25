@@ -9,6 +9,8 @@ import java.util.Vector;
 
 import javax.persistence.EntityTransaction;
 
+import org.semanticweb.owlapi.model.IRI;
+
 import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
 import cz.cvut.kbss.jopa.accessors.OntologyAccessorFactory;
 import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
@@ -183,7 +185,11 @@ public class ServerSession extends AbstractSession {
 		if (object == null) {
 			return;
 		}
-		getLiveObjectCache().removeObjectFromCache(object);
+		final IRI primaryKey = getOntologyAccessor().getIdentifier(object);
+		if (primaryKey == null) {
+			return;
+		}
+		getLiveObjectCache().evict(object.getClass(), primaryKey);
 	}
 
 	public Vector<?> executeQuery(String sparqlQuery) {
@@ -203,7 +209,7 @@ public class ServerSession extends AbstractSession {
 
 	public <T> T readObject(Class<T> cls, Object primaryKey) {
 		T result = this.accessor.readEntity(cls, primaryKey);
-		getLiveObjectCache().addObjectIntoCache(result);
+		getLiveObjectCache().add(primaryKey, result);
 		return result;
 	}
 

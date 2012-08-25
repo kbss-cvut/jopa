@@ -1,6 +1,11 @@
 package cz.cvut.kbss.jopa.owlapi.transactionsUnitTests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -8,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
@@ -15,140 +21,206 @@ import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
+import cz.cvut.kbss.jopa.owlapi.OWLClassB;
+import cz.cvut.kbss.jopa.owlapi.OWLClassD;
 import cz.cvut.kbss.jopa.sessions.CacheManagerImpl;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 public class CacheManagerTest {
 
-	private SessionStub session;
-	private OWLClassA testObject;
+	private static SessionStub session;
+	private static OWLClassA testA;
+	private static OWLClassB testB;
+	private static Map<URI, OWLClassB> listOfBs;
 	private CacheManagerImpl mngr;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		final AccessorStub accessor = new AccessorStub();
+		session = new SessionStub(accessor);
+		final URI pk = URI.create("http://testEntity");
+		testA = new OWLClassA();
+		testA.setUri(pk);
+		testA.setStringAttribute("testAttribute");
+		final URI pkB = URI.create("http://testB");
+		testB = new OWLClassB();
+		testB.setUri(pkB);
+		testB.setStringAttribute("stringAttribute");
+		listOfBs = new HashMap<URI, OWLClassB>();
+		for (int i = 0; i < 10; i++) {
+			final URI pkI = URI.create("http://testBList_" + i);
+			final OWLClassB b = new OWLClassB();
+			b.setUri(pkI);
+			b.setStringAttribute("Instance number " + i);
+			listOfBs.put(pkI, b);
+		}
+	}
 
 	@Before
 	public void setUp() throws Exception {
-		final AccessorStub accessor = new AccessorStub();
-		this.session = new SessionStub(accessor);
-		final URI pk = URI.create("http://testEntity");
-		this.testObject = new OWLClassA();
-		this.testObject.setUri(pk);
-		this.testObject.setStringAttribute("testAttribute");
 		this.mngr = new CacheManagerImpl(session);
 	}
 
 	@Test
-	public void testAddObjectIntoCache() {
-		this.mngr.addObjectIntoCache(testObject);
-		assertEquals(testObject, mngr.getLiveObjectCache().get(testObject));
-		Object uri = mngr.getIRIOfObject(testObject);
-		assertEquals(IRI.create(testObject.getUri()), uri);
+	public void testAdd() {
+		mngr.add(testA.getUri(), testA);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
+		final Object res = mngr.get(testA.getClass(), testA.getUri());
+		assertNotNull(res);
+		assertEquals(testA, res);
 	}
 
 	@Test
-	public void testAddObjectWithDuplicateIRI() {
-		this.mngr.addObjectIntoCache(testObject);
-		final OWLClassA duplicate = new OWLClassA();
-		duplicate.setUri(testObject.getUri());
+	public void testAddNull() {
 		try {
-			this.mngr.addObjectIntoCache(duplicate);
-			fail();
-		} catch (OWLPersistenceException e) {
-			System.out.println("Exception raised! Right.");
-			e.printStackTrace();
+			mngr.add(URI.create("http://blahblahblah"), null);
+			assertTrue(mngr.isEmpty());
+		} catch (Exception e) {
+			fail("Exception caught. Test failed.");
 		}
 	}
 
 	@Test
-	public void testAddObjectWithIRIIntoCache() {
-		this.mngr.addObjectIntoCache(testObject, testObject.getUri());
-		assertFalse(mngr.getLiveObjectCache().isEmpty());
+	public void testAddWithDuplicateIRI() {
+		this.mngr.add(testA.getUri(), testA);
+		final OWLClassA duplicate = new OWLClassA();
+		final String newStr = testA.getStringAttribute() + "duplicated";
+		duplicate.setStringAttribute(newStr);
+		duplicate.setUri(testA.getUri());
+		mngr.add(duplicate.getUri(), duplicate);
+		final OWLClassA res = (OWLClassA) mngr.get(testA.getClass(),
+				testA.getUri());
+		assertNotNull(res);
+		assertFalse(newStr.equals(res.getStringAttribute()));
+		assertEquals(testA.getStringAttribute(), res.getStringAttribute());
 	}
 
 	@Test
-	public void testAddObjectsIntoCache() {
-		final OWLClassA tmp = new OWLClassA();
-		final URI pk = URI.create("http://testURI");
-		tmp.setUri(pk);
-		final Map<URI, OWLClassA> map = new HashMap<URI, OWLClassA>();
-		map.put(testObject.getUri(), testObject);
-		map.put(pk, tmp);
-		this.mngr.addObjectsIntoCache(map);
-		OWLClassA res = (OWLClassA) mngr.getLiveObjectCache().get(testObject);
-		assertEquals(testObject.getStringAttribute(), res.getStringAttribute());
+	public void testAddAll() {
+		mngr.addAll(listOfBs);
+		for (OWLClassB b : listOfBs.values()) {
+			assertTrue(mngr.contains(OWLClassB.class, b.getUri()));
+			final OWLClassB res = (OWLClassB) mngr.get(OWLClassB.class,
+					b.getUri());
+			assertNotNull(res);
+			assertEquals(b.getUri(), res.getUri());
+		}
 	}
 
 	@Test
-	public void testContainsObject() {
-		this.mngr.addObjectIntoCache(testObject);
-		assertTrue(mngr.containsObject(testObject));
+	public void testAddAllNull() {
+		try {
+			mngr.addAll(null);
+			assertTrue(mngr.isEmpty());
+		} catch (Exception e) {
+			fail("Exception caught. Test failed.");
+		}
 	}
 
 	@Test
 	public void testGetObject() {
-		this.mngr.addObjectIntoCache(testObject);
-		assertEquals(testObject, mngr.getObject(testObject));
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test
-	public void testGetObjectByValue() {
-		this.mngr.addObjectIntoCache(testObject);
-		assertEquals(testObject, mngr.getObjectByValue(testObject));
+		mngr.add(testA.getUri(), testA);
+		Object res = mngr.get(testA.getClass(), testA.getUri());
+		assertEquals(testA, res);
 	}
 
 	@Test
-	public void testRemoveObjectFromCache() {
-		this.mngr.addObjectIntoCache(testObject);
-		this.mngr.removeObjectFromCache(testObject);
-		assertTrue(mngr.getLiveObjectCache().isEmpty());
+	public void testGetObjectNull() {
+		mngr.add(testA.getUri(), testA);
+		try {
+			final Object o = mngr.get(OWLClassA.class, null);
+			assertNull(o);
+		} catch (Exception e) {
+			fail("Exception caught. Test failed.");
+		}
 	}
 
 	@Test
-	public void testContainsObjectByIRI() {
-		this.mngr.addObjectIntoCache(testObject);
-		final IRI iri = IRI.create(testObject.getUri());
-		assertTrue(mngr.containsObjectByIRI(iri));
+	public void testGetObjectUnknownClass() {
+		mngr.add(testA.getUri(), testA);
+		mngr.add(testB.getUri(), testB);
+		try {
+			final Object o = mngr.get(OWLClassD.class, testA.getUri());
+			assertNull(o);
+		} catch (Exception e) {
+			fail("Exception caught. Test failed.");
+		}
 	}
 
 	@Test
-	public void testGetObjectByIRI() {
-		this.mngr.addObjectIntoCache(testObject);
-		final IRI iri = IRI.create(testObject.getUri());
-		Object res = mngr.getObjectByIRI(iri);
-		assertEquals(testObject, res);
+	public void testGetObjectUnknownPrimaryKey() {
+		mngr.add(testA.getUri(), testA);
+		mngr.add(testB.getUri(), testB);
+		final URI unknownId = URI.create("http://unknownId");
+		final Object o = mngr.get(OWLClassA.class, unknownId);
+		assertNull(o);
 	}
 
 	@Test
-	public void testGetIRIOfObject() {
-		this.mngr.addObjectIntoCache(testObject);
-		final IRI iri = IRI.create(testObject.getUri());
-		Object res = mngr.getIRIOfObject(testObject);
-		assertEquals(iri, res);
+	public void testEvictAll() {
+		mngr.add(testA.getUri(), testA);
+		mngr.addAll(listOfBs);
+		mngr.evictAll();
+		assertNull(mngr.get(testA.getClass(), testA.getUri()));
+		assertTrue(mngr.isEmpty());
 	}
 
 	@Test
-	public void testReleaseCache() {
-		this.mngr.addObjectIntoCache(testObject);
-		this.mngr.releaseCache();
-		assertNull(mngr.getObject(testObject));
+	public void testEvictByClass() {
+		mngr.add(testA.getUri(), testA);
+		mngr.add(testB.getUri(), testB);
+		mngr.addAll(listOfBs);
+		mngr.evict(OWLClassB.class);
+		assertFalse(mngr.isEmpty());
+		assertTrue(mngr.contains(OWLClassA.class, testA.getUri()));
+		assertFalse(mngr.contains(OWLClassB.class, testB.getUri()));
 	}
 
 	@Test
-	public void testRemoveObjectFromCacheByIRI() {
-		this.mngr.addObjectIntoCache(testObject);
+	public void testEvictByClassNull() {
+		mngr.add(testA.getUri(), testA);
+		mngr.add(testB.getUri(), testB);
+		mngr.addAll(listOfBs);
+		try {
+			mngr.evict(null);
+			assertFalse(mngr.isEmpty());
+			assertTrue(mngr.contains(OWLClassA.class, testA.getUri()));
+			assertTrue(mngr.contains(OWLClassB.class, testB.getUri()));
+		} catch (Exception e) {
+			fail("Exception caught. Test failed.");
+		}
+	}
+
+	@Test
+	public void testEvictByPrimaryKey() {
+		mngr.add(testA.getUri(), testA);
 		final URI pk = URI.create("http://testURI");
 		final OWLClassA tmp = new OWLClassA();
 		tmp.setUri(pk);
-		this.mngr.addObjectIntoCache(tmp, pk);
-		this.mngr.removeObjectFromCacheByIRI(IRI.create(testObject.getUri()));
-		assertNull(mngr.getObjectByIRI(IRI.create(testObject.getUri())));
+		this.mngr.add(pk, tmp);
+		mngr.evict(OWLClassA.class, pk);
+		assertNull(mngr.get(OWLClassA.class, pk));
 	}
 
-	private class SessionStub extends ServerSession {
+	@Test
+	public void testEvictByPrimaryKeyNull() {
+		mngr.add(testA.getUri(), testA);
+		mngr.add(testB.getUri(), testB);
+		try {
+			mngr.evict(OWLClassB.class, null);
+			assertFalse(mngr.isEmpty());
+			assertTrue(mngr.contains(OWLClassA.class, testA.getUri()));
+			assertTrue(mngr.contains(OWLClassB.class, testB.getUri()));
+		} catch (Exception e) {
+			fail("Exception caught. Test failed.");
+		}
+	}
+
+	private static class SessionStub extends ServerSession {
 
 		public SessionStub(AccessorStub accessor) {
 			this.accessor = accessor;
@@ -159,7 +231,7 @@ public class CacheManagerTest {
 		}
 	}
 
-	private class AccessorStub implements TransactionOntologyAccessor {
+	private static class AccessorStub implements TransactionOntologyAccessor {
 
 		public void persistEntity(Object entity, UnitOfWork uow) {
 		}

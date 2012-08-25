@@ -1007,7 +1007,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		// TODO anonymous
 
 		OWLNamedIndividual seq = getDataFactory().getOWLNamedIndividual(
-				createNewID(uri.getFragment() + "-SEQ"));
+				createNewID(o, uri.getFragment() + "-SEQ"));
 
 		writeChange(new AddAxiom(getWorkingOntology(), getDataFactory()
 				.getOWLClassAssertionAxiom(owlList, seq)));
@@ -1045,8 +1045,10 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 				.getOWLObjectPropertyAssertionAxiom(hasContents, seq, ind)));
 
 		for (int i = 1; i < sequence.size(); i++) {
-			OWLNamedIndividual seq2 = getDataFactory().getOWLNamedIndividual(
-					createNewID(uri.getFragment() + "-SEQ" + i));
+			OWLNamedIndividual seq2 = getDataFactory()
+					.getOWLNamedIndividual(
+							createNewID(sequence.get(i), uri.getFragment()
+									+ "-SEQ" + i));
 
 			addChange(new AddAxiom(getWorkingOntology(), getDataFactory()
 					.getOWLObjectPropertyAssertionAxiom(hasNext, seq, seq2)));
@@ -1173,7 +1175,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		return getDataFactory().getOWLClass(IRI.create(uri.toString()));
 	}
 
-	private IRI createNewID(final String name) {
+	private IRI createNewID(final Object entity, final String name) {
 		final String base = getWorkingOntology().getOntologyID()
 				.getOntologyIRI().toString()
 				+ "#i_" + name;
@@ -1181,7 +1183,8 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 
 		int i = 1;
 		while (getWorkingOntology().containsIndividualInSignature(iri, true)
-				|| this.session.getLiveObjectCache().containsObjectByIRI(iri)) {
+				|| this.session.getLiveObjectCache().contains(
+						entity.getClass(), iri)) {
 			iri = IRI.create(base + "_" + (i++));
 		}
 

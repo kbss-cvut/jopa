@@ -92,7 +92,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			return cls.cast(result);
 		}
 		// Search the cache
-		result = getLiveObjectCache().getObjectByIRI(primaryKey);
+		result = getLiveObjectCache().get(cls, primaryKey);
 		if (result == null) {
 			// The object is not in the session cache, so search the ontology
 			result = getOntologyAccessor().readEntity(cls, primaryKey);
@@ -255,7 +255,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		this.cloneBuilder.reset();
 		this.uowChangeSet = null;
 		if (shouldClearCacheAfterCommit) {
-			getLiveObjectCache().releaseCache();
+			getLiveObjectCache().evictAll();
 			this.shouldReleaseAfterCommit = true;
 		}
 	}
@@ -501,8 +501,20 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 * @return boolean
 	 */
 	public boolean isObjectManaged(Object entity) {
+		if (entity == null) {
+			return false;
+		}
+		final IRI pk = getOntologyAccessor().getIdentifier(entity);
+		if (pk == null) {
+			throw new OWLPersistenceException(
+					"Unable to extract identified from entity " + entity);
+		}
+		return isObjectManaged(entity, pk);
+	}
+
+	private boolean isObjectManaged(Object entity, Object primaryKey) {
 		Object original = getOriginal(entity);
-		if (getLiveObjectCache().containsObject(original))
+		if (getLiveObjectCache().contains(entity.getClass(), primaryKey))
 			return true;
 		if (getCloneToOriginals().containsValue(original)) {
 			return true;
@@ -544,7 +556,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			getCloneMapping().remove(clone);
 			getCloneToOriginals().remove(clone);
 			Object orig = ochSet.getChangedObject();
-			getLiveObjectCache().removeObjectFromCache(orig);
+			// TODO Removing can be done directly once change set contains
+			// object's primary key
+			removeObjectFromCache(orig);
 		}
 	}
 
@@ -567,8 +581,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 					"The object is not an ontology entity.");
 		}
 		Object orig = null;
-		if (getLiveObjectCache().containsObjectByIRI(iri)) {
-			orig = getLiveObjectCache().getObjectByIRI(iri);
+		final Class<?> cls = entity.getClass();
+		if (getLiveObjectCache().contains(cls, iri)) {
+			orig = getLiveObjectCache().get(cls, iri);
 		} else {
 			orig = getOntologyAccessor().readEntity(entity.getClass(), iri);
 			if (orig == null) {
@@ -621,13 +636,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 * {@link #registerNewObject(IRI, Object)} should be used instead.
 	 */
 	public Object registerObject(Object object) {
-		if (getLiveObjectCache().containsObject(object)) {
-			return registerExistingObject(object);
-		}
 		IRI primaryKey = getOntologyAccessor().getIdentifier(object);
 		if (primaryKey == null) {
 			throw new OWLPersistenceException(
 					"The specified object is not a valid entity.");
+		}
+		if (getLiveObjectCache().contains(object.getClass(), primaryKey)) {
+			return registerExistingObject(object);
 		}
 		Object clone = readObject(object.getClass(), primaryKey);
 		if (clone != null) {
@@ -670,7 +685,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		if (object == null) {
 			return;
 		}
-		getLiveObjectCache().removeObjectFromCache(object);
+		final IRI primaryKey = getOntologyAccessor().getIdentifier(object);
+		if (primaryKey == null) {
+			return;
+		}
+		getLiveObjectCache().evict(object.getClass(), primaryKey);
 	}
 
 	/**
@@ -699,7 +718,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			}
 		}
 		if ((getOntologyAccessor().isInOntologySignature(id, true)
-				|| isObjectManaged(entity) || primaryKeyAlreadyUsed(id))
+				|| isObjectManaged(entity, id) || primaryKeyAlreadyUsed(id))
 				&& !entity.getClass().isEnum()) {
 			throw new OWLPersistenceException("An entity with URI " + id
 					+ " is already persisted within the context.");

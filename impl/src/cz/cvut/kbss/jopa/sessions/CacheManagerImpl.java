@@ -1,107 +1,87 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
 
 /**
  * The CacheManager is responsible for managing the live object cache of our
  * session. It controls adding and removing objects from the cache. It supports
  * finding object by id or by a reference to it.
  * 
+ * 
  * @author kidney
  * 
  */
 public class CacheManagerImpl implements CacheManager {
 
+	// TODO: Implement proper life time for the cache (objects should be cached
+	// only for a certain time and
+	// inactive objects should be then evicted)
+	// And implement proper locking strategy
+
 	private Set<Class<?>> inferredClasses;
 
-	protected Map<Object, Object> liveObjectCache;
-	protected Map<Object, Object> inferredObjectCache;
-	protected Map<Object, Object> nonInferredObjectCache;
+	private final Map<Class<?>, Map<Object, Object>> objCache;
 
-	protected Map<Object, Object> objectToIRICache;
-	protected Map<Object, Object> iriToObjectCache;
-
-	protected AbstractSession session;
+	protected final AbstractSession session;
 
 	public CacheManagerImpl(AbstractSession session) {
 		this.session = session;
+		this.objCache = new HashMap<Class<?>, Map<Object, Object>>();
 	}
 
 	/**
-	 * Adds the given object into the live object cache. If there is already an
-	 * object with the same iri, this method does nothing and leaves the
-	 * original object untouched.
+	 * {@inheritDoc}
 	 */
-	public void addObjectIntoCache(Object object) {
-		if (object == null)
-			return;
-		Object iri = this.session.getOntologyAccessor().getIdentifier(object);
-		this.addObjectIntoCache(object, iri);
-	}
-
-	public void addObjectIntoCache(Object object, Object iri) {
-		if (object == null || iri == null) {
+	public void add(Object primaryKey, Object entity) {
+		if (entity == null || primaryKey == null) {
 			return;
 		}
-		if (getLiveObjectCache().containsKey(object)
-				|| getIRIToObjectCache().containsKey(iri)) {
-			throw new OWLPersistenceException(
-					"Trying to add an object with existing IRI.");
-		}
-		this.putObjectIntoCache(object, iri);
+		this.putObjectIntoCache(primaryKey, entity);
 	}
 
 	/**
-	 * Put the specified object to all types of cache we use.
+	 * Put the specified object to our cache.
 	 * 
-	 * @param object
-	 *            The entity to cache.
-	 * @param iri
-	 *            The IRI of the cached entity.
+	 * @param primaryKey
+	 *            Primary key of the cached entity
+	 * @param entity
+	 *            The entity to cache
 	 */
-	protected void putObjectIntoCache(Object object, Object iri) {
-		if (!getInferredClasses().contains(object.getClass())) {
-			getNonInferredObjectCache().put(object, object);
-		} else {
-			getInferredObjectCache().put(object, object);
+	protected final void putObjectIntoCache(Object primaryKey, Object entity) {
+		assert entity != null;
+		assert primaryKey != null;
+		final Class<?> cls = entity.getClass();
+		if (contains(cls, primaryKey)) {
+			return;
 		}
-		getLiveObjectCache().put(object, object);
-		getIRIToObjectCache().put(iri, object);
-		getObjectToIRICache().put(object, iri);
-	}
+		Map<Object, Object> m = objCache.get(cls);
+		if (m == null) {
+			m = createMap();
+			objCache.put(cls, m);
+		}
+		m.put(primaryKey, entity);
 
-	/**
-	 * Remove the specified object from live object cache and from the inferred
-	 * or non-inferred cache according to its class.
-	 * 
-	 * @param object
-	 *            The object to remove.
-	 */
-	protected void removeObject(Object object) {
-		getLiveObjectCache().remove(object);
-		getInferredObjectCache().remove(object);
-		getNonInferredObjectCache().remove(object);
 	}
 
 	/**
 	 * This method adds the whole map of objects into the liveObjectCache. It
-	 * expects the map to contain pairs of Object's iri and the Object itself.
+	 * expects the map to contain pairs of Object's IRIs and the Object itself.
 	 * 
 	 * @param objects
 	 *            Map
 	 */
-	public void addObjectsIntoCache(Map<?, ?> objects) {
+	public void addAll(Map<?, ?> objects) {
 		if (objects == null) {
 			return;
 		}
-		for (Object entity : objects.values()) {
-			addObjectIntoCache(entity);
+		for (Map.Entry<?, ?> e : objects.entrySet()) {
+			final Object primaryKey = e.getKey();
+			final Object entity = e.getValue();
+			add(primaryKey, entity);
 		}
 	}
 
@@ -120,153 +100,41 @@ public class CacheManagerImpl implements CacheManager {
 	 * 
 	 * @return Map
 	 */
-	public Map<Object, Object> getLiveObjectCache() {
-		if (this.liveObjectCache == null) {
-			this.liveObjectCache = createMap();
-		}
-		return this.liveObjectCache;
-	}
-
-	protected Map<Object, Object> getNonInferredObjectCache() {
-		if (this.nonInferredObjectCache == null) {
-			this.nonInferredObjectCache = createMap();
-		}
-		return this.nonInferredObjectCache;
-	}
-
-	protected Map<Object, Object> getInferredObjectCache() {
-		if (this.inferredObjectCache == null) {
-			this.inferredObjectCache = createMap();
-		}
-		return this.inferredObjectCache;
-	}
-
-	protected Map<Object, Object> getObjectToIRICache() {
-		if (this.objectToIRICache == null) {
-			this.objectToIRICache = createMap();
-		}
-		return this.objectToIRICache;
-	}
-
-	protected Map<Object, Object> getIRIToObjectCache() {
-		if (this.iriToObjectCache == null) {
-			this.iriToObjectCache = createMap();
-		}
-		return this.iriToObjectCache;
-	}
-
-	public boolean containsObject(Object entity) {
-		return getLiveObjectCache().containsKey(entity);
-	}
-
-	/**
-	 * Looks up the object. If such object is not found, this method returns
-	 * null. Usually lookup by IRI should be used.
-	 * 
-	 * @param domainObject
-	 */
-	public Object getObject(Object domainObject) {
-		if (domainObject == null) {
-			return null;
-		}
-		Object result = getLiveObjectCache().get(domainObject);
-		return result;
-	}
-
-	/**
-	 * This method tries to find the given object by its value. Since it has to
-	 * go through the whole cache, it may be rather slow. Instead of this
-	 * method, clients should use the getObjectById method.
-	 * 
-	 * @see #getObject(Object)
-	 * 
-	 * @param domainObject
-	 *            The object we are looking for
-	 */
-	@Deprecated
-	public Object getObjectByValue(Object domainObject) {
-		if (domainObject == null) {
-			return null;
-		}
-		if (getLiveObjectCache().containsValue(domainObject)) {
-			for (Object o : getLiveObjectCache().keySet()) {
-				if (o.equals(domainObject)) {
-					return o;
-				}
-			}
-		}
-		return null;
+	public Map<Class<?>, Map<Object, Object>> getLiveObjectCache() {
+		return Collections.unmodifiableMap(objCache);
 	}
 
 	/**
 	 * Releases the live object cache.
 	 */
-	public void releaseCache() {
-		this.liveObjectCache = null;
-		this.iriToObjectCache = null;
-		this.objectToIRICache = null;
-		this.inferredObjectCache = null;
-		this.nonInferredObjectCache = null;
+	private void releaseCache() {
+		objCache.clear();
 	}
-	
+
 	public void clearInferredObjects() {
-		Object iri = null;
-		for (Object ob : getInferredObjectCache().keySet()) {
-			getLiveObjectCache().remove(ob);
-			iri = getObjectToIRICache().remove(ob);
-			getIRIToObjectCache().remove(iri);
+		for (Class<?> c : getInferredClasses()) {
+			evict(c);
 		}
-		getInferredObjectCache().clear();
 	}
 
 	/**
-	 * Removes the specified object from the live object cache.
-	 * 
-	 * @param object
+	 * {@inheritDoc}
 	 */
-	public void removeObjectFromCache(Object object) {
-		if (object == null) {
-			return;
-		}
-		Object iri = getObjectToIRICache().remove(object);
-		if (iri != null) {
-			getIRIToObjectCache().remove(iri);
-		}
-		removeObject(object);
-	}
-
-	public boolean containsObjectByIRI(Object iri) {
-		if (iri == null) {
-			return false;
-		}
-		return getIRIToObjectCache().containsKey(iri);
-	}
-
-	public Object getObjectByIRI(Object iri) {
-		if (iri == null) {
+	public Object get(Class<?> cls, Object primaryKey) {
+		if (cls == null || primaryKey == null) {
 			return null;
 		}
-		return getIRIToObjectCache().get(iri);
+		return getMapForClass(cls).get(primaryKey);
 	}
 
-	public Object getIRIOfObject(Object object) {
-		if (object == null) {
-			return null;
-		}
-		return getObjectToIRICache().get(object);
-	}
-
-	public void removeObjectFromCacheByIRI(Object iri) {
-		if (iri == null) {
-			return;
-		}
-		Object object = getIRIToObjectCache().remove(iri);
-		if (object != null) {
-			getObjectToIRICache().remove(object);
-			removeObject(object);
-		}
-	}
-
+	/**
+	 * Get the set of inferred classes.
+	 * 
+	 * Inferred classes (i. e. classes with inferred attributes) are tracked
+	 * separately since they require special behavior.
+	 * 
+	 * @return
+	 */
 	public Set<Class<?>> getInferredClasses() {
 		if (inferredClasses == null) {
 			this.inferredClasses = new HashSet<Class<?>>();
@@ -274,8 +142,82 @@ public class CacheManagerImpl implements CacheManager {
 		return inferredClasses;
 	}
 
+	/**
+	 * Set the inferred classes.
+	 * 
+	 * For more information about inferred classes see
+	 * {@link #getInferredClasses()}.
+	 * 
+	 * @param inferredClasses
+	 *            The set of inferred classes
+	 */
 	public void setInferredClasses(Set<Class<?>> inferredClasses) {
 		this.inferredClasses = inferredClasses;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean contains(Class<?> cls, Object primaryKey) {
+		if (cls == null || primaryKey == null) {
+			return false;
+		}
+		final Map<Object, Object> m = getMapForClass(cls);
+		return m.containsKey(primaryKey);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public void evict(Class<?> cls, Object primaryKey) {
+		if (cls == null || primaryKey == null) {
+			return;
+		}
+		final Map<Object, Object> m = getMapForClass(cls);
+		m.remove(primaryKey);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public void evict(Class<?> cls) {
+		final Map<Object, Object> m = getMapForClass(cls);
+		m.clear();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public void evictAll() {
+		releaseCache();
+	}
+
+	/**
+	 * Check if the cache is empty.
+	 * 
+	 * This method is not part of the public API, but can be useful.
+	 * 
+	 * @return True if the cache is empty
+	 */
+	public boolean isEmpty() {
+		return objCache.isEmpty();
+	}
+
+	/**
+	 * Get the map of primary keys and entities of the specified class.
+	 * 
+	 * @param cls
+	 *            Class
+	 * @return Map of pairs primary key - entity. If the specified class is not
+	 *         registered in the cache, an empty map is returned.
+	 */
+	private Map<Object, Object> getMapForClass(Class<?> cls) {
+		assert cls != null;
+		Map<Object, Object> m = objCache.get(cls);
+		if (m == null) {
+			return Collections.emptyMap();
+		}
+		return m;
 	}
 
 }

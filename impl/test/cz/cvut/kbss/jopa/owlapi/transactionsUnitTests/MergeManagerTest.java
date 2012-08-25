@@ -79,10 +79,10 @@ public class MergeManagerTest {
 		final OWLClassB objTwo = new OWLClassB();
 		final URI pkTwo = URI.create("http://objTwo");
 		objTwo.setUri(pkTwo);
-		this.uow.getLiveObjectCache().addObjectIntoCache(objOne,
-				IRI.create(objOne.getUri()));
-		this.uow.getLiveObjectCache().addObjectIntoCache(objTwo,
-				IRI.create(objTwo.getUri()));
+		this.uow.getLiveObjectCache().add(IRI.create(objOne.getUri()),
+				objOne);
+		this.uow.getLiveObjectCache().add(IRI.create(objTwo.getUri()),
+				objTwo);
 		Object cloneOne = this.uow.registerExistingObject(objOne);
 		Object cloneTwo = this.uow.registerExistingObject(objTwo);
 		this.uow.removeObject(cloneTwo);
@@ -109,7 +109,7 @@ public class MergeManagerTest {
 				true, null);
 		this.uow.getUowChangeSet().addNewObjectChangeSet(ochs);
 		this.mm.mergeChangesFromChangeSet(uow.getUowChangeSet());
-		assertTrue(uow.getLiveObjectCache().containsObjectByIRI(
+		assertTrue(uow.getLiveObjectCache().contains(objOne.getClass(),
 				IRI.create(objOne.getUri())));
 	}
 
@@ -122,7 +122,8 @@ public class MergeManagerTest {
 		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(newOne, clone,
 				true, null);
 		this.mm.mergeNewObject(ochs);
-		assertTrue(uow.getLiveObjectCache().containsObject(newOne));
+		assertTrue(uow.getLiveObjectCache().contains(newOne.getClass(),
+				newOne.getUri()));
 	}
 
 	private class CloneBuilderStub extends CloneBuilderImpl {

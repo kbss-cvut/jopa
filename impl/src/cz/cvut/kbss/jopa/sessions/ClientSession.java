@@ -5,10 +5,10 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 
+import org.semanticweb.owlapi.model.IRI;
+
 import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 /**
  * ClientSession are bound to a single client and they provide the access to the
@@ -68,7 +68,11 @@ public class ClientSession extends AbstractSession {
 		if (object == null) {
 			return;
 		}
-		getLiveObjectCache().removeObjectFromCache(object);
+		final IRI primaryKey = getOntologyAccessor().getIdentifier(object);
+		if (primaryKey == null) {
+			return;
+		}
+		getLiveObjectCache().evict(object.getClass(), primaryKey);
 	}
 
 	@Override

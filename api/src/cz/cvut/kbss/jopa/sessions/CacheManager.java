@@ -9,110 +9,46 @@ import java.util.Map;
  * @author kidney
  * 
  */
-public interface CacheManager {
-
-	/**
-	 * Add the specified object into the shared session cache. IRI will be
-	 * extracted from the object.
-	 * 
-	 * @param object
-	 *            The object to be added into the cache
-	 */
-	public void addObjectIntoCache(Object object);
+public interface CacheManager extends Cache {
 
 	/**
 	 * Add the specified object into the shared session cache. This method gets
 	 * the IRI of the object in parameter, so it does not need to extract it
 	 * itself.
 	 * 
-	 * @param object
+	 * @param primaryKey
+	 *            Primary key of the specified object
+	 * @param entity
 	 *            The object to be added into the cache
-	 * @param iri
-	 *            IRI of the specified object
 	 */
-	public void addObjectIntoCache(Object object, Object iri);
+	public void add(Object primaryKey, Object entity);
 
 	/**
 	 * Add all of these objects into the shared session cache.
 	 * 
-	 * @param objects
-	 */
-	public void addObjectsIntoCache(Map<?, ?> objects);
-
-	/**
-	 * Returns true if the session cache contains such object.
+	 * The map is expected to contain pairs of primary key and entity with that
+	 * primary key (where the primary key is also the key in the map).
 	 * 
-	 * @param object
-	 * @return boolean
+	 * @param entities
+	 *            Map of entities to add to the cache
 	 */
-	public boolean containsObject(Object object);
+	public void addAll(Map<?, ?> entities);
 
 	/**
-	 * Returns true if the session cache contains an object with the specified
-	 * IRI.
+	 * Get entity with the specified primary key from the cache.
 	 * 
-	 * @param iri
-	 * @return boolean
-	 */
-	public boolean containsObjectByIRI(Object iri);
-
-	/**
-	 * Try to find the specified object. It returns either the object or null.
+	 * @param cls
+	 *            Class of the entity
+	 * @param primaryKey
+	 *            Primary key of the entity to search for
 	 * 
-	 * @param domainObject
-	 * @return The cached object or null
+	 * @return Object with the specified primary key or null
 	 */
-	public Object getObject(Object domainObject);
-
-	/**
-	 * Try to find object with the specified IRI.
-	 * 
-	 * @param iri
-	 * @return Object with the specified IRI or null
-	 */
-	public Object getObjectByIRI(Object iri);
-
-	/**
-	 * Get the iri of the specified cached object.
-	 * 
-	 * @param object
-	 * @return IRI
-	 */
-	public Object getIRIOfObject(Object object);
-
-	/**
-	 * Since we don't cache OWLIndividuals, this method is deprecated.
-	 * 
-	 * @param individual
-	 * @return
-	 */
-	@Deprecated
-	public Object getObjectByValue(Object individual);
-
-	/**
-	 * Release the cache.
-	 */
-	public void releaseCache();
+	public Object get(Class<?> cls, Object primaryKey);
 
 	/**
 	 * Remove objects with inferred attributes from the cache, since there are
 	 * changes in the ontology that might influence the inferred attributes.
 	 */
 	public void clearInferredObjects();
-
-	/**
-	 * Remove the specified object from the cache.
-	 * 
-	 * @param object
-	 *            Object to remove
-	 */
-	public void removeObjectFromCache(Object object);
-
-	/**
-	 * Remove the object with the specified IRI from the cache.
-	 * 
-	 * @param iri
-	 */
-	public void removeObjectFromCacheByIRI(Object iri);
-
 }

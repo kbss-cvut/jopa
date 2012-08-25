@@ -17,11 +17,11 @@ public class DisabledCacheManager implements CacheManager {
 		// Nothing to do
 	}
 
-	public void addObjectIntoCache(Object object, Object iri) {
+	public void add(Object iri, Object object) {
 		// Nothing to do
 	}
 
-	public void addObjectsIntoCache(Map<?, ?> objects) {
+	public void addAll(Map<?, ?> objects) {
 		// Nothing to do
 	}
 
@@ -41,7 +41,7 @@ public class DisabledCacheManager implements CacheManager {
 		return null;
 	}
 
-	public Object getObjectByIRI(Object iri) {
+	public Object get(Class<?> cls, Object iri) {
 		return null;
 	}
 
@@ -66,7 +66,26 @@ public class DisabledCacheManager implements CacheManager {
 	}
 
 	public void removeObjectFromCacheByIRI(Object iri) {
-		// Nothing to ddo
+		// Nothing to do
+	}
+
+	public boolean contains(Class<?> cls, Object primaryKey) {
+		return false;
+	}
+
+	public void evict(Class<?> cls, Object primaryKey) {
+		// Nothing to do
+
+	}
+
+	public void evict(Class<?> cls) {
+		// Nothing to do
+
+	}
+
+	public void evictAll() {
+		// Nothing to do
+
 	}
 
 }

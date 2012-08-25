@@ -87,7 +87,7 @@ public abstract class AbstractSession implements Session {
 	 * our cache is no more actual.
 	 */
 	public void releaseObjectCache() {
-		getLiveObjectCache().releaseCache();
+		getLiveObjectCache().evictAll();
 	}
 
 	/**

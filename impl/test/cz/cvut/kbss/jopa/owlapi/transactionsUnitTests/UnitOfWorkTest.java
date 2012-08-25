@@ -188,10 +188,8 @@ public class UnitOfWorkTest {
 		this.em.remove(toRemove);
 		this.em.getTransaction().commit();
 		testEntity = em.find(testEntity.getClass(), testEntity.getUri());
-		final OWLClassA original = (OWLClassA) testUOW.getOriginal(testEntity);
-		assertTrue(testUOW.getLiveObjectCache().containsObject(original));
-		assertFalse(testUOW.getLiveObjectCache().containsObjectByIRI(
-				IRI.create(testObject.getUri())));
+		assertFalse(testUOW.getLiveObjectCache().contains(
+				testObject.getClass(), IRI.create(testObject.getUri())));
 	}
 
 	@Test
@@ -260,7 +258,8 @@ public class UnitOfWorkTest {
 		OWLClassB original = (OWLClassB) this.testUOW
 				.getOriginal(testObjectTwo);
 		this.testUOW.removeObjectFromCache(original);
-		assertFalse(this.testUOW.getLiveObjectCache().containsObject(original));
+		assertFalse(this.testUOW.getLiveObjectCache().contains(
+				original.getClass(), original.getUri()));
 	}
 
 	@Test
@@ -311,7 +310,8 @@ public class UnitOfWorkTest {
 	public void testUnregisterObject() {
 		OWLClassA original = (OWLClassA) this.testUOW.getOriginal(testObject);
 		this.testUOW.unregisterObject(testObject);
-		assertFalse(testUOW.getLiveObjectCache().containsObject(original));
+		assertFalse(testUOW.getLiveObjectCache().contains(original.getClass(),
+				original.getUri()));
 	}
 
 	@Test
