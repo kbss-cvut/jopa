@@ -18,26 +18,26 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 	private static final long serialVersionUID = -1316908575232588565L;
 
 	// Class this ObjectChangeSet represents
-	protected transient Class<?> objectClass;
+	private transient Class<?> objectClass;
 
 	// The object the changes are bound to
-	protected Object changedObject;
+	private Object changedObject;
+
+	// Reference to the clone
+	private transient Object cloneObject;
 
 	// Set of changes
-	protected List<ChangeRecord> changes;
+	private List<ChangeRecord> changes;
 
 	// A map of attributeName-changeRecord pairs to easily find the attributes
 	// to change
-	protected transient Map<String, ChangeRecord> attributesToChange;
+	private transient Map<String, ChangeRecord> attributesToChange;
 
 	// The UOWchangeSet this ObjectChangeSet belongs to
-	protected transient UnitOfWorkChangeSet uowChangeSet;
-
-	// Reference to the clone
-	protected transient Object cloneObject;
+	private transient UnitOfWorkChangeSet uowChangeSet;
 
 	// Does this change set represent a new object
-	protected boolean isNew;
+	private boolean isNew;
 
 	protected ObjectChangeSetImpl() {
 	}

@@ -182,7 +182,16 @@ public class CacheManagerImpl implements CacheManager {
 	 * {@inheritDoc}
 	 */
 	public void evict(Class<?> cls) {
+		if (cls == null) {
+			return;
+		}
 		final Map<Object, Object> m = getMapForClass(cls);
+		// Evict also subclasses
+		for (Class<?> c : objCache.keySet()) {
+			if (cls.isAssignableFrom(c)) {
+				objCache.get(c).clear();
+			}
+		}
 		m.clear();
 	}
 

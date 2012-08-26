@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.PersistenceProvider;
 import cz.cvut.kbss.jopa.model.ProviderUtil;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 public class OWLAPIPersistenceProvider implements PersistenceProvider,
 		ProviderUtil {
@@ -100,6 +101,23 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 			OWLOntologyAccessor accessor = (OWLOntologyAccessor) ei
 					.getServerSession().getOntologyAccessor();
 			accessor.saveReference(o, f, ei.getCurrentPersistenceContext());
+		}
+	}
+
+	/**
+	 * Write changes to the specified entity to the transaction ontology.
+	 * 
+	 * @param entity
+	 *            Entity to persist
+	 */
+	static void persistEntityChanges(Object entity) {
+		if (entity == null) {
+			return;
+		}
+		final EntityManagerImpl em = (EntityManagerImpl) find(entity);
+		if (em != null) {
+			UnitOfWorkImpl uow = em.getCurrentPersistenceContext();
+			uow.getOntologyAccessor().persistExistingEntity(entity, uow);
 		}
 	}
 }

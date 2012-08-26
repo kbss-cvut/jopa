@@ -11,25 +11,26 @@ import cz.cvut.kbss.jopa.sessions.CloneBuilder;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
 
-public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSet {
-	
+public class UnitOfWorkChangeSetImpl implements Serializable,
+		UnitOfWorkChangeSet {
+
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 7834438138173201896L;
-	//Keeps all the change sets. This is here only for future serialization
+	// Keeps all the change sets. This is here only for future serialization
 	// support
 	protected Map<ObjectChangeSet, ObjectChangeSet> allchangeSets;
 	protected Map<ObjectChangeSet, ObjectChangeSet> deletedObjects;
-	
+
 	protected transient Map<Class<?>, Map<ObjectChangeSet, ObjectChangeSet>> objectChanges;
 	protected transient Map<Class<?>, Map<ObjectChangeSet, ObjectChangeSet>> newObjectChanges;
-	
+
 	protected boolean hasChanges;
-	
-	/* Reference to the UnitOfWork that is the owner of this object */
+
+	/* Reference to the UnitOfWork owning this object */
 	protected transient AbstractSession session;
-	
+
 	public UnitOfWorkChangeSetImpl() {
 		super();
 		this.hasChanges = false;
@@ -47,17 +48,17 @@ public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSe
 	public void addObjectChangeSet(ObjectChangeSet objectChangeSet) {
 		if (objectChangeSet.isNew()) {
 			this.addNewObjectChangeSet(objectChangeSet);
-		}
-		else {
+		} else {
 			this.hasChanges = true;
-			Map<ObjectChangeSet, ObjectChangeSet> map = getObjectChanges().get(objectChangeSet.getObjectClass());
+			Map<ObjectChangeSet, ObjectChangeSet> map = getObjectChanges().get(
+					objectChangeSet.getObjectClass());
 			if (map == null) {
 				map = new HashMap<ObjectChangeSet, ObjectChangeSet>();
 				getObjectChanges().put(objectChangeSet.getObjectClass(), map);
 			}
 			map.put(objectChangeSet, objectChangeSet);
 		}
-		((ObjectChangeSetImpl)objectChangeSet).setUowChangeSet(this);
+		((ObjectChangeSetImpl) objectChangeSet).setUowChangeSet(this);
 		getAllChangeSets().put(objectChangeSet, objectChangeSet);
 	}
 
@@ -65,41 +66,46 @@ public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSe
 		CloneBuilder builder = new CloneBuilderImpl();
 		Iterator<?> it = deletedObjects.entrySet().iterator();
 		while (it.hasNext()) {
-			//Entries are pairs clone-original
+			// Entries are pairs clone-original
 			Map.Entry<?, ?> entry = (Entry<?, ?>) it.next();
 			this.addDeletedObject(entry.getValue(), entry.getKey(), builder);
 		}
 	}
 
-	//May be needed to revisit the CloneBuilder usage strategy
+	// May be needed to revisit the CloneBuilder usage strategy
 	public void addDeletedObject(Object deletedObject, Object clone) {
 		CloneBuilder builder = new CloneBuilderImpl();
-		ObjectChangeSet changeSet = builder.createObjectChangeSet(deletedObject, clone, this);
+		ObjectChangeSet changeSet = builder.createObjectChangeSet(
+				deletedObject, clone, this);
 		getDeletedObjects().put(changeSet, changeSet);
 	}
-	
-	protected void addDeletedObject(Object deletedObject, Object clone, CloneBuilder builder) {
-		ObjectChangeSet changeSet = builder.createObjectChangeSet(deletedObject, clone, this);
+
+	protected void addDeletedObject(Object deletedObject, Object clone,
+			CloneBuilder builder) {
+		ObjectChangeSet changeSet = builder.createObjectChangeSet(
+				deletedObject, clone, this);
 		getDeletedObjects().put(changeSet, changeSet);
 	}
 
 	public void addNewObjectChangeSet(ObjectChangeSet newObject) {
-		Map<ObjectChangeSet, ObjectChangeSet> changeSets = getNewObjectChangeSets().get(newObject.getObjectClass());
+		Map<ObjectChangeSet, ObjectChangeSet> changeSets = getNewObjectChangeSets()
+				.get(newObject.getObjectClass());
 		if (changeSets == null) {
-			//EL uses IdentityHashMap
+			// EL uses IdentityHashMap
 			changeSets = new IdentityHashMap<ObjectChangeSet, ObjectChangeSet>();
-			getNewObjectChangeSets().put(newObject.getObjectClass(), changeSets);
+			getNewObjectChangeSets()
+					.put(newObject.getObjectClass(), changeSets);
 		}
 		changeSets.put(newObject, newObject);
-		((ObjectChangeSetImpl)newObject).setUowChangeSet(this);
+		((ObjectChangeSetImpl) newObject).setUowChangeSet(this);
 		getAllChangeSets().put(newObject, newObject);
 		this.hasChanges = true;
 	}
 
-//	public ObjectChangeSet getObjectChangeSetForClone(Object clone) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
+	// public ObjectChangeSet getObjectChangeSetForClone(Object clone) {
+	// // TODO Auto-generated method stub
+	// return null;
+	// }
 
 	public Map<Class<?>, Map<ObjectChangeSet, ObjectChangeSet>> getObjectChanges() {
 		if (this.objectChanges == null) {
@@ -122,7 +128,7 @@ public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSe
 		}
 		return this.newObjectChanges;
 	}
-	
+
 	public Map<ObjectChangeSet, ObjectChangeSet> getAllChangeSets() {
 		if (this.allchangeSets == null) {
 			// EL uses IdentityHashMap
@@ -134,7 +140,8 @@ public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSe
 	public void removeObjectChangeSet(ObjectChangeSet changeSet) {
 		if (changeSet == null)
 			return;
-		Map<?, ?> classChanges = getObjectChanges().get(changeSet.getObjectClass());
+		Map<?, ?> classChanges = getObjectChanges().get(
+				changeSet.getObjectClass());
 		if (classChanges != null) {
 			classChanges.remove(changeSet);
 			if (classChanges.isEmpty()) {
@@ -148,15 +155,18 @@ public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSe
 	}
 
 	public boolean hasDeletedObjects() {
-		return (this.deletedObjects != null) && (!this.deletedObjects.isEmpty());
+		return (this.deletedObjects != null)
+				&& (!this.deletedObjects.isEmpty());
 	}
 
 	public boolean hasChanges() {
-		return (this.hasChanges || ((this.deletedObjects != null) && (!this.deletedObjects.isEmpty())));
+		return (this.hasChanges || ((this.deletedObjects != null) && (!this.deletedObjects
+				.isEmpty())));
 	}
-	
+
 	public boolean hasNew() {
-		return (this.newObjectChanges != null) && (!this.newObjectChanges.isEmpty());
+		return (this.newObjectChanges != null)
+				&& (!this.newObjectChanges.isEmpty());
 	}
 
 }

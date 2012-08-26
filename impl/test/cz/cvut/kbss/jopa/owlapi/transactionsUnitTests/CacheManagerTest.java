@@ -26,6 +26,8 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassB;
 import cz.cvut.kbss.jopa.owlapi.OWLClassD;
+import cz.cvut.kbss.jopa.owlapi.OWLClassE;
+import cz.cvut.kbss.jopa.owlapi.OWLClassF;
 import cz.cvut.kbss.jopa.sessions.CacheManagerImpl;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
@@ -35,6 +37,8 @@ public class CacheManagerTest {
 	private static SessionStub session;
 	private static OWLClassA testA;
 	private static OWLClassB testB;
+	private static OWLClassE testE;
+	private static OWLClassF testF;
 	private static Map<URI, OWLClassB> listOfBs;
 	private CacheManagerImpl mngr;
 
@@ -50,6 +54,15 @@ public class CacheManagerTest {
 		testB = new OWLClassB();
 		testB.setUri(pkB);
 		testB.setStringAttribute("stringAttribute");
+		testE = new OWLClassE();
+		final URI pkE = URI.create("http://testE");
+		testE.setUri(pkE);
+		testE.setStringAttribute("testEStringAttribute");
+		testF = new OWLClassF();
+		final URI pkF = URI.create("http://testF");
+		testF.setUri(pkF);
+		testF.setStringAttribute("someString");
+		testF.setSecondStringAttribute("inferredStringAttribute");
 		listOfBs = new HashMap<URI, OWLClassB>();
 		for (int i = 0; i < 10; i++) {
 			final URI pkI = URI.create("http://testBList_" + i);
@@ -193,6 +206,16 @@ public class CacheManagerTest {
 		} catch (Exception e) {
 			fail("Exception caught. Test failed.");
 		}
+	}
+
+	@Test
+	public void testEvictByClassSubclass() {
+		// According to JPA 2 specification, evict on class
+		// should also evict all object of all subclasses of the evicted class
+		mngr.add(testE.getUri(), testE);
+		mngr.add(testF.getUri(), testF);
+		mngr.evict(OWLClassE.class);
+		assertFalse(mngr.contains(OWLClassF.class, testF.getUri()));
 	}
 
 	@Test

@@ -25,47 +25,54 @@ import cz.cvut.kbss.jopa.owlapi.OWLClassB;
 import cz.cvut.kbss.jopa.owlapi.OWLClassC;
 import cz.cvut.kbss.jopa.owlapi.OWLClassD;
 import cz.cvut.kbss.jopa.owlapi.OWLClassE;
+import cz.cvut.kbss.jopa.owlapi.OWLClassF;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
 
 public class TestEntityTransactions {
 
 	private Logger log = TestEnvironment.getLogger();
 
-	private OWLClassC testC;
-	private List<OWLClassA> classes;
-	private List<OWLClassA> refList;
+	private static OWLClassC testC;
+	private static OWLClassF testF;
+	private static List<OWLClassA> classes;
+	private static List<OWLClassA> refList;
 
 	private EntityManager pc;
 
-	@After
-	public void tearDown() throws Exception {
-		if (pc.isOpen()) {
-			pc.close();
-		}
-	}
-
-	public TestEntityTransactions() {
-		this.testC = new OWLClassC();
+	public static void beforeClass() throws Exception {
+		testC = new OWLClassC();
 		final URI pkC = URI.create("http://testC");
-		this.testC.setUri(pkC);
-		this.classes = new ArrayList<OWLClassA>();
+		testC.setUri(pkC);
+		classes = new ArrayList<OWLClassA>();
 		for (int i = 0; i < 10; i++) {
 			OWLClassA a = new OWLClassA();
 			URI pkA = URI.create("http://classA" + Integer.toString(i));
 			a.setUri(pkA);
 			a.setStringAttribute("StringAttribute" + Integer.toString(i + 1));
-			this.classes.add(a);
+			classes.add(a);
 		}
-		this.refList = new ArrayList<OWLClassA>();
+		refList = new ArrayList<OWLClassA>();
 		for (int i = 0; i < 10; i++) {
 			OWLClassA a = new OWLClassA();
 			final URI pkRA = URI
 					.create("http://refA" + Integer.toString(i + 1));
 			a.setUri(pkRA);
 			a.setStringAttribute("strAttForRefA_" + Integer.toString(i + 1));
-			this.refList.add(a);
+			refList.add(a);
 		}
 		testC.setSimpleList(classes);
+		testF = new OWLClassF();
+		final URI pkF = URI.create("http://testF");
+		testF.setUri(pkF);
+		testF.setStringAttribute("testFStringAttribute");
+		testF.setSecondStringAttribute("inferredStringAttribute");
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		if (pc.isOpen()) {
+			pc.close();
+		}
 	}
 
 	/**
@@ -388,7 +395,7 @@ public class TestEntityTransactions {
 		log.info("Test: persist entity with referenced list and simple list");
 		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testPersistEntityWithLists");
-		this.testC.setReferencedList(refList);
+		testC.setReferencedList(refList);
 		pc.getTransaction().begin();
 		for (OWLClassA ref : testC.getReferencedList()) {
 			pc.persist(ref);
@@ -410,7 +417,7 @@ public class TestEntityTransactions {
 		log.info("Test: change a reference in referenced list of an entity and persist this change");
 		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testChangeReferenceInList");
-		this.testC.setReferencedList(refList);
+		testC.setReferencedList(refList);
 		pc.getTransaction().begin();
 		for (OWLClassA ref : testC.getReferencedList()) {
 			pc.persist(ref);
@@ -494,5 +501,19 @@ public class TestEntityTransactions {
 		assertNotNull(det);
 		pc.detach(det);
 		pc.persist(det);
+	}
+
+	@Test(expected = OWLPersistenceException.class)
+	public void testChangeInferredAttribute() {
+		log.info("Test: change inferred attribute.");
+		pc = TestEnvironment
+				.getPersistenceConnector("TestPersistenceConnectorLogic-testChangeInferredAttribute");
+		pc.getTransaction().begin();
+		pc.persist(testF);
+		pc.getTransaction().commit();
+		pc.clear();
+		final OWLClassF res = pc.find(OWLClassF.class, testF.getUri());
+		res.setSecondStringAttribute("ChangedSecondString");
+		fail("This line should not have been reached.");
 	}
 }

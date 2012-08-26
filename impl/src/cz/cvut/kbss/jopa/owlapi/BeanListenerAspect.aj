@@ -33,9 +33,9 @@ public aspect BeanListenerAspect {
 			.getName());
 
 	pointcut getter() : get( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
-	
-	pointcut setter() : get( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
-	
+
+	pointcut setter() : set( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
+
 	before() : setter() {
 		final Object object = thisJoinPoint.getTarget();
 		Field field;
@@ -50,8 +50,15 @@ public aspect BeanListenerAspect {
 			throw new OWLPersistenceException();
 		}
 		if (CloneBuilderImpl.isFieldInferred(field)) {
-			throw new OWLPersistenceException("Modifying inferred attributes is forbidden.");
+			throw new OWLPersistenceException(
+					"Modifying inferred attributes is forbidden.");
 		}
+	}
+
+	after() returning : setter() {
+		final Object entity = thisJoinPoint.getTarget();
+
+		OWLAPIPersistenceProvider.persistEntityChanges(entity);
 	}
 
 	before() : getter()  {
