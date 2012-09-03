@@ -99,7 +99,7 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 
 		if (ei != null) {
 			OWLOntologyAccessor accessor = (OWLOntologyAccessor) ei
-					.getServerSession().getOntologyAccessor();
+					.getCurrentPersistenceContext().getOntologyAccessor();
 			accessor.saveReference(o, f, ei.getCurrentPersistenceContext());
 		}
 	}

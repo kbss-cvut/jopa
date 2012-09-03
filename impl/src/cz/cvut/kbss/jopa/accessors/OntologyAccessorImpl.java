@@ -37,7 +37,6 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
-import cz.cvut.kbss.jopa.accessors.OntologyDataHolder.DataHolderBuilder;
 import cz.cvut.kbss.jopa.model.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -128,11 +127,12 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 					"Unable to clone working ontology.", e);
 		}
 		manager.addAxioms(ontology, axioms);
-		final OntologyDataHolder holder = new DataHolderBuilder()
+		final OntologyDataHolder holder = OntologyDataHolder
 				.workingOntology(ontology)
 				.reasoningOntology(getReasoningOntology())
 				.ontologyManager(manager).dataFactory(factory)
-				.reasoner(getReasoner()).metamodel(metamodel).build();
+				.reasoner(getReasoner()).metamodel(metamodel).language(lang)
+				.build();
 		return holder;
 	}
 

@@ -62,7 +62,6 @@ public class CacheManagerTest {
 		final URI pkF = URI.create("http://testF");
 		testF.setUri(pkF);
 		testF.setStringAttribute("someString");
-		testF.setSecondStringAttribute("inferredStringAttribute");
 		listOfBs = new HashMap<URI, OWLClassB>();
 		for (int i = 0; i < 10; i++) {
 			final URI pkI = URI.create("http://testBList_" + i);
@@ -244,6 +243,8 @@ public class CacheManagerTest {
 	}
 
 	private static class SessionStub extends ServerSession {
+
+		private final TransactionOntologyAccessor accessor;
 
 		public SessionStub(AccessorStub accessor) {
 			this.accessor = accessor;

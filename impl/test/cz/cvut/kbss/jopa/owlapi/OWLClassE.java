@@ -6,7 +6,7 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
-@OWLClass(iri = "http://OWLClassE")
+@OWLClass(iri = "http://new.owl#OWLClassE")
 public class OWLClassE {
 
 	@Id(generated = true)

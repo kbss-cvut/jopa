@@ -10,13 +10,6 @@ public final class OntologyAccessorFactoryImpl implements
 
 	private OntologyAccessor centralAccessor;
 
-	public TransactionOntologyAccessor createOntologyAccessor(
-			Map<String, String> properties, Metamodel metamodel, Session session) {
-		return new OWLOntologyAccessor(properties, metamodel, session,
-				centralAccessor);
-		// More accessors can be added here
-	}
-
 	public OntologyAccessor createCentralAccessor(
 			Map<String, String> properties, Metamodel metamodel, Session session) {
 		if (centralAccessor == null) {
@@ -24,6 +17,15 @@ public final class OntologyAccessorFactoryImpl implements
 					session);
 		}
 		return centralAccessor;
+	}
+
+	public TransactionOntologyAccessor createTransactionalAccessor(
+			OntologyDataHolder dataHolder, Session session) {
+		if (centralAccessor == null) {
+			throw new IllegalStateException(
+					"Cannot create transactional accessor, because the central accessor is not initialized.");
+		}
+		return new OWLOntologyAccessor(session, centralAccessor, dataHolder);
 	}
 
 }

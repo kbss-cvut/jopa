@@ -848,7 +848,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	}
 
 	public boolean shouldReleaseAfterCommit() {
-		return this.shouldReleaseAfterCommit;
+		return shouldReleaseAfterCommit;
 	}
 
 	public void setShouldClearAfterCommit(boolean shouldClearCache) {
@@ -861,7 +861,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
 	@Override
 	public TransactionOntologyAccessor getOntologyAccessor() {
-		return this.parent.getOntologyAccessor();
+		return parent.getOntologyAccessor();
 	}
 
 	public void writeUncommittedChanges() {

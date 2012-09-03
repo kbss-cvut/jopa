@@ -13,6 +13,8 @@ import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
 import cz.cvut.kbss.jopa.accessors.OntologyAccessorFactory;
+import cz.cvut.kbss.jopa.accessors.OntologyAccessorImpl;
+import cz.cvut.kbss.jopa.accessors.OntologyDataHolder;
 import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -34,9 +36,6 @@ public class ServerSession extends AbstractSession {
 
 	private final Metamodel metamodel;
 	private final Set<Class<?>> managedClasses;
-
-	// TODO To be removed
-	protected TransactionOntologyAccessor accessor;
 
 	private final OntologyAccessorFactory accessorFactory;
 	private OntologyAccessor ontologyAccessor;
@@ -88,8 +87,6 @@ public class ServerSession extends AbstractSession {
 	private void initialize(Map<String, String> properties, Metamodel metamodel) {
 		this.ontologyAccessor = accessorFactory.createCentralAccessor(
 				properties, metamodel, this);
-		this.accessor = accessorFactory.createOntologyAccessor(properties,
-				metamodel, this);
 		String cache = properties.get(CACHE_PROPERTY);
 		if (cache == null || cache.equals("on")) {
 			CacheManagerImpl cm = (CacheManagerImpl) getLiveObjectCache();
@@ -116,8 +113,11 @@ public class ServerSession extends AbstractSession {
 	}
 
 	public TransactionOntologyAccessor getOntologyAccessor() {
-		return accessorFactory.createOntologyAccessor(
-				Collections.<String, String> emptyMap(), metamodel, this);
+		ontologyAccessor.acquireReadLock();
+		final OntologyDataHolder holder = ontologyAccessor
+				.cloneOntologyStructures();
+		ontologyAccessor.releaseReadLock();
+		return accessorFactory.createTransactionalAccessor(holder, this);
 	}
 
 	public OntologyAccessor getAccessor() {
@@ -174,7 +174,7 @@ public class ServerSession extends AbstractSession {
 				}
 			}
 		}
-		accessor.close();
+		ontologyAccessor.close();
 	}
 
 	public void releaseClientSession(ClientSession session) {
@@ -185,7 +185,8 @@ public class ServerSession extends AbstractSession {
 		if (object == null) {
 			return;
 		}
-		final IRI primaryKey = getOntologyAccessor().getIdentifier(object);
+		final IRI primaryKey = ((OntologyAccessorImpl) ontologyAccessor)
+				.getIdentifier(object);
 		if (primaryKey == null) {
 			return;
 		}
@@ -208,7 +209,7 @@ public class ServerSession extends AbstractSession {
 	}
 
 	public <T> T readObject(Class<T> cls, Object primaryKey) {
-		T result = this.accessor.readEntity(cls, primaryKey);
+		T result = ontologyAccessor.readEntity(cls, primaryKey);
 		getLiveObjectCache().add(primaryKey, result);
 		return result;
 	}

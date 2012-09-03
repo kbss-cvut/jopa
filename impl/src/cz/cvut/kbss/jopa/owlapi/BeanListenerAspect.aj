@@ -38,16 +38,26 @@ public aspect BeanListenerAspect {
 
 	before() : setter() {
 		final Object object = thisJoinPoint.getTarget();
-		Field field;
+		Class<?> cls = object.getClass();
+		Field field = null;
+		final String fieldName = thisJoinPoint.getSignature().getName();
 		try {
-			field = object.getClass().getDeclaredField(
-					thisJoinPoint.getSignature().getName());
+			field = cls.getDeclaredField(fieldName);
 		} catch (NoSuchFieldException e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-			throw new OWLPersistenceException();
+			Class<?> superCls = cls;
+			while ((superCls = superCls.getSuperclass()) != null) {
+				try {
+					field = superCls.getDeclaredField(fieldName);
+				} catch (NoSuchFieldException ex) {
+					// Do nothing, keep trying
+				}
+			}
+			if (field == null) {
+				throw new OWLPersistenceException(e.getMessage());
+			}
 		} catch (SecurityException e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
-			throw new OWLPersistenceException();
+			throw new OWLPersistenceException(e.getMessage());
 		}
 		if (CloneBuilderImpl.isFieldInferred(field)) {
 			throw new OWLPersistenceException(

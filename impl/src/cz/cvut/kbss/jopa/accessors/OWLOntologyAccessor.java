@@ -54,7 +54,6 @@ import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.NotYetImplementedException;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.owlapi.QueryImpl;
 import cz.cvut.kbss.jopa.owlapi.TypedQueryImpl;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
@@ -68,36 +67,32 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 	protected static final Logger LOG = Logger
 			.getLogger(OWLOntologyAccessor.class.getName());
 
-	protected Metamodel metamodel;
-	protected final String lang;
-	protected ServerSession session;
-	protected boolean useAspectJ;
+	private final Metamodel metamodel;
+	private final String lang;
+	private ServerSession session;
 
-	protected OntologyAccessor centralAccessor;
+	private final OntologyAccessor centralAccessor;
 
 	protected List<OWLOntologyChange> changeList;
 	private final List<OWLOntologyChange> transactionChanges;
 	private boolean open;
 
-	private OWLOntology workingOntology;
-	private OWLOntology reasoningOntology;
-	private OWLOntologyManager ontologyManager;
-	private OWLReasoner reasoner;
-	private OWLDataFactory dataFactory;
+	private final OWLOntology workingOntology;
+	private final OWLOntology reasoningOntology;
+	private final OWLOntologyManager ontologyManager;
+	private final OWLReasoner reasoner;
+	private final OWLDataFactory dataFactory;
 
-	protected OWLOntologyAccessor() {
-		super();
-		transactionChanges = new ArrayList<OWLOntologyChange>();
-		this.lang = "";
-		this.open = true;
-	}
-
-	public OWLOntologyAccessor(Map<String, String> properties,
-			Metamodel metamodel, Session session, OntologyAccessor accessor) {
-		this.lang = properties.get(OWLAPIPersistenceProperties.LANG);
-		this.metamodel = metamodel;
+	public OWLOntologyAccessor(Session session, OntologyAccessor accessor,
+			OntologyDataHolder dataHolder) {
+		this.lang = dataHolder.getLanguage();
+		this.metamodel = dataHolder.getMetamodel();
 		this.session = (ServerSession) session;
-		this.useAspectJ = metamodel.shouldUseAspectJ();
+		this.workingOntology = dataHolder.getWorkingOntology();
+		this.reasoningOntology = dataHolder.getReasoningOntology();
+		this.reasoner = dataHolder.getReasoner();
+		this.ontologyManager = dataHolder.getOntologyManager();
+		this.dataFactory = dataHolder.getDataFactory();
 
 		this.centralAccessor = accessor;
 
@@ -187,16 +182,14 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		final Class<?> cls = entity.getClass();
 		final IRI id = getIdentifier(entity);
 		final EntityType<?> type = this.metamodel.entity(cls);
-		final OWLNamedIndividual individual = getDataFactory()
+		final OWLNamedIndividual individual = dataFactory
 				.getOWLNamedIndividual(id);
 
-		final OWLClassAssertionAxiom aa = getDataFactory()
-				.getOWLClassAssertionAxiom(
-						getDataFactory().getOWLClass(
-								IRI.create(type.getIRI().toString())),
-						individual);
+		final OWLClassAssertionAxiom aa = dataFactory
+				.getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI
+						.create(type.getIRI().toString())), individual);
 
-		addChange(new AddAxiom(getWorkingOntology(), aa));
+		addChange(new AddAxiom(workingOntology, aa));
 
 		this.saveEntityAttributes(id, entity, type, individual, uow);
 	}
@@ -218,7 +211,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		} else {
 			final Class<?> cls = entity.getClass();
 			final EntityType<?> type = this.metamodel.entity(cls);
-			final OWLNamedIndividual individual = getDataFactory()
+			final OWLNamedIndividual individual = dataFactory
 					.getOWLNamedIndividual(id);
 			this.saveEntityAttributes(id, entity, type, individual, uow);
 		}
@@ -238,10 +231,10 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 			throw new OWLPersistenceException(
 					"Cannot remove the specified entity. The entity or the individual is null!");
 		}
-		OWLEntityRemover r = new OWLEntityRemover(getOntologyManager(),
-				Collections.singleton(getWorkingOntology()));
+		OWLEntityRemover r = new OWLEntityRemover(ontologyManager,
+				Collections.singleton(workingOntology));
 		final IRI id = getIdentifier(entity);
-		final OWLNamedIndividual individual = getDataFactory()
+		final OWLNamedIndividual individual = dataFactory
 				.getOWLNamedIndividual(id);
 		r.visit(individual);
 		addChanges(r.getChanges());
@@ -337,7 +330,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		if (changes == null) {
 			return;
 		}
-		getOntologyManager().applyChanges(changes);
+		ontologyManager.applyChanges(changes);
 		addTransactionChanges(changes);
 		changes.clear();
 	}
@@ -355,7 +348,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		if (change == null) {
 			return;
 		}
-		getOntologyManager().applyChange(change);
+		ontologyManager.applyChange(change);
 		addTransactionChanges(Collections.singletonList(change));
 	}
 
@@ -380,6 +373,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		} finally {
 			centralAccessor.releaseWriteLock();
 		}
+		close();
 	}
 
 	/**
@@ -424,7 +418,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		OWLNamedIndividual ind = null;
 		centralAccessor.acquireReadLock();
 		try {
-			ind = getDataFactory().getOWLNamedIndividual(identifier);
+			ind = dataFactory.getOWLNamedIndividual(identifier);
 		} finally {
 			centralAccessor.releaseReadLock();
 		}
@@ -486,25 +480,24 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		}
 
 		final EntityType<?> type = metamodel.entity(entity.getClass());
-		final OWLClass myClass = getDataFactory().getOWLClass(
-				IRI.create(type.getIRI().toString()));
+		final OWLClass myClass = dataFactory.getOWLClass(IRI.create(type
+				.getIRI().toString()));
 
-		for (final OWLClassExpression ox : individual
-				.getTypes(getWorkingOntology())) {
+		for (final OWLClassExpression ox : individual.getTypes(workingOntology)) {
 			if (ox.equals(myClass) || ox.isAnonymous()) {
 				continue;
 			}
 
-			addChange(new RemoveAxiom(getWorkingOntology(), getDataFactory()
-					.getOWLClassAssertionAxiom(ox, individual)));
+			addChange(new RemoveAxiom(workingOntology,
+					dataFactory.getOWLClassAssertionAxiom(ox, individual)));
 		}
 
 		Set<String> set = (Set<String>) Set.class.cast(value);
 		if (set != null) {
 			for (final String x : set) {
-				addChange(new AddAxiom(getWorkingOntology(), getDataFactory()
-						.getOWLClassAssertionAxiom(
-								getDataFactory().getOWLClass(IRI.create(x)),
+				addChange(new AddAxiom(workingOntology,
+						dataFactory.getOWLClassAssertionAxiom(
+								dataFactory.getOWLClass(IRI.create(x)),
 								individual)));
 			}
 		}
@@ -533,7 +526,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 
 		final EntityType<?> et = this.metamodel.entity(entity.getClass());
 
-		for (final OWLObjectPropertyAssertionAxiom ax : getWorkingOntology()
+		for (final OWLObjectPropertyAssertionAxiom ax : workingOntology
 				.getObjectPropertyAssertionAxioms(individual)) {
 			if (ax.getProperty().isAnonymous()) {
 				continue;
@@ -552,13 +545,13 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 				continue;
 			}
 
-			addChange(new RemoveAxiom(getWorkingOntology(), getDataFactory()
-					.getOWLObjectPropertyAssertionAxiom(ax.getProperty(),
-							individual, ax.getObject())));
+			addChange(new RemoveAxiom(workingOntology,
+					dataFactory.getOWLObjectPropertyAssertionAxiom(
+							ax.getProperty(), individual, ax.getObject())));
 
 		}
 
-		for (final OWLDataPropertyAssertionAxiom ax : getWorkingOntology()
+		for (final OWLDataPropertyAssertionAxiom ax : workingOntology
 				.getDataPropertyAssertionAxioms(individual)) {
 			if (ax.getProperty().isAnonymous()) {
 				continue;
@@ -577,10 +570,9 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 				continue;
 			}
 
-			addChange(new RemoveAxiom(getWorkingOntology(),
-					getOntologyManager().getOWLDataFactory()
-							.getOWLDataPropertyAssertionAxiom(ax.getProperty(),
-									individual, ax.getObject())));
+			addChange(new RemoveAxiom(workingOntology,
+					dataFactory.getOWLDataPropertyAssertionAxiom(
+							ax.getProperty(), individual, ax.getObject())));
 
 		}
 
@@ -596,34 +588,29 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 
 				final IRI propIRI = IRI.create(element + "");
 
-				if (getWorkingOntology().containsDataPropertyInSignature(
-						propIRI)) {
-					final OWLDataProperty prop = getOntologyManager()
-							.getOWLDataFactory().getOWLDataProperty(
-									IRI.create(element + ""));
+				if (workingOntology.containsDataPropertyInSignature(propIRI)) {
+					final OWLDataProperty prop = dataFactory
+							.getOWLDataProperty(IRI.create(element + ""));
 
 					for (final Object ox : Set.class.cast(valueSet)) {
 						final OWLLiteral objX = javaType2owlLiteral(ox);
 
-						addChange(new AddAxiom(getWorkingOntology(),
-								getOntologyManager().getOWLDataFactory()
-										.getOWLDataPropertyAssertionAxiom(prop,
-												individual, objX)));
+						addChange(new AddAxiom(workingOntology,
+								dataFactory.getOWLDataPropertyAssertionAxiom(
+										prop, individual, objX)));
 					}
 				} else {
 					// default object property
-					final OWLObjectProperty prop = getOntologyManager()
-							.getOWLDataFactory().getOWLObjectProperty(
-									IRI.create(element + ""));
+					final OWLObjectProperty prop = dataFactory
+							.getOWLObjectProperty(IRI.create(element + ""));
 
 					for (final Object ox : Set.class.cast(valueSet)) {
-						final OWLNamedIndividual objX = getDataFactory()
+						final OWLNamedIndividual objX = dataFactory
 								.getOWLNamedIndividual(IRI.create(ox + ""));
 
-						addChange(new AddAxiom(getWorkingOntology(),
-								getOntologyManager().getOWLDataFactory()
-										.getOWLObjectPropertyAssertionAxiom(
-												prop, individual, objX)));
+						addChange(new AddAxiom(workingOntology,
+								dataFactory.getOWLObjectPropertyAssertionAxiom(
+										prop, individual, objX)));
 					}
 				}
 			}
@@ -669,8 +656,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 			switch (attribute.getPersistentAttributeType()) {
 			case ANNOTATION:
 			case DATA:
-				final OWLDataProperty dp = getDataFactory().getOWLDataProperty(
-						iri);
+				final OWLDataProperty dp = dataFactory.getOWLDataProperty(iri);
 				switch (pa.getCollectionType()) {
 				case SET:
 					Class<?> clazz = pa.getBindableJavaType();
@@ -689,7 +675,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 				}
 				break;
 			case OBJECT:
-				final OWLObjectProperty op = getDataFactory()
+				final OWLObjectProperty op = dataFactory
 						.getOWLObjectProperty(iri);
 				switch (pa.getCollectionType()) {
 				case SET:
@@ -700,9 +686,9 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 							uow);
 					if (set != null) {
 						for (Object element : set) {
-							final OWLNamedIndividual objectValue = getDataFactory()
-									.getOWLNamedIndividual(
-											IRI.create((String) this.metamodel
+							final OWLNamedIndividual objectValue = dataFactory
+									.getOWLNamedIndividual(IRI
+											.create((String) metamodel
 													.entity(clazz)
 													.getIdentifier()
 													.getJavaField()
@@ -743,12 +729,12 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 
 			switch (attribute.getPersistentAttributeType()) {
 			case ANNOTATION:
-				setAnnotationProperty(individual, getDataFactory()
-						.getOWLAnnotationProperty(iri), value);
+				setAnnotationProperty(individual,
+						dataFactory.getOWLAnnotationProperty(iri), value);
 				break;
 			case DATA:
-				setDataProperty(individual, getDataFactory()
-						.getOWLDataProperty(iri), value);
+				setDataProperty(individual,
+						dataFactory.getOWLDataProperty(iri), value);
 				break;
 			case OBJECT:
 				if (value != null) {
@@ -756,8 +742,8 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 							Collections.singleton(value), uow);
 				}
 
-				setObjectPropertyObject(individual, getDataFactory()
-						.getOWLObjectProperty(iri), value);
+				setObjectPropertyObject(individual,
+						dataFactory.getOWLObjectProperty(iri), value);
 				break;
 			}
 		}
@@ -772,19 +758,18 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 	 */
 	private OWLLiteral javaType2owlLiteral(final Object object) {
 		if (object instanceof Integer) {
-			return getDataFactory().getOWLLiteral((Integer) object);
+			return dataFactory.getOWLLiteral((Integer) object);
 		} else if (object instanceof Boolean) {
-			return getDataFactory().getOWLLiteral((Boolean) object);
+			return dataFactory.getOWLLiteral((Boolean) object);
 		} else if (object instanceof Double) {
-			return getDataFactory().getOWLLiteral((Double) object);
+			return dataFactory.getOWLLiteral((Double) object);
 		} else if (object instanceof String) {
-			return getDataFactory().getOWLLiteral((String) object, lang);
+			return dataFactory.getOWLLiteral((String) object, lang);
 		} else if (object instanceof Date) {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
-			return getDataFactory().getOWLLiteral(
-					sdf.format(((Date) object)),
-					getDataFactory().getOWLDatatype(
-							OWL2Datatype.XSD_DATE_TIME.getIRI()));
+			return dataFactory.getOWLLiteral(sdf.format(((Date) object)),
+					dataFactory.getOWLDatatype(OWL2Datatype.XSD_DATE_TIME
+							.getIRI()));
 		} else {
 			throw new IllegalArgumentException();
 		}
@@ -822,9 +807,9 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 
 		if (cc != null) {
 			for (final OWLLiteral s : cc) {
-				final OWLAxiom axx = getDataFactory()
+				final OWLAxiom axx = dataFactory
 						.getOWLDataPropertyAssertionAxiom(property, subject, s);
-				writeChange(new RemoveAxiom(getWorkingOntology(), axx));
+				writeChange(new RemoveAxiom(workingOntology, axx));
 			}
 		}
 	}
@@ -834,14 +819,13 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 			boolean inferred) {
 		Collection<OWLLiteral> objects;
 		if (inferred) {
-			getReasoner().flush();
-			objects = getReasoner().getDataPropertyValues(subject, property);
+			reasoner.flush();
+			objects = reasoner.getDataPropertyValues(subject, property);
 			if (objects == null) {
 				objects = Collections.emptyList();
 			}
 		} else {
-			objects = subject.getDataPropertyValues(property,
-					getWorkingOntology());
+			objects = subject.getDataPropertyValues(property, workingOntology);
 		}
 		return objects;
 	}
@@ -849,16 +833,17 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 	private void addDataProperty(final OWLNamedIndividual i,
 			final org.semanticweb.owlapi.model.OWLDataProperty property,
 			final Object object) {
-		writeChange(new AddAxiom(getWorkingOntology(), getDataFactory()
-				.getOWLDataPropertyAssertionAxiom(property, i,
+		writeChange(new AddAxiom(workingOntology,
+				dataFactory.getOWLDataPropertyAssertionAxiom(property, i,
 						javaType2owlLiteral(object))));
 	}
 
 	private void addObjectProperty(final OWLNamedIndividual subject,
 			final org.semanticweb.owlapi.model.OWLObjectProperty property,
 			final OWLIndividual object) {
-		writeChange(new AddAxiom(getWorkingOntology(), getDataFactory()
-				.getOWLObjectPropertyAssertionAxiom(property, subject, object)));
+		writeChange(new AddAxiom(workingOntology,
+				dataFactory.getOWLObjectPropertyAssertionAxiom(property,
+						subject, object)));
 	}
 
 	private void removeAllObjectProperties(final OWLNamedIndividual subject,
@@ -869,8 +854,8 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 
 		if (objects != null) {
 			for (final OWLIndividual object : objects) {
-				writeChange(new RemoveAxiom(getWorkingOntology(),
-						getDataFactory().getOWLObjectPropertyAssertionAxiom(
+				writeChange(new RemoveAxiom(workingOntology,
+						dataFactory.getOWLObjectPropertyAssertionAxiom(
 								property, subject, object)));
 			}
 		}
@@ -881,15 +866,15 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 			boolean inferred) {
 		Collection<? extends OWLIndividual> objects;
 		if (inferred) {
-			getReasoner().flush();
-			objects = getReasoner().getObjectPropertyValues(subject, property)
+			reasoner.flush();
+			objects = reasoner.getObjectPropertyValues(subject, property)
 					.getFlattened();
 			if (objects == null) {
 				objects = Collections.emptyList();
 			}
 		} else {
-			objects = subject.getObjectPropertyValues(property,
-					getWorkingOntology());
+			objects = subject
+					.getObjectPropertyValues(property, workingOntology);
 		}
 		return objects;
 	}
@@ -932,17 +917,15 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 
 		final Collection<OWLOntologyChange> ac = new HashSet<OWLOntologyChange>();
 
-		for (OWLAnnotation annotation : r.getAnnotations(getWorkingOntology(),
-				ap)) {
-			ac.add(new RemoveAxiom(getWorkingOntology(), getDataFactory()
+		for (OWLAnnotation annotation : r.getAnnotations(workingOntology, ap)) {
+			ac.add(new RemoveAxiom(workingOntology, dataFactory
 					.getOWLAnnotationAssertionAxiom(r.getIRI(), annotation)));
 		}
 
 		if (literalAnnotation != null) {
-			ac.add(new AddAxiom(getWorkingOntology(), getDataFactory()
-					.getOWLAnnotationAssertionAxiom(
-							r.getIRI(),
-							getDataFactory().getOWLAnnotation(ap,
+			ac.add(new AddAxiom(workingOntology, dataFactory
+					.getOWLAnnotationAssertionAxiom(r.getIRI(), dataFactory
+							.getOWLAnnotation(ap,
 									javaType2owlLiteral(literalAnnotation)))));
 		}
 
@@ -969,7 +952,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		OWLNamedIndividual i = null;
 
 		if (object != null) {
-			i = getDataFactory().getOWLNamedIndividual(getIdentifier(object));
+			i = dataFactory.getOWLNamedIndividual(getIdentifier(object));
 		}
 
 		setObjectProperty(src, p, i);
@@ -1006,14 +989,14 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 
 		// TODO anonymous
 
-		OWLNamedIndividual seq = getDataFactory().getOWLNamedIndividual(
-				createNewID(o, uri.getFragment() + "-SEQ"));
+		OWLNamedIndividual seq = dataFactory.getOWLNamedIndividual(createNewID(
+				o, uri.getFragment() + "-SEQ"));
 
-		writeChange(new AddAxiom(getWorkingOntology(), getDataFactory()
-				.getOWLClassAssertionAxiom(owlList, seq)));
+		writeChange(new AddAxiom(workingOntology,
+				dataFactory.getOWLClassAssertionAxiom(owlList, seq)));
 
-		setObjectProperty(getDataFactory().getOWLNamedIndividual(uri),
-				hasSequence, seq);
+		setObjectProperty(dataFactory.getOWLNamedIndividual(uri), hasSequence,
+				seq);
 
 		if (sequence == null || sequence.isEmpty()) {
 			return;
@@ -1039,23 +1022,25 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		 * .getOWLNamedIndividual((IRI) session.getLiveObjectCache()
 		 * .getIRIOfObject(sequence.get(0)));
 		 */
-		OWLNamedIndividual ind = getDataFactory().getOWLNamedIndividual(
-				getIdentifier(sequence.get(0)));
-		addChange(new AddAxiom(getWorkingOntology(), getDataFactory()
-				.getOWLObjectPropertyAssertionAxiom(hasContents, seq, ind)));
+		OWLNamedIndividual ind = dataFactory
+				.getOWLNamedIndividual(getIdentifier(sequence.get(0)));
+		addChange(new AddAxiom(workingOntology,
+				dataFactory.getOWLObjectPropertyAssertionAxiom(hasContents,
+						seq, ind)));
 
 		for (int i = 1; i < sequence.size(); i++) {
-			OWLNamedIndividual seq2 = getDataFactory()
-					.getOWLNamedIndividual(
-							createNewID(sequence.get(i), uri.getFragment()
-									+ "-SEQ" + i));
+			OWLNamedIndividual seq2 = dataFactory
+					.getOWLNamedIndividual(createNewID(sequence.get(i),
+							uri.getFragment() + "-SEQ" + i));
 
-			addChange(new AddAxiom(getWorkingOntology(), getDataFactory()
-					.getOWLObjectPropertyAssertionAxiom(hasNext, seq, seq2)));
-			OWLNamedIndividual arg = getDataFactory().getOWLNamedIndividual(
-					getIdentifier(sequence.get(i)));
-			addChange(new AddAxiom(getWorkingOntology(), getDataFactory()
-					.getOWLObjectPropertyAssertionAxiom(hasContents, seq2, arg)));
+			addChange(new AddAxiom(workingOntology,
+					dataFactory.getOWLObjectPropertyAssertionAxiom(hasNext,
+							seq, seq2)));
+			OWLNamedIndividual arg = dataFactory
+					.getOWLNamedIndividual(getIdentifier(sequence.get(i)));
+			addChange(new AddAxiom(workingOntology,
+					dataFactory.getOWLObjectPropertyAssertionAxiom(hasContents,
+							seq2, arg)));
 
 			seq = seq2;
 		}
@@ -1073,9 +1058,9 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 			final org.semanticweb.owlapi.model.OWLObjectProperty hasSequence,
 			org.semanticweb.owlapi.model.OWLObjectProperty hasNext)
 			throws InterruptedException {
-		OWLIndividual iSequence = getObjectProperty(getDataFactory()
-				.getOWLNamedIndividual(getIdentifier(object)), hasSequence,
-				false);
+		OWLIndividual iSequence = getObjectProperty(
+				dataFactory.getOWLNamedIndividual(getIdentifier(object)),
+				hasSequence, false);
 
 		// TODO cascading properly
 
@@ -1083,15 +1068,15 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 
 		while (iSequence != null) {
 			if (iSequence.isAnonymous()) {
-				axioms = getWorkingOntology().getReferencingAxioms(
-						iSequence.asOWLAnonymousIndividual());
+				axioms = workingOntology.getReferencingAxioms(iSequence
+						.asOWLAnonymousIndividual());
 			} else {
-				axioms = getWorkingOntology().getReferencingAxioms(
-						iSequence.asOWLNamedIndividual());
+				axioms = workingOntology.getReferencingAxioms(iSequence
+						.asOWLNamedIndividual());
 
 			}
 			for (final OWLAxiom a : axioms) {
-				addChange(new RemoveAxiom(getWorkingOntology(), a));
+				addChange(new RemoveAxiom(workingOntology, a));
 			}
 
 			iSequence = getObjectProperty(iSequence, hasNext, false);
@@ -1101,7 +1086,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 	private OWLIndividual getObjectProperty(final OWLIndividual subject,
 			final org.semanticweb.owlapi.model.OWLObjectProperty property,
 			boolean inferred) throws InterruptedException {
-		for (final OWLObjectPropertyAssertionAxiom axiom : getWorkingOntology()
+		for (final OWLObjectPropertyAssertionAxiom axiom : workingOntology
 				.getObjectPropertyAssertionAxioms(subject)) {
 			if (axiom.getProperty().equals(property)
 					&& axiom.getSubject().equals(subject)) {
@@ -1111,8 +1096,8 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 
 		OWLNamedIndividual inferredObject = null;
 		if (inferred && subject.isNamed()) {
-			getReasoner().flush();
-			final Set<OWLNamedIndividual> inferredObjects = getReasoner()
+			reasoner.flush();
+			final Set<OWLNamedIndividual> inferredObjects = reasoner
 					.getObjectPropertyValues(subject.asOWLNamedIndividual(),
 							property).getFlattened();
 
@@ -1150,14 +1135,14 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 			return;
 		}
 
-		OWLNamedIndividual next = getDataFactory().getOWLNamedIndividual(
-				getIdentifier(iter.next()));
-		OWLNamedIndividual arg = getDataFactory().getOWLNamedIndividual(
-				getIdentifier(o));
+		OWLNamedIndividual next = dataFactory
+				.getOWLNamedIndividual(getIdentifier(iter.next()));
+		OWLNamedIndividual arg = dataFactory
+				.getOWLNamedIndividual(getIdentifier(o));
 		setObjectProperty(arg, hasSequence, next);
 
 		while (iter.hasNext()) {
-			final OWLNamedIndividual next2 = getDataFactory()
+			final OWLNamedIndividual next2 = dataFactory
 					.getOWLNamedIndividual(getIdentifier(iter.next()));
 			setObjectProperty(next, hasNext, next2);
 			next = next2;
@@ -1166,23 +1151,22 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 
 	private org.semanticweb.owlapi.model.OWLObjectProperty op(
 			final cz.cvut.kbss.jopa.model.IRI uri) {
-		return getDataFactory()
-				.getOWLObjectProperty(IRI.create(uri.toString()));
+		return dataFactory.getOWLObjectProperty(IRI.create(uri.toString()));
 	}
 
 	private org.semanticweb.owlapi.model.OWLClass c(
 			final cz.cvut.kbss.jopa.model.IRI uri) {
-		return getDataFactory().getOWLClass(IRI.create(uri.toString()));
+		return dataFactory.getOWLClass(IRI.create(uri.toString()));
 	}
 
 	private IRI createNewID(final Object entity, final String name) {
-		final String base = getWorkingOntology().getOntologyID()
-				.getOntologyIRI().toString()
+		final String base = workingOntology.getOntologyID().getOntologyIRI()
+				.toString()
 				+ "#i_" + name;
 		IRI iri = IRI.create(base);
 
 		int i = 1;
-		while (getWorkingOntology().containsIndividualInSignature(iri, true)
+		while (workingOntology.containsIndividualInSignature(iri, true)
 				|| this.session.getLiveObjectCache().contains(
 						entity.getClass(), iri)) {
 			iri = IRI.create(base + "_" + (i++));
@@ -1249,49 +1233,27 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 	public synchronized Query<?> createQuery(String qlString, EntityManager em) {
 		ensureOpen();
 		return new QueryImpl(qlString, new OWLAPIv3OWL2Ontology(
-				getOntologyManager(), getReasoningOntology(), getReasoner()),
-				false, em);
+				ontologyManager, reasoningOntology, reasoner), false, em);
 	}
 
 	public synchronized <T> TypedQuery<T> createQuery(String query,
 			Class<T> resultClass, boolean sparql, EntityManager em) {
 		ensureOpen();
 		return new TypedQueryImpl<T>(query, resultClass,
-				new OWLAPIv3OWL2Ontology(getOntologyManager(),
-						getReasoningOntology(), getReasoner()), sparql, em);
+				new OWLAPIv3OWL2Ontology(ontologyManager, reasoningOntology,
+						reasoner), sparql, em);
 	}
 
 	public synchronized Query<List<String>> createNativeQuery(String sparql,
 			EntityManager em) {
 		ensureOpen();
-		return new QueryImpl(sparql, new OWLAPIv3OWL2Ontology(
-				getOntologyManager(), getReasoningOntology(), getReasoner()),
-				true, em);
+		return new QueryImpl(sparql, new OWLAPIv3OWL2Ontology(ontologyManager,
+				reasoningOntology, reasoner), true, em);
 	}
 
 	public void close() {
 		ensureOpen();
 		setOpen(false);
-	}
-
-	private OWLOntologyManager getOntologyManager() {
-		return ontologyManager;
-	}
-
-	private OWLReasoner getReasoner() {
-		return reasoner;
-	}
-
-	private OWLOntology getWorkingOntology() {
-		return workingOntology;
-	}
-
-	private OWLOntology getReasoningOntology() {
-		return reasoningOntology;
-	}
-
-	private OWLDataFactory getDataFactory() {
-		return dataFactory;
 	}
 
 	public boolean isOpen() {
