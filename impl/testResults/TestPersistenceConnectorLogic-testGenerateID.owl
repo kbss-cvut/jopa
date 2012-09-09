@@ -2,6 +2,7 @@
 <rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#"
      xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:new="http://new.owl#"
      xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
@@ -49,9 +50,9 @@
     
 
 
-    <!-- http://OWLClassE -->
+    <!-- http://new.owl#OWLClassE -->
 
-    <owl:Class rdf:about="http://OWLClassE"/>
+    <owl:Class rdf:about="http://new.owl#OWLClassE"/>
     
 
 
@@ -69,7 +70,7 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#i_OWLClassE -->
 
     <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#i_OWLClassE">
-        <rdf:type rdf:resource="http://OWLClassE"/>
+        <rdf:type rdf:resource="http://new.owl#OWLClassE"/>
         <http:E-stringAttribute>someString</http:E-stringAttribute>
     </owl:NamedIndividual>
 </rdf:RDF>

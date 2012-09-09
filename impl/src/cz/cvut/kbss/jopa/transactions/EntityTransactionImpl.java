@@ -73,6 +73,7 @@ public class EntityTransactionImpl implements
 						.removeCurrentPersistenceContext();
 				this.wrapper.transactionUOW.release();
 				this.wrapper.transactionUOW.getParent().release();
+				throw ex;
 			}
 		} finally {
 			this.active = false;

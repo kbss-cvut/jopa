@@ -240,7 +240,10 @@ public class UnitOfWorkTest {
 		OWLClassA o = this.em.find(OWLClassA.class,
 				IRI.create(testObject.getUri()));
 		OWLClassA clone = (OWLClassA) this.testUOW.registerObject(o);
-		assertEquals(o, clone);
+		assertNotNull(clone);
+		assertEquals(o.getUri(), clone.getUri());
+		assertEquals(o.getStringAttribute(), clone.getStringAttribute());
+		assertEquals(o.getTypes(), clone.getTypes());
 	}
 
 	@Test
@@ -255,11 +258,9 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testRemoveObjectFromCache() {
-		OWLClassB original = (OWLClassB) this.testUOW
-				.getOriginal(testObjectTwo);
-		this.testUOW.removeObjectFromCache(original);
+		this.testUOW.removeObjectFromCache(testObjectTwo);
 		assertFalse(this.testUOW.getLiveObjectCache().contains(
-				original.getClass(), original.getUri()));
+				testObjectTwo.getClass(), testObjectTwo.getUri()));
 	}
 
 	@Test
@@ -308,8 +309,9 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testUnregisterObject() {
-		OWLClassA original = (OWLClassA) this.testUOW.getOriginal(testObject);
-		this.testUOW.unregisterObject(testObject);
+		OWLClassA entity = em.find(OWLClassA.class, testObject.getUri());
+		OWLClassA original = (OWLClassA) this.testUOW.getOriginal(entity);
+		this.testUOW.unregisterObject(entity);
 		assertFalse(testUOW.getLiveObjectCache().contains(original.getClass(),
 				original.getUri()));
 	}

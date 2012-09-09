@@ -37,7 +37,9 @@ public class TestEnvironment {
 			.getName());
 
 	public static final String dir = "testResults";
-	public static final String dbUri = "jdbc:postgresql://localhost/owldb";
+	public static final String DB_URI = "jdbc:postgresql://localhost/owldb";
+	public static final String DB_USERNAME = "owldb";
+	public static final String DB_PASSWORD = "owldb";
 
 	private static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
 
@@ -88,7 +90,7 @@ public class TestEnvironment {
 				// OWLDB ontology access
 				params.put(
 						OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
-						dbUri);
+						DB_URI);
 			}
 
 			params.put("javax.persistence.provider",
@@ -164,7 +166,7 @@ public class TestEnvironment {
 			mapping.append(onto.getPath());
 			break;
 		case OWLDB:
-			mapping.append(dbUri);
+			mapping.append(DB_URI);
 			break;
 		}
 

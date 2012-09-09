@@ -418,7 +418,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		managed.clear();
 		removed.clear();
 		getCurrentPersistenceContext().clear();
-		this.serverSession.releaseObjectCache();
 	}
 
 	public void detach(Object entity) {

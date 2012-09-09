@@ -18,6 +18,7 @@ package cz.cvut.kbss.jopa.model;
 import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.sessions.Cache;
 
 public interface EntityManagerFactory {
 	/**
@@ -71,7 +72,15 @@ public interface EntityManagerFactory {
 
 	public Map<String, String> getProperties();
 
-	// TODO JPA 2.0 getCache
+	/**
+	 * Access the cache that is associated with the entity manager factory (the
+	 * "second level cache").
+	 * 
+	 * @return instance of the Cache interface
+	 * @throws IllegalStateException
+	 *             if the entity manager factory has been closed
+	 */
+	public Cache getCache();
 
 	public PersistenceUnitUtil getPersistenceUnitUtil();
 }

@@ -233,8 +233,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 */
 	protected void commitUnitOfWork() {
 		commitToOntology();
-		mergeChangesIntoParent();
 		getOntologyAccessor().mergeToWorkingOntology();
+		mergeChangesIntoParent();
 		postCommit();
 	}
 

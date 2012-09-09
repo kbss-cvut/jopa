@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,11 +47,11 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.EmbeddableType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 
 public class MetamodelImpl implements Metamodel {
 
@@ -127,7 +128,17 @@ public class MetamodelImpl implements Metamodel {
 
 		typeMap.put(cls, c2);
 
-		for (final Field field : cls.getDeclaredFields()) {
+		// TODO Is this correct?
+		final List<Field> fields = new ArrayList<Field>();
+		fields.addAll(Arrays.asList(cls.getDeclaredFields()));
+		Class<?> parent = cls.getSuperclass();
+		while (parent != Object.class && parent != null) {
+			fields.addAll(Arrays.asList(parent.getDeclaredFields()));
+			parent = parent.getSuperclass();
+		}
+
+		for (final Field field : fields) {
+			// for (final Field field : cls.getDeclaredFields()) {
 			if (LOG.isLoggable(Level.FINE)) {
 				LOG.fine("   processing field : " + field);
 			}

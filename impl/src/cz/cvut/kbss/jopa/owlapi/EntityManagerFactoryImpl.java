@@ -28,6 +28,7 @@ import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.PersistenceUnitUtil;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.sessions.Cache;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 
 public class EntityManagerFactoryImpl implements EntityManagerFactory,
@@ -162,6 +163,14 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 
 	public boolean isLoaded(Object entity) {
 		return isLoaded(entity);
+	}
+
+	public Cache getCache() {
+		if (!isOpen()) {
+			throw new IllegalStateException(
+					"The entity manager factory is closed.");
+		}
+		return getServerSession().getLiveObjectCache();
 	}
 
 }

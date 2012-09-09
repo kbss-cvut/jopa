@@ -3,6 +3,10 @@ package cz.cvut.kbss.jopa.owlapi_vs_owldb;
 import static org.junit.Assert.assertNotNull;
 
 import java.net.URI;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +14,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -25,6 +30,8 @@ public class FileOWLDBPerformanceTest {
 	private static final int COUNT = 1000;
 	private static final int FIND_CNT = COUNT / 10;
 	private static final String IRI_PREFIX = "http://classA";
+
+	private static boolean shouldDropDb = true;
 
 	private static List<OWLClassA> entitiesA;
 	private static List<URI> ids;
@@ -53,6 +60,30 @@ public class FileOWLDBPerformanceTest {
 		}
 	}
 
+	@Before
+	public void setUp() throws Exception {
+		if (shouldDropDb) {
+			Connection con = null;
+			Statement st1 = null;
+			Statement st2 = null;
+			ResultSet rs = null;
+			con = DriverManager.getConnection(TestEnvironment.DB_URI,
+					TestEnvironment.DB_USERNAME, TestEnvironment.DB_PASSWORD);
+			st1 = con.createStatement();
+			rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+			final String deleteStmt = "TRUNCATE ";
+			while (rs.next()) {
+				final String table = rs.getString(1);
+				st2 = con.createStatement();
+				st2.executeUpdate(deleteStmt + table + " CASCADE");
+				st2.close();
+				st2 = null;
+			}
+			st1.close();
+			shouldDropDb = false;
+		}
+	}
+
 	@Test
 	public void testFileOntologyPerformancePersist() {
 		LOG.config("Testing file ontology access performance. Persisting "
@@ -72,6 +103,7 @@ public class FileOWLDBPerformanceTest {
 
 		persistEntities(em);
 		em.getEntityManagerFactory().close();
+		shouldDropDb = true;
 	}
 
 	/**
@@ -108,6 +140,7 @@ public class FileOWLDBPerformanceTest {
 		findEntities(em);
 		em.close();
 		em.getEntityManagerFactory().close();
+		shouldDropDb = true;
 	}
 
 	private void findEntities(final EntityManager em) {

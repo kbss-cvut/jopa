@@ -24,10 +24,6 @@ import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
 
 public class BasicOperationsTest {
 
-	private static final String dbUrl = "jdbc:postgresql://localhost/owldb";
-	private static final String username = "owldb";
-	private static final String password = "owldb";
-
 	private static EntityManager em;
 
 	@Before
@@ -36,7 +32,8 @@ public class BasicOperationsTest {
 		Statement st1 = null;
 		Statement st2 = null;
 		ResultSet rs = null;
-		con = DriverManager.getConnection(dbUrl, username, password);
+		con = DriverManager.getConnection(TestEnvironment.DB_URI,
+				TestEnvironment.DB_USERNAME, TestEnvironment.DB_PASSWORD);
 		st1 = con.createStatement();
 		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
 		final String deleteStmt = "TRUNCATE ";

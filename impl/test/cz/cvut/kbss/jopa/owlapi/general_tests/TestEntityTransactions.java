@@ -13,8 +13,10 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.persistence.EntityTransaction;
+import javax.persistence.RollbackException;
 
 import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -39,6 +41,7 @@ public class TestEntityTransactions {
 
 	private EntityManager pc;
 
+	@BeforeClass
 	public static void beforeClass() throws Exception {
 		testC = new OWLClassC();
 		final URI pkC = URI.create("http://testC");
@@ -65,7 +68,6 @@ public class TestEntityTransactions {
 		final URI pkF = URI.create("http://testF");
 		testF.setUri(pkF);
 		testF.setStringAttribute("testFStringAttribute");
-		testF.setSecondStringAttribute("inferredStringAttribute");
 	}
 
 	@After
@@ -113,7 +115,7 @@ public class TestEntityTransactions {
 		}
 	}
 
-	@Test
+	@Test(expected = RollbackException.class)
 	public void testSetRollbackOnly() {
 		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testRollbackOnly");
@@ -121,17 +123,11 @@ public class TestEntityTransactions {
 		final OWLClassA testEntity = new OWLClassA();
 		final URI pk = URI.create("http://testPK");
 		testEntity.setUri(pk);
-		try {
-			pc.getTransaction().begin();
-			pc.persist(testEntity);
-			pc.getTransaction().setRollbackOnly();
-			pc.getTransaction().commit();
-			assertFalse(pc.contains(testEntity));
-		} catch (OWLPersistenceException e) {
-			e.printStackTrace();
-			log.severe(e.getMessage());
-			fail();
-		}
+		pc.getTransaction().begin();
+		pc.persist(testEntity);
+		pc.getTransaction().setRollbackOnly();
+		pc.getTransaction().commit();
+		fail("This line should not have been reached.");
 	}
 
 	@Test
@@ -148,6 +144,28 @@ public class TestEntityTransactions {
 			pc.getTransaction().begin();
 			pc.persist(entity);
 			pc.getTransaction().commit();
+			OWLClassA ent = pc.find(OWLClassA.class, pk);
+			assertTrue(entity.getUri().equals(ent.getUri()));
+		} catch (OWLPersistenceException e) {
+			log.info("Persisting failed.");
+			fail();
+		}
+	}
+
+	@Test
+	public void testPersistEvictCache() {
+		log.info("Test: persist entity. Clear cache before presence check.");
+		pc = TestEnvironment
+				.getPersistenceConnector("TestPersistenceConnectorLogic-testPersistEvictCache");
+		final OWLClassA entity = new OWLClassA();
+		final URI pk = URI.create("http://testA");
+		entity.setUri(pk);
+		entity.setStringAttribute("TEST");
+		try {
+			pc.getTransaction().begin();
+			pc.persist(entity);
+			pc.getTransaction().commit();
+			pc.getEntityManagerFactory().getCache().evictAll();
 			OWLClassA ent = pc.find(OWLClassA.class, pk);
 			assertTrue(entity.getUri().equals(ent.getUri()));
 		} catch (OWLPersistenceException e) {
