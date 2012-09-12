@@ -799,7 +799,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	}
 
 	/**
-	 * Remove the registered object from this Unit of Work and from the cache.
+	 * Remove the registered object from this Unit of Work.
 	 * 
 	 * @param object
 	 *            Clone of the original object

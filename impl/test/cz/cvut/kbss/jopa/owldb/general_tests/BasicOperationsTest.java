@@ -72,6 +72,7 @@ public class BasicOperationsTest {
 		em.getTransaction().commit();
 
 		em.clear();
+		em.getEntityManagerFactory().getCache().evictAll();
 
 		assertFalse(em.contains(a));
 
@@ -97,6 +98,7 @@ public class BasicOperationsTest {
 		em.getTransaction().commit();
 
 		em.clear();
+		em.getEntityManagerFactory().getCache().evictAll();
 
 		final OWLClassA aX = em.find(OWLClassA.class, uri);
 		assertNotNull(aX);
@@ -122,6 +124,7 @@ public class BasicOperationsTest {
 		em.persist(d);
 		em.getTransaction().commit();
 		em.clear();
+		em.getEntityManagerFactory().getCache().evictAll();
 
 		final OWLClassD dX = em.find(OWLClassD.class, dUri);
 		assertNotNull(dX);
@@ -142,6 +145,7 @@ public class BasicOperationsTest {
 		em.getTransaction().commit();
 
 		em.clear();
+		em.getEntityManagerFactory().getCache().evictAll();
 		assertFalse(em.contains(a));
 
 		final OWLClassA aX = em.find(OWLClassA.class, uri);

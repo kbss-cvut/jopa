@@ -61,7 +61,6 @@ public class CacheManagerTest {
 		testF = new OWLClassF();
 		final URI pkF = URI.create("http://testF");
 		testF.setUri(pkF);
-		testF.setStringAttribute("someString");
 		listOfBs = new HashMap<URI, OWLClassB>();
 		for (int i = 0; i < 10; i++) {
 			final URI pkI = URI.create("http://testBList_" + i);
@@ -205,16 +204,6 @@ public class CacheManagerTest {
 		} catch (Exception e) {
 			fail("Exception caught. Test failed.");
 		}
-	}
-
-	@Test
-	public void testEvictByClassSubclass() {
-		// According to JPA 2 specification, evict on class
-		// should also evict all object of all subclasses of the evicted class
-		mngr.add(testE.getUri(), testE);
-		mngr.add(testF.getUri(), testF);
-		mngr.evict(OWLClassE.class);
-		assertFalse(mngr.contains(OWLClassF.class, testF.getUri()));
 	}
 
 	@Test

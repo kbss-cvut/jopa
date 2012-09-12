@@ -19,7 +19,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -95,12 +94,13 @@ public class MetamodelImpl implements Metamodel {
 	 */
 	private void checkForWeaver() {
 		try {
+			@SuppressWarnings("unused")
 			Class<?> c = MetamodelImpl.class.getClassLoader().loadClass(
 					ASPECTJ_CLASS);
 			this.shouldUseAspectJ = true;
 		} catch (ClassNotFoundException e) {
-			this.shouldUseAspectJ = false;
-			LOG.config("AspectJ weaver not found. Lazy loading will be disabled.");
+			LOG.severe("AspectJ not found on classpath. Cannot run without AspectJ.");
+			throw new OWLPersistenceException(e);
 		}
 	}
 
@@ -128,17 +128,7 @@ public class MetamodelImpl implements Metamodel {
 
 		typeMap.put(cls, c2);
 
-		// TODO Is this correct?
-		final List<Field> fields = new ArrayList<Field>();
-		fields.addAll(Arrays.asList(cls.getDeclaredFields()));
-		Class<?> parent = cls.getSuperclass();
-		while (parent != Object.class && parent != null) {
-			fields.addAll(Arrays.asList(parent.getDeclaredFields()));
-			parent = parent.getSuperclass();
-		}
-
-		for (final Field field : fields) {
-			// for (final Field field : cls.getDeclaredFields()) {
+		for (final Field field : cls.getDeclaredFields()) {
 			if (LOG.isLoggable(Level.FINE)) {
 				LOG.fine("   processing field : " + field);
 			}

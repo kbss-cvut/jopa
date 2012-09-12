@@ -67,7 +67,6 @@ public class TestEntityTransactions {
 		testF = new OWLClassF();
 		final URI pkF = URI.create("http://testF");
 		testF.setUri(pkF);
-		testF.setStringAttribute("testFStringAttribute");
 	}
 
 	@After

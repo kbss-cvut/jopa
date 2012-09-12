@@ -50,6 +50,7 @@ import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.OWLOntologyChangeWrapper;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.Session;
 
@@ -142,52 +143,23 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 		if (changes == null || changes.isEmpty()) {
 			return;
 		}
+		final List<OWLOntologyChange> toApply = new ArrayList<OWLOntologyChange>(
+				changes.size());
 		for (OWLOntologyChange change : changes) {
 			if (change.getOntology().getOntologyID()
 					.equals(getWorkingOntology().getOntologyID())) {
-				// TODO
-				// Need to set the main working ontology as the change's
-				// ontology
-				// something like this: change.setOntology(getWorkingOntology())
-				// But there is no setter in the API
-				setChangeOntology(change);
+				toApply.add(new OWLOntologyChangeWrapper(getWorkingOntology(),
+						change));
 			}
 		}
 		try {
-			getOntologyManager().applyChanges(changes);
+			getOntologyManager().applyChanges(toApply);
 			saveWorkingOntology();
 		} catch (OWLOntologyRenameException e) {
 			throw new OWLPersistenceException(e);
 		}
 		changes.clear();
 
-	}
-
-	private void setChangeOntology(OWLOntologyChange ch) {
-		assert ch != null;
-		Class<?> cls = ch.getClass();
-		Field f = null;
-		while (cls != null && f == null) {
-			try {
-				f = cls.getDeclaredField("ont");
-			} catch (NoSuchFieldException e) {
-				cls = cls.getSuperclass();
-			} catch (SecurityException e) {
-				throw new OWLPersistenceException(e);
-			}
-		}
-		if (f == null) {
-			throw new OWLPersistenceException(
-					"Unable to find field ont in OWLOntologyChange.");
-		}
-		try {
-			f.setAccessible(true);
-			f.set(ch, getWorkingOntology());
-		} catch (IllegalArgumentException e) {
-			throw new OWLPersistenceException(e);
-		} catch (IllegalAccessException e) {
-			throw new OWLPersistenceException(e);
-		}
 	}
 
 	/**
