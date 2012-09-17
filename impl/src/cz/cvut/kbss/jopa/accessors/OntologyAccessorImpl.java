@@ -50,7 +50,7 @@ import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
-import cz.cvut.kbss.jopa.owlapi.OWLOntologyChangeWrapper;
+import cz.cvut.kbss.jopa.owlapi.OntologyChangeWrapper;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.Session;
 
@@ -143,17 +143,15 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 		if (changes == null || changes.isEmpty()) {
 			return;
 		}
-		final List<OWLOntologyChange> toApply = new ArrayList<OWLOntologyChange>(
-				changes.size());
 		for (OWLOntologyChange change : changes) {
 			if (change.getOntology().getOntologyID()
 					.equals(getWorkingOntology().getOntologyID())) {
-				toApply.add(new OWLOntologyChangeWrapper(getWorkingOntology(),
-						change));
+				((OntologyChangeWrapper) change)
+						.setOntology(getWorkingOntology());
 			}
 		}
 		try {
-			getOntologyManager().applyChanges(toApply);
+			getOntologyManager().applyChanges(changes);
 			saveWorkingOntology();
 		} catch (OWLOntologyRenameException e) {
 			throw new OWLPersistenceException(e);

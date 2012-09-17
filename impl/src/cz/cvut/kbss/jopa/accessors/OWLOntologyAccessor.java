@@ -53,8 +53,11 @@ import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.owlapi.AddAxiomWrapper;
 import cz.cvut.kbss.jopa.owlapi.NotYetImplementedException;
+import cz.cvut.kbss.jopa.owlapi.OWLOntologyChangeWrapper;
 import cz.cvut.kbss.jopa.owlapi.QueryImpl;
+import cz.cvut.kbss.jopa.owlapi.RemoveAxiomWrapper;
 import cz.cvut.kbss.jopa.owlapi.TypedQueryImpl;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.Session;
@@ -142,7 +145,21 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		if (changes == null || changes.isEmpty()) {
 			return;
 		}
-		transactionChanges.addAll(changes);
+		final List<OWLOntologyChange> toAdd = new ArrayList<OWLOntologyChange>(
+				changes.size());
+		for (OWLOntologyChange ch : changes) {
+			// Not the nicest way, but owldb uses the instanceof operator
+			// to determine type of the axiom, so we have to do it this way too
+			if (ch instanceof AddAxiom) {
+				toAdd.add(new AddAxiomWrapper(ch.getOntology(), ch.getAxiom()));
+			} else if (ch instanceof RemoveAxiom) {
+				toAdd.add(new RemoveAxiomWrapper(ch.getOntology(), ch
+						.getAxiom()));
+			} else {
+				toAdd.add(new OWLOntologyChangeWrapper(workingOntology, ch));
+			}
+		}
+		transactionChanges.addAll(toAdd);
 	}
 
 	/**

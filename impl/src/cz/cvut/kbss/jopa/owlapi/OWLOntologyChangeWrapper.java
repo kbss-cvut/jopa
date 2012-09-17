@@ -6,7 +6,8 @@ import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyChangeVisitor;
 import org.semanticweb.owlapi.model.OWLOntologyChangeVisitorEx;
 
-public class OWLOntologyChangeWrapper extends OWLOntologyChange {
+public class OWLOntologyChangeWrapper extends OWLOntologyChange implements
+		OntologyChangeWrapper {
 
 	private final OWLOntologyChange change;
 	private OWLOntology ontology;
