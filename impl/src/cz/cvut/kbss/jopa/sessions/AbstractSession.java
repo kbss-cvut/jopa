@@ -108,10 +108,24 @@ public abstract class AbstractSession implements Session {
 	public abstract Set<Class<?>> getManagedTypes();
 
 	/**
-	 * Get metamodel. This is part of the internal api.
+	 * Get the metamodel. This is part of the internal API.
 	 * 
 	 * @return
 	 */
 	abstract Metamodel getMetamodel();
 
+	/**
+	 * Register the specified entity as managed in the specified
+	 * {@code UnitOfWork}. </p>
+	 * 
+	 * Registering loaded entities with their owning {@code UnitOfWork} is
+	 * highly recommended, since it speeds up persistence context lookup when
+	 * entity attributes are modified.
+	 * 
+	 * @param entity
+	 *            The entity to register
+	 * @param uow
+	 *            Persistence context of the specified entity
+	 */
+	abstract void registerEntityWithContext(Object entity, UnitOfWorkImpl uow);
 }

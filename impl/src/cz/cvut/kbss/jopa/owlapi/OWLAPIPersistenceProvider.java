@@ -114,10 +114,13 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 		if (entity == null) {
 			return;
 		}
-		final EntityManagerImpl em = (EntityManagerImpl) find(entity);
-		if (em != null) {
-			UnitOfWorkImpl uow = em.getCurrentPersistenceContext();
-			uow.getOntologyAccessor().persistExistingEntity(entity, uow);
+		for (EntityManagerFactoryImpl emf : emfs) {
+			final UnitOfWorkImpl uow = emf.getServerSession()
+					.getPersistenceContext(entity);
+			if (uow != null) {
+				uow.getOntologyAccessor().persistEntity(entity, uow);
+				break;
+			}
 		}
 	}
 }

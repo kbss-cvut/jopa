@@ -111,4 +111,9 @@ public class ClientSession extends AbstractSession {
 	Metamodel getMetamodel() {
 		return parent.getMetamodel();
 	}
+
+	@Override
+	void registerEntityWithContext(Object entity, UnitOfWorkImpl uow) {
+		parent.registerEntityWithContext(entity, uow);
+	}
 }

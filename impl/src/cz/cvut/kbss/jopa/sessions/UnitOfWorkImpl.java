@@ -611,6 +611,16 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		return clones;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	void registerEntityWithContext(Object entity, UnitOfWorkImpl uow) {
+		parent.registerEntityWithContext(entity, uow);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	public Object registerExistingObject(Object object) {
 		if (object == null) {
 			return null;
@@ -625,6 +635,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 		getCloneMapping().put(clone, clone);
 		getCloneToOriginals().put(clone, object);
+		registerEntityWithContext(clone, this);
 		setHasChanges(true); // TODO: Is this right?
 		return clone;
 	}
@@ -728,6 +739,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		Object original = null;
 		getCloneMapping().put(clone, clone);
 		getNewObjectsCloneToOriginal().put(clone, original);
+		registerEntityWithContext(clone, this);
 		getUsedPrimaryKeys().add(id);
 		getNewObjectsKeyToClone().put(id, clone);
 		this.hasNew = true;

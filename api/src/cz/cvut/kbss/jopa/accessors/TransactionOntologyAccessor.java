@@ -59,11 +59,13 @@ public interface TransactionOntologyAccessor {
 	public void removeEntity(Object entity);
 
 	/**
-	 * Load and reconstruct object with the given uri from the ontology.
+	 * Load and reconstruct object with the given URI from the ontology.
 	 * 
+	 * @param cls
+	 *            Entity class
 	 * @param uri
-	 *            Object
-	 * @return The object with specified uri or null
+	 *            Identifier of the object to read
+	 * @return The object with specified identifier or null
 	 */
 	public <T> T readEntity(Class<T> cls, Object uri);
 

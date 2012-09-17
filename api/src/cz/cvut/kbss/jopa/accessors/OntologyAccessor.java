@@ -86,6 +86,8 @@ public interface OntologyAccessor {
 	/**
 	 * Load and reconstruct object with the given URI from the ontology.
 	 * 
+	 * @param cls
+	 *            Entity class to which the returned object should be cast
 	 * @param uri
 	 *            URI of the entity to search for
 	 * @return The object with specified URI or null.

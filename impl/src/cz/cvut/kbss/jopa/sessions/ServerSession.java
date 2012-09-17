@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.WeakHashMap;
 
 import javax.persistence.EntityTransaction;
 
@@ -41,6 +42,7 @@ public class ServerSession extends AbstractSession {
 	private OntologyAccessor ontologyAccessor;
 
 	private Map<EntityTransaction, EntityManager> runningTransactions;
+	private final Map<Object, UnitOfWorkImpl> activePersistenceContexts;
 
 	public ServerSession() {
 		super();
@@ -48,6 +50,7 @@ public class ServerSession extends AbstractSession {
 		this.metamodel = null;
 		this.ontologyAccessor = null;
 		this.accessorFactory = null;
+		this.activePersistenceContexts = new WeakHashMap<Object, UnitOfWorkImpl>();
 	}
 
 	public ServerSession(Map<String, String> properties, Metamodel metamodel,
@@ -55,6 +58,7 @@ public class ServerSession extends AbstractSession {
 		this.metamodel = metamodel;
 		this.managedClasses = processTypes(metamodel.getEntities());
 		this.accessorFactory = factory;
+		this.activePersistenceContexts = new WeakHashMap<Object, UnitOfWorkImpl>();
 		initialize(properties, metamodel);
 	}
 
@@ -225,5 +229,47 @@ public class ServerSession extends AbstractSession {
 
 	public OntologyAccessorFactory getAccessorFactory() {
 		return accessorFactory;
+	}
+
+	/**
+	 * Register the specified entity as managed in the specified
+	 * {@code UnitOfWork}. </p>
+	 * 
+	 * Registering loaded entities with their owning {@code UnitOfWork} is
+	 * highly recommended, since it speeds up persistence context lookup when
+	 * entity attributes are modified.
+	 * 
+	 * @param entity
+	 *            The entity to register
+	 * @param uow
+	 *            Persistence context of the specified entity
+	 */
+	void registerEntityWithContext(Object entity, UnitOfWorkImpl uow) {
+		if (entity == null || uow == null) {
+			throw new NullPointerException(
+					"Null passed to as argument. Entity: " + entity
+							+ ", unit of work: " + uow);
+		}
+		activePersistenceContexts.put(entity, uow);
+	}
+
+	/**
+	 * Get persistence context for the specified entity. </p>
+	 * 
+	 * @param entity
+	 *            The entity
+	 * @return Persistence context of the specified entity or null, if it cannot
+	 *         be found
+	 */
+	public synchronized UnitOfWorkImpl getPersistenceContext(Object entity) {
+		if (entity == null) {
+			return null;
+		}
+		final UnitOfWorkImpl uow = activePersistenceContexts.get(entity);
+		if (uow == null) {
+			LOG.warning("Unable to find persistence context for entity: "
+					+ entity);
+		}
+		return uow;
 	}
 }
