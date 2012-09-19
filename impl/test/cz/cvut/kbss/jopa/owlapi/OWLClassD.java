@@ -29,9 +29,10 @@ public class OWLClassD {
 	private URI uri;
 
 	@OWLObjectProperty(iri = "http://hasA", fetch = FetchType.EAGER)
-//	@ParticipationConstraints({
-//		@ParticipationConstraint(owlObjectIRI="http://new.owl#OWLClassA", min=1, max=1)
-//	})
+	// @ParticipationConstraints({
+	// @ParticipationConstraint(owlObjectIRI="http://new.owl#OWLClassA", min=1,
+	// max=1)
+	// })
 	private OWLClassA owlClassA;
 
 	/**
@@ -56,4 +57,11 @@ public class OWLClassD {
 	public OWLClassA getOwlClassA() {
 		return owlClassA;
 	}
+
+//	@Override
+//	public String toString() {
+//		String out = "OWLClassD: uri = " + uri;
+//		out += ", owlClassA = " + owlClassA;
+//		return out;
+//	}
 }

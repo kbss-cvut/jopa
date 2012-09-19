@@ -102,101 +102,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			Map<String, String> map, ServerSession serverSession) {
 		this.emf = emf;
 		this.serverSession = serverSession;
-		//
-		// final String ontologyURI = map
-		// .get(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY);
-		// final String mappingFileURI = map
-		// .get(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY);
-		// final String reasonerFactoryClass = map
-		// .get(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS);
-		// final String dbConnection = map
-		// .get(OWLAPIPersistenceProperties.ONTOLOGY_DB_CONNECTION);
-		// final String languageTag = map.get(OWLAPIPersistenceProperties.LANG);
-		//
-		// if (languageTag != null) {
-		// lang = languageTag;
-		// }
-		//
-		// try {
-		// this.rf = (OWLReasonerFactory) Class.forName(reasonerFactoryClass)
-		// .newInstance();
-		// } catch (Exception e) {
-		// throw new OWLPersistenceException("Error instantiating factory '"
-		// + reasonerFactoryClass + "'.", e);
-		// }
-		//
-		// if (ontologyURI == null) {
-		// throw new IllegalArgumentException(
-		// "Either a document URL or an ontology URI must be specified.");
-		// }
-		//
-		// if (LOG.isLoggable(Level.INFO)) {
-		// LOG.info("Loading model ontologyURI='" + ontologyURI
-		// + "', mappingFileURI='" + mappingFileURI + "'.");
-		// }
-		// try {
-		//
-		// if (dbConnection != null) {
-		// LOG.info("Using database backend: " + dbConnection);
-		// // TODO
-		// // this.m = Class.forName(OWLDBManagerclassName)
-		// // .createOWLOntologyManager(OWLDataFactoryImpl
-		// // .getInstance());
-		//
-		// } else {
-		// this.m = OWLManager.createOWLOntologyManager();
-		// }
-		//
-		// this.f = m.getOWLDataFactory();
-		//
-		// final Map<URI, URI> mapping = getMappings(mappingFileURI);
-		// LOG.info("Found mappings = " + mapping);
-		//
-		// m.addIRIMapper(new OWLOntologyIRIMapper() {
-		// public IRI getDocumentIRI(IRI arg0) {
-		// if (!mapping.containsKey(arg0.toURI())) {
-		// return arg0;
-		// }
-		//
-		// return IRI.create(mapping.get(arg0.toURI()));
-		// }
-		// });
-		// LOG.info("Mapping file succesfully parsed.");
-		//
-		// if (dbConnection != null) {
-		// // workingOnt = m.loadOntology(IRI.create(dbConnection));
-		// // LOG.info("INDS: "
-		// // + workingOnt.getIndividualsInSignature().size());
-		// // m.saveOntology(workingOnt);
-		// } else {
-		// URI physicalURI = mapping.get(URI.create(ontologyURI));
-		//
-		// if (physicalURI == null) {
-		// physicalURI = URI.create(ontologyURI);
-		// }
-		//
-		// if (physicalURI != null) {
-		// workingOnt = m.loadOntologyFromOntologyDocument(new File(
-		// physicalURI));
-		// } else if (ontologyURI.startsWith("file:")) {
-		// workingOnt = m.loadOntologyFromOntologyDocument(new File(
-		// URI.create(ontologyURI)));
-		// } else {
-		// workingOnt = m.loadOntology(IRI.create(ontologyURI));
-		// }
-		// }
-		// reasoningOnt = new OWLOntologyMerger(m).createMergedOntology(m,
-		// IRI.create("http://temporary"));
-		// LOG.info("Ontology " + ontologyURI + " succesfully loaded.");
-		// } catch (Exception e) {
-		// LOG.log(Level.SEVERE, null, e);
-		// }
-		// try {
-		// r = rf.createReasoner(reasoningOnt);
-		// r.precomputeInferences(InferenceType.CLASS_ASSERTIONS);
-		// } catch (Exception e) {
-		// LOG.log(Level.SEVERE, e.getMessage(), e);
-		// }
 
 		this.setTransactionWrapper();
 
@@ -719,6 +624,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 * up to the EntityTransaction.
 	 */
 	public void removeCurrentPersistenceContext() {
+		if (persistenceContext != null && persistenceContext.isActive()) {
+			persistenceContext.clear();
+		}
 		this.persistenceContext = null;
 	}
 

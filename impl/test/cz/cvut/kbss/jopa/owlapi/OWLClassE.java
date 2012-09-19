@@ -31,4 +31,10 @@ public class OWLClassE {
 		this.stringAttribute = stringAttribute;
 	}
 
+//	@Override
+//	public String toString() {
+//		String out = "OWLClassE: uri = " + uri;
+//		out += ", stringAttribute = " + stringAttribute;
+//		return out;
+//	}
 }

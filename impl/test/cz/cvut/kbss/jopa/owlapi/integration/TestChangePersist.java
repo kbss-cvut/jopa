@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.owlapi.general_tests;
+package cz.cvut.kbss.jopa.owlapi.integration;
 
 import java.net.URI;
 import java.util.HashSet;
@@ -7,6 +7,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -17,6 +18,8 @@ import cz.cvut.kbss.jopa.owlapi.OWLClassD;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
 
 public class TestChangePersist extends TestCase {
+
+	private static EntityManager pc;
 
 	private static String strAttr = "TestAttribute";
 	private static Set<String> strTypes;
@@ -50,13 +53,20 @@ public class TestChangePersist extends TestCase {
 		this.testEntityTwo.setOwlClassA(testEntityOne);
 	}
 
+	@After
+	public void tearDown() {
+		if (pc.isOpen()) {
+			pc.getEntityManagerFactory().close();
+		}
+	}
+
 	/**
 	 * Test saving changes of Strings or built-in types (or simple immutable
 	 * types in general).
 	 */
 	@Test
 	public void testCommitSimpleChange() {
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testCommitSimpleChange");
 		pc.clear();
 		pc.getTransaction().begin();
@@ -77,7 +87,7 @@ public class TestChangePersist extends TestCase {
 
 	@Test
 	public void testCommitCollectionChange() {
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testCommitCollectionChange");
 		pc.clear();
 		pc.getTransaction().begin();
@@ -108,7 +118,7 @@ public class TestChangePersist extends TestCase {
 		final OWLClassA newRef = new OWLClassA();
 		final URI newUri = URI.create("http://newURIforA");
 		newRef.setUri(newUri);
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testCommitReferenceChange");
 		pc.clear();
 		pc.getTransaction().begin();
@@ -129,11 +139,11 @@ public class TestChangePersist extends TestCase {
 		assertNotNull(changed.getOwlClassA());
 		assertEquals(newUri, changed.getOwlClassA().getUri());
 	}
-	
+
 	@Test
 	public void testComitChangeInReference() {
 		final String changedAttribute = "changedString";
-		EntityManager pc = TestEnvironment
+		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testCommitChangeInReference");
 		pc.clear();
 		pc.getTransaction().begin();
@@ -147,7 +157,7 @@ public class TestChangePersist extends TestCase {
 		assertNotNull(toChange);
 		toChange.getOwlClassA().setStringAttribute(changedAttribute);
 		pc.getTransaction().commit();
-		
+
 		final OWLClassA res = pc.find(OWLClassA.class, testEntityOne.getUri());
 		assertNotNull(res);
 		assertEquals(changedAttribute, res.getStringAttribute());

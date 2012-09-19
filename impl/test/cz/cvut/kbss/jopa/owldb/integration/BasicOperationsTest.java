@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.owldb.general_tests;
+package cz.cvut.kbss.jopa.owldb.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -12,8 +12,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -26,8 +27,8 @@ public class BasicOperationsTest {
 
 	private static EntityManager em;
 
-	@Before
-	public void setup() throws Exception {
+	@BeforeClass
+	public static void setupBeforeClass() throws Exception {
 		Connection con = null;
 		Statement st1 = null;
 		Statement st2 = null;
@@ -45,10 +46,18 @@ public class BasicOperationsTest {
 			st2 = null;
 		}
 		st1.close();
+		em = TestEnvironment.getPersistenceConnector(
+				"OWLDBTestBasicOperations", Storage.OWLDB, true);
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@Before
+	public void setup() throws Exception {
+		em.getEntityManagerFactory().getCache().evictAll();
+		em.clear();
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
 		if (em != null) {
 			em.getEntityManagerFactory().close();
 		}
@@ -56,10 +65,6 @@ public class BasicOperationsTest {
 
 	@Test
 	public void testFetchSimpleData() {
-		em = TestEnvironment.getPersistenceConnector(
-				"OWLDBTestBasicOperations-testFetchSimpleData", Storage.OWLDB,
-				true);
-
 		OWLClassA a = new OWLClassA();
 		URI uri = URI.create("http://new#A");
 		a.setUri(uri);
@@ -85,11 +90,8 @@ public class BasicOperationsTest {
 
 	@Test
 	public void testPersistEntity() {
-		em = TestEnvironment.getPersistenceConnector(
-				"OWLDBTestBasicOperations-testPersistEntity", Storage.OWLDB,
-				true);
 		final OWLClassA a = new OWLClassA();
-		final URI uri = URI.create("persistA");
+		final URI uri = URI.create("http://persistA");
 		a.setUri(uri);
 		final String str = "PersistTestString";
 		a.setStringAttribute(str);
@@ -107,11 +109,8 @@ public class BasicOperationsTest {
 
 	@Test
 	public void testPersistRelationship() {
-		em = TestEnvironment.getPersistenceConnector(
-				"OWLDBTestBasicOperations-testPersistRelationship",
-				Storage.OWLDB, true);
 		final OWLClassA a = new OWLClassA();
-		final URI uri = URI.create("persistA");
+		final URI uri = URI.create("http://persistARelationship");
 		a.setUri(uri);
 		final String str = "PersistTestString";
 		a.setStringAttribute(str);
@@ -134,11 +133,8 @@ public class BasicOperationsTest {
 
 	@Test
 	public void testRemoveEntity() {
-		em = TestEnvironment.getPersistenceConnector(
-				"OWLDBTestBasicOperations-testRemoveEntity", Storage.OWLDB,
-				true);
 		final OWLClassA a = new OWLClassA();
-		final URI uri = URI.create("persistA");
+		final URI uri = URI.create("http://aToRemove");
 		a.setUri(uri);
 		em.getTransaction().begin();
 		em.persist(a);

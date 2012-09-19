@@ -117,7 +117,7 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 		for (EntityManagerFactoryImpl emf : emfs) {
 			final UnitOfWorkImpl uow = emf.getServerSession()
 					.getPersistenceContext(entity);
-			if (uow != null) {
+			if (uow != null && uow.isInTransaction()) {
 				uow.getOntologyAccessor().persistEntity(entity, uow);
 				break;
 			}

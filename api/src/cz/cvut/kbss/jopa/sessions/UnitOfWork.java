@@ -40,6 +40,14 @@ public interface UnitOfWork extends Session {
 	public boolean isActive();
 
 	/**
+	 * Returns true if this {@code UnitOfWork} represents persistence context of
+	 * a currently running transaction.
+	 * 
+	 * @return True if in an active transaction
+	 */
+	public boolean isInTransaction();
+
+	/**
 	 * Return true if the given entity is managed. This means it is either in
 	 * the shared session cache or it is a new object ready for persist.
 	 * 

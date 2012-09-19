@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.owlapi.general_tests;
+package cz.cvut.kbss.jopa.owlapi.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

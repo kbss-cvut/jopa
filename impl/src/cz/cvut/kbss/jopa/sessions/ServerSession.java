@@ -1,7 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -23,10 +22,11 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
 
 /**
- * The ServerSession is the primary interface for accessing the ontology. It
- * manages an accessor object, which performs the queries. NOTE: In the future
- * there should be a pool of accessors, since we will be dealing with parallel
- * access from many clients.
+ * The ServerSession is the primary interface for accessing the ontology. </p>
+ * 
+ * It manages an accessor object, which performs the queries. NOTE: In the
+ * future there should be a pool of accessors, since we will be dealing with
+ * parallel access from many clients.
  * 
  * @author kidney
  * 
@@ -41,7 +41,7 @@ public class ServerSession extends AbstractSession {
 	private final OntologyAccessorFactory accessorFactory;
 	private OntologyAccessor ontologyAccessor;
 
-	private Map<EntityTransaction, EntityManager> runningTransactions;
+	private final Map<EntityTransaction, EntityManager> runningTransactions;
 	private final Map<Object, UnitOfWorkImpl> activePersistenceContexts;
 
 	public ServerSession() {
@@ -50,6 +50,7 @@ public class ServerSession extends AbstractSession {
 		this.metamodel = null;
 		this.ontologyAccessor = null;
 		this.accessorFactory = null;
+		this.runningTransactions = new WeakHashMap<EntityTransaction, EntityManager>();
 		this.activePersistenceContexts = new WeakHashMap<Object, UnitOfWorkImpl>();
 	}
 
@@ -58,6 +59,7 @@ public class ServerSession extends AbstractSession {
 		this.metamodel = metamodel;
 		this.managedClasses = processTypes(metamodel.getEntities());
 		this.accessorFactory = factory;
+		this.runningTransactions = new WeakHashMap<EntityTransaction, EntityManager>();
 		this.activePersistenceContexts = new WeakHashMap<Object, UnitOfWorkImpl>();
 		initialize(properties, metamodel);
 	}
@@ -129,9 +131,6 @@ public class ServerSession extends AbstractSession {
 	}
 
 	public Map<EntityTransaction, EntityManager> getRunningTransactions() {
-		if (runningTransactions == null) {
-			this.runningTransactions = new HashMap<EntityTransaction, EntityManager>();
-		}
 		return runningTransactions;
 	}
 
@@ -155,14 +154,6 @@ public class ServerSession extends AbstractSession {
 		if (uow != null && uow.hasChanges()) {
 			getLiveObjectCache().clearInferredObjects();
 		}
-	}
-
-	/**
-	 * Connect the session to the ontology. This method actually starts up the
-	 * connection pools and sets up ontology accessor.
-	 */
-	public void connect() {
-		// TODO
 	}
 
 	/**
@@ -262,7 +253,7 @@ public class ServerSession extends AbstractSession {
 	 *         be found
 	 */
 	public synchronized UnitOfWorkImpl getPersistenceContext(Object entity) {
-		if (entity == null) {
+		if (entity == null || runningTransactions.isEmpty()) {
 			return null;
 		}
 		final UnitOfWorkImpl uow = activePersistenceContexts.get(entity);

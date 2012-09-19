@@ -889,4 +889,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	Metamodel getMetamodel() {
 		return parent.getMetamodel();
 	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isInTransaction() {
+		return entityManager.getTransaction().isActive();
+	}
 }

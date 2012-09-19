@@ -28,7 +28,7 @@ public class OWLClassA {
 
 	@Types
 	private Set<String> types;
-	
+
 	@Id
 	private URI uri;
 
@@ -65,4 +65,14 @@ public class OWLClassA {
 	public Set<String> getTypes() {
 		return types;
 	}
+
+//	@Override
+//	public String toString() {
+//		String out = "OWLClassA: uri = " + uri;
+//		out += ", stringAttribute = " + stringAttribute;
+//		if (types != null) {
+//			out += ", types = {" + types.toString() + "}";
+//		}
+//		return out;
+//	}
 }

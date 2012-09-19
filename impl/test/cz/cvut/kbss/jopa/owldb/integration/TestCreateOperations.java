@@ -1,7 +1,6 @@
-package cz.cvut.kbss.jopa.owldb.general_tests;
+package cz.cvut.kbss.jopa.owldb.integration;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -30,7 +29,7 @@ import cz.cvut.kbss.jopa.owlapi.OWLClassD;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
 
-public class EntityTransactionsTest {
+public class TestCreateOperations {
 
 	private static int index;
 	private static EntityManager pc;
@@ -39,21 +38,17 @@ public class EntityTransactionsTest {
 
 	private OWLClassC testC;
 	private OWLClassC testCWithRefs;
-	private OWLClassC testCToChange;
 	private List<OWLClassA> classes;
 	private List<OWLClassA> simples;
 	private List<OWLClassA> refList;
 
-	public EntityTransactionsTest() {
+	public TestCreateOperations() {
 		this.testC = new OWLClassC();
 		final URI pkC = URI.create("http://testC");
 		testC.setUri(pkC);
 		this.testCWithRefs = new OWLClassC();
 		final URI pkC2 = URI.create("http://testCWitRefs");
 		testCWithRefs.setUri(pkC2);
-		this.testCToChange = new OWLClassC();
-		final URI pkC3 = URI.create("http://testCToChange");
-		testCToChange.setUri(pkC3);
 		this.classes = new ArrayList<OWLClassA>();
 		for (int i = 0; i < 10; i++) {
 			OWLClassA a = new OWLClassA();
@@ -83,27 +78,6 @@ public class EntityTransactionsTest {
 		}
 		testCWithRefs.setSimpleList(simples);
 		testCWithRefs.setReferencedList(refList);
-		final List<OWLClassA> simple = new ArrayList<OWLClassA>();
-		for (int i = 0; i < 10; i++) {
-			OWLClassA a = new OWLClassA();
-			URI pkA = URI
-					.create("http://simpleToChangeA" + Integer.toString(i));
-			a.setUri(pkA);
-			a.setStringAttribute("StringAttributeSimple"
-					+ Integer.toString(i + 1));
-			simple.add(a);
-		}
-		final List<OWLClassA> refs = new ArrayList<OWLClassA>();
-		for (int i = 0; i < 10; i++) {
-			OWLClassA a = new OWLClassA();
-			final URI pkRA = URI.create("http://refAToChange"
-					+ Integer.toString(i + 1));
-			a.setUri(pkRA);
-			a.setStringAttribute("strAttForRefA_" + Integer.toString(i + 1));
-			refs.add(a);
-		}
-		testCToChange.setSimpleList(simple);
-		testCToChange.setReferencedList(refs);
 	}
 
 	@BeforeClass
@@ -127,7 +101,7 @@ public class EntityTransactionsTest {
 		}
 		st1.close();
 		pc = TestEnvironment.getPersistenceConnector(
-				"OWLDBPersistenceTest-transactions", Storage.OWLDB, true);
+				"OWLDBPersistenceTest-create", Storage.OWLDB, true);
 	}
 
 	@AfterClass
@@ -224,99 +198,6 @@ public class EntityTransactionsTest {
 	}
 
 	@Test
-	public void testFindEntity() {
-		log.info("Test: Find entity");
-		pc.clear();
-		final OWLClassA entity = new OWLClassA();
-		final URI pk = URI.create("http://testA" + (index++));
-		entity.setUri(pk);
-		try {
-			pc.getTransaction().begin();
-			pc.persist(entity);
-			pc.getTransaction().commit();
-			pc.clear();
-			OWLClassA result = pc.find(OWLClassA.class, pk);
-			assertNotNull(result);
-			assertEquals(pk, result.getUri());
-		} catch (OWLPersistenceException e) {
-			log.info("Loading entity failed.");
-			fail();
-		}
-	}
-
-	@Test
-	public void testRemoveEntity() {
-		log.info("Test: Remove entity");
-		pc.clear();
-		OWLClassA entity = new OWLClassA();
-		final URI pk = URI.create("http://testA" + (index++));
-		entity.setUri(pk);
-		try {
-			pc.getTransaction().begin();
-			pc.persist(entity);
-			pc.getTransaction().commit();
-			OWLClassA fnd = pc.find(OWLClassA.class, pk);
-			assertNotNull(fnd);
-
-			pc.getTransaction().begin();
-			pc.remove(fnd);
-			pc.getTransaction().commit();
-			fnd = pc.find(OWLClassA.class, pk);
-			assertNull(fnd);
-		} catch (OWLPersistenceException e) {
-			log.info("Remove failed with exception.");
-			e.printStackTrace();
-			fail();
-		}
-	}
-
-	@Test
-	public void testMergeDetachedEntity() {
-		log.info("Test: Merge detached (detached during transaction)");
-		pc.clear();
-		OWLClassA entity = new OWLClassA();
-		final URI pk = URI.create("http://testA" + (index++));
-		entity.setStringAttribute("OriginalStringAttribute");
-		entity.setUri(pk);
-		pc.getTransaction().begin();
-		pc.persist(entity);
-		pc.getTransaction().commit();
-		pc.getTransaction().begin();
-		OWLClassA det = pc.find(OWLClassA.class, pk);
-		pc.detach(det);
-		assertFalse(pc.contains(det));
-		det.setStringAttribute("NewStringAttribute");
-		pc.merge(det);
-		assertTrue(pc.contains(det));
-		pc.getTransaction().commit();
-		det = pc.find(OWLClassA.class, pk);
-		assertNotNull(det);
-		assertEquals("NewStringAttribute", det.getStringAttribute());
-	}
-
-	@Test
-	public void testMergeDetachedOutsideTransaction() {
-		log.info("Test: Merge detached (detached outside transaction)");
-		pc.clear();
-		OWLClassA entity = new OWLClassA();
-		final URI pk = URI.create("http://testA" + (index++));
-		entity.setStringAttribute("OriginalStringAttribute");
-		entity.setUri(pk);
-		pc.getTransaction().begin();
-		pc.persist(entity);
-		pc.getTransaction().commit();
-		OWLClassA det = pc.find(OWLClassA.class, pk);
-		pc.detach(det);
-		det.setStringAttribute("NewStringAttribute");
-		pc.getTransaction().begin();
-		pc.merge(det);
-		pc.getTransaction().commit();
-		det = pc.find(OWLClassA.class, pk);
-		assertNotNull(det);
-		assertEquals("NewStringAttribute", det.getStringAttribute());
-	}
-
-	@Test
 	public void testPersistSimpleList() {
 		log.info("Test: persist an entity containing simple list of referenced entites");
 		pc.clear();
@@ -350,75 +231,6 @@ public class EntityTransactionsTest {
 		assertEquals(refList.get(0).getStringAttribute(), c.getReferencedList()
 				.get(0).getStringAttribute());
 		assertEquals(simples.get(5).getUri(), c.getSimpleList().get(5).getUri());
-	}
-
-	@Test
-	public void testChangeReferenceInList() {
-		log.info("Test: change a reference in referenced list of an entity and persist this change");
-		pc.clear();
-		pc.getTransaction().begin();
-		for (OWLClassA ref : testCToChange.getReferencedList()) {
-			pc.persist(ref);
-		}
-		for (OWLClassA simple : testCToChange.getSimpleList()) {
-			pc.persist(simple);
-		}
-		pc.persist(testCToChange);
-		pc.getTransaction().commit();
-		OWLClassC c = pc.find(OWLClassC.class, testCToChange.getUri());
-		assertNotNull(c);
-		pc.getTransaction().begin();
-		OWLClassA a = c.getReferencedList().get(3);
-		final String nStr = "newString";
-		a.setStringAttribute(nStr);
-		pc.getTransaction().commit();
-		c = pc.find(OWLClassC.class, testCToChange.getUri());
-		boolean found = false;
-		for (OWLClassA aa : c.getReferencedList()) {
-			if (nStr.equals(aa.getStringAttribute())) {
-				found = true;
-			}
-		}
-		assertTrue(found);
-	}
-
-	@Test
-	public void testContainsMember() {
-		log.info("Test: does the EntityManager contain object which is a member of another object");
-		pc.clear();
-		final OWLClassA a = new OWLClassA();
-		final URI pkOne = URI.create("http://testA" + (index++));
-		a.setUri(pkOne);
-		a.setStringAttribute("someStringAttribute");
-		final OWLClassD d = new OWLClassD();
-		final URI pkTwo = URI.create("http://testD");
-		d.setUri(pkTwo);
-		d.setOwlClassA(a);
-		pc.getTransaction().begin();
-		pc.persist(a);
-		pc.persist(d);
-		pc.getTransaction().commit();
-		OWLClassD resD = pc.find(OWLClassD.class, pkTwo);
-		assertNotNull(resD);
-		assertTrue(pc.contains(resD.getOwlClassA()));
-	}
-
-	@Test
-	public void testRefreshEntity() {
-		log.info("Test: refresh the entity state.");
-		pc.clear();
-		final OWLClassA a = new OWLClassA();
-		final URI pk = URI.create("http://testA" + (index++));
-		a.setUri(pk);
-		a.setStringAttribute("stringAttribute");
-		pc.getTransaction().begin();
-		pc.persist(a);
-		pc.getTransaction().commit();
-		OWLClassA toChange = pc.find(OWLClassA.class, pk);
-		assertNotNull(toChange);
-		toChange.setStringAttribute("newString");
-		pc.refresh(toChange);
-		assertEquals(a.getStringAttribute(), toChange.getStringAttribute());
 	}
 
 	@Test(expected = OWLPersistentObjectException.class)

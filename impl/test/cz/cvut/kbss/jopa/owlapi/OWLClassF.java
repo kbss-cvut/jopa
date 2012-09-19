@@ -30,4 +30,11 @@ public class OWLClassF {
 	public void setSecondStringAttribute(String secondStringAttribute) {
 		this.secondStringAttribute = secondStringAttribute;
 	}
+
+//	@Override
+//	public String toString() {
+//		String out = "OWLClassF: uri = " + uri;
+//		out += ", secondStringAttribute = " + secondStringAttribute;
+//		return out;
+//	}
 }

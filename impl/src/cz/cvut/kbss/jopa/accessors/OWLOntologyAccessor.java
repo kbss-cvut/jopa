@@ -202,11 +202,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 		final OWLNamedIndividual individual = dataFactory
 				.getOWLNamedIndividual(id);
 
-		final OWLClassAssertionAxiom aa = dataFactory
-				.getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI
-						.create(type.getIRI().toString())), individual);
-
-		addChange(new AddAxiom(workingOntology, aa));
+		addIndividualToOntology(entity);
 
 		this.saveEntityAttributes(id, entity, type, individual, uow);
 	}
@@ -920,12 +916,34 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 						}
 						persistEntity(li, uow);
 					} else {
-						throw new OWLPersistenceException(
-								"The entity is not persisted, neither has cascade type of ALL or PERSIST");
+						if (LOG.isLoggable(Level.FINE)) {
+							LOG.fine("Adding class assertion axiom for a not yet persisted entity.");
+						}
+						addIndividualToOntology(li);
 					}
 				}
 			}
 		}
+	}
+
+	/**
+	 * Create and add a class assertion axiom into the ontology. This axiom
+	 * means there is a new entity about to be persisted.
+	 * 
+	 * @param entity
+	 */
+	private void addIndividualToOntology(Object entity) {
+		final Class<?> cls = entity.getClass();
+		final IRI id = getIdentifier(entity);
+		final EntityType<?> type = this.metamodel.entity(cls);
+		final OWLNamedIndividual individual = dataFactory
+				.getOWLNamedIndividual(id);
+
+		final OWLClassAssertionAxiom aa = dataFactory
+				.getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI
+						.create(type.getIRI().toString())), individual);
+
+		addChange(new AddAxiom(workingOntology, aa));
 	}
 
 	private void setAnnotationProperty(final OWLNamedIndividual r,

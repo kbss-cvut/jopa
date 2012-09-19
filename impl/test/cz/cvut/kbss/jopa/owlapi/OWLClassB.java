@@ -52,4 +52,11 @@ public class OWLClassB {
 	public String getStringAttribute() {
 		return stringAttribute;
 	}
+
+//	@Override
+//	public String toString() {
+//		String out = "OWLClassB: uri = " + uri;
+//		out += ", stringAttribute = " + stringAttribute;
+//		return out;
+//	}
 }

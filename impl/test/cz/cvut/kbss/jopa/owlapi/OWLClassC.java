@@ -32,7 +32,7 @@ public class OWLClassC {
 	private URI uri;
 
 	@Sequence
-	@OWLObjectProperty(iri = "http://B-hasReferencedSequence",fetch=FetchType.EAGER)
+	@OWLObjectProperty(iri = "http://B-hasReferencedSequence", fetch = FetchType.EAGER)
 	private List<OWLClassA> referencedList;
 
 	@Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://B-hasSimpleNext")
@@ -63,4 +63,15 @@ public class OWLClassC {
 		return simplelist;
 	}
 
+//	@Override
+//	public String toString() {
+//		String out = "OWLClassC: uri = " + uri;
+//		if (referencedList != null) {
+//			out += ", referencedList = {" + referencedList.toString() + "}";
+//		}
+//		if (simplelist != null) {
+//			out += ", simpleList = {" + simplelist.toString() + "}";
+//		}
+//		return out;
+//	}
 }
