@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
-import cz.cvut.kbss.jopa.sessions.CloneBuilder;
 
 /**
  * Special class for cloning collections. Introduced because some Java
@@ -24,21 +23,21 @@ import cz.cvut.kbss.jopa.sessions.CloneBuilder;
  */
 public class CollectionInstantiationHelper {
 
-	private CloneBuilder builder;
+	private InstantiationHelper builder;
 	private static final Class<?> singletonListClass = Collections
 			.singletonList(null).getClass();
 	private static final Class<?> singletonSetClass = Collections.singleton(
 			null).getClass();
 	private static final Class<?> singletonMapClass = Collections.singletonMap(
 			null, null).getClass();
-	private static final Class<?> arrayAsListClass = Arrays.asList(new Object())
-			.getClass();
+	private static final Class<?> arrayAsListClass = Arrays
+			.asList(new Object()).getClass();
 
 	public CollectionInstantiationHelper() {
 		this.builder = null;
 	}
 
-	public CollectionInstantiationHelper(CloneBuilder builder) {
+	public CollectionInstantiationHelper(InstantiationHelper builder) {
 		super();
 		this.builder = builder;
 	}
@@ -46,8 +45,7 @@ public class CollectionInstantiationHelper {
 	/**
 	 * This method is the entry point for cloning the Java collections. It
 	 * clones standard collections as well as immutable collections and
-	 * singleton collections.
-	 * TODO Add support for maps
+	 * singleton collections. TODO Add support for maps
 	 * 
 	 * @param collection
 	 *            The collection to clone.
@@ -68,10 +66,12 @@ public class CollectionInstantiationHelper {
 			} else if (singletonSetClass.isInstance(container)) {
 				c = getFirstDeclaredConstructorFor(singletonSetClass);
 			} else if (singletonMapClass.isInstance(container)) {
-				throw new UnsupportedOperationException("Maps are not supported yet.");
+				throw new UnsupportedOperationException(
+						"Maps are not supported yet.");
 			} else if (arrayAsListClass.isInstance(container)) {
 				c = getFirstDeclaredConstructorFor(arrayAsListClass);
-				params[0] = ((CloneBuilderImpl)builder).cloneArray(container.toArray());
+				params[0] = builder.getCloneBuilder().cloneArray(
+						container.toArray());
 			}
 			try {
 				if (!c.isAccessible()) {
@@ -145,8 +145,7 @@ public class CollectionInstantiationHelper {
 
 	/**
 	 * Clone all the elements in the collection. This will make sure that the
-	 * cloning process creates a deep copy.
-	 * TODO Add support for maps
+	 * cloning process creates a deep copy. TODO Add support for maps
 	 * 
 	 * @param collection
 	 *            The collection to clone.
@@ -154,7 +153,8 @@ public class CollectionInstantiationHelper {
 	private Collection cloneCollectionContent(Collection<?> collection) {
 		Collection<Object> result = null;
 		if (collection instanceof Map) {
-			throw new UnsupportedOperationException("Maps are not supported yet.");
+			throw new UnsupportedOperationException(
+					"Maps are not supported yet.");
 		} else {
 			result = new ArrayList<Object>(collection.size());
 			for (Object obj : collection) {
@@ -162,7 +162,13 @@ public class CollectionInstantiationHelper {
 					result.addAll(collection);
 					break;
 				}
-				Object clone = builder.buildClone(obj);
+				Object clone = null;
+				if (builder.getUnitOfWork().getManagedTypes()
+						.contains(obj.getClass())) {
+					clone = builder.getUnitOfWork().registerExistingObject(obj);
+				} else {
+					clone = builder.getCloneBuilder().buildClone(obj);
+				}
 				result.add(clone);
 			}
 		}

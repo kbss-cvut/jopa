@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.Vector;
 
 import org.semanticweb.owlapi.model.IRI;
@@ -66,9 +67,25 @@ public interface UnitOfWork extends Session {
 	public void mergeDetached(Object entity);
 
 	/**
-	 * Register objects from the given collection in this Unit of Work. This
-	 * creates working clones and puts the given objects into this Unit of Work
-	 * cache.
+	 * Register objects from the given collection in this {@code UnitOfWork}.
+	 * </p>
+	 * 
+	 * The difference between this method and the
+	 * {@link #registerAllObjects(Collection)} is that this method assumes that
+	 * the registered objects exist in the ontology. This version is preffered
+	 * and should be used, since it performs better.
+	 * 
+	 * @param objects
+	 *            Objects to register
+	 * @return Vector of clones of the specified objects
+	 */
+	public Vector<Object> registerAllExistingObjects(Collection<Object> objects);
+
+	/**
+	 * Register objects from the given collection in this Unit of Work. </p>
+	 * 
+	 * This creates working clones and puts the given objects into this Unit of
+	 * Work cache.
 	 * 
 	 * @param objects
 	 *            Collection<Object>
@@ -155,4 +172,12 @@ public interface UnitOfWork extends Session {
 	 */
 	public void writeUncommittedChanges();
 
+	/**
+	 * Get a set of all types managed by this persistence context. </p>
+	 * 
+	 * I. e. get a set of all known entity classes.
+	 * 
+	 * @return Set of {@code Class}
+	 */
+	public Set<Class<?>> getManagedTypes();
 }

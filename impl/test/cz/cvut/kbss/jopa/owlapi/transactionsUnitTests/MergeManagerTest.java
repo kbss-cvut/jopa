@@ -205,6 +205,9 @@ public class MergeManagerTest {
 		public boolean isOpen() {
 			return true;
 		}
+
+		public void loadReference(Object entity, Field field, UnitOfWork uow) {
+		}
 	}
 
 	public static class ServerSessionStub extends ServerSession {

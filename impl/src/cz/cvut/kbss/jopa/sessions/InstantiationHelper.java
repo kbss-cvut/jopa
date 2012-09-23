@@ -21,17 +21,22 @@ import cz.cvut.kbss.jopa.sessions.CloneBuilder;
  * 
  */
 public class InstantiationHelper {
-	
-	private CloneBuilder builder;
-	private CollectionInstantiationHelper collectionBuilder;
+
+	private final CloneBuilder builder;
+	private final CollectionInstantiationHelper collectionBuilder;
+	private final UnitOfWork uow;
 
 	public InstantiationHelper() {
 		this.builder = null;
+		this.collectionBuilder = null;
+		this.uow = null;
 	}
 
-	public InstantiationHelper(CloneBuilder builder) {
+	public InstantiationHelper(CloneBuilder builder, UnitOfWork uow) {
 		super();
 		this.builder = builder;
+		this.uow = uow;
+		this.collectionBuilder = new CollectionInstantiationHelper(this);
 	}
 
 	/**
@@ -40,14 +45,14 @@ public class InstantiationHelper {
 	 * @param javaClass
 	 * @return New object of the given class.
 	 */
-	public Object buildNewInstance(final Class<?> javaClass,
-			Object original) {
+	public Object buildNewInstance(final Class<?> javaClass, Object original) {
 		if (javaClass == null || original == null) {
 			return null;
 		}
 		if (original instanceof Collection) {
-			// According to eclipselink, instanceof is much faster than isAssignableFrom
-			return getCollectionBuilder().buildNewInstance(original);
+			// According to eclipselink, instanceof is much faster than
+			// isAssignableFrom
+			return collectionBuilder.buildNewInstance(original);
 		}
 		Object newInstance = buildNewInstanceUsingDefaultConstructor(javaClass);
 		if (newInstance == null) {
@@ -65,8 +70,9 @@ public class InstantiationHelper {
 						fieldClasses.add(f.getType());
 					} else {
 						try {
-							Object [] params = new Object[1];
-							params[0] = original.getClass().getDeclaredField(f.getName());
+							Object[] params = new Object[1];
+							params[0] = original.getClass().getDeclaredField(
+									f.getName());
 							newInstance = c.newInstance(params);
 							if (newInstance != null) {
 								return newInstance;
@@ -92,7 +98,7 @@ public class InstantiationHelper {
 					args = fieldClasses.toArray(args);
 					c = getDeclaredConstructorFor(javaClass, args);
 					if (c != null) {
-						Object [] params = new Object[args.length];
+						Object[] params = new Object[args.length];
 						for (int i = 0; i < params.length; i++) {
 							params[i] = null;
 						}
@@ -161,12 +167,13 @@ public class InstantiationHelper {
 		}
 		return newInstance;
 	}
+
+	UnitOfWork getUnitOfWork() {
+		return uow;
+	}
 	
-	protected CollectionInstantiationHelper getCollectionBuilder() {
-		if (collectionBuilder == null) {
-			this.collectionBuilder = new CollectionInstantiationHelper(builder);
-		}
-		return collectionBuilder;
+	CloneBuilderImpl getCloneBuilder() {
+		return (CloneBuilderImpl) builder;
 	}
 
 	/**
@@ -203,7 +210,9 @@ public class InstantiationHelper {
 
 	/**
 	 * Checks if the specified field was declared static in its class.
-	 * @param f The field to examine.
+	 * 
+	 * @param f
+	 *            The field to examine.
 	 * @return True when the Field is static.
 	 */
 	private static boolean isFieldStatic(final Field f) {

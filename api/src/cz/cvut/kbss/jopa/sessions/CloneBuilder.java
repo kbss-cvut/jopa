@@ -66,5 +66,4 @@ public interface CloneBuilder {
 	 */
 	public Object mergeChanges(Object original, Object clone,
 			ObjectChangeSet changeSet, MergeManager mergeManager);
-
 }

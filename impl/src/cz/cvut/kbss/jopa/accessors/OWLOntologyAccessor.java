@@ -1305,4 +1305,25 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 					"The TransactionOntologyAccessor is closed.");
 		}
 	}
+
+	public void loadReference(Object entity, Field field, UnitOfWork uow)
+			throws IllegalArgumentException, IllegalAccessException {
+		if (entity == null || field == null) {
+			LOG.warning("Null passed to TransactionalOntologyAccessor.loadReference.");
+			return;
+		}
+		centralAccessor.acquireReadLock();
+		((OntologyAccessorImpl) centralAccessor).loadReference(entity, field);
+		Object reference = null;
+		reference = field.get(entity);
+		if (reference instanceof Collection) {
+			Collection<Object> c = (Collection<Object>) reference;
+			Collection<?> clones = uow.registerAllExistingObjects(c);
+			field.set(entity, clones);
+		} else {
+			Object clone = uow.registerExistingObject(reference);
+			field.set(entity, clone);
+		}
+		centralAccessor.releaseReadLock();
+	}
 }

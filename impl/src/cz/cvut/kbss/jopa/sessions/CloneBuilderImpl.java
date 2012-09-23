@@ -18,11 +18,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.CloneBuilder;
-import cz.cvut.kbss.jopa.sessions.MergeManager;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
 
 public class CloneBuilderImpl implements CloneBuilder {
 
@@ -358,7 +353,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	protected InstantiationHelper getInstantiationHelper() {
 		if (instantiationHelper == null) {
-			this.instantiationHelper = new InstantiationHelper(this);
+			this.instantiationHelper = new InstantiationHelper(this, uow);
 		}
 		return instantiationHelper;
 	}

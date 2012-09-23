@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.accessors;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import org.semanticweb.owlapi.model.IRI;
@@ -168,7 +169,21 @@ public interface TransactionOntologyAccessor {
 	public IRI getIdentifier(Object object);
 
 	/**
-	 * Check if the accessor is open.
+	 * Load referenced field of the specified entity. </p>
+	 * 
+	 * @param entity
+	 *            The entity whose field is to be loaded
+	 * @param field
+	 *            The field to be loaded
+	 * @param uow
+	 *            Persistence context of the entity
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
+	 */
+	public void loadReference(Object entity, Field field, UnitOfWork uow) throws IllegalArgumentException, IllegalAccessException;
+
+	/**
+	 * Check if the accessor is open. </p>
 	 * 
 	 * If the accessor is already closed, all operation will throw an
 	 * {@code IllegalStateException}.

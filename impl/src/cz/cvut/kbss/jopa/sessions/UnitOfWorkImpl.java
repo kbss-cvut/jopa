@@ -597,9 +597,23 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		setHasChanges(true);
 	}
 
+	public Vector<Object> registerAllExistingObjects(Collection<Object> objects) {
+		if (objects == null || objects.isEmpty()) {
+			return new Vector<Object>();
+		}
+		Vector<Object> clones = new Vector<Object>();
+		Iterator<?> it = objects.iterator();
+		while (it.hasNext()) {
+			Object original = it.next();
+			Object clone = registerExistingObject(original);
+			clones.add(clone);
+		}
+		return clones;
+	}
+
 	public Vector<Object> registerAllObjects(Collection<Object> objects) {
-		if (objects == null) {
-			return null;
+		if (objects == null || objects.isEmpty()) {
+			return new Vector<Object>();
 		}
 		Vector<Object> clones = new Vector<Object>();
 		Iterator<?> it = objects.iterator();
@@ -636,7 +650,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		getCloneMapping().put(clone, clone);
 		getCloneToOriginals().put(clone, object);
 		registerEntityWithContext(clone, this);
-		setHasChanges(true); // TODO: Is this right?
 		return clone;
 	}
 

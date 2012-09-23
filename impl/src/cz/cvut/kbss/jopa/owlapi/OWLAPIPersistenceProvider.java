@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.accessors.OWLOntologyAccessor;
-import cz.cvut.kbss.jopa.accessors.OntologyAccessorImpl;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
@@ -61,25 +60,26 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 		return LoadState.UNKNOWN;
 	}
 
-	private static AbstractEntityManager find(Object o) {
-		for (final EntityManagerFactoryImpl emfi : emfs) {
-			for (final AbstractEntityManager emi : emfi.getEntityManagers()) {
-				if (emi.isOpen() && emi.contains(o)) {
-					return emi;
-				}
+	private static UnitOfWorkImpl getPersistenceContext(Object entity) {
+		if (entity == null) {
+			return null;
+		}
+		for (EntityManagerFactoryImpl emf : emfs) {
+			final UnitOfWorkImpl uow = emf.getServerSession()
+					.getPersistenceContext(entity);
+			if (uow != null) {
+				return uow;
 			}
 		}
-
 		return null;
 	}
 
 	static void loadReference(Object o, Field f)
 			throws IllegalArgumentException, IllegalAccessException {
-		final EntityManagerImpl ei = (EntityManagerImpl) find(o);
+		final UnitOfWorkImpl uow = getPersistenceContext(o);
 
-		if (ei != null) {
-			Object managedOrig = ei.getCurrentPersistenceContext().getOriginal(
-					o);
+		if (uow != null) {
+			Object managedOrig = uow.getOriginal(o);
 			if (managedOrig == null) {
 				throw new OWLPersistenceException(
 						"Entity not managed in the current persistence context.");
@@ -88,19 +88,17 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 			if (val != null) {
 				return;
 			}
-			OntologyAccessorImpl accessor = (OntologyAccessorImpl) ei
-					.getServerSession().getAccessor();
-			accessor.loadReference(o, f);
+			uow.getOntologyAccessor().loadReference(o, f, uow);
 		}
 	}
 
 	static void saveReference(Object o, Field f) {
-		final EntityManagerImpl ei = (EntityManagerImpl) find(o);
+		final UnitOfWorkImpl uow = getPersistenceContext(o);
 
-		if (ei != null) {
-			OWLOntologyAccessor accessor = (OWLOntologyAccessor) ei
-					.getCurrentPersistenceContext().getOntologyAccessor();
-			accessor.saveReference(o, f, ei.getCurrentPersistenceContext());
+		if (uow != null && uow.isInTransaction()) {
+			OWLOntologyAccessor accessor = (OWLOntologyAccessor) uow
+					.getOntologyAccessor();
+			accessor.saveReference(o, f, uow);
 		}
 	}
 
@@ -111,16 +109,10 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 	 *            Entity to persist
 	 */
 	static void persistEntityChanges(Object entity) {
-		if (entity == null) {
-			return;
-		}
-		for (EntityManagerFactoryImpl emf : emfs) {
-			final UnitOfWorkImpl uow = emf.getServerSession()
-					.getPersistenceContext(entity);
-			if (uow != null && uow.isInTransaction()) {
-				uow.getOntologyAccessor().persistEntity(entity, uow);
-				break;
-			}
+		final UnitOfWorkImpl uow = getPersistenceContext(entity);
+		if (uow != null && uow.isInTransaction()) {
+			uow.getOntologyAccessor().persistEntity(entity, uow);
+			uow.setHasChanges(true);
 		}
 	}
 }

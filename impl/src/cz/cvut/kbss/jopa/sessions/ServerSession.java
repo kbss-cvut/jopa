@@ -253,7 +253,7 @@ public class ServerSession extends AbstractSession {
 	 *         be found
 	 */
 	public synchronized UnitOfWorkImpl getPersistenceContext(Object entity) {
-		if (entity == null || runningTransactions.isEmpty()) {
+		if (entity == null) {
 			return null;
 		}
 		final UnitOfWorkImpl uow = activePersistenceContexts.get(entity);

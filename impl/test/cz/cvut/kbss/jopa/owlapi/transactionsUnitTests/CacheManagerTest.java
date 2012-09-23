@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -307,6 +308,9 @@ public class CacheManagerTest {
 
 		public boolean isOpen() {
 			return true;
+		}
+
+		public void loadReference(Object entity, Field field, UnitOfWork uow) {
 		}
 
 	}
