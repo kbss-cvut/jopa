@@ -10,6 +10,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -64,7 +67,11 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 	protected Metamodel metamodel;
 	protected String lang;
 	protected ServerSession session;
-	protected boolean useAspectJ;
+	private boolean open;
+
+	private final ReadWriteLock lock;
+	private final Lock readLock;
+	private final Lock writeLock;
 
 	public OntologyAccessorImpl(Map<String, String> properties,
 			Metamodel metamodel, Session session) {
@@ -75,45 +82,53 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 		}
 		this.metamodel = metamodel;
 		this.session = (ServerSession) session;
-		this.useAspectJ = metamodel.shouldUseAspectJ();
 
 		this.accessor = AccessStrategy.getStrategy(properties);
+		this.lock = new ReentrantReadWriteLock();
+		this.readLock = lock.readLock();
+		this.writeLock = lock.writeLock();
+		this.open = true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public boolean acquireReadLock() {
-		// TODO Auto-generated method stub
-		return false;
+		ensureOpen();
+		readLock.lock();
+		return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public void releaseReadLock() {
-		// TODO
+		ensureOpen();
+		readLock.unlock();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public boolean acquireWriteLock() {
-		// TODO Auto-generated method stub
-		return false;
+		ensureOpen();
+		writeLock.lock();
+		return true;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public void releaseWriteLock() {
-		// TODO
+		ensureOpen();
+		writeLock.unlock();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public OntologyDataHolder cloneOntologyStructures() {
+		ensureOpen();
 		final Set<OWLAxiom> axioms = getWorkingOntology().getAxioms();
 		final OWLOntologyManager manager = OWLManager
 				.createOWLOntologyManager();
@@ -140,6 +155,7 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 	 */
 	public void writeChanges(List<OWLOntologyChange> changes)
 			throws OWLPersistenceException {
+		ensureOpen();
 		if (changes == null || changes.isEmpty()) {
 			return;
 		}
@@ -164,6 +180,7 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 	 * {@inheritDoc}
 	 */
 	public <T> T readEntity(Class<T> cls, Object uri) {
+		ensureOpen();
 		final IRI iri = (IRI) uri;
 		if (!isInOntologySignature(iri, true)) {
 			return null;
@@ -176,6 +193,7 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 	 * {@inheritDoc}
 	 */
 	public void saveWorkingOntology() throws OWLPersistenceException {
+		ensureOpen();
 		try {
 			if (LOG.isLoggable(Level.CONFIG)) {
 				LOG.config("Saving working ontology...");
@@ -190,14 +208,24 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 	 * {@inheritDoc}
 	 */
 	public void close() throws OWLPersistenceException {
+		ensureOpen();
 		saveWorkingOntology();
 		accessor.close();
+		this.open = false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean isOpen() {
+		return open;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public IRI generateNewIdentifier(Object entity) {
+		ensureOpen();
 		if (entity == null) {
 			return null;
 		}
@@ -222,6 +250,7 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 	 */
 	public boolean isInOntologySignature(IRI identifier,
 			boolean shouldSearchImports) {
+		ensureOpen();
 		if (identifier == null) {
 			return false;
 		}
@@ -233,6 +262,7 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 	 * {@inheritDoc}
 	 */
 	public OWLNamedIndividual getOWLNamedIndividual(IRI identifier) {
+		ensureOpen();
 		return getDataFactory().getOWLNamedIndividual(identifier);
 	}
 
@@ -304,6 +334,7 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 	}
 
 	public void loadReference(Object object, Field field) {
+		ensureOpen();
 
 		final EntityType<?> et = this.metamodel.entity(object.getClass());
 		final IRI iri = getIdentifier(object);
@@ -535,9 +566,7 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 
 				break;
 			case OBJECT:
-				if (!all && field.getFetchType().equals(FetchType.LAZY)
-						&& useAspectJ) {
-					// toRefresh.add(object);
+				if (!all && field.getFetchType().equals(FetchType.LAZY)) {
 					break;
 				}
 
@@ -992,6 +1021,12 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 
 	private OWLDataFactory getDataFactory() {
 		return accessor.getDataFactory();
+	}
+
+	private void ensureOpen() {
+		if (!open) {
+			throw new IllegalStateException("The OntologyAccessor is closed.");
+		}
 	}
 
 }

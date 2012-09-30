@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 public interface OntologyAccessor {
 
 	/**
-	 * Acquire a read lock.
+	 * Acquire a read lock. </p>
 	 * 
 	 * Read locks are non-exclusive, i. e. multiple threads can simultaneously
 	 * acquire read locks and read the same data. If an exclusive lock is held
@@ -35,12 +35,14 @@ public interface OntologyAccessor {
 	public boolean acquireReadLock();
 
 	/**
-	 * Release the previously acquired read lock.
+	 * Release the previously acquired read lock. </p>
+	 * 
+	 * See {@link #acquireReadLock()}.
 	 */
 	public void releaseReadLock();
 
 	/**
-	 * Acquire an exclusive write lock.
+	 * Acquire an exclusive write lock. </p>
 	 * 
 	 * Acquiring write lock exclusively locks the accessor so the calling thread
 	 * can modify the data in the ontology. Since the write lock is exclusive,
@@ -52,12 +54,14 @@ public interface OntologyAccessor {
 	public boolean acquireWriteLock();
 
 	/**
-	 * Release the previously acquired write lock.
+	 * Release the previously acquired write lock. </p>
+	 * 
+	 * See {@link #acquireWriteLock()}
 	 */
 	public void releaseWriteLock();
 
 	/**
-	 * Create and get a clone of the working ontology structures.
+	 * Create and get a clone of the working ontology structures. </p>
 	 * 
 	 * This operation requires only read lock, since it does not modify existing
 	 * resources.
@@ -67,7 +71,7 @@ public interface OntologyAccessor {
 	public OntologyDataHolder cloneOntologyStructures();
 
 	/**
-	 * Write changes to the underlying ontology.
+	 * Write changes to the underlying ontology. </p>
 	 * 
 	 * This method applies the specified changes to the underlying working
 	 * ontology and saves the working ontology. This operation effectively
@@ -84,7 +88,7 @@ public interface OntologyAccessor {
 			throws OWLPersistenceException;
 
 	/**
-	 * Load and reconstruct object with the given URI from the ontology.
+	 * Load and reconstruct object with the given URI from the ontology. </p>
 	 * 
 	 * @param cls
 	 *            Entity class to which the returned object should be cast
@@ -95,7 +99,7 @@ public interface OntologyAccessor {
 	public <T> T readEntity(Class<T> cls, Object uri);
 
 	/**
-	 * Explicitly save the working ontology.
+	 * Explicitly save the working ontology. </p>
 	 * 
 	 * Note that saving the working ontology is usually not necessary, because
 	 * the only operation allowed to modify the working ontology (see
@@ -108,7 +112,7 @@ public interface OntologyAccessor {
 	public void saveWorkingOntology() throws OWLPersistenceException;
 
 	/**
-	 * Close the connection to the working ontology.
+	 * Close the connection to the working ontology. </p>
 	 * 
 	 * @throws OWLPersistenceException
 	 *             If an exception is thrown while closing the connection to the
@@ -117,7 +121,16 @@ public interface OntologyAccessor {
 	public void close() throws OWLPersistenceException;
 
 	/**
-	 * Generate new identifier for the specified entity.
+	 * Indicates whether the accessor is open. </p>
+	 * 
+	 * Returns true until the accessor has been closed.
+	 * 
+	 * @return Boolean indicating whether the accessor is open
+	 */
+	public boolean isOpen();
+
+	/**
+	 * Generate new identifier for the specified entity. </p>
 	 * 
 	 * If the specified object is not entity or is already present in the
 	 * working ontology, null is returned.
@@ -129,7 +142,7 @@ public interface OntologyAccessor {
 	public IRI generateNewIdentifier(Object entity);
 
 	/**
-	 * Check if entity with the specified IRI is in the working ontology.
+	 * Check if entity with the specified IRI is in the working ontology. </p>
 	 * 
 	 * If the specified identifier is null, false is returned.
 	 * 
@@ -145,7 +158,7 @@ public interface OntologyAccessor {
 			boolean shouldSearchImports);
 
 	/**
-	 * Get the OWLNamedIndividual with the specified IRI.
+	 * Get the OWLNamedIndividual with the specified IRI. </p>
 	 * 
 	 * @param identifier
 	 *            Identifier of the individual to search for
@@ -154,7 +167,7 @@ public interface OntologyAccessor {
 	public OWLNamedIndividual getOWLNamedIndividual(IRI identifier);
 
 	/**
-	 * Check if the integrity constraints are not violated.
+	 * Check if the integrity constraints are not violated. </p>
 	 * 
 	 * 
 	 * @param entity
