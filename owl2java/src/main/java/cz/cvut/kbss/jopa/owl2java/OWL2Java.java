@@ -49,7 +49,7 @@ public class OWL2Java {
 				accepts("c", "context name").withRequiredArg().ofType(
 						String.class);
 				accepts("d", "output directory").withRequiredArg()
-						.ofType(String.class).defaultsTo(".");
+						.ofType(String.class).defaultsTo("");
 			}
 		});
 		map.put(COMMAND.list, new OptionParser() {
