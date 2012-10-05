@@ -599,7 +599,7 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 						for (OWLIndividual col : getObjectProperties(
 								individual, op(pa.getIRI()), field.isInferred())) {
 							set.add(getJavaInstanceForOWLIndividual(pa
-									.getBindableJavaType(), col, col
+									.getBindableJavaType(), col.asOWLNamedIndividual(), col
 									.asOWLNamedIndividual().getIRI()));
 						}
 
@@ -617,7 +617,7 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 
 					if (iObject != null) {
 						value = getJavaInstanceForOWLIndividual(
-								field.getJavaType(), iObject, iObject
+								field.getJavaType(), iObject.asOWLNamedIndividual(), iObject
 										.asOWLNamedIndividual().getIRI());
 					}
 				}
@@ -684,11 +684,11 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 	 *            TODO
 	 */
 	private <T> T getJavaInstanceForOWLIndividual(final Class<T> cls,
-			final OWLIndividual i, IRI iri) {
+			final OWLNamedIndividual i, IRI iri) {
 		if (LOG.isLoggable(Level.FINEST))
 			LOG.finest("Getting " + i + " of " + cls);
-		if (this.session.getLiveObjectCache().contains(cls, iri)) {
-			Object ob = this.session.getLiveObjectCache().get(cls, iri);
+		if (this.session.getLiveObjectCache().contains(cls, i.getIRI())) {
+			Object ob = this.session.getLiveObjectCache().get(cls, i.getIRI());
 			if (ob == null) {
 				throw new OWLPersistenceException();
 			}
@@ -697,12 +697,12 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 					LOG.fine("Found " + ob + ", casting to " + cls);
 				return cls.cast(ob);
 			} else {
-				return loadAndReconstructEntity(cls, iri);
+				return loadAndReconstructEntity(cls, i.getIRI());
 			}
 		} else if (cls.isEnum()) {
 			return cls.cast(getEnum(cls.asSubclass(Enum.class), i));
 		} else {
-			return loadAndReconstructEntity(cls, iri);
+			return loadAndReconstructEntity(cls, i.getIRI());
 		}
 		/*
 		 * if (managed.containsValue(i)) { for (Object o : managed.keySet()) {
@@ -903,7 +903,8 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 				// IntegrityConstraintViolatedException("No content specified for a list.");
 			}
 
-			lst.add(getJavaInstanceForOWLIndividual(type, iContent, iri));
+            // TODO asOWLNamedIndividual - not necessarily true
+			lst.add(getJavaInstanceForOWLIndividual(type, iContent.asOWLNamedIndividual(), iri));
 			seq = getObjectProperty(seq, hasNext, inferred);
 		}
 		if (lst.isEmpty()) {
@@ -922,7 +923,7 @@ public class OntologyAccessorImpl implements OntologyAccessor {
 		OWLIndividual o = getObjectProperty(subject, hasSequence, inferred);
 
 		while (o != null) {
-			lst.add(getJavaInstanceForOWLIndividual(type, o, iri));
+			lst.add(getJavaInstanceForOWLIndividual(type, o.asOWLNamedIndividual(), iri)); // asOWLNamedIndivdiual not necessarily true
 			o = getObjectProperty(o, hasNext, inferred);
 		}
 		if (lst.isEmpty()) {
