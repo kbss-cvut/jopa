@@ -12,6 +12,7 @@
     <url>http://jopa.sourceforge.net</url>
 
     <properties>
+        <owlapi.version>3.2.2</owlapi.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -27,4 +28,58 @@
             </plugin>
         </plugins>
     </build>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License</name>
+            <url>http://www.gnu.org/copyleft/lesser.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Petr Křemen</name>
+            <email>petr.kremen@fel.cvut.cz</email>
+            <url>http://cyber.felk.cvut.cz/people</url>
+            <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group</organization>
+            <organizationUrl>http://kbss.felk.cvut.cz</organizationUrl>
+            <roles>
+            </roles>
+        </developer>
+        <developer>
+            <name>Martin Ledvinka</name>
+            <email>ledvima1@fit.cvut.cz</email>
+            <!--<url>http://cyber.felk.cvut.cz/people</url>-->
+            <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group</organization>
+            <organizationUrl>http://kbss.felk.cvut.cz</organizationUrl>
+            <roles>
+            </roles>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>Czech Technical University in Prague, Knowledge Based and Software Systems Group</name>
+        <url>http://kbss.felk.cvut.cz</url>
+    </organization>
+
+    <scm>
+        <connection>scm:svn:https://krizik.felk.cvut.cz/svnkbss/research/jopa/trunk/</connection>
+        <developerConnection>scm:svn:https://krizik.felk.cvut.cz/svnkbss/research/jopa/trunk/</developerConnection>
+        <url>https://krizik.felk.cvut.cz/svnkbss/research/jopa/trunk/</url>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>krizik</id>
+            <name>KBSS Maven 2 Repository</name>
+            <url>http://krizik.felk.cvut.cz/m2repo</url>
+        </repository>
+        <site>
+            <id>jopa</id>
+            <name>JOPA</name>
+            <url>http://jopa.sourceforge.net</url>
+        </site>
+        <downloadUrl>http://sourceforge.net/projects/jopa/files/</downloadUrl>
+    </distributionManagement>
 </project>

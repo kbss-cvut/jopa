@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>cz.cvut.kbss</groupId>
-	<artifactId>jopa</artifactId>
+
+    <groupId>cz.cvut.kbss.jopa</groupId>
+    <version>0.3-SNAPSHOT</version>
+    <artifactId>jopa-all</artifactId>
 	<packaging>pom</packaging>
-	<version>0.3-SNAPSHOT</version>
 	<name>JOPA</name>
-	<url>http://sourceforge.net/projects/jopa</url>
 
 	<modules>
 		<module>jopa-api</module>
@@ -16,13 +16,6 @@
 		<module>jopa-impl</module>
 	</modules>
 
-	<licenses>
-		<license>
-			<name>GNU Lesser General Public License</name>
-			<url>http://www.gnu.org/copyleft/lesser.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
 
 	<build>
 		<finalName>jopa-${project.version}</finalName>
@@ -89,10 +82,4 @@
 			</plugin>
 		</plugins>
 	</reporting>
-
-	<scm>
-		<connection>scm:svn:https://krizik.felk.cvut.cz/svnkbss/projects/jopa/trunk/</connection>
-		<developerConnection>scm:svn:https://krizik.felk.cvut.cz/svnkbss/projects/jopa/trunk/</developerConnection>
-		<url>https://krizik.felk.cvut.cz/svnkbss/projects/jopa/trunk/</url>
-	</scm>
 </project>
