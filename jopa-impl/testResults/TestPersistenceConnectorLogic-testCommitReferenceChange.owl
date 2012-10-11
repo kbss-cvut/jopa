@@ -102,7 +102,7 @@
 
     <owl:NamedIndividual rdf:about="http://testOWLClassD">
         <rdf:type rdf:resource="http://new.owl#OWLClassD"/>
-        <http:hasA rdf:resource="http://newURIforA"/>
+        <http:hasA rdf:resource="http://testOne"/>
     </owl:NamedIndividual>
     
 
