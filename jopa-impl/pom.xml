@@ -130,7 +130,7 @@
 			<optional>false</optional>
 		</dependency>
 		<dependency>
-			<groupId>cz.cvut.kbss</groupId>
+			<groupId>cz.cvut.kbss.jopa</groupId>
 			<artifactId>jopa-api</artifactId>
 			<version>${project.version}</version>
 			<type>jar</type>
@@ -138,7 +138,7 @@
 			<optional>false</optional>
 		</dependency>
 		<dependency>
-			<groupId>cz.cvut.kbss</groupId>
+			<groupId>cz.cvut.kbss.jopa</groupId>
 			<artifactId>jopa-owl2java</artifactId>
 			<version>${project.version}</version>
 			<type>jar</type>
