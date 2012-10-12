@@ -1,0 +1,636 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+                                   "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping default-cascade="save-update" default-lazy="false" package="uk.ac.manchester.cs.owl.owlapi">
+
+<!-- Meta -->
+	<class name="de.fraunhofer.iitb.owldb.meta.OntologyIRI">
+		<cache usage="read-write"/>
+		<id column="id" name="id" type="long">
+			<generator class="native" />
+		</id>
+		<property name="ontologyIRI" type="de.fraunhofer.iitb.owldb.util.IRIStringType" />
+	</class>
+
+	<class name="de.fraunhofer.iitb.owldb.meta.AnnotatedOWLObject" table="owlobject">
+		<cache usage="read-write"/>
+		<id column="id" name="id" type="long"/>
+		<property name="refC" type="long"/>
+		<property name="hashCode" column="hashCode" type="long" index="AnnotatedOWLObjectURIIndex"/>
+	</class>
+
+	<class name="OWLImportsDeclarationImpl" table="ImportsDeclaration">
+		<id column="id" type="long" />
+		<property access="field" name="iri"	type="de.fraunhofer.iitb.owldb.util.IRIStringType" />
+	</class>
+
+	<class name="org.semanticweb.owlapi.model.OWLObject" abstract="true" table="owlobject">
+		<cache usage="read-write"/>
+
+		<id column="id" type="long">
+			<generator class="increment" />
+		</id>
+		<discriminator column="objectType" type="string" />
+
+<!-- Annotations -->
+		<subclass name="OWLAnnotationAssertionAxiomImpl">
+			<join fetch="select" table="AnnotationAssertion">
+				<key column="id" />
+				<many-to-one name="subject" class="org.semanticweb.owlapi.model.OWLObject" access="field" lazy="false" fetch="select" />
+				<many-to-one name="property" access="field" lazy="false" fetch="select" />
+				<many-to-one name="value" class="org.semanticweb.owlapi.model.OWLObject" access="field" lazy="false" fetch="select" />
+			</join>
+		</subclass>
+
+		<subclass name="org.semanticweb.owlapi.model.OWLAnnotationProperty" abstract="true">
+		<subclass name="OWLAnnotationPropertyImpl">
+			<join fetch="select" table="AnnotationProperty">
+				<key column="id" />
+				<property access="field" name="iri"
+					type="de.fraunhofer.iitb.owldb.util.IRIStringType" />
+			</join>
+		</subclass>
+		</subclass>
+
+		<subclass name="OWLAnnotationPropertyDomainAxiomImpl">
+			<join fetch="select" table="AnnotationPropertyDomain">
+				<key column="id" />
+				<many-to-one name="property" access="field" lazy="false" fetch="select" />
+				<property access="field" name="domain"
+					type="de.fraunhofer.iitb.owldb.util.IRIStringType" />
+			</join>
+		</subclass>
+
+		<subclass name="OWLAnnotationPropertyRangeAxiomImpl">
+			<join fetch="select" table="AnnotationPropertyRange">
+				<key column="id" />
+				<many-to-one name="property" access="field" lazy="false" fetch="select" />
+				<property access="field" name="range" column="rangec"
+					type="de.fraunhofer.iitb.owldb.util.IRIStringType" />
+			</join>
+		</subclass>
+
+		<subclass name="OWLSubAnnotationPropertyOfAxiomImpl">
+			<join fetch="select" table="SubAnnotationPropertyOf">
+				<key column="id" />
+				<many-to-one name="subProperty" access="field" lazy="false" fetch="select" />
+				<many-to-one name="superProperty" access="field" lazy="false" fetch="select" />
+			</join>
+		</subclass>
+
+		<!-- Annotation IRIs are stored here -->
+		<subclass name="org.semanticweb.owlapi.model.IRI$IRIImpl">
+				<join fetch="select" table="AnnotationIRI">
+				<key column="id" />
+					<property name="remainder" access="field"/>
+					<property name="prefix" access="field"/>
+				</join>
+		</subclass>
+
+
+<!-- Declarations -->
+		<subclass name="OWLDeclarationAxiomImpl">
+			<join fetch="select" table="DeclarationAxiom">
+				<key column="id" />
+				<many-to-one name="entity" unique-key="OWLDecAxUK"
+					not-null="true" class="org.semanticweb.owlapi.model.OWLObject" access="field"
+					lazy="false" fetch="select"/>
+			</join>
+		</subclass>
+
+		<!-- LOGICAL AXIOMS -->
+		<subclass name="OWLLogicalAxiomImpl" abstract="true">
+
+			<!-- Class Axioms -->
+			<subclass name="OWLClassAxiomImpl" abstract="true">
+
+				<subclass name="OWLDisjointUnionAxiomImpl">
+					<join fetch="select" table="DisjointUnionAxiom">
+						<key column="id" />
+						<many-to-one name="owlClass" access="field" lazy="false" fetch="select" />
+					</join>
+				</subclass>
+
+				<subclass name="OWLNaryClassAxiomImpl" abstract="true">
+					<set name="classExpressions" table="class_expressions" access="field">
+						<key column="id" not-null="true" />
+						<many-to-many class="org.semanticweb.owlapi.model.OWLClassExpression" lazy="false" fetch="select" />
+					</set>
+					<subclass name="OWLDisjointClassesAxiomImpl">
+					</subclass>
+					<subclass name="OWLEquivalentClassesAxiomImpl">
+						<!-- The namedClasses Collection is only used for Caching at this time and thus transient
+							<set name="namedClasses" table="class_expressions" access="field">
+							<key column="id" not-null="true" />
+							<many-to-many class="org.semanticweb.owlapi.model.OWLObject" lazy="false" fetch="select" />
+						</set>-->
+					</subclass>
+				</subclass>
+
+				<subclass name="OWLSubClassOfAxiomImpl">
+					<join fetch="select" table="SubClassAxiom">
+						<key column="id" />
+						<many-to-one name="subClass" access="field" lazy="false" fetch="select" />
+						<many-to-one name="superClass" access="field" lazy="false" fetch="select" />
+					</join>
+				</subclass>
+
+			<!-- END - Class Axioms -->
+			</subclass>
+
+			<!-- Data Property Axioms -->
+			<subclass name="OWLDataPropertyCharacteristicAxiomImpl" abstract="true">
+				<join fetch="select" table="DataPropertyCharacteristicAxiom">
+					<key column="id" />
+					<many-to-one name="property" access="field" lazy="false" fetch="select" />
+				</join>
+				<subclass name="OWLFunctionalDataPropertyAxiomImpl">
+				</subclass>
+			</subclass>
+			<!-- TODO Add missing implementations OWLDataPropertyAxiom -->
+
+			<subclass name="OWLHasKeyAxiomImpl">
+				<set name="propertyExpressions" table="key_prop_exprs" access="field">
+					<key column="id" not-null="true" />
+					<many-to-many class="org.semanticweb.owlapi.model.OWLPropertyExpression"
+						lazy="false" fetch="select" />
+				</set>
+				<join fetch="select" table="HasKeyAxiom">
+					<key column="id" />
+					<many-to-one name="expression" lazy="false" fetch="select" access="field" />
+				</join>
+			</subclass>
+
+			<!-- Individual Axioms -->
+			<subclass name="OWLIndividualAxiomImpl" abstract="true">
+
+				<subclass name="OWLClassAssertionImpl">
+					<join fetch="select" table="ClassAssertionAxiom">
+						<key column="id" />
+						<many-to-one name="individual" lazy="false" fetch="select" access="field" />
+						<many-to-one name="classExpression" lazy="false" fetch="select" access="field" />
+					</join>
+				</subclass>
+				<subclass name="OWLNaryIndividualAxiomImpl">
+					<set name="individuals" table="indi_parts" access="field">
+						<key column="id" not-null="true" />
+						<many-to-many class="org.semanticweb.owlapi.model.OWLIndividual"
+							lazy="false" fetch="select" />
+					</set>
+					<subclass name="OWLDifferentIndividualsAxiomImpl">
+					</subclass>
+					<subclass name="OWLSameIndividualAxiomImpl">
+					</subclass>
+				</subclass>
+
+				<subclass name="OWLIndividualRelationshipAxiomImpl" abstract="true">
+					<join fetch="select" table="IndividualRelationshipAxiom">
+						<key column="id" />
+						<many-to-one name="subject" access="field" lazy="false" fetch="select" />
+						<many-to-one name="property" access="field" lazy="false" fetch="select" />
+						<many-to-one name="object" class="org.semanticweb.owlapi.model.OWLObject" access="field" lazy="false" fetch="select" />
+					</join>
+					<subclass name="OWLObjectPropertyAssertionAxiomImpl">
+					</subclass>
+					<subclass name="OWLDataPropertyAssertionAxiomImpl">
+					</subclass>
+					<subclass name="OWLNegativeDataPropertyAssertionImplAxiom"><!--weird naming -->
+					</subclass>
+					<subclass name="OWLNegativeObjectPropertyAssertionAxiomImpl">
+					</subclass>
+				</subclass>
+
+			</subclass>
+			<!-- END - Individual Axioms -->
+
+			<!-- SWRL Rule Stuff -->
+			<subclass name="SWRLRuleImpl">
+				<set name="head" table="rule_headatoms" access="field">
+					<key column="id" not-null="true" />
+					<many-to-many class="SWRLAtomImpl" lazy="false" fetch="select" />
+				</set>
+				<set name="body" table="rule_bodyatoms" access="field">
+					<key column="id" not-null="true" />
+					<many-to-many class="SWRLAtomImpl" lazy="false" fetch="select" />
+				</set>
+				<set name="variables" table="rule_variables" access="field">
+					<key column="id" not-null="true" />
+					<many-to-many class="SWRLVariableImpl" lazy="false" fetch="select" />
+				</set>
+				<set name="classAtomsPredicates" table="rule_classatompredicates" access="field">
+					<key column="id" not-null="true" />
+					<many-to-many class="org.semanticweb.owlapi.model.OWLClass" lazy="false" fetch="select" />
+				</set>
+				<join fetch="select" table="SWRLRule">
+					<key column="id" />
+					<property name="containsAnonymousClassExpressions" access="field" />
+				</join>
+			</subclass>
+
+<!-- END - LOGICAL AXIOMS -->
+		</subclass>
+
+		<!-- Property Axioms -->
+		<subclass name="OWLPropertyAxiomImpl" abstract="true">
+
+			<subclass name="OWLNaryPropertyAxiomImpl" abstract="true">
+				<set name="properties" table="prop_parts" access="field">
+					<key column="id" not-null="true" />
+					<many-to-many class="org.semanticweb.owlapi.model.OWLPropertyExpression"
+						lazy="false" fetch="select" />
+				</set>
+				<subclass name="OWLDisjointDataPropertiesAxiomImpl">
+				</subclass>
+				<subclass name="OWLDisjointObjectPropertiesAxiomImpl">
+				</subclass>
+				<subclass name="OWLEquivalentDataPropertiesAxiomImpl">
+				</subclass>
+				<subclass name="OWLEquivalentObjectPropertiesAxiomImpl">
+				</subclass>
+				<subclass name="OWLInverseObjectPropertiesAxiomImpl">
+					<join fetch="select" table="InverseObjectPropertiesAxiom">
+						<key column="id" />
+						<many-to-one name="first" column="nfirst" access="field"
+							lazy="false" fetch="select" />
+						<many-to-one name="second" column="nsecond" access="field"
+							lazy="false" fetch="select" />
+					</join>
+				</subclass>
+			</subclass>
+
+			<subclass name="OWLObjectPropertyCharacteristicAxiomImpl"
+				abstract="true">
+				<join fetch="select" table="ObjectPropertyCharacteristicAxiom">
+					<key column="id" />
+					<many-to-one name="property" access="field" lazy="false" fetch="select" />
+				</join>
+				<subclass name="OWLAsymmetricObjectPropertyAxiomImpl">
+				</subclass>
+				<subclass name="OWLFunctionalObjectPropertyAxiomImpl">
+				</subclass>
+				<subclass name="OWLInverseFunctionalObjectPropertyAxiomImpl">
+				</subclass>
+				<subclass name="OWLIrreflexiveObjectPropertyAxiomImpl">
+				</subclass>
+				<subclass name="OWLReflexiveObjectPropertyAxiomImpl">
+				</subclass>
+				<subclass name="OWLSymmetricObjectPropertyAxiomImpl">
+				</subclass>
+				<subclass name="OWLTransitiveObjectPropertyAxiomImpl">
+				</subclass>
+			</subclass>
+
+			<subclass name="OWLSubPropertyChainAxiomImpl">
+				<list name="propertyChain" table="obpropchainsub_parts" access="field">
+					<key column="id" />
+					<index column="xindex" type="long" />
+					<many-to-many
+						class="org.semanticweb.owlapi.model.OWLObjectPropertyExpression" lazy="false" fetch="select" />
+				</list>
+				<join fetch="select" table="ObjectPropertyChainSubPropertyAxiom">
+					<key column="id" />
+					<many-to-one name="superProperty" access="field" lazy="false" fetch="select" />
+				</join>
+			</subclass>
+
+			<subclass name="OWLSubPropertyAxiomImpl" abstract="true">
+				<join fetch="select" table="SubPropertyAxiom">
+					<key column="id" />
+					<many-to-one name="subProperty" access="field" lazy="false" fetch="select" />
+					<many-to-one name="superProperty" access="field" lazy="false" fetch="select" />
+				</join>
+				<subclass name="OWLSubDataPropertyOfAxiomImpl">
+				</subclass>
+				<subclass name="OWLSubObjectPropertyOfAxiomImpl">
+				</subclass>
+			</subclass>
+
+			<subclass name="OWLUnaryPropertyAxiomImpl" abstract="true">
+	   <!--<discriminator force="false" insert="true" not-null="true"/>-->
+				<join fetch="select" table="UnaryPropertyAxiom">
+					<key column="id" />
+					<many-to-one name="property" access="field" lazy="false" fetch="select" />
+				</join>
+
+				<subclass name="OWLPropertyDomainAxiomImpl" abstract="true">
+					<join fetch="select" table="PropertyDomainAxiom">
+						<key column="id" />
+						<many-to-one name="domain" access="field" lazy="false" fetch="select" />
+					</join>
+					<subclass name="OWLObjectPropertyDomainAxiomImpl">
+					</subclass>
+					<subclass name="OWLDataPropertyDomainAxiomImpl">
+					</subclass>
+				</subclass>
+
+				<subclass abstract="true" name="OWLPropertyRangeAxiomImpl">
+					<join fetch="select" table="PropertyRangeAxiom">
+						<key column="id" />
+						<many-to-one name="range" column="xrange" access="field"
+							lazy="false" fetch="select" />
+					</join>
+					<subclass name="OWLObjectPropertyRangeAxiomImpl">
+					</subclass>
+					<subclass name="OWLDataPropertyRangeAxiomImpl">
+					</subclass>
+				</subclass>
+			</subclass>
+
+		<!-- END Property Axioms -->
+		</subclass>
+
+
+ <!-- OWL OBJECTS-->
+		<subclass name="org.semanticweb.owlapi.model.OWLAnnotation"
+			abstract="true">
+			<subclass name="OWLAnnotationImpl" abstract="true">
+				<set name="annotations" table="annotation_annotations" access="field">
+						<key column="id" not-null="true" />
+						<many-to-many class="org.semanticweb.owlapi.model.OWLAnnotation"
+							lazy="false" fetch="select" />
+				</set>
+				<join fetch="select" table="OWLAnnotation">
+					<key column="id" />
+					<many-to-one name="property" access="field" lazy="false" fetch="select" />
+					<many-to-one name="value" class="org.semanticweb.owlapi.model.OWLObject" access="field" lazy="false" fetch="select" />
+				</join>
+
+			</subclass>
+		</subclass>
+		<subclass name="org.semanticweb.owlapi.model.OWLIndividual"
+			abstract="true">
+			<subclass name="OWLIndividualImpl" abstract="true">
+				<subclass name="OWLAnonymousIndividualImpl">
+					<join fetch="select" table="OWLAnonymousIndividual">
+						<key column="id" />
+ 						<property access="field" generated="never" name="nodeId" unique-key="IndividualUnique" not-null="true"
+							type="de.fraunhofer.iitb.owldb.util.NodeIDStringType" />
+					</join>
+				</subclass>
+				<subclass name="OWLNamedIndividualImpl" >
+					<join fetch="select" table="OWLNamedIndividual">
+						<key column="id" />
+						<property access="field" generated="never" name="iri" unique-key="IndividualUnique" not-null="true"
+							type="de.fraunhofer.iitb.owldb.util.IRIStringType" />
+					</join>
+				</subclass>
+			</subclass>
+		</subclass>
+		<subclass name="org.semanticweb.owlapi.model.OWLPropertyRange"
+			abstract="true">
+			<subclass name="org.semanticweb.owlapi.model.OWLClassExpression"
+				abstract="true">
+				<subclass name="org.semanticweb.owlapi.model.OWLClass"
+					abstract="true">
+					<subclass name="OWLClassImpl">
+						<join fetch="select" table="OWLClass">
+							<key column="id" />
+							<property name="iri" lazy="false"  access="field"
+								unique-key="ClassUnique" not-null="true"
+								type="de.fraunhofer.iitb.owldb.util.IRIStringType" />
+						</join>
+					</subclass>
+				</subclass>
+				<subclass name="OWLNaryBooleanClassExpressionImpl" abstract="true">
+					<set name="operands" table="class_operands" access="field">
+						<key column="id" not-null="true" />
+						<many-to-many class="org.semanticweb.owlapi.model.OWLClassExpression" lazy="false" fetch="select" />
+					</set>
+					<subclass name="OWLObjectIntersectionOfImpl">
+					</subclass>
+					<subclass name="OWLObjectUnionOfImpl">
+					</subclass>
+				</subclass>
+				<subclass name="OWLObjectComplementOfImpl">
+					<join fetch="select" table="OWLObjectComplementOf">
+						<key column="id" />
+						<many-to-one name="operand" access="field" lazy="false" fetch="select" />
+					</join>
+				</subclass>
+				<subclass name="OWLObjectOneOfImpl">
+					<set name="values" table="objectoneof_values" access="field">
+						<key column="id" not-null="true" />
+						<many-to-many class="org.semanticweb.owlapi.model.OWLIndividual"
+							lazy="false" fetch="select" />
+					</set>
+				</subclass>
+				<subclass name="OWLRestrictionImpl" abstract="true">
+					<join fetch="select" table="OWLRestriction">
+						<key column="id" />
+						<many-to-one name="property" access="field" lazy="false" fetch="select" />
+					</join>
+					<subclass name="OWLCardinalityRestrictionImpl" abstract="true">
+						<join fetch="select" table="OWLCardinalityRestriction">
+							<key column="id" />
+							<property name="cardinality" access="field" />
+							<many-to-one name="filler" access="field" lazy="false" fetch="select" />
+						</join>
+						<subclass name="OWLDataCardinalityRestrictionImpl"
+							abstract="true">
+							<subclass name="OWLDataExactCardinalityImpl">
+							</subclass>
+							<subclass name="OWLDataMaxCardinalityImpl">
+							</subclass>
+							<subclass name="OWLDataMinCardinalityImpl">
+							</subclass>
+						</subclass>
+						<subclass name="OWLObjectCardinalityRestrictionImpl"
+							abstract="true">
+							<subclass name="OWLObjectExactCardinalityImpl">
+							</subclass>
+							<subclass name="OWLObjectMaxCardinalityImpl">
+							</subclass>
+							<subclass name="OWLObjectMinCardinalityImpl">
+							</subclass>
+						</subclass>
+					</subclass>
+					<subclass name="OWLObjectHasSelfImpl">
+					</subclass>
+					<subclass name="OWLQuantifiedRestrictionImpl" abstract="true">
+						<join fetch="select" table="OWLQuantifiedRestriction">
+							<key column="id" />
+							<many-to-one name="filler" access="field" lazy="false" fetch="select" />
+						</join>
+						<subclass name="OWLDataAllValuesFromImpl">
+						</subclass>
+						<subclass name="OWLDataSomeValuesFromImpl">
+						</subclass>
+						<subclass name="OWLObjectAllValuesFromImpl">
+						</subclass>
+						<subclass name="OWLObjectSomeValuesFromImpl">
+						</subclass>
+					</subclass>
+					<subclass name="OWLValueRestrictionImpl" abstract="true">
+						<join fetch="select" table="OWLValueRestriction">
+							<key column="id" />
+							<many-to-one name="value" access="field" lazy="false" fetch="select" />
+						</join>
+						<subclass name="OWLDataHasValueImpl">
+						</subclass>
+						<subclass name="OWLObjectHasValueImpl">
+						</subclass>
+					</subclass>
+				</subclass>
+			</subclass>
+			<subclass name="org.semanticweb.owlapi.model.OWLDataRange"
+				abstract="true">
+				<subclass name="OWLDataComplementOfImpl">
+					<join fetch="select" table="OWLDataComplementOf">
+						<key column="id" />
+						<many-to-one name="dataRange" access="field" lazy="false" fetch="select" />
+					</join>
+				</subclass>
+				<subclass name="OWLDataOneOfImpl">
+					<set name="values" table="dataoneof_values" access="field">
+						<key column="id" not-null="true" />
+						<many-to-many class="OWLLiteralImpl" lazy="false" fetch="select" />
+					</set>
+				</subclass>
+				<subclass name="OWLDatatypeRestrictionImpl">
+					<set name="facetRestrictions" table="datarange_facets" access="field">
+						<key column="id" not-null="true" />
+						<many-to-many class="OWLFacetRestrictionImpl"	lazy="false" fetch="select" />
+					</set>
+					<join fetch="select" table="OWLDatatypeRestriction">
+						<key column="id" />
+						<many-to-one name="datatype" class="OWLDatatypeImpl"  access="field" lazy="false" fetch="select" />
+					</join>
+				</subclass>
+				<subclass name="OWLDatatypeImpl">
+					<join fetch="select" table="OWLDatatype">
+						<key column="id" />
+						<property name="iri" access="field" unique-key="DatatypeUnique"
+							not-null="true" type="de.fraunhofer.iitb.owldb.util.IRIStringType" />
+					</join>
+				</subclass>
+			</subclass>
+		</subclass>
+
+		<subclass name="OWLDatatypeDefinitionAxiomImpl">
+					<join fetch="select" table="OWLDatatypeDefinition">
+						<key column="id" />
+						<many-to-one name="datatype" class="OWLDatatypeImpl"  access="field" lazy="false" fetch="select" />
+						<many-to-one name="dataRange" access="field" lazy="false" fetch="select" />
+					</join>
+		</subclass>
+
+		<subclass name="org.semanticweb.owlapi.model.OWLPropertyExpression"
+			abstract="true">
+			<subclass name="org.semanticweb.owlapi.model.OWLDataPropertyExpression"
+				abstract="true">
+				<subclass name="OWLDataPropertyImpl">
+					<join fetch="select" table="OWLDataProperty">
+						<key column="id" />
+						<property name="iri" unique-key="DPUnique" not-null="true"
+							index="dpiriidx" type="de.fraunhofer.iitb.owldb.util.IRIStringType"
+							access="field" />
+					</join>
+				</subclass>
+			</subclass>
+			<subclass name="org.semanticweb.owlapi.model.OWLObjectPropertyExpression"
+				abstract="true">
+				<subclass name="OWLObjectPropertyExpressionImpl" abstract="true">
+					<subclass name="OWLObjectPropertyImpl">
+						<join fetch="select" table="OWLObjectProperty">
+							<key column="id" />
+							<property name="iri" access="field" unique-key="OPUnique"
+								not-null="true" type="de.fraunhofer.iitb.owldb.util.IRIStringType" />
+						</join>
+					</subclass>
+					<subclass name="OWLObjectInverseOfImpl">
+						<join fetch="select" table="OWLObjectPropertyInverse">
+							<key column="id" />
+							<many-to-one name="inverseProperty" access="field"
+								lazy="false" fetch="select" />
+						</join>
+					</subclass>
+				</subclass>
+			</subclass>
+		</subclass>
+		<subclass name="OWLFacetRestrictionImpl">
+			<join fetch="select" table="FacetRestriction">
+				<key column="id" />
+				<property name="facet" type="de.fraunhofer.iitb.owldb.util.OWLFacetEnumType" access="field" lazy="false" />
+				<many-to-one name="facetValue" access="field"
+					class="OWLLiteralImpl" lazy="false" fetch="select" />
+			</join>
+		</subclass>
+		<subclass name="OWLLiteralImpl">
+			<join fetch="select" table="OWLConstant">
+				<key column="id" />
+				<property name="literal" access="field" type="text"/>
+			</join>
+			<join fetch="select" table="OWLTypedConstant">
+				<key column="id" />
+				<many-to-one name="datatype" access="field" class="OWLDatatypeImpl"
+					lazy="false" fetch="select" />
+			</join>
+			<join fetch="select" table="OWLUntypedConstant">
+				<key column="id" />
+				<property name="lang" access="field" />
+			</join>
+		</subclass>
+
+
+		<!-- SWRL Object -->
+		<subclass name="org.semanticweb.owlapi.model.SWRLObject" abstract="true">
+
+			<!-- SWRL Atoms -->
+			<subclass name="SWRLLiteralArgumentImpl">
+				<join fetch="select" table="SWRLLiteralArgument">
+					<key column="id" />
+					<many-to-one name="literal" access="field" lazy="false" fetch="select" class="OWLLiteralImpl"/>
+				</join>
+			</subclass>
+
+			<subclass name="SWRLIndividualArgumentImpl">
+				<join fetch="select" table="SWRLIndividualArgument">
+					<key column="id" />
+					<many-to-one name="individual" access="field" lazy="false" fetch="select" class="OWLIndividualImpl"/>
+				</join>
+			</subclass>
+
+			<subclass name="SWRLVariableImpl">
+				<join fetch="select" table="SWRLVariable">
+					<key column="id" />
+					<property name="iri" access="field" type="de.fraunhofer.iitb.owldb.util.IRIStringType" />
+				</join>
+			</subclass>
+
+			<subclass name="SWRLAtomImpl" abstract="true">
+				<join fetch="select" table="SWRLAtom">
+					<key column="id" />
+					<many-to-one name="predicate" access="field" lazy="false" fetch="select" class="org.semanticweb.owlapi.model.OWLObject"/>
+				</join>
+				<subclass name="SWRLBinaryAtomImpl" abstract="true">
+					<join fetch="select" table="SWRLBinaryAtom">
+						<key column="id" />
+						<many-to-one name="arg0" class="org.semanticweb.owlapi.model.SWRLObject" access="field" lazy="false" fetch="select" />
+						<many-to-one name="arg1" class="org.semanticweb.owlapi.model.SWRLObject" access="field" lazy="false" fetch="select" />
+					</join>
+					<subclass name="SWRLDataPropertyAtomImpl"/>
+					<subclass name="SWRLDifferentIndividualsAtomImpl"/>
+					<subclass name="SWRLObjectPropertyAtomImpl"/>
+					<subclass name="SWRLSameIndividualAtomImpl"/>
+				</subclass>
+				<subclass name="SWRLBuiltInAtomImpl">
+					<list name="args" table="SWRLBuiltInArgs" access="field">
+						<key column="id"/>
+						<index column="argsIndex" type="int"/>
+						<many-to-many class="org.semanticweb.owlapi.model.SWRLObject" lazy="false" fetch="select" />
+					</list>
+				</subclass>
+				<subclass name="SWRLUnaryAtomImpl" abstract="true">
+					<join fetch="select" table="SWRLUnaryAtom">
+						<key column="id" />
+						<many-to-one name="arg" class="org.semanticweb.owlapi.model.SWRLObject" access="field" lazy="false" fetch="select" />
+					</join>
+					<subclass name="SWRLClassAtomImpl"/>
+					<subclass name="SWRLDataRangeAtomImpl"/>
+				</subclass>
+			</subclass>
+
+		</subclass>
+	</class>
+
+</hibernate-mapping>
