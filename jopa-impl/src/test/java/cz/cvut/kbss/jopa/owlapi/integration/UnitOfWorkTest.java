@@ -62,12 +62,12 @@ public class UnitOfWorkTest {
 
 	@After
 	public void tearDown() {
-		this.em.close();
+		em.close();
 	}
 
 	@Test
 	public void testReadObjectFromCache() {
-		OWLClassA res = this.testUOW.readObject(OWLClassA.class,
+		OWLClassA res = testUOW.readObject(OWLClassA.class,
 				IRI.create(testObject.getUri()));
 		assertNotNull(res);
 		assertEquals(res.getStringAttribute(), testObject.getStringAttribute());

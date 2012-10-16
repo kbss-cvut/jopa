@@ -43,6 +43,7 @@ public class ServerSession extends AbstractSession {
 
 	private final Map<EntityTransaction, EntityManager> runningTransactions;
 	private final Map<Object, UnitOfWorkImpl> activePersistenceContexts;
+	private final Map<UnitOfWorkImpl, Set<Object>> uowsToEntities;
 
 	public ServerSession() {
 		super();
@@ -52,6 +53,7 @@ public class ServerSession extends AbstractSession {
 		this.accessorFactory = null;
 		this.runningTransactions = new WeakHashMap<EntityTransaction, EntityManager>();
 		this.activePersistenceContexts = new WeakHashMap<Object, UnitOfWorkImpl>();
+		this.uowsToEntities = new WeakHashMap<UnitOfWorkImpl, Set<Object>>();
 	}
 
 	public ServerSession(Map<String, String> properties, Metamodel metamodel,
@@ -61,6 +63,7 @@ public class ServerSession extends AbstractSession {
 		this.accessorFactory = factory;
 		this.runningTransactions = new WeakHashMap<EntityTransaction, EntityManager>();
 		this.activePersistenceContexts = new WeakHashMap<Object, UnitOfWorkImpl>();
+		this.uowsToEntities = new WeakHashMap<UnitOfWorkImpl, Set<Object>>();
 		initialize(properties, metamodel);
 	}
 
@@ -91,8 +94,7 @@ public class ServerSession extends AbstractSession {
 	 *            Factory for creating ontology accessors.
 	 */
 	private void initialize(Map<String, String> properties, Metamodel metamodel) {
-		this.ontologyAccessor = accessorFactory.createCentralAccessor(
-				properties, metamodel, this);
+		this.ontologyAccessor = accessorFactory.createCentralAccessor(properties, metamodel, this);
 		String cache = properties.get(CACHE_PROPERTY);
 		if (cache == null || cache.equals("on")) {
 			CacheManagerImpl cm = (CacheManagerImpl) getLiveObjectCache();
@@ -120,8 +122,7 @@ public class ServerSession extends AbstractSession {
 
 	public TransactionOntologyAccessor getOntologyAccessor() {
 		ontologyAccessor.acquireReadLock();
-		final OntologyDataHolder holder = ontologyAccessor
-				.cloneOntologyStructures();
+		final OntologyDataHolder holder = ontologyAccessor.cloneOntologyStructures();
 		ontologyAccessor.releaseReadLock();
 		return accessorFactory.createTransactionalAccessor(holder, this);
 	}
@@ -154,6 +155,7 @@ public class ServerSession extends AbstractSession {
 		if (uow != null && uow.hasChanges()) {
 			getLiveObjectCache().clearInferredObjects();
 		}
+		removePersistenceContext(uow);
 	}
 
 	/**
@@ -180,8 +182,7 @@ public class ServerSession extends AbstractSession {
 		if (object == null) {
 			return;
 		}
-		final IRI primaryKey = ((OntologyAccessorImpl) ontologyAccessor)
-				.getIdentifier(object);
+		final IRI primaryKey = ((OntologyAccessorImpl) ontologyAccessor).getIdentifier(object);
 		if (primaryKey == null) {
 			return;
 		}
@@ -237,11 +238,14 @@ public class ServerSession extends AbstractSession {
 	 */
 	void registerEntityWithContext(Object entity, UnitOfWorkImpl uow) {
 		if (entity == null || uow == null) {
-			throw new NullPointerException(
-					"Null passed to as argument. Entity: " + entity
-							+ ", unit of work: " + uow);
+			throw new NullPointerException("Null passed to as argument. Entity: " + entity
+					+ ", unit of work: " + uow);
 		}
 		activePersistenceContexts.put(entity, uow);
+		if (!uowsToEntities.containsKey(uow)) {
+			uowsToEntities.put(uow, new HashSet<Object>());
+		}
+		uowsToEntities.get(uow).add(entity);
 	}
 
 	/**
@@ -257,10 +261,24 @@ public class ServerSession extends AbstractSession {
 			return null;
 		}
 		final UnitOfWorkImpl uow = activePersistenceContexts.get(entity);
-		if (uow == null) {
-			LOG.warning("Unable to find persistence context for entity: "
-					+ entity);
-		}
 		return uow;
+	}
+
+	/**
+	 * Remove the specified {@code UnitOfWork} from the list of currently active
+	 * persistence contexts. </p>
+	 * 
+	 * Also remove all the objects associated with this persistence context.
+	 * 
+	 * @param uow
+	 *            The persistence context to remove
+	 */
+	private void removePersistenceContext(UnitOfWorkImpl uow) {
+		if (uowsToEntities.containsKey(uow)) {
+			for (Object entity : uowsToEntities.get(uow)) {
+				activePersistenceContexts.remove(entity);
+			}
+		}
+		uowsToEntities.remove(uow);
 	}
 }
