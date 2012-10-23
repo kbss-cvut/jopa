@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -23,8 +24,8 @@ import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
 
 public class TestEntityTransactionsWithoutCache {
 
-	private static final Logger LOG = Logger
-			.getLogger(TestEntityTransactionsWithoutCache.class.getName());
+	private static final Logger LOG = Logger.getLogger(TestEntityTransactionsWithoutCache.class
+			.getName());
 
 	private static final Map<String, String> properties = new HashMap<String, String>();
 
@@ -48,6 +49,11 @@ public class TestEntityTransactionsWithoutCache {
 		properties.put("cache", "off");
 	}
 
+	@After
+	public void tearDown() {
+		testEntity.setTypes(null);
+	}
+
 	@Test
 	public void testPersist() {
 		LOG.config("TestPersist");
@@ -58,17 +64,14 @@ public class TestEntityTransactionsWithoutCache {
 		pc.getTransaction().commit();
 		OWLClassA result = pc.find(OWLClassA.class, testEntity.getUri());
 		assertNotNull(result);
-		assertEquals(testEntity.getStringAttribute(),
-				result.getStringAttribute());
+		assertEquals(testEntity.getStringAttribute(), result.getStringAttribute());
 	}
 
 	@Test
 	public void testPersistComposed() {
 		LOG.config("TestPersistComposed");
-		EntityManager pc = TestEnvironment
-				.getPersistenceConnector(
-						"TestPersistenceConnectorLogic-testPersistComposedWithoutCache",
-						false);
+		EntityManager pc = TestEnvironment.getPersistenceConnector(
+				"TestPersistenceConnectorLogic-testPersistComposedWithoutCache", false);
 		pc.getTransaction().begin();
 		pc.persist(testEntity);
 		pc.persist(composedEntity);
@@ -99,41 +102,33 @@ public class TestEntityTransactionsWithoutCache {
 	@Test
 	public void testRemoveWithoutCascade() {
 		LOG.config("TestRemoveComposedWithoutCascade");
-		EntityManager pc = TestEnvironment
-				.getPersistenceConnector(
-						"TestPersistenceConnectorLogic-testRemoveNotCascadeWithoutCache",
-						false);
+		EntityManager pc = TestEnvironment.getPersistenceConnector(
+				"TestPersistenceConnectorLogic-testRemoveNotCascadeWithoutCache", false);
 		pc.getTransaction().begin();
 		pc.persist(testEntity);
 		pc.persist(composedEntity);
 		pc.getTransaction().commit();
-		final OWLClassD toDelete = pc.find(OWLClassD.class,
-				composedEntity.getUri());
+		final OWLClassD toDelete = pc.find(OWLClassD.class, composedEntity.getUri());
 		assertNotNull(toDelete);
 		pc.getTransaction().begin();
 		pc.remove(toDelete);
 		pc.getTransaction().commit();
-		final OWLClassD shouldBeNull = pc.find(OWLClassD.class,
-				composedEntity.getUri());
+		final OWLClassD shouldBeNull = pc.find(OWLClassD.class, composedEntity.getUri());
 		assertNull(shouldBeNull);
-		final OWLClassA shouldNotBeNull = pc.find(OWLClassA.class,
-				testEntity.getUri());
+		final OWLClassA shouldNotBeNull = pc.find(OWLClassA.class, testEntity.getUri());
 		assertNotNull(shouldNotBeNull);
 	}
 
 	@Test
 	public void testPersistSimpleChange() {
 		LOG.config("TestPersistSimpleChange");
-		EntityManager pc = TestEnvironment
-				.getPersistenceConnector(
-						"TestPersistenceConnectorLogic-testPersistSimpleChangeWithoutCache",
-						false);
+		EntityManager pc = TestEnvironment.getPersistenceConnector(
+				"TestPersistenceConnectorLogic-testPersistSimpleChangeWithoutCache", false);
 		pc.getTransaction().begin();
 		pc.persist(testEntity);
 		pc.getTransaction().commit();
 		pc.getTransaction().begin();
-		final OWLClassA toChange = pc
-				.find(OWLClassA.class, testEntity.getUri());
+		final OWLClassA toChange = pc.find(OWLClassA.class, testEntity.getUri());
 		assertNotNull(toChange);
 		final String newString = "NewStringAttribute";
 		toChange.setStringAttribute(newString);
@@ -146,17 +141,14 @@ public class TestEntityTransactionsWithoutCache {
 	@Test
 	public void testPersistReferenceChange() {
 		LOG.config("TestPersistReferenceChange");
-		EntityManager pc = TestEnvironment
-				.getPersistenceConnector(
-						"TestPersistenceConnectorLogic-testPersistReferenceChangeWithoutCache",
-						false);
+		EntityManager pc = TestEnvironment.getPersistenceConnector(
+				"TestPersistenceConnectorLogic-testPersistReferenceChangeWithoutCache", false);
 		pc.getTransaction().begin();
 		pc.persist(testEntity);
 		pc.persist(composedEntity);
 		pc.getTransaction().commit();
 		pc.getTransaction().begin();
-		final OWLClassD toChange = pc.find(OWLClassD.class,
-				composedEntity.getUri());
+		final OWLClassD toChange = pc.find(OWLClassD.class, composedEntity.getUri());
 		final OWLClassA newReference = new OWLClassA();
 		final URI pk = URI.create("http://newReferenceToA");
 		newReference.setUri(pk);
@@ -164,23 +156,19 @@ public class TestEntityTransactionsWithoutCache {
 		toChange.setOwlClassA(newReference);
 		pc.persist(newReference);
 		pc.getTransaction().commit();
-		final OWLClassD changed = pc.find(OWLClassD.class,
-				composedEntity.getUri());
+		final OWLClassD changed = pc.find(OWLClassD.class, composedEntity.getUri());
 		assertNotNull(changed);
 		assertEquals(newReference.getUri(), changed.getOwlClassA().getUri());
-		assertEquals(newReference.getStringAttribute(), changed.getOwlClassA()
-				.getStringAttribute());
+		assertEquals(newReference.getStringAttribute(), changed.getOwlClassA().getStringAttribute());
 		assertNotNull(pc.find(OWLClassA.class, pk));
 		assertNotNull(pc.find(OWLClassA.class, testEntity.getUri()));
 	}
-	
+
 	@Test
 	public void testPersistCollectionChange() {
 		LOG.config("TestPersistCollectionChange - empty collection changed to non-empty");
-		EntityManager pc = TestEnvironment
-				.getPersistenceConnector(
-						"TestPersistenceConnectorLogic-testPersistCollectionChangeWithoutCache",
-						false);
+		EntityManager pc = TestEnvironment.getPersistenceConnector(
+				"TestPersistenceConnectorLogic-testPersistCollectionChangeWithoutCache", false);
 		pc.getTransaction().begin();
 		pc.persist(testEntity);
 		pc.getTransaction().commit();
@@ -198,14 +186,37 @@ public class TestEntityTransactionsWithoutCache {
 		assertNotNull(changed.getTypes());
 		assertTrue(changed.getTypes().contains("NumberTwo"));
 	}
-	
+
+	@Test
+	public void testAddObjectToCollection() {
+		LOG.config("TestAddObjectToCollection - added element into collection managed by entity.");
+		EntityManager pc = TestEnvironment.getPersistenceConnector(
+				"TestPersistenceConnectorLogic-testAddObjectToCollectionWithoutCache", false);
+		final Set<String> types = new HashSet<String>();
+		types.add("TypeOne");
+		types.add("TypeTwo");
+		types.add("TypeThree");
+		pc.getTransaction().begin();
+		testEntity.setTypes(new HashSet<String>());
+		for (String t : types) {
+			testEntity.getTypes().add(t);
+		}
+		pc.persist(testEntity);
+		pc.getTransaction().commit();
+		final OWLClassA changed = pc.find(OWLClassA.class, testEntity.getUri());
+		assertNotNull(changed);
+		assertNotNull(changed.getTypes());
+		assertEquals(types.size(), changed.getTypes().size());
+		for (String t : types) {
+			assertTrue(changed.getTypes().contains(t));
+		}
+	}
+
 	@Test
 	public void testPersistCollectionChangeII() {
 		LOG.config("TestPersistCollectionChange - changed content of the collection");
-		EntityManager pc = TestEnvironment
-				.getPersistenceConnector(
-						"TestPersistenceConnectorLogic-testPersistCollectionChangeWithoutCacheII",
-						false);
+		EntityManager pc = TestEnvironment.getPersistenceConnector(
+				"TestPersistenceConnectorLogic-testPersistCollectionChangeWithoutCacheII", false);
 		pc.getTransaction().begin();
 		final Set<String> orSet = new HashSet<String>();
 		orSet.add("One");

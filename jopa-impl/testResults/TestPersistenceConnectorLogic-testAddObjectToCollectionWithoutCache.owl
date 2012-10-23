@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistCollectionChangeWithoutCacheII#"
-     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistCollectionChangeWithoutCacheII"
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testAddObjectToCollectionWithoutCache#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testAddObjectToCollectionWithoutCache"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:new="http://new.owl#"
      xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistCollectionChangeWithoutCacheII"/>
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testAddObjectToCollectionWithoutCache"/>
     
 
 
@@ -50,27 +50,21 @@
     
 
 
-    <!-- Five -->
+    <!-- TypeOne -->
 
-    <owl:Class rdf:about="Five"/>
+    <owl:Class rdf:about="TypeOne"/>
     
 
 
-    <!-- Four -->
+    <!-- TypeThree -->
 
-    <owl:Class rdf:about="Four"/>
+    <owl:Class rdf:about="TypeThree"/>
     
 
 
-    <!-- One -->
+    <!-- TypeTwo -->
 
-    <owl:Class rdf:about="One"/>
-    
-
-
-    <!-- Three -->
-
-    <owl:Class rdf:about="Three"/>
+    <owl:Class rdf:about="TypeTwo"/>
     
 
 
@@ -94,10 +88,9 @@
     <!-- http://testEntity -->
 
     <owl:NamedIndividual rdf:about="http://testEntity">
-        <rdf:type rdf:resource="Five"/>
-        <rdf:type rdf:resource="Four"/>
-        <rdf:type rdf:resource="One"/>
-        <rdf:type rdf:resource="Three"/>
+        <rdf:type rdf:resource="TypeOne"/>
+        <rdf:type rdf:resource="TypeThree"/>
+        <rdf:type rdf:resource="TypeTwo"/>
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
         <http:A-stringAttribute>TestAttribute</http:A-stringAttribute>
     </owl:NamedIndividual>
