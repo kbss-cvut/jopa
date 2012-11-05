@@ -525,6 +525,24 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	}
 
 	/**
+	 * Persist changes made to the specified entity to the underlying
+	 * transactional ontology.
+	 * 
+	 * @param entity
+	 *            The entity with changes
+	 * @throws IllegalStateException
+	 *             If this {@code UnitOfWork} is not in transaction
+	 */
+	public void persistChangeInTransaction(Object entity) {
+		if (!isInTransaction()) {
+			throw new IllegalStateException(
+					"This unit of work is not in a transaction.");
+		}
+		getOntologyAccessor().persistEntity(entity, this);
+		setHasChanges(true);
+	}
+
+	/**
 	 * Merge the changes from this Unit of Work's change set into the parent
 	 * session and to the original objects. Also mark new objects as existing,
 	 * since they are already persisted.

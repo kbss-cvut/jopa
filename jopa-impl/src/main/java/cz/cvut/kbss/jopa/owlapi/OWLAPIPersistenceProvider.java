@@ -111,8 +111,7 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 	static void persistEntityChanges(Object entity) {
 		final UnitOfWorkImpl uow = getPersistenceContext(entity);
 		if (uow != null && uow.isInTransaction()) {
-			uow.getOntologyAccessor().persistEntity(entity, uow);
-			uow.setHasChanges(true);
+			uow.persistChangeInTransaction(entity);
 		}
 	}
 }
