@@ -9,7 +9,7 @@ public class UnitOfWorkImplStub extends UnitOfWorkImpl {
 
 	public UnitOfWorkImplStub(AbstractSession parent) {
 		super(parent);
-		// TODO Auto-generated constructor stub
+
 	}
 
 	/**
@@ -24,4 +24,12 @@ public class UnitOfWorkImplStub extends UnitOfWorkImpl {
 		return lastEntity;
 	}
 
+	public void setLastEntity(Object entity) {
+		this.lastEntity = entity;
+	}
+
+	@Override
+	public boolean isInTransaction() {
+		return true;
+	}
 }

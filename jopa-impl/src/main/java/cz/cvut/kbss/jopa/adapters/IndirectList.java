@@ -11,6 +11,18 @@ public class IndirectList<E> extends IndirectCollection implements List<E> {
 
 	private final List<E> internalList;
 
+	/**
+	 * Create new indirect list backed by the specified referenced list.
+	 * 
+	 * @param owner
+	 *            Owner of the list
+	 * @param uow
+	 *            Persistence context the owner belongs to
+	 * @param referencedList
+	 *            The list to reference
+	 * @throws NullPointerException
+	 *             If the {@code referencedList} is null
+	 */
 	public IndirectList(Object owner, UnitOfWorkImpl uow, List<E> referencedList) {
 		super(owner, uow);
 		if (referencedList == null) {
@@ -131,8 +143,7 @@ public class IndirectList<E> extends IndirectCollection implements List<E> {
 	}
 
 	public List<E> subList(int arg0, int arg1) {
-		return new IndirectList<E>(owner, persistenceContext,
-				internalList.subList(arg0, arg1));
+		return new IndirectList<E>(owner, persistenceContext, internalList.subList(arg0, arg1));
 	}
 
 	public Object[] toArray() {

@@ -16,7 +16,6 @@
 package cz.cvut.kbss.jopa.owlapi;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,17 +29,11 @@ import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
 
 public aspect BeanListenerAspect {
 
-	private Object o;
-
 	private static final Logger LOG = Logger.getLogger(BeanListenerAspect.class.getName());
 
 	pointcut getter() : get( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
 
 	pointcut setter() : set( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
-
-	pointcut add(Collection c) : call(boolean Collection.add(..)) && target(c);
-
-	pointcut remove(Collection c) : call(boolean Collection.remove(..)) && target(c);
 
 	before() : setter() {
 		final Object object = thisJoinPoint.getTarget();
@@ -79,7 +72,6 @@ public aspect BeanListenerAspect {
 	before() : getter()  {
 		try {
 			final Object object = thisJoinPoint.getTarget();
-			o = object;
 			final Field field = object.getClass().getDeclaredField(
 					thisJoinPoint.getSignature().getName());
 
@@ -97,33 +89,6 @@ public aspect BeanListenerAspect {
 		} catch (IllegalArgumentException e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
 			throw new OWLPersistenceException();
-		} catch (IllegalAccessException e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-			throw new OWLPersistenceException();
-		}
-	}
-
-	after(Collection c) returning : add(c) {
-		checkModification(c);
-	}
-
-	after(Collection c) returning : remove(c) {
-		checkModification(c);
-	}
-
-	private void checkModification(Collection<?> c) {
-		if (o == null) {
-			return;
-		}
-		Field[] fields = o.getClass().getDeclaredFields();
-		try {
-			for (Field f : fields) {
-				f.setAccessible(true);
-				if (f.get(o) == c) {
-					OWLAPIPersistenceProvider.persistEntityChanges(o);
-					break;
-				}
-			}
 		} catch (IllegalAccessException e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
 			throw new OWLPersistenceException();
