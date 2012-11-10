@@ -13,8 +13,7 @@ public class IndirectSet<E> extends IndirectCollection implements Set<E> {
 	public IndirectSet(Object owner, UnitOfWorkImpl uow, Set<E> referencedSet) {
 		super(owner, uow);
 		if (referencedSet == null) {
-			throw new NullPointerException(
-					"Null passed in as the referencedSet.");
+			throw new NullPointerException("Null passed in as the referencedSet.");
 		}
 		this.internalSet = referencedSet;
 	}
@@ -32,7 +31,7 @@ public class IndirectSet<E> extends IndirectCollection implements Set<E> {
 	}
 
 	public Iterator<E> iterator() {
-		return internalSet.iterator();
+		return new IndirectSetIterator<E>(internalSet.iterator());
 	}
 
 	public Object[] toArray() {
@@ -90,5 +89,27 @@ public class IndirectSet<E> extends IndirectCollection implements Set<E> {
 	public void clear() {
 		internalSet.clear();
 		persistChange();
+	}
+
+	private class IndirectSetIterator<T> implements Iterator<T> {
+
+		private Iterator<T> iterator;
+
+		private IndirectSetIterator(Iterator<T> iterator) {
+			this.iterator = iterator;
+		}
+
+		public boolean hasNext() {
+			return iterator.hasNext();
+		}
+
+		public T next() {
+			return iterator.next();
+		}
+
+		public void remove() {
+			iterator.remove();
+			IndirectSet.this.persistChange();
+		}
 	}
 }

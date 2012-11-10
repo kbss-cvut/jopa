@@ -10,7 +10,7 @@ public abstract class IndirectCollection {
 	/**
 	 * Create new indirect collection from the specified data. </p>
 	 * 
-	 * The owner is null, the persistence context is not.
+	 * The owner can be null, the persistence context not.
 	 * 
 	 * @param owner
 	 *            Owner of the indirect collection
