@@ -1,11 +1,18 @@
 package cz.cvut.kbss.jopa.adapters;
 
+import java.util.Collection;
+
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 public abstract class IndirectCollection {
 
 	protected final Object owner;
 	protected final UnitOfWorkImpl persistenceContext;
+
+	protected IndirectCollection() {
+		owner = null;
+		persistenceContext = null;
+	}
 
 	/**
 	 * Create new indirect collection from the specified data. </p>
@@ -32,4 +39,6 @@ public abstract class IndirectCollection {
 			persistenceContext.persistChangeInTransaction(owner);
 		}
 	}
+	
+	public abstract Collection<?> getReferencedCollection();
 }

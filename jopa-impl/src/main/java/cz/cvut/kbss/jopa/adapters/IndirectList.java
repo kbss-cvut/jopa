@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.adapters;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -10,6 +11,14 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 public class IndirectList<E> extends IndirectCollection implements List<E> {
 
 	private final List<E> internalList;
+
+	/**
+	 * Private constructor to allow clone building.
+	 */
+	private IndirectList() {
+		super();
+		this.internalList = new ArrayList<E>();
+	}
 
 	/**
 	 * Create new indirect list backed by the specified referenced list.
@@ -152,5 +161,25 @@ public class IndirectList<E> extends IndirectCollection implements List<E> {
 
 	public <T> T[] toArray(T[] arg0) {
 		return internalList.toArray(arg0);
+	}
+
+	@Override
+	public Collection<?> getReferencedCollection() {
+		return internalList;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		return internalList.equals(o);
+	}
+
+	@Override
+	public int hashCode() {
+		return internalList.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return internalList.toString();
 	}
 }

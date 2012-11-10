@@ -24,14 +24,11 @@ import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 public class CollectionInstantiationHelper {
 
 	private InstantiationHelper builder;
-	private static final Class<?> singletonListClass = Collections
-			.singletonList(null).getClass();
-	private static final Class<?> singletonSetClass = Collections.singleton(
-			null).getClass();
-	private static final Class<?> singletonMapClass = Collections.singletonMap(
-			null, null).getClass();
-	private static final Class<?> arrayAsListClass = Arrays
-			.asList(new Object()).getClass();
+	private static final Class<?> singletonListClass = Collections.singletonList(null).getClass();
+	private static final Class<?> singletonSetClass = Collections.singleton(null).getClass();
+	private static final Class<?> singletonMapClass = Collections.singletonMap(null, null)
+			.getClass();
+	private static final Class<?> arrayAsListClass = Arrays.asList(new Object()).getClass();
 
 	public CollectionInstantiationHelper() {
 		this.builder = null;
@@ -51,8 +48,7 @@ public class CollectionInstantiationHelper {
 	 *            The collection to clone.
 	 * @return A deep clone of the specified collection.
 	 */
-	public Object buildNewInstance(Object collection)
-			throws OWLPersistenceException {
+	public Object buildNewInstance(Object collection) throws OWLPersistenceException {
 		Collection<?> container = (Collection<?>) collection;
 		Collection<?> clone = null;
 		clone = cloneUsingDefaultConstructor(container);
@@ -66,12 +62,10 @@ public class CollectionInstantiationHelper {
 			} else if (singletonSetClass.isInstance(container)) {
 				c = getFirstDeclaredConstructorFor(singletonSetClass);
 			} else if (singletonMapClass.isInstance(container)) {
-				throw new UnsupportedOperationException(
-						"Maps are not supported yet.");
+				throw new UnsupportedOperationException("Maps are not supported yet.");
 			} else if (arrayAsListClass.isInstance(container)) {
 				c = getFirstDeclaredConstructorFor(arrayAsListClass);
-				params[0] = builder.getCloneBuilder().cloneArray(
-						container.toArray());
+				params[0] = builder.getCloneBuilder().cloneArray(container.toArray());
 			}
 			try {
 				if (!c.isAccessible()) {
@@ -109,11 +103,9 @@ public class CollectionInstantiationHelper {
 	 *            The collection to clone.
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Collection<?> cloneUsingDefaultConstructor(Collection<?> container) {
-		Class javaClass = container.getClass();
-		Constructor ctor = InstantiationHelper.getDeclaredConstructorFor(
-				javaClass, null);
+		Class<?> javaClass = container.getClass();
+		Constructor<?> ctor = InstantiationHelper.getDeclaredConstructorFor(javaClass, null);
 		if (ctor != null) {
 			Collection<?> result = null;
 			try {
@@ -153,8 +145,7 @@ public class CollectionInstantiationHelper {
 	private Collection cloneCollectionContent(Collection<?> collection) {
 		Collection<Object> result = null;
 		if (collection instanceof Map) {
-			throw new UnsupportedOperationException(
-					"Maps are not supported yet.");
+			throw new UnsupportedOperationException("Maps are not supported yet.");
 		} else {
 			result = new ArrayList<Object>(collection.size());
 			for (Object obj : collection) {
@@ -163,8 +154,7 @@ public class CollectionInstantiationHelper {
 					break;
 				}
 				Object clone = null;
-				if (builder.getUnitOfWork().getManagedTypes()
-						.contains(obj.getClass())) {
+				if (builder.getUnitOfWork().getManagedTypes().contains(obj.getClass())) {
 					clone = builder.getUnitOfWork().registerExistingObject(obj);
 				} else {
 					clone = builder.getCloneBuilder().buildClone(obj);
@@ -186,8 +176,7 @@ public class CollectionInstantiationHelper {
 	 *            The class whose constructors should be searched.
 	 * @return The first declared constructor of the specified class.
 	 */
-	private static Constructor<?> getFirstDeclaredConstructorFor(
-			Class<?> javaClass) {
+	private static Constructor<?> getFirstDeclaredConstructorFor(Class<?> javaClass) {
 		Constructor<?>[] ctors = javaClass.getDeclaredConstructors();
 		return ctors[0];
 	}

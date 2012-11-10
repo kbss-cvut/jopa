@@ -50,6 +50,18 @@
     
 
 
+    <!-- Five -->
+
+    <owl:Class rdf:about="Five"/>
+    
+
+
+    <!-- Four -->
+
+    <owl:Class rdf:about="Four"/>
+    
+
+
     <!-- One -->
 
     <owl:Class rdf:about="One"/>
@@ -59,12 +71,6 @@
     <!-- Three -->
 
     <owl:Class rdf:about="Three"/>
-    
-
-
-    <!-- Two -->
-
-    <owl:Class rdf:about="Two"/>
     
 
 
@@ -88,9 +94,10 @@
     <!-- http://testEntity -->
 
     <owl:NamedIndividual rdf:about="http://testEntity">
+        <rdf:type rdf:resource="Five"/>
+        <rdf:type rdf:resource="Four"/>
         <rdf:type rdf:resource="One"/>
         <rdf:type rdf:resource="Three"/>
-        <rdf:type rdf:resource="Two"/>
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
         <http:A-stringAttribute>TestAttribute</http:A-stringAttribute>
     </owl:NamedIndividual>

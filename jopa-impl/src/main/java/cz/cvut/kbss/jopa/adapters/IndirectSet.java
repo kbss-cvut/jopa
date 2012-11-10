@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.adapters;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -9,6 +10,14 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 public class IndirectSet<E> extends IndirectCollection implements Set<E> {
 
 	private Set<E> internalSet;
+
+	/**
+	 * Private constructor to allow clone building.
+	 */
+	private IndirectSet() {
+		super();
+		this.internalSet = new HashSet<E>();
+	}
 
 	public IndirectSet(Object owner, UnitOfWorkImpl uow, Set<E> referencedSet) {
 		super(owner, uow);
@@ -111,5 +120,25 @@ public class IndirectSet<E> extends IndirectCollection implements Set<E> {
 			iterator.remove();
 			IndirectSet.this.persistChange();
 		}
+	}
+
+	@Override
+	public Collection<?> getReferencedCollection() {
+		return internalSet;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		return internalSet.equals(o);
+	}
+
+	@Override
+	public int hashCode() {
+		return internalSet.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return internalSet.toString();
 	}
 }

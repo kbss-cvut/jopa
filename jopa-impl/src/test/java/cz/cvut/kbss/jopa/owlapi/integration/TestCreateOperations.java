@@ -16,6 +16,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.RollbackException;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -63,8 +64,7 @@ public class TestCreateOperations {
 		refList = new ArrayList<OWLClassA>();
 		for (int i = 0; i < 10; i++) {
 			OWLClassA a = new OWLClassA();
-			final URI pkRA = URI
-					.create("http://refA" + Integer.toString(i + 1));
+			final URI pkRA = URI.create("http://refA" + Integer.toString(i + 1));
 			a.setUri(pkRA);
 			a.setStringAttribute("strAttForRefA_" + Integer.toString(i + 1));
 			refList.add(a);
@@ -73,6 +73,12 @@ public class TestCreateOperations {
 		testF = new OWLClassF();
 		final URI pkF = URI.create("http://testF");
 		testF.setUri(pkF);
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		testC.setSimpleList(classes);
+		testC.setReferencedList(null);
 	}
 
 	@After
@@ -103,8 +109,7 @@ public class TestCreateOperations {
 
 	@Test
 	public void testRollbackTransaction() {
-		pc = TestEnvironment
-				.getPersistenceConnector("TestPersistenceConnectorLogic-testRollback");
+		pc = TestEnvironment.getPersistenceConnector("TestPersistenceConnectorLogic-testRollback");
 		pc.clear();
 		final OWLClassB testEntity = new OWLClassB();
 		final URI pk = URI.create("http://pk");
@@ -315,8 +320,8 @@ public class TestCreateOperations {
 		pc.getTransaction().commit();
 		final OWLClassC c = pc.find(OWLClassC.class, testC.getUri());
 		assertNotNull(c);
-		assertEquals(refList.get(0).getStringAttribute(), c.getReferencedList()
-				.get(0).getStringAttribute());
+		assertEquals(refList.get(0).getStringAttribute(), c.getReferencedList().get(0)
+				.getStringAttribute());
 		assertEquals(classes.get(5).getUri(), c.getSimpleList().get(5).getUri());
 	}
 
