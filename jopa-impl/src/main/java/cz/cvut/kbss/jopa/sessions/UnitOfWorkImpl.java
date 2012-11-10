@@ -606,6 +606,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		getUsedPrimaryKeys().add(iri);
 		getCloneMapping().put(entity, entity);
 		getCloneToOriginals().put(entity, orig);
+		checkForCollections(entity);
 		setHasChanges(true);
 	}
 

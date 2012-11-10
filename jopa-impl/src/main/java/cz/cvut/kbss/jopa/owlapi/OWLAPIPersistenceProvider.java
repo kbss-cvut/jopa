@@ -23,21 +23,18 @@ import java.util.Set;
 import cz.cvut.kbss.jopa.accessors.OWLOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.LoadState;
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.PersistenceProvider;
 import cz.cvut.kbss.jopa.model.ProviderUtil;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
-public class OWLAPIPersistenceProvider implements PersistenceProvider,
-		ProviderUtil {
+public class OWLAPIPersistenceProvider implements PersistenceProvider, ProviderUtil {
 
 	private static Set<EntityManagerFactoryImpl> emfs = new HashSet<EntityManagerFactoryImpl>();
 
 	public OWLAPIPersistenceProvider() {
 	}
 
-	public EntityManagerFactory createEntityManagerFactory(String emName,
-			Map<String, String> map) {
+	public EntityManagerFactory createEntityManagerFactory(String emName, Map<String, String> map) {
 		final EntityManagerFactoryImpl emf = new EntityManagerFactoryImpl(map);
 		emfs.add(emf);
 		return emf;
@@ -55,8 +52,7 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 		return LoadState.UNKNOWN;
 	}
 
-	public LoadState isLoadedWithoutReference(Object entity,
-			String attributeName) {
+	public LoadState isLoadedWithoutReference(Object entity, String attributeName) {
 		return LoadState.UNKNOWN;
 	}
 
@@ -65,8 +61,7 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 			return null;
 		}
 		for (EntityManagerFactoryImpl emf : emfs) {
-			final UnitOfWorkImpl uow = emf.getServerSession()
-					.getPersistenceContext(entity);
+			final UnitOfWorkImpl uow = emf.getServerSession().getPersistenceContext(entity);
 			if (uow != null) {
 				return uow;
 			}
@@ -74,15 +69,20 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 		return null;
 	}
 
-	static void loadReference(Object o, Field f)
-			throws IllegalArgumentException, IllegalAccessException {
+	static void loadReference(Object o, Field f) throws IllegalArgumentException,
+			IllegalAccessException {
 		final UnitOfWorkImpl uow = getPersistenceContext(o);
 
 		if (uow != null) {
 			Object managedOrig = uow.getOriginal(o);
 			if (managedOrig == null) {
-				throw new OWLPersistenceException(
-						"Entity not managed in the current persistence context.");
+				// if (uow.isObjectNew(o)) {
+				// return;
+				// }
+				// throw new OWLPersistenceException(
+				// "Entity not managed in the current persistence context.");
+				// The entity is not managed in this persistence context
+				return;
 			}
 			Object val = f.get(managedOrig);
 			if (val != null) {
@@ -96,8 +96,7 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 		final UnitOfWorkImpl uow = getPersistenceContext(o);
 
 		if (uow != null && uow.isInTransaction()) {
-			OWLOntologyAccessor accessor = (OWLOntologyAccessor) uow
-					.getOntologyAccessor();
+			OWLOntologyAccessor accessor = (OWLOntologyAccessor) uow.getOntologyAccessor();
 			accessor.saveReference(o, f, uow);
 		}
 	}
