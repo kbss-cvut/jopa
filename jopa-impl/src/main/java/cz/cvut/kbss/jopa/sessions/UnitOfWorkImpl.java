@@ -591,7 +591,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 */
 	public void mergeDetached(Object entity) {
 		if (entity == null) {
-			return;
+			throw new IllegalArgumentException("Null cannot be merged since it is not an entity.");
 		}
 		if (this.contains(entity)) {
 			return;
@@ -614,6 +614,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		getCloneMapping().put(entity, entity);
 		getCloneToOriginals().put(entity, orig);
 		checkForCollections(entity);
+		if (isInTransaction()) {
+			persistChangeInTransaction(entity);
+		}
 		setHasChanges(true);
 	}
 

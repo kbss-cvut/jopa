@@ -42,6 +42,7 @@ public class ChangeManagerTest {
 	private static OWLClassD testDClone;
 	private static OWLClassC testCClone;
 	private static Set<String> typesCollection;
+	private static TestEntity primitivesTest;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -81,6 +82,8 @@ public class ChangeManagerTest {
 			refList.add(a);
 		}
 		testC.setReferencedList(refList);
+		primitivesTest = new TestEntity();
+		primitivesTest.setId(0);
 	}
 
 	@Before
@@ -160,6 +163,18 @@ public class ChangeManagerTest {
 		assertNotNull(chSet);
 		assertFalse(0 == chSet.getChanges().size());
 		assertTrue(chSet.getAttributesToChange().containsKey("stringAttribute"));
+	}
+
+	@Test
+	public void testCalcuateChangesPrimitives() throws IllegalAccessException,
+			IllegalArgumentException, OWLInferredAttributeModifiedException {
+		final TestEntity primClone = new TestEntity();
+		primClone.setId(primitivesTest.getId() + 10);
+		ObjectChangeSet chSet = builder.createObjectChangeSet(primitivesTest, primClone, null);
+		chSet = manager.calculateChanges(chSet);
+		assertNotNull(chSet);
+		assertFalse(0 == chSet.getChanges().size());
+		assertTrue(chSet.getAttributesToChange().containsKey("id"));
 	}
 
 	@Test
@@ -269,5 +284,19 @@ public class ChangeManagerTest {
 		final ChangeRecord r = chSet.getChanges().get(0);
 		List<OWLClassA> refs = (List<OWLClassA>) r.getNewValue();
 		assertTrue(refs.contains(newOne));
+	}
+
+	private static final class TestEntity {
+
+		private int id;
+
+		public int getId() {
+			return id;
+		}
+
+		public void setId(int id) {
+			this.id = id;
+		}
+
 	}
 }

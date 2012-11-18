@@ -2,10 +2,69 @@
 <rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testTypes#"
      xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testTypes"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:new="http://new.owl#"
+     xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
     <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testTypes"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://classA -->
+
+    <owl:Class rdf:about="http://classA"/>
+    
+
+
+    <!-- http://classB -->
+
+    <owl:Class rdf:about="http://classB"/>
+    
+
+
+    <!-- http://classC -->
+
+    <owl:Class rdf:about="http://classC"/>
+    
+
+
+    <!-- http://new.owl#OWLClassA -->
+
+    <owl:Class rdf:about="http://new.owl#OWLClassA"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://newA -->
+
+    <owl:NamedIndividual rdf:about="http://newA">
+        <rdf:type rdf:resource="http://classA"/>
+        <rdf:type rdf:resource="http://classB"/>
+        <rdf:type rdf:resource="http://classC"/>
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
 </rdf:RDF>
 
 
