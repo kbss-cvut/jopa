@@ -38,6 +38,7 @@ public class ServerSession extends AbstractSession {
 	private final Metamodel metamodel;
 	private final Set<Class<?>> managedClasses;
 
+	private CacheManager liveObjectCache;
 	private final OntologyAccessorFactory accessorFactory;
 	private OntologyAccessor ontologyAccessor;
 
@@ -97,8 +98,8 @@ public class ServerSession extends AbstractSession {
 		this.ontologyAccessor = accessorFactory.createCentralAccessor(properties, metamodel, this);
 		String cache = properties.get(CACHE_PROPERTY);
 		if (cache == null || cache.equals("on")) {
-			CacheManagerImpl cm = (CacheManagerImpl) getLiveObjectCache();
-			cm.setInferredClasses(metamodel.getInferredClasses());
+			this.liveObjectCache = new CacheManagerImpl(this);
+			liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
 		} else {
 			this.liveObjectCache = new DisabledCacheManager(this);
 		}
@@ -118,6 +119,10 @@ public class ServerSession extends AbstractSession {
 	@Override
 	public UnitOfWork acquireUnitOfWork() {
 		return acquireClientSession().acquireUnitOfWork();
+	}
+
+	public CacheManager getLiveObjectCache() {
+		return liveObjectCache;
 	}
 
 	public TransactionOntologyAccessor getOntologyAccessor() {

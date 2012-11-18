@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 
@@ -88,4 +89,23 @@ public class DisabledCacheManager implements CacheManager {
 
 	}
 
+	public boolean acquireReadLock() {
+		return true;
+	}
+
+	public void releaseReadLock() {
+		// Nothing to do
+	}
+
+	public boolean acquireWriteLock() {
+		return true;
+	}
+
+	public void releaseWriteLock() {
+		// Nothing to do
+	}
+
+	public void setInferredClasses(Set<Class<?>> inferredClasses) {
+		// Nothing to do
+	}
 }

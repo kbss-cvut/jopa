@@ -103,7 +103,9 @@ public class MergeManagerImpl implements MergeManager {
 		Object newObject = changeSet.getChangedObject();
 		final IRI primaryKey = session.getOntologyAccessor().getIdentifier(
 				newObject);
+		session.getLiveObjectCache().acquireWriteLock();
 		session.getLiveObjectCache().add(primaryKey, newObject);
+		session.getLiveObjectCache().releaseWriteLock();
 	}
 
 }

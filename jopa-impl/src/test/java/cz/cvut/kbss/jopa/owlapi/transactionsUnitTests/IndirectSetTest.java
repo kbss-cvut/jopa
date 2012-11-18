@@ -22,6 +22,8 @@ import org.junit.Test;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassF;
+import cz.cvut.kbss.jopa.owlapi.utils.AccessorStub;
+import cz.cvut.kbss.jopa.owlapi.utils.ServerSessionStub;
 import cz.cvut.kbss.jopa.owlapi.utils.UnitOfWorkImplStub;
 
 public class IndirectSetTest {
@@ -38,7 +40,7 @@ public class IndirectSetTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		LOG.setLevel(Level.ALL);
-		uow = new UnitOfWorkImplStub(null);
+		uow = new UnitOfWorkImplStub(new ServerSessionStub(new AccessorStub()));
 		owner = new OWLClassF();
 		owner.setUri(URI.create("http://C"));
 		backupSet = new HashSet<OWLClassA>();

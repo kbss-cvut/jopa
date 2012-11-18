@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * The CacheManager is responsible for managing the live object cache of our
@@ -20,8 +23,6 @@ public class CacheManagerImpl implements CacheManager {
 	// TODO: Implement proper life time for the cache (objects should be cached
 	// only for a certain time and
 	// inactive objects should be then evicted)
-	// And implement proper locking strategy
-	// Also check how inheritance would work in this simple cache
 
 	private Set<Class<?>> inferredClasses;
 
@@ -29,9 +30,16 @@ public class CacheManagerImpl implements CacheManager {
 
 	protected final AbstractSession session;
 
+	private final ReadWriteLock lock;
+	private final Lock readLock;
+	private final Lock writeLock;
+
 	public CacheManagerImpl(AbstractSession session) {
 		this.session = session;
 		this.objCache = new HashMap<Class<?>, Map<Object, Object>>();
+		this.lock = new ReentrantReadWriteLock();
+		this.readLock = lock.readLock();
+		this.writeLock = lock.writeLock();
 	}
 
 	/**
@@ -228,6 +236,24 @@ public class CacheManagerImpl implements CacheManager {
 			return Collections.emptyMap();
 		}
 		return m;
+	}
+
+	public boolean acquireReadLock() {
+		readLock.lock();
+		return true;
+	}
+
+	public void releaseReadLock() {
+		readLock.unlock();
+	}
+
+	public boolean acquireWriteLock() {
+		writeLock.lock();
+		return true;
+	}
+
+	public void releaseWriteLock() {
+		writeLock.unlock();
 	}
 
 }

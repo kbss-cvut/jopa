@@ -18,6 +18,8 @@ import org.junit.Test;
 import cz.cvut.kbss.jopa.adapters.IndirectList;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassC;
+import cz.cvut.kbss.jopa.owlapi.utils.AccessorStub;
+import cz.cvut.kbss.jopa.owlapi.utils.ServerSessionStub;
 import cz.cvut.kbss.jopa.owlapi.utils.UnitOfWorkImplStub;
 
 public class IndirectListTest {
@@ -34,7 +36,7 @@ public class IndirectListTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		LOG.setLevel(Level.ALL);
-		uow = new UnitOfWorkImplStub(null);
+		uow = new UnitOfWorkImplStub(new ServerSessionStub(new AccessorStub()));
 		owner = new OWLClassC();
 		owner.setUri(URI.create("http://C"));
 		backupList = new ArrayList<OWLClassA>();

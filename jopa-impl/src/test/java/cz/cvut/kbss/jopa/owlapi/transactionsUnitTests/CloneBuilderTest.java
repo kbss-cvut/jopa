@@ -16,6 +16,8 @@ import org.junit.Test;
 
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
+import cz.cvut.kbss.jopa.owlapi.utils.AccessorStub;
+import cz.cvut.kbss.jopa.owlapi.utils.ServerSessionStub;
 import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
@@ -36,7 +38,7 @@ public class CloneBuilderTest extends TestCase {
 
 	@Before
 	public void setUp() throws Exception {
-		UnitOfWorkImpl uow = new UnitOfWorkImpl(null);
+		UnitOfWorkImpl uow = new UnitOfWorkImpl(new ServerSessionStub(new AccessorStub()));
 		this.builder = new CloneBuilderImpl(uow);
 		this.testEntity = new OWLClassA();
 		final URI pk = URI.create("http://testB");
@@ -59,8 +61,7 @@ public class CloneBuilderTest extends TestCase {
 	@Test
 	public void testBuildClone() {
 		OWLClassA res = (OWLClassA) this.builder.buildClone(this.testEntity);
-		assertEquals(res.getStringAttribute(),
-				this.testEntity.getStringAttribute());
+		assertEquals(res.getStringAttribute(), this.testEntity.getStringAttribute());
 		assertTrue(res.getUri().equals(this.testEntity.getUri()));
 		assertEquals(testEntity.getTypes(), res.getTypes());
 	}
@@ -68,8 +69,7 @@ public class CloneBuilderTest extends TestCase {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testBuildClones() {
-		List<OWLClassA> result = (List<OWLClassA>) this.builder
-				.buildClones(this.testEntities);
+		List<OWLClassA> result = (List<OWLClassA>) this.builder.buildClones(this.testEntities);
 		assertEquals(this.testEntities.size(), result.size());
 		int index = 0;
 		for (OWLClassA ent : result) {
@@ -86,8 +86,7 @@ public class CloneBuilderTest extends TestCase {
 		// We don't need to create some sort of special object, this is just
 		// for the test
 		Object clone = new Object();
-		ObjectChangeSet res = this.builder.createObjectChangeSet(
-				this.testEntity, clone, chSet);
+		ObjectChangeSet res = this.builder.createObjectChangeSet(this.testEntity, clone, chSet);
 		assertEquals(this.testEntity, res.getChangedObject());
 		assertEquals(clone, res.getCloneObject());
 	}

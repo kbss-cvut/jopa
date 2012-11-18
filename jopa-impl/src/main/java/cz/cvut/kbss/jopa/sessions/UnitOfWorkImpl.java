@@ -52,12 +52,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	protected MergeManager mergeManager;
 	protected CloneBuilder cloneBuilder;
 	protected ChangeManager changeManager;
+	/**
+	 * This is a shortcut for the second level cache. Performance reasons (to
+	 * prevent server session method call chain.
+	 */
+	protected final CacheManager cacheManager;
 
 	public UnitOfWorkImpl(AbstractSession parent) {
 		this.parent = parent;
 		this.entityManager = null;
 		this.isActive = true;
 		this.cloneBuilder = new CloneBuilderImpl(this);
+		this.cacheManager = parent.getLiveObjectCache();
 	}
 
 	/**
@@ -94,7 +100,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			return cls.cast(result);
 		}
 		// Search the cache
-		result = getLiveObjectCache().get(cls, primaryKey);
+		getObjectFromCache(cls, primaryKey);
 		if (result == null) {
 			// The object is not in the session cache, so search the ontology
 			result = getOntologyAccessor().readEntity(cls, primaryKey);
@@ -254,7 +260,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		this.cloneBuilder.reset();
 		this.uowChangeSet = null;
 		if (shouldClearCacheAfterCommit) {
-			getLiveObjectCache().evictAll();
+			cacheManager.acquireWriteLock();
+			cacheManager.evictAll();
+			cacheManager.releaseWriteLock();
 			this.shouldReleaseAfterCommit = true;
 		}
 	}
@@ -428,7 +436,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
 	@Override
 	public CacheManager getLiveObjectCache() {
-		return this.parent.getLiveObjectCache();
+		return parent.getLiveObjectCache();
 	}
 
 	/**
@@ -511,7 +519,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
 	private boolean isObjectManaged(Object entity, Object primaryKey) {
 		Object original = getOriginal(entity);
-		if (getLiveObjectCache().contains(entity.getClass(), primaryKey))
+		if (isInCache(entity.getClass(), primaryKey))
 			return true;
 		if (getCloneToOriginals().containsValue(original)) {
 			return true;
@@ -594,9 +602,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 		Object orig = null;
 		final Class<?> cls = entity.getClass();
-		if (getLiveObjectCache().contains(cls, iri)) {
-			orig = getLiveObjectCache().get(cls, iri);
-		} else {
+		orig = getObjectFromCache(cls, iri);
+		if (orig == null) {
 			orig = getOntologyAccessor().readEntity(entity.getClass(), iri);
 			if (orig == null) {
 				throw new OWLPersistenceException(
@@ -677,7 +684,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		if (primaryKey == null) {
 			throw new OWLPersistenceException("The specified object is not a valid entity.");
 		}
-		if (getLiveObjectCache().contains(object.getClass(), primaryKey)) {
+		if (isInCache(object.getClass(), primaryKey)) {
 			return registerExistingObject(object);
 		}
 		Object clone = readObject(object.getClass(), primaryKey);
@@ -724,7 +731,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		if (primaryKey == null) {
 			return;
 		}
-		getLiveObjectCache().evict(object.getClass(), primaryKey);
+		cacheManager.acquireWriteLock();
+		cacheManager.evict(object.getClass(), primaryKey);
+		cacheManager.releaseWriteLock();
 	}
 
 	/**
@@ -900,9 +909,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		if (!hasChanges()) {
 			return;
 		}
-		commitToOntology();
-		mergeChangesIntoParent();
-		postCommit();
+		commitUnitOfWork();
 	}
 
 	@Override
@@ -978,5 +985,43 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			LOG.severe("Unable to set indirect collection on entity " + entity);
 			throw new OWLPersistenceException(e);
 		}
+	}
+
+	/**
+	 * This is just a delegate for the cache. It handles read lock acquiring and
+	 * releasing.
+	 * 
+	 * @param cls
+	 * @param primaryKey
+	 * @return True if the cache contains an object with the specified
+	 *         primaryKey
+	 */
+	private boolean isInCache(Class<?> cls, Object primaryKey) {
+		assert cls != null;
+		assert primaryKey != null;
+		cacheManager.acquireReadLock();
+		final boolean res = cacheManager.contains(cls, primaryKey);
+		cacheManager.releaseReadLock();
+		return res;
+	}
+
+	/**
+	 * Get entity with the specified primary key from the cache. </p>
+	 * 
+	 * If the cache does not contain any object with the specified primary key
+	 * and class, null is returned. This method is just a delegate for the cache
+	 * methods, it handles locks.
+	 * 
+	 * @param cls
+	 * @param primaryKey
+	 * @return Cached object or null
+	 */
+	private Object getObjectFromCache(Class<?> cls, Object primaryKey) {
+		assert cls != null;
+		assert primaryKey != null;
+		cacheManager.acquireReadLock();
+		final Object entity = cacheManager.get(cls, primaryKey);
+		cacheManager.releaseReadLock();
+		return entity;
 	}
 }
