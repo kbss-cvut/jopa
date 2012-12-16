@@ -65,8 +65,17 @@ public aspect BeanListenerAspect {
 
 	after() returning : setter() {
 		final Object entity = thisJoinPoint.getTarget();
-
-		OWLAPIPersistenceProvider.persistEntityChanges(entity);
+		Field f;
+		try {
+			f = entity.getClass().getDeclaredField(thisJoinPoint.getSignature().getName());
+			OWLAPIPersistenceProvider.persistEntityChanges(entity, f);
+		} catch (NoSuchFieldException e) {
+			LOG.log(Level.SEVERE, e.getMessage(), e);
+			throw new OWLPersistenceException(e.getMessage());
+		} catch (SecurityException e) {
+			LOG.log(Level.SEVERE, e.getMessage(), e);
+			throw new OWLPersistenceException(e.getMessage());
+		}
 	}
 
 	before() : getter()  {

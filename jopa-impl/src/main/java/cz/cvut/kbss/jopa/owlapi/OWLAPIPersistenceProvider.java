@@ -107,10 +107,11 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider, ProviderU
 	 * @param entity
 	 *            Entity to persist
 	 */
-	static void persistEntityChanges(Object entity) {
+	static void persistEntityChanges(Object entity, Field f) {
 		final UnitOfWorkImpl uow = getPersistenceContext(entity);
 		if (uow != null && uow.isInTransaction()) {
 			uow.persistChangeInTransaction(entity);
+			uow.setIndirectCollectionIfPresent(entity, f);
 		}
 	}
 }

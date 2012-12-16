@@ -124,4 +124,28 @@ public class TestCollectionOperations {
 		assertTrue(res.getTypes().contains(addedType));
 		assertFalse(res.getTypes().contains(removed));
 	}
+
+	@Test
+	public void testSetNewCollectionDuringTransaction() {
+		LOG.config("Test: persist entity. Set new collection on it and make changes in the collection.");
+		this.em = TestEnvironment.getPersistenceConnector(
+				"TestCollectionOperations-setNewCollectionDuringTransaction", Storage.FILE, true);
+		em.getTransaction().begin();
+		em.persist(testA);
+		em.getTransaction().commit();
+		OWLClassA res = em.find(OWLClassA.class, testA.getUri());
+		assertNotNull(res);
+		final Set<String> newSet = new HashSet<String>();
+		newSet.add("NewStringOne");
+		newSet.add("NewStringTwo");
+		em.getTransaction().begin();
+		res.setTypes(newSet);
+		res.getTypes().add("NewStringThree");
+		em.getTransaction().commit();
+		res = em.find(OWLClassA.class, testA.getUri());
+		assertNotNull(res);
+		final Set<String> resSet = res.getTypes();
+		assertEquals(newSet.size(), resSet.size());
+		assertTrue(newSet.containsAll(resSet));
+	}
 }

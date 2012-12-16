@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassB;
 import cz.cvut.kbss.jopa.owlapi.OWLClassD;
@@ -229,6 +230,51 @@ public class CacheManagerTest {
 		} catch (Exception e) {
 			fail("Exception caught. Test failed.");
 		}
+	}
+
+	@Test
+	public void testEvictWithSweeper() {
+		initSweepeableManager();
+		mngr.add(testA.getUri(), testA);
+		mngr.add(testB.getUri(), testB);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
+		assertTrue(mngr.contains(testB.getClass(), testB.getUri()));
+		// Give it enough time to sweep the cache
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		assertFalse(mngr.contains(testA.getClass(), testA.getUri()));
+		assertFalse(mngr.contains(testB.getClass(), testB.getUri()));
+	}
+
+	@Test
+	public void testRefreshTTL() {
+		initSweepeableManager();
+		mngr.add(testA.getUri(), testA);
+		mngr.add(testB.getUri(), testB);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
+		assertTrue(mngr.contains(testB.getClass(), testB.getUri()));
+		// The cycle ensures that testA is refreshed and stays in the cache
+		// while testB will be evicted because its TTL is exhausted
+		for (int i = 0; i < 5; i++) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			assertNotNull(mngr.get(testA.getClass(), testA.getUri()));
+		}
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
+		assertFalse(mngr.contains(testB.getClass(), testB.getUri()));
+	}
+
+	private void initSweepeableManager() {
+		final Map<String, String> props = new HashMap<String, String>();
+		props.put(OWLAPIPersistenceProperties.CACHE_TTL, "1");
+		props.put(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE, "2");
+		this.mngr = new CacheManagerImpl(session, props);
 	}
 
 	private static class SessionStub extends ServerSession {

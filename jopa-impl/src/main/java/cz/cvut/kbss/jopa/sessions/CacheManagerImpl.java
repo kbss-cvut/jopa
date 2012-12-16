@@ -6,9 +6,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
@@ -24,11 +29,12 @@ import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
  */
 public class CacheManagerImpl implements CacheManager {
 
-	// TODO: Implement proper life time for the cache (objects should be cached
-	// only for a certain time and
-	// inactive objects should be then evicted)
+	private static final Logger LOG = Logger.getLogger(CacheManagerImpl.class.getName());
 
 	private static final Long DEFAULT_TTL = 60000L;
+	// Initial delay is the sweep rate multiplied by this multiplier
+	private static final int DELAY_MULTIPLIER = 2;
+	private static final long DEFAULT_SWEEP_RATE = 30L;
 
 	private Set<Class<?>> inferredClasses;
 
@@ -41,27 +47,51 @@ public class CacheManagerImpl implements CacheManager {
 	private final Lock readLock;
 	private final Lock writeLock;
 
-	private final Long timeToLive;
+	private final CacheSweeper cacheSweeper;
+	private final ScheduledExecutorService sweeperScheduler;
+	private long initDelay;
+	private long sweepRate;
+	private Long timeToLive;
 	private volatile boolean sweepRunning;
 
 	public CacheManagerImpl(AbstractSession session, Map<String, String> properties) {
 		this.session = session;
 		this.objCache = new HashMap<Class<?>, Map<Object, Object>>();
 		this.ttls = new HashMap<Class<?>, Map<Object, Long>>();
+		initSettings(properties);
+		this.lock = new ReentrantReadWriteLock();
+		this.readLock = lock.readLock();
+		this.writeLock = lock.writeLock();
+		this.cacheSweeper = new CacheSweeper();
+		this.sweeperScheduler = Executors.newSingleThreadScheduledExecutor();
+		sweeperScheduler.scheduleAtFixedRate(cacheSweeper, initDelay, sweepRate, TimeUnit.SECONDS);
+	}
+
+	private void initSettings(Map<String, String> properties) {
 		if (!properties.containsKey(OWLAPIPersistenceProperties.CACHE_TTL)) {
 			this.timeToLive = DEFAULT_TTL;
 		} else {
 			try {
+				// The property is in seconds, we need milliseconds
 				this.timeToLive = Long.valueOf(properties
-						.get(OWLAPIPersistenceProperties.CACHE_TTL));
+						.get(OWLAPIPersistenceProperties.CACHE_TTL)) * 1000;
 			} catch (NumberFormatException e) {
 				throw new OWLPersistenceException("Unable to parse long value from "
 						+ properties.get(OWLAPIPersistenceProperties.CACHE_TTL), e);
 			}
 		}
-		this.lock = new ReentrantReadWriteLock();
-		this.readLock = lock.readLock();
-		this.writeLock = lock.writeLock();
+		if (!properties.containsKey(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE)) {
+			this.sweepRate = DEFAULT_SWEEP_RATE;
+		} else {
+			try {
+				this.sweepRate = Long.parseLong(properties
+						.get(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE));
+			} catch (NumberFormatException e) {
+				throw new OWLPersistenceException("Unable to parse long value from "
+						+ properties.get(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE), e);
+			}
+		}
+		this.initDelay = DELAY_MULTIPLIER * sweepRate;
 	}
 
 	/**
@@ -102,7 +132,6 @@ public class CacheManagerImpl implements CacheManager {
 		}
 		m.put(primaryKey, entity);
 		ttlMap.put(primaryKey, System.currentTimeMillis());
-		runCacheSweep();
 	}
 
 	/**
@@ -155,7 +184,6 @@ public class CacheManagerImpl implements CacheManager {
 			evict(c);
 			getTtlMapForClass(c).clear();
 		}
-		runCacheSweep();
 	}
 
 	/**
@@ -167,7 +195,6 @@ public class CacheManagerImpl implements CacheManager {
 		}
 		Object entity = getMapForClass(cls).get(primaryKey);
 		updateEntityTimeToLive(cls, primaryKey);
-		runCacheSweep();
 		return entity;
 	}
 
@@ -240,7 +267,6 @@ public class CacheManagerImpl implements CacheManager {
 		m.clear();
 		final Map<Object, Long> ttlMap = getTtlMapForClass(cls);
 		ttlMap.clear();
-		runCacheSweep();
 	}
 
 	/**
@@ -304,10 +330,6 @@ public class CacheManagerImpl implements CacheManager {
 		ttls.get(cls).put(primaryKey, System.currentTimeMillis());
 	}
 
-	private void runCacheSweep() {
-		// TODO
-	}
-
 	public boolean acquireReadLock() {
 		readLock.lock();
 		return true;
@@ -336,20 +358,34 @@ public class CacheManagerImpl implements CacheManager {
 	private final class CacheSweeper implements Runnable {
 
 		public void run() {
-			if (CacheManagerImpl.this.sweepRunning) {
-				return;
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.fine("Running cache sweep.");
 			}
-			CacheManagerImpl.this.sweepRunning = true;
-			final long currentTime = System.currentTimeMillis();
-			for (Map<Object, Long> ttl : CacheManagerImpl.this.ttls.values()) {
-				for (Entry<Object, Long> e : ttl.entrySet()) {
-					if (e.getValue() + CacheManagerImpl.this.timeToLive < currentTime) {
-						ttl.remove(e.getKey());
+			CacheManagerImpl.this.acquireWriteLock();
+			try {
+				if (CacheManagerImpl.this.sweepRunning || CacheManagerImpl.this.objCache.isEmpty()) {
+					return;
+				}
+				CacheManagerImpl.this.sweepRunning = true;
+				final long currentTime = System.currentTimeMillis();
+				final Map<Object, Class<?>> toEvict = new HashMap<Object, Class<?>>();
+				// Mark the objects to evict (can't evict them now, it would
+				// cause ConcurrentModificationException)
+				for (Entry<Class<?>, Map<Object, Long>> ttl : CacheManagerImpl.this.ttls.entrySet()) {
+					for (Entry<Object, Long> e : ttl.getValue().entrySet()) {
+						if (e.getValue() + CacheManagerImpl.this.timeToLive < currentTime) {
+							toEvict.put(e.getKey(), ttl.getKey());
+						}
 					}
 				}
+				// Evict them
+				for (Entry<Object, Class<?>> e : toEvict.entrySet()) {
+					CacheManagerImpl.this.evict(e.getValue(), e.getKey());
+				}
+			} finally {
+				CacheManagerImpl.this.sweepRunning = false;
+				CacheManagerImpl.this.releaseWriteLock();
 			}
-			// TODO Auto-generated method stub
-
 		}
 
 	}

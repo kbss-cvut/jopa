@@ -544,6 +544,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 		getOntologyAccessor().persistEntity(entity, this);
 		setHasChanges(true);
+		// Let's see how this works
+		checkForCollections(entity);
 	}
 
 	/**
@@ -940,20 +942,43 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 */
 	private void checkForCollections(Object entity) {
 		Field[] fields = entity.getClass().getDeclaredFields();
+		for (Field f : fields) {
+			setIndirectCollectionIfPresent(entity, f);
+		}
+	}
+
+	/**
+	 * Create and set indirect collection on the specified entity field.</p>
+	 * 
+	 * If the specified field is of Collection type and it is not already an
+	 * indirect collection, create new one and set it as the value of the
+	 * specified field on the specified entity.
+	 * 
+	 * @param entity
+	 *            The entity collection will be set on
+	 * @param field
+	 *            The field to set
+	 * @throws IllegalArgumentException
+	 *             Reflection
+	 * @throws IllegalAccessException
+	 *             Reflection
+	 */
+	public void setIndirectCollectionIfPresent(Object entity, Field field) {
+		if (entity == null || field == null) {
+			throw new NullPointerException();
+		}
 		try {
-			for (Field f : fields) {
-				if (Collection.class.isAssignableFrom(f.getType())) {
-					if (!f.isAccessible()) {
-						f.setAccessible(true);
-					}
-					Collection<?> col = (Collection<?>) f.get(entity);
-					if (col == null) {
-						continue;
-					}
-					Object indirectCollection = ((CloneBuilderImpl) cloneBuilder)
-							.createIndirectCollection(col, entity);
-					f.set(entity, indirectCollection);
+			if (Collection.class.isAssignableFrom(field.getType())) {
+				if (!field.isAccessible()) {
+					field.setAccessible(true);
 				}
+				Collection<?> col = (Collection<?>) field.get(entity);
+				if (col == null || col instanceof IndirectCollection) {
+					return;
+				}
+				Object indirectCollection = ((CloneBuilderImpl) cloneBuilder)
+						.createIndirectCollection(col, entity);
+				field.set(entity, indirectCollection);
 			}
 		} catch (IllegalAccessException e) {
 			LOG.severe("Unable to set indirect collection on entity " + entity);
