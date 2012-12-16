@@ -100,7 +100,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			return cls.cast(result);
 		}
 		// Search the cache
-		getObjectFromCache(cls, primaryKey);
+		result = getObjectFromCache(cls, primaryKey);
 		if (result == null) {
 			// The object is not in the session cache, so search the ontology
 			result = getOntologyAccessor().readEntity(cls, primaryKey);
