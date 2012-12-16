@@ -26,4 +26,6 @@ public interface OWLAPIPersistenceProperties extends PersistenceProperties {
 	public static final String MAPPING_FILE_URI_KEY = "cz.cvut.jopa.mappingFileURI";
 	public static final String REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
 	public static final String LANG = "cz.cvut.jopa.lang";
+	public static final String CACHE_PROPERTY = "cz.cvut.jopa.cache";
+	public static final String CACHE_TTL = "cz.cvut.jopa.cache.ttl";
 }

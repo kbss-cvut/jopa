@@ -33,8 +33,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 
 @Ignore
 public class TestEnvironment {
-	private static final Logger log = Logger.getLogger(TestEnvironment.class
-			.getName());
+	private static final Logger log = Logger.getLogger(TestEnvironment.class.getName());
 
 	public static final String dir = "testResults";
 	public static final String DB_URI = "jdbc:postgresql://localhost/owldb";
@@ -61,17 +60,13 @@ public class TestEnvironment {
 		return getPersistenceConnector(name, Storage.FILE, true);
 	}
 
-	public static EntityManager getPersistenceConnector(String name,
-			boolean cache) {
+	public static EntityManager getPersistenceConnector(String name, boolean cache) {
 		return getPersistenceConnector(name, Storage.FILE, cache);
 	}
 
-	public static EntityManager getPersistenceConnector(String name,
-			Storage storage, boolean cache) {
+	public static EntityManager getPersistenceConnector(String name, Storage storage, boolean cache) {
 		final Map<String, String> params = new HashMap<String, String>();
-		final IRI iri = IRI
-				.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
-						+ name);
+		final IRI iri = IRI.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/" + name);
 		params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, iri.toString());
 		try {
 			switch (storage) {
@@ -82,23 +77,18 @@ public class TestEnvironment {
 				if (url.exists() && shouldDeleteOntologyFile) {
 					url.delete();
 				}
-				params.put(
-						OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
-						physicalURI);
+				params.put(OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, physicalURI);
 				break;
 			case OWLDB:
 				// OWLDB ontology access
-				params.put(
-						OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY,
-						DB_URI);
+				params.put(OWLAPIPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, DB_URI);
 			}
 
-			params.put("javax.persistence.provider",
-					EntityManagerFactoryImpl.class.getName());
+			params.put("javax.persistence.provider", EntityManagerFactoryImpl.class.getName());
 			if (cache) {
-				params.put("cache", "on");
+				params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "on");
 			} else {
-				params.put("cache", "off");
+				params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "off");
 			}
 			/* Set location of the entities (package) */
 			params.put("location", "cz.cvut.kbss.jopa.owlapi");
@@ -106,27 +96,23 @@ public class TestEnvironment {
 					OWLAPIPersistenceProvider.class.getName());
 			// params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
 			// .getAbsolutePath());
-			params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
-					REASONER_FACTORY_CLASS);
+			params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);
 
-			return Persistence.createEntityManagerFactory("context-name",
-					params).createEntityManager();
+			return Persistence.createEntityManagerFactory("context-name", params)
+					.createEntityManager();
 		} catch (UnknownOWLOntologyException e) {
 			log.log(Level.SEVERE, e.getMessage(), e);
 		}
 		return null;
 	}
 
-	public static EntityManager getPersistenceConnectorWithMappingFile(
-			final String name, final Storage storage, final boolean cache) {
+	public static EntityManager getPersistenceConnectorWithMappingFile(final String name,
+			final Storage storage, final boolean cache) {
 		final Map<String, String> params = new HashMap<String, String>();
-		final IRI iri = IRI
-				.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
-						+ name);
+		final IRI iri = IRI.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/" + name);
 		final String mappingFile = createMappingFile(name, iri, storage);
 		params.put(OWLAPIPersistenceProperties.ONTOLOGY_URI_KEY, iri.toString());
-		params.put(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY,
-				mappingFile);
+		params.put(OWLAPIPersistenceProperties.MAPPING_FILE_URI_KEY, mappingFile);
 		if (cache) {
 			params.put("cache", "on");
 		} else {
@@ -138,15 +124,12 @@ public class TestEnvironment {
 				OWLAPIPersistenceProvider.class.getName());
 		// params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
 		// .getAbsolutePath());
-		params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
-				REASONER_FACTORY_CLASS);
+		params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);
 
-		return Persistence.createEntityManagerFactory("context-name", params)
-				.createEntityManager();
+		return Persistence.createEntityManagerFactory("context-name", params).createEntityManager();
 	}
 
-	private static String createMappingFile(final String name, final IRI iri,
-			final Storage storage) {
+	private static String createMappingFile(final String name, final IRI iri, final Storage storage) {
 		final File mappingFile = new File(dir + "/" + name + ".mapping");
 		if (mappingFile.exists()) {
 			mappingFile.delete();
@@ -173,8 +156,7 @@ public class TestEnvironment {
 		try {
 			mappingFile.createNewFile();
 
-			final BufferedWriter wr = new BufferedWriter(new FileWriter(
-					mappingFile));
+			final BufferedWriter wr = new BufferedWriter(new FileWriter(mappingFile));
 			wr.write(mapping.toString());
 			wr.close();
 		} catch (IOException e) {

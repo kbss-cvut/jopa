@@ -1,5 +1,7 @@
 package cz.cvut.kbss.jopa.owlapi.utils;
 
+import java.util.Collections;
+
 import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.CacheManagerImpl;
@@ -12,7 +14,7 @@ public class ServerSessionStub extends ServerSession {
 
 	public ServerSessionStub(TransactionOntologyAccessor accessor) {
 		this.accessor = accessor;
-		this.liveObjectCache = new CacheManagerImpl(this);
+		this.liveObjectCache = new CacheManagerImpl(this, Collections.<String, String> emptyMap());
 	}
 
 	@Override

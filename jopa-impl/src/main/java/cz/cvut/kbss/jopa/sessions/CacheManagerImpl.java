@@ -4,10 +4,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import cz.cvut.kbss.jopa.model.OWLPersistenceException;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 
 /**
  * The CacheManager is responsible for managing the live object cache of our
@@ -24,9 +28,12 @@ public class CacheManagerImpl implements CacheManager {
 	// only for a certain time and
 	// inactive objects should be then evicted)
 
+	private static final Long DEFAULT_TTL = 60000L;
+
 	private Set<Class<?>> inferredClasses;
 
 	private final Map<Class<?>, Map<Object, Object>> objCache;
+	private final Map<Class<?>, Map<Object, Long>> ttls;
 
 	protected final AbstractSession session;
 
@@ -34,9 +41,24 @@ public class CacheManagerImpl implements CacheManager {
 	private final Lock readLock;
 	private final Lock writeLock;
 
-	public CacheManagerImpl(AbstractSession session) {
+	private final Long timeToLive;
+	private volatile boolean sweepRunning;
+
+	public CacheManagerImpl(AbstractSession session, Map<String, String> properties) {
 		this.session = session;
 		this.objCache = new HashMap<Class<?>, Map<Object, Object>>();
+		this.ttls = new HashMap<Class<?>, Map<Object, Long>>();
+		if (!properties.containsKey(OWLAPIPersistenceProperties.CACHE_TTL)) {
+			this.timeToLive = DEFAULT_TTL;
+		} else {
+			try {
+				this.timeToLive = Long.valueOf(properties
+						.get(OWLAPIPersistenceProperties.CACHE_TTL));
+			} catch (NumberFormatException e) {
+				throw new OWLPersistenceException("Unable to parse long value from "
+						+ properties.get(OWLAPIPersistenceProperties.CACHE_TTL), e);
+			}
+		}
 		this.lock = new ReentrantReadWriteLock();
 		this.readLock = lock.readLock();
 		this.writeLock = lock.writeLock();
@@ -72,8 +94,15 @@ public class CacheManagerImpl implements CacheManager {
 			m = createMap();
 			objCache.put(cls, m);
 		}
-		m.put(primaryKey, entity);
+		Map<Object, Long> ttlMap = ttls.get(cls);
+		if (ttlMap == null) {
+			ttlMap = new HashMap<Object, Long>();
+			ttls.put(cls, ttlMap);
 
+		}
+		m.put(primaryKey, entity);
+		ttlMap.put(primaryKey, System.currentTimeMillis());
+		runCacheSweep();
 	}
 
 	/**
@@ -118,12 +147,15 @@ public class CacheManagerImpl implements CacheManager {
 	 */
 	private void releaseCache() {
 		objCache.clear();
+		ttls.clear();
 	}
 
 	public void clearInferredObjects() {
 		for (Class<?> c : getInferredClasses()) {
 			evict(c);
+			getTtlMapForClass(c).clear();
 		}
+		runCacheSweep();
 	}
 
 	/**
@@ -133,7 +165,10 @@ public class CacheManagerImpl implements CacheManager {
 		if (cls == null || primaryKey == null) {
 			return null;
 		}
-		return getMapForClass(cls).get(primaryKey);
+		Object entity = getMapForClass(cls).get(primaryKey);
+		updateEntityTimeToLive(cls, primaryKey);
+		runCacheSweep();
+		return entity;
 	}
 
 	/**
@@ -184,6 +219,8 @@ public class CacheManagerImpl implements CacheManager {
 		}
 		final Map<Object, Object> m = getMapForClass(cls);
 		m.remove(primaryKey);
+		final Map<Object, Long> ttlMap = getTtlMapForClass(cls);
+		ttlMap.remove(primaryKey);
 	}
 
 	/**
@@ -201,6 +238,9 @@ public class CacheManagerImpl implements CacheManager {
 			}
 		}
 		m.clear();
+		final Map<Object, Long> ttlMap = getTtlMapForClass(cls);
+		ttlMap.clear();
+		runCacheSweep();
 	}
 
 	/**
@@ -238,6 +278,36 @@ public class CacheManagerImpl implements CacheManager {
 		return m;
 	}
 
+	private Map<Object, Long> getTtlMapForClass(Class<?> cls) {
+		assert cls != null;
+		Map<Object, Long> m = ttls.get(cls);
+		if (m == null) {
+			return Collections.emptyMap();
+		}
+		return m;
+	}
+
+	/**
+	 * Refresh the time to live for entity with the specified primary key.
+	 * 
+	 * @param cls
+	 *            Class of the entity
+	 * @param primaryKey
+	 *            Primary key of the entity
+	 */
+	private void updateEntityTimeToLive(Class<?> cls, Object primaryKey) {
+		assert cls != null;
+		assert primaryKey != null;
+		if (!ttls.containsKey(cls) || !ttls.get(cls).containsKey(primaryKey)) {
+			return;
+		}
+		ttls.get(cls).put(primaryKey, System.currentTimeMillis());
+	}
+
+	private void runCacheSweep() {
+		// TODO
+	}
+
 	public boolean acquireReadLock() {
 		readLock.lock();
 		return true;
@@ -256,4 +326,31 @@ public class CacheManagerImpl implements CacheManager {
 		writeLock.unlock();
 	}
 
+	/**
+	 * Sweeps the second level cache and removes entities with no more time to
+	 * live.
+	 * 
+	 * @author kidney
+	 * 
+	 */
+	private final class CacheSweeper implements Runnable {
+
+		public void run() {
+			if (CacheManagerImpl.this.sweepRunning) {
+				return;
+			}
+			CacheManagerImpl.this.sweepRunning = true;
+			final long currentTime = System.currentTimeMillis();
+			for (Map<Object, Long> ttl : CacheManagerImpl.this.ttls.values()) {
+				for (Entry<Object, Long> e : ttl.entrySet()) {
+					if (e.getValue() + CacheManagerImpl.this.timeToLive < currentTime) {
+						ttl.remove(e.getKey());
+					}
+				}
+			}
+			// TODO Auto-generated method stub
+
+		}
+
+	}
 }

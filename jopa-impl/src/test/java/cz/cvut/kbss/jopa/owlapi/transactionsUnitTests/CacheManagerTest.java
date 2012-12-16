@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +75,7 @@ public class CacheManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		this.mngr = new CacheManagerImpl(session);
+		this.mngr = new CacheManagerImpl(session, Collections.<String, String> emptyMap());
 	}
 
 	@Test
@@ -104,8 +105,7 @@ public class CacheManagerTest {
 		duplicate.setStringAttribute(newStr);
 		duplicate.setUri(testA.getUri());
 		mngr.add(duplicate.getUri(), duplicate);
-		final OWLClassA res = (OWLClassA) mngr.get(testA.getClass(),
-				testA.getUri());
+		final OWLClassA res = (OWLClassA) mngr.get(testA.getClass(), testA.getUri());
 		assertNotNull(res);
 		assertFalse(newStr.equals(res.getStringAttribute()));
 		assertEquals(testA.getStringAttribute(), res.getStringAttribute());
@@ -116,8 +116,7 @@ public class CacheManagerTest {
 		mngr.addAll(listOfBs);
 		for (OWLClassB b : listOfBs.values()) {
 			assertTrue(mngr.contains(OWLClassB.class, b.getUri()));
-			final OWLClassB res = (OWLClassB) mngr.get(OWLClassB.class,
-					b.getUri());
+			final OWLClassB res = (OWLClassB) mngr.get(OWLClassB.class, b.getUri());
 			assertNotNull(res);
 			assertEquals(b.getUri(), res.getUri());
 		}
@@ -290,13 +289,12 @@ public class CacheManagerTest {
 			return null;
 		}
 
-		public <T> TypedQuery<T> createQuery(String query,
-				Class<T> resultClass, boolean sparql, final EntityManager em) {
+		public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, boolean sparql,
+				final EntityManager em) {
 			return null;
 		}
 
-		public Query<List<String>> createNativeQuery(String sqlString,
-				final EntityManager em) {
+		public Query<List<String>> createNativeQuery(String sqlString, final EntityManager em) {
 			return null;
 		}
 

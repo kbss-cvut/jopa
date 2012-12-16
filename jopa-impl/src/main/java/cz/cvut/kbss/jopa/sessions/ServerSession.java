@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 
 /**
  * The ServerSession is the primary interface for accessing the ontology. </p>
@@ -32,8 +33,6 @@ import cz.cvut.kbss.jopa.model.metamodel.Type;
  * 
  */
 public class ServerSession extends AbstractSession {
-
-	private static final String CACHE_PROPERTY = "cache";
 
 	private final Metamodel metamodel;
 	private final Set<Class<?>> managedClasses;
@@ -96,9 +95,9 @@ public class ServerSession extends AbstractSession {
 	 */
 	private void initialize(Map<String, String> properties, Metamodel metamodel) {
 		this.ontologyAccessor = accessorFactory.createCentralAccessor(properties, metamodel, this);
-		String cache = properties.get(CACHE_PROPERTY);
+		String cache = properties.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
 		if (cache == null || cache.equals("on")) {
-			this.liveObjectCache = new CacheManagerImpl(this);
+			this.liveObjectCache = new CacheManagerImpl(this, properties);
 			liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
 		} else {
 			this.liveObjectCache = new DisabledCacheManager(this);
