@@ -207,6 +207,7 @@ public class MetamodelImpl implements Metamodel {
 				t = PersistentAttributeType.OBJECT;
 				iri = IRI.create(oop.iri());
 				cascadeTypes = oop.cascade();
+				fetchType = oop.fetch();
 				processOWLClass(cxx);
 				type = typeMap.get(cxx);
 				inferred = oop.inferred();

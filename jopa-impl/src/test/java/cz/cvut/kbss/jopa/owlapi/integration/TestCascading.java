@@ -67,7 +67,7 @@ public class TestCascading {
 		assertNotNull(resH);
 		final OWLClassA resA = em.find(OWLClassA.class, testA.getUri());
 		assertNotNull(resA);
-//		assertEquals(resA, resH.getOwlClassA());
+		assertEquals(resA, resH.getOwlClassA());
 		assertEquals(testA.getStringAttribute(), resA.getStringAttribute());
 	}
 
