@@ -378,6 +378,15 @@ public interface ResultSet {
 	public boolean isFirst() throws OntoDriverException;
 
 	/**
+	 * Returns true if this result set is open.
+	 * 
+	 * @return True if this result set is open, false otherwise
+	 * @throws OntoDriverException
+	 *             If an error occurs
+	 */
+	public boolean isOpen() throws OntoDriverException;
+
+	/**
 	 * Returns true if the cursor does not point at the last row in this result
 	 * set.
 	 * 
