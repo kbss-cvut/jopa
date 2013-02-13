@@ -2,12 +2,16 @@ package cz.cvut.kbss.ontodriver;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
+
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 
 /**
  * Represents a connection to the underlying OntoDriver. </p>
  * 
  * A single OntoDriver can manage multiple storages at once. Each of the storage
- * can even be of a different type (OWL, RDF) and different profile.
+ * can be of a different type (OWL, RDF) and different profile (OWL 2 RL, OWL 2
+ * EL etc.).
  * 
  * @author kidney
  * 
@@ -50,6 +54,58 @@ public interface Connection {
 	public Statement createStatement() throws OntoDriverException;
 
 	/**
+	 * Finds entity with the specified primary key and returns it as the
+	 * specified type. </p>
+	 * 
+	 * This methods searches for the entity in the default context of this
+	 * connection.
+	 * 
+	 * @param cls
+	 *            Type of the returned instance
+	 * @param primaryKey
+	 *            Primary key
+	 * @return Entity or null if there is none with the specified primary key
+	 * @throws OntoDriverException
+	 *             If called on a closed connection, if the entity cannot be
+	 *             cast to the specified type or an ontology access error occurs
+	 * @throws MetamodelNotSetException
+	 *             If metamodel is not set for this connection
+	 * @see #setDefaultContext(URI)
+	 * @see #find(Class, Object, URI, Map)
+	 */
+	public <T> T find(Class<T> cls, Object primaryKey)
+			throws OntoDriverException, MetamodelNotSetException;
+
+	/**
+	 * Finds entity with the specified primary key and returns it as the
+	 * specified type. </p>
+	 * 
+	 * This method searches for the entity in the specified context.
+	 * Furthermore, entity attributes values can be search in different
+	 * contexts.
+	 * 
+	 * @param cls
+	 *            Type of the returned instance
+	 * @param primaryKey
+	 *            Primary key
+	 * @param entityContext
+	 *            Context which the entity should be looked for in
+	 * @param attributeContexts
+	 *            Contexts where attributes values should be looked for
+	 * @return Entity or null if there is none with the specified primary key
+	 * @throws OntoDriverException
+	 *             If called on a closed connection, if the entity cannot be
+	 *             cast to the specified type, if any of the contexts is not
+	 *             valid or an ontology access error occurs
+	 * @throws MetamodelNotSetException
+	 *             If metamodel is not set for this connection
+	 * @see #find(Class, Object)
+	 */
+	public <T> T find(Class<T> cls, Object primaryKey, URI entityContext,
+			Map<String, URI> attributeContexts) throws OntoDriverException,
+			MetamodelNotSetException;
+
+	/**
 	 * Retrieves a list of all available contexts. </p>
 	 * 
 	 * A context in this scenario can be a named graph, an ontology or an
@@ -69,15 +125,34 @@ public interface Connection {
 	 * also its saving context. If {@code entity} is to be persisted, the
 	 * default saving context is returned.
 	 * 
-	 * @param primaryKey
-	 *            URI of the entity to look context up for
+	 * @param entity
+	 *            The entity to look context up for
 	 * @return Context URI
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
 	 * @see #setDefaultContext(String)
 	 */
-	public URI getSaveContextFor(Object primaryKey) throws OntoDriverException;
+	public URI getSaveContextFor(Object entity) throws OntoDriverException;
+
+	/**
+	 * Merges state of the specified entity into the storage. </p>
+	 * 
+	 * This method is meant only for merging state of existing entities, trying
+	 * to {@code merge} a new entity will result in an exception.
+	 * 
+	 * @param primaryKey
+	 *            Primary key of the merged entity
+	 * @param entity
+	 *            The entity to merge
+	 * @throws OntoDriverException
+	 *             If called on a closed connection, if the entity is not
+	 *             persistent yet or an ontology access error occurs
+	 * @throws MetamodelNotSetException
+	 *             If metamodel is not set for this connection
+	 */
+	public <T> void merge(Object primaryKey, T entity)
+			throws OntoDriverException, MetamodelNotSetException;
 
 	/**
 	 * Creates and returns a new prepared SPARQL statement. </p>
@@ -130,22 +205,37 @@ public interface Connection {
 	public void setDefaultContext(URI context) throws OntoDriverException;
 
 	/**
-	 * Sets saving context for entity with the specified primary key. </p>
+	 * Sets metamodel for this connection. </p>
 	 * 
-	 * @param primaryKey
-	 *            Primary key of the entity to set context for
+	 * The metamodel is essential for operations that return or require working
+	 * with typed entities, since the driver needs to work with the entity's
+	 * ontology attributes, e. g. data properties, references.
+	 * 
+	 * @param metamodel
+	 *            {@code Metamodel}
+	 * @throws OntoDriverException
+	 *             If called on a closed connection or an ontology access error
+	 *             occurs
+	 */
+	public void setMetamodel(Metamodel metamodel) throws OntoDriverException;
+
+	/**
+	 * Sets saving context for the specified entity. </p>
+	 * 
+	 * This method is expected to be called mainly for new entities that are yet
+	 * to be persisted. However, setting different saving context for an
+	 * existing entity is also possible.
+	 * 
+	 * @param entity
+	 *            The entity to set context for
 	 * @param context
-	 *            The context URi
+	 *            The context URI
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, the context is not valid or
 	 *             an ontology access error occurs
 	 */
-	// TODO What about auto-generated primary keys
-	public void setSaveContextFor(Object primaryKey, URI context)
+	public void setSaveContextFor(Object entity, URI context)
 			throws OntoDriverException;
 
-	// TODO find, merge, persist, remove - how should they be typed? Sending the
-	// whole entity would require OntoDriver to have access to metamodel,
-	// sending only OWLIndividual/Resource would require additional methods for
-	// working with attributes of the entity
+	// TODO persist, remove
 }
