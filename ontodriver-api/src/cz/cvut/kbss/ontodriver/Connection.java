@@ -58,7 +58,9 @@ public interface Connection {
 	 * specified type. </p>
 	 * 
 	 * This methods searches for the entity in the default context of this
-	 * connection.
+	 * connection. If the context is not set or if no entity with the
+	 * {@code primaryKey} is found in it, the rest of the available contexts are
+	 * searched (ordered by their priority).
 	 * 
 	 * @param cls
 	 *            Type of the returned instance
@@ -71,9 +73,36 @@ public interface Connection {
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 * @see #setDefaultContext(URI)
+	 * @see #find(Class, Object, URI)
 	 * @see #find(Class, Object, URI, Map)
 	 */
 	public <T> T find(Class<T> cls, Object primaryKey)
+			throws OntoDriverException, MetamodelNotSetException;
+
+	/**
+	 * Finds entity with the specified primary key and returns it as the
+	 * specified type. </p>
+	 * 
+	 * This method searches the specified {@code context} and if no entity is
+	 * found, {@code null} is immediately returned and no further search is
+	 * conducted.
+	 * 
+	 * @param cls
+	 *            The of the returned instance
+	 * @param primaryKey
+	 *            Primary key
+	 * @param context
+	 *            Context to search in
+	 * @return Entity or null if there is none with the specified primary key
+	 * @throws OntoDriverException
+	 *             If called on a closed connection, if the entity cannot be
+	 *             cast to the specified type or an ontology access error occurs
+	 * @throws MetamodelNotSetException
+	 *             If metamodel is not set for this connection
+	 * @see #find(Class, Object)
+	 * @see #find(Class, Object, URI, Map)
+	 */
+	public <T> T find(Class<T> cls, Object primaryKey, URI context)
 			throws OntoDriverException, MetamodelNotSetException;
 
 	/**
@@ -100,6 +129,7 @@ public interface Connection {
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 * @see #find(Class, Object)
+	 * @see #find(Class, Object, URI)
 	 */
 	public <T> T find(Class<T> cls, Object primaryKey, URI entityContext,
 			Map<String, URI> attributeContexts) throws OntoDriverException,
@@ -155,6 +185,74 @@ public interface Connection {
 			throws OntoDriverException, MetamodelNotSetException;
 
 	/**
+	 * Persists the specified entity into the default persistence context. </p>
+	 * 
+	 * The default context can be either set via the
+	 * {@link #setDefaultContext(URI)} or it can be the default graph without
+	 * name (for RDF stores).
+	 * 
+	 * @param primaryKey
+	 *            Primary key of the new entity
+	 * @param entity
+	 *            The entity to persist
+	 * @throws OntoDriverException
+	 *             If called on a closed connection, the primary key is null or
+	 *             an ontology access error occurs
+	 * @throws MetamodelNotSetException
+	 *             If metamodel is not set for this connection
+	 */
+	public <T> void persist(Object primaryKey, T entity)
+			throws OntoDriverException, MetamodelNotSetException;
+
+	/**
+	 * Persists the specified entity into the specified context. </p>
+	 * 
+	 * The entity is saved into this context with all its attribute values.
+	 * 
+	 * @param primaryKey
+	 *            Primary key of the new entity
+	 * @param entity
+	 *            The entity to persist
+	 * @param context
+	 *            The context the new entity will be saved to
+	 * @throws OntoDriverException
+	 *             If called on a closed connection, the primary key is null, if
+	 *             the context is not valid or an ontology access error occurs
+	 * @throws MetamodelNotSetException
+	 *             If metamodel is not set for this connection
+	 */
+	public <T> void persist(Object primaryKey, T entity, URI context)
+			throws OntoDriverException, MetamodelNotSetException;
+
+	/**
+	 * Persists the specified entity. </p>
+	 * 
+	 * The entity is saved into the {@code context}, the attributes are saved
+	 * into respective contexts specified by the {@code attributeContexts}
+	 * argument. If context is not set for some attribute, it is saved into the
+	 * main context of the entity.
+	 * 
+	 * @param primaryKey
+	 *            Primary key of the new entity
+	 * @param entity
+	 *            The entity to persist
+	 * @param context
+	 *            The context the entity will be saved to
+	 * @param attributeContexts
+	 *            Map of attribute names and contexts which the attribute values
+	 *            will be saved to
+	 * @throws OntoDriverException
+	 *             If called on a closed connection, the primary key is null, if
+	 *             any of the contexts is not valid or an ontology access error
+	 *             occurs
+	 * @throws MetamodelNotSetException
+	 *             If metamodel is not set for this connection
+	 */
+	public <T> void persist(Object primaryKey, T entity, URI context,
+			Map<String, URI> attributeContexts) throws OntoDriverException,
+			MetamodelNotSetException;
+
+	/**
 	 * Creates and returns a new prepared SPARQL statement. </p>
 	 * 
 	 * @param sparql
@@ -165,6 +263,48 @@ public interface Connection {
 	 *             occurs
 	 */
 	public PreparedStatement prepareStatement(String sparql)
+			throws OntoDriverException;
+
+	/**
+	 * Removes entity with the specified primary key. </p>
+	 * 
+	 * If an entity with the {@code primaryKey} is already loaded in some
+	 * context in this connection, the removal is done to this entity. If no
+	 * entity is loaded with the {@code primaryKey}, then available contexts are
+	 * search (ordered by their priority) and first entity with matching primary
+	 * key is removed. </p>
+	 * 
+	 * This strategy is based on the fact that no assumption can be made about
+	 * primary key uniqueness.
+	 * 
+	 * @param primaryKey
+	 *            Primary key of the entity to be removed
+	 * @throws OntoDriverException
+	 *             If called on a closed connection or an ontology access error
+	 *             occurs
+	 */
+	public void remove(Object primaryKey) throws OntoDriverException;
+
+	/**
+	 * Removes entity with the specified primary key from the specified context.
+	 * </p>
+	 * 
+	 * If no entity with the specified primary key is found in the specified
+	 * context, this method returns and does not try to search other contexts.
+	 * </p>
+	 * 
+	 * If the {@code context} is {@code null}, this method behaves exactly as
+	 * {@link #remove(Object)}.
+	 * 
+	 * @param primaryKey
+	 *            Primary key of the entity to be removed
+	 * @param context
+	 *            Context which the entity will be removed from
+	 * @throws OntoDriverException
+	 *             If called on a closed connection, if the context is not valid
+	 *             or if an ontology access error occurs
+	 */
+	public void remove(Object primaryKey, URI context)
 			throws OntoDriverException;
 
 	/**
@@ -236,6 +376,4 @@ public interface Connection {
 	 */
 	public void setSaveContextFor(Object entity, URI context)
 			throws OntoDriverException;
-
-	// TODO persist, remove
 }
