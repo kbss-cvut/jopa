@@ -92,7 +92,7 @@ public interface Connection {
 	 * @param primaryKey
 	 *            Primary key
 	 * @param context
-	 *            Context to search in
+	 *            URI of Context to search in
 	 * @return Entity or null if there is none with the specified primary key
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, if the entity cannot be
@@ -118,9 +118,9 @@ public interface Connection {
 	 * @param primaryKey
 	 *            Primary key
 	 * @param entityContext
-	 *            Context which the entity should be looked for in
+	 *            URI of the Context which the entity should be looked for in
 	 * @param attributeContexts
-	 *            Contexts where attributes values should be looked for
+	 *            URIs of Contexts where attributes values should be looked for
 	 * @return Entity or null if there is none with the specified primary key
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, if the entity cannot be
@@ -136,17 +136,29 @@ public interface Connection {
 			MetamodelNotSetException;
 
 	/**
+	 * Retrieves context with the specified URI.
+	 * 
+	 * @param contextUri
+	 *            URI of the context
+	 * @return Context or null if there is none with such URI
+	 * @throws OntoDriverException
+	 *             If called on a closed connection or an ontology access error
+	 *             occurs
+	 */
+	public Context getContext(URI contextUri) throws OntoDriverException;
+
+	/**
 	 * Retrieves a list of all available contexts. </p>
 	 * 
 	 * A context in this scenario can be a named graph, an ontology or an
 	 * ontology module.
 	 * 
-	 * @return List of context URIs
+	 * @return List of available contexts
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
 	 */
-	public List<URI> getContexts() throws OntoDriverException;
+	public List<Context> getContexts() throws OntoDriverException;
 
 	/**
 	 * Retrieves saving context for the specified entity. </p>
@@ -157,13 +169,13 @@ public interface Connection {
 	 * 
 	 * @param entity
 	 *            The entity to look context up for
-	 * @return Context URI
+	 * @return Context
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
 	 * @see #setDefaultContext(String)
 	 */
-	public URI getSaveContextFor(Object entity) throws OntoDriverException;
+	public Context getSaveContextFor(Object entity) throws OntoDriverException;
 
 	/**
 	 * Merges state of the specified entity into the storage. </p>
@@ -214,7 +226,7 @@ public interface Connection {
 	 * @param entity
 	 *            The entity to persist
 	 * @param context
-	 *            The context the new entity will be saved to
+	 *            URI of the context the new entity will be saved to
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, the primary key is null, if
 	 *             the context is not valid or an ontology access error occurs
@@ -237,10 +249,10 @@ public interface Connection {
 	 * @param entity
 	 *            The entity to persist
 	 * @param context
-	 *            The context the entity will be saved to
+	 *            URI of the context the entity will be saved to
 	 * @param attributeContexts
-	 *            Map of attribute names and contexts which the attribute values
-	 *            will be saved to
+	 *            Map of attribute names and context URIs which the attribute
+	 *            values will be saved to
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, the primary key is null, if
 	 *             any of the contexts is not valid or an ontology access error
@@ -299,7 +311,7 @@ public interface Connection {
 	 * @param primaryKey
 	 *            Primary key of the entity to be removed
 	 * @param context
-	 *            Context which the entity will be removed from
+	 *            URI of the context the entity will be removed from
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, if the context is not valid
 	 *             or if an ontology access error occurs
@@ -337,7 +349,7 @@ public interface Connection {
 	 * This context is used for newly persisted entities without saving context.
 	 * 
 	 * @param context
-	 *            The context to use as default for persist
+	 *            URI of the context to use as default for persist
 	 * @throws OntoDriverException
 	 *             If the context is not valid, called on a closed connection or
 	 *             an ontology access error occurs
