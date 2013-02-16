@@ -15,6 +15,7 @@
 		<module>jopa-owl2java</module>
 		<module>jopa-impl</module>
 		<module>ontodriver-api</module>
+		<module>ontodriver-impl</module>
 	</modules>
 
 
