@@ -1,6 +1,9 @@
 package cz.cvut.kbss.ontodriver;
 
 import java.util.List;
+import java.util.Map;
+
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 
 /**
  * Manages the whole underlying ontology storage which can consist of several
@@ -15,6 +18,75 @@ import java.util.List;
  */
 public abstract class StorageManager {
 
+	protected final Metamodel metamodel;
+
+	public StorageManager(Metamodel metamodel) {
+		if (metamodel == null) {
+			throw new NullPointerException("Metamodel is cannot be null.");
+		}
+		this.metamodel = metamodel;
+	}
+
+	/**
+	 * Commits all unsaved changes into the underlying storage. </p>
+	 * 
+	 * The StorageManager starts an internal transaction once it is acquired
+	 * calling {@code commit} has two effects:
+	 * <ul>
+	 * <li>Changes are committed to the underlying data storage</li>
+	 * <li>A new internal transaction is started</li>
+	 * </ul>
+	 * 
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @see #rollback()
+	 */
+	public abstract void commit() throws OntoDriverException;
+
+	/**
+	 * Executes the specified SPARQL statement. </p>
+	 * 
+	 * If the statement is an update, then the number of affected individuals is
+	 * returned in the result set.
+	 * 
+	 * @param statement
+	 *            The statement to execute
+	 * @return results of the execution
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 */
+	public abstract ResultSet executeStatement(Statement statement) throws OntoDriverException;
+
+	/**
+	 * Finds entity with the specified primary key and returns it as the
+	 * specified entity type. </p>
+	 * 
+	 * The {@code entityContext} represents context where the individual should
+	 * be located, {@code attributeContexts} will be searched for the attribute
+	 * values. If the {@code entityContext} is not set, the default context is
+	 * searched. If {@code attributeContexts} are not set, the same context as
+	 * the {@code entityContext} is searched.
+	 * 
+	 * @param cls
+	 *            Return type
+	 * @param primaryKey
+	 *            Primary key
+	 * @param entityContext
+	 *            Context where to look for the entity
+	 * @param attributeContexts
+	 *            Pairs of attribute names and contexts where the appropriate
+	 *            value should be looked for
+	 * @return The found entity or null
+	 * @throws OntoDriverException
+	 *             If any of the contexts is not valid, if the {@code cls} is
+	 *             not an entity class or if an ontology access error occurs
+	 * @throws NullPointerException
+	 *             If the {@code cls} or {@code primaryKey} parameters are
+	 *             {@code null}
+	 */
+	public abstract <T> T find(Class<T> cls, Object primaryKey, Context entityContext,
+			Map<String, Context> attributeContexts) throws OntoDriverException;
+
 	/**
 	 * Returns a list of all available contexts this {@code StorageManager} is
 	 * managing. </p>
@@ -26,6 +98,91 @@ public abstract class StorageManager {
 	 */
 	public abstract List<Context> getAvailableContexts();
 
-	// TODO The storage manager should provide all the methods needed by
-	// Connection
+	/**
+	 * Merges the state of the specified entity into the appropriate ontology.
+	 * </p>
+	 * 
+	 * The {@code entityContext} represents the context into which the entity
+	 * should be merged. If the context does not contain such individual, an
+	 * exception is thrown. If the {@code entityContext} is not set, the entity
+	 * is merged into the default context (which has the highest priority). </p>
+	 * 
+	 * Attribute values are persisted into the context as specified by the
+	 * {@code attributeContexts} parameter. Attribute values without context are
+	 * persisted into the same context as the entity.
+	 * 
+	 * @param primaryKey
+	 *            Primary key of the merged entity
+	 * @param entity
+	 *            The merged entity
+	 * @param entityContext
+	 *            Context of the entity
+	 * @param attributeContexts
+	 *            Attribute values' contexts
+	 * @throws OntoDriverException
+	 *             If the entity is not persistent yet, if any of the contexts
+	 *             is not valid or if an ontology access error occurs
+	 */
+	public abstract <T> void merge(Object primaryKey, T entity, Context entityContext,
+			Map<String, Context> attributeContexts) throws OntoDriverException;
+
+	/**
+	 * Persists the specified entity. </p>
+	 * 
+	 * The {@code entity} is persisted into context specified by the
+	 * {@code entityContext} parameter. If that is not set, the default context
+	 * is used. </p>
+	 * 
+	 * The {@code entity}'s attribute values are persisted to their respective
+	 * contexts as specified by the {@code attributeContexts} map. If context
+	 * for an attribute is not specified, it is saved into the same context as
+	 * the {@code entity}.
+	 * 
+	 * @param primaryKey
+	 *            Primary key of the persisted entity
+	 * @param entity
+	 *            The entity to persist
+	 * @param entityContext
+	 *            Context into which the entity will be persisted
+	 * @param attributeContexts
+	 *            Contexts for attribute values
+	 * @throws OntoDriverException
+	 *             If the primary key is not set, if an entity with the
+	 *             specified primary key already exists in the specified
+	 *             context, if any of the contexts is not valid or if an
+	 *             ontology access error occurs
+	 */
+	public abstract <T> void persist(Object primaryKey, T entity, Context entityContext,
+			Map<String, Context> attributeContexts) throws OntoDriverException;
+
+	/**
+	 * Removes entity with the specified primary key from the specified context.
+	 * </p>
+	 * 
+	 * If the {@code entityContext} is not set the default context is used. If
+	 * the context does not contain any individual with the specified primary
+	 * key an exception is thrown.
+	 * 
+	 * @param primaryKey
+	 *            Primary key of the entity to remove
+	 * @param entityContext
+	 *            Context from which the entity should be removed
+	 * @throws OntoDriverException
+	 *             If the context is not valid, if the context does not contain
+	 *             any individual with the specified primary key or if an
+	 *             ontology access error occurs
+	 * @throws NullPointerException
+	 *             If the {@code primaryKey} is null
+	 */
+	public abstract void remove(Object primaryKey, Context entityContext)
+			throws OntoDriverException;
+
+	/**
+	 * Discards all pending ontology changes. </p>
+	 * 
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @see #commit()
+	 */
+	public abstract void rollback() throws OntoDriverException;
 }

@@ -60,7 +60,8 @@ public interface Connection {
 	 * This methods searches for the entity in the default context of this
 	 * connection. If the context is not set or if no entity with the
 	 * {@code primaryKey} is found in it, the rest of the available contexts are
-	 * searched (ordered by their priority).
+	 * searched (ordered by their priority). Attribute values are looked for in
+	 * the same context where the entity was found.
 	 * 
 	 * @param cls
 	 *            Type of the returned instance
@@ -76,8 +77,8 @@ public interface Connection {
 	 * @see #find(Class, Object, URI)
 	 * @see #find(Class, Object, URI, Map)
 	 */
-	public <T> T find(Class<T> cls, Object primaryKey)
-			throws OntoDriverException, MetamodelNotSetException;
+	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException,
+			MetamodelNotSetException;
 
 	/**
 	 * Finds entity with the specified primary key and returns it as the
@@ -85,7 +86,8 @@ public interface Connection {
 	 * 
 	 * This method searches the specified {@code context} and if no entity is
 	 * found, {@code null} is immediately returned and no further search is
-	 * conducted.
+	 * conducted. Attribute values are looked for in the same context as the
+	 * entity.
 	 * 
 	 * @param cls
 	 *            The of the returned instance
@@ -102,8 +104,8 @@ public interface Connection {
 	 * @see #find(Class, Object)
 	 * @see #find(Class, Object, URI, Map)
 	 */
-	public <T> T find(Class<T> cls, Object primaryKey, URI context)
-			throws OntoDriverException, MetamodelNotSetException;
+	public <T> T find(Class<T> cls, Object primaryKey, URI context) throws OntoDriverException,
+			MetamodelNotSetException;
 
 	/**
 	 * Finds entity with the specified primary key and returns it as the
@@ -193,8 +195,8 @@ public interface Connection {
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 */
-	public <T> void merge(Object primaryKey, T entity)
-			throws OntoDriverException, MetamodelNotSetException;
+	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException,
+			MetamodelNotSetException;
 
 	/**
 	 * Persists the specified entity into the default persistence context. </p>
@@ -213,8 +215,8 @@ public interface Connection {
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 */
-	public <T> void persist(Object primaryKey, T entity)
-			throws OntoDriverException, MetamodelNotSetException;
+	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException,
+			MetamodelNotSetException;
 
 	/**
 	 * Persists the specified entity into the specified context. </p>
@@ -233,8 +235,8 @@ public interface Connection {
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 */
-	public <T> void persist(Object primaryKey, T entity, URI context)
-			throws OntoDriverException, MetamodelNotSetException;
+	public <T> void persist(Object primaryKey, T entity, URI context) throws OntoDriverException,
+			MetamodelNotSetException;
 
 	/**
 	 * Persists the specified entity. </p>
@@ -274,8 +276,7 @@ public interface Connection {
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
 	 */
-	public PreparedStatement prepareStatement(String sparql)
-			throws OntoDriverException;
+	public PreparedStatement prepareStatement(String sparql) throws OntoDriverException;
 
 	/**
 	 * Removes entity with the specified primary key. </p>
@@ -316,8 +317,7 @@ public interface Connection {
 	 *             If called on a closed connection, if the context is not valid
 	 *             or if an ontology access error occurs
 	 */
-	public void remove(Object primaryKey, URI context)
-			throws OntoDriverException;
+	public void remove(Object primaryKey, URI context) throws OntoDriverException;
 
 	/**
 	 * Rolls back the current transaction undoing any pending changes. </p>
@@ -386,6 +386,5 @@ public interface Connection {
 	 *             If called on a closed connection, the context is not valid or
 	 *             an ontology access error occurs
 	 */
-	public void setSaveContextFor(Object entity, URI context)
-			throws OntoDriverException;
+	public void setSaveContextFor(Object entity, URI context) throws OntoDriverException;
 }
