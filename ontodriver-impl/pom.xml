@@ -4,7 +4,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <parent>
   	<groupId>cz.cvut.kbss.jopa</groupId>
-  	<artifactId>jopa-all</artifactId>
+  	<artifactId>jopa-parent</artifactId>
   	<version>0.3-SNAPSHOT</version>
   	<relativePath>../jopa-parent/pom.xml</relativePath>
   </parent>
