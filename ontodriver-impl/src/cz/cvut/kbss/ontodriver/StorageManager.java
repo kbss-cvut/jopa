@@ -19,12 +19,34 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 public abstract class StorageManager {
 
 	protected final Metamodel metamodel;
+	protected boolean open;
 
 	public StorageManager(Metamodel metamodel) {
 		if (metamodel == null) {
 			throw new NullPointerException("Metamodel is cannot be null.");
 		}
 		this.metamodel = metamodel;
+		this.open = true;
+	}
+
+	/**
+	 * Returns true if this storage manager is open. </p>
+	 * 
+	 * @return True if open false otherwise
+	 * @see #close()
+	 */
+	public boolean isOpen() {
+		return open;
+	}
+
+	/**
+	 * Close this storage manager. </p>
+	 * 
+	 * Implementing subclasses can (and should) override this method to close
+	 * any open storage connections they maintain.
+	 */
+	public void close() {
+		this.open = false;
 	}
 
 	/**
@@ -54,6 +76,8 @@ public abstract class StorageManager {
 	 * @return results of the execution
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
+	 * @throws NullPointerException
+	 *             If {@code statement} is {@code null}
 	 */
 	public abstract ResultSet executeStatement(Statement statement) throws OntoDriverException;
 
@@ -75,13 +99,14 @@ public abstract class StorageManager {
 	 *            Context where to look for the entity
 	 * @param attributeContexts
 	 *            Pairs of attribute names and contexts where the appropriate
-	 *            value should be looked for
+	 *            value should be looked for. If not specified, use empty map,
+	 *            not {@code null}
 	 * @return The found entity or null
 	 * @throws OntoDriverException
 	 *             If any of the contexts is not valid, if the {@code cls} is
 	 *             not an entity class or if an ontology access error occurs
 	 * @throws NullPointerException
-	 *             If the {@code cls} or {@code primaryKey} parameters are
+	 *             If {@code cls}, or {@code primaryKey} or attributeContexts is
 	 *             {@code null}
 	 */
 	public abstract <T> T find(Class<T> cls, Object primaryKey, Context entityContext,
@@ -118,10 +143,14 @@ public abstract class StorageManager {
 	 * @param entityContext
 	 *            Context of the entity
 	 * @param attributeContexts
-	 *            Attribute values' contexts
+	 *            Attribute values' contexts. If not specified, use an empty
+	 *            map, not {@code null}
 	 * @throws OntoDriverException
 	 *             If the entity is not persistent yet, if any of the contexts
 	 *             is not valid or if an ontology access error occurs
+	 * @throws NullPointerException
+	 *             If {@code primaryKey}, {@code entity} or
+	 *             {@code attributeContexts} is {@code null}
 	 */
 	public abstract <T> void merge(Object primaryKey, T entity, Context entityContext,
 			Map<String, Context> attributeContexts) throws OntoDriverException;
@@ -145,12 +174,16 @@ public abstract class StorageManager {
 	 * @param entityContext
 	 *            Context into which the entity will be persisted
 	 * @param attributeContexts
-	 *            Contexts for attribute values
+	 *            Contexts for attribute values. If not specified, use an empty
+	 *            map, not {@code null}
 	 * @throws OntoDriverException
 	 *             If the primary key is not set, if an entity with the
 	 *             specified primary key already exists in the specified
 	 *             context, if any of the contexts is not valid or if an
 	 *             ontology access error occurs
+	 * @throws NullPointerException
+	 *             If {@code primaryKey}, {@code entity} or
+	 *             {@code attributeContexts} is {@code null}
 	 */
 	public abstract <T> void persist(Object primaryKey, T entity, Context entityContext,
 			Map<String, Context> attributeContexts) throws OntoDriverException;
