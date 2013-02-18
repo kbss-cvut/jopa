@@ -21,10 +21,10 @@ public interface Connection {
 	/**
 	 * Closes this connection. </p>
 	 * 
-	 * Closing an already closed connection does nothing. If there is a
-	 * transaction running when {@code close} is called, the transaction is
-	 * rolled back. However, it is strongly recommended to commit or roll back
-	 * transaction explicitly.
+	 * If there is a transaction running when {@code close} is called, the
+	 * transaction is rolled back. However, it is strongly recommended to commit
+	 * or roll back transaction explicitly. Closing an already closed connection
+	 * does nothing.
 	 * 
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
@@ -40,8 +40,11 @@ public interface Connection {
 	 * @throws OntoDriverException
 	 *             If in auto-commit mode, called on a closed connection or an
 	 *             ontology access error occurs
+	 * @throws MetamodelNotSetException
+	 *             If metamodel is not set for this connection and there are
+	 *             changes to commit
 	 */
-	public void commit() throws OntoDriverException;
+	public void commit() throws OntoDriverException, MetamodelNotSetException;
 
 	/**
 	 * Creates a new SPARQL statement.
@@ -73,7 +76,7 @@ public interface Connection {
 	 *             cast to the specified type or an ontology access error occurs
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
-	 * @see #setDefaultContext(URI)
+	 * @see #setConnectionContext(URI)
 	 * @see #find(Class, Object, URI)
 	 * @see #find(Class, Object, URI, Map)
 	 */
@@ -138,6 +141,16 @@ public interface Connection {
 			MetamodelNotSetException;
 
 	/**
+	 * Retrieves the current auto-commit status of this {@code Connection}.
+	 * 
+	 * @return {@code true} if auto-commit is enabled, {@code false} otherwise
+	 * @throws OntoDriverException
+	 *             If called on a closed connection or if an ontology access
+	 *             error occurs
+	 */
+	public boolean getAutoCommit() throws OntoDriverException;
+
+	/**
 	 * Retrieves context with the specified URI.
 	 * 
 	 * @param contextUri
@@ -153,7 +166,9 @@ public interface Connection {
 	 * Retrieves a list of all available contexts. </p>
 	 * 
 	 * A context in this scenario can be a named graph, an ontology or an
-	 * ontology module.
+	 * ontology module. </p>
+	 * 
+	 * The contexts are sorted in descending order by their priority.
 	 * 
 	 * @return List of available contexts
 	 * @throws OntoDriverException
@@ -175,9 +190,16 @@ public interface Connection {
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
-	 * @see #setDefaultContext(String)
+	 * @see #setConnectionContext(String)
 	 */
 	public Context getSaveContextFor(Object entity) throws OntoDriverException;
+
+	/**
+	 * Retrieves status of this connection. </p>
+	 * 
+	 * @return {@code true} if the connection is open, {@code false} otherwise
+	 */
+	public boolean isOpen();
 
 	/**
 	 * Merges state of the specified entity into the storage. </p>
@@ -199,11 +221,16 @@ public interface Connection {
 			MetamodelNotSetException;
 
 	/**
-	 * Persists the specified entity into the default persistence context. </p>
+	 * Persists the specified entity into a context. </p>
 	 * 
-	 * The default context can be either set via the
-	 * {@link #setDefaultContext(URI)} or it can be the default graph without
-	 * name (for RDF stores).
+	 * The context can be:
+	 * <ul>
+	 * <li>set for the entity via the {@link #setSaveContextFor(Object, URI)}</li>
+	 * <li>set for the whole connection via {@link #setConnectionContext(URI)}</li>
+	 * <li>or initially it is context with the highest priority.</li>
+	 * </ul>
+	 * 
+	 * In this order.
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the new entity
@@ -281,11 +308,9 @@ public interface Connection {
 	/**
 	 * Removes entity with the specified primary key. </p>
 	 * 
-	 * If an entity with the {@code primaryKey} is already loaded in some
-	 * context in this connection, the removal is done to this entity. If no
-	 * entity is loaded with the {@code primaryKey}, then available contexts are
-	 * search (ordered by their priority) and first entity with matching primary
-	 * key is removed. </p>
+	 * If no entity with the specified primary key is loaded within this
+	 * connection, an exception is thrown. Otherwise, the first entity with
+	 * matching primary key is removed.
 	 * 
 	 * This strategy is based on the fact that no assumption can be made about
 	 * primary key uniqueness.
@@ -295,8 +320,10 @@ public interface Connection {
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
+	 * @throws MetamodelNotSetException
+	 *             If metamodel is not set for this connection
 	 */
-	public void remove(Object primaryKey) throws OntoDriverException;
+	public void remove(Object primaryKey) throws OntoDriverException, MetamodelNotSetException;
 
 	/**
 	 * Removes entity with the specified primary key from the specified context.
@@ -316,8 +343,11 @@ public interface Connection {
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, if the context is not valid
 	 *             or if an ontology access error occurs
+	 * @throws MetamodelNotSetException
+	 *             If metamodel is not set for this connection
 	 */
-	public void remove(Object primaryKey, URI context) throws OntoDriverException;
+	public void remove(Object primaryKey, URI context) throws OntoDriverException,
+			MetamodelNotSetException;
 
 	/**
 	 * Rolls back the current transaction undoing any pending changes. </p>
@@ -354,7 +384,7 @@ public interface Connection {
 	 *             If the context is not valid, called on a closed connection or
 	 *             an ontology access error occurs
 	 */
-	public void setDefaultContext(URI context) throws OntoDriverException;
+	public void setConnectionContext(URI context) throws OntoDriverException;
 
 	/**
 	 * Sets metamodel for this connection. </p>

@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -122,6 +123,14 @@ public abstract class StorageManager {
 	 * @return List of contexts
 	 */
 	public abstract List<Context> getAvailableContexts();
+
+	/**
+	 * Returns a map of available contexts mapped by their URIs. </p>
+	 * 
+	 * @return Map of contexts mapped by URIs
+	 * @see #getAvailableContexts()
+	 */
+	public abstract Map<URI, Context> getContextsByUris();
 
 	/**
 	 * Merges the state of the specified entity into the appropriate ontology.
