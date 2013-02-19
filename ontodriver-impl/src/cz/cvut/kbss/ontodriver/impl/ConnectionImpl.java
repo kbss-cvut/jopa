@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,7 +25,6 @@ public class ConnectionImpl implements Connection {
 	private Context defaultContext;
 	private Map<URI, Context> contexts;
 	private Map<Object, Context> entityToContext;
-	private Map<Object, List<Object>> pkToEntity;
 
 	private boolean open;
 	private boolean hasChanges;
@@ -40,11 +38,9 @@ public class ConnectionImpl implements Connection {
 		this.contexts = new HashMap<URI, Context>();
 		// This has to be based on identities
 		this.entityToContext = new IdentityHashMap<Object, Context>();
-		this.pkToEntity = new HashMap<Object, List<Object>>();
 		this.storageManager = storageManager;
 		this.open = true;
-		// TODO This should be loaded from some properties
-		this.autoCommit = false;
+		this.autoCommit = true;
 	}
 
 	public ConnectionImpl(StorageManager storageManager, Metamodel metamodel) {
@@ -83,7 +79,7 @@ public class ConnectionImpl implements Connection {
 		T result = storageManager.find(cls, primaryKey, defaultContext,
 				Collections.<String, Context> emptyMap());
 		if (result != null) {
-			registerEntity(primaryKey, result, defaultContext);
+			registerInternal(result, defaultContext);
 			return result;
 		}
 		for (Context ctx : storageManager.getAvailableContexts()) {
@@ -94,7 +90,7 @@ public class ConnectionImpl implements Connection {
 			result = storageManager.find(cls, primaryKey, ctx,
 					Collections.<String, Context> emptyMap());
 			if (result != null) {
-				registerEntity(primaryKey, result, ctx);
+				registerInternal(result, ctx);
 				return result;
 			}
 		}
@@ -112,12 +108,7 @@ public class ConnectionImpl implements Connection {
 			throw new OntoDriverException("Context with URI " + context.toString()
 					+ " not found within this connection.");
 		}
-		final T result = storageManager.find(cls, primaryKey, ctx,
-				Collections.<String, Context> emptyMap());
-		if (result != null) {
-			registerEntity(primaryKey, result, ctx);
-		}
-		return result;
+		return findInternal(cls, primaryKey, ctx, Collections.<String, Context> emptyMap());
 	}
 
 	public <T> T find(Class<T> cls, Object primaryKey, URI entityContext,
@@ -133,9 +124,14 @@ public class ConnectionImpl implements Connection {
 					+ " not found within this connection.");
 		}
 		Map<String, Context> attContexts = resolveAttributeContexts(attributeContexts);
-		final T result = storageManager.find(cls, primaryKey, ctx, attContexts);
+		return findInternal(cls, primaryKey, ctx, attContexts);
+	}
+
+	private <T> T findInternal(Class<T> cls, Object primaryKey, Context entityContext,
+			Map<String, Context> attContexts) throws OntoDriverException {
+		final T result = storageManager.find(cls, primaryKey, entityContext, attContexts);
 		if (result != null) {
-			registerEntity(primaryKey, result, ctx);
+			registerInternal(result, entityContext);
 		}
 		return result;
 	}
@@ -194,21 +190,60 @@ public class ConnectionImpl implements Connection {
 
 	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException,
 			MetamodelNotSetException {
-		// TODO Auto-generated method stub
-
+		ensureState(true);
+		if (entity == null) {
+			throw new NullPointerException();
+		}
+		Context ctx = null;
+		ctx = entityToContext.get(entity);
+		if (ctx != null) {
+			persistInternal(primaryKey, entity, ctx, Collections.<String, Context> emptyMap());
+			return;
+		}
+		ctx = defaultContext;
+		persistInternal(primaryKey, entity, ctx, Collections.<String, Context> emptyMap());
 	}
 
 	public <T> void persist(Object primaryKey, T entity, URI context) throws OntoDriverException,
 			MetamodelNotSetException {
-		// TODO Auto-generated method stub
-
+		ensureState(true);
+		if (entity == null || context == null) {
+			throw new NullPointerException();
+		}
+		final Context ctx = contexts.get(context);
+		if (ctx == null) {
+			throw new OntoDriverException("Context with URI " + context.toString()
+					+ " not found within this connection.");
+		}
+		persistInternal(primaryKey, entity, ctx, Collections.<String, Context> emptyMap());
 	}
 
 	public <T> void persist(Object primaryKey, T entity, URI context,
 			Map<String, URI> attributeContexts) throws OntoDriverException,
 			MetamodelNotSetException {
-		// TODO Auto-generated method stub
+		ensureState(true);
+		if (entity == null || context == null || attributeContexts == null) {
+			throw new NullPointerException();
+		}
+		final Context ctx = contexts.get(context);
+		if (ctx == null) {
+			throw new OntoDriverException("Context with URI " + context.toString()
+					+ " not found within this connection.");
+		}
+		final Map<String, Context> attrContexts = resolveAttributeContexts(attributeContexts);
+		persistInternal(primaryKey, entity, ctx, attrContexts);
+	}
 
+	private <T> void persistInternal(Object primaryKey, T entity, Context context,
+			Map<String, Context> attributeContexts) throws OntoDriverException {
+		assert entity != null;
+		assert context != null;
+		assert attributeContexts != null;
+		storageManager.persist(primaryKey, entity, context, attributeContexts);
+		registerInternal(entity, context);
+		if (autoCommit) {
+			commit();
+		}
 	}
 
 	public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
@@ -216,55 +251,56 @@ public class ConnectionImpl implements Connection {
 		return null;
 	}
 
-	public void remove(Object primaryKey) throws OntoDriverException {
-		ensureState(true);
-		if (primaryKey == null) {
+	public <T> void registerWithContext(T entity, URI context) throws OntoDriverException {
+		ensureState(false);
+		if (entity == null || context == null) {
 			throw new NullPointerException();
 		}
-		final List<Object> entsWithPk = pkToEntity.get(primaryKey);
-		if (entsWithPk == null || entsWithPk.isEmpty()) {
-			throw new OntoDriverException("No entity with primary key " + primaryKey
-					+ " is loaded within this connection.");
-		}
-		final Object toRemove = entsWithPk.get(0);
-		Context ctx = entityToContext.get(toRemove);
-		if (ctx == null) {
-			throw new OntoDriverException("Context for entity with primary key " + primaryKey
-					+ " not found within this connection.");
-		}
-		storageManager.remove(primaryKey, ctx);
-		entsWithPk.remove(0);
-		entityToContext.remove(toRemove);
-	}
-
-	public void remove(Object primaryKey, URI context) throws OntoDriverException {
-		ensureState(true);
-		if (primaryKey == null || context == null) {
-			throw new NullPointerException();
-		}
-		final List<Object> entitiesWithPk = pkToEntity.get(primaryKey);
-		if (entitiesWithPk == null || entitiesWithPk.isEmpty()) {
-			throw new OntoDriverException("No entity with primary key " + primaryKey
-					+ " is loaded within this connection.");
-		}
-		Context ctx = null;
-		Object toRemove = null;
-		for (Object o : entitiesWithPk) {
-			final Context c = entityToContext.get(o);
-			if (c.getUri().equals(context)) {
-				ctx = c;
-				toRemove = o;
-				break;
-			}
-		}
+		final Context ctx = contexts.get(context);
 		if (ctx == null) {
 			throw new OntoDriverException("Context with URI " + context.toString()
 					+ " not found within this connection.");
 		}
-		storageManager.remove(primaryKey, ctx);
-		entitiesWithPk.remove(toRemove);
-		entityToContext.remove(toRemove);
+		registerInternal(entity, ctx);
+	}
 
+	public <T> void remove(Object primaryKey, T entity) throws OntoDriverException {
+		ensureState(true);
+		if (primaryKey == null) {
+			throw new NullPointerException();
+		}
+		Context ctx = entityToContext.get(entity);
+		if (ctx == null) {
+			throw new OntoDriverException("Context for entity with primary key " + primaryKey
+					+ " not found within this connection.");
+		}
+		removeInternal(primaryKey, entity, ctx);
+	}
+
+	public <T> void remove(Object primaryKey, T entity, URI context) throws OntoDriverException {
+		ensureState(true);
+		if (primaryKey == null || context == null) {
+			throw new NullPointerException();
+		}
+		Context ctx = contexts.get(context);
+		if (ctx == null) {
+			throw new OntoDriverException("Context with URI " + context.toString()
+					+ " not found within this connection.");
+		}
+		if (ctx != entityToContext.get(entity)) {
+			throw new OntoDriverException(
+					"The context of the entity and the context specified by URI are not the same!");
+		}
+		removeInternal(primaryKey, entity, ctx);
+	}
+
+	private void removeInternal(Object primaryKey, Object entity, Context ctx)
+			throws OntoDriverException {
+		storageManager.remove(primaryKey, ctx);
+		entityToContext.remove(entity);
+		if (autoCommit) {
+			commit();
+		}
 	}
 
 	public void rollback() throws OntoDriverException {
@@ -312,7 +348,7 @@ public class ConnectionImpl implements Connection {
 			throw new OntoDriverException("Context with URI " + context.toString()
 					+ " not found within this connection.");
 		}
-		registerEntity(null, entity, ctx);
+		registerInternal(entity, ctx);
 	}
 
 	/**
@@ -355,20 +391,11 @@ public class ConnectionImpl implements Connection {
 	 * @param ctx
 	 *            Context
 	 */
-	private void registerEntity(Object primaryKey, Object entity, Context ctx) {
+	private void registerInternal(Object entity, Context ctx) {
 		// Possible to add some more code if necessary
 		assert entity != null;
 		assert ctx != null;
 		entityToContext.put(entity, ctx);
-		if (primaryKey != null) {
-			if (pkToEntity.containsKey(primaryKey)) {
-				pkToEntity.get(primaryKey).add(entity);
-			} else {
-				List<Object> lst = new LinkedList<Object>();
-				lst.add(entity);
-				pkToEntity.put(primaryKey, lst);
-			}
-		}
 	}
 
 	/**

@@ -201,8 +201,7 @@ public abstract class StorageManager {
 	 * Removes entity with the specified primary key from the specified context.
 	 * </p>
 	 * 
-	 * If the {@code entityContext} is not set the default context is used. If
-	 * the context does not contain any individual with the specified primary
+	 * If the context does not contain any individual with the specified primary
 	 * key an exception is thrown.
 	 * 
 	 * @param primaryKey
@@ -210,11 +209,12 @@ public abstract class StorageManager {
 	 * @param entityContext
 	 *            Context from which the entity should be removed
 	 * @throws OntoDriverException
-	 *             If the context is not valid, if the context does not contain
-	 *             any individual with the specified primary key or if an
-	 *             ontology access error occurs
+	 *             If {@code entityContext} is not valid, if
+	 *             {@code entityContext} does not contain any individual with
+	 *             the specified primary key or if an ontology access error
+	 *             occurs
 	 * @throws NullPointerException
-	 *             If the {@code primaryKey} is null
+	 *             If {@code primaryKey} or {@code entityContext} is null
 	 */
 	public abstract void remove(Object primaryKey, Context entityContext)
 			throws OntoDriverException;

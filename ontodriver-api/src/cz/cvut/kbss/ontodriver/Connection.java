@@ -233,7 +233,8 @@ public interface Connection {
 	 * In this order.
 	 * 
 	 * @param primaryKey
-	 *            Primary key of the new entity
+	 *            Primary key of the new entity. Optional, if not set it will be
+	 *            generated
 	 * @param entity
 	 *            The entity to persist
 	 * @throws OntoDriverException
@@ -251,7 +252,8 @@ public interface Connection {
 	 * The entity is saved into this context with all its attribute values.
 	 * 
 	 * @param primaryKey
-	 *            Primary key of the new entity
+	 *            Primary key of the new entity. Optional, if not set it will be
+	 *            generated
 	 * @param entity
 	 *            The entity to persist
 	 * @param context
@@ -274,7 +276,8 @@ public interface Connection {
 	 * main context of the entity.
 	 * 
 	 * @param primaryKey
-	 *            Primary key of the new entity
+	 *            Primary key of the new entity. Optional, if not set it will be
+	 *            generated
 	 * @param entity
 	 *            The entity to persist
 	 * @param context
@@ -306,38 +309,60 @@ public interface Connection {
 	public PreparedStatement prepareStatement(String sparql) throws OntoDriverException;
 
 	/**
-	 * Removes entity with the specified primary key. </p>
+	 * Registers the specified {@code entity} as belonging to the specified
+	 * {@code context} within this connection. </p>
 	 * 
-	 * If no entity with the specified primary key is loaded within this
-	 * connection, an exception is thrown. Otherwise, the first entity with
-	 * matching primary key is removed.
+	 * No check whether this relationship is correct is done. </p>
 	 * 
-	 * This strategy is based on the fact that no assumption can be made about
-	 * primary key uniqueness.
+	 * This method can be used e. g. for registering entities returned from the
+	 * second level cache so that the ontology does not have to be queried.
+	 * 
+	 * @param entity
+	 *            The entity to register
+	 * @param context
+	 *            The context
+	 * @throws OntoDriverException
+	 *             If called on a closed connection or if {@code context} is not
+	 *             valid
+	 * @throws NullPointerException
+	 *             If {@code entity} or {@code context} is null
+	 */
+	public <T> void registerWithContext(T entity, URI context) throws OntoDriverException;
+
+	/**
+	 * Removes the specified {@code entity}. </p>
+	 * 
+	 * If the entity is not loaded within this connection an exception is
+	 * thrown.
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the entity to be removed
+	 * @param entity
+	 *            The entity to remove
 	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
+	 *             If called on a closed connection, if no entity with
+	 *             {@code primaryKey} is loaded within this connection or if an
+	 *             ontology access error occurs
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 */
-	public void remove(Object primaryKey) throws OntoDriverException, MetamodelNotSetException;
+	public <T> void remove(Object primaryKey, T entity) throws OntoDriverException,
+			MetamodelNotSetException;
 
 	/**
-	 * Removes entity with the specified primary key from the specified context.
+	 * Removes the specified {@code entity} from the specified {@code context}.
 	 * </p>
 	 * 
-	 * If no entity with the specified primary key is found in the specified
-	 * context, this method returns and does not try to search other contexts.
-	 * </p>
+	 * If the entity is not persistent in the specified context an exception is
+	 * thrown. </p>
 	 * 
 	 * If the {@code context} is {@code null}, this method behaves exactly as
 	 * {@link #remove(Object)}.
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the entity to be removed
+	 * @param entity
+	 *            The entity to remove
 	 * @param context
 	 *            URI of the context the entity will be removed from
 	 * @throws OntoDriverException
@@ -346,7 +371,7 @@ public interface Connection {
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 */
-	public void remove(Object primaryKey, URI context) throws OntoDriverException,
+	public <T> void remove(Object primaryKey, T entity, URI context) throws OntoDriverException,
 			MetamodelNotSetException;
 
 	/**
