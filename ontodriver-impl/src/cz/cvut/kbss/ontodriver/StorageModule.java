@@ -12,7 +12,7 @@ import java.net.URI;
  * @author kidney
  * 
  */
-public abstract class StorageModule {
+public abstract class StorageModule implements Transactional {
 
 	/** Context information */
 	protected final Context context;
@@ -25,14 +25,7 @@ public abstract class StorageModule {
 		this.open = true;
 	}
 
-	/**
-	 * Closes this storage module. </p>
-	 * 
-	 * By closing the module, the connection to the underlying physical storage
-	 * is released and cannot be reaquired. </p>
-	 * 
-	 * Closing an already closed storage module does nothing.
-	 */
+	@Override
 	public void close() {
 		this.open = false;
 	}
@@ -46,12 +39,7 @@ public abstract class StorageModule {
 		return context;
 	}
 
-	/**
-	 * Returns true if this storage module is open.
-	 * 
-	 * @return True if open false otherwise
-	 * @see #close()
-	 */
+	@Override
 	public boolean isOpen() {
 		return open;
 	}
@@ -63,22 +51,6 @@ public abstract class StorageModule {
 	 * acquiring connection to the physical storage.
 	 */
 	protected abstract void initialize();
-
-	/**
-	 * Makes the pending changes in this module persistent. </p>
-	 * 
-	 * @throws OntoDriverException
-	 *             If an ontology access error occurs
-	 */
-	public abstract void commit() throws OntoDriverException;
-
-	/**
-	 * Rolls back all pending changes in this module. </p>
-	 * 
-	 * @throws OntoDriverException
-	 *             If an ontology access error occurs
-	 */
-	public abstract void rollback() throws OntoDriverException;
 
 	/**
 	 * Retrieves entity with the specified primary key. </p>
@@ -115,14 +87,15 @@ public abstract class StorageModule {
 	 * Persists the specified entity into this module. </p>
 	 * 
 	 * @param primaryKey
-	 *            Primary key of the entity
+	 *            Primary key of the entity. Optional, if not set it will be
+	 *            generated
 	 * @param entity
 	 *            The entity to persist
 	 * @throws OntoDriverException
 	 *             If an entity with the specified primary key already exists in
 	 *             this module or if an ontology access error occurs
 	 * @throws NullPointerException
-	 *             If {@code primaryKey} or {@code entity} is null
+	 *             If {@code entity} is null
 	 */
 	public abstract <T> void persist(Object primaryKey, T entity) throws OntoDriverException;
 

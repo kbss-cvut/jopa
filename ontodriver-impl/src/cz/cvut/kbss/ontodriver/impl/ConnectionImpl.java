@@ -7,6 +7,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Connection;
@@ -18,6 +20,8 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageManager;
 
 public class ConnectionImpl implements Connection {
+
+	private static final Logger LOG = Logger.getLogger(ConnectionImpl.class.getName());
 
 	private final StorageManager storageManager;
 	private Metamodel metamodel;
@@ -49,6 +53,9 @@ public class ConnectionImpl implements Connection {
 	}
 
 	public void close() throws OntoDriverException {
+		if (LOG.isLoggable(Level.CONFIG)) {
+			LOG.config("Closing the connection.");
+		}
 		if (!open) {
 			return;
 		}
@@ -57,6 +64,9 @@ public class ConnectionImpl implements Connection {
 	}
 
 	public void commit() throws OntoDriverException, MetamodelNotSetException {
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Committing changes.");
+		}
 		ensureState(true);
 		if (!hasChanges) {
 			return;
@@ -74,6 +84,7 @@ public class ConnectionImpl implements Connection {
 			MetamodelNotSetException {
 		ensureState(true);
 		if (cls == null || primaryKey == null) {
+			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey);
 			throw new NullPointerException();
 		}
 		T result = storageManager.find(cls, primaryKey, defaultContext,
@@ -101,6 +112,8 @@ public class ConnectionImpl implements Connection {
 			MetamodelNotSetException {
 		ensureState(true);
 		if (cls == null || primaryKey == null || context == null) {
+			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey
+					+ ", context = " + context);
 			throw new NullPointerException();
 		}
 		final Context ctx = contexts.get(context);
@@ -116,6 +129,8 @@ public class ConnectionImpl implements Connection {
 			MetamodelNotSetException {
 		ensureState(true);
 		if (cls == null || primaryKey == null || entityContext == null || attributeContexts == null) {
+			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey
+					+ ", context = " + entityContext + ", attributeContexts = " + attributeContexts);
 			throw new NullPointerException();
 		}
 		final Context ctx = contexts.get(entityContext);
@@ -174,6 +189,8 @@ public class ConnectionImpl implements Connection {
 			MetamodelNotSetException {
 		ensureState(true);
 		if (primaryKey == null || entity == null) {
+			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", primaryKey = "
+					+ primaryKey);
 			throw new NullPointerException();
 		}
 		final Context ctx = entityToContext.get(entity);
@@ -192,6 +209,7 @@ public class ConnectionImpl implements Connection {
 			MetamodelNotSetException {
 		ensureState(true);
 		if (entity == null) {
+			LOG.severe("Null argument passed: entity = " + entity);
 			throw new NullPointerException();
 		}
 		Context ctx = null;
@@ -208,6 +226,7 @@ public class ConnectionImpl implements Connection {
 			MetamodelNotSetException {
 		ensureState(true);
 		if (entity == null || context == null) {
+			LOG.severe("Null argument passed: entity = " + entity + ", context = " + context);
 			throw new NullPointerException();
 		}
 		final Context ctx = contexts.get(context);
@@ -223,6 +242,8 @@ public class ConnectionImpl implements Connection {
 			MetamodelNotSetException {
 		ensureState(true);
 		if (entity == null || context == null || attributeContexts == null) {
+			LOG.severe("Null argument passed: entity = " + entity + ", entityContext = " + context
+					+ ", attributeContexts = " + attributeContexts);
 			throw new NullPointerException();
 		}
 		final Context ctx = contexts.get(context);
@@ -267,6 +288,7 @@ public class ConnectionImpl implements Connection {
 	public <T> void remove(Object primaryKey, T entity) throws OntoDriverException {
 		ensureState(true);
 		if (primaryKey == null) {
+			LOG.severe("Null argument passed: primaryKey = " + primaryKey);
 			throw new NullPointerException();
 		}
 		Context ctx = entityToContext.get(entity);
@@ -280,6 +302,8 @@ public class ConnectionImpl implements Connection {
 	public <T> void remove(Object primaryKey, T entity, URI context) throws OntoDriverException {
 		ensureState(true);
 		if (primaryKey == null || context == null) {
+			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", context = "
+					+ context);
 			throw new NullPointerException();
 		}
 		Context ctx = contexts.get(context);
@@ -304,6 +328,9 @@ public class ConnectionImpl implements Connection {
 	}
 
 	public void rollback() throws OntoDriverException {
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Rolling back changes.");
+		}
 		ensureState(false);
 		if (!hasChanges) {
 			return;

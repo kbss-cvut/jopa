@@ -17,7 +17,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
  * @author kidney
  * 
  */
-public abstract class StorageManager {
+public abstract class StorageManager implements Transactional {
 
 	protected final Metamodel metamodel;
 	protected boolean open;
@@ -30,41 +30,21 @@ public abstract class StorageManager {
 		this.open = true;
 	}
 
-	/**
-	 * Returns true if this storage manager is open. </p>
-	 * 
-	 * @return True if open false otherwise
-	 * @see #close()
-	 */
+	@Override
 	public boolean isOpen() {
 		return open;
 	}
 
 	/**
-	 * Close this storage manager. </p>
+	 * {@inheritDoc} </p>
 	 * 
 	 * Implementing subclasses can (and should) override this method to close
 	 * any open storage connections they maintain.
 	 */
-	public void close() {
+	@Override
+	public void close() throws OntoDriverException {
 		this.open = false;
 	}
-
-	/**
-	 * Commits all unsaved changes into the underlying storage. </p>
-	 * 
-	 * The StorageManager starts an internal transaction once it is acquired
-	 * calling {@code commit} has two effects:
-	 * <ul>
-	 * <li>Changes are committed to the underlying data storage</li>
-	 * <li>A new internal transaction is started</li>
-	 * </ul>
-	 * 
-	 * @throws OntoDriverException
-	 *             If an ontology access error occurs
-	 * @see #rollback()
-	 */
-	public abstract void commit() throws OntoDriverException;
 
 	/**
 	 * Executes the specified SPARQL statement. </p>
@@ -168,8 +148,7 @@ public abstract class StorageManager {
 	 * Persists the specified entity. </p>
 	 * 
 	 * The {@code entity} is persisted into context specified by the
-	 * {@code entityContext} parameter. If that is not set, the default context
-	 * is used. </p>
+	 * {@code entityContext} parameter. </p>
 	 * 
 	 * The {@code entity}'s attribute values are persisted to their respective
 	 * contexts as specified by the {@code attributeContexts} map. If context
@@ -177,7 +156,8 @@ public abstract class StorageManager {
 	 * the {@code entity}.
 	 * 
 	 * @param primaryKey
-	 *            Primary key of the persisted entity
+	 *            Primary key of the persisted entity. Optional, if not set it
+	 *            will be generated
 	 * @param entity
 	 *            The entity to persist
 	 * @param entityContext
@@ -191,7 +171,7 @@ public abstract class StorageManager {
 	 *             context, if any of the contexts is not valid or if an
 	 *             ontology access error occurs
 	 * @throws NullPointerException
-	 *             If {@code primaryKey}, {@code entity} or
+	 *             If {@code entity}, {@code entityContext} or
 	 *             {@code attributeContexts} is {@code null}
 	 */
 	public abstract <T> void persist(Object primaryKey, T entity, Context entityContext,
@@ -218,13 +198,4 @@ public abstract class StorageManager {
 	 */
 	public abstract void remove(Object primaryKey, Context entityContext)
 			throws OntoDriverException;
-
-	/**
-	 * Discards all pending ontology changes. </p>
-	 * 
-	 * @throws OntoDriverException
-	 *             If an ontology access error occurs
-	 * @see #commit()
-	 */
-	public abstract void rollback() throws OntoDriverException;
 }

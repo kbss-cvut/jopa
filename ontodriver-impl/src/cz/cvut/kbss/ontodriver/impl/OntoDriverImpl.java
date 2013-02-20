@@ -32,10 +32,12 @@ public class OntoDriverImpl implements OntoDriver {
 	/**
 	 * @throws UnsupportedOperationException
 	 */
+	@Override
 	public StorageManager acquireStorageManager() throws OntoDriverException {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public StorageManager acquireStorageManager(Metamodel metamodel) throws OntoDriverException {
 		if (metamodel == null) {
 			return acquireStorageManager();
