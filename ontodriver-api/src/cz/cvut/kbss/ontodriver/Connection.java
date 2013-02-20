@@ -16,35 +16,23 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
  * @author kidney
  * 
  */
-public interface Connection {
+public interface Connection extends Transactional {
 
 	/**
-	 * Closes this connection. </p>
+	 * {@inheritDoc} </p>
 	 * 
-	 * If there is a transaction running when {@code close} is called, the
-	 * transaction is rolled back. However, it is strongly recommended to commit
-	 * or roll back transaction explicitly. Closing an already closed connection
-	 * does nothing.
-	 * 
-	 * @throws OntoDriverException
-	 *             If an ontology access error occurs
+	 * Calling {@code commit} in auto-commit mode results in an
+	 * {@code OntoDriverException}.
 	 */
-	public void close() throws OntoDriverException;
+	public void commit() throws OntoDriverException;
 
 	/**
-	 * Commits the current ontology transaction making all pending changes
-	 * persistent. </p>
+	 * {@inheritDoc} </p>
 	 * 
-	 * This method should not be called when in auto-commit mode.
-	 * 
-	 * @throws OntoDriverException
-	 *             If in auto-commit mode, called on a closed connection or an
-	 *             ontology access error occurs
-	 * @throws MetamodelNotSetException
-	 *             If metamodel is not set for this connection and there are
-	 *             changes to commit
+	 * Calling {@code rollback} in auto-commit mode results in an
+	 * {@code OntoDriverException}.
 	 */
-	public void commit() throws OntoDriverException, MetamodelNotSetException;
+	public void rollback() throws OntoDriverException;
 
 	/**
 	 * Creates a new SPARQL statement.
@@ -195,13 +183,6 @@ public interface Connection {
 	public Context getSaveContextFor(Object entity) throws OntoDriverException;
 
 	/**
-	 * Retrieves status of this connection. </p>
-	 * 
-	 * @return {@code true} if the connection is open, {@code false} otherwise
-	 */
-	public boolean isOpen();
-
-	/**
 	 * Merges state of the specified entity into the storage. </p>
 	 * 
 	 * This method is meant only for merging state of existing entities, trying
@@ -280,7 +261,7 @@ public interface Connection {
 	 *            generated
 	 * @param entity
 	 *            The entity to persist
-	 * @param context
+	 * @param entityContext
 	 *            URI of the context the entity will be saved to
 	 * @param attributeContexts
 	 *            Map of attribute names and context URIs which the attribute
@@ -292,7 +273,7 @@ public interface Connection {
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 */
-	public <T> void persist(Object primaryKey, T entity, URI context,
+	public <T> void persist(Object primaryKey, T entity, URI entityContext,
 			Map<String, URI> attributeContexts) throws OntoDriverException,
 			MetamodelNotSetException;
 
@@ -375,20 +356,12 @@ public interface Connection {
 			MetamodelNotSetException;
 
 	/**
-	 * Rolls back the current transaction undoing any pending changes. </p>
-	 * 
-	 * This method should not be called when in auto-commit mode.
-	 * 
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 */
-	public void rollback() throws OntoDriverException;
-
-	/**
 	 * Sets auto commit mode on this connection. </p>
 	 * 
-	 * Setting auto commit twice on to the same value has no effect.
+	 * Setting auto commit twice to the same value has no effect. </p>
+	 * 
+	 * Note that when auto-commit is enabled, it is not possible to explicitly
+	 * commit or roll back transactions. Doing so results in an exception.
 	 * 
 	 * @param autoCommit
 	 *            True if setting to auto-commit mode, false otherwise

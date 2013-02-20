@@ -100,4 +100,10 @@ public class Context {
 		}
 		this.signature = signature;
 	}
+
+	@Override
+	public String toString() {
+		String out = "Context: URI = " + contextUri.toString();
+		return out;
+	}
 }

@@ -11,18 +11,14 @@ import java.util.Observer;
  * @author kidney
  * 
  */
-public interface ResultSet {
+public interface ResultSet extends Closeable {
 
 	/**
-	 * Closes this result set immediately releasing any ontology resources held.
-	 * </p>
+	 * {@inheritDoc} </p>
 	 * 
 	 * Calling this method also results in immediate disconnection of all
 	 * registered observers and cancellation of any running reasoning associated
-	 * with this result set. Closing an already closed result set has no effect.
-	 * 
-	 * @throws OntoDriverException
-	 *             If an error occurs
+	 * with this result set.
 	 */
 	public void close() throws OntoDriverException;
 
@@ -262,8 +258,7 @@ public interface ResultSet {
 	 *             value cannot be cast to the specified type, this method is
 	 *             called on closed result set or there occurs some other error
 	 */
-	public <T> T getObject(int columnIndex, Class<T> cls)
-			throws OntoDriverException;
+	public <T> T getObject(int columnIndex, Class<T> cls) throws OntoDriverException;
 
 	/**
 	 * Retrieves value from column with the specified label and returns it as an
@@ -283,8 +278,7 @@ public interface ResultSet {
 	 *             cannot be cast to the specified type, this method is called
 	 *             on closed result set or there occurs some other error
 	 */
-	public <T> T getObject(String columnLabel, Class<T> cls)
-			throws OntoDriverException;
+	public <T> T getObject(String columnLabel, Class<T> cls) throws OntoDriverException;
 
 	/**
 	 * Retrieves index of the current row. </p>
@@ -376,15 +370,6 @@ public interface ResultSet {
 	 *             error occurs
 	 */
 	public boolean isFirst() throws OntoDriverException;
-
-	/**
-	 * Returns true if this result set is open.
-	 * 
-	 * @return True if this result set is open, false otherwise
-	 * @throws OntoDriverException
-	 *             If an error occurs
-	 */
-	public boolean isOpen() throws OntoDriverException;
 
 	/**
 	 * Returns true if the cursor does not point at the last row in this result
