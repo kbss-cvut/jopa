@@ -6,10 +6,21 @@ import java.util.logging.Level;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.OntoDriverException;
+import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.StorageModule;
 
 public class DriverOwlapiFactory extends DriverAbstractFactory {
+
+	static {
+		try {
+			OntoDriverImpl.registerFactoryClass(OntologyConnectorType.OWLAPI,
+					DriverOwlapiFactory.class);
+		} catch (OntoDriverException e) {
+			LOG.severe("Unable to register " + DriverOwlapiFactory.class
+					+ " at the driver. Message: " + e.getMessage());
+		}
+	}
 
 	public DriverOwlapiFactory(List<OntologyStorageProperties> storageProperties)
 			throws OntoDriverException {
@@ -39,15 +50,5 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 				contextsToProperties.get(ctx));
 		registerConnector(c);
 		return c;
-	}
-
-	private void ensureState(Context ctx) throws OntoDriverException {
-		ensureOpen();
-		if (ctx == null) {
-			throw new NullPointerException("Context cannot be null.");
-		}
-		if (!contextsToProperties.containsKey(ctx)) {
-			throw new OntoDriverException("Context " + ctx + " not found.");
-		}
 	}
 }

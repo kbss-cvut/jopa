@@ -115,6 +115,33 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	}
 
 	/**
+	 * Ensures that this factory is in a valid state. </p>
+	 * 
+	 * This means:
+	 * <ul>
+	 * <li>That this factory is open</li>
+	 * <li>That {@code ctx} is not null</li>
+	 * <li>That {@code ctx} exists in this factory</li>
+	 * </ul>
+	 * 
+	 * @param ctx
+	 *            The context to check
+	 * @throws OntoDriverException
+	 *             If the factory is closed or if the context is not valid
+	 * @throws NullPointerException
+	 *             If {@code ctx} is {@code null}
+	 */
+	protected void ensureState(Context ctx) throws OntoDriverException {
+		ensureOpen();
+		if (ctx == null) {
+			throw new NullPointerException("Context cannot be null.");
+		}
+		if (!contextsToProperties.containsKey(ctx)) {
+			throw new OntoDriverException("Context " + ctx + " not found.");
+		}
+	}
+
+	/**
 	 * Registers the {@code module} among the opened modules managed by this
 	 * factory.
 	 * 
@@ -138,6 +165,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		openedConnectors.put(connector, connector);
 	}
 
+	// TODO This is not very good because it will be done for every new factory
 	private List<Context> initContexts() {
 		final List<Context> ctxs = new ArrayList<Context>(
 				storageProperties.size());
