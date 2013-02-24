@@ -1,6 +1,18 @@
 package cz.cvut.kbss.ontodriver;
 
+import java.util.List;
+
 public interface DriverFactory extends Closeable {
+
+	/**
+	 * Retrieves a list of contexts available to this factory. </p>
+	 * 
+	 * The contexts in the list are sorted by their priority. The list should
+	 * not be modified.
+	 * 
+	 * @return List of contexts
+	 */
+	public List<Context> getContexts();
 
 	/**
 	 * Creates and returns storage module. </p>
@@ -34,8 +46,7 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory, if the module has been already
 	 *             released or if an ontology access error occurs
 	 */
-	public void releaseStorageModule(StorageModule module)
-			throws OntoDriverException;
+	public void releaseStorageModule(StorageModule module) throws OntoDriverException;
 
 	/**
 	 * Creates and returns a storage connector. </p>
@@ -52,8 +63,8 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory or if an ontology access error
 	 *             occurs
 	 */
-	public StorageConnector createStorageConnector(Context ctx,
-			boolean autoCommit) throws OntoDriverException;
+	public StorageConnector createStorageConnector(Context ctx, boolean autoCommit)
+			throws OntoDriverException;
 
 	/**
 	 * Releases the specified storage connector. </p>
@@ -70,6 +81,5 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory, if the module has been already
 	 *             released or if an ontology access error occurs
 	 */
-	public void releaseStorageConnector(StorageConnector connector)
-			throws OntoDriverException;
+	public void releaseStorageConnector(StorageConnector connector) throws OntoDriverException;
 }

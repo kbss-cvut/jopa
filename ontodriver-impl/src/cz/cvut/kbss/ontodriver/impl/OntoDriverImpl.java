@@ -21,13 +21,14 @@ import cz.cvut.kbss.ontodriver.StorageManager;
 
 public class OntoDriverImpl implements OntoDriver {
 
-	private static final Logger LOG = Logger.getLogger(OntoDriverImpl.class
-			.getName());
+	private static final Logger LOG = Logger.getLogger(OntoDriverImpl.class.getName());
 
 	private static final Map<OntologyConnectorType, Constructor<? extends DriverFactory>> factoryClasses = new HashMap<OntologyConnectorType, Constructor<? extends DriverFactory>>();
 
 	private final Map<String, String> properties;
 	private final Map<OntologyConnectorType, DriverFactory> factories;
+	/** Reference for easier access */
+	private List<Context> contexts;
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties,
 			Map<String, String> properties) {
@@ -39,7 +40,8 @@ public class OntoDriverImpl implements OntoDriver {
 		}
 		this.properties = properties;
 		this.factories = initFactories(storageProperties);
-		// TODO Auto-generated constructor stub
+		// Get contexts from the first available factory
+		this.contexts = factories.values().iterator().next().getContexts();
 	}
 
 	/**
@@ -51,16 +53,15 @@ public class OntoDriverImpl implements OntoDriver {
 	}
 
 	@Override
-	public StorageManager acquireStorageManager(Metamodel metamodel)
-			throws OntoDriverException {
+	public StorageManager acquireStorageManager(Metamodel metamodel) throws OntoDriverException {
 		if (metamodel == null) {
 			return acquireStorageManager();
 		}
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating storage manager.");
 		}
-		// TODO Auto-generated method stub
-		return null;
+		final StorageManager m = new StorageManagerImpl(metamodel, contexts);
+		return m;
 	}
 
 	/**
@@ -84,6 +85,14 @@ public class OntoDriverImpl implements OntoDriver {
 		return factories.get(context.getConnectorType());
 	}
 
+	/**
+	 * Creates factory instances based on the registered classes. </p>
+	 * 
+	 * @param props
+	 *            Storage properties containing data about ontology storages
+	 * @return map of connector types and factories for them
+	 * @see #registerFactoryClass(OntologyConnectorType, Class)
+	 */
 	private Map<OntologyConnectorType, DriverFactory> initFactories(
 			List<OntologyStorageProperties> props) {
 		final Map<OntologyConnectorType, DriverFactory> facts = new HashMap<OntologyConnectorType, DriverFactory>();
@@ -93,8 +102,8 @@ public class OntoDriverImpl implements OntoDriver {
 			try {
 				final DriverFactory f = c.newInstance(props);
 				facts.put(e.getKey(), f);
-			} catch (InstantiationException | IllegalAccessException
-					| IllegalArgumentException | InvocationTargetException e1) {
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException e1) {
 				LOG.severe("Unable to initialize factory. + " + e.toString());
 			}
 		}
@@ -119,19 +128,16 @@ public class OntoDriverImpl implements OntoDriver {
 	 *             argument
 	 */
 	public static void registerFactoryClass(OntologyConnectorType type,
-			Class<? extends DriverFactory> factoryClass)
-			throws OntoDriverException {
+			Class<? extends DriverFactory> factoryClass) throws OntoDriverException {
 		if (type == null || factoryClass == null) {
 			throw new NullPointerException();
 		}
 		try {
 			if (!DriverFactory.class.isAssignableFrom(factoryClass)) {
-				throw new OntoDriverException("The class "
-						+ factoryClass.getName()
+				throw new OntoDriverException("The class " + factoryClass.getName()
 						+ " is not an implementation of DriverFactory.");
 			}
-			final Constructor<? extends DriverFactory> c = factoryClass
-					.getConstructor(Map.class);
+			final Constructor<? extends DriverFactory> c = factoryClass.getConstructor(Map.class);
 			factoryClasses.put(type, c);
 		} catch (NoSuchMethodException e) {
 			throw new OntoDriverException("The class " + factoryClass.getName()

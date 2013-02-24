@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,31 +10,38 @@ import java.util.logging.Logger;
 
 public abstract class DriverAbstractFactory implements DriverFactory {
 
-	protected static final Logger LOG = Logger
-			.getLogger(DriverAbstractFactory.class.getName());
+	protected static final Logger LOG = Logger.getLogger(DriverAbstractFactory.class.getName());
 
-	protected final List<Context> contexts;
-	protected final Map<Context, OntologyStorageProperties> contextsToProperties;
-	protected final List<OntologyStorageProperties> storageProperties;
+	protected static List<Context> contexts;
+	protected static Map<Context, OntologyStorageProperties> contextsToProperties;
+	protected static List<OntologyStorageProperties> storageProperties;
+
 	protected final Map<StorageConnector, StorageConnector> openedConnectors;
 	protected final Map<StorageModule, StorageModule> openedModules;
 
 	private boolean open;
 
-	protected DriverAbstractFactory(
-			List<OntologyStorageProperties> storageProperties)
+	protected DriverAbstractFactory(List<OntologyStorageProperties> storageProperties)
 			throws OntoDriverException {
 		if (storageProperties == null || storageProperties.isEmpty()) {
-			throw new OntoDriverException(
-					"There has to be at least one storage specified.");
+			throw new OntoDriverException("There has to be at least one storage specified.");
 		}
-		this.storageProperties = storageProperties;
+		if (DriverAbstractFactory.storageProperties == null) {
+			initFactory(storageProperties);
+		}
 		this.openedConnectors = new HashMap<StorageConnector, StorageConnector>();
 		this.openedModules = new HashMap<StorageModule, StorageModule>();
 		this.open = true;
-		this.contextsToProperties = new HashMap<Context, OntologyStorageProperties>(
-				storageProperties.size());
-		this.contexts = initContexts();
+		if (contexts == null) {
+			// This should not happen but just to be sure
+			throw new OntoDriverException(new IllegalStateException(
+					"The factory is not initalized."));
+		}
+	}
+
+	@Override
+	public List<Context> getContexts() {
+		return Collections.unmodifiableList(contexts);
 	}
 
 	@Override
@@ -63,8 +71,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 * Default implementation which closes the specified module.
 	 */
 	@Override
-	public void releaseStorageModule(StorageModule module)
-			throws OntoDriverException {
+	public void releaseStorageModule(StorageModule module) throws OntoDriverException {
 		ensureOpen();
 		if (module == null) {
 			throw new NullPointerException();
@@ -74,8 +81,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		}
 		final StorageModule m = openedModules.remove(module);
 		if (m == null) {
-			throw new OntoDriverException("Module " + module
-					+ " not managed in this factory.");
+			throw new OntoDriverException("Module " + module + " not managed in this factory.");
 		}
 		m.close();
 	}
@@ -84,8 +90,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 * Default implementation which closes the specified connector.
 	 */
 	@Override
-	public void releaseStorageConnector(StorageConnector connector)
-			throws OntoDriverException {
+	public void releaseStorageConnector(StorageConnector connector) throws OntoDriverException {
 		ensureOpen();
 		if (connector == null) {
 			throw new NullPointerException();
@@ -109,8 +114,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 */
 	protected void ensureOpen() throws OntoDriverException {
 		if (!open) {
-			throw new OntoDriverException(new IllegalStateException(
-					"The factory is closed."));
+			throw new OntoDriverException(new IllegalStateException("The factory is closed."));
 		}
 	}
 
@@ -165,17 +169,25 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		openedConnectors.put(connector, connector);
 	}
 
-	// TODO This is not very good because it will be done for every new factory
-	private List<Context> initContexts() {
-		final List<Context> ctxs = new ArrayList<Context>(
-				storageProperties.size());
+	/**
+	 * Initializes data shared by all driver factories. </p>
+	 * 
+	 * This means initializing contexts and binding them with their respective
+	 * storage properties so that connectors can be created based on this data.
+	 * 
+	 * @param storageProps
+	 *            Storage properties
+	 */
+	private static void initFactory(List<OntologyStorageProperties> storageProps) {
+		assert storageProps != null;
+		storageProperties = storageProps;
+		contexts = new ArrayList<Context>(storageProperties.size());
+		contextsToProperties = new HashMap<Context, OntologyStorageProperties>();
 		for (OntologyStorageProperties p : storageProperties) {
-			final Context ctx = new Context(p.getOntologyURI(),
-					p.getConnectorType());
+			final Context ctx = new Context(p.getOntologyURI(), p.getConnectorType());
 			// TODO Set expressiveness and signature for the context
-			ctxs.add(ctx);
+			contexts.add(ctx);
 			contextsToProperties.put(ctx, p);
 		}
-		return ctxs;
 	}
 }
