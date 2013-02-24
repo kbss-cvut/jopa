@@ -1,7 +1,5 @@
 package cz.cvut.kbss.ontodriver;
 
-import java.net.URI;
-
 /**
  * Represents a single storage module. </p>
  * 
@@ -19,8 +17,11 @@ public abstract class StorageModule implements Transactional {
 	/** True if this module is open */
 	protected boolean open;
 
-	public StorageModule(URI ontologyUri) {
-		this.context = new Context(ontologyUri);
+	public StorageModule(Context context) {
+		if (context == null) {
+			throw new NullPointerException("Context cannot be null.");
+		}
+		this.context = context;
 		initialize();
 		this.open = true;
 	}
@@ -66,7 +67,8 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code cls} or {@code primaryKey} is null
 	 */
-	public abstract <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException;
+	public abstract <T> T find(Class<T> cls, Object primaryKey)
+			throws OntoDriverException;
 
 	/**
 	 * Merges changes on the specified entity into this module. </p>
@@ -81,7 +83,8 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code entity} is null
 	 */
-	public abstract <T> void merge(Object primaryKey, T entity) throws OntoDriverException;
+	public abstract <T> void merge(Object primaryKey, T entity)
+			throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity into this module. </p>
@@ -97,7 +100,8 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code entity} is null
 	 */
-	public abstract <T> void persist(Object primaryKey, T entity) throws OntoDriverException;
+	public abstract <T> void persist(Object primaryKey, T entity)
+			throws OntoDriverException;
 
 	/**
 	 * Removes entity with the specified primary key from this module. </p>
@@ -128,5 +132,6 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code statement} is null
 	 */
-	public abstract ResultSet executeStatement(Statement statement) throws OntoDriverException;
+	public abstract ResultSet executeStatement(Statement statement)
+			throws OntoDriverException;
 }

@@ -13,7 +13,15 @@
   	<dependency>
   		<groupId>cz.cvut.kbss.jopa</groupId>
   		<artifactId>ontodriver-api</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
   	</dependency>
   </dependencies>
+  <dependencyManagement>
+  	<dependencies>
+  		<dependency>
+  			<groupId>cz.cvut.kbss.jopa</groupId>
+  			<artifactId>ontodriver-api</artifactId>
+  			<version>0.0.1-SNAPSHOT</version>
+  		</dependency>
+  	</dependencies>
+  </dependencyManagement>
 </project>

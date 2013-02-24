@@ -23,6 +23,7 @@ public class Context {
 	private final URI contextUri;
 	private ContextExpressiveness expressiveness;
 	private Set<String> signature;
+	private OntologyConnectorType connectorType;
 
 	/**
 	 * 
@@ -31,20 +32,33 @@ public class Context {
 	 * @throws NullPointerException
 	 *             If the {@code contextUri} is null
 	 */
-	public Context(URI contextUri) {
+	public Context(URI contextUri, OntologyConnectorType connectorType) {
 		if (contextUri == null) {
-			throw new NullPointerException("ContextUri cannot null.");
+			throw new NullPointerException("ContextUri cannot be null.");
+		}
+		if (connectorType == null) {
+			throw new NullPointerException("ConnectorType cannot be null.");
 		}
 		this.contextUri = contextUri;
+		this.connectorType = connectorType;
 	}
 
 	/**
-	 * Returns URI of this context.
+	 * Retrieves URI of this context.
 	 * 
 	 * @return URI
 	 */
 	public URI getUri() {
 		return contextUri;
+	}
+
+	/**
+	 * Retrieves type of the context connector.
+	 * 
+	 * @return OntologyConnectorType
+	 */
+	public OntologyConnectorType getConnectorType() {
+		return connectorType;
 	}
 
 	/**
