@@ -185,6 +185,20 @@ public class ConnectionImpl implements Connection {
 		return open;
 	}
 
+	@Override
+	public <T> void loadFieldValue(T entity, String fieldName) throws OntoDriverException {
+		if (entity == null || fieldName == null) {
+			LOG.severe("Null argument passed: entity = " + entity + ", fieldName = " + fieldName);
+			throw new NullPointerException();
+		}
+		final Context ctx = entityToContext.get(entity);
+		if (ctx == null) {
+			throw new OntoDriverException("Entity " + entity
+					+ " is not loaded within this connection.");
+		}
+		storageManager.loadFieldValue(entity, fieldName, ctx);
+	}
+
 	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException,
 			MetamodelNotSetException {
 		ensureState(true);

@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 import cz.cvut.kbss.ontodriver.Context;
@@ -14,17 +15,17 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 
 	static {
 		try {
-			OntoDriverImpl.registerFactoryClass(OntologyConnectorType.JENA,
-					DriverJenaFactory.class);
+			OntoDriverImpl
+					.registerFactoryClass(OntologyConnectorType.JENA, DriverJenaFactory.class);
 		} catch (OntoDriverException e) {
 			LOG.severe("Unable to register " + DriverOwlapiFactory.class
 					+ " at the driver. Message: " + e.getMessage());
 		}
 	}
 
-	public DriverJenaFactory(List<OntologyStorageProperties> storageProperties)
-			throws OntoDriverException {
-		super(storageProperties);
+	public DriverJenaFactory(List<OntologyStorageProperties> storageProperties,
+			Map<String, String> properties) throws OntoDriverException {
+		super(storageProperties, properties);
 	}
 
 	@Override
@@ -34,20 +35,19 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage module.");
 		}
-		final JenaStorageModule m = new JenaStorageModule(ctx);
+		final JenaStorageModule m = new JenaStorageModule(ctx, this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public JenaStorageConnector createStorageConnector(Context ctx,
-			boolean autoCommit) throws OntoDriverException {
+	public JenaStorageConnector createStorageConnector(Context ctx, boolean autoCommit)
+			throws OntoDriverException {
 		ensureState(ctx);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage connector.");
 		}
-		final JenaStorageConnector c = new JenaStorageConnector(
-				contextsToProperties.get(ctx));
+		final JenaStorageConnector c = new JenaStorageConnector(contextsToProperties.get(ctx));
 		registerConnector(c);
 		return c;
 	}

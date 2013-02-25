@@ -14,14 +14,20 @@ public abstract class StorageModule implements Transactional {
 
 	/** Context information */
 	protected final Context context;
+	/** Backward reference to the factory */
+	protected final DriverFactory factory;
 	/** True if this module is open */
 	protected boolean open;
 
-	public StorageModule(Context context) {
+	public StorageModule(Context context, DriverFactory factory) throws OntoDriverException {
 		if (context == null) {
 			throw new NullPointerException("Context cannot be null.");
 		}
+		if (factory == null) {
+			throw new NullPointerException("Factory cannot be null.");
+		}
 		this.context = context;
+		this.factory = factory;
 		initialize();
 		this.open = true;
 	}
@@ -50,8 +56,10 @@ public abstract class StorageModule implements Transactional {
 	 * 
 	 * This means setting information about its expressiveness and signature and
 	 * acquiring connection to the physical storage.
+	 * 
+	 * @throws OntoDriverException
 	 */
-	protected abstract void initialize();
+	protected abstract void initialize() throws OntoDriverException;
 
 	/**
 	 * Retrieves entity with the specified primary key. </p>
@@ -67,8 +75,24 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code cls} or {@code primaryKey} is null
 	 */
-	public abstract <T> T find(Class<T> cls, Object primaryKey)
-			throws OntoDriverException;
+	public abstract <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException;
+
+	/**
+	 * Loads from the ontology and sets value of field {@code fieldName}. </p>
+	 * 
+	 * This method is intended to be used for lazy loaded field values.
+	 * 
+	 * @param entity
+	 *            The entity to set field value on
+	 * @param fieldName
+	 *            Name of the field
+	 * @throws OntoDriverException
+	 *             If called on a closed storage module, if the field name does
+	 *             not exist or if an ontology access error occurs
+	 * @throws NullPointerException
+	 *             If {@code entity} or {@code fieldName} is null
+	 */
+	public abstract <T> void loadFieldValue(T entity, String fieldName) throws OntoDriverException;
 
 	/**
 	 * Merges changes on the specified entity into this module. </p>
@@ -83,8 +107,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code entity} is null
 	 */
-	public abstract <T> void merge(Object primaryKey, T entity)
-			throws OntoDriverException;
+	public abstract <T> void merge(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity into this module. </p>
@@ -100,8 +123,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code entity} is null
 	 */
-	public abstract <T> void persist(Object primaryKey, T entity)
-			throws OntoDriverException;
+	public abstract <T> void persist(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
 	 * Removes entity with the specified primary key from this module. </p>
@@ -132,6 +154,5 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code statement} is null
 	 */
-	public abstract ResultSet executeStatement(Statement statement)
-			throws OntoDriverException;
+	public abstract ResultSet executeStatement(Statement statement) throws OntoDriverException;
 }

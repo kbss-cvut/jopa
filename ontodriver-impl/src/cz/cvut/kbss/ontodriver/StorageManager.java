@@ -113,6 +113,27 @@ public abstract class StorageManager implements Transactional {
 	public abstract Map<URI, Context> getContextsByUris();
 
 	/**
+	 * Loads from ontology and sets value of field {@code fieldName}. </p>
+	 * 
+	 * This method is intended to be used for lazy loaded entity fields.
+	 * 
+	 * @param entity
+	 *            The entity to set field value on
+	 * @param fieldName
+	 *            Name of the field
+	 * @param context
+	 *            Context from which the field value should be loaded
+	 * @throws OntoDriverException
+	 *             If called on a closed storage manager, if the context is not
+	 *             valid or if an ontology access error occurs
+	 * @throws NullPointerException
+	 *             If {@code entity}, {@code fieldName} or {@code context} is
+	 *             null
+	 */
+	public abstract <T> void loadFieldValue(T entity, String fieldName, Context context)
+			throws OntoDriverException;
+
+	/**
 	 * Merges the state of the specified entity into the appropriate ontology.
 	 * </p>
 	 * 

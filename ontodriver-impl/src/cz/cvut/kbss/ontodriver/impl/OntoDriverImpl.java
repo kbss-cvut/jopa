@@ -100,7 +100,7 @@ public class OntoDriverImpl implements OntoDriver {
 				.entrySet()) {
 			final Constructor<? extends DriverFactory> c = e.getValue();
 			try {
-				final DriverFactory f = c.newInstance(props);
+				final DriverFactory f = c.newInstance(props, properties);
 				facts.put(e.getKey(), f);
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException e1) {
@@ -115,8 +115,8 @@ public class OntoDriverImpl implements OntoDriver {
 	 * </p>
 	 * 
 	 * The factory class is expected to have a constructor taking a list of
-	 * {@code OntologyStorageProperties} as argument. If it doesn't an exception
-	 * is thrown.
+	 * {@code OntologyStorageProperties} and a map of properties ({@code String}
+	 * to {@code String}) as arguments. If it doesn't an exception is thrown.
 	 * 
 	 * @param type
 	 *            Type of connector to associate the factory class with
@@ -137,7 +137,8 @@ public class OntoDriverImpl implements OntoDriver {
 				throw new OntoDriverException("The class " + factoryClass.getName()
 						+ " is not an implementation of DriverFactory.");
 			}
-			final Constructor<? extends DriverFactory> c = factoryClass.getConstructor(Map.class);
+			final Constructor<? extends DriverFactory> c = factoryClass.getConstructor(List.class,
+					Map.class);
 			factoryClasses.put(type, c);
 		} catch (NoSuchMethodException e) {
 			throw new OntoDriverException("The class " + factoryClass.getName()

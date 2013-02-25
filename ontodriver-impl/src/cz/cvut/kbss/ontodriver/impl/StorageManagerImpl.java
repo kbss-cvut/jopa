@@ -115,6 +115,18 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
+	public <T> void loadFieldValue(T entity, String fieldName, Context context)
+			throws OntoDriverException {
+		if (entity == null || fieldName == null || context == null) {
+			LOG.severe("Null argument passed: entity = " + entity + ", fieldName = " + fieldName
+					+ ", context = " + context);
+			throw new NullPointerException();
+		}
+		final StorageModule m = getModule(context);
+		m.loadFieldValue(entity, fieldName);
+	}
+
+	@Override
 	public <T> void merge(Object primaryKey, T entity, Context entityContext,
 			Map<String, Context> attributeContexts) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {

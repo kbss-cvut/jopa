@@ -1,25 +1,194 @@
 package cz.cvut.kbss.ontodriver.impl;
 
+import java.net.URI;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLOntologyStorageException;
+import org.semanticweb.owlapi.reasoner.InferenceType;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
+import org.semanticweb.owlapi.util.OWLOntologyMerger;
+
 import cz.cvut.kbss.ontodriver.OntoDriverException;
+import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.StorageConnector;
+import cz.cvut.kbss.ontodriver.impl.utils.OwlapiConnectorDataHolder;
 
-public class OwlapiStorageConnector implements StorageConnector {
+public abstract class OwlapiStorageConnector implements StorageConnector {
 
-	public OwlapiStorageConnector(OntologyStorageProperties storageProperties) {
-		// TODO Auto-generated constructor stub
+	protected static final Logger LOG = Logger.getLogger(OwlapiStorageConnector.class.getName());
+
+	protected final URI ontologyUri;
+
+	protected OWLReasoner reasoner;
+	protected OWLOntology workingOntology;
+	protected OWLOntology reasoningOntology;
+	protected OWLOntologyManager ontologyManager;
+	protected OWLReasonerFactory reasonerFactory;
+	protected OWLDataFactory dataFactory;
+
+	private boolean open;
+
+	public OwlapiStorageConnector(OntologyStorageProperties storageProperties,
+			Map<String, String> properties) throws OntoDriverException {
+		this.ontologyUri = storageProperties.getOntologyURI();
+		final String reasonerFactoryClass = properties
+				.get(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS);
+		try {
+			this.reasonerFactory = (OWLReasonerFactory) Class.forName(reasonerFactoryClass)
+					.newInstance();
+		} catch (Exception e) {
+			throw new OntoDriverException("Error instantiating factory " + reasonerFactoryClass
+					+ ".", e);
+		}
+
+		if (LOG.isLoggable(Level.CONFIG)) {
+			LOG.info("Loading model ontologyURI=" + storageProperties.getOntologyURI()
+					+ ", physicalURI=" + storageProperties.getPhysicalURI() + ".");
+		}
+		try {
+			initConnection(storageProperties);
+
+			this.reasoningOntology = new OWLOntologyMerger(this.ontologyManager)
+					.createMergedOntology(this.ontologyManager, IRI.create("http://temporary"));
+			LOG.info("Ontology " + storageProperties.getOntologyURI() + " succesfully loaded.");
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, null, e);
+			throw new OntoDriverException(e);
+		}
+		try {
+			this.reasoner = this.reasonerFactory.createReasoner(reasoningOntology);
+			this.reasoner.precomputeInferences(InferenceType.CLASS_ASSERTIONS);
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, e.getMessage(), e);
+		}
 	}
 
 	@Override
 	public void close() throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		this.open = false;
 	}
 
 	@Override
 	public boolean isOpen() {
-		// TODO Auto-generated method stub
-		return false;
+		return open;
 	}
 
+	public OWLReasoner getReasoner() {
+		ensureOpen();
+		return reasoner;
+	}
+
+	public OWLOntology getWorkingOntology() {
+		ensureOpen();
+		return workingOntology;
+	}
+
+	public OWLOntology getReasoningOntology() {
+		ensureOpen();
+		return reasoningOntology;
+	}
+
+	public OWLOntologyManager getOntologyManager() {
+		ensureOpen();
+		return ontologyManager;
+	}
+
+	public OWLReasonerFactory getReasonerFactory() {
+		ensureOpen();
+		return reasonerFactory;
+	}
+
+	public OWLDataFactory getDataFactory() {
+		ensureOpen();
+		return dataFactory;
+	}
+
+	/**
+	 * Clones the working ontology into a new in-memory ontology. </p>
+	 * 
+	 * Besides the working ontology a new OWLOntologyManager with OWLDataFactory
+	 * is created. Reasoner and reasoning ontology are reused from this
+	 * connector.
+	 * 
+	 * @return OwlapiConnectorDataHolder
+	 * @throws OntoDriverException
+	 *             If an error during data cloning occurs
+	 */
+	OwlapiConnectorDataHolder cloneOntologyData() throws OntoDriverException {
+		ensureOpen();
+		final Set<OWLAxiom> axioms = getWorkingOntology().getAxioms();
+		final OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+		final OWLDataFactory factory = manager.getOWLDataFactory();
+		OWLOntology ontology = null;
+		try {
+			ontology = manager.createOntology(IRI.create(ontologyUri));
+		} catch (OWLOntologyCreationException e) {
+			throw new OntoDriverException("Unable to clone working ontology.", e);
+		}
+		manager.addAxioms(ontology, axioms);
+		final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
+				.workingOntology(ontology).reasoningOntology(getReasoningOntology())
+				.ontologyManager(manager).dataFactory(factory).reasoner(getReasoner()).build();
+		return holder;
+	}
+
+	private void ensureOpen() {
+		if (!open) {
+			throw new IllegalStateException("The connector is closed.");
+		}
+	}
+
+	protected void setIriMapper(final URI logicalUri, final URI physicalUri) {
+		ontologyManager.addIRIMapper(new OWLOntologyIRIMapper() {
+			public IRI getDocumentIRI(IRI arg0) {
+				if (!logicalUri.equals(arg0.toURI())) {
+					return arg0;
+				}
+				return IRI.create(physicalUri);
+			}
+		});
+	}
+
+	/**
+	 * Saves the working ontology. </p>
+	 * 
+	 * Saving the working ontology makes changes in it persistent in the
+	 * underlying storage.
+	 * 
+	 * @throws OntoDriverException
+	 *             If an error during the save operation occurs
+	 */
+	public void saveWorkingOntology() throws OntoDriverException {
+		try {
+			ontologyManager.saveOntology(workingOntology);
+		} catch (OWLOntologyStorageException e) {
+			throw new OntoDriverException(e);
+		}
+	}
+
+	/**
+	 * Initializes connection to the storage. </p>
+	 * 
+	 * This procedure may differ according to the storage type.
+	 * 
+	 * @param storageProperties
+	 *            Storage properties
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 */
+	protected abstract void initConnection(OntologyStorageProperties storageProperties)
+			throws OntoDriverException;
 }

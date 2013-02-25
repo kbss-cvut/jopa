@@ -18,20 +18,25 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 
 	protected final Map<StorageConnector, StorageConnector> openedConnectors;
 	protected final Map<StorageModule, StorageModule> openedModules;
+	protected final Map<String, String> properties;
 
 	private boolean open;
 
-	protected DriverAbstractFactory(List<OntologyStorageProperties> storageProperties)
-			throws OntoDriverException {
+	protected DriverAbstractFactory(List<OntologyStorageProperties> storageProperties,
+			Map<String, String> properties) throws OntoDriverException {
 		if (storageProperties == null || storageProperties.isEmpty()) {
 			throw new OntoDriverException("There has to be at least one storage specified.");
 		}
 		if (DriverAbstractFactory.storageProperties == null) {
 			initFactory(storageProperties);
 		}
+		if (properties == null) {
+			properties = Collections.emptyMap();
+		}
 		this.openedConnectors = new HashMap<StorageConnector, StorageConnector>();
 		this.openedModules = new HashMap<StorageModule, StorageModule>();
 		this.open = true;
+		this.properties = properties;
 		if (contexts == null) {
 			// This should not happen but just to be sure
 			throw new OntoDriverException(new IllegalStateException(

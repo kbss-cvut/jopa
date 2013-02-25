@@ -183,6 +183,21 @@ public interface Connection extends Transactional {
 	public Context getSaveContextFor(Object entity) throws OntoDriverException;
 
 	/**
+	 * Loads from ontology and sets value of field {@code fieldName}. </p>
+	 * 
+	 * This method is intended to be used for lazy loaded field values.
+	 * 
+	 * @param entity
+	 *            Entity to set the field value on
+	 * @param fieldName
+	 *            Name of the field
+	 * @throws OntoDriverException
+	 *             If called on a closed connection, if the entity is not
+	 *             persistent or if an ontology access error occurs
+	 */
+	public <T> void loadFieldValue(T entity, String fieldName) throws OntoDriverException;
+
+	/**
 	 * Merges state of the specified entity into the storage. </p>
 	 * 
 	 * This method is meant only for merging state of existing entities, trying
