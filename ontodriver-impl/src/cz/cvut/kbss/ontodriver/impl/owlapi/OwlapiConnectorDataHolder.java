@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.impl.utils;
+package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -12,6 +12,7 @@ public final class OwlapiConnectorDataHolder {
 	private final OWLOntologyManager ontologyManager;
 	private final OWLDataFactory dataFactory;
 	private final OWLReasoner reasoner;
+	private final String lang;
 
 	OwlapiConnectorDataHolder(DataHolderBuilder builder) {
 		this.workingOntology = builder.workingOntology;
@@ -19,6 +20,7 @@ public final class OwlapiConnectorDataHolder {
 		this.ontologyManager = builder.ontologyManager;
 		this.dataFactory = builder.dataFactory;
 		this.reasoner = builder.reasoner;
+		this.lang = builder.language;
 	}
 
 	public OWLOntology getWorkingOntology() {
@@ -41,6 +43,10 @@ public final class OwlapiConnectorDataHolder {
 		return reasoner;
 	}
 
+	public String getLanguage() {
+		return lang;
+	}
+
 	public static DataHolderBuilder workingOntology(OWLOntology ontology) {
 		return new DataHolderBuilder().workingOntology(ontology);
 	}
@@ -61,12 +67,17 @@ public final class OwlapiConnectorDataHolder {
 		return new DataHolderBuilder().reasoner(reasoner);
 	}
 
+	public static DataHolderBuilder language(String language) {
+		return new DataHolderBuilder().language(language);
+	}
+
 	public static class DataHolderBuilder {
 		private OWLOntology workingOntology;
 		private OWLOntology reasoningOntology;
 		private OWLOntologyManager ontologyManager;
 		private OWLDataFactory dataFactory;
 		private OWLReasoner reasoner;
+		private String language;
 
 		DataHolderBuilder() {
 		}
@@ -93,6 +104,11 @@ public final class OwlapiConnectorDataHolder {
 
 		public DataHolderBuilder reasoner(OWLReasoner reasoner) {
 			this.reasoner = reasoner;
+			return this;
+		}
+
+		public DataHolderBuilder language(String language) {
+			this.language = language;
 			return this;
 		}
 

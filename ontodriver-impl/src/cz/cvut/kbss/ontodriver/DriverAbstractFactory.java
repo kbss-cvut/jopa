@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+
 public abstract class DriverAbstractFactory implements DriverFactory {
 
 	protected static final Logger LOG = Logger.getLogger(DriverAbstractFactory.class.getName());
@@ -147,6 +150,23 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		}
 		if (!contextsToProperties.containsKey(ctx)) {
 			throw new OntoDriverException("Context " + ctx + " not found.");
+		}
+	}
+
+	/**
+	 * Ensures that this factory is in valid state. </p>
+	 * 
+	 * @param ctx
+	 * @param metamodel
+	 * @throws OntoDriverException
+	 * @throws NullPointerException
+	 *             If {@code metamodel} is null
+	 * @see #ensureState(Context)
+	 */
+	protected void ensureState(Context ctx, Metamodel metamodel) throws OntoDriverException {
+		ensureState(ctx);
+		if (metamodel == null) {
+			throw new NullPointerException("Metamodel cannot be null.");
 		}
 	}
 

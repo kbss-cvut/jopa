@@ -1,8 +1,8 @@
-package cz.cvut.kbss.ontodriver.impl;
+package cz.cvut.kbss.ontodriver.impl.jena;
 
-import cz.cvut.kbss.ontodriver.OntoDriverException;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.StorageConnector;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class JenaStorageConnector implements StorageConnector {
 

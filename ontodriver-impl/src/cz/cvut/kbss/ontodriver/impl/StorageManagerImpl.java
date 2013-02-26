@@ -10,11 +10,11 @@ import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Context;
-import cz.cvut.kbss.ontodriver.OntoDriverException;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.StorageModule;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class StorageManagerImpl extends StorageManager {
 
@@ -232,7 +232,7 @@ public class StorageManagerImpl extends StorageManager {
 	private StorageModule getModule(Context context) throws OntoDriverException {
 		StorageModule m = modules.get(context);
 		if (m == null) {
-			m = driver.getFactory(context).createStorageModule(context, false);
+			m = driver.getFactory(context).createStorageModule(context, metamodel, false);
 			modules.put(context, m);
 		}
 		return m;

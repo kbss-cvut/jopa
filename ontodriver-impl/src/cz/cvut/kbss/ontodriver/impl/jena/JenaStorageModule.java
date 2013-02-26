@@ -1,23 +1,25 @@
-package cz.cvut.kbss.ontodriver.impl;
+package cz.cvut.kbss.ontodriver.impl.jena;
 
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
-import cz.cvut.kbss.ontodriver.OntoDriverException;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageModule;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
-public class OwlapiStorageModule extends StorageModule {
+public class JenaStorageModule extends StorageModule {
 
-	private OwlapiStorageConnector connector;
-
-	public OwlapiStorageModule(Context context, DriverFactory factory) throws OntoDriverException {
-		super(context, factory);
+	public JenaStorageModule(Context context, Metamodel metamodel, DriverFactory factory)
+			throws OntoDriverException {
+		super(context, metamodel, factory);
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public void commit() throws OntoDriverException {
-		connector.saveWorkingOntology();
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
@@ -27,8 +29,9 @@ public class OwlapiStorageModule extends StorageModule {
 	}
 
 	@Override
-	protected void initialize() throws OntoDriverException {
-		this.connector = (OwlapiStorageConnector) factory.createStorageConnector(context, false);
+	protected void initialize() {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
@@ -66,4 +69,5 @@ public class OwlapiStorageModule extends StorageModule {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

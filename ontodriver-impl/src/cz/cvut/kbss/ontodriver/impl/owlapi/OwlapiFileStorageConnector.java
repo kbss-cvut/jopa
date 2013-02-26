@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.impl;
+package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.io.File;
 import java.net.URI;
@@ -12,8 +12,8 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
-import cz.cvut.kbss.ontodriver.OntoDriverException;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
  * Implementation of OWLAPI storage connector for ontologies saved in a regular

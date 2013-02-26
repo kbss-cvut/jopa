@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
  * Represents a connection to the underlying OntoDriver. </p>

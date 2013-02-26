@@ -1,16 +1,18 @@
-package cz.cvut.kbss.ontodriver.impl;
+package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
-import cz.cvut.kbss.ontodriver.OntoDriverException;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.StorageModule;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.impl.OntoDriverImpl;
 
 public class DriverOwlapiFactory extends DriverAbstractFactory {
 
@@ -32,13 +34,13 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public StorageModule createStorageModule(Context ctx, boolean autoCommit)
+	public StorageModule createStorageModule(Context ctx, Metamodel metamodel, boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(ctx);
+		ensureState(ctx, metamodel);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLAPI storage module.");
 		}
-		final StorageModule m = new OwlapiStorageModule(ctx, this);
+		final StorageModule m = new OwlapiStorageModule(ctx, metamodel, this);
 		registerModule(m);
 		return m;
 	}

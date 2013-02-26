@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.impl;
+package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 /**
  * Type of physical storage for OWLAPI driven ontology.

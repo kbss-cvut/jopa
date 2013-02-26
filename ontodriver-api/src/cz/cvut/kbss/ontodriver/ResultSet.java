@@ -2,6 +2,8 @@ package cz.cvut.kbss.ontodriver;
 
 import java.util.Observer;
 
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+
 /**
  * Represents a set of results of a SPARQL query. </p>
  * 

@@ -1,5 +1,7 @@
 package cz.cvut.kbss.ontodriver;
 
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+
 /**
  * This interface extends the {@code Statement} and adds the possibility to
  * parameterize queries. </p>

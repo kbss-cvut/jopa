@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
  * Manages the whole underlying ontology storage which can consist of several

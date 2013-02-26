@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver;
+package cz.cvut.kbss.ontodriver.exceptions;
 
 /**
  * This exception is thrown when metamodel is not set for a Connection.

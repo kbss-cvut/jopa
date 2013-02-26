@@ -13,11 +13,11 @@ import java.util.logging.Logger;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Context;
-import cz.cvut.kbss.ontodriver.MetamodelNotSetException;
-import cz.cvut.kbss.ontodriver.OntoDriverException;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageManager;
+import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class ConnectionImpl implements Connection {
 

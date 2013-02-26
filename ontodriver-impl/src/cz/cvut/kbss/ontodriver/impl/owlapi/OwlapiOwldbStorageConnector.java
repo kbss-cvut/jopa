@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.impl;
+package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.net.URI;
 import java.util.Map;
@@ -9,8 +9,8 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
-import cz.cvut.kbss.ontodriver.OntoDriverException;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import de.fraunhofer.iitb.owldb.OWLDBManager;
 import de.fraunhofer.iitb.owldb.OWLDBOntology;
 import de.fraunhofer.iitb.owldb.OWLDBOntologyFormat;

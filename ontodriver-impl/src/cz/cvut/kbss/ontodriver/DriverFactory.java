@@ -2,6 +2,9 @@ package cz.cvut.kbss.ontodriver;
 
 import java.util.List;
 
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+
 public interface DriverFactory extends Closeable {
 
 	/**
@@ -22,6 +25,8 @@ public interface DriverFactory extends Closeable {
 	 * 
 	 * @param ctx
 	 *            Context of the module
+	 * @param metamodel
+	 *            Metamodel
 	 * @param autoCommit
 	 *            {@code true} if the module is for an auto commit operation
 	 * @return StorageModule
@@ -29,7 +34,7 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory or if an ontology access error
 	 *             occurs
 	 */
-	public StorageModule createStorageModule(Context ctx, boolean autoCommit)
+	public StorageModule createStorageModule(Context ctx, Metamodel metamodel, boolean autoCommit)
 			throws OntoDriverException;
 
 	/**

@@ -1,5 +1,7 @@
 package cz.cvut.kbss.ontodriver;
 
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+
 /**
  * Defines common interface for all transactional resources.
  * 

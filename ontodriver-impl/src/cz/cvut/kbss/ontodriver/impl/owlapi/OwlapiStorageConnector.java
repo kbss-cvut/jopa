@@ -1,6 +1,7 @@
-package cz.cvut.kbss.ontodriver.impl;
+package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -14,17 +15,17 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLOntologyRenameException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
 
-import cz.cvut.kbss.ontodriver.OntoDriverException;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.StorageConnector;
-import cz.cvut.kbss.ontodriver.impl.utils.OwlapiConnectorDataHolder;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public abstract class OwlapiStorageConnector implements StorageConnector {
 
@@ -38,12 +39,14 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 	protected OWLOntologyManager ontologyManager;
 	protected OWLReasonerFactory reasonerFactory;
 	protected OWLDataFactory dataFactory;
+	protected String language;
 
 	private boolean open;
 
 	public OwlapiStorageConnector(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		this.ontologyUri = storageProperties.getOntologyURI();
+		this.language = properties.get(OntoDriverProperties.ONTOLOGY_LANGUAGE);
 		final String reasonerFactoryClass = properties
 				.get(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS);
 		try {
@@ -141,8 +144,33 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 		manager.addAxioms(ontology, axioms);
 		final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
 				.workingOntology(ontology).reasoningOntology(getReasoningOntology())
-				.ontologyManager(manager).dataFactory(factory).reasoner(getReasoner()).build();
+				.ontologyManager(manager).dataFactory(factory).reasoner(getReasoner())
+				.language(language).build();
 		return holder;
+	}
+
+	/**
+	 * Applies the specified changes to the working ontology. </p>
+	 * 
+	 * The changes are applied but the ontology has to be explicitly saved
+	 * before the changes become persistent.
+	 * 
+	 * @param changes
+	 *            The changes to apply
+	 * @throws OntoDriverException
+	 *             If an error during application of changes occurs
+	 */
+	void applyChanges(List<OwlOntologyChangeWrapper> changes) throws OntoDriverException {
+		for (OwlOntologyChangeWrapper change : changes) {
+			if (change.getOntology().getOntologyID().equals(getWorkingOntology().getOntologyID())) {
+				change.setOntology(getWorkingOntology());
+			}
+		}
+		try {
+			getOntologyManager().applyChanges(changes);
+		} catch (OWLOntologyRenameException e) {
+			throw new OntoDriverException(e);
+		}
 	}
 
 	private void ensureOpen() {

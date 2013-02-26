@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
  * Represents an ontology data source. </p>

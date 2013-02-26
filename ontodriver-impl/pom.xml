@@ -46,5 +46,10 @@
 			<scope>compile</scope>
 			<optional>false</optional>
 		</dependency>
+  	<dependency>
+  		<groupId>cz.cvut.kbss.jopa</groupId>
+  		<artifactId>jopa-owlapi-utils</artifactId>
+  		<version>0.3-SNAPSHOT</version>
+  	</dependency>
   </dependencies>
 </project>

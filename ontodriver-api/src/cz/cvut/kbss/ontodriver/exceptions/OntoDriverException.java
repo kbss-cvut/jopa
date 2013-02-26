@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver;
+package cz.cvut.kbss.ontodriver.exceptions;
 
 import java.io.Serializable;
 

@@ -1,5 +1,7 @@
 package cz.cvut.kbss.ontodriver;
 
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+
 /**
  * Interface for closeable resources.
  * 

@@ -1,5 +1,8 @@
 package cz.cvut.kbss.ontodriver;
 
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+
 /**
  * Represents a single storage module. </p>
  * 
@@ -16,17 +19,24 @@ public abstract class StorageModule implements Transactional {
 	protected final Context context;
 	/** Backward reference to the factory */
 	protected final DriverFactory factory;
+	/** Metamodel of the entity model */
+	protected final Metamodel metamodel;
 	/** True if this module is open */
 	protected boolean open;
 
-	public StorageModule(Context context, DriverFactory factory) throws OntoDriverException {
+	public StorageModule(Context context, Metamodel metamodel, DriverFactory factory)
+			throws OntoDriverException {
 		if (context == null) {
 			throw new NullPointerException("Context cannot be null.");
+		}
+		if (metamodel == null) {
+			throw new NullPointerException("Metamodel cannot be null.");
 		}
 		if (factory == null) {
 			throw new NullPointerException("Factory cannot be null.");
 		}
 		this.context = context;
+		this.metamodel = metamodel;
 		this.factory = factory;
 		initialize();
 		this.open = true;
@@ -44,6 +54,15 @@ public abstract class StorageModule implements Transactional {
 	 */
 	public Context getContext() {
 		return context;
+	}
+
+	/**
+	 * Gets metamodel associated with this storage module.
+	 * 
+	 * @return Metamodel
+	 */
+	public Metamodel getMetamodel() {
+		return metamodel;
 	}
 
 	@Override

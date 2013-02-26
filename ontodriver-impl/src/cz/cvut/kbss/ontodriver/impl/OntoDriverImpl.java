@@ -14,10 +14,10 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.OntoDriver;
-import cz.cvut.kbss.ontodriver.OntoDriverException;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.StorageManager;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class OntoDriverImpl implements OntoDriver {
 

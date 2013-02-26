@@ -8,10 +8,10 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntoDriver;
-import cz.cvut.kbss.ontodriver.OntoDriverException;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.StorageManager;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
  * Simple data source implementation without any pooling. </p>

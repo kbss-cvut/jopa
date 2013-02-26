@@ -1,15 +1,18 @@
-package cz.cvut.kbss.ontodriver.impl;
+package cz.cvut.kbss.ontodriver.impl.jena;
 
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
-import cz.cvut.kbss.ontodriver.OntoDriverException;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.StorageModule;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.impl.OntoDriverImpl;
+import cz.cvut.kbss.ontodriver.impl.owlapi.DriverOwlapiFactory;
 
 public class DriverJenaFactory extends DriverAbstractFactory {
 
@@ -29,13 +32,13 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public StorageModule createStorageModule(Context ctx, boolean autoCommit)
+	public StorageModule createStorageModule(Context ctx, Metamodel metamodel, boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(ctx);
+		ensureState(ctx, metamodel);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage module.");
 		}
-		final JenaStorageModule m = new JenaStorageModule(ctx, this);
+		final JenaStorageModule m = new JenaStorageModule(ctx, metamodel, this);
 		registerModule(m);
 		return m;
 	}
