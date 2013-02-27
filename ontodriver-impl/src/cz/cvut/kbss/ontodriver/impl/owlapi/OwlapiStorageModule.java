@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.impl.owlapi;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageModule;
@@ -67,5 +68,13 @@ public class OwlapiStorageModule extends StorageModule {
 	public ResultSet executeStatement(Statement statement) throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	PersistenceProviderFacade getPersistenceProvider() {
+		return factory.getPersistenceProvider();
+	}
+
+	OwlapiConnectorDataHolder cloneOntologyData() throws OntoDriverException {
+		return connector.cloneOntologyData();
 	}
 }

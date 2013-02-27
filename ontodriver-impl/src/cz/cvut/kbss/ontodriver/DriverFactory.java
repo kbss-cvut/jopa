@@ -18,6 +18,17 @@ public interface DriverFactory extends Closeable {
 	public List<Context> getContexts();
 
 	/**
+	 * Retrieves persistence proxy. </p>
+	 * 
+	 * The persistence proxy represents persistence provider running above this
+	 * driver and provides some useful methods for increasing performance and
+	 * object reuse.
+	 * 
+	 * @return PersistenceProxy
+	 */
+	public PersistenceProviderFacade getPersistenceProvider();
+
+	/**
 	 * Creates and returns storage module. </p>
 	 * 
 	 * Implementations may choose to pool storage modules or create lazy loaded

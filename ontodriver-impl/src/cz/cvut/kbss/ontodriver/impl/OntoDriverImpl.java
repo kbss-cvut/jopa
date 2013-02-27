@@ -16,6 +16,7 @@ import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.OntoDriver;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -29,6 +30,8 @@ public class OntoDriverImpl implements OntoDriver {
 	private final Map<OntologyConnectorType, DriverFactory> factories;
 	/** Reference for easier access */
 	private List<Context> contexts;
+	/** Persistence provider proxy */
+	private final PersistenceProviderFacade persistence;
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties,
 			Map<String, String> properties) {
@@ -42,6 +45,8 @@ public class OntoDriverImpl implements OntoDriver {
 		this.factories = initFactories(storageProperties);
 		// Get contexts from the first available factory
 		this.contexts = factories.values().iterator().next().getContexts();
+		// TODO Init the proxy
+		this.persistence = null;
 	}
 
 	/**
@@ -60,7 +65,7 @@ public class OntoDriverImpl implements OntoDriver {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating storage manager.");
 		}
-		final StorageManager m = new StorageManagerImpl(metamodel, contexts);
+		final StorageManager m = new StorageManagerImpl(metamodel, contexts, this);
 		return m;
 	}
 
@@ -100,7 +105,7 @@ public class OntoDriverImpl implements OntoDriver {
 				.entrySet()) {
 			final Constructor<? extends DriverFactory> c = e.getValue();
 			try {
-				final DriverFactory f = c.newInstance(props, properties);
+				final DriverFactory f = c.newInstance(props, properties, persistence);
 				facts.put(e.getKey(), f);
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException e1) {
@@ -138,7 +143,7 @@ public class OntoDriverImpl implements OntoDriver {
 						+ " is not an implementation of DriverFactory.");
 			}
 			final Constructor<? extends DriverFactory> c = factoryClass.getConstructor(List.class,
-					Map.class);
+					Map.class, PersistenceProviderFacade.class);
 			factoryClasses.put(type, c);
 		} catch (NoSuchMethodException e) {
 			throw new OntoDriverException("The class " + factoryClass.getName()

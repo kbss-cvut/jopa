@@ -51,16 +51,17 @@ class ModuleInternalImpl implements ModuleInternal {
 
 	private static final Logger LOG = Logger.getLogger(ModuleInternalImpl.class.getName());
 
-	private final OWLOntology workingOntology;
-	private final OWLOntology reasoningOntology;
-	private final OWLOntologyManager ontologyManager;
-	private final OWLDataFactory dataFactory;
-	private final OWLReasoner reasoner;
-	private final String lang;
+	private OWLOntology workingOntology;
+	private OWLOntology reasoningOntology;
+	private OWLOntologyManager ontologyManager;
+	private OWLDataFactory dataFactory;
+	private OWLReasoner reasoner;
+	private String lang;
 
 	private final OwlapiStorageModule storageModule;
 
 	private List<OwlOntologyChangeWrapper> changes;
+	private boolean usingOriginalOntology;
 
 	ModuleInternalImpl(OwlapiConnectorDataHolder dataHolder, OwlapiStorageModule storageModule) {
 		super();
@@ -73,6 +74,7 @@ class ModuleInternalImpl implements ModuleInternal {
 		this.reasoner = dataHolder.getReasoner();
 		this.lang = dataHolder.getLanguage();
 		this.storageModule = storageModule;
+		this.usingOriginalOntology = true;
 		resetChanges();
 	}
 
@@ -92,19 +94,19 @@ class ModuleInternalImpl implements ModuleInternal {
 	@Override
 	public <T> void persistEntity(T entity, Object primaryKey) throws OntoDriverException {
 		// TODO Auto-generated method stub
-
+		checkStatus();
 	}
 
 	@Override
 	public <T> void mergeEntity(T entity, Object primaryKey) throws OntoDriverException {
 		// TODO Auto-generated method stub
-
+		checkStatus();
 	}
 
 	@Override
 	public void removeEntity(Object primaryKey) throws OntoDriverException {
 		// TODO Auto-generated method stub
-
+		checkStatus();
 	}
 
 	@Override
@@ -118,6 +120,34 @@ class ModuleInternalImpl implements ModuleInternal {
 		final List<OwlOntologyChangeWrapper> toReturn = changes;
 		resetChanges();
 		return toReturn;
+	}
+
+	/**
+	 * Checks whether this instance is using original ontology or its clone.
+	 * </p>
+	 * 
+	 * This method has to be called at the beginning of every operation that can
+	 * modify the state of the ontology. In this case this method checks whether
+	 * the original ontology is in use and if so it is cloned and replaced with
+	 * this clone so that the original ontology remains untouched. </p>
+	 * 
+	 * The reason for this is performance since there is no need to clone the
+	 * ontology as long as there are only retrieval calls.
+	 * 
+	 * @throws OntoDriverException
+	 *             If the cloning fails
+	 */
+	private void checkStatus() throws OntoDriverException {
+		if (usingOriginalOntology) {
+			final OwlapiConnectorDataHolder holder = storageModule.cloneOntologyData();
+			this.workingOntology = holder.getWorkingOntology();
+			this.reasoningOntology = holder.getReasoningOntology();
+			this.ontologyManager = holder.getOntologyManager();
+			this.dataFactory = holder.getDataFactory();
+			this.reasoner = holder.getReasoner();
+			this.lang = holder.getLanguage();
+			this.usingOriginalOntology = false;
+		}
 	}
 
 	/**
@@ -334,6 +364,77 @@ class ModuleInternalImpl implements ModuleInternal {
 	}
 
 	/**
+	 * Loads non-inferred data and object properties for the specified
+	 * {@code entity}. </p>
+	 * 
+	 * @param entity
+	 *            Entity
+	 * @param entityType
+	 *            Metamodel entity type
+	 * @param individual
+	 *            OWL Individual
+	 * @param properties
+	 *            Properties specification
+	 * @return Map of properties
+	 */
+	private Map<String, Set<String>> loadNonInferredPropertiesReference(Object entity,
+			EntityType<?> entityType, OWLNamedIndividual individual,
+			PropertiesSpecification<?, ?> properties) {
+		final Map<String, Set<String>> map = new HashMap<String, Set<String>>();
+		for (final OWLObjectPropertyAssertionAxiom ax : workingOntology
+				.getObjectPropertyAssertionAxioms(individual)) { //
+			if (ax.getProperty().isAnonymous()) {
+				continue;
+			}
+			final IRI propIRI = ax.getProperty().asOWLObjectProperty().getIRI();
+
+			boolean found = false;
+			for (final Attribute<?, ?> a : entityType.getAttributes()) {
+				if (a.getIRI().toString().equals(propIRI.toString())) {
+					found = true;
+					break;
+				}
+			}
+			if (found) {
+				continue;
+			}
+
+			Set<String> set = map.get(propIRI.toString());
+			if (set == null) {
+				set = new HashSet<String>();
+				map.put(propIRI.toString(), set);
+			}
+			set.add(ax.getObject().asOWLNamedIndividual().getIRI().toString());
+		}
+		for (final OWLDataPropertyAssertionAxiom ax : workingOntology
+				.getDataPropertyAssertionAxioms(individual)) {
+			if (ax.getProperty().isAnonymous()) {
+				continue;
+			}
+			final IRI propIRI = ax.getProperty().asOWLDataProperty().getIRI();
+
+			boolean found = false;
+			for (final Attribute<?, ?> a : entityType.getAttributes()) {
+				if (a.getIRI().equals(propIRI)) {
+					found = true;
+					break;
+				}
+			}
+			if (found) {
+				continue;
+			}
+
+			Set<String> set = map.get(propIRI.toString());
+			if (set == null) {
+				set = new HashSet<String>();
+				map.put(propIRI.toString(), set);
+			}
+			set.add(DatatypeTransformer.transform(ax.getObject()).toString());
+		}
+		return map;
+	}
+
+	/**
 	 * Loads references for the specified {@code entity}. </p>
 	 * 
 	 * The references in this context mean other entities referenced from the
@@ -350,9 +451,10 @@ class ModuleInternalImpl implements ModuleInternal {
 	 * @param alwaysLoad
 	 *            True if object references should be always loaded (despite the
 	 *            lazy loading settings)
+	 * @throws OntoDriverException
 	 */
 	private void _loadReference(Object entity, OWLNamedIndividual individual, IRI primaryKey,
-			Attribute<?, ?> field, boolean alwaysLoad) {
+			Attribute<?, ?> field, boolean alwaysLoad) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("Loading " + field + " reference of " + entity);
 		}
@@ -444,8 +546,6 @@ class ModuleInternalImpl implements ModuleInternal {
 			throw new OwlModuleException(e);
 		} catch (IllegalAccessException e) {
 			throw new OwlModuleException(e);
-		} catch (InterruptedException e) {
-			throw new OwlModuleException(e);
 		}
 		checkIntegrityConstraints(entity, primaryKey, field);
 	}
@@ -498,16 +598,15 @@ class ModuleInternalImpl implements ModuleInternal {
 	 *            OWL ontology individual
 	 * @param iri
 	 *            IRI of the individual TODO
+	 * @throws OntoDriverException
 	 */
 	private <T> T getJavaInstanceForOWLIndividual(final Class<T> cls,
-			final OWLNamedIndividual individual, IRI iri) {
+			final OWLNamedIndividual individual, IRI iri) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINEST))
 			LOG.finest("Getting " + individual + " of " + cls);
-		if (this.session.getLiveObjectCache().contains(cls, individual.getIRI())) {
-			Object ob = this.session.getLiveObjectCache().get(cls, individual.getIRI());
-			if (ob == null) {
-				throw new OWLPersistenceException();
-			}
+		Object ob = storageModule.getPersistenceProvider().getEntityFromLiveObjectCache(cls,
+				individual.getIRI());
+		if (ob != null) {
 			if (cls.equals(ob.getClass())) {
 				if (LOG.isLoggable(Level.FINE))
 					LOG.fine("Found " + ob + ", casting to " + cls);
@@ -520,77 +619,6 @@ class ModuleInternalImpl implements ModuleInternal {
 		} else {
 			return loadAndReconstructEntity(cls, individual.getIRI());
 		}
-	}
-
-	/**
-	 * Loads non-inferred data and object properties for the specified
-	 * {@code entity}. </p>
-	 * 
-	 * @param entity
-	 *            Entity
-	 * @param entityType
-	 *            Metamodel entity type
-	 * @param individual
-	 *            OWL Individual
-	 * @param properties
-	 *            Properties specification
-	 * @return Map of properties
-	 */
-	private Map<String, Set<String>> loadNonInferredPropertiesReference(Object entity,
-			EntityType<?> entityType, OWLNamedIndividual individual,
-			PropertiesSpecification<?, ?> properties) {
-		final Map<String, Set<String>> map = new HashMap<String, Set<String>>();
-		for (final OWLObjectPropertyAssertionAxiom ax : workingOntology
-				.getObjectPropertyAssertionAxioms(individual)) { //
-			if (ax.getProperty().isAnonymous()) {
-				continue;
-			}
-			final IRI propIRI = ax.getProperty().asOWLObjectProperty().getIRI();
-
-			boolean found = false;
-			for (final Attribute<?, ?> a : entityType.getAttributes()) {
-				if (a.getIRI().toString().equals(propIRI.toString())) {
-					found = true;
-					break;
-				}
-			}
-			if (found) {
-				continue;
-			}
-
-			Set<String> set = map.get(propIRI.toString());
-			if (set == null) {
-				set = new HashSet<String>();
-				map.put(propIRI.toString(), set);
-			}
-			set.add(ax.getObject().asOWLNamedIndividual().getIRI().toString());
-		}
-		for (final OWLDataPropertyAssertionAxiom ax : workingOntology
-				.getDataPropertyAssertionAxioms(individual)) {
-			if (ax.getProperty().isAnonymous()) {
-				continue;
-			}
-			final IRI propIRI = ax.getProperty().asOWLDataProperty().getIRI();
-
-			boolean found = false;
-			for (final Attribute<?, ?> a : entityType.getAttributes()) {
-				if (a.getIRI().equals(propIRI)) {
-					found = true;
-					break;
-				}
-			}
-			if (found) {
-				continue;
-			}
-
-			Set<String> set = map.get(propIRI.toString());
-			if (set == null) {
-				set = new HashSet<String>();
-				map.put(propIRI.toString(), set);
-			}
-			set.add(DatatypeTransformer.transform(ax.getObject()).toString());
-		}
-		return map;
 	}
 
 	/**
@@ -693,8 +721,7 @@ class ModuleInternalImpl implements ModuleInternal {
 	 * @return OWLLiteral
 	 */
 	private OWLLiteral getDataProperty(final OWLNamedIndividual subject,
-			final org.semanticweb.owlapi.model.OWLDataProperty property, boolean inferred)
-			throws InterruptedException {
+			final org.semanticweb.owlapi.model.OWLDataProperty property, boolean inferred) {
 		for (final OWLDataPropertyAssertionAxiom axiom : workingOntology
 				.getDataPropertyAssertionAxioms(subject)) {
 			if (axiom.getProperty().equals(property) && axiom.getSubject().equals(subject)) {
@@ -749,8 +776,7 @@ class ModuleInternalImpl implements ModuleInternal {
 	 * @return OWLIndividual
 	 */
 	private OWLIndividual getObjectProperty(final OWLIndividual subject,
-			final org.semanticweb.owlapi.model.OWLObjectProperty property, boolean inferred)
-			throws InterruptedException {
+			final org.semanticweb.owlapi.model.OWLObjectProperty property, boolean inferred) {
 		for (final OWLObjectPropertyAssertionAxiom axiom : workingOntology
 				.getObjectPropertyAssertionAxioms(subject)) {
 			if (axiom.getProperty().equals(property) && axiom.getSubject().equals(subject)) {
@@ -813,7 +839,7 @@ class ModuleInternalImpl implements ModuleInternal {
 			final org.semanticweb.owlapi.model.OWLClass owlList,
 			final org.semanticweb.owlapi.model.OWLObjectProperty hasContents,
 			final org.semanticweb.owlapi.model.OWLObjectProperty hasNext, boolean inferred)
-			throws InterruptedException {
+			throws OntoDriverException {
 		final List<T> lst = new ArrayList<T>();
 		OWLIndividual seq = getObjectProperty(subject, hasSequence, inferred);
 		while (seq != null) {
@@ -838,7 +864,7 @@ class ModuleInternalImpl implements ModuleInternal {
 	private <T> List<T> getSimpleList(final OWLNamedIndividual subject, IRI iri,
 			final Class<T> type, final org.semanticweb.owlapi.model.OWLObjectProperty hasSequence,
 			final org.semanticweb.owlapi.model.OWLObjectProperty hasNext, boolean inferred)
-			throws InterruptedException {
+			throws OntoDriverException {
 		final List<T> lst = new ArrayList<T>();
 
 		OWLIndividual o = getObjectProperty(subject, hasSequence, inferred);

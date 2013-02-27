@@ -10,6 +10,7 @@ import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.OntoDriverImpl;
@@ -29,8 +30,9 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 	}
 
 	public DriverOwlapiFactory(List<OntologyStorageProperties> storageProperties,
-			Map<String, String> properties) throws OntoDriverException {
-		super(storageProperties, properties);
+			Map<String, String> properties, PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException {
+		super(storageProperties, properties, persistenceProvider);
 	}
 
 	@Override

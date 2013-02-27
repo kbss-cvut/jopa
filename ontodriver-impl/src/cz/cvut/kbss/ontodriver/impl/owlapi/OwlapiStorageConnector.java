@@ -120,6 +120,24 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 	}
 
 	/**
+	 * Gets data holder containing original connector. </p>
+	 * 
+	 * In contrast to {@link #cloneOntologyData()} this method return the
+	 * original ontology structures.
+	 * 
+	 * @return OwlapiConnectorDataHolder
+	 * @see #cloneOntologyData()
+	 */
+	OwlapiConnectorDataHolder getOntologyData() {
+		ensureOpen();
+		final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
+				.workingOntology(workingOntology).reasoningOntology(reasoningOntology)
+				.ontologyManager(ontologyManager).dataFactory(dataFactory).language(language)
+				.reasoner(reasoner).build();
+		return holder;
+	}
+
+	/**
 	 * Clones the working ontology into a new in-memory ontology. </p>
 	 * 
 	 * Besides the working ontology a new OWLOntologyManager with OWLDataFactory

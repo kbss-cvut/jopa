@@ -22,16 +22,21 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	protected final Map<StorageConnector, StorageConnector> openedConnectors;
 	protected final Map<StorageModule, StorageModule> openedModules;
 	protected final Map<String, String> properties;
+	protected final PersistenceProviderFacade persistenceProvider;
 
 	private boolean open;
 
 	protected DriverAbstractFactory(List<OntologyStorageProperties> storageProperties,
-			Map<String, String> properties) throws OntoDriverException {
+			Map<String, String> properties, PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException {
 		if (storageProperties == null || storageProperties.isEmpty()) {
 			throw new OntoDriverException("There has to be at least one storage specified.");
 		}
 		if (DriverAbstractFactory.storageProperties == null) {
 			initFactory(storageProperties);
+		}
+		if (persistenceProvider == null) {
+			throw new NullPointerException("PersistenceProvider cannot be null.");
 		}
 		if (properties == null) {
 			properties = Collections.emptyMap();
@@ -40,6 +45,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		this.openedModules = new HashMap<StorageModule, StorageModule>();
 		this.open = true;
 		this.properties = properties;
+		this.persistenceProvider = persistenceProvider;
 		if (contexts == null) {
 			// This should not happen but just to be sure
 			throw new OntoDriverException(new IllegalStateException(
@@ -50,6 +56,11 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	@Override
 	public List<Context> getContexts() {
 		return Collections.unmodifiableList(contexts);
+	}
+
+	@Override
+	public PersistenceProviderFacade getPersistenceProvider() {
+		return persistenceProvider;
 	}
 
 	@Override

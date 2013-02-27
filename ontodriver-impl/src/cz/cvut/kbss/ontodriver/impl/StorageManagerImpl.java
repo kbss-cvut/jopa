@@ -21,7 +21,7 @@ public class StorageManagerImpl extends StorageManager {
 	private static final Logger LOG = Logger.getLogger(StorageManagerImpl.class.getName());
 
 	/** Reference to the driver */
-	private OntoDriverImpl driver;
+	private final OntoDriverImpl driver;
 
 	/** Contexts sorted by priority */
 	private List<Context> contexts;
@@ -39,7 +39,7 @@ public class StorageManagerImpl extends StorageManager {
 	 * @param contexts
 	 *            List of available contexts
 	 */
-	public StorageManagerImpl(Metamodel metamodel, List<Context> contexts) {
+	public StorageManagerImpl(Metamodel metamodel, List<Context> contexts, OntoDriverImpl driver) {
 		super(metamodel);
 		if (contexts == null) {
 			throw new NullPointerException();
@@ -47,8 +47,12 @@ public class StorageManagerImpl extends StorageManager {
 		if (contexts.isEmpty()) {
 			throw new IllegalArgumentException("Contexts list cannot be empty.");
 		}
+		if (driver == null) {
+			throw new NullPointerException();
+		}
 		this.contexts = contexts;
 		this.modulesWithChanges = new HashMap<Context, StorageModule>();
+		this.driver = driver;
 		initModules();
 	}
 
@@ -236,12 +240,5 @@ public class StorageManagerImpl extends StorageManager {
 			modules.put(context, m);
 		}
 		return m;
-	}
-
-	public void setDriver(OntoDriverImpl driver) {
-		if (driver == null) {
-			throw new NullPointerException();
-		}
-		this.driver = driver;
 	}
 }
