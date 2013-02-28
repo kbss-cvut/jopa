@@ -695,7 +695,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 					case referenced:
 						setReferencedList(object, clazz2, lst, op, c(la.getOWLListClass()),
 								op(la.getOWLPropertyHasContentsIRI()),
-								op(la.getOWLObjectPropertyHasNextIRI()), uow);
+								op(la.getOWLObjectPropertyHasNextIRI()));
 						break;
 					case simple:
 						setSimpleList(object, clazz2, lst, op,
@@ -960,7 +960,7 @@ public class OWLOntologyAccessor implements TransactionOntologyAccessor {
 			final org.semanticweb.owlapi.model.OWLObjectProperty hasSequence,
 			final org.semanticweb.owlapi.model.OWLClass owlList,
 			final org.semanticweb.owlapi.model.OWLObjectProperty hasContents,
-			final org.semanticweb.owlapi.model.OWLObjectProperty hasNext, UnitOfWork uow)
+			final org.semanticweb.owlapi.model.OWLObjectProperty hasNext)
 			throws InterruptedException {
 		if (LOG.isLoggable(Level.FINE))
 			LOG.fine("Setting referenced list " + o + ", sequence=" + sequence);
