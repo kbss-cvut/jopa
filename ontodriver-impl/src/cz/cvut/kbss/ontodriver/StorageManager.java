@@ -4,7 +4,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -20,14 +20,14 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  */
 public abstract class StorageManager implements Transactional {
 
-	protected final Metamodel metamodel;
+	protected final PersistenceProviderFacade persistenceProvider;
 	protected boolean open;
 
-	public StorageManager(Metamodel metamodel) {
-		if (metamodel == null) {
+	public StorageManager(PersistenceProviderFacade persistenceProvider) {
+		if (persistenceProvider == null) {
 			throw new NullPointerException("Metamodel is cannot be null.");
 		}
-		this.metamodel = metamodel;
+		this.persistenceProvider = persistenceProvider;
 		this.open = true;
 	}
 
@@ -220,4 +220,20 @@ public abstract class StorageManager implements Transactional {
 	 */
 	public abstract void remove(Object primaryKey, Context entityContext)
 			throws OntoDriverException;
+
+	/**
+	 * Ensures that this storage manager is in valid status.
+	 * 
+	 * @throws OntoDriverException
+	 * @throws MetamodelNotSetException
+	 */
+	protected void ensureState() throws OntoDriverException, MetamodelNotSetException {
+		if (!open) {
+			throw new OntoDriverException(
+					new IllegalStateException("The StorageManager is closed."));
+		}
+		if (persistenceProvider == null || persistenceProvider.getMetamodel() == null) {
+			throw new MetamodelNotSetException();
+		}
+	}
 }

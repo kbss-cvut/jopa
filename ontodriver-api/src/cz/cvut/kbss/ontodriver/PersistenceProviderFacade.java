@@ -1,5 +1,7 @@
 package cz.cvut.kbss.ontodriver;
 
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+
 /**
  * Represents the persistence provider.
  * 
@@ -7,6 +9,13 @@ package cz.cvut.kbss.ontodriver;
  * 
  */
 public interface PersistenceProviderFacade {
+
+	/**
+	 * Gets metamodel of this persistence provider.
+	 * 
+	 * @return Metamodel
+	 */
+	public Metamodel getMetamodel();
 
 	/**
 	 * Retrieves entity with the specified {@code primaryKey} from the second

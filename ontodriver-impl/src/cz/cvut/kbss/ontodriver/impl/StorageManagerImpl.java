@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageManager;
@@ -39,8 +39,9 @@ public class StorageManagerImpl extends StorageManager {
 	 * @param contexts
 	 *            List of available contexts
 	 */
-	public StorageManagerImpl(Metamodel metamodel, List<Context> contexts, OntoDriverImpl driver) {
-		super(metamodel);
+	public StorageManagerImpl(PersistenceProviderFacade persistenceProvider,
+			List<Context> contexts, OntoDriverImpl driver) {
+		super(persistenceProvider);
 		if (contexts == null) {
 			throw new NullPointerException();
 		}
@@ -74,7 +75,7 @@ public class StorageManagerImpl extends StorageManager {
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Committing changes.");
 		}
-		ensureOpen();
+		ensureState();
 		commitInternal();
 	}
 
@@ -94,7 +95,7 @@ public class StorageManagerImpl extends StorageManager {
 			LOG.finer("Retrieving entity with primary key " + primaryKey + " from context "
 					+ entityContext);
 		}
-		ensureOpen();
+		ensureState();
 		if (cls == null || primaryKey == null || entityContext == null || attributeContexts == null) {
 			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey
 					+ ", entityContext = " + entityContext + ", attributeContexts = "
@@ -137,7 +138,7 @@ public class StorageManagerImpl extends StorageManager {
 			LOG.finer("Merging entity with primary key " + primaryKey + " into context "
 					+ entityContext);
 		}
-		ensureOpen();
+		ensureState();
 		if (primaryKey == null || entity == null || entityContext == null
 				|| attributeContexts == null) {
 			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", entity = " + entity
@@ -157,7 +158,7 @@ public class StorageManagerImpl extends StorageManager {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Persisting entity into context " + entityContext);
 		}
-		ensureOpen();
+		ensureState();
 		if (entity == null || entityContext == null || attributeContexts == null) {
 			LOG.severe("Null argument passed: entity = " + entity + ", entityContext = "
 					+ entityContext + ", attributeContexts = " + attributeContexts);
@@ -175,7 +176,7 @@ public class StorageManagerImpl extends StorageManager {
 			LOG.finer("Removing entity with primary key " + primaryKey + " from context "
 					+ entityContext);
 		}
-		ensureOpen();
+		ensureState();
 		if (primaryKey == null || entityContext == null) {
 			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", entityContext = "
 					+ entityContext);
@@ -191,7 +192,7 @@ public class StorageManagerImpl extends StorageManager {
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Rolling back changes.");
 		}
-		ensureOpen();
+		ensureState();
 		rollbackInternal();
 	}
 
@@ -216,13 +217,6 @@ public class StorageManagerImpl extends StorageManager {
 		}
 	}
 
-	private void ensureOpen() throws OntoDriverException {
-		if (!open) {
-			throw new OntoDriverException(
-					new IllegalStateException("The StorageManager is closed."));
-		}
-	}
-
 	private void initModules() {
 		this.uriToContext = new HashMap<URI, Context>(contexts.size());
 		this.modules = new HashMap<Context, StorageModule>(contexts.size());
@@ -236,7 +230,7 @@ public class StorageManagerImpl extends StorageManager {
 	private StorageModule getModule(Context context) throws OntoDriverException {
 		StorageModule m = modules.get(context);
 		if (m == null) {
-			m = driver.getFactory(context).createStorageModule(context, metamodel, false);
+			m = driver.getFactory(context).createStorageModule(context, persistenceProvider, false);
 			modules.put(context, m);
 		}
 		return m;

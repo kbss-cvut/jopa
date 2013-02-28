@@ -12,6 +12,7 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
@@ -122,7 +123,7 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 	/**
 	 * Gets data holder containing original connector. </p>
 	 * 
-	 * In contrast to {@link #cloneOntologyData()} this method return the
+	 * In contrast to {@link #cloneOntologyData()} this method returns the
 	 * original ontology structures.
 	 * 
 	 * @return OwlapiConnectorDataHolder
@@ -178,10 +179,11 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 	 * @throws OntoDriverException
 	 *             If an error during application of changes occurs
 	 */
-	void applyChanges(List<OwlOntologyChangeWrapper> changes) throws OntoDriverException {
-		for (OwlOntologyChangeWrapper change : changes) {
+	void applyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
+		for (OWLOntologyChange change : changes) {
 			if (change.getOntology().getOntologyID().equals(getWorkingOntology().getOntologyID())) {
-				change.setOntology(getWorkingOntology());
+				assert (change instanceof OntologyMutable);
+				((OntologyMutable) change).setOntology(getWorkingOntology());
 			}
 		}
 		try {

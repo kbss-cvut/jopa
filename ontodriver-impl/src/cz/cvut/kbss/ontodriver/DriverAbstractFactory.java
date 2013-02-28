@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public abstract class DriverAbstractFactory implements DriverFactory {
@@ -22,21 +21,16 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	protected final Map<StorageConnector, StorageConnector> openedConnectors;
 	protected final Map<StorageModule, StorageModule> openedModules;
 	protected final Map<String, String> properties;
-	protected final PersistenceProviderFacade persistenceProvider;
 
 	private boolean open;
 
 	protected DriverAbstractFactory(List<OntologyStorageProperties> storageProperties,
-			Map<String, String> properties, PersistenceProviderFacade persistenceProvider)
-			throws OntoDriverException {
+			Map<String, String> properties) throws OntoDriverException {
 		if (storageProperties == null || storageProperties.isEmpty()) {
 			throw new OntoDriverException("There has to be at least one storage specified.");
 		}
 		if (DriverAbstractFactory.storageProperties == null) {
 			initFactory(storageProperties);
-		}
-		if (persistenceProvider == null) {
-			throw new NullPointerException("PersistenceProvider cannot be null.");
 		}
 		if (properties == null) {
 			properties = Collections.emptyMap();
@@ -45,7 +39,6 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		this.openedModules = new HashMap<StorageModule, StorageModule>();
 		this.open = true;
 		this.properties = properties;
-		this.persistenceProvider = persistenceProvider;
 		if (contexts == null) {
 			// This should not happen but just to be sure
 			throw new OntoDriverException(new IllegalStateException(
@@ -56,11 +49,6 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	@Override
 	public List<Context> getContexts() {
 		return Collections.unmodifiableList(contexts);
-	}
-
-	@Override
-	public PersistenceProviderFacade getPersistenceProvider() {
-		return persistenceProvider;
 	}
 
 	@Override
@@ -168,16 +156,17 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 * Ensures that this factory is in valid state. </p>
 	 * 
 	 * @param ctx
-	 * @param metamodel
+	 * @param persistenceProvider
 	 * @throws OntoDriverException
 	 * @throws NullPointerException
 	 *             If {@code metamodel} is null
 	 * @see #ensureState(Context)
 	 */
-	protected void ensureState(Context ctx, Metamodel metamodel) throws OntoDriverException {
+	protected void ensureState(Context ctx, PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException {
 		ensureState(ctx);
-		if (metamodel == null) {
-			throw new NullPointerException("Metamodel cannot be null.");
+		if (persistenceProvider == null) {
+			throw new NullPointerException("PersistenceProvider cannot be null.");
 		}
 	}
 

@@ -13,7 +13,7 @@ import org.semanticweb.owlapi.model.OWLOntologyChangeVisitorEx;
  * @author kidney
  * 
  */
-public class OwlOntologyChangeWrapper extends OWLOntologyChange {
+class OwlOntologyChangeWrapper extends OWLOntologyChange implements OntologyMutable {
 
 	private final OWLOntologyChange change;
 	private OWLOntology ontology;
@@ -61,6 +61,7 @@ public class OwlOntologyChangeWrapper extends OWLOntologyChange {
 		return ontology;
 	}
 
+	@Override
 	public void setOntology(OWLOntology ontology) {
 		this.ontology = ontology;
 	}

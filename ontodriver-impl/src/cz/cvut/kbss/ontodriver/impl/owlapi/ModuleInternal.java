@@ -2,6 +2,8 @@ package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.util.List;
 
+import org.semanticweb.owlapi.model.OWLOntologyChange;
+
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 interface ModuleInternal {
@@ -19,37 +21,37 @@ interface ModuleInternal {
 	 * @throws NullPointerException
 	 *             If {@code cls} or {@code primaryKey} is null
 	 */
-	public <T> T readEntity(Class<T> cls, Object primaryKey) throws OntoDriverException;
+	public <T> T findEntity(Class<T> cls, Object primaryKey) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>
-	 * 
-	 * @param entity
-	 *            The entity to persist
 	 * @param primaryKey
 	 *            Primary key of the entity. Optional, if the primary key is not
 	 *            specified it will be generated and set on the entity
+	 * @param entity
+	 *            The entity to persist
+	 * 
 	 * @throws OntoDriverException
 	 *             If an error occurs during persist
 	 * @throws NullPointerException
 	 *             If {@code entity} is null
 	 */
-	public <T> void persistEntity(T entity, Object primaryKey) throws OntoDriverException;
+	public <T> void persistEntity(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
 	 * Merges state of the specified entity into this module. </p>
-	 * 
-	 * @param entity
-	 *            The entity to merge
 	 * @param primaryKey
 	 *            Primary key
+	 * @param entity
+	 *            The entity to merge
+	 * 
 	 * @throws OntoDriverException
 	 *             If the entity is not persistent or if an error occurs during
 	 *             merge
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code primaryKey} is null
 	 */
-	public <T> void mergeEntity(T entity, Object primaryKey) throws OntoDriverException;
+	public <T> void mergeEntity(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
 	 * Removes entity with the specified primary key. </p>
@@ -90,5 +92,10 @@ interface ModuleInternal {
 	 * 
 	 * @return List of changes applied since last call of this method
 	 */
-	public List<OwlOntologyChangeWrapper> commitAndRetrieveChanges();
+	public List<OWLOntologyChange> commitAndRetrieveChanges();
+
+	/**
+	 * Rolls back all pending changes.
+	 */
+	public void rollback();
 }

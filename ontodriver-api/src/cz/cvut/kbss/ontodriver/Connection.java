@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -400,21 +399,6 @@ public interface Connection extends Transactional {
 	 *             an ontology access error occurs
 	 */
 	public void setConnectionContext(URI context) throws OntoDriverException;
-
-	/**
-	 * Sets metamodel for this connection. </p>
-	 * 
-	 * The metamodel is essential for operations that return or require working
-	 * with typed entities, since the driver needs to work with the entity's
-	 * ontology attributes, e. g. data properties, references.
-	 * 
-	 * @param metamodel
-	 *            {@code Metamodel}
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 */
-	public void setMetamodel(Metamodel metamodel) throws OntoDriverException;
 
 	/**
 	 * Sets saving context for the specified entity. </p>

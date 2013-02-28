@@ -1,6 +1,5 @@
 package cz.cvut.kbss.ontodriver;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -37,11 +36,12 @@ public interface OntoDriver {
 	 * each {@code Connection} or can keep a pool of them (similar to JPA's
 	 * DataSource).
 	 * 
-	 * @param metamodel
-	 *            Metamodel of the entity classes
+	 * @param persistenceProvider
+	 *            Facade representing the persistence provider
 	 * @return {@code StorageManager}
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
 	 */
-	public StorageManager acquireStorageManager(Metamodel metamodel) throws OntoDriverException;
+	public StorageManager acquireStorageManager(PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException;
 }

@@ -20,30 +20,30 @@ public abstract class StorageModule implements Transactional {
 	/** Backward reference to the factory */
 	protected final DriverFactory factory;
 	/** Metamodel of the entity model */
-	protected final Metamodel metamodel;
+	protected final PersistenceProviderFacade persistenceProvider;
 	/** True if this module is open */
 	protected boolean open;
 
-	public StorageModule(Context context, Metamodel metamodel, DriverFactory factory)
-			throws OntoDriverException {
+	public StorageModule(Context context, PersistenceProviderFacade persistenceProvider,
+			DriverFactory factory) throws OntoDriverException {
 		if (context == null) {
 			throw new NullPointerException("Context cannot be null.");
 		}
-		if (metamodel == null) {
-			throw new NullPointerException("Metamodel cannot be null.");
+		if (persistenceProvider == null) {
+			throw new NullPointerException("PersistenceProvider cannot be null.");
 		}
 		if (factory == null) {
 			throw new NullPointerException("Factory cannot be null.");
 		}
 		this.context = context;
-		this.metamodel = metamodel;
+		this.persistenceProvider = persistenceProvider;
 		this.factory = factory;
 		initialize();
 		this.open = true;
 	}
 
 	@Override
-	public void close() {
+	public void close() throws OntoDriverException {
 		this.open = false;
 	}
 
@@ -62,7 +62,7 @@ public abstract class StorageModule implements Transactional {
 	 * @return Metamodel
 	 */
 	public Metamodel getMetamodel() {
-		return metamodel;
+		return persistenceProvider.getMetamodel();
 	}
 
 	@Override
@@ -174,4 +174,17 @@ public abstract class StorageModule implements Transactional {
 	 *             If {@code statement} is null
 	 */
 	public abstract ResultSet executeStatement(Statement statement) throws OntoDriverException;
+
+	/**
+	 * Ensures that this module is in valid state.
+	 * 
+	 * @throws OntoDriverException
+	 *             If not in valid state
+	 */
+	protected void ensureOpen() throws OntoDriverException {
+		if (!open) {
+			throw new OntoDriverException(
+					new IllegalStateException("The storage module is closed."));
+		}
+	}
 }

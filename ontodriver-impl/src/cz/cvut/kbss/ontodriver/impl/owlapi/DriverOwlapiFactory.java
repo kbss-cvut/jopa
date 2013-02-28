@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
@@ -30,19 +29,19 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 	}
 
 	public DriverOwlapiFactory(List<OntologyStorageProperties> storageProperties,
-			Map<String, String> properties, PersistenceProviderFacade persistenceProvider)
-			throws OntoDriverException {
-		super(storageProperties, properties, persistenceProvider);
+			Map<String, String> properties) throws OntoDriverException {
+		super(storageProperties, properties);
 	}
 
 	@Override
-	public StorageModule createStorageModule(Context ctx, Metamodel metamodel, boolean autoCommit)
+	public StorageModule createStorageModule(Context ctx,
+			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(ctx, metamodel);
+		ensureState(ctx, persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLAPI storage module.");
 		}
-		final StorageModule m = new OwlapiStorageModule(ctx, metamodel, this);
+		final StorageModule m = new OwlapiStorageModule(ctx, persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
@@ -28,19 +27,19 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 	}
 
 	public DriverJenaFactory(List<OntologyStorageProperties> storageProperties,
-			Map<String, String> properties, PersistenceProviderFacade persistenceProvider)
-			throws OntoDriverException {
-		super(storageProperties, properties, persistenceProvider);
+			Map<String, String> properties) throws OntoDriverException {
+		super(storageProperties, properties);
 	}
 
 	@Override
-	public StorageModule createStorageModule(Context ctx, Metamodel metamodel, boolean autoCommit)
+	public StorageModule createStorageModule(Context ctx,
+			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(ctx, metamodel);
+		ensureState(ctx, persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage module.");
 		}
-		final JenaStorageModule m = new JenaStorageModule(ctx, metamodel, this);
+		final JenaStorageModule m = new JenaStorageModule(ctx, persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}

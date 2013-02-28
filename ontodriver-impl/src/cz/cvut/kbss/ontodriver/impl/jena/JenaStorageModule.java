@@ -1,8 +1,8 @@
 package cz.cvut.kbss.ontodriver.impl.jena;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageModule;
@@ -10,9 +10,9 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class JenaStorageModule extends StorageModule {
 
-	public JenaStorageModule(Context context, Metamodel metamodel, DriverFactory factory)
-			throws OntoDriverException {
-		super(context, metamodel, factory);
+	public JenaStorageModule(Context context, PersistenceProviderFacade persistenceProvider,
+			DriverFactory factory) throws OntoDriverException {
+		super(context, persistenceProvider, factory);
 		// TODO Auto-generated constructor stub
 	}
 

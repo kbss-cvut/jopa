@@ -1,6 +1,5 @@
 package cz.cvut.kbss.ontodriver;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -29,11 +28,12 @@ public interface DataSource {
 	/**
 	 * Requests a connection to the underlying data source. </p>
 	 * 
-	 * @param metamodel
-	 *            The Metamodel to set on the Connection
+	 * @param persistenceProvider
+	 *            Facade representing accessible persistence provider methods
 	 * @return a {@code Connection} to the data source
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
 	 */
-	public Connection getConnection(Metamodel metamodel) throws OntoDriverException;
+	public Connection getConnection(PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException;
 }

@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.OntoDriver;
@@ -30,8 +29,6 @@ public class OntoDriverImpl implements OntoDriver {
 	private final Map<OntologyConnectorType, DriverFactory> factories;
 	/** Reference for easier access */
 	private List<Context> contexts;
-	/** Persistence provider proxy */
-	private final PersistenceProviderFacade persistence;
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties,
 			Map<String, String> properties) {
@@ -45,8 +42,6 @@ public class OntoDriverImpl implements OntoDriver {
 		this.factories = initFactories(storageProperties);
 		// Get contexts from the first available factory
 		this.contexts = factories.values().iterator().next().getContexts();
-		// TODO Init the proxy
-		this.persistence = null;
 	}
 
 	/**
@@ -58,14 +53,15 @@ public class OntoDriverImpl implements OntoDriver {
 	}
 
 	@Override
-	public StorageManager acquireStorageManager(Metamodel metamodel) throws OntoDriverException {
-		if (metamodel == null) {
+	public StorageManager acquireStorageManager(PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException {
+		if (persistenceProvider == null) {
 			return acquireStorageManager();
 		}
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating storage manager.");
 		}
-		final StorageManager m = new StorageManagerImpl(metamodel, contexts, this);
+		final StorageManager m = new StorageManagerImpl(persistenceProvider, contexts, this);
 		return m;
 	}
 
@@ -105,7 +101,7 @@ public class OntoDriverImpl implements OntoDriver {
 				.entrySet()) {
 			final Constructor<? extends DriverFactory> c = e.getValue();
 			try {
-				final DriverFactory f = c.newInstance(props, properties, persistence);
+				final DriverFactory f = c.newInstance(props, properties);
 				facts.put(e.getKey(), f);
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException e1) {
@@ -143,7 +139,7 @@ public class OntoDriverImpl implements OntoDriver {
 						+ " is not an implementation of DriverFactory.");
 			}
 			final Constructor<? extends DriverFactory> c = factoryClass.getConstructor(List.class,
-					Map.class, PersistenceProviderFacade.class);
+					Map.class);
 			factoryClasses.put(type, c);
 		} catch (NoSuchMethodException e) {
 			throw new OntoDriverException("The class " + factoryClass.getName()

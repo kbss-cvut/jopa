@@ -4,12 +4,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntoDriver;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -46,13 +46,15 @@ public class SimpleDataSource implements DataSource {
 		throw new UnsupportedOperationException();
 	}
 
-	public Connection getConnection(Metamodel metamodel) throws OntoDriverException {
-		return createConnection(metamodel);
+	public Connection getConnection(PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException {
+		return createConnection(persistenceProvider);
 	}
 
-	private Connection createConnection(Metamodel metamodel) throws OntoDriverException {
-		final StorageManager sm = driver.acquireStorageManager(metamodel);
-		final Connection conn = new ConnectionImpl(sm, metamodel);
+	private Connection createConnection(PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException {
+		final StorageManager sm = driver.acquireStorageManager(persistenceProvider);
+		final Connection conn = new ConnectionImpl(sm);
 		final String strAutoCommit = properties.get(OntoDriverProperties.CONNECTION_AUTO_COMMIT);
 		boolean autoCommit = false;
 		if (strAutoCommit != null) {

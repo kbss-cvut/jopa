@@ -2,7 +2,6 @@ package cz.cvut.kbss.ontodriver;
 
 import java.util.List;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public interface DriverFactory extends Closeable {
@@ -18,17 +17,6 @@ public interface DriverFactory extends Closeable {
 	public List<Context> getContexts();
 
 	/**
-	 * Retrieves persistence proxy. </p>
-	 * 
-	 * The persistence proxy represents persistence provider running above this
-	 * driver and provides some useful methods for increasing performance and
-	 * object reuse.
-	 * 
-	 * @return PersistenceProxy
-	 */
-	public PersistenceProviderFacade getPersistenceProvider();
-
-	/**
 	 * Creates and returns storage module. </p>
 	 * 
 	 * Implementations may choose to pool storage modules or create lazy loaded
@@ -36,8 +24,8 @@ public interface DriverFactory extends Closeable {
 	 * 
 	 * @param ctx
 	 *            Context of the module
-	 * @param metamodel
-	 *            Metamodel
+	 * @param persistenceProvider
+	 *            Facade representing the persistence provider
 	 * @param autoCommit
 	 *            {@code true} if the module is for an auto commit operation
 	 * @return StorageModule
@@ -45,7 +33,8 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory or if an ontology access error
 	 *             occurs
 	 */
-	public StorageModule createStorageModule(Context ctx, Metamodel metamodel, boolean autoCommit)
+	public StorageModule createStorageModule(Context ctx,
+			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException;
 
 	/**

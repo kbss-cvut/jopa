@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
@@ -24,7 +23,6 @@ public class ConnectionImpl implements Connection {
 	private static final Logger LOG = Logger.getLogger(ConnectionImpl.class.getName());
 
 	private final StorageManager storageManager;
-	private Metamodel metamodel;
 
 	private Context defaultContext;
 	private Map<URI, Context> contexts;
@@ -47,11 +45,6 @@ public class ConnectionImpl implements Connection {
 		this.autoCommit = true;
 	}
 
-	public ConnectionImpl(StorageManager storageManager, Metamodel metamodel) {
-		this(storageManager);
-		this.metamodel = metamodel;
-	}
-
 	public void close() throws OntoDriverException {
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Closing the connection.");
@@ -67,7 +60,7 @@ public class ConnectionImpl implements Connection {
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Committing changes.");
 		}
-		ensureState(true);
+		ensureOpen(true);
 		if (!hasChanges) {
 			return;
 		}
@@ -82,7 +75,7 @@ public class ConnectionImpl implements Connection {
 
 	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException,
 			MetamodelNotSetException {
-		ensureState(true);
+		ensureOpen(true);
 		if (cls == null || primaryKey == null) {
 			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey);
 			throw new NullPointerException();
@@ -110,7 +103,7 @@ public class ConnectionImpl implements Connection {
 
 	public <T> T find(Class<T> cls, Object primaryKey, URI context) throws OntoDriverException,
 			MetamodelNotSetException {
-		ensureState(true);
+		ensureOpen(true);
 		if (cls == null || primaryKey == null || context == null) {
 			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey
 					+ ", context = " + context);
@@ -127,7 +120,7 @@ public class ConnectionImpl implements Connection {
 	public <T> T find(Class<T> cls, Object primaryKey, URI entityContext,
 			Map<String, URI> attributeContexts) throws OntoDriverException,
 			MetamodelNotSetException {
-		ensureState(true);
+		ensureOpen(true);
 		if (cls == null || primaryKey == null || entityContext == null || attributeContexts == null) {
 			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey
 					+ ", context = " + entityContext + ", attributeContexts = " + attributeContexts);
@@ -152,12 +145,12 @@ public class ConnectionImpl implements Connection {
 	}
 
 	public boolean getAutoCommit() throws OntoDriverException {
-		ensureState(false);
+		ensureOpen(false);
 		return autoCommit;
 	}
 
 	public Context getContext(URI contextUri) throws OntoDriverException {
-		ensureState(false);
+		ensureOpen(false);
 		if (contextUri == null) {
 			throw new NullPointerException();
 		}
@@ -165,12 +158,12 @@ public class ConnectionImpl implements Connection {
 	}
 
 	public List<Context> getContexts() throws OntoDriverException {
-		ensureState(false);
+		ensureOpen(false);
 		return storageManager.getAvailableContexts();
 	}
 
 	public Context getSaveContextFor(Object entity) throws OntoDriverException {
-		ensureState(false);
+		ensureOpen(false);
 		if (entity == null) {
 			throw new NullPointerException();
 		}
@@ -201,7 +194,7 @@ public class ConnectionImpl implements Connection {
 
 	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException,
 			MetamodelNotSetException {
-		ensureState(true);
+		ensureOpen(true);
 		if (primaryKey == null || entity == null) {
 			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", primaryKey = "
 					+ primaryKey);
@@ -221,7 +214,7 @@ public class ConnectionImpl implements Connection {
 
 	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException,
 			MetamodelNotSetException {
-		ensureState(true);
+		ensureOpen(true);
 		if (entity == null) {
 			LOG.severe("Null argument passed: entity = " + entity);
 			throw new NullPointerException();
@@ -238,7 +231,7 @@ public class ConnectionImpl implements Connection {
 
 	public <T> void persist(Object primaryKey, T entity, URI context) throws OntoDriverException,
 			MetamodelNotSetException {
-		ensureState(true);
+		ensureOpen(true);
 		if (entity == null || context == null) {
 			LOG.severe("Null argument passed: entity = " + entity + ", context = " + context);
 			throw new NullPointerException();
@@ -254,7 +247,7 @@ public class ConnectionImpl implements Connection {
 	public <T> void persist(Object primaryKey, T entity, URI context,
 			Map<String, URI> attributeContexts) throws OntoDriverException,
 			MetamodelNotSetException {
-		ensureState(true);
+		ensureOpen(true);
 		if (entity == null || context == null || attributeContexts == null) {
 			LOG.severe("Null argument passed: entity = " + entity + ", entityContext = " + context
 					+ ", attributeContexts = " + attributeContexts);
@@ -287,7 +280,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	public <T> void registerWithContext(T entity, URI context) throws OntoDriverException {
-		ensureState(false);
+		ensureOpen(false);
 		if (entity == null || context == null) {
 			throw new NullPointerException();
 		}
@@ -300,7 +293,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	public <T> void remove(Object primaryKey, T entity) throws OntoDriverException {
-		ensureState(true);
+		ensureOpen(true);
 		if (primaryKey == null) {
 			LOG.severe("Null argument passed: primaryKey = " + primaryKey);
 			throw new NullPointerException();
@@ -314,7 +307,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	public <T> void remove(Object primaryKey, T entity, URI context) throws OntoDriverException {
-		ensureState(true);
+		ensureOpen(true);
 		if (primaryKey == null || context == null) {
 			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", context = "
 					+ context);
@@ -345,7 +338,7 @@ public class ConnectionImpl implements Connection {
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Rolling back changes.");
 		}
-		ensureState(false);
+		ensureOpen(false);
 		if (!hasChanges) {
 			return;
 		}
@@ -354,12 +347,12 @@ public class ConnectionImpl implements Connection {
 	}
 
 	public void setAutoCommit(boolean autoCommit) throws OntoDriverException {
-		ensureState(false);
+		ensureOpen(false);
 		this.autoCommit = autoCommit;
 	}
 
 	public void setConnectionContext(URI context) throws OntoDriverException {
-		ensureState(false);
+		ensureOpen(false);
 		if (context == null) {
 			throw new NullPointerException();
 		}
@@ -371,16 +364,8 @@ public class ConnectionImpl implements Connection {
 		this.defaultContext = ctx;
 	}
 
-	public void setMetamodel(Metamodel metamodel) throws OntoDriverException {
-		ensureState(false);
-		if (metamodel == null) {
-			throw new NullPointerException();
-		}
-		this.metamodel = metamodel;
-	}
-
 	public void setSaveContextFor(Object entity, URI context) throws OntoDriverException {
-		ensureState(false);
+		ensureOpen(false);
 		if (entity == null || context == null) {
 			throw new NullPointerException();
 		}
@@ -413,13 +398,10 @@ public class ConnectionImpl implements Connection {
 	 * @throws OntoDriverException
 	 * @throws MetamodelNotSetException
 	 */
-	private void ensureState(boolean checkMetamodel) throws OntoDriverException,
+	private void ensureOpen(boolean checkMetamodel) throws OntoDriverException,
 			MetamodelNotSetException {
 		if (!open) {
 			throw new OntoDriverException("The connection is closed.");
-		}
-		if (checkMetamodel && metamodel == null) {
-			throw new MetamodelNotSetException("Metamodel is not set for this Connection.");
 		}
 	}
 
