@@ -1,5 +1,9 @@
 package cz.cvut.kbss.ontodriver;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -14,6 +18,12 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * 
  */
 public abstract class StorageModule implements Transactional {
+
+	/**
+	 * Counters that increment with each inserted entity so that newly generated
+	 * primary keys are unique
+	 */
+	protected static final Map<Context, AtomicInteger> primaryKeyCounters = new HashMap<Context, AtomicInteger>();
 
 	/** Context information */
 	protected final Context context;
@@ -186,5 +196,28 @@ public abstract class StorageModule implements Transactional {
 			throw new OntoDriverException(
 					new IllegalStateException("The storage module is closed."));
 		}
+	}
+
+	/**
+	 * Retrieves a new primary key number and increments the internal counter.
+	 * 
+	 * @param ctx
+	 *            The context from which key should be retrieved
+	 * @return primary key number
+	 */
+	protected static int getNewPrimaryKey(Context ctx) {
+		assert primaryKeyCounters.containsKey(ctx);
+		return primaryKeyCounters.get(ctx).incrementAndGet();
+	}
+
+	/**
+	 * Increments the primary key counter in the specified context.
+	 * 
+	 * @param ctx
+	 *            Context
+	 */
+	protected static void incrementPrimaryKeyCounter(Context ctx) {
+		assert primaryKeyCounters.containsKey(ctx);
+		primaryKeyCounters.get(ctx).incrementAndGet();
 	}
 }

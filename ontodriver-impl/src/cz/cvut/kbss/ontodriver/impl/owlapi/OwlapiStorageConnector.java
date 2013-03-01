@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -191,6 +192,15 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 		} catch (OWLOntologyRenameException e) {
 			throw new OntoDriverException(e);
 		}
+	}
+
+	/**
+	 * Returns the number of class assertions in the working ontology.
+	 * 
+	 * @return Number of class assertions
+	 */
+	int getClassAssertionsCount() {
+		return workingOntology.getAxiomCount(AxiomType.CLASS_ASSERTION);
 	}
 
 	private void ensureOpen() {

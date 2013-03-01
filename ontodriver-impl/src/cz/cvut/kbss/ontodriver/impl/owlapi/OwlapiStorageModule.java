@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
@@ -47,6 +48,9 @@ public class OwlapiStorageModule extends StorageModule {
 	@Override
 	protected void initialize() throws OntoDriverException {
 		this.connector = (OwlapiStorageConnector) factory.createStorageConnector(context, false);
+		if (!primaryKeyCounters.containsKey(context)) {
+			primaryKeyCounters.put(context, new AtomicInteger(connector.getClassAssertionsCount()));
+		}
 	}
 
 	@Override
@@ -131,5 +135,21 @@ public class OwlapiStorageModule extends StorageModule {
 	 */
 	OwlapiConnectorDataHolder getOntologyData() {
 		return connector.getOntologyData();
+	}
+
+	/**
+	 * Retrieves a new primary key number and increments the internal counter.
+	 * 
+	 * @return primary key number
+	 */
+	int getNewPrimaryKey() {
+		return StorageModule.getNewPrimaryKey(context);
+	}
+
+	/**
+	 * Increments the primary key counter for this module's context.
+	 */
+	void incrementPrimaryKeyCounter() {
+		StorageModule.incrementPrimaryKeyCounter(context);
 	}
 }

@@ -210,7 +210,8 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		contextsToProperties = new HashMap<Context, OntologyStorageProperties>();
 		for (OntologyStorageProperties p : storageProperties) {
 			final Context ctx = new Context(p.getOntologyURI(), p.getConnectorType());
-			// TODO Set expressiveness and signature for the context
+			// TODO Set expressiveness and signature for the context (will
+			// probably have to write own profile checker)
 			contexts.add(ctx);
 			contextsToProperties.put(ctx, p);
 		}

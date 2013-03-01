@@ -32,7 +32,7 @@ public class ConnectionImpl implements Connection {
 	private boolean hasChanges;
 	private boolean autoCommit;
 
-	public ConnectionImpl(StorageManager storageManager) {
+	public ConnectionImpl(StorageManager storageManager) throws OntoDriverException {
 		super();
 		if (storageManager == null) {
 			throw new NullPointerException();
@@ -43,6 +43,7 @@ public class ConnectionImpl implements Connection {
 		this.storageManager = storageManager;
 		this.open = true;
 		this.autoCommit = true;
+		initContexts();
 	}
 
 	public void close() throws OntoDriverException {
@@ -375,6 +376,12 @@ public class ConnectionImpl implements Connection {
 					+ " not found within this connection.");
 		}
 		registerInternal(entity, ctx);
+	}
+
+	private void initContexts() throws OntoDriverException {
+		for (Context ctx : getContexts()) {
+			contexts.put(ctx.getUri(), ctx);
+		}
 	}
 
 	/**
