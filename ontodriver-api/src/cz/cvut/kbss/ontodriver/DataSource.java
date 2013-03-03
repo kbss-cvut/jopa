@@ -34,6 +34,6 @@ public interface DataSource {
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
 	 */
-	public Connection getConnection(PersistenceProviderFacade persistenceProvider)
+	public Connection getConnection(PersistenceProvider persistenceProvider)
 			throws OntoDriverException;
 }

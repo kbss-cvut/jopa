@@ -20,10 +20,10 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  */
 public abstract class StorageManager implements Transactional {
 
-	protected final PersistenceProviderFacade persistenceProvider;
+	protected final PersistenceProvider persistenceProvider;
 	protected boolean open;
 
-	public StorageManager(PersistenceProviderFacade persistenceProvider) {
+	public StorageManager(PersistenceProvider persistenceProvider) {
 		if (persistenceProvider == null) {
 			throw new NullPointerException("Metamodel is cannot be null.");
 		}
@@ -61,7 +61,30 @@ public abstract class StorageManager implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code statement} is {@code null}
 	 */
-	public abstract ResultSet executeStatement(Statement statement) throws OntoDriverException;
+	public abstract ResultSet executeStatement(Statement statement)
+			throws OntoDriverException;
+
+	/**
+	 * Resolves whether the specified context contains entity with the specified
+	 * primary key. </p>
+	 * 
+	 * This method also searches imports declared by the specified context.
+	 * 
+	 * @param primaryKey
+	 *            Primary key
+	 * @param entityContext
+	 *            Context to search in
+	 * @return {@code true} if the {@code entityContext} contains entity with
+	 *         {@code primaryKey}, {@code false} otherwise
+	 * @throws OntoDriverException
+	 *             If {@code entityContext} is not valid or if an ontology
+	 *             access error occurs
+	 * @throws NullPointerException
+	 *             If {@code primaryKey} or {@code entityContext} is
+	 *             {@code null}
+	 */
+	public abstract boolean contains(Object primaryKey, Context entityContext)
+			throws OntoDriverException;
 
 	/**
 	 * Finds entity with the specified primary key and returns it as the
@@ -91,8 +114,9 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code cls}, or {@code primaryKey} or attributeContexts is
 	 *             {@code null}
 	 */
-	public abstract <T> T find(Class<T> cls, Object primaryKey, Context entityContext,
-			Map<String, Context> attributeContexts) throws OntoDriverException;
+	public abstract <T> T find(Class<T> cls, Object primaryKey,
+			Context entityContext, Map<String, Context> attributeContexts)
+			throws OntoDriverException;
 
 	/**
 	 * Returns a list of all available contexts this {@code StorageManager} is
@@ -131,8 +155,8 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code entity}, {@code fieldName} or {@code context} is
 	 *             null
 	 */
-	public abstract <T> void loadFieldValue(T entity, String fieldName, Context context)
-			throws OntoDriverException;
+	public abstract <T> void loadFieldValue(T entity, String fieldName,
+			Context context) throws OntoDriverException;
 
 	/**
 	 * Merges the state of the specified entity into the appropriate ontology.
@@ -163,8 +187,9 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code primaryKey}, {@code entity} or
 	 *             {@code attributeContexts} is {@code null}
 	 */
-	public abstract <T> void merge(Object primaryKey, T entity, Context entityContext,
-			Map<String, Context> attributeContexts) throws OntoDriverException;
+	public abstract <T> void merge(Object primaryKey, T entity,
+			Context entityContext, Map<String, Context> attributeContexts)
+			throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>
@@ -196,8 +221,9 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code entity}, {@code entityContext} or
 	 *             {@code attributeContexts} is {@code null}
 	 */
-	public abstract <T> void persist(Object primaryKey, T entity, Context entityContext,
-			Map<String, Context> attributeContexts) throws OntoDriverException;
+	public abstract <T> void persist(Object primaryKey, T entity,
+			Context entityContext, Map<String, Context> attributeContexts)
+			throws OntoDriverException;
 
 	/**
 	 * Removes entity with the specified primary key from the specified context.
@@ -227,12 +253,14 @@ public abstract class StorageManager implements Transactional {
 	 * @throws OntoDriverException
 	 * @throws MetamodelNotSetException
 	 */
-	protected void ensureState() throws OntoDriverException, MetamodelNotSetException {
+	protected void ensureState() throws OntoDriverException,
+			MetamodelNotSetException {
 		if (!open) {
-			throw new OntoDriverException(
-					new IllegalStateException("The StorageManager is closed."));
+			throw new OntoDriverException(new IllegalStateException(
+					"The StorageManager is closed."));
 		}
-		if (persistenceProvider == null || persistenceProvider.getMetamodel() == null) {
+		if (persistenceProvider == null
+				|| persistenceProvider.getMetamodel() == null) {
 			throw new MetamodelNotSetException();
 		}
 	}

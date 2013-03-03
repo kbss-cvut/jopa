@@ -23,35 +23,40 @@ import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
-	protected Map<Object, Object> cloneMapping;
-	protected Map<Object, Object> cloneToOriginals;
-	protected Map<Object, Object> deletedObjects;
-	protected Map<Object, Object> newObjectsCloneToOriginal;
-	protected Map<Object, Object> newObjectsOriginalToClone;
-	protected Map<Object, Object> newObjectsKeyToClone;
+	private Map<Object, Object> cloneMapping;
+	private Map<Object, Object> cloneToOriginals;
+	private Map<Object, Object> deletedObjects;
+	private Map<Object, Object> newObjectsCloneToOriginal;
+	private Map<Object, Object> newObjectsOriginalToClone;
+	private Map<Object, Object> newObjectsKeyToClone;
 	// A set of primary keys (IRI or URI), which are already used and
 	// no other object can use them
-	protected Set<Object> usedPrimaryKeys;
+	private Set<Object> usedPrimaryKeys;
 
-	protected boolean hasChanges;
-	protected boolean hasNew;
-	protected boolean hasDeleted;
-	protected boolean shouldReleaseAfterCommit;
-	protected boolean shouldClearCacheAfterCommit;
+	private boolean hasChanges;
+	private boolean hasNew;
+	private boolean hasDeleted;
+	private boolean shouldReleaseAfterCommit;
+	private boolean shouldClearCacheAfterCommit;
 
-	protected boolean isActive;
+	private boolean isActive;
 
-	protected UnitOfWorkChangeSet uowChangeSet;
+	private UnitOfWorkChangeSet uowChangeSet;
 
-	protected AbstractSession parent;
-	protected EntityManager entityManager;
+	private AbstractSession parent;
+	private EntityManager entityManager;
+	private Connection storageConnection;
 
-	protected MergeManager mergeManager;
-	protected CloneBuilder cloneBuilder;
-	protected ChangeManager changeManager;
+	private MergeManager mergeManager;
+	private CloneBuilder cloneBuilder;
+	private ChangeManager changeManager;
 	/**
 	 * This is a shortcut for the second level cache. Performance reasons (to
 	 * prevent server session method call chain.
@@ -64,6 +69,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		this.isActive = true;
 		this.cloneBuilder = new CloneBuilderImpl(this);
 		this.cacheManager = parent.getLiveObjectCache();
+		this.storageConnection = acquireConnection();
 	}
 
 	/**
@@ -73,6 +79,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	@Override
 	public UnitOfWork acquireUnitOfWork() {
 		return null;
+	}
+
+	@Override
+	protected Connection acquireConnection() {
+		return parent.acquireConnection();
 	}
 
 	public Vector<?> readAllObjects(Class<?> domainClass) {
@@ -103,7 +114,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		result = getObjectFromCache(cls, primaryKey);
 		if (result == null) {
 			// The object is not in the session cache, so search the ontology
-			result = getOntologyAccessor().readEntity(cls, primaryKey);
+			try {
+				result = storageConnection.find(cls, primaryKey);
+			} catch (MetamodelNotSetException e) {
+				throw new OWLPersistenceException(e);
+			} catch (OntoDriverException e) {
+				throw new OWLPersistenceException(e);
+			}
 		}
 		if (result == null) {
 			return null;
@@ -130,7 +147,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			for (Object clone : getDeletedObjects().keySet()) {
 				Object original = getCloneToOriginals().get(clone);
 				if (original == null) {
-					throw new OWLPersistenceException("Cannot find an original for clone!");
+					throw new OWLPersistenceException(
+							"Cannot find an original for clone!");
 				}
 				toDelete.put(clone, original);
 			}
@@ -144,14 +162,17 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 						continue;
 					}
 					Object original = getCloneToOriginals().get(clone);
-					if (original == null && !getNewObjectsCloneToOriginal().containsKey(clone)) {
-						throw new OWLPersistenceException("Cannot find an original for clone!");
+					if (original == null
+							&& !getNewObjectsCloneToOriginal().containsKey(
+									clone)) {
+						throw new OWLPersistenceException(
+								"Cannot find an original for clone!");
 					}
 					if (original == null) {
 						continue; // It was a new object
 					}
-					ObjectChangeSet chSet = cloneBuilder.createObjectChangeSet(original, clone,
-							changeSet);
+					ObjectChangeSet chSet = cloneBuilder.createObjectChangeSet(
+							original, clone, changeSet);
 					chSet = getChangeManager().calculateChanges(chSet);
 					if (chSet != null) {
 						changeSet.addObjectChangeSet(chSet);
@@ -194,7 +215,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			}
 			getNewObjectsCloneToOriginal().put(clone, original);
 			getNewObjectsOriginalToClone().put(original, clone);
-			ObjectChangeSet oChangeSet = new ObjectChangeSetImpl(original, clone, true, changeSet);
+			ObjectChangeSet oChangeSet = new ObjectChangeSetImpl(original,
+					clone, true, changeSet);
 			changeSet.addNewObjectChangeSet(oChangeSet);
 		}
 	}
@@ -213,7 +235,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	}
 
 	public boolean contains(Object entity) {
-		return (getCloneMapping().containsKey(entity) && !getDeletedObjects().containsKey(entity));
+		return (getCloneMapping().containsKey(entity) && !getDeletedObjects()
+				.containsKey(entity));
 	}
 
 	public void commit() {
@@ -221,7 +244,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			LOG.fine("UnitOfWork commit started.");
 		}
 		if (!isActive()) {
-			throw new OWLPersistenceException("Cannot commit inactive Unit of Work!");
+			throw new OWLPersistenceException(
+					"Cannot commit inactive Unit of Work!");
 		}
 		commitUnitOfWork();
 		if (LOG.isLoggable(Level.FINE)) {
@@ -234,7 +258,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 */
 	protected void commitUnitOfWork() {
 		commitToOntology();
-		getOntologyAccessor().mergeToWorkingOntology();
+		storageCommit();
 		mergeChangesIntoParent();
 		postCommit();
 	}
@@ -309,8 +333,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			return State.REMOVED;
 		} else if (getCloneToOriginals().containsKey(entity)) {
 			return State.MANAGED;
-		} else if (getOntologyAccessor().isInOntologySignature(
-				getOntologyAccessor().getIdentifier(entity), true)) {
+		} else if (storageContains(getIdentifier(entity))) {
 			return State.DETACHED;
 		} else {
 			return State.NEW;
@@ -363,7 +386,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 * @return The clone or null, if there is none.
 	 */
 	Object getCloneForOriginal(Object original) {
-		Iterator<Entry<Object, Object>> it = getCloneToOriginals().entrySet().iterator();
+		Iterator<Entry<Object, Object>> it = getCloneToOriginals().entrySet()
+				.iterator();
 		while (it.hasNext()) {
 			Entry<Object, Object> entry = it.next();
 			// We use IdentityMap, so we can use ==
@@ -510,9 +534,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		if (entity == null) {
 			return false;
 		}
-		final IRI pk = getOntologyAccessor().getIdentifier(entity);
+		final IRI pk = getIdentifier(entity);
 		if (pk == null) {
-			throw new OWLPersistenceException("Unable to extract identified from entity " + entity);
+			throw new OWLPersistenceException(
+					"Unable to extract identified from entity " + entity);
 		}
 		return isObjectManaged(entity, pk);
 	}
@@ -540,9 +565,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 */
 	public void persistChangeInTransaction(Object entity) {
 		if (!isInTransaction()) {
-			throw new IllegalStateException("This unit of work is not in a transaction.");
+			throw new IllegalStateException(
+					"This unit of work is not in a transaction.");
 		}
-		getOntologyAccessor().persistEntity(entity, this);
+		storageMerge(getIdentifier(entity), entity);
 		setHasChanges(true);
 		// Let's see how this works
 		checkForCollections(entity);
@@ -572,7 +598,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 		// Remove the clones and originals of the deleted objects from the
 		// context
-		Iterator<?> deletedIt = getUowChangeSet().getDeletedObjects().keySet().iterator();
+		Iterator<?> deletedIt = getUowChangeSet().getDeletedObjects().keySet()
+				.iterator();
 		while (deletedIt.hasNext()) {
 			ObjectChangeSet ochSet = (ObjectChangeSet) deletedIt.next();
 			Object clone = ochSet.getCloneObject();
@@ -593,20 +620,22 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 */
 	public void mergeDetached(Object entity) {
 		if (entity == null) {
-			throw new IllegalArgumentException("Null cannot be merged since it is not an entity.");
+			throw new IllegalArgumentException(
+					"Null cannot be merged since it is not an entity.");
 		}
 		if (this.contains(entity)) {
 			return;
 		}
-		final IRI iri = getOntologyAccessor().getIdentifier(entity);
+		final IRI iri = getIdentifier(entity);
 		if (iri == null) {
-			throw new OWLPersistenceException("The object is not an ontology entity.");
+			throw new OWLPersistenceException(
+					"The object is not an ontology entity.");
 		}
 		Object orig = null;
 		final Class<?> cls = entity.getClass();
 		orig = getObjectFromCache(cls, iri);
 		if (orig == null) {
-			orig = getOntologyAccessor().readEntity(entity.getClass(), iri);
+			orig = storageFind(cls, iri);
 			if (orig == null) {
 				throw new OWLPersistenceException(
 						"The detached object is not in the ontology signature.");
@@ -668,7 +697,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			return getCloneForOriginal(object);
 		}
 		Object clone = this.cloneBuilder.buildClone(object);
-		IRI iri = getOntologyAccessor().getIdentifier(clone);
+		IRI iri = getIdentifier(clone);
 		if (iri != null) {
 			getUsedPrimaryKeys().add(iri);
 		}
@@ -685,9 +714,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 * {@link #registerNewObject(IRI, Object)} should be used instead.
 	 */
 	public Object registerObject(Object object) {
-		IRI primaryKey = getOntologyAccessor().getIdentifier(object);
+		IRI primaryKey = getIdentifier(object);
 		if (primaryKey == null) {
-			throw new OWLPersistenceException("The specified object is not a valid entity.");
+			throw new OWLPersistenceException(
+					"The specified object is not a valid entity.");
 		}
 		if (isInCache(object.getClass(), primaryKey)) {
 			return registerExistingObject(object);
@@ -707,6 +737,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	public void release() {
 		writeUncommittedChanges();
 		this.clear();
+		if (storageConnection != null) {
+			try {
+				storageConnection.close();
+			} catch (OntoDriverException e) {
+				LOG.log(Level.SEVERE,
+						"Exception caugth when closing connection.", e);
+			}
+		}
 		this.isActive = false;
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("UnitOfWork released.");
@@ -714,7 +752,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	}
 
 	public Object revertObject(Object object) {
-		ObjectChangeSet chSet = new ObjectChangeSetImpl(object, getOriginal(object), false, null);
+		ObjectChangeSet chSet = new ObjectChangeSetImpl(object,
+				getOriginal(object), false, null);
 		try {
 			getChangeManager().calculateChanges(chSet);
 		} catch (IllegalAccessException e) {
@@ -732,7 +771,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		if (object == null) {
 			return;
 		}
-		final IRI primaryKey = getOntologyAccessor().getIdentifier(object);
+		final IRI primaryKey = getIdentifier(object);
 		if (primaryKey == null) {
 			return;
 		}
@@ -751,24 +790,28 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 */
 	public Object registerNewObject(IRI id, Object entity) {
 		if (entity == null) {
-			throw new OWLPersistenceException("Cannot persist entity. IRI or entity is null!");
+			throw new OWLPersistenceException(
+					"Cannot persist entity. IRI or entity is null!");
 		}
 		if (id == null) {
-			// Generate IRI if possible
+			// Check if the ID is generated
 			final Class<?> cls = entity.getClass();
 			final EntityType<?> eType = getMetamodel().entity(cls);
-
-			if (eType.getIdentifier().isGenerated()) {
-				getOntologyAccessor().generateNewIRI(entity);
-			} else {
+			if (!eType.getIdentifier().isGenerated()) {
 				throw new OWLPersistenceException("The id for entity " + entity
 						+ " is null and it is not specified as \'generated\' ");
 			}
 		}
-		if ((getOntologyAccessor().isInOntologySignature(id, true) || isObjectManaged(entity, id) || primaryKeyAlreadyUsed(id))
+		if ((storageContains(id) || isObjectManaged(entity, id) || primaryKeyAlreadyUsed(id))
 				&& !entity.getClass().isEnum()) {
 			throw new OWLPersistenceException("An entity with URI " + id
 					+ " is already persisted within the context.");
+		}
+		storagePersist(id, entity);
+		if (id == null) {
+			// If the ID was null, extract it from the entity
+			// It is present now
+			id = getIdentifier(entity);
 		}
 		Object clone = entity;
 		// Original is null until commit
@@ -780,8 +823,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		getNewObjectsKeyToClone().put(id, clone);
 		checkForCollections(clone);
 		this.hasNew = true;
-		getOntologyAccessor().persistEntity(entity, this);
-
 		return entity;
 	}
 
@@ -808,39 +849,24 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			return;
 		}
 		if (!isObjectManaged(object)) {
-			throw new OWLPersistenceException("Cannot remove object that is not managed!");
+			throw new OWLPersistenceException(
+					"Cannot remove object that is not managed!");
 		}
 		if (getDeletedObjects().containsKey(object)) {
 			return;
 		}
+		final Object primaryKey = getIdentifier(object);
 		Object registered = isRegistered(object);
 
-		if (registered == null) {
-			// If the object is not registered, we try to load it from the
-			// ontology, register it and then delete.
-			Object primaryKey = getOntologyAccessor().getIdentifier(object);
-			// Try to get the primary key of the object
-			if (primaryKey == null) {
-				throw new OWLPersistenceException("The specified object has not a valid IRI.");
-			}
-			Object clone = readObject(object.getClass(), primaryKey);
-			if (clone == null) {
-				throw new OWLPersistenceException("The specified object is not an entity.");
-			}
-			getDeletedObjects().put(clone, clone);
-			this.hasDeleted = true;
+		if (hasNew() && getNewObjectsCloneToOriginal().containsKey(registered)) {
+			this.unregisterObject(registered);
+			this.getNewObjectsKeyToClone().remove(primaryKey);
+			this.getUsedPrimaryKeys().remove(primaryKey);
 		} else {
-			if (hasNew() && getNewObjectsCloneToOriginal().containsKey(registered)) {
-				this.unregisterObject(registered);
-				Object id = getOntologyAccessor().getIdentifier(registered);
-				this.getNewObjectsKeyToClone().remove(id);
-				this.getUsedPrimaryKeys().remove(id);
-			} else {
-				this.getDeletedObjects().put(object, object);
-				this.hasDeleted = true;
-			}
+			this.getDeletedObjects().put(object, object);
+			this.hasDeleted = true;
 		}
-		getOntologyAccessor().removeEntity(object);
+		storageRemove(primaryKey, object);
 	}
 
 	/**
@@ -1051,5 +1077,74 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		final Object entity = cacheManager.get(cls, primaryKey);
 		cacheManager.releaseReadLock();
 		return entity;
+	}
+
+	private IRI getIdentifier(Object entity) {
+		assert entity != null;
+		return EntityPropertiesUtils.getPrimaryKey(entity, getMetamodel());
+	}
+
+	private boolean storageContains(Object primaryKey) {
+		assert primaryKey != null;
+		try {
+			return storageConnection.contains(primaryKey);
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException(e);
+		}
+	}
+
+	private <T> T storageFind(Class<T> cls, Object primaryKey) {
+		assert cls != null;
+		assert primaryKey != null;
+		try {
+			return storageConnection.find(cls, primaryKey);
+		} catch (MetamodelNotSetException e) {
+			throw new OWLPersistenceException(e);
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException(e);
+		}
+	}
+
+	private <T> void storageMerge(Object primaryKey, T entity) {
+		assert primaryKey != null;
+		assert entity != null;
+		try {
+			storageConnection.merge(primaryKey, entity);
+		} catch (MetamodelNotSetException e) {
+			throw new OWLPersistenceException(e);
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException(e);
+		}
+	}
+
+	private <T> void storagePersist(Object primaryKey, T entity) {
+		assert entity != null;
+		try {
+			storageConnection.persist(primaryKey, entity);
+		} catch (MetamodelNotSetException e) {
+			throw new OWLPersistenceException(e);
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException(e);
+		}
+	}
+
+	private <T> void storageRemove(Object primaryKey, T entity) {
+		assert primaryKey != null;
+		assert entity != null;
+		try {
+			storageConnection.remove(primaryKey, entity);
+		} catch (MetamodelNotSetException e) {
+			throw new OWLPersistenceException(e);
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException(e);
+		}
+	}
+
+	private void storageCommit() {
+		try {
+			storageConnection.commit();
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException(e);
+		}
 	}
 }

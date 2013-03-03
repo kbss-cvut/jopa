@@ -162,7 +162,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 *             If {@code metamodel} is null
 	 * @see #ensureState(Context)
 	 */
-	protected void ensureState(Context ctx, PersistenceProviderFacade persistenceProvider)
+	protected void ensureState(Context ctx, PersistenceProvider persistenceProvider)
 			throws OntoDriverException {
 		ensureState(ctx);
 		if (persistenceProvider == null) {

@@ -3,12 +3,12 @@ package cz.cvut.kbss.ontodriver;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 
 /**
- * Represents the persistence provider.
+ * Facade to the persistence provider.
  * 
  * @author kidney
  * 
  */
-public interface PersistenceProviderFacade {
+public interface PersistenceProvider {
 
 	/**
 	 * Gets metamodel of this persistence provider.
@@ -30,6 +30,8 @@ public interface PersistenceProviderFacade {
 	 * @param primaryKey
 	 *            Primary key of the entity to retrieve
 	 * @return Entity or null
+	 * @throws NullPointerException
+	 *             If {@code cls} or {@code primaryKey} is {@code null}
 	 */
 	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey);
 }

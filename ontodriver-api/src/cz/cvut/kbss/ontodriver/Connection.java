@@ -46,6 +46,45 @@ public interface Connection extends Transactional {
 	public Statement createStatement() throws OntoDriverException;
 
 	/**
+	 * Resolves whether entity with the specified primary key is present in this
+	 * connection's default context. </p>
+	 * 
+	 * This method also searches ontologies imported by the ontology represented
+	 * by the default context.
+	 * 
+	 * @param primaryKey
+	 *            Primary key
+	 * @return {@code true} if the default context contains entity with the
+	 *         specified primary key, {@code false} otherwise
+	 * @throws NullPointerException
+	 *             If {@code primaryKey} is null
+	 * @throws OntoDriverException
+	 *             If called on a closed connection or an ontology access error
+	 *             occurs
+	 * @see #contains(Object, URI)
+	 */
+	public boolean contains(Object primaryKey) throws OntoDriverException;
+
+	/**
+	 * Resolves whether entity with the specified primary key is present in
+	 * context with the specified URI. </p>
+	 * 
+	 * @param primaryKey
+	 *            Primary key
+	 * @param context
+	 *            URI of Context to search in
+	 * @return {@code true} if the default context contains entity with the
+	 *         specified primary key, {@code false} otherwise
+	 * @throws NullPointerException
+	 *             If {@code primaryKey} or {@code context} is null
+	 * @throws OntoDriverException
+	 *             If called on a closed connection or an ontology access error
+	 *             occurs
+	 */
+	public boolean contains(Object primaryKey, URI context)
+			throws OntoDriverException;
+
+	/**
 	 * Finds entity with the specified primary key and returns it as the
 	 * specified type. </p>
 	 * 
@@ -69,8 +108,8 @@ public interface Connection extends Transactional {
 	 * @see #find(Class, Object, URI)
 	 * @see #find(Class, Object, URI, Map)
 	 */
-	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> T find(Class<T> cls, Object primaryKey)
+			throws OntoDriverException, MetamodelNotSetException;
 
 	/**
 	 * Finds entity with the specified primary key and returns it as the
@@ -96,8 +135,8 @@ public interface Connection extends Transactional {
 	 * @see #find(Class, Object)
 	 * @see #find(Class, Object, URI, Map)
 	 */
-	public <T> T find(Class<T> cls, Object primaryKey, URI context) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> T find(Class<T> cls, Object primaryKey, URI context)
+			throws OntoDriverException, MetamodelNotSetException;
 
 	/**
 	 * Finds entity with the specified primary key and returns it as the
@@ -196,7 +235,8 @@ public interface Connection extends Transactional {
 	 *             If called on a closed connection, if the entity is not
 	 *             persistent or if an ontology access error occurs
 	 */
-	public <T> void loadFieldValue(T entity, String fieldName) throws OntoDriverException;
+	public <T> void loadFieldValue(T entity, String fieldName)
+			throws OntoDriverException;
 
 	/**
 	 * Merges state of the specified entity into the storage. </p>
@@ -214,8 +254,8 @@ public interface Connection extends Transactional {
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 */
-	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> void merge(Object primaryKey, T entity)
+			throws OntoDriverException, MetamodelNotSetException;
 
 	/**
 	 * Persists the specified entity into a context. </p>
@@ -240,8 +280,8 @@ public interface Connection extends Transactional {
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 */
-	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> void persist(Object primaryKey, T entity)
+			throws OntoDriverException, MetamodelNotSetException;
 
 	/**
 	 * Persists the specified entity into the specified context. </p>
@@ -261,8 +301,8 @@ public interface Connection extends Transactional {
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 */
-	public <T> void persist(Object primaryKey, T entity, URI context) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> void persist(Object primaryKey, T entity, URI context)
+			throws OntoDriverException, MetamodelNotSetException;
 
 	/**
 	 * Persists the specified entity. </p>
@@ -303,7 +343,8 @@ public interface Connection extends Transactional {
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
 	 */
-	public PreparedStatement prepareStatement(String sparql) throws OntoDriverException;
+	public PreparedStatement prepareStatement(String sparql)
+			throws OntoDriverException;
 
 	/**
 	 * Registers the specified {@code entity} as belonging to the specified
@@ -324,7 +365,8 @@ public interface Connection extends Transactional {
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code context} is null
 	 */
-	public <T> void registerWithContext(T entity, URI context) throws OntoDriverException;
+	public <T> void registerWithContext(T entity, URI context)
+			throws OntoDriverException;
 
 	/**
 	 * Removes the specified {@code entity}. </p>
@@ -343,8 +385,8 @@ public interface Connection extends Transactional {
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 */
-	public <T> void remove(Object primaryKey, T entity) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> void remove(Object primaryKey, T entity)
+			throws OntoDriverException, MetamodelNotSetException;
 
 	/**
 	 * Removes the specified {@code entity} from the specified {@code context}.
@@ -368,8 +410,8 @@ public interface Connection extends Transactional {
 	 * @throws MetamodelNotSetException
 	 *             If metamodel is not set for this connection
 	 */
-	public <T> void remove(Object primaryKey, T entity, URI context) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> void remove(Object primaryKey, T entity, URI context)
+			throws OntoDriverException, MetamodelNotSetException;
 
 	/**
 	 * Sets auto commit mode on this connection. </p>
@@ -415,5 +457,6 @@ public interface Connection extends Transactional {
 	 *             If called on a closed connection, the context is not valid or
 	 *             an ontology access error occurs
 	 */
-	public void setSaveContextFor(Object entity, URI context) throws OntoDriverException;
+	public void setSaveContextFor(Object entity, URI context)
+			throws OntoDriverException;
 }

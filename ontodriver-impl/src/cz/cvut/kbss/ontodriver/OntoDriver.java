@@ -42,6 +42,6 @@ public interface OntoDriver {
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
 	 */
-	public StorageManager acquireStorageManager(PersistenceProviderFacade persistenceProvider)
+	public StorageManager acquireStorageManager(PersistenceProvider persistenceProvider)
 			throws OntoDriverException;
 }

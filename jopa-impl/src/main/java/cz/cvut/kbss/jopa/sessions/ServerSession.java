@@ -1,7 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -15,12 +15,16 @@ import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
 import cz.cvut.kbss.jopa.accessors.OntologyAccessorFactory;
 import cz.cvut.kbss.jopa.accessors.OntologyAccessorImpl;
 import cz.cvut.kbss.jopa.accessors.OntologyDataHolder;
+import cz.cvut.kbss.jopa.accessors.StorageAccessor;
+import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
 import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 /**
  * The ServerSession is the primary interface for accessing the ontology. </p>
@@ -38,33 +42,34 @@ public class ServerSession extends AbstractSession {
 	private final Set<Class<?>> managedClasses;
 
 	private CacheManager liveObjectCache;
-	private final OntologyAccessorFactory accessorFactory;
+	private StorageAccessor storageAccessor;
+
+	private OntologyAccessorFactory accessorFactory;
 	private OntologyAccessor ontologyAccessor;
 
-	private final Map<EntityTransaction, EntityManager> runningTransactions;
-	private final Map<Object, UnitOfWorkImpl> activePersistenceContexts;
-	private final Map<UnitOfWorkImpl, Set<Object>> uowsToEntities;
+	private Map<EntityTransaction, EntityManager> runningTransactions;
+	private Map<Object, UnitOfWorkImpl> activePersistenceContexts;
+	private Map<UnitOfWorkImpl, Set<Object>> uowsToEntities;
 
-	public ServerSession() {
-		super();
-		this.managedClasses = Collections.emptySet();
+	protected ServerSession() {
 		this.metamodel = null;
-		this.ontologyAccessor = null;
-		this.accessorFactory = null;
-		this.runningTransactions = new WeakHashMap<EntityTransaction, EntityManager>();
-		this.activePersistenceContexts = new WeakHashMap<Object, UnitOfWorkImpl>();
-		this.uowsToEntities = new WeakHashMap<UnitOfWorkImpl, Set<Object>>();
+		this.managedClasses = null;
 	}
 
+	public ServerSession(List<OntologyStorageProperties> storageProperties,
+			Map<String, String> properties, Metamodel metamodel) {
+		this.metamodel = metamodel;
+		this.managedClasses = processTypes(metamodel.getEntities());
+		initialize(storageProperties, properties, metamodel);
+	}
+
+	// TODO To be removed
 	public ServerSession(Map<String, String> properties, Metamodel metamodel,
 			OntologyAccessorFactory factory) {
 		this.metamodel = metamodel;
 		this.managedClasses = processTypes(metamodel.getEntities());
 		this.accessorFactory = factory;
-		this.runningTransactions = new WeakHashMap<EntityTransaction, EntityManager>();
-		this.activePersistenceContexts = new WeakHashMap<Object, UnitOfWorkImpl>();
-		this.uowsToEntities = new WeakHashMap<UnitOfWorkImpl, Set<Object>>();
-		initialize(properties, metamodel);
+		// initialize(properties, metamodel);
 	}
 
 	/**
@@ -83,8 +88,8 @@ public class ServerSession extends AbstractSession {
 	}
 
 	/**
-	 * Initialize this ServerSession. This in particular means initialization of
-	 * the ontology accessor and of the shared cache manager.
+	 * Initializes this ServerSession. This in particular means initialization
+	 * of the ontology accessor and live object cache.
 	 * 
 	 * @param properties
 	 *            Map of setup properties.
@@ -93,9 +98,19 @@ public class ServerSession extends AbstractSession {
 	 * @param factory
 	 *            Factory for creating ontology accessors.
 	 */
-	private void initialize(Map<String, String> properties, Metamodel metamodel) {
-		this.ontologyAccessor = accessorFactory.createCentralAccessor(properties, metamodel, this);
-		String cache = properties.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
+	private void initialize(List<OntologyStorageProperties> storageProperties,
+			Map<String, String> properties, Metamodel metamodel) {
+		assert properties != null;
+		assert metamodel != null;
+		this.runningTransactions = new WeakHashMap<EntityTransaction, EntityManager>();
+		this.activePersistenceContexts = new WeakHashMap<Object, UnitOfWorkImpl>();
+		this.uowsToEntities = new WeakHashMap<UnitOfWorkImpl, Set<Object>>();
+		this.storageAccessor = new StorageAccessorImpl(metamodel, this,
+				storageProperties, properties);
+		this.ontologyAccessor = accessorFactory.createCentralAccessor(
+				properties, metamodel, this);
+		String cache = properties
+				.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
 		if (cache == null || cache.equals("on")) {
 			this.liveObjectCache = new CacheManagerImpl(this, properties);
 			liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
@@ -115,6 +130,10 @@ public class ServerSession extends AbstractSession {
 		return s;
 	}
 
+	protected Connection acquireConnection() {
+		return storageAccessor.acquireConnection();
+	}
+
 	@Override
 	public UnitOfWork acquireUnitOfWork() {
 		return acquireClientSession().acquireUnitOfWork();
@@ -126,7 +145,8 @@ public class ServerSession extends AbstractSession {
 
 	public TransactionOntologyAccessor getOntologyAccessor() {
 		ontologyAccessor.acquireReadLock();
-		final OntologyDataHolder holder = ontologyAccessor.cloneOntologyStructures();
+		final OntologyDataHolder holder = ontologyAccessor
+				.cloneOntologyStructures();
 		ontologyAccessor.releaseReadLock();
 		return accessorFactory.createTransactionalAccessor(holder, this);
 	}
@@ -186,7 +206,8 @@ public class ServerSession extends AbstractSession {
 		if (object == null) {
 			return;
 		}
-		final IRI primaryKey = ((OntologyAccessorImpl) ontologyAccessor).getIdentifier(object);
+		final IRI primaryKey = ((OntologyAccessorImpl) ontologyAccessor)
+				.getIdentifier(object);
 		if (primaryKey == null) {
 			return;
 		}
@@ -242,8 +263,9 @@ public class ServerSession extends AbstractSession {
 	 */
 	void registerEntityWithContext(Object entity, UnitOfWorkImpl uow) {
 		if (entity == null || uow == null) {
-			throw new NullPointerException("Null passed to as argument. Entity: " + entity
-					+ ", unit of work: " + uow);
+			throw new NullPointerException(
+					"Null passed to as argument. Entity: " + entity
+							+ ", unit of work: " + uow);
 		}
 		activePersistenceContexts.put(entity, uow);
 		if (!uowsToEntities.containsKey(uow)) {

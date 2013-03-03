@@ -11,5 +11,14 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/home/kidney/.m2/repository/de/fraunhofer/iitb/owldb/2.04/owldb-2.04.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="de.fraunhofer.iitb"/>
+			<attribute name="maven.artifactId" value="owldb"/>
+			<attribute name="maven.version" value="2.04"/>
+			<attribute name="maven.scope" value="compile"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

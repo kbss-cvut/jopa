@@ -9,7 +9,7 @@ import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
+import cz.cvut.kbss.ontodriver.PersistenceProvider;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.OntoDriverImpl;
@@ -35,7 +35,7 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 
 	@Override
 	public StorageModule createStorageModule(Context ctx,
-			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
+			PersistenceProvider persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(ctx, persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {

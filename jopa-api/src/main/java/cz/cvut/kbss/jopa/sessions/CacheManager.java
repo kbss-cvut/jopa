@@ -43,9 +43,9 @@ public interface CacheManager extends Cache {
 	 * @param primaryKey
 	 *            Primary key of the entity to search for
 	 * 
-	 * @return Object with the specified primary key or null
+	 * @return Entity with the specified primary key or null
 	 */
-	public Object get(Class<?> cls, Object primaryKey);
+	public <T> T get(Class<T> cls, Object primaryKey);
 
 	/**
 	 * Remove objects with inferred attributes from the cache, since there are

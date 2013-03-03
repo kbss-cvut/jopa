@@ -42,7 +42,7 @@ public class DisabledCacheManager implements CacheManager {
 		return null;
 	}
 
-	public Object get(Class<?> cls, Object iri) {
+	public <T> T get(Class<T> cls, Object iri) {
 		return null;
 	}
 

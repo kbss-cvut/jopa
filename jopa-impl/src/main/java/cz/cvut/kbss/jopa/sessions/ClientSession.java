@@ -9,6 +9,7 @@ import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.ontodriver.Connection;
 
 /**
  * ClientSession are bound to a single client and they provide the access to the
@@ -21,14 +22,6 @@ public class ClientSession extends AbstractSession {
 
 	private final ServerSession parent;
 	private TransactionOntologyAccessor accessor;
-
-	/**
-	 * Default constructor. Should not be used.
-	 */
-	public ClientSession() {
-		super();
-		parent = null;
-	}
 
 	public ClientSession(ServerSession parent) {
 		super();
@@ -73,6 +66,11 @@ public class ClientSession extends AbstractSession {
 			return;
 		}
 		getLiveObjectCache().evict(object.getClass(), primaryKey);
+	}
+
+	@Override
+	protected Connection acquireConnection() {
+		return parent.acquireConnection();
 	}
 
 	@Override

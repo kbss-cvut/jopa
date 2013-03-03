@@ -9,6 +9,21 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 interface ModuleInternal {
 
 	/**
+	 * Resolves whether this module contains entity with the specified primary
+	 * key. </p>
+	 * 
+	 * @param primaryKey
+	 *            Primary key
+	 * @return {@code true} if there is entity with the specified primary key in
+	 *         this internal, {@code false} otherwise
+	 * @throws OntoDriverException
+	 *             If {@code primaryKey} is not a valid URI
+	 * @throws NullPointerException
+	 *             If {@code primaryKey} is {@code null}
+	 */
+	public boolean containsEntity(Object primaryKey) throws OntoDriverException;
+
+	/**
 	 * Retrieves entity with the specified primary key from this module. </p>
 	 * 
 	 * @param cls
@@ -21,10 +36,12 @@ interface ModuleInternal {
 	 * @throws NullPointerException
 	 *             If {@code cls} or {@code primaryKey} is null
 	 */
-	public <T> T findEntity(Class<T> cls, Object primaryKey) throws OntoDriverException;
+	public <T> T findEntity(Class<T> cls, Object primaryKey)
+			throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>
+	 * 
 	 * @param primaryKey
 	 *            Primary key of the entity. Optional, if the primary key is not
 	 *            specified it will be generated and set on the entity
@@ -36,10 +53,12 @@ interface ModuleInternal {
 	 * @throws NullPointerException
 	 *             If {@code entity} is null
 	 */
-	public <T> void persistEntity(Object primaryKey, T entity) throws OntoDriverException;
+	public <T> void persistEntity(Object primaryKey, T entity)
+			throws OntoDriverException;
 
 	/**
 	 * Merges state of the specified entity into this module. </p>
+	 * 
 	 * @param primaryKey
 	 *            Primary key
 	 * @param entity
@@ -51,7 +70,8 @@ interface ModuleInternal {
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code primaryKey} is null
 	 */
-	public <T> void mergeEntity(Object primaryKey, T entity) throws OntoDriverException;
+	public <T> void mergeEntity(Object primaryKey, T entity)
+			throws OntoDriverException;
 
 	/**
 	 * Removes entity with the specified primary key. </p>
@@ -81,7 +101,8 @@ interface ModuleInternal {
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code fieldName} is null
 	 */
-	public <T> void loadFieldValue(T entity, String fieldName) throws OntoDriverException;
+	public <T> void loadFieldValue(T entity, String fieldName)
+			throws OntoDriverException;
 
 	/**
 	 * Retrieves changes performed since the last {@code commit} and resets the

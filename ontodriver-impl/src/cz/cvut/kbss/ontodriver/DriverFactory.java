@@ -34,7 +34,7 @@ public interface DriverFactory extends Closeable {
 	 *             occurs
 	 */
 	public StorageModule createStorageModule(Context ctx,
-			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
+			PersistenceProvider persistenceProvider, boolean autoCommit)
 			throws OntoDriverException;
 
 	/**
