@@ -20,10 +20,10 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  */
 public abstract class StorageManager implements Transactional {
 
-	protected final PersistenceProvider persistenceProvider;
+	protected final PersistenceProviderFacade persistenceProvider;
 	protected boolean open;
 
-	public StorageManager(PersistenceProvider persistenceProvider) {
+	public StorageManager(PersistenceProviderFacade persistenceProvider) {
 		if (persistenceProvider == null) {
 			throw new NullPointerException(
 					"Persistence provider cannot be null.");

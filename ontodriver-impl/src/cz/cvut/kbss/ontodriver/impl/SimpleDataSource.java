@@ -9,7 +9,7 @@ import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntoDriver;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.PersistenceProvider;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -56,12 +56,14 @@ public class SimpleDataSource implements DataSource {
 		throw new UnsupportedOperationException();
 	}
 
-	public Connection getConnection(PersistenceProvider persistenceProvider)
+	public Connection getConnection(
+			PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException {
 		return createConnection(persistenceProvider);
 	}
 
-	private Connection createConnection(PersistenceProvider persistenceProvider)
+	private Connection createConnection(
+			PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException {
 		final StorageManager sm = driver
 				.acquireStorageManager(persistenceProvider);

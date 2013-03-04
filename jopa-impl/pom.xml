@@ -186,11 +186,6 @@
         </dependency>
         <dependency>
         	<groupId>cz.cvut.kbss.jopa</groupId>
-        	<artifactId>ontodriver-api</artifactId>
-        	<version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-        	<groupId>cz.cvut.kbss.jopa</groupId>
         	<artifactId>ontodriver-impl</artifactId>
         	<version>0.0.1-SNAPSHOT</version>
         </dependency>

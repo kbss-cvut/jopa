@@ -30,12 +30,12 @@ public abstract class StorageModule implements Transactional {
 	/** Backward reference to the factory */
 	protected final DriverFactory factory;
 	/** Metamodel of the entity model */
-	protected final PersistenceProvider persistenceProvider;
+	protected final PersistenceProviderFacade persistenceProvider;
 	/** True if this module is open */
 	protected boolean open;
 
 	public StorageModule(Context context,
-			PersistenceProvider persistenceProvider, DriverFactory factory)
+			PersistenceProviderFacade persistenceProvider, DriverFactory factory)
 			throws OntoDriverException {
 		if (context == null) {
 			throw new NullPointerException("Context cannot be null.");

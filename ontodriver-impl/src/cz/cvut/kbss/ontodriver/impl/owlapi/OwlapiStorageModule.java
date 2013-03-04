@@ -7,7 +7,7 @@ import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
-import cz.cvut.kbss.ontodriver.PersistenceProvider;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageModule;
@@ -19,7 +19,7 @@ public class OwlapiStorageModule extends StorageModule {
 	private ModuleInternal internal;
 
 	public OwlapiStorageModule(Context context,
-			PersistenceProvider persistenceProvider, DriverFactory factory)
+			PersistenceProviderFacade persistenceProvider, DriverFactory factory)
 			throws OntoDriverException {
 		super(context, persistenceProvider, factory);
 		this.internal = new ModuleInternalImpl(connector.getOntologyData(),
@@ -136,7 +136,7 @@ public class OwlapiStorageModule extends StorageModule {
 	 * 
 	 * @return Persistence provider facade
 	 */
-	PersistenceProvider getPersistenceProvider() {
+	PersistenceProviderFacade getPersistenceProvider() {
 		return persistenceProvider;
 	}
 

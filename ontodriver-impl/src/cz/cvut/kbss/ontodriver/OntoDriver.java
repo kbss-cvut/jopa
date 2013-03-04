@@ -64,5 +64,6 @@ public interface OntoDriver {
 	 *             If {@code persistenceProvider} is {@code null}
 	 */
 	public StorageManager acquireStorageManager(
-			PersistenceProvider persistenceProvider) throws OntoDriverException;
+			PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException;
 }

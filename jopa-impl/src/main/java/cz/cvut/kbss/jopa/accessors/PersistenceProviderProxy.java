@@ -3,9 +3,9 @@ package cz.cvut.kbss.jopa.accessors;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
-import cz.cvut.kbss.ontodriver.PersistenceProvider;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 
-class PersistenceProviderProxy implements PersistenceProvider {
+class PersistenceProviderProxy implements PersistenceProviderFacade {
 
 	private final Metamodel metamodel;
 	private final ServerSession serverSession;

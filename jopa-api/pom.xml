@@ -55,11 +55,6 @@
 			<artifactId>persistence-api</artifactId>
 			<version>1.0.2</version>
 		</dependency>
-		<dependency>
-			<groupId>cz.cvut.kbss.jopa</groupId>
-			<artifactId>ontodriver-api</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
 	</dependencies>
 
 	<build>

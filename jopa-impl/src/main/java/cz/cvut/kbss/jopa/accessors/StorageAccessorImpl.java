@@ -10,7 +10,7 @@ import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.PersistenceProvider;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.SimpleDataSource;
 
@@ -18,7 +18,7 @@ public class StorageAccessorImpl implements StorageAccessor {
 
 	private final Metamodel metamodel;
 	private final ServerSession serverSession;
-	private final PersistenceProvider provider;
+	private final PersistenceProviderFacade provider;
 
 	private DataSource dataSource;
 
@@ -62,7 +62,7 @@ public class StorageAccessorImpl implements StorageAccessor {
 		this.dataSource = new SimpleDataSource(storageProps, properties);
 	}
 
-	private PersistenceProvider initPersistenceProvider() {
+	private PersistenceProviderFacade initPersistenceProvider() {
 		return new PersistenceProviderProxy(metamodel, serverSession);
 	}
 }

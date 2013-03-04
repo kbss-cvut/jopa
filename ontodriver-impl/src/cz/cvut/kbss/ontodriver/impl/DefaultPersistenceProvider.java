@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.ontodriver.PersistenceProvider;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 
 /**
  * This class is a default implementation of the {@code PersistenceProvider}
@@ -12,7 +12,7 @@ import cz.cvut.kbss.ontodriver.PersistenceProvider;
  * @author kidney
  * 
  */
-class DefaultPersistenceProvider implements PersistenceProvider {
+class DefaultPersistenceProvider implements PersistenceProviderFacade {
 
 	private final Metamodel metamodel;
 

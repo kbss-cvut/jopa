@@ -12,7 +12,8 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public abstract class DriverAbstractFactory implements DriverFactory {
 
-	protected static final Logger LOG = Logger.getLogger(DriverAbstractFactory.class.getName());
+	protected static final Logger LOG = Logger
+			.getLogger(DriverAbstractFactory.class.getName());
 
 	protected static List<Context> contexts;
 	protected static Map<Context, OntologyStorageProperties> contextsToProperties;
@@ -24,10 +25,12 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 
 	private boolean open;
 
-	protected DriverAbstractFactory(List<OntologyStorageProperties> storageProperties,
+	protected DriverAbstractFactory(
+			List<OntologyStorageProperties> storageProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		if (storageProperties == null || storageProperties.isEmpty()) {
-			throw new OntoDriverException("There has to be at least one storage specified.");
+			throw new OntoDriverException(
+					"There has to be at least one storage specified.");
 		}
 		if (DriverAbstractFactory.storageProperties == null) {
 			initFactory(storageProperties);
@@ -78,7 +81,8 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 * Default implementation which closes the specified module.
 	 */
 	@Override
-	public void releaseStorageModule(StorageModule module) throws OntoDriverException {
+	public void releaseStorageModule(StorageModule module)
+			throws OntoDriverException {
 		ensureOpen();
 		if (module == null) {
 			throw new NullPointerException();
@@ -88,7 +92,8 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		}
 		final StorageModule m = openedModules.remove(module);
 		if (m == null) {
-			throw new OntoDriverException("Module " + module + " not managed in this factory.");
+			throw new OntoDriverException("Module " + module
+					+ " not managed in this factory.");
 		}
 		m.close();
 	}
@@ -97,7 +102,8 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 * Default implementation which closes the specified connector.
 	 */
 	@Override
-	public void releaseStorageConnector(StorageConnector connector) throws OntoDriverException {
+	public void releaseStorageConnector(StorageConnector connector)
+			throws OntoDriverException {
 		ensureOpen();
 		if (connector == null) {
 			throw new NullPointerException();
@@ -121,7 +127,8 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 */
 	protected void ensureOpen() throws OntoDriverException {
 		if (!open) {
-			throw new OntoDriverException(new IllegalStateException("The factory is closed."));
+			throw new OntoDriverException(new IllegalStateException(
+					"The factory is closed."));
 		}
 	}
 
@@ -162,11 +169,13 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 *             If {@code metamodel} is null
 	 * @see #ensureState(Context)
 	 */
-	protected void ensureState(Context ctx, PersistenceProvider persistenceProvider)
+	protected void ensureState(Context ctx,
+			PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException {
 		ensureState(ctx);
 		if (persistenceProvider == null) {
-			throw new NullPointerException("PersistenceProvider cannot be null.");
+			throw new NullPointerException(
+					"PersistenceProvider cannot be null.");
 		}
 	}
 
@@ -209,7 +218,8 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		contexts = new ArrayList<Context>(storageProperties.size());
 		contextsToProperties = new HashMap<Context, OntologyStorageProperties>();
 		for (OntologyStorageProperties p : storageProperties) {
-			final Context ctx = new Context(p.getOntologyURI(), p.getConnectorType());
+			final Context ctx = new Context(p.getOntologyURI(),
+					p.getConnectorType());
 			// TODO Set expressiveness and signature for the context (will
 			// probably have to write own profile checker)
 			contexts.add(ctx);

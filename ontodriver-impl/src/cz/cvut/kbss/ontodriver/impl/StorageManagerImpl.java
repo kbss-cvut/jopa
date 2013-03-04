@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.ontodriver.Context;
-import cz.cvut.kbss.ontodriver.PersistenceProvider;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageManager;
@@ -40,7 +40,7 @@ public class StorageManagerImpl extends StorageManager {
 	 * @param contexts
 	 *            List of available contexts
 	 */
-	public StorageManagerImpl(PersistenceProvider persistenceProvider,
+	public StorageManagerImpl(PersistenceProviderFacade persistenceProvider,
 			List<Context> contexts, OntoDriverImpl driver) {
 		super(persistenceProvider);
 		if (contexts == null) {

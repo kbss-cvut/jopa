@@ -16,7 +16,7 @@ import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.OntoDriver;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.PersistenceProvider;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -77,7 +77,8 @@ public class OntoDriverImpl implements OntoDriver {
 
 	@Override
 	public StorageManager acquireStorageManager(
-			PersistenceProvider persistenceProvider) throws OntoDriverException {
+			PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException {
 		if (persistenceProvider == null) {
 			return acquireStorageManager();
 		}
