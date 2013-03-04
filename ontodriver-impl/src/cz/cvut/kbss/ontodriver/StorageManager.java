@@ -25,7 +25,8 @@ public abstract class StorageManager implements Transactional {
 
 	public StorageManager(PersistenceProvider persistenceProvider) {
 		if (persistenceProvider == null) {
-			throw new NullPointerException("Metamodel is cannot be null.");
+			throw new NullPointerException(
+					"Persistence provider cannot be null.");
 		}
 		this.persistenceProvider = persistenceProvider;
 		this.open = true;

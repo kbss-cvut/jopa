@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver;
 
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -15,7 +16,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 public interface OntoDriver {
 
 	/**
-	 * Acquires storage manager for the specified connection. </p>
+	 * Acquires storage manager. </p>
 	 * 
 	 * Storage managers control and provide access to the underlying storage.
 	 * The implementation of {@code OntoDriver} can create them on demand for
@@ -29,7 +30,25 @@ public interface OntoDriver {
 	public StorageManager acquireStorageManager() throws OntoDriverException;
 
 	/**
-	 * Acquires storage manager for the specified connection. </p>
+	 * Acquires storage manager. </p>
+	 * 
+	 * Storage managers control and provide access to the underlying storage.
+	 * This method does not require persistence provider facade to be provided,
+	 * however metamodel is required.
+	 * 
+	 * @param metamodel
+	 *            Metamodel
+	 * @return {@code StorageManager}
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @throws NullPointerException
+	 *             If {@code metamodel} is {@code null}
+	 */
+	public StorageManager acquireStorageManager(Metamodel metamodel)
+			throws OntoDriverException;
+
+	/**
+	 * Acquires storage manager. </p>
 	 * 
 	 * Storage managers control and provide access to the underlying storage.
 	 * The implementation of {@code OntoDriver} can create them on demand for
@@ -41,7 +60,9 @@ public interface OntoDriver {
 	 * @return {@code StorageManager}
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
+	 * @throws NullPointerException
+	 *             If {@code persistenceProvider} is {@code null}
 	 */
-	public StorageManager acquireStorageManager(PersistenceProvider persistenceProvider)
-			throws OntoDriverException;
+	public StorageManager acquireStorageManager(
+			PersistenceProvider persistenceProvider) throws OntoDriverException;
 }

@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.OntoDriver;
@@ -56,12 +57,22 @@ public class OntoDriverImpl implements OntoDriver {
 		this.contexts = factories.values().iterator().next().getContexts();
 	}
 
-	/**
-	 * @throws UnsupportedOperationException
-	 */
 	@Override
 	public StorageManager acquireStorageManager() throws OntoDriverException {
-		throw new UnsupportedOperationException();
+		final StorageManager m = new StorageManagerImpl(
+				new DefaultPersistenceProvider(null), contexts, this);
+		return m;
+	}
+
+	@Override
+	public StorageManager acquireStorageManager(Metamodel metamodel)
+			throws OntoDriverException {
+		if (metamodel == null) {
+			throw new NullPointerException("Metamodel cannot be null.");
+		}
+		final StorageManager m = new StorageManagerImpl(
+				new DefaultPersistenceProvider(metamodel), contexts, this);
+		return m;
 	}
 
 	@Override
