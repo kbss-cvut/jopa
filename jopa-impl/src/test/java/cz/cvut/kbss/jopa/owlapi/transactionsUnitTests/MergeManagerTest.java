@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.owlapi.OWLClassB;
-import cz.cvut.kbss.jopa.owlapi.utils.AccessorStub;
 import cz.cvut.kbss.jopa.owlapi.utils.ServerSessionStub;
 import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
 import cz.cvut.kbss.jopa.sessions.MergeManager;
@@ -32,9 +31,9 @@ public class MergeManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		AccessorStub sor = new AccessorStub();
-		this.session = new ServerSessionStub(sor);
-		this.uow = (UnitOfWorkImpl) session.acquireClientSession().acquireUnitOfWork();
+		this.session = new ServerSessionStub();
+		this.uow = (UnitOfWorkImpl) session.acquireClientSession()
+				.acquireUnitOfWork();
 		this.cloneBuilder = new CloneBuilderStub(uow);
 		mm = new MergeManagerImpl(uow);
 		// Set the stub as the clone builder
@@ -56,8 +55,8 @@ public class MergeManagerTest {
 		orig.setUri(pk);
 		orig.setStringAttribute("ANiceAttribute");
 		final OWLClassB clone = (OWLClassB) cloneBuilder.buildClone(orig);
-		final ObjectChangeSetImpl chs = new ObjectChangeSetImpl(orig, clone, false,
-				uow.getUowChangeSet());
+		final ObjectChangeSetImpl chs = new ObjectChangeSetImpl(orig, clone,
+				false, uow.getUowChangeSet());
 		clone.setStringAttribute("AnotherStringAttribute");
 		this.mm.mergeChangesOnObject(clone, chs);
 		assertEquals(clone.getStringAttribute(), orig.getStringAttribute());
@@ -78,12 +77,14 @@ public class MergeManagerTest {
 		this.uow.removeObject(cloneTwo);
 		((OWLClassB) cloneOne).setStringAttribute("testAtt");
 		this.uow.getUowChangeSet().addDeletedObject(objTwo, cloneTwo);
-		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(objOne, cloneOne, false, null);
+		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(objOne,
+				cloneOne, false, null);
 		this.uow.getUowChangeSet().addObjectChangeSet(ochs);
 		this.mm.mergeChangesFromChangeSet(uow.getUowChangeSet());
 		this.uow.clear();
 		assertFalse(uow.contains(cloneTwo));
-		assertEquals(((OWLClassB) cloneOne).getStringAttribute(), objOne.getStringAttribute());
+		assertEquals(((OWLClassB) cloneOne).getStringAttribute(),
+				objOne.getStringAttribute());
 	}
 
 	@Test
@@ -93,11 +94,12 @@ public class MergeManagerTest {
 		objOne.setUri(pk);
 		objOne.setStringAttribute("ABeautifulAttribute");
 		final Object clone = cloneBuilder.buildClone(objOne);
-		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(objOne, clone, true, null);
+		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(objOne, clone,
+				true, null);
 		this.uow.getUowChangeSet().addNewObjectChangeSet(ochs);
 		this.mm.mergeChangesFromChangeSet(uow.getUowChangeSet());
-		assertTrue(uow.getLiveObjectCache()
-				.contains(objOne.getClass(), IRI.create(objOne.getUri())));
+		assertTrue(uow.getLiveObjectCache().contains(objOne.getClass(),
+				IRI.create(objOne.getUri())));
 	}
 
 	@Test
@@ -106,7 +108,8 @@ public class MergeManagerTest {
 		final URI pk = URI.create("http://newOnesUri");
 		newOne.setUri(pk);
 		final Object clone = cloneBuilder.buildClone(newOne);
-		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(newOne, clone, true, null);
+		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(newOne, clone,
+				true, null);
 		this.mm.mergeNewObject(ochs);
 		final IRI iri = IRI.create(pk);
 		boolean res = uow.getLiveObjectCache().contains(newOne.getClass(), iri);
@@ -122,8 +125,8 @@ public class MergeManagerTest {
 		/**
 		 * Does no merge, just assigns the clone to the original
 		 */
-		public Object mergeChanges(Object original, Object clone, ObjectChangeSet changeSet,
-				MergeManager manager) {
+		public Object mergeChanges(Object original, Object clone,
+				ObjectChangeSet changeSet, MergeManager manager) {
 			OWLClassB or = (OWLClassB) original;
 			OWLClassB cl = (OWLClassB) clone;
 			or.setStringAttribute(cl.getStringAttribute());

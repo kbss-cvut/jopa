@@ -7,24 +7,15 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
-import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.model.query.Query;
-import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassB;
@@ -33,7 +24,6 @@ import cz.cvut.kbss.jopa.owlapi.OWLClassE;
 import cz.cvut.kbss.jopa.owlapi.OWLClassF;
 import cz.cvut.kbss.jopa.sessions.CacheManagerImpl;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 public class CacheManagerTest {
 
@@ -47,8 +37,7 @@ public class CacheManagerTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		final AccessorStub accessor = new AccessorStub();
-		session = new SessionStub(accessor);
+		session = new SessionStub();
 		final URI pk = URI.create("http://testEntity");
 		testA = new OWLClassA();
 		testA.setUri(pk);
@@ -76,7 +65,8 @@ public class CacheManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		this.mngr = new CacheManagerImpl(session, Collections.<String, String> emptyMap());
+		this.mngr = new CacheManagerImpl(session,
+				Collections.<String, String> emptyMap());
 	}
 
 	@Test
@@ -106,7 +96,8 @@ public class CacheManagerTest {
 		duplicate.setStringAttribute(newStr);
 		duplicate.setUri(testA.getUri());
 		mngr.add(duplicate.getUri(), duplicate);
-		final OWLClassA res = (OWLClassA) mngr.get(testA.getClass(), testA.getUri());
+		final OWLClassA res = (OWLClassA) mngr.get(testA.getClass(),
+				testA.getUri());
 		assertNotNull(res);
 		assertFalse(newStr.equals(res.getStringAttribute()));
 		assertEquals(testA.getStringAttribute(), res.getStringAttribute());
@@ -117,7 +108,8 @@ public class CacheManagerTest {
 		mngr.addAll(listOfBs);
 		for (OWLClassB b : listOfBs.values()) {
 			assertTrue(mngr.contains(OWLClassB.class, b.getUri()));
-			final OWLClassB res = (OWLClassB) mngr.get(OWLClassB.class, b.getUri());
+			final OWLClassB res = (OWLClassB) mngr.get(OWLClassB.class,
+					b.getUri());
 			assertNotNull(res);
 			assertEquals(b.getUri(), res.getUri());
 		}
@@ -279,84 +271,7 @@ public class CacheManagerTest {
 
 	private static class SessionStub extends ServerSession {
 
-		private final TransactionOntologyAccessor accessor;
-
-		public SessionStub(AccessorStub accessor) {
-			this.accessor = accessor;
-		}
-
-		public TransactionOntologyAccessor getOntologyAccessor() {
-			return this.accessor;
+		public SessionStub() {
 		}
 	}
-
-	private static class AccessorStub implements TransactionOntologyAccessor {
-
-		public void persistEntity(Object entity, UnitOfWork uow) {
-		}
-
-		public void removeEntity(Object entity) {
-		}
-
-		public <T> T readEntity(Class<T> cls, Object uri) {
-			return null;
-		}
-
-		public void writeChanges(List<OWLOntologyChange> changes) {
-		}
-
-		public void writeChange(OWLOntologyChange change) {
-
-		}
-
-		public void mergeToWorkingOntology() {
-		}
-
-		public boolean isInOntologySignature(IRI uri, boolean searchImports) {
-			return false;
-		}
-
-		public OWLNamedIndividual getOWLNamedIndividual(IRI identifier) {
-			return null;
-		}
-
-		/**
-		 * We need only this method
-		 */
-		public IRI getIdentifier(Object object) {
-			OWLClassA tmp = (OWLClassA) object;
-			return IRI.create(tmp.getUri());
-		}
-
-		public void persistExistingEntity(Object entity, UnitOfWork uow) {
-		}
-
-		public Query<?> createQuery(String qlString, final EntityManager em) {
-			return null;
-		}
-
-		public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, boolean sparql,
-				final EntityManager em) {
-			return null;
-		}
-
-		public Query<List<String>> createNativeQuery(String sqlString, final EntityManager em) {
-			return null;
-		}
-
-		public void close() {
-		}
-
-		public void generateNewIRI(Object entity) {
-		}
-
-		public boolean isOpen() {
-			return true;
-		}
-
-		public void loadReference(Object entity, Field field, UnitOfWork uow) {
-		}
-
-	}
-
 }

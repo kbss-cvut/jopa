@@ -1,7 +1,5 @@
 package cz.cvut.kbss.ontodriver;
 
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-
 /**
  * Facade to the persistence provider.
  * 
@@ -12,6 +10,8 @@ public interface PersistenceProvider {
 
 	/**
 	 * Gets metamodel of this persistence provider.
+	 * 
+	 * TODO Introduces circular dependency between JOPA API and OntoDriver API
 	 * 
 	 * @return Metamodel
 	 */

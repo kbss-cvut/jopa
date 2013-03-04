@@ -11,18 +11,14 @@ import javax.persistence.EntityTransaction;
 
 import org.semanticweb.owlapi.model.IRI;
 
-import cz.cvut.kbss.jopa.accessors.OntologyAccessor;
-import cz.cvut.kbss.jopa.accessors.OntologyAccessorFactory;
-import cz.cvut.kbss.jopa.accessors.OntologyAccessorImpl;
-import cz.cvut.kbss.jopa.accessors.OntologyDataHolder;
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
-import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
@@ -44,9 +40,6 @@ public class ServerSession extends AbstractSession {
 	private CacheManager liveObjectCache;
 	private StorageAccessor storageAccessor;
 
-	private OntologyAccessorFactory accessorFactory;
-	private OntologyAccessor ontologyAccessor;
-
 	private Map<EntityTransaction, EntityManager> runningTransactions;
 	private Map<Object, UnitOfWorkImpl> activePersistenceContexts;
 	private Map<UnitOfWorkImpl, Set<Object>> uowsToEntities;
@@ -61,15 +54,6 @@ public class ServerSession extends AbstractSession {
 		this.metamodel = metamodel;
 		this.managedClasses = processTypes(metamodel.getEntities());
 		initialize(storageProperties, properties, metamodel);
-	}
-
-	// TODO To be removed
-	public ServerSession(Map<String, String> properties, Metamodel metamodel,
-			OntologyAccessorFactory factory) {
-		this.metamodel = metamodel;
-		this.managedClasses = processTypes(metamodel.getEntities());
-		this.accessorFactory = factory;
-		// initialize(properties, metamodel);
 	}
 
 	/**
@@ -107,8 +91,6 @@ public class ServerSession extends AbstractSession {
 		this.uowsToEntities = new WeakHashMap<UnitOfWorkImpl, Set<Object>>();
 		this.storageAccessor = new StorageAccessorImpl(metamodel, this,
 				storageProperties, properties);
-		this.ontologyAccessor = accessorFactory.createCentralAccessor(
-				properties, metamodel, this);
 		String cache = properties
 				.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
 		if (cache == null || cache.equals("on")) {
@@ -141,18 +123,6 @@ public class ServerSession extends AbstractSession {
 
 	public CacheManager getLiveObjectCache() {
 		return liveObjectCache;
-	}
-
-	public TransactionOntologyAccessor getOntologyAccessor() {
-		ontologyAccessor.acquireReadLock();
-		final OntologyDataHolder holder = ontologyAccessor
-				.cloneOntologyStructures();
-		ontologyAccessor.releaseReadLock();
-		return accessorFactory.createTransactionalAccessor(holder, this);
-	}
-
-	public OntologyAccessor getAccessor() {
-		return this.ontologyAccessor;
 	}
 
 	public Map<EntityTransaction, EntityManager> getRunningTransactions() {
@@ -195,7 +165,6 @@ public class ServerSession extends AbstractSession {
 				}
 			}
 		}
-		ontologyAccessor.close();
 	}
 
 	public void releaseClientSession(ClientSession session) {
@@ -206,8 +175,8 @@ public class ServerSession extends AbstractSession {
 		if (object == null) {
 			return;
 		}
-		final IRI primaryKey = ((OntologyAccessorImpl) ontologyAccessor)
-				.getIdentifier(object);
+		final IRI primaryKey = EntityPropertiesUtils.getPrimaryKey(object,
+				metamodel);
 		if (primaryKey == null) {
 			return;
 		}
@@ -219,22 +188,6 @@ public class ServerSession extends AbstractSession {
 		return null;
 	}
 
-	public Vector<?> readAllObjects(Class<?> domainClass) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Object readObject(Class<?> domainClass) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public <T> T readObject(Class<T> cls, Object primaryKey) {
-		T result = ontologyAccessor.readEntity(cls, primaryKey);
-		getLiveObjectCache().add(primaryKey, result);
-		return result;
-	}
-
 	public Set<Class<?>> getManagedTypes() {
 		return this.managedClasses;
 	}
@@ -242,10 +195,6 @@ public class ServerSession extends AbstractSession {
 	@Override
 	Metamodel getMetamodel() {
 		return metamodel;
-	}
-
-	public OntologyAccessorFactory getAccessorFactory() {
-		return accessorFactory;
 	}
 
 	/**

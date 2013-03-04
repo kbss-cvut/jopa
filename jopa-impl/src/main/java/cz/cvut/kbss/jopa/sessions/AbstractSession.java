@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
@@ -39,7 +38,9 @@ public abstract class AbstractSession implements Session {
 		if (qlString == null || qlString.equalsIgnoreCase("")) {
 			return null;
 		}
-		return getOntologyAccessor().createQuery(qlString, em);
+		// TODO add query support
+		return null;
+		// return getOntologyAccessor().createQuery(qlString, em);
 	}
 
 	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass,
@@ -47,8 +48,10 @@ public abstract class AbstractSession implements Session {
 		if (query == null || query.equalsIgnoreCase("") || resultClass == null) {
 			return null;
 		}
-		return getOntologyAccessor()
-				.createQuery(query, resultClass, sparql, em);
+		// TODO add query support
+		return null;
+		// return getOntologyAccessor()
+		// .createQuery(query, resultClass, sparql, em);
 	}
 
 	public Query<List<String>> createNativeQuery(String sparql,
@@ -56,7 +59,9 @@ public abstract class AbstractSession implements Session {
 		if (sparql == null || sparql.equalsIgnoreCase("")) {
 			return null;
 		}
-		return getOntologyAccessor().createNativeQuery(sparql, em);
+		// TODO add query support
+		return null;
+		// return getOntologyAccessor().createNativeQuery(sparql, em);
 	}
 
 	/**
@@ -86,15 +91,6 @@ public abstract class AbstractSession implements Session {
 	 * @return Second level cache
 	 */
 	public abstract CacheManager getLiveObjectCache();
-
-	/**
-	 * Get the ontology accessor. Each client session has its own
-	 * TransactionOntologyAccessor and this accessor is valid only during a
-	 * single transaction.
-	 * 
-	 * @return Transaction ontology accessor.
-	 */
-	public abstract TransactionOntologyAccessor getOntologyAccessor();
 
 	/**
 	 * Acquires connection to the underlying ontology storage. </p>

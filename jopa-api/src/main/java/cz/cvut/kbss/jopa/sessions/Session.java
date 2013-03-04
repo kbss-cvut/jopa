@@ -1,7 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.util.List;
-import java.util.Vector;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.query.Query;
@@ -64,35 +63,6 @@ public interface Session {
 	 */
 	public Query<List<String>> createNativeQuery(String sparql,
 			final EntityManager em);
-
-	/**
-	 * Reads all objects of the specified class from the ontology.
-	 * 
-	 * @param domainClass
-	 *            Class
-	 * @return Vector Returns a Vector of objects of the given class.
-	 */
-	public Vector<?> readAllObjects(Class<?> domainClass);
-
-	/**
-	 * Reads the first object of the given Class from the ontology.
-	 * 
-	 * @param domainClass
-	 *            Class
-	 * @return Object
-	 */
-	public Object readObject(Class<?> domainClass);
-
-	/**
-	 * Reads the first object with the same primary key from the ontology.
-	 * 
-	 * @param cls
-	 *            Class
-	 * @param primaryKey
-	 *            Object
-	 * @return
-	 */
-	public <T> T readObject(Class<T> cls, Object primaryKey);
 
 	/**
 	 * Remove the given object from the session's live object cache. This is

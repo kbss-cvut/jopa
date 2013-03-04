@@ -18,13 +18,13 @@ import org.junit.Test;
 import cz.cvut.kbss.jopa.adapters.IndirectList;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassC;
-import cz.cvut.kbss.jopa.owlapi.utils.AccessorStub;
 import cz.cvut.kbss.jopa.owlapi.utils.ServerSessionStub;
 import cz.cvut.kbss.jopa.owlapi.utils.UnitOfWorkImplStub;
 
 public class IndirectListTest {
 
-	private static final Logger LOG = Logger.getLogger(IndirectListTest.class.getName());
+	private static final Logger LOG = Logger.getLogger(IndirectListTest.class
+			.getName());
 
 	private static UnitOfWorkImplStub uow;
 	private static List<OWLClassA> list;
@@ -36,7 +36,7 @@ public class IndirectListTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		LOG.setLevel(Level.ALL);
-		uow = new UnitOfWorkImplStub(new ServerSessionStub(new AccessorStub()));
+		uow = new UnitOfWorkImplStub(new ServerSessionStub());
 		owner = new OWLClassC();
 		owner.setUri(URI.create("http://C"));
 		backupList = new ArrayList<OWLClassA>();
@@ -61,13 +61,15 @@ public class IndirectListTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testConstructorNull() {
-		final IndirectList<OWLClassA> l = new IndirectList<OWLClassA>(owner, uow, null);
+		final IndirectList<OWLClassA> l = new IndirectList<OWLClassA>(owner,
+				uow, null);
 		assertNull(l);
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testConstructorNullTwo() {
-		final IndirectList<OWLClassA> l = new IndirectList<OWLClassA>(owner, null, list);
+		final IndirectList<OWLClassA> l = new IndirectList<OWLClassA>(owner,
+				null, list);
 		assertNull(l);
 	}
 

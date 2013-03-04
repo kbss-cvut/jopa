@@ -1,0 +1,26 @@
+#surefire
+#Mon Feb 11 23:41:00 CET 2013
+testClassesDirectory=/home/kidney/Development/Java/JOPA/jopa-driver/ontodriver-api/target/test-classes
+useManifestOnlyJar=true
+classPathUrl.1=/home/kidney/Development/Java/JOPA/jopa-driver/ontodriver-api/target/classes
+reportsDirectory=/home/kidney/Development/Java/JOPA/jopa-driver/ontodriver-api/target/surefire-reports
+classPathUrl.0=/home/kidney/Development/Java/JOPA/jopa-driver/ontodriver-api/target/test-classes
+dirscanner.0=directoryScannerOptions
+providerConfiguration=org.apache.maven.surefire.junit.JUnit3Provider
+testSuiteDefinitionTestSourceDirectory=/home/kidney/Development/Java/JOPA/jopa-driver/ontodriver-api/src/test/java
+surefireClassPathUrl.1=/home/kidney/.m2/repository/org/apache/maven/surefire/surefire-api/2.7.1/surefire-api-2.7.1.jar
+surefireClassPathUrl.0=/home/kidney/.m2/repository/org/apache/maven/surefire/surefire-junit3/2.7.1/surefire-junit3-2.7.1.jar
+report.2=org.apache.maven.surefire.report.XMLReporter
+useSystemClassLoader=true
+report.1=org.apache.maven.surefire.report.BriefFileReporter
+excludes0=**/*$*
+report.0=org.apache.maven.surefire.report.ForkingConsoleReporter
+isTrimStackTrace=true
+dirscanner.0.params=/home/kidney/Development/Java/JOPA/jopa-driver/ontodriver-api/target/test-classes|[**/Test*.java, **/*Test.java, **/*TestCase.java]|[**/*$*]
+enableAssertions=true
+includes2=**/*TestCase.java
+failIfNoTests=false
+includes1=**/*Test.java
+dirscanner.0.types=java.io.File|java.util.ArrayList|java.util.ArrayList
+includes0=**/Test*.java
+childDelegation=false

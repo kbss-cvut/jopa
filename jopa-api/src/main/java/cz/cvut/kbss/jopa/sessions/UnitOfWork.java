@@ -16,6 +16,13 @@ public interface UnitOfWork extends Session {
 	public void commit();
 
 	/**
+	 * Rolls back changes done since last commit.
+	 * 
+	 * @see #commit()
+	 */
+	public void rollback();
+
+	/**
 	 * Returns true if the specified entity is managed in the current
 	 * persistence context. This method is used by the EntityManager's contains
 	 * method.

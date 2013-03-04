@@ -29,13 +29,15 @@ import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
 
 public aspect BeanListenerAspect {
 
-	private static final Logger LOG = Logger.getLogger(BeanListenerAspect.class.getName());
+	private static final Logger LOG = Logger.getLogger(BeanListenerAspect.class
+			.getName());
 
 	pointcut getter() : get( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
 
 	pointcut setter() : set( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
 
 	before() : setter() {
+		// Check for inferred field modification
 		final Object object = thisJoinPoint.getTarget();
 		Class<?> cls = object.getClass();
 		Field field = null;
@@ -59,15 +61,18 @@ public aspect BeanListenerAspect {
 			throw new OWLPersistenceException(e.getMessage());
 		}
 		if (CloneBuilderImpl.isFieldInferred(field)) {
-			throw new OWLPersistenceException("Modifying inferred attributes is forbidden.");
+			throw new OWLPersistenceException(
+					"Modifying inferred attributes is forbidden.");
 		}
 	}
 
 	after() returning : setter() {
+		// Persist changes done druing transaction
 		final Object entity = thisJoinPoint.getTarget();
 		Field f;
 		try {
-			f = entity.getClass().getDeclaredField(thisJoinPoint.getSignature().getName());
+			f = entity.getClass().getDeclaredField(
+					thisJoinPoint.getSignature().getName());
 			OWLAPIPersistenceProvider.persistEntityChanges(entity, f);
 		} catch (NoSuchFieldException e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
@@ -79,6 +84,7 @@ public aspect BeanListenerAspect {
 	}
 
 	before() : getter()  {
+		// Load lazy loaded entity field
 		try {
 			final Object object = thisJoinPoint.getTarget();
 			final Field field = object.getClass().getDeclaredField(
@@ -86,9 +92,9 @@ public aspect BeanListenerAspect {
 
 			field.setAccessible(true);
 
-			if (LOG.isLoggable(Level.CONFIG)) {
-				LOG.config("*** Fetching " + field.getName() + " of " + object.getClass() + ":"
-						+ object.hashCode());
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("*** Fetching " + field.getName() + " of "
+						+ object.getClass() + ":" + object.hashCode());
 			}
 
 			OWLAPIPersistenceProvider.loadReference(object, field);

@@ -18,6 +18,7 @@ package cz.cvut.kbss.jopa;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -29,6 +30,7 @@ import cz.cvut.kbss.jopa.model.PersistenceProperties;
 import cz.cvut.kbss.jopa.model.PersistenceProvider;
 import cz.cvut.kbss.jopa.model.PersistenceProviderResolverHolder;
 import cz.cvut.kbss.jopa.model.PersistenceUtil;
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 public class Persistence {
 
@@ -55,8 +57,8 @@ public class Persistence {
 	 */
 	public static EntityManagerFactory createEntityManagerFactory(
 			final String persistenceUnitName) {
-		return createEntityManagerFactory(persistenceUnitName, Collections
-				.<String, String> emptyMap());
+		return createEntityManagerFactory(persistenceUnitName,
+				Collections.<String, String> emptyMap());
 	}
 
 	public static EntityManagerFactory createEntityManagerFactory(
@@ -68,6 +70,14 @@ public class Persistence {
 		// + persistenceUnitName + "' already configured.");
 		// }
 
+		return createEntityManagerFactory(persistenceUnitName,
+				Collections.<OntologyStorageProperties> emptyList(), parameters);
+	}
+
+	public static EntityManagerFactory createEntityManagerFactory(
+			final String persistenceUnitName,
+			final List<OntologyStorageProperties> storageProperties,
+			final Map<String, String> parameters) {
 		final Map<String, String> realParams = new HashMap<String, String>();
 
 		if (mapProp.containsKey(persistenceUnitName)) {

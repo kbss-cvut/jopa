@@ -9,11 +9,4 @@
   	<relativePath>../jopa-parent/pom.xml</relativePath>
   </parent>
   <name>OntoDriver - API</name>
-  <dependencies>
-  	<dependency>
-  		<groupId>cz.cvut.kbss.jopa</groupId>
-  		<artifactId>jopa-api</artifactId>
-  		<version>0.3-SNAPSHOT</version>
-  	</dependency>
-  </dependencies>
 </project>

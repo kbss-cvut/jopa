@@ -22,13 +22,13 @@ import org.junit.Test;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassF;
-import cz.cvut.kbss.jopa.owlapi.utils.AccessorStub;
 import cz.cvut.kbss.jopa.owlapi.utils.ServerSessionStub;
 import cz.cvut.kbss.jopa.owlapi.utils.UnitOfWorkImplStub;
 
 public class IndirectSetTest {
 
-	private static final Logger LOG = Logger.getLogger(IndirectListTest.class.getName());
+	private static final Logger LOG = Logger.getLogger(IndirectListTest.class
+			.getName());
 
 	private static UnitOfWorkImplStub uow;
 	private static Set<OWLClassA> set;
@@ -40,7 +40,7 @@ public class IndirectSetTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		LOG.setLevel(Level.ALL);
-		uow = new UnitOfWorkImplStub(new ServerSessionStub(new AccessorStub()));
+		uow = new UnitOfWorkImplStub(new ServerSessionStub());
 		owner = new OWLClassF();
 		owner.setUri(URI.create("http://C"));
 		backupSet = new HashSet<OWLClassA>();
@@ -66,7 +66,8 @@ public class IndirectSetTest {
 	@Test(expected = NullPointerException.class)
 	public void testIndirectSet() {
 		LOG.config("Test: create new IndirectSet with null owner. Should throw exception.");
-		final IndirectSet<OWLClassA> res = new IndirectSet<OWLClassA>(owner, null, set);
+		final IndirectSet<OWLClassA> res = new IndirectSet<OWLClassA>(owner,
+				null, set);
 		assertNull(res);
 	}
 

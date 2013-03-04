@@ -7,8 +7,8 @@ import java.util.logging.Level;
 
 import org.semanticweb.owlapi.model.IRI;
 
-import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 
 /**
@@ -21,7 +21,6 @@ import cz.cvut.kbss.ontodriver.Connection;
 public class ClientSession extends AbstractSession {
 
 	private final ServerSession parent;
-	private TransactionOntologyAccessor accessor;
 
 	public ClientSession(ServerSession parent) {
 		super();
@@ -43,9 +42,6 @@ public class ClientSession extends AbstractSession {
 
 	@Override
 	public void release() {
-		if (accessor.isOpen()) {
-			accessor.close();
-		}
 	}
 
 	@Override
@@ -61,7 +57,8 @@ public class ClientSession extends AbstractSession {
 		if (object == null) {
 			return;
 		}
-		final IRI primaryKey = getOntologyAccessor().getIdentifier(object);
+		final IRI primaryKey = EntityPropertiesUtils.getPrimaryKey(object,
+				getMetamodel());
 		if (primaryKey == null) {
 			return;
 		}
@@ -73,29 +70,8 @@ public class ClientSession extends AbstractSession {
 		return parent.acquireConnection();
 	}
 
-	@Override
-	public TransactionOntologyAccessor getOntologyAccessor() {
-		// If the accessor is not set or is closed, acquire a new one
-		if (accessor == null || !accessor.isOpen()) {
-			this.accessor = parent.getOntologyAccessor();
-		}
-		return accessor;
-	}
-
 	public Vector<?> executeQuery(String sparqlQuery) {
 		return this.parent.executeQuery(sparqlQuery);
-	}
-
-	public Vector<?> readAllObjects(Class<?> domainClass) {
-		return this.parent.readAllObjects(domainClass);
-	}
-
-	public Object readObject(Class<?> domainClass) {
-		return this.parent.readObject(domainClass);
-	}
-
-	public <T> T readObject(Class<T> cls, Object primaryKey) {
-		return this.parent.readObject(cls, primaryKey);
 	}
 
 	public Set<Class<?>> getManagedTypes() {

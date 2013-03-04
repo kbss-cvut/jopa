@@ -6,6 +6,7 @@ import java.util.Map;
 import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 public class MergeManagerImpl implements MergeManager {
 
@@ -101,8 +102,8 @@ public class MergeManagerImpl implements MergeManager {
 		}
 		// Put the original object into the shared session cache
 		Object newObject = changeSet.getChangedObject();
-		final IRI primaryKey = session.getOntologyAccessor().getIdentifier(
-				newObject);
+		final IRI primaryKey = EntityPropertiesUtils.getPrimaryKey(newObject,
+				session.getMetamodel());
 		session.getLiveObjectCache().acquireWriteLock();
 		session.getLiveObjectCache().add(primaryKey, newObject);
 		session.getLiveObjectCache().releaseWriteLock();

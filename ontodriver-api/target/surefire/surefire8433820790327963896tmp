@@ -1,0 +1,5 @@
+#surefire
+#Mon Feb 11 23:41:00 CET 2013
+user.dir=/home/kidney/Development/Java/JOPA/jopa-driver/ontodriver-api
+localRepository=/home/kidney/.m2/repository
+basedir=/home/kidney/Development/Java/JOPA/jopa-driver/ontodriver-api

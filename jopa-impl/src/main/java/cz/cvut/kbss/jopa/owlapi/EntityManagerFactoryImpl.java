@@ -18,11 +18,10 @@ package cz.cvut.kbss.jopa.owlapi;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import cz.cvut.kbss.jopa.accessors.OntologyAccessorFactory;
-import cz.cvut.kbss.jopa.accessors.OntologyAccessorFactoryImpl;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
@@ -30,6 +29,7 @@ import cz.cvut.kbss.jopa.model.PersistenceUnitUtil;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.Cache;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		PersistenceUnitUtil {
@@ -38,15 +38,26 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 
 	private final Set<AbstractEntityManager> em = new HashSet<AbstractEntityManager>();
 	private final Map<String, String> properties;
+	private final List<OntologyStorageProperties> storageProperties;
 
 	private ServerSession serverSession;
-	private OntologyAccessorFactory accessorFactory;
 
 	private MetamodelImpl metamodel = null;
 
 	public EntityManagerFactoryImpl(final Map<String, String> properties) {
 		this.properties = properties;
-		this.accessorFactory = new OntologyAccessorFactoryImpl();
+		// TODO The storage properties should be read from persistence.xml
+		this.storageProperties = Collections.emptyList();
+	}
+
+	public EntityManagerFactoryImpl(
+			List<OntologyStorageProperties> storageProperties,
+			Map<String, String> properties) {
+		if (storageProperties == null) {
+			throw new NullPointerException();
+		}
+		this.properties = properties;
+		this.storageProperties = storageProperties;
 	}
 
 	public void close() {
@@ -94,8 +105,8 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 	 */
 	private void initServerSession(Map<String, String> newMap) {
 		if (this.serverSession == null) {
-			this.serverSession = new ServerSession(newMap, getMetamodel(),
-					accessorFactory);
+			this.serverSession = new ServerSession(storageProperties, newMap,
+					getMetamodel());
 		}
 	}
 

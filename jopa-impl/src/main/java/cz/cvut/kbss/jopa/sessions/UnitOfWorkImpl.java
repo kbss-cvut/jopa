@@ -15,7 +15,6 @@ import java.util.logging.Level;
 
 import org.semanticweb.owlapi.model.IRI;
 
-import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.OWLInferredAttributeModifiedException;
@@ -86,16 +85,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		return parent.acquireConnection();
 	}
 
-	public Vector<?> readAllObjects(Class<?> domainClass) {
-		// TODO Auto-generated method stub
-		return this.parent.readAllObjects(domainClass);
-	}
-
-	public Object readObject(Class<?> domainClass) {
-		// TODO
-		return this.parent.readObject(domainClass);
-	}
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -114,18 +103,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		result = getObjectFromCache(cls, primaryKey);
 		if (result == null) {
 			// The object is not in the session cache, so search the ontology
-			try {
-				result = storageConnection.find(cls, primaryKey);
-			} catch (MetamodelNotSetException e) {
-				throw new OWLPersistenceException(e);
-			} catch (OntoDriverException e) {
-				throw new OWLPersistenceException(e);
-			}
+			result = storageFind(cls, primaryKey);
 		}
 		if (result == null) {
 			return null;
 		}
 		Object clone = registerExistingObject(result);
+		checkForCollections(clone);
 		return cls.cast(clone);
 	}
 
@@ -253,6 +237,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 	}
 
+	public void rollback() {
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("UnitOfWork rollback started.");
+		}
+		if (!isActive()) {
+			throw new OWLPersistenceException(
+					"Cannot rollback inactive Unit of Work!");
+		}
+		rollbackInternal();
+		clear();
+	}
+
 	/**
 	 * Commit this Unit of Work.
 	 */
@@ -271,7 +267,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		for (Object clone : getCloneMapping().keySet()) {
 			removeIndirectCollections(clone);
 		}
-		getOntologyAccessor().close();
 		getNewObjectsCloneToOriginal().clear();
 		getNewObjectsOriginalToClone().clear();
 		getNewObjectsKeyToClone().clear();
@@ -301,6 +296,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 				this.uowChangeSet = new UnitOfWorkChangeSetImpl(this);
 			}
 			calculateChanges(this.uowChangeSet, getCloneMapping());
+		}
+	}
+
+	private void rollbackInternal() {
+		try {
+			storageConnection.rollback();
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException(e);
 		}
 	}
 
@@ -736,7 +739,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 */
 	public void release() {
 		writeUncommittedChanges();
-		this.clear();
+		clear();
 		if (storageConnection != null) {
 			try {
 				storageConnection.close();
@@ -931,11 +934,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		this.entityManager = entityManager;
 	}
 
-	@Override
-	public TransactionOntologyAccessor getOntologyAccessor() {
-		return parent.getOntologyAccessor();
-	}
-
 	public void writeUncommittedChanges() {
 		if (!hasChanges()) {
 			return;
@@ -956,6 +954,30 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			return false;
 		}
 		return entityManager.getTransaction().isActive();
+	}
+
+	/**
+	 * Loads lazily loaded field on the specified entity. </p>
+	 * 
+	 * @param entity
+	 *            Entity
+	 * @param fieldName
+	 *            Name of the field to load
+	 * @throws NullPointerException
+	 *             If {@code entity} or {@code fieldName} is {@code null}
+	 * @throws OWLPersistenceException
+	 *             If an error during loading occurs
+	 */
+	public <T> void loadEntityField(T entity, String fieldName) {
+		if (entity == null || fieldName == null) {
+			throw new NullPointerException();
+		}
+		try {
+			storageConnection.loadFieldValue(entity, fieldName);
+			checkForCollections(entity);
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException(e);
+		}
 	}
 
 	/**
