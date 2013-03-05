@@ -101,7 +101,7 @@ public class Persistence {
 			map.add(pp);
 
 			return pp.createEntityManagerFactory(persistenceUnitName,
-					realParams);
+					storageProperties, realParams);
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
 			throw new IllegalArgumentException(
