@@ -79,6 +79,7 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
 		}
+		this.open = true;
 	}
 
 	@Override
