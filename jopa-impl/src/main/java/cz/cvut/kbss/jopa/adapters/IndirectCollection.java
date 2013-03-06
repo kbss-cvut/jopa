@@ -35,10 +35,10 @@ public abstract class IndirectCollection {
 	}
 
 	protected void persistChange() {
-		if (persistenceContext.isInTransaction()) {
+		if (persistenceContext.isInTransaction() && !persistenceContext.isInCommit()) {
 			persistenceContext.persistChangeInTransaction(owner);
 		}
 	}
-	
+
 	public abstract Collection<?> getReferencedCollection();
 }

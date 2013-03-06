@@ -152,7 +152,9 @@ public class TestEntityTransactionsWithoutCache {
 		final OWLClassA newReference = new OWLClassA();
 		final URI pk = URI.create("http://newReferenceToA");
 		newReference.setUri(pk);
+		assertNull(pc.find(OWLClassA.class, pk));
 		newReference.setStringAttribute("AnotherStringAttribute");
+		assertNull(pc.find(OWLClassA.class, pk));
 		toChange.setOwlClassA(newReference);
 		pc.persist(newReference);
 		pc.getTransaction().commit();

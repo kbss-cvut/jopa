@@ -67,8 +67,7 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testReadObjectFromCache() {
-		OWLClassA res = testUOW.readObject(OWLClassA.class,
-				IRI.create(testObject.getUri()));
+		OWLClassA res = testUOW.readObject(OWLClassA.class, IRI.create(testObject.getUri()));
 		assertNotNull(res);
 		assertEquals(res.getStringAttribute(), testObject.getStringAttribute());
 	}
@@ -83,8 +82,7 @@ public class UnitOfWorkTest {
 	public void testReadObjectFromOntology() {
 		// Clear the cache so the entity will be loaded from the ontology
 		this.em.clear();
-		OWLClassA res = this.testUOW.readObject(OWLClassA.class,
-				IRI.create(testObject.getUri()));
+		OWLClassA res = this.testUOW.readObject(OWLClassA.class, IRI.create(testObject.getUri()));
 		assertNotNull(res);
 		assertEquals(testObject.getUri(), res.getUri());
 	}
@@ -92,13 +90,11 @@ public class UnitOfWorkTest {
 	@Test
 	public void testCalculateChanges() {
 		this.em.getTransaction().begin();
-		OWLClassB toDelete = em.find(OWLClassB.class,
-				IRI.create(testObjectTwo.getUri()));
+		OWLClassB toDelete = em.find(OWLClassB.class, IRI.create(testObjectTwo.getUri()));
 		assertNotNull(toDelete);
 		this.em.remove(toDelete);
 		this.em.getTransaction().commit();
-		OWLClassB res = em.find(OWLClassB.class,
-				IRI.create(testObjectTwo.getUri()));
+		OWLClassB res = em.find(OWLClassB.class, IRI.create(testObjectTwo.getUri()));
 		assertNull(res);
 	}
 
@@ -130,8 +126,7 @@ public class UnitOfWorkTest {
 	@Test
 	public void testGetState() {
 		assertEquals(State.DETACHED, testUOW.getState(testObject));
-		Object toRemove = em.find(testObjectTwo.getClass(),
-				testObjectTwo.getUri());
+		Object toRemove = em.find(testObjectTwo.getClass(), testObjectTwo.getUri());
 		testUOW.removeObject(toRemove);
 		assertEquals(State.REMOVED, testUOW.getState(toRemove));
 		final OWLClassA stateTest = new OWLClassA();
@@ -159,7 +154,7 @@ public class UnitOfWorkTest {
 		final OWLClassA testNew = new OWLClassA();
 		final URI pk = URI.create("http://testNewOne");
 		testNew.setUri(pk);
-		testUOW.registerNewObject(IRI.create(testNew.getUri()), testNew);
+		testUOW.registerNewObject(testNew);
 		assertTrue(testUOW.isObjectNew(testNew));
 	}
 
@@ -188,8 +183,8 @@ public class UnitOfWorkTest {
 		this.em.remove(toRemove);
 		this.em.getTransaction().commit();
 		testEntity = em.find(testEntity.getClass(), testEntity.getUri());
-		assertFalse(testUOW.getLiveObjectCache().contains(
-				testObject.getClass(), IRI.create(testObject.getUri())));
+		assertFalse(testUOW.getLiveObjectCache().contains(testObject.getClass(),
+				IRI.create(testObject.getUri())));
 	}
 
 	@Test
@@ -227,8 +222,7 @@ public class UnitOfWorkTest {
 	@Test
 	public void testRegisterExistingObjectOnCleared() {
 		this.em.clear();
-		OWLClassA clone = this.em.find(OWLClassA.class,
-				IRI.create(testObject.getUri()));
+		OWLClassA clone = this.em.find(OWLClassA.class, IRI.create(testObject.getUri()));
 		assertEquals(testObject.getUri(), clone.getUri());
 	}
 
@@ -237,8 +231,7 @@ public class UnitOfWorkTest {
 	 */
 	@Test
 	public void testRegisterObject() {
-		OWLClassA o = this.em.find(OWLClassA.class,
-				IRI.create(testObject.getUri()));
+		OWLClassA o = this.em.find(OWLClassA.class, IRI.create(testObject.getUri()));
 		OWLClassA clone = (OWLClassA) this.testUOW.registerObject(o);
 		assertNotNull(clone);
 		assertEquals(o.getUri(), clone.getUri());
@@ -259,8 +252,8 @@ public class UnitOfWorkTest {
 	@Test
 	public void testRemoveObjectFromCache() {
 		this.testUOW.removeObjectFromCache(testObjectTwo);
-		assertFalse(this.testUOW.getLiveObjectCache().contains(
-				testObjectTwo.getClass(), testObjectTwo.getUri()));
+		assertFalse(this.testUOW.getLiveObjectCache().contains(testObjectTwo.getClass(),
+				testObjectTwo.getUri()));
 	}
 
 	@Test
@@ -269,7 +262,7 @@ public class UnitOfWorkTest {
 		final URI pk = URI.create("http://newEntity");
 		newOne.setUri(pk);
 		newOne.setStringAttribute("stringAttributeOne");
-		this.testUOW.registerNewObject(IRI.create(pk), newOne);
+		this.testUOW.registerNewObject(newOne);
 		assertTrue(testUOW.getNewObjectsCloneToOriginal().containsKey(newOne));
 	}
 
@@ -301,7 +294,7 @@ public class UnitOfWorkTest {
 		final URI pk = URI.create("http://testObject");
 		newOne.setUri(pk);
 		newOne.setStringAttribute("strAtt");
-		this.testUOW.registerNewObject(IRI.create(newOne.getUri()), newOne);
+		this.testUOW.registerNewObject(newOne);
 		// Now try to remove it
 		this.testUOW.removeObject(newOne);
 		assertFalse(testUOW.contains(newOne));
@@ -312,8 +305,7 @@ public class UnitOfWorkTest {
 		OWLClassA entity = em.find(OWLClassA.class, testObject.getUri());
 		OWLClassA original = (OWLClassA) this.testUOW.getOriginal(entity);
 		this.testUOW.unregisterObject(entity);
-		assertFalse(testUOW.getLiveObjectCache().contains(original.getClass(),
-				original.getUri()));
+		assertFalse(testUOW.getLiveObjectCache().contains(original.getClass(), original.getUri()));
 	}
 
 	@Test
@@ -323,8 +315,7 @@ public class UnitOfWorkTest {
 		final String changedAtt = "changedAtt";
 		clone.setStringAttribute(changedAtt);
 		this.testUOW.revertObject(clone);
-		assertEquals(testObject.getStringAttribute(),
-				clone.getStringAttribute());
+		assertEquals(testObject.getStringAttribute(), clone.getStringAttribute());
 	}
 
 	@Test
@@ -337,8 +328,7 @@ public class UnitOfWorkTest {
 		clone.setOwlClassA(changedRef);
 		this.testUOW.revertObject(clone);
 		assertEquals(testObject.getUri(), clone.getOwlClassA().getUri());
-		assertEquals(testObject.getStringAttribute(), clone.getOwlClassA()
-				.getStringAttribute());
+		assertEquals(testObject.getStringAttribute(), clone.getOwlClassA().getStringAttribute());
 		assertNotNull(clone.getOwlClassA().getTypes());
 	}
 }

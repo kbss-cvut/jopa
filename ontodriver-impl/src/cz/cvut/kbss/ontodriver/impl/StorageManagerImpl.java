@@ -18,8 +18,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class StorageManagerImpl extends StorageManager {
 
-	private static final Logger LOG = Logger.getLogger(StorageManagerImpl.class
-			.getName());
+	private static final Logger LOG = Logger.getLogger(StorageManagerImpl.class.getName());
 
 	/** Reference to the driver */
 	private final OntoDriverImpl driver;
@@ -66,7 +65,9 @@ public class StorageManagerImpl extends StorageManager {
 		for (StorageModule m : modules.values()) {
 			// Just close the module, any pending changes will be rolled back
 			// implicitly
-			m.close();
+			if (m != null) {
+				m.close();
+			}
 		}
 		super.close();
 	}
@@ -81,8 +82,7 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public ResultSet executeStatement(Statement statement)
-			throws OntoDriverException {
+	public ResultSet executeStatement(Statement statement) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Executing statement.");
 		}
@@ -91,16 +91,15 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, Context entityContext)
-			throws OntoDriverException {
+	public boolean contains(Object primaryKey, Context entityContext) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Checking whether context " + entityContext
 					+ " contains entity with primary key " + primaryKey);
 		}
 		ensureState();
 		if (primaryKey == null || entityContext == null) {
-			LOG.severe("Null argument passed: primaryKey = " + primaryKey
-					+ ", entityContext = " + entityContext);
+			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", entityContext = "
+					+ entityContext);
 			throw new NullPointerException();
 		}
 		final StorageModule m = getModule(entityContext);
@@ -111,15 +110,14 @@ public class StorageManagerImpl extends StorageManager {
 	public <T> T find(Class<T> cls, Object primaryKey, Context entityContext,
 			Map<String, Context> attributeContexts) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Retrieving entity with primary key " + primaryKey
-					+ " from context " + entityContext);
+			LOG.finer("Retrieving entity with primary key " + primaryKey + " from context "
+					+ entityContext);
 		}
 		ensureState();
-		if (cls == null || primaryKey == null || entityContext == null
-				|| attributeContexts == null) {
-			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = "
-					+ primaryKey + ", entityContext = " + entityContext
-					+ ", attributeContexts = " + attributeContexts);
+		if (cls == null || primaryKey == null || entityContext == null || attributeContexts == null) {
+			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey
+					+ ", entityContext = " + entityContext + ", attributeContexts = "
+					+ attributeContexts);
 			throw new NullPointerException();
 		}
 		// NOTE: We cannot handle attribute contexts yet
@@ -143,8 +141,8 @@ public class StorageManagerImpl extends StorageManager {
 	public <T> void loadFieldValue(T entity, String fieldName, Context context)
 			throws OntoDriverException {
 		if (entity == null || fieldName == null || context == null) {
-			LOG.severe("Null argument passed: entity = " + entity
-					+ ", fieldName = " + fieldName + ", context = " + context);
+			LOG.severe("Null argument passed: entity = " + entity + ", fieldName = " + fieldName
+					+ ", context = " + context);
 			throw new NullPointerException();
 		}
 		final StorageModule m = getModule(context);
@@ -155,15 +153,14 @@ public class StorageManagerImpl extends StorageManager {
 	public <T> void merge(Object primaryKey, T entity, Context entityContext,
 			Map<String, Context> attributeContexts) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Merging entity with primary key " + primaryKey
-					+ " into context " + entityContext);
+			LOG.finer("Merging entity with primary key " + primaryKey + " into context "
+					+ entityContext);
 		}
 		ensureState();
 		if (primaryKey == null || entity == null || entityContext == null
 				|| attributeContexts == null) {
-			LOG.severe("Null argument passed: primaryKey = " + primaryKey
-					+ ", entity = " + entity + ", entityContext = "
-					+ entityContext + ", attributeContexts = "
+			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", entity = " + entity
+					+ ", entityContext = " + entityContext + ", attributeContexts = "
 					+ attributeContexts);
 			throw new NullPointerException();
 		}
@@ -180,11 +177,9 @@ public class StorageManagerImpl extends StorageManager {
 			LOG.finer("Persisting entity into context " + entityContext);
 		}
 		ensureState();
-		if (entity == null || entityContext == null
-				|| attributeContexts == null) {
-			LOG.severe("Null argument passed: entity = " + entity
-					+ ", entityContext = " + entityContext
-					+ ", attributeContexts = " + attributeContexts);
+		if (entity == null || entityContext == null || attributeContexts == null) {
+			LOG.severe("Null argument passed: entity = " + entity + ", entityContext = "
+					+ entityContext + ", attributeContexts = " + attributeContexts);
 			throw new NullPointerException();
 		}
 		// NOTE: We cannot handle attribute contexts yet
@@ -194,16 +189,15 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public void remove(Object primaryKey, Context entityContext)
-			throws OntoDriverException {
+	public void remove(Object primaryKey, Context entityContext) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Removing entity with primary key " + primaryKey
-					+ " from context " + entityContext);
+			LOG.finer("Removing entity with primary key " + primaryKey + " from context "
+					+ entityContext);
 		}
 		ensureState();
 		if (primaryKey == null || entityContext == null) {
-			LOG.severe("Null argument passed: primaryKey = " + primaryKey
-					+ ", entityContext = " + entityContext);
+			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", entityContext = "
+					+ entityContext);
 			throw new NullPointerException();
 		}
 		checkForContextValidity(entityContext);
@@ -233,8 +227,7 @@ public class StorageManagerImpl extends StorageManager {
 		}
 	}
 
-	private void checkForContextValidity(Context ctx)
-			throws OntoDriverException {
+	private void checkForContextValidity(Context ctx) throws OntoDriverException {
 		assert ctx != null;
 		if (!modules.containsKey(ctx)) {
 			throw new OntoDriverException("The context " + ctx
@@ -255,8 +248,7 @@ public class StorageManagerImpl extends StorageManager {
 	private StorageModule getModule(Context context) throws OntoDriverException {
 		StorageModule m = modules.get(context);
 		if (m == null) {
-			m = driver.getFactory(context).createStorageModule(context,
-					persistenceProvider, false);
+			m = driver.getFactory(context).createStorageModule(context, persistenceProvider, false);
 			modules.put(context, m);
 		}
 		return m;

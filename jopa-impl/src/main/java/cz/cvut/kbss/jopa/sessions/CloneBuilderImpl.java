@@ -8,6 +8,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -17,10 +18,13 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.semanticweb.owlapi.model.IRI;
+
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.adapters.IndirectList;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 public class CloneBuilderImpl implements CloneBuilder {
 
@@ -30,17 +34,22 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	// This identity map stores visited objects during the clone building
 	// process. We use this to prevent cloning already cloned objects.
-	private Map<Object, Object> visitedObjects;
+	private final Map<Object, Object> visitedObjects;
+	private final Map<Object, Object> visitedEntities;
 	private InstantiationHelper instantiationHelper;
 
-	private UnitOfWorkImpl uow;
+	private final UnitOfWorkImpl uow;
 
 	public CloneBuilderImpl() {
 		this.uow = null;
+		this.visitedObjects = new IdentityHashMap<Object, Object>();
+		this.visitedEntities = new HashMap<Object, Object>();
 	}
 
 	public CloneBuilderImpl(UnitOfWorkImpl uow) {
 		this.uow = uow;
+		this.visitedObjects = new IdentityHashMap<Object, Object>();
+		this.visitedEntities = new HashMap<Object, Object>();
 	}
 
 	public Object buildClone(final Object original) {
@@ -50,14 +59,25 @@ public class CloneBuilderImpl implements CloneBuilder {
 		if (original == null) {
 			return null;
 		}
-		if (getVisitedObjects().containsKey(original)) {
-			return getVisitedObjects().get(original);
+		if (visitedObjects.containsKey(original)) {
+			return visitedObjects.get(original);
 		}
 		if (uow.containsOriginal(original)) {
 			return uow.getCloneForOriginal(original);
 		}
+		final Class<?> cls = original.getClass();
+		if (uow.isManagedType(cls)) {
+			final IRI pk = getIdentifier(original);
+			if (visitedEntities.containsKey(pk)) {
+				return visitedEntities.get(pk);
+			}
+		}
 		Object clone = getInstantiationHelper().buildNewInstance(original.getClass(), original);
-		getVisitedObjects().put(original, clone);
+		visitedObjects.put(original, clone);
+		if (uow.isManagedType(cls)) {
+			final IRI pk = getIdentifier(clone);
+			visitedEntities.put(pk, clone);
+		}
 		populateAttributes(original, clone);
 		return clone;
 	}
@@ -113,8 +133,11 @@ public class CloneBuilderImpl implements CloneBuilder {
 					// Else we have a relationship and we need to clone its
 					// target as well
 					Object attValue = f.get(original);
-					if (getVisitedObjects().containsKey(attValue)) {
-						f.set(clone, getVisitedObjects().get(attValue));
+					if (attValue == null) {
+						continue;
+					}
+					if (visitedObjects.containsKey(attValue)) {
+						f.set(clone, visitedObjects.get(attValue));
 						continue;
 					}
 					if (uow.containsOriginal(attValue)) {
@@ -123,8 +146,10 @@ public class CloneBuilderImpl implements CloneBuilder {
 						continue;
 					}
 					Object toAssign = null;
-					if (attValue != null && uow.getManagedTypes().contains(attValue.getClass())) {
-						toAssign = uow.registerExistingObject(attValue);
+					if (uow.isManagedType(attValue.getClass())) {
+						final IRI pk = getIdentifier(attValue);
+						toAssign = visitedEntities.containsKey(pk) ? visitedEntities.get(pk) : uow
+								.registerExistingObject(attValue);
 					} else {
 						toAssign = buildClone(attValue);
 					}
@@ -351,11 +376,10 @@ public class CloneBuilderImpl implements CloneBuilder {
 		}
 	}
 
-	private Map<Object, Object> getVisitedObjects() {
-		if (this.visitedObjects == null) {
-			this.visitedObjects = new IdentityHashMap<Object, Object>();
-		}
-		return this.visitedObjects;
+	private IRI getIdentifier(Object entity) {
+		assert entity != null;
+		assert uow.isManagedType(entity.getClass());
+		return EntityPropertiesUtils.getPrimaryKey(entity, uow.getMetamodel());
 	}
 
 	protected InstantiationHelper getInstantiationHelper() {
@@ -385,7 +409,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	}
 
 	public void reset() {
-		getVisitedObjects().clear();
+		visitedObjects.clear();
 	}
 
 	<E> Collection<E> createIndirectCollection(Collection<E> c, Object owner) {

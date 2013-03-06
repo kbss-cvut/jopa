@@ -75,6 +75,7 @@ class ModuleInternalImpl implements ModuleInternal {
 
 	private List<OWLOntologyChange> changes;
 	private List<OWLOntologyChange> transactionalChanges;
+	private Set<IRI> temporaryIndividuals;
 	private boolean usingOriginalOntology;
 
 	ModuleInternalImpl(OwlapiConnectorDataHolder dataHolder, OwlapiStorageModule storageModule) {
@@ -86,6 +87,7 @@ class ModuleInternalImpl implements ModuleInternal {
 		this.usingOriginalOntology = true;
 		this.transactionalChanges = createList();
 		this.changes = createList();
+		this.temporaryIndividuals = new HashSet<IRI>();
 	}
 
 	@Override
@@ -103,7 +105,7 @@ class ModuleInternalImpl implements ModuleInternal {
 			throw new NullPointerException();
 		}
 		final IRI iri = getPrimaryKeyAsIri(primaryKey);
-		if (!isInOntologySignature(iri, true)) {
+		if (!isInOntologySignature(iri, true) || temporaryIndividuals.contains(iri)) {
 			return null;
 		}
 		T entity = loadAndReconstructEntity(cls, iri);
@@ -117,7 +119,7 @@ class ModuleInternalImpl implements ModuleInternal {
 			throw new NullPointerException("The persisted entity cannot be null!");
 		}
 		final Class<?> cls = entity.getClass();
-		IRI id = getIdentifier(entity);
+		IRI id = getPrimaryKeyAsIri(primaryKey);
 		final EntityType<?> type = getEntityType(cls);
 		if (id == null) {
 			if (!type.getIdentifier().isGenerated()) {
@@ -131,10 +133,10 @@ class ModuleInternalImpl implements ModuleInternal {
 			storageModule.incrementPrimaryKeyCounter();
 		}
 		final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(id);
-
 		addIndividualToOntology(entity, type);
 
 		this.saveEntityAttributes(id, entity, type, individual);
+		temporaryIndividuals.remove(id);
 	}
 
 	@Override
@@ -194,6 +196,11 @@ class ModuleInternalImpl implements ModuleInternal {
 	public List<OWLOntologyChange> commitAndRetrieveChanges() {
 		final List<OWLOntologyChange> toReturn = transactionalChanges;
 		this.transactionalChanges = createList();
+		this.changes = createList();
+		if (!temporaryIndividuals.isEmpty()) {
+			throw new IllegalStateException(
+					"There are some uncommitted and unpersisted entities in the ontology.");
+		}
 		return toReturn;
 	}
 
@@ -201,6 +208,7 @@ class ModuleInternalImpl implements ModuleInternal {
 	public void rollback() {
 		this.changes = createList();
 		this.transactionalChanges = createList();
+		this.temporaryIndividuals = new HashSet<IRI>();
 		initFromHolder(storageModule.getOntologyData());
 		this.usingOriginalOntology = true;
 	}
@@ -259,7 +267,8 @@ class ModuleInternalImpl implements ModuleInternal {
 		if (iri == null) {
 			return false;
 		}
-		return workingOntology.containsIndividualInSignature(iri, searchImports);
+		boolean inSignature = workingOntology.containsIndividualInSignature(iri, searchImports);
+		return (inSignature && !temporaryIndividuals.contains(iri));
 	}
 
 	/**
@@ -1106,19 +1115,20 @@ class ModuleInternalImpl implements ModuleInternal {
 			for (final Object li : lst) {
 				final EntityType<?> e = getEntityType(li.getClass());
 				IRI id = getIdentifier(li);
-				if (!isInOntologySignature(id, false)) {
-					if (cascade || li.getClass().isEnum()) {
-						if (id == null && e.getIdentifier().isGenerated()) {
-							id = generatePrimaryKey(li, e.getName());
-							setIdentifier(li, id);
-						}
-						persistEntity(id, li);
-					} else {
+				if (!isInOntologySignature(id, false) || temporaryIndividuals.contains(id)) {
+//					if (cascade || li.getClass().isEnum()) {
+//						if (id == null && e.getIdentifier().isGenerated()) {
+//							id = generatePrimaryKey(li, e.getName());
+//							setIdentifier(li, id);
+//						}
+//						persistEntity(id, li);
+//					} else {
 						if (LOG.isLoggable(Level.FINEST)) {
 							LOG.finest("Adding class assertion axiom for a not yet persisted entity.");
 						}
 						addIndividualToOntology(li, e);
-					}
+//					}
+					temporaryIndividuals.add(id);
 				}
 			}
 		}
@@ -1432,6 +1442,9 @@ class ModuleInternalImpl implements ModuleInternal {
 			for (final OWLIndividual object : objects) {
 				writeChange(new RemoveAxiom(workingOntology,
 						dataFactory.getOWLObjectPropertyAssertionAxiom(property, subject, object)));
+				if (object.isNamed()) {
+					temporaryIndividuals.remove(object.asOWLNamedIndividual().getIRI());
+				}
 			}
 		}
 	}
@@ -1448,6 +1461,12 @@ class ModuleInternalImpl implements ModuleInternal {
 			final OWLIndividual object) {
 		writeChange(new AddAxiom(workingOntology, dataFactory.getOWLObjectPropertyAssertionAxiom(
 				property, subject, object)));
+		if (object.isNamed()) {
+			final IRI iri = object.asOWLNamedIndividual().getIRI();
+			if (!isInOntologySignature(iri, false)) {
+				temporaryIndividuals.add(iri);
+			}
+		}
 	}
 
 	/**
@@ -1514,6 +1533,9 @@ class ModuleInternalImpl implements ModuleInternal {
 		OWLNamedIndividual ind = dataFactory.getOWLNamedIndividual(getIdentifier(sequence.get(0)));
 		addChange(new AddAxiom(workingOntology, dataFactory.getOWLObjectPropertyAssertionAxiom(
 				hasContents, seq, ind)));
+		if (!isInOntologySignature(ind.getIRI(), false)) {
+			temporaryIndividuals.add(ind.getIRI());
+		}
 
 		for (int i = 1; i < sequence.size(); i++) {
 			OWLNamedIndividual seq2 = dataFactory.getOWLNamedIndividual(generatePrimaryKey(
@@ -1525,6 +1547,9 @@ class ModuleInternalImpl implements ModuleInternal {
 					.get(i)));
 			addChange(new AddAxiom(workingOntology, dataFactory.getOWLObjectPropertyAssertionAxiom(
 					hasContents, seq2, arg)));
+			if (!isInOntologySignature(arg.getIRI(), false)) {
+				temporaryIndividuals.add(arg.getIRI());
+			}
 			seq = seq2;
 		}
 	}
@@ -1598,6 +1623,10 @@ class ModuleInternalImpl implements ModuleInternal {
 
 			}
 			for (final OWLAxiom a : axioms) {
+				// TODO Is this correct?
+				for (OWLNamedIndividual i : a.getIndividualsInSignature()) {
+					temporaryIndividuals.remove(i.getIRI());
+				}
 				addChange(new RemoveAxiom(workingOntology, a));
 			}
 
@@ -1671,7 +1700,9 @@ class ModuleInternalImpl implements ModuleInternal {
 	 *             If {@code primaryKey} is not a valid URI.
 	 */
 	private IRI getPrimaryKeyAsIri(Object primaryKey) throws OntoDriverException {
-		assert primaryKey != null;
+		if (primaryKey == null) {
+			return null;
+		}
 		if (primaryKey instanceof IRI) {
 			return (IRI) primaryKey;
 		} else if (primaryKey instanceof URI) {

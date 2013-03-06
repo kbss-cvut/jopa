@@ -205,26 +205,21 @@ public class TestCreateOperations {
 			fail();
 		} catch (OWLPersistenceException e) {
 			log.severe("Exception raised! Right.");
-			log.severe(e.getMessage() + "\n" + e.getCause().getMessage());
+			log.severe(e.getMessage());
 		}
 	}
 
-	@Test
+	@Test(expected = NullPointerException.class)
 	public void testPersistNull() {
 		log.info("Test: persist a null object");
 		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testPersistNull");
 		pc.clear();
-		final OWLClassA testEntity = new OWLClassA();
-		try {
-			pc.getTransaction().begin();
-			pc.persist(testEntity);
-			pc.getTransaction().commit();
-			fail();
-		} catch (OWLPersistenceException e) {
-			log.severe("Exception raised! Right.");
-			log.severe(e.getMessage());
-		}
+		final OWLClassA testEntity = null;
+		pc.getTransaction().begin();
+		pc.persist(testEntity);
+		pc.getTransaction().commit();
+		fail();
 	}
 
 	@Test

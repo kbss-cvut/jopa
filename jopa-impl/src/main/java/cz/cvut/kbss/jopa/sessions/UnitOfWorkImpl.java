@@ -47,6 +47,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	private boolean shouldClearCacheAfterCommit;
 
 	private boolean isActive;
+	private boolean inCommit;
 
 	private UnitOfWorkChangeSet uowChangeSet;
 
@@ -70,6 +71,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		this.cloneBuilder = new CloneBuilderImpl(this);
 		this.cacheManager = parent.getLiveObjectCache();
 		this.storageConnection = acquireConnection();
+		this.inCommit = false;
 	}
 
 	/**
@@ -225,6 +227,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		if (!isActive()) {
 			throw new OWLPersistenceException("Cannot commit inactive Unit of Work!");
 		}
+		this.inCommit = true;
 		commitUnitOfWork();
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("UnitOfWork commit finished.");
@@ -269,6 +272,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		this.hasChanges = false;
 		this.hasDeleted = false;
 		this.hasNew = false;
+		this.inCommit = false;
 		this.cloneBuilder.reset();
 		this.uowChangeSet = null;
 		if (shouldClearCacheAfterCommit) {
@@ -716,7 +720,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		if (clone != null) {
 			return clone;
 		}
-		return registerNewObject(primaryKey, object);
+		return registerNewObject(object);
 	}
 
 	/**
@@ -776,10 +780,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 * @param entity
 	 *            Object The entity to persist
 	 */
-	public Object registerNewObject(IRI id, Object entity) {
+	public Object registerNewObject(Object entity) {
 		if (entity == null) {
 			throw new OWLPersistenceException("Cannot persist entity. IRI or entity is null!");
 		}
+		IRI id = getIdentifier(entity);
 		if (id == null) {
 			// Check if the ID is generated
 			final Class<?> cls = entity.getClass();
@@ -940,6 +945,30 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	}
 
 	/**
+	 * Returns {@code true} if this UoW is currently committing changes.
+	 * 
+	 * @return
+	 */
+	public boolean isInCommit() {
+		return inCommit;
+	}
+
+	/**
+	 * Checks whether the specified {@code cls} is an entity type.
+	 * 
+	 * @param cls
+	 *            Class
+	 * @return {@code true} if the {@code cls} is a managed type, {@code false}
+	 *         otherwise
+	 */
+	public boolean isManagedType(Class<?> cls) {
+		if (cls == null) {
+			return false;
+		}
+		return getManagedTypes().contains(cls);
+	}
+
+	/**
 	 * Loads lazily loaded field on the specified entity. </p>
 	 * 
 	 * @param entity
@@ -956,6 +985,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			throw new NullPointerException();
 		}
 		try {
+			// TODO Should create and register clone if the field is a reference
+			// to another managed type
 			storageConnection.loadFieldValue(entity, fieldName);
 			checkForCollections(entity);
 		} catch (OntoDriverException e) {
@@ -1090,7 +1121,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	}
 
 	private boolean storageContains(Object primaryKey) {
-		assert primaryKey != null;
+		if (primaryKey == null) {
+			return false;
+		}
 		try {
 			return storageConnection.contains(primaryKey);
 		} catch (OntoDriverException e) {

@@ -15,7 +15,6 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,8 +69,7 @@ import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3QueryFactory;
 
 public class EntityManagerImpl extends AbstractEntityManager {
 
-	private static final Logger LOG = Logger.getLogger(EntityManagerImpl.class
-			.getName());
+	private static final Logger LOG = Logger.getLogger(EntityManagerImpl.class.getName());
 	private OWLReasoner r;
 	private OWLDataFactory f;
 	private OWLOntology workingOnt;
@@ -98,8 +96,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	private UnitOfWorkImpl persistenceContext;
 	private ServerSession serverSession;
 
-	public EntityManagerImpl(EntityManagerFactoryImpl emf,
-			Map<String, String> map, ServerSession serverSession) {
+	public EntityManagerImpl(EntityManagerFactoryImpl emf, Map<String, String> map,
+			ServerSession serverSession) {
 		this.emf = emf;
 		this.serverSession = serverSession;
 
@@ -124,20 +122,19 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			LOG.config("Persisting " + entity);
 		}
 		ensureOpen();
+		if (entity == null) {
+			throw new NullPointerException("Null passed to persist.");
+		}
 
 		switch (getState(entity)) {
 		case NEW:
 			try {
-				IRI id = getIdentifier(entity);
-
-				getCurrentPersistenceContext().registerNewObject(id, entity);
-
+				getCurrentPersistenceContext().registerNewObject(entity);
 			} catch (Exception e) {
 				if (getTransaction().isActive()) {
 					getTransaction().setRollbackOnly();
 				}
-				throw new OWLPersistenceException(
-						"A problem occured when persisting " + entity, e);
+				throw new OWLPersistenceException("A problem occured when persisting " + entity, e);
 			}
 		case MANAGED:
 			new OneLevelCascadeExplorer() {
@@ -145,8 +142,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
 					try {
 						Object ox = at.getJavaField().get(o);
-						System.out.println("object=" + o + ", attribute="
-								+ at.getName() + ", value=" + ox);
+						System.out.println("object=" + o + ", attribute=" + at.getName()
+								+ ", value=" + ox);
 
 						if (ox == null) {
 							return;
@@ -164,17 +161,15 @@ public class EntityManagerImpl extends AbstractEntityManager {
 							getTransaction().setRollbackOnly();
 						}
 						throw new OWLPersistenceException(
-								"A problem occured when persisting attribute "
-										+ at.getName() + " of with value " + o
-										+ " of object " + entity, e);
+								"A problem occured when persisting attribute " + at.getName()
+										+ " of with value " + o + " of object " + entity, e);
 					}
 				}
 			}.start(this, entity, CascadeType.PERSIST);
 			break;
 		case DETACHED:
-			throw new OWLPersistentObjectException(
-					"Detached entity passed to persist: "
-							+ entity.getClass().getName());
+			throw new OWLPersistentObjectException("Detached entity passed to persist: "
+					+ entity.getClass().getName());
 		case REMOVED:
 			getCurrentPersistenceContext().revertObject(entity);
 			break;
@@ -201,8 +196,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 					}
 
 					@Override
-					protected void exploreNonCascaded(Attribute<?, ?> at,
-							Object o) throws IllegalAccessException {
+					protected void exploreNonCascaded(Attribute<?, ?> at, Object o)
+							throws IllegalAccessException {
 						at.getJavaField().set(merged, at.getJavaField().get(o));
 					}
 				};
@@ -260,12 +255,13 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			throw new IllegalArgumentException();
 		case MANAGED:
 			getCurrentPersistenceContext().removeObject(object);
-			break;
 		case REMOVED:
 			new OneLevelCascadeExplorer() {
 				@Override
-				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
-					remove(o);
+				protected void exploreCascaded(Attribute<?, ?> at, Object o)
+						throws IllegalArgumentException, IllegalAccessException {
+					final Object toRemove = at.getJavaField().get(o);
+					remove(toRemove);
 				}
 			}.start(this, object, CascadeType.REMOVE);
 			break;
@@ -397,8 +393,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		return getServerSession().createNativeQuery(sparql, this);
 	}
 
-	public <T> TypedQuery<T> createNativeQuery(String sparql,
-			Class<T> resultClass) {
+	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass) {
 		return _createTypedQuery(sparql, resultClass, true);
 	}
 
@@ -423,13 +418,12 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	public String getLabel(String iri) {
 		String label = null;
 
-		for (final OWLAnnotationAssertionAxiom ax : reasoningOnt
-				.getAnnotationAssertionAxioms(IRI.create(iri))) {
+		for (final OWLAnnotationAssertionAxiom ax : reasoningOnt.getAnnotationAssertionAxioms(IRI
+				.create(iri))) {
 
 			OWLAnnotation a = ax.getAnnotation();
 			if (a.getProperty().equals(
-					f.getOWLAnnotationProperty(OWLRDFVocabulary.RDFS_LABEL
-							.getIRI()))) {
+					f.getOWLAnnotationProperty(OWLRDFVocabulary.RDFS_LABEL.getIRI()))) {
 				final LanguageResolverVisitor v = new LanguageResolverVisitor();
 				a.getValue().accept(v);
 
@@ -437,8 +431,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 					return v.getValue();
 				}
 
-				if (v.getLang().isEmpty() || (v.getLang() == null)
-						|| (label == null)) {
+				if (v.getLang().isEmpty() || (v.getLang() == null) || (label == null)) {
 					label = v.getValue();
 				}
 			}
@@ -487,8 +480,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			cc.accept(new OWLOntologyChangeVisitor() {
 
 				public void visit(AddAxiom arg0) {
-					final RemoveAxiom ax = new RemoveAxiom(workingOnt, arg0
-							.getAxiom());
+					final RemoveAxiom ax = new RemoveAxiom(workingOnt, arg0.getAxiom());
 					if (allChanges.contains(ax)) {
 						allChanges.remove(ax);
 					} else {
@@ -497,8 +489,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				}
 
 				public void visit(RemoveAxiom arg0) {
-					final AddAxiom ax = new AddAxiom(workingOnt, arg0
-							.getAxiom());
+					final AddAxiom ax = new AddAxiom(workingOnt, arg0.getAxiom());
 					if (allChanges.contains(ax)) {
 						allChanges.remove(ax);
 					} else {
@@ -556,46 +547,14 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	// private void checkRunningTransaction() {
-	// if (tx == null) {
-	// throw new OWLPersistenceException(
-	// "A transaction context is missing.");
-	// }
-	// }
-
-	private IRI getIdentifier(final Object object) {
-		Object fieldValue = getEntityManagerFactory().getPersistenceUnitUtil()
-				.getIdentifier(object);
-
-		if (fieldValue == null) {
-			return null;
-		}
-
-		try {
-
-			if (fieldValue instanceof String) {
-				return IRI.create((String) fieldValue);
-			} else if (fieldValue instanceof URI) {
-				return IRI.create((URI) fieldValue);
-			} else {
-				throw new OWLPersistenceException("Unknown identifier type: "
-						+ fieldValue.getClass());
-			}
-		} catch (IllegalArgumentException e) {
-			throw new OWLPersistenceException(e);
-		}
-	}
-
-	private <T> TypedQuery<T> _createTypedQuery(String string, Class<T> cls,
-			boolean sparql) {
+	private <T> TypedQuery<T> _createTypedQuery(String string, Class<T> cls, boolean sparql) {
 		return getServerSession().createQuery(string, cls, sparql, this);
 	}
 
 	class ICEvaluator {
 		public boolean isSatisfied(IntegrityConstraint check) {
 
-			OWL2Ontology<OWLObject> ont = new OWLAPIv3OWL2Ontology(m,
-					workingOnt, r);
+			OWL2Ontology<OWLObject> ont = new OWLAPIv3OWL2Ontology(m, workingOnt, r);
 			OWLAPIv3QueryFactory fact = new OWLAPIv3QueryFactory(m, workingOnt);
 
 			ICQueryGenerator v = new ICQueryGenerator(fact, ont);
@@ -608,8 +567,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 	public UnitOfWorkImpl getCurrentPersistenceContext() {
 		if (this.persistenceContext == null) {
-			this.persistenceContext = (UnitOfWorkImpl) this.serverSession
-					.acquireClientSession().acquireUnitOfWork();
+			this.persistenceContext = (UnitOfWorkImpl) this.serverSession.acquireClientSession()
+					.acquireUnitOfWork();
 			persistenceContext.setEntityManager(this);
 		}
 		return this.persistenceContext;

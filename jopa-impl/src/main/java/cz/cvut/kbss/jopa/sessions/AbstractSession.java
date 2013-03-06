@@ -19,8 +19,7 @@ import cz.cvut.kbss.ontodriver.Connection;
  * 
  */
 public abstract class AbstractSession implements Session {
-	protected static final Logger LOG = Logger.getLogger(AbstractSession.class
-			.getName());
+	protected static final Logger LOG = Logger.getLogger(AbstractSession.class.getName());
 
 	public AbstractSession() {
 		super();
@@ -43,8 +42,8 @@ public abstract class AbstractSession implements Session {
 		// return getOntologyAccessor().createQuery(qlString, em);
 	}
 
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass,
-			boolean sparql, final EntityManager em) {
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, boolean sparql,
+			final EntityManager em) {
 		if (query == null || query.equalsIgnoreCase("") || resultClass == null) {
 			return null;
 		}
@@ -54,8 +53,7 @@ public abstract class AbstractSession implements Session {
 		// .createQuery(query, resultClass, sparql, em);
 	}
 
-	public Query<List<String>> createNativeQuery(String sparql,
-			final EntityManager em) {
+	public Query<List<String>> createNativeQuery(String sparql, final EntityManager em) {
 		if (sparql == null || sparql.equalsIgnoreCase("")) {
 			return null;
 		}

@@ -3,6 +3,7 @@
 	<name>jopa-impl</name>
 	<comment></comment>
 	<projects>
+		<project>ontodriver-impl</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

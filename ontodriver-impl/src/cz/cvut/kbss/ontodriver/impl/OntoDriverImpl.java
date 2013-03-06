@@ -127,8 +127,13 @@ public class OntoDriverImpl implements OntoDriver {
 			try {
 				final DriverFactory f = c.newInstance(props, properties);
 				facts.put(e.getKey(), f);
-			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-					| InvocationTargetException e1) {
+			} catch (InstantiationException ex) {
+				LOG.severe("Unable to initialize factory. + " + e.toString());
+			} catch (IllegalAccessException ex) {
+				LOG.severe("Unable to initialize factory. + " + e.toString());
+			} catch (IllegalArgumentException ex) {
+				LOG.severe("Unable to initialize factory. + " + e.toString());
+			} catch (InvocationTargetException ex) {
 				LOG.severe("Unable to initialize factory. + " + e.toString());
 			}
 		}

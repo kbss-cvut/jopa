@@ -3,9 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-    <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>0.3-SNAPSHOT</version>
-    <artifactId>jopa-all</artifactId>
+	<groupId>cz.cvut.kbss.jopa</groupId>
+	<version>0.3-SNAPSHOT</version>
+	<artifactId>jopa-all</artifactId>
 	<packaging>pom</packaging>
 	<name>JOPA</name>
 
@@ -14,7 +14,6 @@
 		<module>jopa-owlapi-utils</module>
 		<module>jopa-owl2java</module>
 		<module>jopa-impl</module>
-		<module>ontodriver-api</module>
 		<module>ontodriver-impl</module>
 	</modules>
 
@@ -58,18 +57,18 @@
 					</descriptors>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.nuiton</groupId>
 				<artifactId>maven-license-plugin</artifactId>
 				<version>3.0</version>
 				<configuration>
-				    <excludedArtifacts>
-					cz.cvut.kbss:jopa-api,cz.cvut.kbss:jopa-impl,cz.cvut.kbss:jopa-owl2java,cz.cvut.kbss:jopa-owlapi-utils
-				    </excludedArtifacts>
+					<excludedArtifacts>
+						cz.cvut.kbss:jopa-api,cz.cvut.kbss:jopa-impl,cz.cvut.kbss:jopa-owl2java,cz.cvut.kbss:jopa-owlapi-utils,cz.cvut.kbss:ontodriver-impl
+					</excludedArtifacts>
 				</configuration>
 			</plugin>
-			
+
 		</plugins>
 	</build>
 	<!-- Generate one javadoc for everything -->

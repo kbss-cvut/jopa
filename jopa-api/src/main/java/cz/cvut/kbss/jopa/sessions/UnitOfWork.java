@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.Vector;
 
-import org.semanticweb.owlapi.model.IRI;
-
 public interface UnitOfWork extends Session {
 
 	public void clear();
@@ -117,13 +115,11 @@ public interface UnitOfWork extends Session {
 	 * cache. These objects are created during a transaction in this Unit of
 	 * Work. New objects are put into ServerSession shared cache after commit.
 	 * 
-	 * @param id
-	 *            IRI
 	 * @param object
 	 *            Object
 	 * @return Object Returns clone of the registered object
 	 */
-	public Object registerNewObject(IRI id, Object object);
+	public Object registerNewObject(Object object);
 
 	/**
 	 * Remove the given object. Calling this method causes the entity to be
