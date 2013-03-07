@@ -87,6 +87,7 @@ public class TestCreateOperations {
 			pc.close();
 			pc.getEntityManagerFactory().close();
 		}
+		pc = null;
 	}
 
 	/**

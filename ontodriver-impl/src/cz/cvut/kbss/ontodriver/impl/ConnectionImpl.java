@@ -295,6 +295,7 @@ public class ConnectionImpl implements Connection {
 		assert context != null;
 		assert attributeContexts != null;
 		storageManager.persist(primaryKey, entity, context, attributeContexts);
+		this.hasChanges = true;
 		registerInternal(entity, context);
 		if (autoCommit) {
 			commit();
@@ -355,6 +356,7 @@ public class ConnectionImpl implements Connection {
 	private void removeInternal(Object primaryKey, Object entity, Context ctx)
 			throws OntoDriverException {
 		storageManager.remove(primaryKey, ctx);
+		this.hasChanges = true;
 		entityToContext.remove(entity);
 		if (autoCommit) {
 			commit();

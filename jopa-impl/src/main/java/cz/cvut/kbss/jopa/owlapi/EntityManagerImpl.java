@@ -584,7 +584,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 */
 	public void removeCurrentPersistenceContext() {
 		if (persistenceContext != null && persistenceContext.isActive()) {
-			persistenceContext.clear();
+			persistenceContext.release();
 		}
 		this.persistenceContext = null;
 	}

@@ -10,7 +10,7 @@ import java.net.URI;
  * @author kidney
  * 
  */
-public final class OntologyStorageProperties {
+public class OntologyStorageProperties {
 
 	/** URI of the ontology */
 	private final URI ontologyUri;
@@ -73,8 +73,7 @@ public final class OntologyStorageProperties {
 	 * @see #OntologyStorageProperties(URI, URI)
 	 */
 	public OntologyStorageProperties(URI ontologyUri, URI physicalUri,
-			OntologyConnectorType connectorType, String username,
-			String password) {
+			OntologyConnectorType connectorType, String username, String password) {
 		super();
 		if (ontologyUri == null) {
 			throw new NullPointerException("OntologyURI cannot be null.");

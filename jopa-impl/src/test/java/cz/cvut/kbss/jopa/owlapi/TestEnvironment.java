@@ -32,16 +32,17 @@ import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.OwldbOntologyStorageProperties;
 
 @Ignore
 public class TestEnvironment {
-	private static final Logger log = Logger.getLogger(TestEnvironment.class
-			.getName());
+	private static final Logger log = Logger.getLogger(TestEnvironment.class.getName());
 
 	public static final String dir = "testResults";
 	public static final String DB_URI = "jdbc:postgresql://localhost/owldb";
 	public static final String DB_USERNAME = "owldb";
 	public static final String DB_PASSWORD = "owldb";
+	public static final String DB_DRIVER = "org.postgresql.Driver";
 
 	private static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
 
@@ -63,17 +64,13 @@ public class TestEnvironment {
 		return getPersistenceConnector(name, Storage.FILE, true);
 	}
 
-	public static EntityManager getPersistenceConnector(String name,
-			boolean cache) {
+	public static EntityManager getPersistenceConnector(String name, boolean cache) {
 		return getPersistenceConnector(name, Storage.FILE, cache);
 	}
 
-	public static EntityManager getPersistenceConnector(String name,
-			Storage storage, boolean cache) {
+	public static EntityManager getPersistenceConnector(String name, Storage storage, boolean cache) {
 		final Map<String, String> params = new HashMap<String, String>();
-		final IRI iri = IRI
-				.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
-						+ name);
+		final IRI iri = IRI.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/" + name);
 		URI physicalUri = null;
 		try {
 			switch (storage) {
@@ -90,9 +87,8 @@ public class TestEnvironment {
 				physicalUri = URI.create(DB_URI);
 			}
 			final List<OntologyStorageProperties> storageProps = createOwlapiStorageProperties(
-					iri.toURI(), physicalUri);
-			params.put("javax.persistence.provider",
-					EntityManagerFactoryImpl.class.getName());
+					iri.toURI(), physicalUri, storage);
+			params.put("javax.persistence.provider", EntityManagerFactoryImpl.class.getName());
 			if (cache) {
 				params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "on");
 			} else {
@@ -104,23 +100,31 @@ public class TestEnvironment {
 					OWLAPIPersistenceProvider.class.getName());
 			// params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
 			// .getAbsolutePath());
-			params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
-					REASONER_FACTORY_CLASS);
+			params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);
 
-			return Persistence.createEntityManagerFactory("context-name",
-					storageProps, params).createEntityManager();
+			return Persistence.createEntityManagerFactory("context-name", storageProps, params)
+					.createEntityManager();
 		} catch (UnknownOWLOntologyException e) {
 			log.log(Level.SEVERE, e.getMessage(), e);
 		}
 		return null;
 	}
 
-	private static List<OntologyStorageProperties> createOwlapiStorageProperties(
-			URI ontologyUri, URI physicalUri) {
-		final List<OntologyStorageProperties> props = new ArrayList<OntologyStorageProperties>(
-				1);
-		final OntologyStorageProperties p = new OntologyStorageProperties(
-				ontologyUri, physicalUri, OntologyConnectorType.OWLAPI);
+	private static List<OntologyStorageProperties> createOwlapiStorageProperties(URI ontologyUri,
+			URI physicalUri, Storage storage) {
+		final List<OntologyStorageProperties> props = new ArrayList<OntologyStorageProperties>(1);
+		OntologyStorageProperties p = null;
+		switch (storage) {
+		case FILE:
+			p = new OntologyStorageProperties(ontologyUri, physicalUri,
+					OntologyConnectorType.OWLAPI);
+			break;
+		case OWLDB:
+			p = OwldbOntologyStorageProperties.ontologyUri(ontologyUri).physicalUri(physicalUri)
+					.connectorType(OntologyConnectorType.OWLAPI).username(DB_USERNAME)
+					.password(DB_PASSWORD).jdbcDriverClass(DB_DRIVER).build();
+			break;
+		}
 		props.add(p);
 		return props;
 	}

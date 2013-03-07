@@ -168,6 +168,7 @@ public class StorageManagerImpl extends StorageManager {
 		checkForContextValidity(entityContext);
 		final StorageModule module = getModule(entityContext);
 		module.merge(primaryKey, entity);
+		modulesWithChanges.put(entityContext, module);
 	}
 
 	@Override
@@ -186,6 +187,7 @@ public class StorageManagerImpl extends StorageManager {
 		checkForContextValidity(entityContext);
 		final StorageModule module = getModule(entityContext);
 		module.persist(primaryKey, entity);
+		modulesWithChanges.put(entityContext, module);
 	}
 
 	@Override
@@ -203,6 +205,7 @@ public class StorageManagerImpl extends StorageManager {
 		checkForContextValidity(entityContext);
 		StorageModule module = getModule(entityContext);
 		module.remove(primaryKey);
+		modulesWithChanges.put(entityContext, module);
 	}
 
 	@Override

@@ -189,6 +189,12 @@
         	<artifactId>ontodriver-impl</artifactId>
         	<version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+        	<groupId>org.jgrapht</groupId>
+        	<artifactId>jgrapht-jdk1.5</artifactId>
+        	<version>0.7.3</version>
+        	<scope>runtime</scope>
+        </dependency>
 	</dependencies>
 
 
