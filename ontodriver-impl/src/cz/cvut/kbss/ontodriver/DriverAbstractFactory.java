@@ -1,6 +1,5 @@
 package cz.cvut.kbss.ontodriver;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -12,12 +11,10 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public abstract class DriverAbstractFactory implements DriverFactory {
 
-	protected static final Logger LOG = Logger
-			.getLogger(DriverAbstractFactory.class.getName());
+	protected static final Logger LOG = Logger.getLogger(DriverAbstractFactory.class.getName());
 
-	protected static List<Context> contexts;
-	protected static Map<Context, OntologyStorageProperties> contextsToProperties;
-	protected static List<OntologyStorageProperties> storageProperties;
+	protected final List<Context> contexts;
+	protected final Map<Context, OntologyStorageProperties> contextsToProperties;
 
 	protected final Map<StorageConnector, StorageConnector> openedConnectors;
 	protected final Map<StorageModule, StorageModule> openedModules;
@@ -25,28 +22,24 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 
 	private boolean open;
 
-	protected DriverAbstractFactory(
-			List<OntologyStorageProperties> storageProperties,
-			Map<String, String> properties) throws OntoDriverException {
-		if (storageProperties == null || storageProperties.isEmpty()) {
-			throw new OntoDriverException(
-					"There has to be at least one storage specified.");
+	protected DriverAbstractFactory(List<Context> contexts,
+			Map<Context, OntologyStorageProperties> ctxsToProperties, Map<String, String> properties)
+			throws OntoDriverException {
+		if (contexts == null || contexts.isEmpty()) {
+			throw new OntoDriverException("There has to be at least one storage context specified.");
 		}
-		if (DriverAbstractFactory.storageProperties == null) {
-			initFactory(storageProperties);
+		if (ctxsToProperties == null) {
+			throw new NullPointerException();
 		}
 		if (properties == null) {
 			properties = Collections.emptyMap();
 		}
+		this.contexts = contexts;
+		this.contextsToProperties = ctxsToProperties;
 		this.openedConnectors = new HashMap<StorageConnector, StorageConnector>();
 		this.openedModules = new HashMap<StorageModule, StorageModule>();
 		this.open = true;
 		this.properties = properties;
-		if (contexts == null) {
-			// This should not happen but just to be sure
-			throw new OntoDriverException(new IllegalStateException(
-					"The factory is not initalized."));
-		}
 	}
 
 	@Override
@@ -81,8 +74,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 * Default implementation which closes the specified module.
 	 */
 	@Override
-	public void releaseStorageModule(StorageModule module)
-			throws OntoDriverException {
+	public void releaseStorageModule(StorageModule module) throws OntoDriverException {
 		ensureOpen();
 		if (module == null) {
 			throw new NullPointerException();
@@ -92,8 +84,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		}
 		final StorageModule m = openedModules.remove(module);
 		if (m == null) {
-			throw new OntoDriverException("Module " + module
-					+ " not managed in this factory.");
+			throw new OntoDriverException("Module " + module + " not managed in this factory.");
 		}
 		m.close();
 	}
@@ -102,8 +93,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 * Default implementation which closes the specified connector.
 	 */
 	@Override
-	public void releaseStorageConnector(StorageConnector connector)
-			throws OntoDriverException {
+	public void releaseStorageConnector(StorageConnector connector) throws OntoDriverException {
 		ensureOpen();
 		if (connector == null) {
 			throw new NullPointerException();
@@ -127,8 +117,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 */
 	protected void ensureOpen() throws OntoDriverException {
 		if (!open) {
-			throw new OntoDriverException(new IllegalStateException(
-					"The factory is closed."));
+			throw new OntoDriverException(new IllegalStateException("The factory is closed."));
 		}
 	}
 
@@ -169,13 +158,11 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 *             If {@code metamodel} is null
 	 * @see #ensureState(Context)
 	 */
-	protected void ensureState(Context ctx,
-			PersistenceProviderFacade persistenceProvider)
+	protected void ensureState(Context ctx, PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException {
 		ensureState(ctx);
 		if (persistenceProvider == null) {
-			throw new NullPointerException(
-					"PersistenceProvider cannot be null.");
+			throw new NullPointerException("PersistenceProvider cannot be null.");
 		}
 	}
 
@@ -201,29 +188,5 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	protected void registerConnector(StorageConnector connector) {
 		assert connector != null;
 		openedConnectors.put(connector, connector);
-	}
-
-	/**
-	 * Initializes data shared by all driver factories. </p>
-	 * 
-	 * This means initializing contexts and binding them with their respective
-	 * storage properties so that connectors can be created based on this data.
-	 * 
-	 * @param storageProps
-	 *            Storage properties
-	 */
-	private static void initFactory(List<OntologyStorageProperties> storageProps) {
-		assert storageProps != null;
-		storageProperties = storageProps;
-		contexts = new ArrayList<Context>(storageProperties.size());
-		contextsToProperties = new HashMap<Context, OntologyStorageProperties>();
-		for (OntologyStorageProperties p : storageProperties) {
-			final Context ctx = new Context(p.getOntologyURI(),
-					p.getConnectorType());
-			// TODO Set expressiveness and signature for the context (will
-			// probably have to write own profile checker)
-			contexts.add(ctx);
-			contextsToProperties.put(ctx, p);
-		}
 	}
 }

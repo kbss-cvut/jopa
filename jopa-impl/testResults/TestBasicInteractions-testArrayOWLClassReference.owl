@@ -2,10 +2,772 @@
 <rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#"
      xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:new="http://new.owl#"
+     xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+     xmlns:sequences="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:sequences2="http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#">
     <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://B-hasReferencedSequence -->
+
+    <owl:ObjectProperty rdf:about="http://B-hasReferencedSequence"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#hasNext -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#hasNext"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#OWLList -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#OWLList"/>
+    
+
+
+    <!-- http://new.owl#OWLClassA -->
+
+    <owl:Class rdf:about="http://new.owl#OWLClassA"/>
+    
+
+
+    <!-- http://new.owl#OWLClassC -->
+
+    <owl:Class rdf:about="http://new.owl#OWLClassC"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://newA1-0 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-0">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-1 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-1">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-10 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-10">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-11 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-11">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-12 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-12">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-13 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-13">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-14 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-14">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-15 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-15">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-16 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-16">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-17 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-17">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-18 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-18">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-19 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-19">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-2 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-2">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-20 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-20">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-21 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-21">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-22 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-22">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-23 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-23">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-24 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-24">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-25 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-25">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-26 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-26">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-27 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-27">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-28 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-28">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-29 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-29">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-3 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-3">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-30 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-30">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-31 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-31">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-32 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-32">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-33 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-33">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-34 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-34">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-35 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-35">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-36 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-36">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-37 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-37">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-38 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-38">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-39 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-39">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-4 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-4">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-5 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-5">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-6 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-6">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-7 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-7">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-8 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-8">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newA1-9 -->
+
+    <owl:NamedIndividual rdf:about="http://newA1-9">
+        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://newC-2 -->
+
+    <owl:NamedIndividual rdf:about="http://newC-2">
+        <rdf:type rdf:resource="http://new.owl#OWLClassC"/>
+        <http:B-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ">
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#OWLList"/>
+        <sequences:hasContents rdf:resource="http://newA1-0"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ1 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ1">
+        <sequences:hasContents rdf:resource="http://newA1-1"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ2"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ10 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ10">
+        <sequences:hasContents rdf:resource="http://newA1-10"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ11"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ11 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ11">
+        <sequences:hasContents rdf:resource="http://newA1-11"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ12"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ12 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ12">
+        <sequences:hasContents rdf:resource="http://newA1-12"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ13"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ13 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ13">
+        <sequences:hasContents rdf:resource="http://newA1-13"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ14"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ14 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ14">
+        <sequences:hasContents rdf:resource="http://newA1-14"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ15"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ15 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ15">
+        <sequences:hasContents rdf:resource="http://newA1-15"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ16"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ16 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ16">
+        <sequences:hasContents rdf:resource="http://newA1-16"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ17"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ17 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ17">
+        <sequences:hasContents rdf:resource="http://newA1-17"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ18"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ18 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ18">
+        <sequences:hasContents rdf:resource="http://newA1-18"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ19"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ19 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ19">
+        <sequences:hasContents rdf:resource="http://newA1-19"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ20"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ2 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ2">
+        <sequences:hasContents rdf:resource="http://newA1-2"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ3"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ20 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ20">
+        <sequences:hasContents rdf:resource="http://newA1-20"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ21"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ21 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ21">
+        <sequences:hasContents rdf:resource="http://newA1-21"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ22"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ22 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ22">
+        <sequences:hasContents rdf:resource="http://newA1-22"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ23"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ23 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ23">
+        <sequences:hasContents rdf:resource="http://newA1-23"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ24"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ24 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ24">
+        <sequences:hasContents rdf:resource="http://newA1-24"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ25"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ25 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ25">
+        <sequences:hasContents rdf:resource="http://newA1-25"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ26"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ26 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ26">
+        <sequences:hasContents rdf:resource="http://newA1-26"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ27"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ27 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ27">
+        <sequences:hasContents rdf:resource="http://newA1-27"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ28"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ28 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ28">
+        <sequences:hasContents rdf:resource="http://newA1-28"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ29"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ29 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ29">
+        <sequences:hasContents rdf:resource="http://newA1-29"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ30"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ3 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ3">
+        <sequences:hasContents rdf:resource="http://newA1-3"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ4"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ30 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ30">
+        <sequences:hasContents rdf:resource="http://newA1-30"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ31"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ31 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ31">
+        <sequences:hasContents rdf:resource="http://newA1-31"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ32"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ32 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ32">
+        <sequences:hasContents rdf:resource="http://newA1-32"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ33"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ33 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ33">
+        <sequences:hasContents rdf:resource="http://newA1-33"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ34"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ34 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ34">
+        <sequences:hasContents rdf:resource="http://newA1-34"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ35"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ35 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ35">
+        <sequences:hasContents rdf:resource="http://newA1-35"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ36"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ36 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ36">
+        <sequences:hasContents rdf:resource="http://newA1-36"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ37"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ37 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ37">
+        <sequences:hasContents rdf:resource="http://newA1-37"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ38"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ38 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ38">
+        <sequences:hasContents rdf:resource="http://newA1-38"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ39"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ39 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ39">
+        <sequences:hasContents rdf:resource="http://newA1-39"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ4 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ4">
+        <sequences:hasContents rdf:resource="http://newA1-4"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ5"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ5 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ5">
+        <sequences:hasContents rdf:resource="http://newA1-5"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ6"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ6 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ6">
+        <sequences:hasContents rdf:resource="http://newA1-6"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ7"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ7 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ7">
+        <sequences:hasContents rdf:resource="http://newA1-7"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ8"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ8 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ8">
+        <sequences:hasContents rdf:resource="http://newA1-8"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ9"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ9 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ9">
+        <sequences:hasContents rdf:resource="http://newA1-9"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicInteractions-testArrayOWLClassReference#i_null-SEQ10"/>
+    </owl:NamedIndividual>
 </rdf:RDF>
 
 

@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.impl;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -31,17 +32,17 @@ public class OntoDriverImpl implements OntoDriver {
 	private final Map<String, String> properties;
 	private final Map<OntologyConnectorType, DriverFactory> factories;
 	/** Reference for easier access */
-	private List<Context> contexts;
+	private final List<Context> contexts;
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties) {
 		if (storageProperties == null || storageProperties.isEmpty()) {
 			throw new IllegalArgumentException(
 					"Storage properties cannot be neither null nor empty.");
 		}
-		this.factories = initFactories(storageProperties);
+		this.contexts = new ArrayList<Context>(storageProperties.size());
+		final Map<Context, OntologyStorageProperties> contextToProps = resolveContexts(storageProperties);
+		this.factories = initFactories(contextToProps);
 		this.properties = Collections.emptyMap();
-		// Get contexts from the first available factory
-		this.contexts = factories.values().iterator().next().getContexts();
 	}
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties,
@@ -53,9 +54,9 @@ public class OntoDriverImpl implements OntoDriver {
 			properties = Collections.emptyMap();
 		}
 		this.properties = properties;
-		this.factories = initFactories(storageProperties);
-		// Get contexts from the first available factory
-		this.contexts = factories.values().iterator().next().getContexts();
+		this.contexts = new ArrayList<Context>(storageProperties.size());
+		final Map<Context, OntologyStorageProperties> contextToProps = resolveContexts(storageProperties);
+		this.factories = initFactories(contextToProps);
 	}
 
 	@Override
@@ -118,14 +119,14 @@ public class OntoDriverImpl implements OntoDriver {
 	 * @see #registerFactoryClass(OntologyConnectorType, Class)
 	 */
 	private Map<OntologyConnectorType, DriverFactory> initFactories(
-			List<OntologyStorageProperties> props) {
+			Map<Context, OntologyStorageProperties> ctxsToPros) {
 		final Map<OntologyConnectorType, DriverFactory> facts = new HashMap<OntologyConnectorType, DriverFactory>();
-		addDefaultFactories(facts, props);
+		addDefaultFactories(facts, ctxsToPros);
 		for (Entry<OntologyConnectorType, Constructor<? extends DriverFactory>> e : factoryClasses
 				.entrySet()) {
 			final Constructor<? extends DriverFactory> c = e.getValue();
 			try {
-				final DriverFactory f = c.newInstance(props, properties);
+				final DriverFactory f = c.newInstance(contexts, ctxsToPros, properties);
 				facts.put(e.getKey(), f);
 			} catch (InstantiationException ex) {
 				LOG.severe("Unable to initialize factory. + " + e.toString());
@@ -147,13 +148,14 @@ public class OntoDriverImpl implements OntoDriver {
 	 * @param storageProperties
 	 */
 	private void addDefaultFactories(Map<OntologyConnectorType, DriverFactory> map,
-			List<OntologyStorageProperties> storageProperties) {
+			Map<Context, OntologyStorageProperties> ctxsToPros) {
 		assert map != null;
 		try {
-			final DriverFactory owlapiFactory = new DriverOwlapiFactory(storageProperties,
+			final DriverFactory owlapiFactory = new DriverOwlapiFactory(contexts, ctxsToPros,
 					properties);
 			map.put(OntologyConnectorType.OWLAPI, owlapiFactory);
-			final DriverFactory jenaFactory = new DriverJenaFactory(storageProperties, properties);
+			final DriverFactory jenaFactory = new DriverJenaFactory(contexts, ctxsToPros,
+					properties);
 			map.put(OntologyConnectorType.JENA, jenaFactory);
 		} catch (OntoDriverException e) {
 			LOG.severe("Unable to instantiate default driver factories.");
@@ -161,10 +163,32 @@ public class OntoDriverImpl implements OntoDriver {
 	}
 
 	/**
+	 * Resolves contexts from the specified storage properties list. </p>
+	 * 
+	 * @param storageProperties
+	 *            List of storage properties
+	 * @return Map with storage properties mapped by the resolved contexts
+	 */
+	private Map<Context, OntologyStorageProperties> resolveContexts(
+			List<OntologyStorageProperties> storageProperties) {
+		assert storageProperties != null;
+		final Map<Context, OntologyStorageProperties> contextsToProperties = new HashMap<Context, OntologyStorageProperties>();
+		for (OntologyStorageProperties p : storageProperties) {
+			final Context ctx = new Context(p.getOntologyURI(), p.getConnectorType());
+			// TODO Set expressiveness and signature for the context (will
+			// probably have to write own profile checker)
+			contexts.add(ctx);
+			contextsToProperties.put(ctx, p);
+		}
+		return contextsToProperties;
+	}
+
+	/**
 	 * Registers the specified factory class for the specified connector type.
 	 * </p>
 	 * 
 	 * The factory class is expected to have a constructor taking a list of
+	 * {@code Context}s, a map of {@code Context} to
 	 * {@code OntologyStorageProperties} and a map of properties ({@code String}
 	 * to {@code String}) as arguments. If it doesn't an exception is thrown.
 	 * 
@@ -173,9 +197,8 @@ public class OntoDriverImpl implements OntoDriver {
 	 * @param factoryClass
 	 *            The factory class
 	 * @throws OntoDriverException
-	 *             If the {@code factoryClass} does not have a constructor
-	 *             taking a list of {@code OntologyStorageProperties} as
-	 *             argument
+	 *             If the {@code factoryClass} does not have the required
+	 *             constructor
 	 */
 	public static void registerFactoryClass(OntologyConnectorType type,
 			Class<? extends DriverFactory> factoryClass) throws OntoDriverException {
@@ -188,7 +211,7 @@ public class OntoDriverImpl implements OntoDriver {
 						+ " is not an implementation of DriverFactory.");
 			}
 			final Constructor<? extends DriverFactory> c = factoryClass.getConstructor(List.class,
-					Map.class);
+					Map.class, Map.class);
 			factoryClasses.put(type, c);
 		} catch (NoSuchMethodException e) {
 			throw new OntoDriverException("The class " + factoryClass.getName()

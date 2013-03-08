@@ -74,11 +74,11 @@ public class CloneBuilderImpl implements CloneBuilder {
 		}
 		Object clone = getInstantiationHelper().buildNewInstance(original.getClass(), original);
 		visitedObjects.put(original, clone);
+		populateAttributes(original, clone);
 		if (uow.isManagedType(cls)) {
 			final IRI pk = getIdentifier(clone);
 			visitedEntities.put(pk, clone);
 		}
-		populateAttributes(original, clone);
 		return clone;
 	}
 
@@ -410,6 +410,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	public void reset() {
 		visitedObjects.clear();
+		visitedEntities.clear();
 	}
 
 	<E> Collection<E> createIndirectCollection(Collection<E> c, Object owner) {

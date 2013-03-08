@@ -74,14 +74,12 @@ public class TestChangePersist extends TestCase {
 		pc.getTransaction().commit();
 
 		pc.getTransaction().begin();
-		final OWLClassA toChange = pc.find(OWLClassA.class,
-				testEntityOne.getUri());
+		final OWLClassA toChange = pc.find(OWLClassA.class, testEntityOne.getUri());
 		assertNotNull(toChange);
 		String newAtt = "NewOne";
 		toChange.setStringAttribute(newAtt);
 		pc.getTransaction().commit();
-		final OWLClassA changed = pc.find(OWLClassA.class,
-				testEntityOne.getUri());
+		final OWLClassA changed = pc.find(OWLClassA.class, testEntityOne.getUri());
 		assertEquals(newAtt, changed.getStringAttribute());
 	}
 
@@ -95,16 +93,14 @@ public class TestChangePersist extends TestCase {
 		pc.getTransaction().commit();
 
 		pc.getTransaction().begin();
-		final OWLClassA toChange = pc.find(OWLClassA.class,
-				testEntityOne.getUri());
+		final OWLClassA toChange = pc.find(OWLClassA.class, testEntityOne.getUri());
 		assertNotNull(toChange);
 		Set<String> newTypes = new HashSet<String>();
 		newTypes.add("NewTypeOne");
 		newTypes.add("NewTypeTwo");
 		toChange.setTypes(newTypes);
 		pc.getTransaction().commit();
-		final OWLClassA changed = pc.find(OWLClassA.class,
-				testEntityOne.getUri());
+		final OWLClassA changed = pc.find(OWLClassA.class, testEntityOne.getUri());
 		assertEquals(newTypes.size(), changed.getTypes().size());
 		Iterator<String> it = changed.getTypes().iterator();
 		Iterator<String> it2 = newTypes.iterator();
@@ -128,14 +124,12 @@ public class TestChangePersist extends TestCase {
 		pc.getTransaction().commit();
 
 		pc.getTransaction().begin();
-		final OWLClassD toChange = pc.find(OWLClassD.class,
-				testEntityTwo.getUri());
+		final OWLClassD toChange = pc.find(OWLClassD.class, testEntityTwo.getUri());
 		assertNotNull(toChange);
 		toChange.setOwlClassA(newRef);
 		pc.getTransaction().commit();
 
-		final OWLClassD changed = pc.find(OWLClassD.class,
-				testEntityTwo.getUri());
+		final OWLClassD changed = pc.find(OWLClassD.class, testEntityTwo.getUri());
 		assertNotNull(changed.getOwlClassA());
 		assertEquals(newUri, changed.getOwlClassA().getUri());
 	}
@@ -152,8 +146,7 @@ public class TestChangePersist extends TestCase {
 		pc.getTransaction().commit();
 
 		pc.getTransaction().begin();
-		final OWLClassD toChange = pc.find(OWLClassD.class,
-				testEntityTwo.getUri());
+		final OWLClassD toChange = pc.find(OWLClassD.class, testEntityTwo.getUri());
 		assertNotNull(toChange);
 		toChange.getOwlClassA().setStringAttribute(changedAttribute);
 		pc.getTransaction().commit();

@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,15 +35,13 @@ public abstract class StorageModule implements Transactional {
 	/** True if this module is open */
 	protected boolean open;
 
-	public StorageModule(Context context,
-			PersistenceProviderFacade persistenceProvider, DriverFactory factory)
-			throws OntoDriverException {
+	public StorageModule(Context context, PersistenceProviderFacade persistenceProvider,
+			DriverFactory factory) throws OntoDriverException {
 		if (context == null) {
 			throw new NullPointerException("Context cannot be null.");
 		}
 		if (persistenceProvider == null) {
-			throw new NullPointerException(
-					"PersistenceProvider cannot be null.");
+			throw new NullPointerException("PersistenceProvider cannot be null.");
 		}
 		if (factory == null) {
 			throw new NullPointerException("Factory cannot be null.");
@@ -105,8 +104,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} is {@code null}
 	 */
-	public abstract boolean contains(Object primaryKey)
-			throws OntoDriverException;
+	public abstract boolean contains(Object primaryKey) throws OntoDriverException;
 
 	/**
 	 * Retrieves entity with the specified primary key. </p>
@@ -122,8 +120,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code cls} or {@code primaryKey} is {@code null}
 	 */
-	public abstract <T> T find(Class<T> cls, Object primaryKey)
-			throws OntoDriverException;
+	public abstract <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException;
 
 	/**
 	 * Loads from the ontology and sets value of field {@code fieldName}. </p>
@@ -132,16 +129,15 @@ public abstract class StorageModule implements Transactional {
 	 * 
 	 * @param entity
 	 *            The entity to set field value on
-	 * @param fieldName
-	 *            Name of the field
+	 * @param field
+	 *            The field to load
 	 * @throws OntoDriverException
 	 *             If called on a closed storage module, if the field name does
 	 *             not exist or if an ontology access error occurs
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code fieldName} is null
 	 */
-	public abstract <T> void loadFieldValue(T entity, String fieldName)
-			throws OntoDriverException;
+	public abstract <T> void loadFieldValue(T entity, Field field) throws OntoDriverException;
 
 	/**
 	 * Merges changes on the specified entity into this module. </p>
@@ -156,8 +152,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code entity} is null
 	 */
-	public abstract <T> void merge(Object primaryKey, T entity)
-			throws OntoDriverException;
+	public abstract <T> void merge(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity into this module. </p>
@@ -173,8 +168,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code entity} is null
 	 */
-	public abstract <T> void persist(Object primaryKey, T entity)
-			throws OntoDriverException;
+	public abstract <T> void persist(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
 	 * Removes entity with the specified primary key from this module. </p>
@@ -205,8 +199,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code statement} is null
 	 */
-	public abstract ResultSet executeStatement(Statement statement)
-			throws OntoDriverException;
+	public abstract ResultSet executeStatement(Statement statement) throws OntoDriverException;
 
 	/**
 	 * Ensures that this module is in valid state.
@@ -216,8 +209,8 @@ public abstract class StorageModule implements Transactional {
 	 */
 	protected void ensureOpen() throws OntoDriverException {
 		if (!open) {
-			throw new OntoDriverException(new IllegalStateException(
-					"The storage module is closed."));
+			throw new OntoDriverException(
+					new IllegalStateException("The storage module is closed."));
 		}
 	}
 

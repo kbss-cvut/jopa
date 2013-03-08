@@ -331,7 +331,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 		if (getDeletedObjects().containsKey(entity)) {
 			return State.REMOVED;
-		} else if (getCloneToOriginals().containsKey(entity)) {
+		} else if (getCloneMapping().containsKey(entity)) {
 			return State.MANAGED;
 		} else if (storageContains(getIdentifier(entity))) {
 			return State.DETACHED;
@@ -694,6 +694,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		IRI iri = getIdentifier(clone);
 		if (iri != null) {
 			getUsedPrimaryKeys().add(iri);
+			putObjectIntoCache(iri, object);
 		}
 		getCloneMapping().put(clone, clone);
 		getCloneToOriginals().put(clone, object);
@@ -973,24 +974,36 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 * 
 	 * @param entity
 	 *            Entity
-	 * @param fieldName
-	 *            Name of the field to load
+	 * @param field
+	 *            The field to load
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code fieldName} is {@code null}
 	 * @throws OWLPersistenceException
 	 *             If an error during loading occurs
 	 */
-	public <T> void loadEntityField(T entity, String fieldName) {
-		if (entity == null || fieldName == null) {
+	public <T> void loadEntityField(T entity, Field field) {
+		if (entity == null || field == null) {
 			throw new NullPointerException();
 		}
 		try {
+			storageConnection.loadFieldValue(entity, field);
+			final Class<?> cls = field.getType();
+			if (isManagedType(cls)) {
+				final Object orig = field.get(entity);
+				final Object clone = registerExistingObject(orig);
+				field.set(entity, clone);
+			}
 			// TODO Should create and register clone if the field is a reference
 			// to another managed type
-			storageConnection.loadFieldValue(entity, fieldName);
 			checkForCollections(entity);
 		} catch (OntoDriverException e) {
 			throw new OWLPersistenceException(e);
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -1113,6 +1126,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		final Object entity = cacheManager.get(cls, primaryKey);
 		cacheManager.releaseReadLock();
 		return entity;
+	}
+
+	private void putObjectIntoCache(Object primaryKey, Object entity) {
+		cacheManager.acquireWriteLock();
+		try {
+			cacheManager.add(primaryKey, entity);
+		} finally {
+			cacheManager.releaseWriteLock();
+		}
 	}
 
 	private IRI getIdentifier(Object entity) {

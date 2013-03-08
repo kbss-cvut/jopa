@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +26,7 @@ public abstract class StorageManager implements Transactional {
 
 	public StorageManager(PersistenceProviderFacade persistenceProvider) {
 		if (persistenceProvider == null) {
-			throw new NullPointerException(
-					"Persistence provider cannot be null.");
+			throw new NullPointerException("Persistence provider cannot be null.");
 		}
 		this.persistenceProvider = persistenceProvider;
 		this.open = true;
@@ -62,8 +62,7 @@ public abstract class StorageManager implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code statement} is {@code null}
 	 */
-	public abstract ResultSet executeStatement(Statement statement)
-			throws OntoDriverException;
+	public abstract ResultSet executeStatement(Statement statement) throws OntoDriverException;
 
 	/**
 	 * Resolves whether the specified context contains entity with the specified
@@ -115,9 +114,8 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code cls}, or {@code primaryKey} or attributeContexts is
 	 *             {@code null}
 	 */
-	public abstract <T> T find(Class<T> cls, Object primaryKey,
-			Context entityContext, Map<String, Context> attributeContexts)
-			throws OntoDriverException;
+	public abstract <T> T find(Class<T> cls, Object primaryKey, Context entityContext,
+			Map<String, Context> attributeContexts) throws OntoDriverException;
 
 	/**
 	 * Returns a list of all available contexts this {@code StorageManager} is
@@ -145,8 +143,8 @@ public abstract class StorageManager implements Transactional {
 	 * 
 	 * @param entity
 	 *            The entity to set field value on
-	 * @param fieldName
-	 *            Name of the field
+	 * @param field
+	 *            The field to load
 	 * @param context
 	 *            Context from which the field value should be loaded
 	 * @throws OntoDriverException
@@ -156,8 +154,8 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code entity}, {@code fieldName} or {@code context} is
 	 *             null
 	 */
-	public abstract <T> void loadFieldValue(T entity, String fieldName,
-			Context context) throws OntoDriverException;
+	public abstract <T> void loadFieldValue(T entity, Field field, Context context)
+			throws OntoDriverException;
 
 	/**
 	 * Merges the state of the specified entity into the appropriate ontology.
@@ -188,9 +186,8 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code primaryKey}, {@code entity} or
 	 *             {@code attributeContexts} is {@code null}
 	 */
-	public abstract <T> void merge(Object primaryKey, T entity,
-			Context entityContext, Map<String, Context> attributeContexts)
-			throws OntoDriverException;
+	public abstract <T> void merge(Object primaryKey, T entity, Context entityContext,
+			Map<String, Context> attributeContexts) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>
@@ -222,9 +219,8 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code entity}, {@code entityContext} or
 	 *             {@code attributeContexts} is {@code null}
 	 */
-	public abstract <T> void persist(Object primaryKey, T entity,
-			Context entityContext, Map<String, Context> attributeContexts)
-			throws OntoDriverException;
+	public abstract <T> void persist(Object primaryKey, T entity, Context entityContext,
+			Map<String, Context> attributeContexts) throws OntoDriverException;
 
 	/**
 	 * Removes entity with the specified primary key from the specified context.
@@ -254,14 +250,12 @@ public abstract class StorageManager implements Transactional {
 	 * @throws OntoDriverException
 	 * @throws MetamodelNotSetException
 	 */
-	protected void ensureState() throws OntoDriverException,
-			MetamodelNotSetException {
+	protected void ensureState() throws OntoDriverException, MetamodelNotSetException {
 		if (!open) {
-			throw new OntoDriverException(new IllegalStateException(
-					"The StorageManager is closed."));
+			throw new OntoDriverException(
+					new IllegalStateException("The StorageManager is closed."));
 		}
-		if (persistenceProvider == null
-				|| persistenceProvider.getMetamodel() == null) {
+		if (persistenceProvider == null || persistenceProvider.getMetamodel() == null) {
 			throw new MetamodelNotSetException();
 		}
 	}

@@ -172,13 +172,12 @@ class ModuleInternalImpl implements ModuleInternal {
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, String fieldName) throws OntoDriverException {
+	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
 		final Class<?> cls = entity.getClass();
 		final EntityType<?> et = getEntityType(cls);
 		final IRI iri = getIdentifier(entity);
 		final OWLNamedIndividual ind = dataFactory.getOWLNamedIndividual(iri);
 		try {
-			final Field field = cls.getDeclaredField(fieldName);
 			if (et.getTypes() != null && et.getTypes().getJavaField().equals(field)) {
 				_loadTypesReference(entity, ind, et.getTypes());
 			} else if (et.getProperties() != null
@@ -1116,18 +1115,18 @@ class ModuleInternalImpl implements ModuleInternal {
 				final EntityType<?> e = getEntityType(li.getClass());
 				IRI id = getIdentifier(li);
 				if (!isInOntologySignature(id, false) || temporaryIndividuals.contains(id)) {
-//					if (cascade || li.getClass().isEnum()) {
-//						if (id == null && e.getIdentifier().isGenerated()) {
-//							id = generatePrimaryKey(li, e.getName());
-//							setIdentifier(li, id);
-//						}
-//						persistEntity(id, li);
-//					} else {
-						if (LOG.isLoggable(Level.FINEST)) {
-							LOG.finest("Adding class assertion axiom for a not yet persisted entity.");
-						}
-						addIndividualToOntology(li, e);
-//					}
+					// if (cascade || li.getClass().isEnum()) {
+					// if (id == null && e.getIdentifier().isGenerated()) {
+					// id = generatePrimaryKey(li, e.getName());
+					// setIdentifier(li, id);
+					// }
+					// persistEntity(id, li);
+					// } else {
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.finest("Adding class assertion axiom for a not yet persisted entity.");
+					}
+					addIndividualToOntology(li, e);
+					// }
 					temporaryIndividuals.add(id);
 				}
 			}

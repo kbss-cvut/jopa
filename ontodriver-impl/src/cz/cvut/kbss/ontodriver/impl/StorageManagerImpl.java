@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.impl;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -138,15 +139,15 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, String fieldName, Context context)
+	public <T> void loadFieldValue(T entity, Field field, Context context)
 			throws OntoDriverException {
-		if (entity == null || fieldName == null || context == null) {
-			LOG.severe("Null argument passed: entity = " + entity + ", fieldName = " + fieldName
+		if (entity == null || field == null || context == null) {
+			LOG.severe("Null argument passed: entity = " + entity + ", field = " + field
 					+ ", context = " + context);
 			throw new NullPointerException();
 		}
 		final StorageModule m = getModule(context);
-		m.loadFieldValue(entity, fieldName);
+		m.loadFieldValue(entity, field);
 	}
 
 	@Override

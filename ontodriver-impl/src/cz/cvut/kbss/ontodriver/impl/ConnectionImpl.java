@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.impl;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -206,9 +207,9 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, String fieldName) throws OntoDriverException {
-		if (entity == null || fieldName == null) {
-			LOG.severe("Null argument passed: entity = " + entity + ", fieldName = " + fieldName);
+	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
+		if (entity == null || field == null) {
+			LOG.severe("Null argument passed: entity = " + entity + ", field = " + field);
 			throw new NullPointerException();
 		}
 		final Context ctx = entityToContext.get(entity);
@@ -216,7 +217,7 @@ public class ConnectionImpl implements Connection {
 			throw new OntoDriverException("Entity " + entity
 					+ " is not loaded within this connection.");
 		}
-		storageManager.loadFieldValue(entity, fieldName, ctx);
+		storageManager.loadFieldValue(entity, field, ctx);
 	}
 
 	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException,

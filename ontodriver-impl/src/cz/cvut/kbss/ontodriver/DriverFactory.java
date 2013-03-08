@@ -9,8 +9,8 @@ public interface DriverFactory extends Closeable {
 	/**
 	 * Retrieves a list of contexts available to this factory. </p>
 	 * 
-	 * The contexts in the list are sorted by their priority. The list should
-	 * not be modified.
+	 * The contexts in the list are sorted by their priority. The returned list
+	 * is unmodifiable
 	 * 
 	 * @return List of contexts
 	 */
@@ -51,8 +51,7 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory, if the module has been already
 	 *             released or if an ontology access error occurs
 	 */
-	public void releaseStorageModule(StorageModule module)
-			throws OntoDriverException;
+	public void releaseStorageModule(StorageModule module) throws OntoDriverException;
 
 	/**
 	 * Creates and returns a storage connector. </p>
@@ -69,8 +68,8 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory or if an ontology access error
 	 *             occurs
 	 */
-	public StorageConnector createStorageConnector(Context ctx,
-			boolean autoCommit) throws OntoDriverException;
+	public StorageConnector createStorageConnector(Context ctx, boolean autoCommit)
+			throws OntoDriverException;
 
 	/**
 	 * Releases the specified storage connector. </p>
@@ -87,6 +86,5 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory, if the module has been already
 	 *             released or if an ontology access error occurs
 	 */
-	public void releaseStorageConnector(StorageConnector connector)
-			throws OntoDriverException;
+	public void releaseStorageConnector(StorageConnector connector) throws OntoDriverException;
 }

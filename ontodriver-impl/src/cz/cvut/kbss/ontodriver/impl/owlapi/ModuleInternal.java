@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -36,8 +37,7 @@ interface ModuleInternal {
 	 * @throws NullPointerException
 	 *             If {@code cls} or {@code primaryKey} is null
 	 */
-	public <T> T findEntity(Class<T> cls, Object primaryKey)
-			throws OntoDriverException;
+	public <T> T findEntity(Class<T> cls, Object primaryKey) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>
@@ -53,8 +53,7 @@ interface ModuleInternal {
 	 * @throws NullPointerException
 	 *             If {@code entity} is null
 	 */
-	public <T> void persistEntity(Object primaryKey, T entity)
-			throws OntoDriverException;
+	public <T> void persistEntity(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
 	 * Merges state of the specified entity into this module. </p>
@@ -70,8 +69,7 @@ interface ModuleInternal {
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code primaryKey} is null
 	 */
-	public <T> void mergeEntity(Object primaryKey, T entity)
-			throws OntoDriverException;
+	public <T> void mergeEntity(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
 	 * Removes entity with the specified primary key. </p>
@@ -93,16 +91,15 @@ interface ModuleInternal {
 	 * 
 	 * @param entity
 	 *            The entity
-	 * @param fieldName
-	 *            Name of the field
+	 * @param field
+	 *            The field to load
 	 * @throws OntoDriverException
 	 *             If the entity has no field with name {@code fieldName} or if
 	 *             an error occurs during load
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code fieldName} is null
 	 */
-	public <T> void loadFieldValue(T entity, String fieldName)
-			throws OntoDriverException;
+	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException;
 
 	/**
 	 * Retrieves changes performed since the last {@code commit} and resets the

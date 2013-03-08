@@ -29,8 +29,7 @@ public class MergeManagerImpl implements MergeManager {
 
 	public Object mergeChangesOnObject(Object clone, ObjectChangeSet changeSet) {
 		if (changeSet == null) {
-			throw new OWLPersistenceException(
-					"Change Set in Merge Manager null.");
+			throw new OWLPersistenceException("Change Set in Merge Manager null.");
 		}
 		if (clone == null) {
 			return clone;
@@ -45,8 +44,7 @@ public class MergeManagerImpl implements MergeManager {
 			if (unitOfWork.isObjectNew(clone)) {
 				mergeNewObject(changeSet);
 			} else {
-				throw new OWLPersistenceException(
-						"Cannot find the original object.");
+				throw new OWLPersistenceException("Cannot find the original object.");
 			}
 		} else {
 			this.builder.mergeChanges(original, clone, changeSet, this);
@@ -55,24 +53,21 @@ public class MergeManagerImpl implements MergeManager {
 	}
 
 	public void mergeChangesFromChangeSet(UnitOfWorkChangeSet changeSet) {
-		Iterator<?> objectChangeIterator = changeSet.getObjectChanges()
-				.keySet().iterator();
+		Iterator<?> objectChangeIterator = changeSet.getObjectChanges().keySet().iterator();
 		while (objectChangeIterator.hasNext()) {
-			Map<?, ?> changeSets = (Map<?, ?>) changeSet.getObjectChanges()
-					.get(objectChangeIterator.next());
+			Map<?, ?> changeSets = (Map<?, ?>) changeSet.getObjectChanges().get(
+					objectChangeIterator.next());
 			Iterator<?> mapIterator = changeSets.keySet().iterator();
 			while (mapIterator.hasNext()) {
-				ObjectChangeSet objectChangeSet = (ObjectChangeSet) mapIterator
-						.next();
+				ObjectChangeSet objectChangeSet = (ObjectChangeSet) mapIterator.next();
 				Object clone = objectChangeSet.getCloneObject();
 				mergeChangesOnObject(clone, objectChangeSet);
 			}
 		}
-		Iterator<?> newObjectsIterator = changeSet.getNewObjectChangeSets()
-				.keySet().iterator();
+		Iterator<?> newObjectsIterator = changeSet.getNewObjectChangeSets().keySet().iterator();
 		while (newObjectsIterator.hasNext()) {
-			Map<?, ?> changeSetsForCls = (Map<?, ?>) changeSet
-					.getNewObjectChangeSets().get(newObjectsIterator.next());
+			Map<?, ?> changeSetsForCls = (Map<?, ?>) changeSet.getNewObjectChangeSets().get(
+					newObjectsIterator.next());
 			Iterator<?> chsIterator = changeSetsForCls.keySet().iterator();
 			while (chsIterator.hasNext()) {
 				ObjectChangeSet objectChangeSet = (ObjectChangeSet) changeSetsForCls
@@ -81,11 +76,9 @@ public class MergeManagerImpl implements MergeManager {
 			}
 		}
 		if (changeSet.hasDeletedObjects()) {
-			Iterator<?> deletedObjectsIterator = changeSet.getDeletedObjects()
-					.keySet().iterator();
+			Iterator<?> deletedObjectsIterator = changeSet.getDeletedObjects().keySet().iterator();
 			while (deletedObjectsIterator.hasNext()) {
-				ObjectChangeSet deletedChangeSet = (ObjectChangeSet) deletedObjectsIterator
-						.next();
+				ObjectChangeSet deletedChangeSet = (ObjectChangeSet) deletedObjectsIterator.next();
 				deleteObjectFromCache(deletedChangeSet);
 			}
 		}
@@ -105,8 +98,11 @@ public class MergeManagerImpl implements MergeManager {
 		final IRI primaryKey = EntityPropertiesUtils.getPrimaryKey(newObject,
 				session.getMetamodel());
 		session.getLiveObjectCache().acquireWriteLock();
-		session.getLiveObjectCache().add(primaryKey, newObject);
-		session.getLiveObjectCache().releaseWriteLock();
+		try {
+			session.getLiveObjectCache().add(primaryKey, newObject);
+		} finally {
+			session.getLiveObjectCache().releaseWriteLock();
+		}
 	}
 
 }

@@ -28,10 +28,10 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 		}
 	}
 
-	public DriverOwlapiFactory(
-			List<OntologyStorageProperties> storageProperties,
-			Map<String, String> properties) throws OntoDriverException {
-		super(storageProperties, properties);
+	public DriverOwlapiFactory(List<Context> contexts,
+			Map<Context, OntologyStorageProperties> ctxsToProperties, Map<String, String> properties)
+			throws OntoDriverException {
+		super(contexts, ctxsToProperties, properties);
 	}
 
 	@Override
@@ -42,15 +42,14 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLAPI storage module.");
 		}
-		final StorageModule m = new OwlapiStorageModule(ctx,
-				persistenceProvider, this);
+		final StorageModule m = new OwlapiStorageModule(ctx, persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public OwlapiStorageConnector createStorageConnector(Context ctx,
-			boolean autoCommit) throws OntoDriverException {
+	public OwlapiStorageConnector createStorageConnector(Context ctx, boolean autoCommit)
+			throws OntoDriverException {
 		ensureState(ctx);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLAPI storage connector.");
@@ -60,8 +59,7 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 		return c;
 	}
 
-	private OwlapiStorageConnector createConnectorInternal(Context ctx)
-			throws OntoDriverException {
+	private OwlapiStorageConnector createConnectorInternal(Context ctx) throws OntoDriverException {
 		final OntologyStorageProperties p = contextsToProperties.get(ctx);
 		final OwlapiStorageType type = resolveStorageType(p);
 		OwlapiStorageConnector connector = null;
@@ -73,8 +71,7 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 			connector = new OwlapiFileStorageConnector(p, properties);
 			break;
 		default:
-			throw new UnsupportedOperationException("Unknown storage type "
-					+ type);
+			throw new UnsupportedOperationException("Unknown storage type " + type);
 		}
 		return connector;
 	}
