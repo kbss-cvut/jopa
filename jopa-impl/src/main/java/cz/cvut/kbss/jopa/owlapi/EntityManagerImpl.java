@@ -15,6 +15,7 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +63,7 @@ import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
+import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.owl2query.engine.OWL2QueryEngine;
 import cz.cvut.kbss.owl2query.model.OWL2Ontology;
 import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3OWL2Ontology;
@@ -118,7 +120,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 *             whenever the entity is already persisted.
 	 */
 	public void persist(final Object entity) {
-		if (LOG.isLoggable(Level.CONFIG)) {
+		if (LOG.isLoggable(Level.FINER)) {
 			LOG.config("Persisting " + entity);
 		}
 		ensureOpen();
@@ -176,8 +178,13 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
+	@Override
+	public void persist(Object entity, URI contextUri) {
+		// TODO Resolve primary key uniqueness issue
+	}
+
 	public <T> T merge(final T entity) {
-		if (LOG.isLoggable(Level.CONFIG)) {
+		if (LOG.isLoggable(Level.FINER)) {
 			LOG.config("Merging " + entity);
 		}
 		ensureOpen();
@@ -270,11 +277,12 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	public <T> T find(Class<T> t, Object primaryKey) {
-		if (primaryKey == null) {
-			return null;
+		if (t == null || primaryKey == null) {
+			throw new NullPointerException("Null passed to find. t = " + t + ", primaryKey = "
+					+ primaryKey);
 		}
 		ensureOpen();
-		if (LOG.isLoggable(Level.CONFIG)) {
+		if (LOG.isLoggable(Level.FINER)) {
 			LOG.config("Finding " + t + " with key " + primaryKey);
 		}
 		final IRI uri = IRI.create(primaryKey.toString());
@@ -284,10 +292,27 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		return ob;
 	}
 
+	@Override
+	public <T> T find(Class<T> cls, Object primaryKey, URI contextUri) {
+		if (cls == null || primaryKey == null || contextUri == null) {
+			throw new NullPointerException("Null passed to find. cls = " + cls + ", primaryKey = "
+					+ primaryKey + ", contextUri = " + contextUri);
+		}
+		ensureOpen();
+		if (LOG.isLoggable(Level.FINER)) {
+			LOG.config("Finding " + cls + " with key " + primaryKey + " in context " + contextUri);
+		}
+		final IRI uri = IRI.create(primaryKey.toString());
+
+		T ob = getCurrentPersistenceContext().readObject(cls, uri, contextUri);
+
+		return ob;
+	}
+
 	public void flush() {
 		ensureOpen();
 
-		if (LOG.isLoggable(Level.CONFIG)) {
+		if (LOG.isLoggable(Level.FINER)) {
 			LOG.config("Flushing ...");
 		}
 		if (!getTransaction().isActive()) {
@@ -352,6 +377,11 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	public boolean contains(Object entity) {
 		ensureOpen();
 		return getCurrentPersistenceContext().contains(entity);
+	}
+
+	@Override
+	public List<Context> getAvailableContexts() {
+		return getCurrentPersistenceContext().getContexts();
 	}
 
 	public void close() {

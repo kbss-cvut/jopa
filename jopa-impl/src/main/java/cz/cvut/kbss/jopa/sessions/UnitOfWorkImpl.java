@@ -1,12 +1,14 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -88,13 +90,27 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		return parent.acquireConnection();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	public <T> T readObject(Class<T> cls, Object primaryKey) {
 		if (cls == null || primaryKey == null) {
-			return null;
+			throw new NullPointerException("Null passed to readObject. cls = " + cls
+					+ ", primaryKey = " + primaryKey);
 		}
+		return readObjectInternal(cls, primaryKey, null);
+	}
+
+	@Override
+	public <T> T readObject(Class<T> cls, Object primaryKey, URI context) {
+		if (cls == null || primaryKey == null || context == null) {
+			throw new NullPointerException("Null passed to readObject. cls = " + cls
+					+ ", primaryKey = " + primaryKey + ", context = " + context);
+		}
+		return readObjectInternal(cls, primaryKey, context);
+	}
+
+	private <T> T readObjectInternal(Class<T> cls, Object primaryKey, URI context) {
+		assert cls != null;
+		assert primaryKey != null;
 		// First try to find the object among new uncommitted objects
 		Object result = getNewObjectsKeyToClone().get(primaryKey);
 		if (result != null) {
@@ -106,7 +122,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		result = getObjectFromCache(cls, primaryKey);
 		if (result == null) {
 			// The object is not in the session cache, so search the ontology
-			result = storageFind(cls, primaryKey);
+			result = storageFind(cls, primaryKey, context);
 		}
 		if (result == null) {
 			return null;
@@ -629,7 +645,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		final Class<?> cls = entity.getClass();
 		orig = getObjectFromCache(cls, iri);
 		if (orig == null) {
-			orig = storageFind(cls, iri);
+			orig = storageFind(cls, iri, null);
 			if (orig == null) {
 				throw new OWLPersistenceException(
 						"The detached object is not in the ontology signature.");
@@ -721,7 +737,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		if (clone != null) {
 			return clone;
 		}
-		return registerNewObject(object);
+		registerNewObject(object);
+		return null;
 	}
 
 	/**
@@ -773,18 +790,33 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		cacheManager.releaseWriteLock();
 	}
 
-	/**
-	 * Register a new object for persist.
-	 * 
-	 * @param id
-	 *            IRI of the new entity
-	 * @param entity
-	 *            Object The entity to persist
-	 */
-	public Object registerNewObject(Object entity) {
+	@Override
+	public void registerNewObject(Object entity) {
 		if (entity == null) {
-			throw new OWLPersistenceException("Cannot persist entity. IRI or entity is null!");
+			throw new NullPointerException("Null passed to registerNewObject: entity " + entity);
 		}
+		registerNewObjectInternal(entity, null);
+	}
+
+	@Override
+	public void registerNewObject(Object entity, URI context) {
+		if (entity == null || context == null) {
+			throw new NullPointerException("Null passed to registerNewObject: entity " + entity
+					+ ", context = " + context);
+		}
+		registerNewObjectInternal(entity, context);
+	}
+
+	/**
+	 * Registers the specified entity for persist in this Unit of Work.
+	 * 
+	 * @param entity
+	 *            The entity to register
+	 * @param context
+	 *            URI of context. Optional
+	 */
+	private void registerNewObjectInternal(Object entity, URI context) {
+		assert entity != null;
 		IRI id = getIdentifier(entity);
 		if (id == null) {
 			// Check if the ID is generated
@@ -800,7 +832,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			throw new OWLPersistenceException("An entity with URI " + id
 					+ " is already persisted within the context.");
 		}
-		storagePersist(id, entity);
+		storagePersist(id, entity, context);
 		if (id == null) {
 			// If the ID was null, extract it from the entity
 			// It is present now
@@ -816,7 +848,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		getNewObjectsKeyToClone().put(id, clone);
 		checkForCollections(clone);
 		this.hasNew = true;
-		return entity;
 	}
 
 	/**
@@ -993,17 +1024,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 				final Object clone = registerExistingObject(orig);
 				field.set(entity, clone);
 			}
-			// TODO Should create and register clone if the field is a reference
-			// to another managed type
 			checkForCollections(entity);
 		} catch (OntoDriverException e) {
 			throw new OWLPersistenceException(e);
 		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new OWLPersistenceException(e);
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new OWLPersistenceException(e);
 		}
 	}
 
@@ -1153,11 +1180,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 	}
 
-	private <T> T storageFind(Class<T> cls, Object primaryKey) {
+	private <T> T storageFind(Class<T> cls, Object primaryKey, URI context) {
 		assert cls != null;
 		assert primaryKey != null;
 		try {
-			return storageConnection.find(cls, primaryKey);
+			if (context == null) {
+				return storageConnection.find(cls, primaryKey);
+			} else {
+				return storageConnection.find(cls, primaryKey, context);
+			}
 		} catch (MetamodelNotSetException e) {
 			throw new OWLPersistenceException(e);
 		} catch (OntoDriverException e) {
@@ -1177,10 +1208,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 	}
 
-	private <T> void storagePersist(Object primaryKey, T entity) {
+	private <T> void storagePersist(Object primaryKey, T entity, URI context) {
 		assert entity != null;
 		try {
-			storageConnection.persist(primaryKey, entity);
+			if (context == null) {
+				storageConnection.persist(primaryKey, entity);
+			} else {
+				storageConnection.persist(primaryKey, entity, context);
+			}
 		} catch (MetamodelNotSetException e) {
 			throw new OWLPersistenceException(e);
 		} catch (OntoDriverException e) {
@@ -1212,6 +1247,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		try {
 			final Context ctx = storageConnection.getSaveContextFor(original);
 			storageConnection.registerWithContext(clone, ctx.getUri());
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException(e);
+		}
+	}
+
+	@Override
+	public List<Context> getContexts() {
+		try {
+			return storageConnection.getContexts();
 		} catch (OntoDriverException e) {
 			throw new OWLPersistenceException(e);
 		}

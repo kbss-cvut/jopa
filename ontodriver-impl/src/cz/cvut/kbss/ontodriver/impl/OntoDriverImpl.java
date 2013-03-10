@@ -22,6 +22,7 @@ import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.jena.DriverJenaFactory;
 import cz.cvut.kbss.ontodriver.impl.owlapi.DriverOwlapiFactory;
+import cz.cvut.kbss.ontodriver.impl.utils.OntologyProfileChecker;
 
 public class OntoDriverImpl implements OntoDriver {
 
@@ -175,11 +176,10 @@ public class OntoDriverImpl implements OntoDriver {
 		final Map<Context, OntologyStorageProperties> contextsToProperties = new HashMap<Context, OntologyStorageProperties>();
 		for (OntologyStorageProperties p : storageProperties) {
 			final Context ctx = new Context(p.getOntologyURI(), p.getConnectorType());
-			// TODO Set expressiveness and signature for the context (will
-			// probably have to write own profile checker)
 			contexts.add(ctx);
 			contextsToProperties.put(ctx, p);
 		}
+		OntologyProfileChecker.checkProfiles(contextsToProperties);
 		return contextsToProperties;
 	}
 

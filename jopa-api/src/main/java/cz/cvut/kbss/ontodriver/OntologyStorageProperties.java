@@ -110,4 +110,22 @@ public class OntologyStorageProperties {
 	public String getPassword() {
 		return password;
 	}
+
+	@Override
+	public String toString() {
+		final StringBuilder b = new StringBuilder();
+		b.append("StorageProperties: logical URI = ");
+		b.append(ontologyUri);
+		b.append(", physical URI = ");
+		b.append(physicalUri);
+		b.append(", connector type = ");
+		b.append(connectorType);
+		if (username != null) {
+			b.append(", username = ");
+			b.append(username);
+			b.append(", password = ");
+			b.append(password);
+		}
+		return b.toString();
+	}
 }

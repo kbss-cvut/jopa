@@ -83,7 +83,7 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 	 *            Storage properties
 	 * @return OwlapiStorageType
 	 */
-	private OwlapiStorageType resolveStorageType(OntologyStorageProperties props) {
+	public static OwlapiStorageType resolveStorageType(OntologyStorageProperties props) {
 		final URI u = props.getPhysicalURI();
 		if (u.getScheme().equals(JDBC_SCHEME)) {
 			return OwlapiStorageType.OWLDB;

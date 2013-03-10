@@ -23,7 +23,7 @@ public class Context {
 	private final URI contextUri;
 	private ContextExpressiveness expressiveness;
 	private Set<String> signature;
-	private OntologyConnectorType connectorType;
+	private final OntologyConnectorType connectorType;
 
 	/**
 	 * 

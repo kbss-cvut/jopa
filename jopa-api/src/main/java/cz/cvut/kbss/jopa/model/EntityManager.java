@@ -15,9 +15,13 @@
 
 package cz.cvut.kbss.jopa.model;
 
+import java.net.URI;
 import java.util.List;
 
+import javax.persistence.EntityExistsException;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.EntityTransaction;
+import javax.persistence.PersistenceException;
 import javax.transaction.TransactionRequiredException;
 
 import cz.cvut.kbss.jopa.NonJPA;
@@ -25,6 +29,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.ontodriver.Context;
 
 public interface EntityManager {
 
@@ -47,6 +52,33 @@ public interface EntityManager {
 	 *             transaction.
 	 */
 	public void persist(final Object entity);
+
+	/**
+	 * Make an instance managed and persistent. </p>
+	 * 
+	 * The {@code contextUri} represents an ontology context into which the
+	 * entity should be persisted.
+	 * 
+	 * @param entity
+	 *            entity instance
+	 * @param contextUri
+	 *            URI of ontology context
+	 * @throws EntityExistsException
+	 *             if the entity already exists. (The EntityExistsException may
+	 *             be thrown when the persist operation is invoked, or the
+	 *             EntityExistsException or another PersistenceException may be
+	 *             thrown at flush or commit time.)
+	 * @throws IllegalArgumentException
+	 *             if not an entity
+	 * @throws NullPointerException
+	 *             If {@code entity} or {@code contextUri} is {@code null}
+	 * @throws TransactionRequiredException
+	 *             if invoked on a container-managed entity manager of type
+	 *             PersistenceContextType.TRANSACTION and there is no
+	 *             transaction.
+	 * @see #getAvailableContexts()
+	 */
+	public void persist(final Object entity, final URI contextUri);
 
 	/**
 	 * (taken from javax.persistence.EntityManager)
@@ -87,8 +119,39 @@ public interface EntityManager {
 	 *             if the first argument does not denote an entity type or the
 	 *             second argument is not a valid type for that entity’s primary
 	 *             key
+	 * @throws NullPointerException
+	 *             If {@code entityClass} or {@code primaryKey} is {@code null}
 	 */
 	public <T> T find(final Class<T> entityClass, final Object primaryKey);
+
+	/**
+	 * Find by primary key. </p>
+	 * 
+	 * Search for an entity of the specified class and primary key. If the
+	 * entity instance is contained in the persistence context, it is returned
+	 * from there. </p>
+	 * 
+	 * The {@code contextUri} parameter represents URI of the ontology context
+	 * in which the entity should be looked for.
+	 * 
+	 * @param entityClass
+	 *            Entity class
+	 * @param primaryKey
+	 *            Primary key
+	 * @param contextUri
+	 *            URI of the ontology context
+	 * @return the found entity instance or {@code null} if the entity does not
+	 *         exist in the given ontology context
+	 * @throws IllegalArgumentException
+	 *             if the first argument does not denote an entity type or the
+	 *             second argument is not a valid type for that entity’s primary
+	 *             key
+	 * @throws NullPointerException
+	 *             If {@code entityClass}, {@code primaryKey} or
+	 *             {@code contextUri} is {@code null}
+	 * @see #getAvailableContexts()
+	 */
+	public <T> T find(final Class<T> entityClass, final Object primaryKey, final URI contextUri);
 
 	// TODO JPA 2.0 find with properties
 
@@ -261,8 +324,7 @@ public interface EntityManager {
 	 *            the class of the resulting instance(s)
 	 * @return the new query instance
 	 */
-	public <T> TypedQuery<T> createNativeQuery(String sqlString,
-			Class<T> resultClass);
+	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass);
 
 	// /**
 	// * Create an instance of Query for executing a native SQL query.
@@ -340,6 +402,19 @@ public interface EntityManager {
 	 */
 	@NonJPA
 	public String getLabel(final String iri);
+
+	/**
+	 * Returns a list of ontology contexts available to this entity manager.
+	 * </p>
+	 * 
+	 * These contexts represent ontology storages that are accessible through
+	 * this manager. They are ordered descending by their priority. The list
+	 * itself is not modifiable.
+	 * 
+	 * @return
+	 */
+	@NonJPA
+	public List<Context> getAvailableContexts();
 
 	// TODO JPA 2.0 public CriteriaBuilder getCriteriaBuilder();
 	public Metamodel getMetamodel();

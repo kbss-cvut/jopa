@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import org.hibernate.HibernateException;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyID;
@@ -77,6 +78,11 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 			if (LOG.isLoggable(Level.CONFIG)) {
 				LOG.config("Ontology " + logicalUri
 						+ " does not exist in the database. Creating...");
+			}
+			createOntology(ontologyIri, props);
+		} catch (HibernateException e) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finer("OWLDB database structure not present. Generating...");
 			}
 			createOntology(ontologyIri, props);
 		}

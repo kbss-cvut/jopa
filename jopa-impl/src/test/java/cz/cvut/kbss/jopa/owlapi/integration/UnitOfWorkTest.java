@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -72,10 +73,25 @@ public class UnitOfWorkTest {
 		assertEquals(res.getStringAttribute(), testObject.getStringAttribute());
 	}
 
-	@Test
-	public void testReadObectWithNull() {
-		assertNull(testUOW.readObject(testObject.getClass(), null));
-		assertNull(testUOW.readObject(null, testObjectTwo.getUri()));
+	@Test(expected = NullPointerException.class)
+	public void testReadObectNullPrimaryKey() {
+		@SuppressWarnings("unused")
+		final Object res = testUOW.readObject(testObject.getClass(), null);
+		fail("This line should not have been reached.");
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testReadObjectNullClass() {
+		@SuppressWarnings("unused")
+		final Object res = testUOW.readObject(null, testObjectTwo.getUri());
+		fail("This line should not have been reached.");
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testReadObjectNullContext() {
+		@SuppressWarnings("unused")
+		final Object res = testUOW.readObject(testObject.getClass(), testObject.getUri(), null);
+		fail("This line should not have been reached.");
 	}
 
 	@Test
@@ -245,8 +261,9 @@ public class UnitOfWorkTest {
 		final URI pk = URI.create("http://newOne");
 		newOne.setUri(pk);
 		newOne.setStringAttribute("str");
-		Object clone = this.testUOW.registerObject(newOne);
-		assertEquals(newOne, clone);
+		this.testUOW.registerObject(newOne);
+		assertTrue(testUOW.contains(newOne));
+		assertTrue(testUOW.getNewObjectsCloneToOriginal().containsKey(newOne));
 	}
 
 	@Test
@@ -264,6 +281,22 @@ public class UnitOfWorkTest {
 		newOne.setStringAttribute("stringAttributeOne");
 		this.testUOW.registerNewObject(newOne);
 		assertTrue(testUOW.getNewObjectsCloneToOriginal().containsKey(newOne));
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testRegisterNewObjectNull() {
+		testUOW.registerNewObject(null);
+		fail("This line should not have been reached.");
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testRegisterNewObjectNullContext() {
+		final OWLClassA newOne = new OWLClassA();
+		final URI pk = URI.create("http://newEntity");
+		newOne.setUri(pk);
+		newOne.setStringAttribute("stringAttributeOne");
+		testUOW.registerNewObject(newOne, null);
+		fail("This line should not have been reached.");
 	}
 
 	@Test

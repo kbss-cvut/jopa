@@ -50,6 +50,15 @@ public final class OwldbOntologyStorageProperties extends OntologyStoragePropert
 		return jdbcDriverClass;
 	}
 
+	@Override
+	public String toString() {
+		final StringBuilder b = new StringBuilder();
+		b.append(super.toString());
+		b.append(", JDBC driver = ");
+		b.append(jdbcDriverClass);
+		return b.toString();
+	}
+
 	public static OwldbStoragePropertiesBuilder ontologyUri(URI ontologyUri) {
 		return new OwldbStoragePropertiesBuilder().ontologyUri(ontologyUri);
 	}
