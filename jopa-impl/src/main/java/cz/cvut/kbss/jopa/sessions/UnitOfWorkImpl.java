@@ -594,7 +594,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 */
 	public void mergeChangesIntoParent() {
 		if (hasChanges() && getUowChangeSet() != null) {
-			getMergeManager().mergeChangesFromChangeSet(getUowChangeSet());
+			getLiveObjectCache().acquireWriteLock();
+			try {
+				getMergeManager().mergeChangesFromChangeSet(getUowChangeSet());
+			} finally {
+				getLiveObjectCache().releaseWriteLock();
+			}
 		}
 		// Mark new persistent object as existing and managed
 		Iterator<?> it = getNewObjectsCloneToOriginal().keySet().iterator();
@@ -617,10 +622,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			Object clone = ochSet.getCloneObject();
 			getCloneMapping().remove(clone);
 			getCloneToOriginals().remove(clone);
-			Object orig = ochSet.getChangedObject();
-			// TODO Removing can be done directly once change set contains
-			// object's primary key
-			removeObjectFromCache(orig);
 		}
 	}
 
@@ -710,7 +711,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		IRI iri = getIdentifier(clone);
 		if (iri != null) {
 			getUsedPrimaryKeys().add(iri);
-			putObjectIntoCache(iri, object);
 		}
 		getCloneMapping().put(clone, clone);
 		getCloneToOriginals().put(clone, object);
@@ -1184,11 +1184,16 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		assert cls != null;
 		assert primaryKey != null;
 		try {
+			T result = null;
 			if (context == null) {
-				return storageConnection.find(cls, primaryKey);
+				result = storageConnection.find(cls, primaryKey);
 			} else {
-				return storageConnection.find(cls, primaryKey, context);
+				result = storageConnection.find(cls, primaryKey, context);
 			}
+			if (result != null) {
+				putObjectIntoCache(primaryKey, result);
+			}
+			return result;
 		} catch (MetamodelNotSetException e) {
 			throw new OWLPersistenceException(e);
 		} catch (OntoDriverException e) {

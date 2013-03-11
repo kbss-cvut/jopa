@@ -29,8 +29,7 @@ import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
  */
 public class CacheManagerImpl implements CacheManager {
 
-	private static final Logger LOG = Logger.getLogger(CacheManagerImpl.class
-			.getName());
+	private static final Logger LOG = Logger.getLogger(CacheManagerImpl.class.getName());
 
 	private static final Long DEFAULT_TTL = 60000L;
 	// Initial delay is the sweep rate multiplied by this multiplier
@@ -55,8 +54,7 @@ public class CacheManagerImpl implements CacheManager {
 	private Long timeToLive;
 	private volatile boolean sweepRunning;
 
-	public CacheManagerImpl(AbstractSession session,
-			Map<String, String> properties) {
+	public CacheManagerImpl(AbstractSession session, Map<String, String> properties) {
 		this.session = session;
 		this.objCache = new HashMap<Class<?>, Map<Object, Object>>();
 		this.ttls = new HashMap<Class<?>, Map<Object, Long>>();
@@ -66,8 +64,7 @@ public class CacheManagerImpl implements CacheManager {
 		this.writeLock = lock.writeLock();
 		this.cacheSweeper = new CacheSweeper();
 		this.sweeperScheduler = Executors.newSingleThreadScheduledExecutor();
-		sweeperScheduler.scheduleAtFixedRate(cacheSweeper, initDelay,
-				sweepRate, TimeUnit.SECONDS);
+		sweeperScheduler.scheduleAtFixedRate(cacheSweeper, initDelay, sweepRate, TimeUnit.SECONDS);
 	}
 
 	private void initSettings(Map<String, String> properties) {
@@ -79,26 +76,19 @@ public class CacheManagerImpl implements CacheManager {
 				this.timeToLive = Long.valueOf(properties
 						.get(OWLAPIPersistenceProperties.CACHE_TTL)) * 1000;
 			} catch (NumberFormatException e) {
-				throw new OWLPersistenceException(
-						"Unable to parse long value from "
-								+ properties
-										.get(OWLAPIPersistenceProperties.CACHE_TTL),
-						e);
+				throw new OWLPersistenceException("Unable to parse long value from "
+						+ properties.get(OWLAPIPersistenceProperties.CACHE_TTL), e);
 			}
 		}
-		if (!properties
-				.containsKey(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE)) {
+		if (!properties.containsKey(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE)) {
 			this.sweepRate = DEFAULT_SWEEP_RATE;
 		} else {
 			try {
 				this.sweepRate = Long.parseLong(properties
 						.get(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE));
 			} catch (NumberFormatException e) {
-				throw new OWLPersistenceException(
-						"Unable to parse long value from "
-								+ properties
-										.get(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE),
-						e);
+				throw new OWLPersistenceException("Unable to parse long value from "
+						+ properties.get(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE), e);
 			}
 		}
 		this.initDelay = DELAY_MULTIPLIER * sweepRate;
@@ -378,8 +368,7 @@ public class CacheManagerImpl implements CacheManager {
 			}
 			CacheManagerImpl.this.acquireWriteLock();
 			try {
-				if (CacheManagerImpl.this.sweepRunning
-						|| CacheManagerImpl.this.objCache.isEmpty()) {
+				if (CacheManagerImpl.this.sweepRunning || CacheManagerImpl.this.objCache.isEmpty()) {
 					return;
 				}
 				CacheManagerImpl.this.sweepRunning = true;
@@ -387,8 +376,7 @@ public class CacheManagerImpl implements CacheManager {
 				final Map<Object, Class<?>> toEvict = new HashMap<Object, Class<?>>();
 				// Mark the objects to evict (can't evict them now, it would
 				// cause ConcurrentModificationException)
-				for (Entry<Class<?>, Map<Object, Long>> ttl : CacheManagerImpl.this.ttls
-						.entrySet()) {
+				for (Entry<Class<?>, Map<Object, Long>> ttl : CacheManagerImpl.this.ttls.entrySet()) {
 					for (Entry<Object, Long> e : ttl.getValue().entrySet()) {
 						if (e.getValue() + CacheManagerImpl.this.timeToLive < currentTime) {
 							toEvict.put(e.getKey(), ttl.getKey());

@@ -151,6 +151,7 @@ public class TestChangePersist extends TestCase {
 		toChange.getOwlClassA().setStringAttribute(changedAttribute);
 		pc.getTransaction().commit();
 
+		// pc.getEntityManagerFactory().getCache().evictAll();
 		final OWLClassA res = pc.find(OWLClassA.class, testEntityOne.getUri());
 		assertNotNull(res);
 		assertEquals(changedAttribute, res.getStringAttribute());

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -40,18 +41,15 @@ public class TestUpdateOperations {
 		final List<OWLClassA> simple = new ArrayList<OWLClassA>();
 		for (int i = 0; i < 10; i++) {
 			OWLClassA a = new OWLClassA();
-			URI pkA = URI
-					.create("http://simpleToChangeA" + Integer.toString(i));
+			URI pkA = URI.create("http://simpleToChangeA" + Integer.toString(i));
 			a.setUri(pkA);
-			a.setStringAttribute("StringAttributeSimple"
-					+ Integer.toString(i + 1));
+			a.setStringAttribute("StringAttributeSimple" + Integer.toString(i + 1));
 			simple.add(a);
 		}
 		final List<OWLClassA> refs = new ArrayList<OWLClassA>();
 		for (int i = 0; i < 10; i++) {
 			OWLClassA a = new OWLClassA();
-			final URI pkRA = URI.create("http://refAToChange"
-					+ Integer.toString(i + 1));
+			final URI pkRA = URI.create("http://refAToChange" + Integer.toString(i + 1));
 			a.setUri(pkRA);
 			a.setStringAttribute("strAttForRefA_" + Integer.toString(i + 1));
 			refs.add(a);
@@ -67,8 +65,8 @@ public class TestUpdateOperations {
 		Statement st1 = null;
 		Statement st2 = null;
 		ResultSet rs = null;
-		con = DriverManager.getConnection(TestEnvironment.DB_URI,
-				TestEnvironment.DB_USERNAME, TestEnvironment.DB_PASSWORD);
+		con = DriverManager.getConnection(TestEnvironment.DB_URI, TestEnvironment.DB_USERNAME,
+				TestEnvironment.DB_PASSWORD);
 		st1 = con.createStatement();
 		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
 		final String deleteStmt = "TRUNCATE ";
@@ -80,13 +78,20 @@ public class TestUpdateOperations {
 			st2 = null;
 		}
 		st1.close();
-		pc = TestEnvironment.getPersistenceConnector(
-				"OWLDBPersistenceTest-update", Storage.OWLDB, true);
+		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-update", Storage.OWLDB,
+				true);
 	}
 
 	@AfterClass
 	public static void teardownAfterClass() {
 		pc.getEntityManagerFactory().close();
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		if (pc.getTransaction().isActive()) {
+			pc.getTransaction().rollback();
+		}
 	}
 
 	@Test
