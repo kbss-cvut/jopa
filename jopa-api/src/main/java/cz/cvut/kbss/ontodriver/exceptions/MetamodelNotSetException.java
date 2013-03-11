@@ -24,10 +24,4 @@ public class MetamodelNotSetException extends RuntimeException {
 	public MetamodelNotSetException(String message, Throwable cause) {
 		super(message, cause);
 	}
-
-	public MetamodelNotSetException(String message, Throwable cause,
-			boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
 }

@@ -19,9 +19,4 @@ public class IntegrityConstraintViolatedException extends RuntimeException {
 	public IntegrityConstraintViolatedException(String message, Throwable cause) {
 		super(message, cause);
 	}
-
-	public IntegrityConstraintViolatedException(String message, Throwable cause,
-			boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
 }

@@ -92,21 +92,16 @@ public class TestRetrieveOperations {
 		}
 	}
 
-	@Test
+	@Test(expected = NullPointerException.class)
 	public void testFindNull() {
 		log.info("Test: Find null entity");
 		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testFindNull");
 		pc.clear();
-		final OWLClassA res;
 		final URI uri = null;
-		try {
-			res = pc.find(OWLClassA.class, uri);
-			assertNull(res);
-		} catch (OWLPersistenceException e) {
-			e.printStackTrace();
-			fail();
-		}
+		@SuppressWarnings("unused")
+		final OWLClassA res = pc.find(OWLClassA.class, uri);
+		fail("This line should not have been reached.");
 	}
 
 	@Test
