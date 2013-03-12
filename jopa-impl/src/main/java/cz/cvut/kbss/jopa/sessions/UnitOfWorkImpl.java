@@ -119,7 +119,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			return cls.cast(result);
 		}
 		// Search the cache
-		result = getObjectFromCache(cls, primaryKey);
+		result = getObjectFromCache(context, cls, primaryKey);
 		if (result == null) {
 			// The object is not in the session cache, so search the ontology
 			result = storageFind(cls, primaryKey, context);
@@ -644,7 +644,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 		Object orig = null;
 		final Class<?> cls = entity.getClass();
-		orig = getObjectFromCache(cls, iri);
+		orig = getObjectFromCache(null, cls, iri);
 		if (orig == null) {
 			orig = storageFind(cls, iri, null);
 			if (orig == null) {
@@ -1142,23 +1142,32 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 * and class, null is returned. This method is just a delegate for the cache
 	 * methods, it handles locks.
 	 * 
+	 * @param contextUri
 	 * @param cls
 	 * @param primaryKey
 	 * @return Cached object or null
 	 */
-	private Object getObjectFromCache(Class<?> cls, Object primaryKey) {
+	private Object getObjectFromCache(URI contextUri, Class<?> cls, Object primaryKey) {
 		assert cls != null;
 		assert primaryKey != null;
 		cacheManager.acquireReadLock();
-		final Object entity = cacheManager.get(cls, primaryKey);
+		Object entity = null;
+		if (contextUri != null) {
+			entity = cacheManager.get(contextUri, cls, primaryKey);
+		} else {
+			entity = cacheManager.get(cls, primaryKey);
+		}
 		cacheManager.releaseReadLock();
 		return entity;
 	}
 
-	private void putObjectIntoCache(Object primaryKey, Object entity) {
+	void putObjectIntoCache(Object primaryKey, Object entity) {
 		cacheManager.acquireWriteLock();
 		try {
-			cacheManager.add(primaryKey, entity);
+			cacheManager.add(storageConnection.getSaveContextFor(entity).getUri(), primaryKey,
+					entity);
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException(e);
 		} finally {
 			cacheManager.releaseWriteLock();
 		}

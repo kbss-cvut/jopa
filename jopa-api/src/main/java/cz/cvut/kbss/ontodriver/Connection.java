@@ -191,6 +191,23 @@ public interface Connection extends Transactional {
 	public Context getContext(URI contextUri) throws OntoDriverException;
 
 	/**
+	 * Retrieves the current context of this {@code Connection}. </p>
+	 * 
+	 * The current context is used when no saving context is specified for e. g.
+	 * {@code persist}. </p>
+	 * 
+	 * By default the context with highest priority is used as current context.
+	 * This can be changed by calling {@link #setConnectionContext(URI)}.
+	 * 
+	 * @return {@code Context} of this connection
+	 * @throws OntoDriverException
+	 *             If called on a closed connection or if an ontology access
+	 *             error occurs
+	 * @see #setConnectionContext(URI)
+	 */
+	public Context getCurrentContext() throws OntoDriverException;
+
+	/**
 	 * Retrieves a list of all available contexts. </p>
 	 * 
 	 * A context in this scenario can be a named graph, an ontology or an

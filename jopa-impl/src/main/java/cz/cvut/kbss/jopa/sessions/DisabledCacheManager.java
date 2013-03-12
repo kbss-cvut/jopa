@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -46,6 +47,11 @@ public class DisabledCacheManager implements CacheManager {
 		return null;
 	}
 
+	@Override
+	public <T> T get(URI contextUri, Class<T> cls, Object primaryKey) {
+		return null;
+	}
+
 	public Object getIRIOfObject(Object object) {
 		return null;
 	}
@@ -72,6 +78,16 @@ public class DisabledCacheManager implements CacheManager {
 
 	public boolean contains(Class<?> cls, Object primaryKey) {
 		return false;
+	}
+
+	@Override
+	public boolean contains(URI contextUri, Class<?> cls, Object primaryKey) {
+		return false;
+	}
+
+	@Override
+	public void evict(URI contextUri, Class<?> cls, Object primaryKey) {
+		// Nothing to do
 	}
 
 	public void evict(Class<?> cls, Object primaryKey) {
@@ -106,6 +122,16 @@ public class DisabledCacheManager implements CacheManager {
 	}
 
 	public void setInferredClasses(Set<Class<?>> inferredClasses) {
+		// Nothing to do
+	}
+
+	@Override
+	public void evict(URI contextUri) {
+		// Nothing to do
+	}
+
+	@Override
+	public void add(URI contextUri, Object primaryKey, Object entity) {
 		// Nothing to do
 	}
 }

@@ -11,6 +11,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -27,6 +28,7 @@ import cz.cvut.kbss.jopa.sessions.ServerSession;
 
 public class CacheManagerTest {
 
+	private static final URI CONTEXT_URI = URI.create("http://jopa-unit-tests");
 	private static SessionStub session;
 	private static OWLClassA testA;
 	private static OWLClassB testB;
@@ -65,76 +67,48 @@ public class CacheManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		this.mngr = new CacheManagerImpl(session,
-				Collections.<String, String> emptyMap());
+		this.mngr = new CacheManagerImpl(session, Collections.<String, String> emptyMap());
 	}
 
 	@Test
 	public void testAdd() {
-		mngr.add(testA.getUri(), testA);
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
 		final Object res = mngr.get(testA.getClass(), testA.getUri());
 		assertNotNull(res);
 		assertEquals(testA, res);
 	}
 
-	@Test
+	@Test(expected = NullPointerException.class)
 	public void testAddNull() {
-		try {
-			mngr.add(URI.create("http://blahblahblah"), null);
-			assertTrue(mngr.isEmpty());
-		} catch (Exception e) {
-			fail("Exception caught. Test failed.");
-		}
+		mngr.add(CONTEXT_URI, URI.create("http://blahblahblah"), null);
+		fail("This line should not have been reached.");
 	}
 
 	@Test
 	public void testAddWithDuplicateIRI() {
-		this.mngr.add(testA.getUri(), testA);
+		this.mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		final OWLClassA duplicate = new OWLClassA();
 		final String newStr = testA.getStringAttribute() + "duplicated";
 		duplicate.setStringAttribute(newStr);
 		duplicate.setUri(testA.getUri());
-		mngr.add(duplicate.getUri(), duplicate);
-		final OWLClassA res = (OWLClassA) mngr.get(testA.getClass(),
-				testA.getUri());
+		mngr.add(CONTEXT_URI, duplicate.getUri(), duplicate);
+		final OWLClassA res = (OWLClassA) mngr.get(testA.getClass(), testA.getUri());
 		assertNotNull(res);
 		assertFalse(newStr.equals(res.getStringAttribute()));
 		assertEquals(testA.getStringAttribute(), res.getStringAttribute());
 	}
 
 	@Test
-	public void testAddAll() {
-		mngr.addAll(listOfBs);
-		for (OWLClassB b : listOfBs.values()) {
-			assertTrue(mngr.contains(OWLClassB.class, b.getUri()));
-			final OWLClassB res = (OWLClassB) mngr.get(OWLClassB.class,
-					b.getUri());
-			assertNotNull(res);
-			assertEquals(b.getUri(), res.getUri());
-		}
-	}
-
-	@Test
-	public void testAddAllNull() {
-		try {
-			mngr.addAll(null);
-			assertTrue(mngr.isEmpty());
-		} catch (Exception e) {
-			fail("Exception caught. Test failed.");
-		}
-	}
-
-	@Test
 	public void testGetObject() {
-		mngr.add(testA.getUri(), testA);
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		Object res = mngr.get(testA.getClass(), testA.getUri());
 		assertEquals(testA, res);
 	}
 
 	@Test
 	public void testGetObjectNull() {
-		mngr.add(testA.getUri(), testA);
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		try {
 			final Object o = mngr.get(OWLClassA.class, null);
 			assertNull(o);
@@ -145,8 +119,8 @@ public class CacheManagerTest {
 
 	@Test
 	public void testGetObjectUnknownClass() {
-		mngr.add(testA.getUri(), testA);
-		mngr.add(testB.getUri(), testB);
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		mngr.add(CONTEXT_URI, testB.getUri(), testB);
 		try {
 			final Object o = mngr.get(OWLClassD.class, testA.getUri());
 			assertNull(o);
@@ -157,8 +131,8 @@ public class CacheManagerTest {
 
 	@Test
 	public void testGetObjectUnknownPrimaryKey() {
-		mngr.add(testA.getUri(), testA);
-		mngr.add(testB.getUri(), testB);
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		mngr.add(CONTEXT_URI, testB.getUri(), testB);
 		final URI unknownId = URI.create("http://unknownId");
 		final Object o = mngr.get(OWLClassA.class, unknownId);
 		assertNull(o);
@@ -166,8 +140,8 @@ public class CacheManagerTest {
 
 	@Test
 	public void testEvictAll() {
-		mngr.add(testA.getUri(), testA);
-		mngr.addAll(listOfBs);
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		addAllToCache(listOfBs);
 		mngr.evictAll();
 		assertNull(mngr.get(testA.getClass(), testA.getUri()));
 		assertTrue(mngr.isEmpty());
@@ -175,9 +149,9 @@ public class CacheManagerTest {
 
 	@Test
 	public void testEvictByClass() {
-		mngr.add(testA.getUri(), testA);
-		mngr.add(testB.getUri(), testB);
-		mngr.addAll(listOfBs);
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		mngr.add(CONTEXT_URI, testB.getUri(), testB);
+		addAllToCache(listOfBs);
 		mngr.evict(OWLClassB.class);
 		assertFalse(mngr.isEmpty());
 		assertTrue(mngr.contains(OWLClassA.class, testA.getUri()));
@@ -186,11 +160,11 @@ public class CacheManagerTest {
 
 	@Test
 	public void testEvictByClassNull() {
-		mngr.add(testA.getUri(), testA);
-		mngr.add(testB.getUri(), testB);
-		mngr.addAll(listOfBs);
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		mngr.add(CONTEXT_URI, testB.getUri(), testB);
+		addAllToCache(listOfBs);
 		try {
-			mngr.evict(null);
+			mngr.evict((Class<?>) null);
 			assertFalse(mngr.isEmpty());
 			assertTrue(mngr.contains(OWLClassA.class, testA.getUri()));
 			assertTrue(mngr.contains(OWLClassB.class, testB.getUri()));
@@ -201,19 +175,19 @@ public class CacheManagerTest {
 
 	@Test
 	public void testEvictByPrimaryKey() {
-		mngr.add(testA.getUri(), testA);
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		final URI pk = URI.create("http://testURI");
 		final OWLClassA tmp = new OWLClassA();
 		tmp.setUri(pk);
-		this.mngr.add(pk, tmp);
+		this.mngr.add(CONTEXT_URI, pk, tmp);
 		mngr.evict(OWLClassA.class, pk);
 		assertNull(mngr.get(OWLClassA.class, pk));
 	}
 
 	@Test
 	public void testEvictByPrimaryKeyNull() {
-		mngr.add(testA.getUri(), testA);
-		mngr.add(testB.getUri(), testB);
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		mngr.add(CONTEXT_URI, testB.getUri(), testB);
 		try {
 			mngr.evict(OWLClassB.class, null);
 			assertFalse(mngr.isEmpty());
@@ -227,8 +201,8 @@ public class CacheManagerTest {
 	@Test
 	public void testEvictWithSweeper() {
 		initSweepeableManager();
-		mngr.add(testA.getUri(), testA);
-		mngr.add(testB.getUri(), testB);
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		mngr.add(CONTEXT_URI, testB.getUri(), testB);
 		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
 		assertTrue(mngr.contains(testB.getClass(), testB.getUri()));
 		// Give it enough time to sweep the cache
@@ -244,8 +218,8 @@ public class CacheManagerTest {
 	@Test
 	public void testRefreshTTL() {
 		initSweepeableManager();
-		mngr.add(testA.getUri(), testA);
-		mngr.add(testB.getUri(), testB);
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		mngr.add(CONTEXT_URI, testB.getUri(), testB);
 		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
 		assertTrue(mngr.contains(testB.getClass(), testB.getUri()));
 		// The cycle ensures that testA is refreshed and stays in the cache
@@ -267,6 +241,12 @@ public class CacheManagerTest {
 		props.put(OWLAPIPersistenceProperties.CACHE_TTL, "1");
 		props.put(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE, "2");
 		this.mngr = new CacheManagerImpl(session, props);
+	}
+
+	private void addAllToCache(Map<URI, OWLClassB> entities) {
+		for (Entry<URI, OWLClassB> e : entities.entrySet()) {
+			mngr.add(CONTEXT_URI, e.getKey(), e.getValue());
+		}
 	}
 
 	private static class SessionStub extends ServerSession {

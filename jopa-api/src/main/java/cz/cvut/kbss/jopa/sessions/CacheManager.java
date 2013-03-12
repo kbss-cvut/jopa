@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.util.Map;
+import java.net.URI;
 import java.util.Set;
 
 /**
@@ -13,30 +13,21 @@ import java.util.Set;
 public interface CacheManager extends Cache {
 
 	/**
-	 * Add the specified object into the shared session cache. This method gets
-	 * the IRI of the object in parameter, so it does not need to extract it
-	 * itself.
+	 * Adds the specified object into the shared session cache. </p>
 	 * 
+	 * This method gets the primary key of the object in parameter, so it does
+	 * not need to extract it itself.
+	 * @param contextUri
+	 *            URI of the context to which the specified entity belongs
 	 * @param primaryKey
 	 *            Primary key of the specified object
 	 * @param entity
 	 *            The object to be added into the cache
 	 */
-	public void add(Object primaryKey, Object entity);
+	public void add(URI contextUri, Object primaryKey, Object entity);
 
 	/**
-	 * Add all of these objects into the shared session cache.
-	 * 
-	 * The map is expected to contain pairs of primary key and entity with that
-	 * primary key (where the primary key is also the key in the map).
-	 * 
-	 * @param entities
-	 *            Map of entities to add to the cache
-	 */
-	public void addAll(Map<?, ?> entities);
-
-	/**
-	 * Get entity with the specified primary key from the cache.
+	 * Gets entity with the specified primary key from the cache.
 	 * 
 	 * @param cls
 	 *            Class of the entity
@@ -46,6 +37,23 @@ public interface CacheManager extends Cache {
 	 * @return Entity with the specified primary key or null
 	 */
 	public <T> T get(Class<T> cls, Object primaryKey);
+
+	/**
+	 * Gets entity with the specified primary key from the cache. </p>
+	 * 
+	 * The entity is searched for in the context specified by {@code contextUri}
+	 * . Thus all three conditions - class, primary key and context must match
+	 * to return a result.
+	 * @param contextUri
+	 *            URI of the context
+	 * @param cls
+	 *            Class of the entity
+	 * @param primaryKey
+	 *            Primary key of the entity
+	 * 
+	 * @return Entity with the specified primary key or {@code null}
+	 */
+	public <T> T get(URI contextUri, Class<T> cls, Object primaryKey);
 
 	/**
 	 * Remove objects with inferred attributes from the cache, since there are

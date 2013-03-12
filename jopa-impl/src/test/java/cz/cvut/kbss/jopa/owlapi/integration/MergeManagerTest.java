@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 public class MergeManagerTest {
 
+	private static final URI CONTEXT_URI = URI.create("http://jopa-unit-tests");
 	private ServerSession session;
 	private UnitOfWorkImpl uow;
 	private CloneBuilderStub cloneBuilder;
@@ -72,8 +73,8 @@ public class MergeManagerTest {
 		final OWLClassB objTwo = new OWLClassB();
 		final URI pkTwo = URI.create("http://objTwo");
 		objTwo.setUri(pkTwo);
-		this.uow.getLiveObjectCache().add(IRI.create(objOne.getUri()), objOne);
-		this.uow.getLiveObjectCache().add(IRI.create(objTwo.getUri()), objTwo);
+		this.uow.getLiveObjectCache().add(CONTEXT_URI, IRI.create(objOne.getUri()), objOne);
+		this.uow.getLiveObjectCache().add(CONTEXT_URI, IRI.create(objTwo.getUri()), objTwo);
 		Object cloneOne = this.uow.registerExistingObject(objOne);
 		Object cloneTwo = this.uow.registerExistingObject(objTwo);
 		this.uow.removeObject(cloneTwo);

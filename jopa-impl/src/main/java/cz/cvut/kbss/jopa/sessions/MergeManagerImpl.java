@@ -11,19 +11,19 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 public class MergeManagerImpl implements MergeManager {
 
 	// The UnitOfWork instance for this MergeManager
-	protected AbstractSession session;
+	protected UnitOfWorkImpl uow;
 
 	protected CloneBuilder builder;
 
-	public MergeManagerImpl(AbstractSession session) {
-		this.session = session;
+	public MergeManagerImpl(UnitOfWorkImpl session) {
+		this.uow = session;
 		this.builder = new CloneBuilderImpl((UnitOfWorkImpl) session);
 	}
 
 	protected void deleteObjectFromCache(ObjectChangeSet changeSet) {
 		Object original = changeSet.getChangedObject();
 		if (original != null) {
-			session.removeObjectFromCache(original);
+			uow.removeObjectFromCache(original);
 		}
 	}
 
@@ -34,14 +34,13 @@ public class MergeManagerImpl implements MergeManager {
 		if (clone == null) {
 			return clone;
 		}
-		UnitOfWorkImpl unitOfWork = (UnitOfWorkImpl) this.session;
 
 		Object original = changeSet.getChangedObject();
 		if (original == null) {
 			// If the original is null, then we may have a new object
 			// but this should not happen since new objects are handled
 			// separately
-			if (unitOfWork.isObjectNew(clone)) {
+			if (uow.isObjectNew(clone)) {
 				mergeNewObject(changeSet);
 			} else {
 				throw new OWLPersistenceException("Cannot find the original object.");
@@ -96,13 +95,8 @@ public class MergeManagerImpl implements MergeManager {
 		// Put the original object into the shared session cache
 		Object newObject = changeSet.getChangedObject();
 		final IRI primaryKey = EntityPropertiesUtils.getPrimaryKey(newObject,
-				session.getMetamodel());
-		session.getLiveObjectCache().acquireWriteLock();
-		try {
-			session.getLiveObjectCache().add(primaryKey, newObject);
-		} finally {
-			session.getLiveObjectCache().releaseWriteLock();
-		}
+				uow.getMetamodel());
+		uow.putObjectIntoCache(primaryKey, newObject);
 	}
 
 }

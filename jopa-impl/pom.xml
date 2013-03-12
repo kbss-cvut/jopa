@@ -185,15 +185,15 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-        	<groupId>cz.cvut.kbss.jopa</groupId>
-        	<artifactId>ontodriver-impl</artifactId>
-        	<version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
         	<groupId>org.jgrapht</groupId>
         	<artifactId>jgrapht-jdk1.5</artifactId>
         	<version>0.7.3</version>
         	<scope>runtime</scope>
+        </dependency>
+        <dependency>
+        	<groupId>cz.cvut.kbss.jopa</groupId>
+        	<artifactId>ontodriver-impl</artifactId>
+        	<version>0.0.1-SNAPSHOT</version>
         </dependency>
 	</dependencies>
 

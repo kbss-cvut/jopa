@@ -47,6 +47,7 @@ public class ConnectionImpl implements Connection {
 		initContexts();
 	}
 
+	@Override
 	public void close() throws OntoDriverException {
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Closing the connection.");
@@ -58,6 +59,7 @@ public class ConnectionImpl implements Connection {
 		this.open = false;
 	}
 
+	@Override
 	public void commit() throws OntoDriverException, MetamodelNotSetException {
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Committing changes.");
@@ -101,6 +103,7 @@ public class ConnectionImpl implements Connection {
 		return storageManager.contains(primaryKey, ctx);
 	}
 
+	@Override
 	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException,
 			MetamodelNotSetException {
 		ensureOpen(true);
@@ -145,6 +148,7 @@ public class ConnectionImpl implements Connection {
 		return findInternal(cls, primaryKey, ctx, Collections.<String, Context> emptyMap());
 	}
 
+	@Override
 	public <T> T find(Class<T> cls, Object primaryKey, URI entityContext,
 			Map<String, URI> attributeContexts) throws OntoDriverException,
 			MetamodelNotSetException {
@@ -172,11 +176,13 @@ public class ConnectionImpl implements Connection {
 		return result;
 	}
 
+	@Override
 	public boolean getAutoCommit() throws OntoDriverException {
 		ensureOpen(false);
 		return autoCommit;
 	}
 
+	@Override
 	public Context getContext(URI contextUri) throws OntoDriverException {
 		ensureOpen(false);
 		if (contextUri == null) {
@@ -185,11 +191,18 @@ public class ConnectionImpl implements Connection {
 		return contexts.get(contextUri);
 	}
 
+	@Override
+	public Context getCurrentContext() throws OntoDriverException {
+		return defaultContext;
+	}
+
+	@Override
 	public List<Context> getContexts() throws OntoDriverException {
 		ensureOpen(false);
 		return storageManager.getAvailableContexts();
 	}
 
+	@Override
 	public Context getSaveContextFor(Object entity) throws OntoDriverException {
 		ensureOpen(false);
 		if (entity == null) {
@@ -202,6 +215,7 @@ public class ConnectionImpl implements Connection {
 		return ctx;
 	}
 
+	@Override
 	public boolean isOpen() {
 		return open;
 	}
@@ -220,6 +234,7 @@ public class ConnectionImpl implements Connection {
 		storageManager.loadFieldValue(entity, field, ctx);
 	}
 
+	@Override
 	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException,
 			MetamodelNotSetException {
 		ensureOpen(true);
@@ -240,6 +255,7 @@ public class ConnectionImpl implements Connection {
 		}
 	}
 
+	@Override
 	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException,
 			MetamodelNotSetException {
 		ensureOpen(true);
@@ -257,6 +273,7 @@ public class ConnectionImpl implements Connection {
 		persistInternal(primaryKey, entity, ctx, Collections.<String, Context> emptyMap());
 	}
 
+	@Override
 	public <T> void persist(Object primaryKey, T entity, URI context) throws OntoDriverException,
 			MetamodelNotSetException {
 		ensureOpen(true);
@@ -272,6 +289,7 @@ public class ConnectionImpl implements Connection {
 		persistInternal(primaryKey, entity, ctx, Collections.<String, Context> emptyMap());
 	}
 
+	@Override
 	public <T> void persist(Object primaryKey, T entity, URI context,
 			Map<String, URI> attributeContexts) throws OntoDriverException,
 			MetamodelNotSetException {
@@ -303,11 +321,13 @@ public class ConnectionImpl implements Connection {
 		}
 	}
 
+	@Override
 	public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public <T> void registerWithContext(T entity, URI context) throws OntoDriverException {
 		ensureOpen(false);
 		if (entity == null || context == null) {
@@ -321,6 +341,7 @@ public class ConnectionImpl implements Connection {
 		registerInternal(entity, ctx);
 	}
 
+	@Override
 	public <T> void remove(Object primaryKey, T entity) throws OntoDriverException {
 		ensureOpen(true);
 		if (primaryKey == null) {
@@ -335,6 +356,7 @@ public class ConnectionImpl implements Connection {
 		removeInternal(primaryKey, entity, ctx);
 	}
 
+	@Override
 	public <T> void remove(Object primaryKey, T entity, URI context) throws OntoDriverException {
 		ensureOpen(true);
 		if (primaryKey == null || context == null) {
@@ -364,6 +386,7 @@ public class ConnectionImpl implements Connection {
 		}
 	}
 
+	@Override
 	public void rollback() throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Rolling back changes.");
@@ -376,11 +399,13 @@ public class ConnectionImpl implements Connection {
 		afterTransactionFinished();
 	}
 
+	@Override
 	public void setAutoCommit(boolean autoCommit) throws OntoDriverException {
 		ensureOpen(false);
 		this.autoCommit = autoCommit;
 	}
 
+	@Override
 	public void setConnectionContext(URI context) throws OntoDriverException {
 		ensureOpen(false);
 		if (context == null) {
@@ -394,6 +419,7 @@ public class ConnectionImpl implements Connection {
 		this.defaultContext = ctx;
 	}
 
+	@Override
 	public void setSaveContextFor(Object entity, URI context) throws OntoDriverException {
 		ensureOpen(false);
 		if (entity == null || context == null) {

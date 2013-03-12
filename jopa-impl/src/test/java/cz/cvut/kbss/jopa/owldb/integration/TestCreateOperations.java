@@ -63,15 +63,13 @@ public class TestCreateOperations {
 			OWLClassA a = new OWLClassA();
 			URI pkA = URI.create("http://simpleA" + Integer.toString(i));
 			a.setUri(pkA);
-			a.setStringAttribute("StringAttributeSimple"
-					+ Integer.toString(i + 1));
+			a.setStringAttribute("StringAttributeSimple" + Integer.toString(i + 1));
 			this.simples.add(a);
 		}
 		this.refList = new ArrayList<OWLClassA>();
 		for (int i = 0; i < 10; i++) {
 			OWLClassA a = new OWLClassA();
-			final URI pkRA = URI
-					.create("http://refA" + Integer.toString(i + 1));
+			final URI pkRA = URI.create("http://refA" + Integer.toString(i + 1));
 			a.setUri(pkRA);
 			a.setStringAttribute("strAttForRefA_" + Integer.toString(i + 1));
 			this.refList.add(a);
@@ -87,8 +85,8 @@ public class TestCreateOperations {
 		Statement st1 = null;
 		Statement st2 = null;
 		ResultSet rs = null;
-		con = DriverManager.getConnection(TestEnvironment.DB_URI,
-				TestEnvironment.DB_USERNAME, TestEnvironment.DB_PASSWORD);
+		con = DriverManager.getConnection(TestEnvironment.DB_URI, TestEnvironment.DB_USERNAME,
+				TestEnvironment.DB_PASSWORD);
 		st1 = con.createStatement();
 		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
 		final String deleteStmt = "TRUNCATE ";
@@ -100,12 +98,15 @@ public class TestCreateOperations {
 			st2 = null;
 		}
 		st1.close();
-		pc = TestEnvironment.getPersistenceConnector(
-				"OWLDBPersistenceTest-create", Storage.OWLDB, true);
+		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-create", Storage.OWLDB,
+				true);
 	}
 
 	@AfterClass
 	public static void teardownAfterClass() {
+		if (pc.getTransaction().isActive()) {
+			pc.getTransaction().rollback();
+		}
 		pc.getEntityManagerFactory().close();
 	}
 
@@ -228,8 +229,8 @@ public class TestCreateOperations {
 		pc.getTransaction().commit();
 		final OWLClassC c = pc.find(OWLClassC.class, testCWithRefs.getUri());
 		assertNotNull(c);
-		assertEquals(refList.get(0).getStringAttribute(), c.getReferencedList()
-				.get(0).getStringAttribute());
+		assertEquals(refList.get(0).getStringAttribute(), c.getReferencedList().get(0)
+				.getStringAttribute());
 		assertEquals(simples.get(5).getUri(), c.getSimpleList().get(5).getUri());
 	}
 
