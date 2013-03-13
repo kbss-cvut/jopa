@@ -15,13 +15,17 @@ import java.net.URI;
 public interface Cache {
 
 	/**
-	 * Checks whether the cache contains data for the given entity.
+	 * Checks whether the cache contains data for the given entity. </p>
+	 * 
+	 * This method searches all the available contexts and returns true on
+	 * finding the first occurence of matching entity.
 	 * 
 	 * @param cls
 	 *            entity class
 	 * @param primaryKey
 	 *            primary key
 	 * @return {@code boolean} indicating whether the entity is in the cache
+	 * @see #contains(URI, Class, Object)
 	 */
 	public boolean contains(Class<?> cls, Object primaryKey);
 
@@ -40,7 +44,10 @@ public interface Cache {
 	public boolean contains(URI contextUri, Class<?> cls, Object primaryKey);
 
 	/**
-	 * Remove the data for the given entity from the cache
+	 * Removes the data for the given entity from the cache. </p>
+	 * 
+	 * This method removes all occurrences of the matching entity from all the
+	 * available contexts.
 	 * 
 	 * @param cls
 	 *            entity class
@@ -62,8 +69,10 @@ public interface Cache {
 	public void evict(URI contextUri, Class<?> cls, Object primaryKey);
 
 	/**
-	 * Remove the data for entities of the specified class (and its subclasses)
-	 * from the cache.
+	 * Removes the data for entities of the specified class (and its subclasses)
+	 * from the cache. </p>
+	 * 
+	 * This method removes the entities from all available contexts.
 	 * 
 	 * @param cls
 	 *            entity class
@@ -71,7 +80,7 @@ public interface Cache {
 	public void evict(Class<?> cls);
 
 	/**
-	 * Remove the data for entities of the specified context from the cache.
+	 * Removes the data for entities of the specified context from the cache.
 	 * 
 	 * @param contextUri
 	 *            URI of {@code Context}
@@ -79,7 +88,7 @@ public interface Cache {
 	public void evict(URI contextUri);
 
 	/**
-	 * Clear the cache.
+	 * Clears the cache.
 	 */
 	public void evictAll();
 

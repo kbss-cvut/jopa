@@ -119,7 +119,7 @@ public class CacheManagerImpl implements CacheManager {
 		assert primaryKey != null;
 		assert contextUri != null;
 		final Class<?> cls = entity.getClass();
-		if (contains(cls, primaryKey)) {
+		if (contains(contextUri, cls, primaryKey)) {
 			return;
 		}
 		Map<Class<?>, Map<Object, Object>> m = objCache.get(contextUri);
@@ -263,7 +263,7 @@ public class CacheManagerImpl implements CacheManager {
 	@Override
 	public void evict(URI contextUri, Class<?> cls, Object primaryKey) {
 		if (contextUri == null || cls == null || primaryKey == null) {
-			throw new NullPointerException("Null passed to add: primaryKey = " + primaryKey
+			throw new NullPointerException("Null passed to evict: primaryKey = " + primaryKey
 					+ ", cls = " + cls + ", contextUri = " + contextUri);
 		}
 		Object e = getMapForClass(getMapForContext(contextUri), cls).remove(primaryKey);
@@ -277,7 +277,8 @@ public class CacheManagerImpl implements CacheManager {
 	 */
 	public void evict(Class<?> cls, Object primaryKey) {
 		if (cls == null || primaryKey == null) {
-			return;
+			throw new NullPointerException("Null passed to evict: primaryKey = " + primaryKey
+					+ ", cls = " + cls);
 		}
 		for (Map<Class<?>, Map<Object, Object>> m : objCache.values()) {
 			final Map<Object, Object> map = getMapForClass(m, cls);
@@ -294,7 +295,7 @@ public class CacheManagerImpl implements CacheManager {
 	 */
 	public void evict(Class<?> cls) {
 		if (cls == null) {
-			return;
+			throw new NullPointerException("Null passed to evict: cls = " + cls);
 		}
 		for (Map<Class<?>, Map<Object, Object>> m : objCache.values()) {
 			m.remove(cls);
@@ -321,7 +322,7 @@ public class CacheManagerImpl implements CacheManager {
 	@Override
 	public void evict(URI contextUri) {
 		if (contextUri == null) {
-			return;
+			throw new NullPointerException("Null passed to evict: contextUri = " + contextUri);
 		}
 		objCache.remove(contextUri);
 		ttls.get(contextUri).clear();

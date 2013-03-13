@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -27,6 +28,8 @@ import cz.cvut.kbss.jopa.sessions.CacheManagerImpl;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 
 public class CacheManagerTest {
+
+	private static final Logger LOG = Logger.getLogger(CacheManagerTest.class.getName());
 
 	private static final URI CONTEXT_URI = URI.create("http://jopa-unit-tests");
 	private static SessionStub session;
@@ -72,6 +75,7 @@ public class CacheManagerTest {
 
 	@Test
 	public void testAdd() {
+		LOG.config("Test: add entity into cache.");
 		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
 		final Object res = mngr.get(testA.getClass(), testA.getUri());
@@ -81,12 +85,14 @@ public class CacheManagerTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testAddNull() {
+		LOG.config("Test: add null into cache.");
 		mngr.add(CONTEXT_URI, URI.create("http://blahblahblah"), null);
 		fail("This line should not have been reached.");
 	}
 
 	@Test
 	public void testAddWithDuplicateIRI() {
+		LOG.config("Test: add two entities with the same primary key into the same context.");
 		this.mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		final OWLClassA duplicate = new OWLClassA();
 		final String newStr = testA.getStringAttribute() + "duplicated";
@@ -100,14 +106,81 @@ public class CacheManagerTest {
 	}
 
 	@Test
-	public void testGetObject() {
+	public void testAddWithDuplicateIRIToDifferentContexts() {
+		LOG.config("Test: add two entities with the same primary key into different contexts.");
 		mngr.add(CONTEXT_URI, testA.getUri(), testA);
-		Object res = mngr.get(testA.getClass(), testA.getUri());
+		final OWLClassA duplicate = new OWLClassA();
+		duplicate.setUri(testA.getUri());
+		final String newStr = testA.getStringAttribute() + "duplicated";
+		duplicate.setStringAttribute(newStr);
+		final URI diffContext = URI.create("http://jopa-different-context");
+		mngr.add(diffContext, duplicate.getUri(), duplicate);
+		assertTrue(mngr.contains(CONTEXT_URI, testA.getClass(), testA.getUri()));
+		assertTrue(mngr.contains(diffContext, duplicate.getClass(), duplicate.getUri()));
+	}
+
+	@Test
+	public void testContains() {
+		LOG.config("Test: contains by class and primary key.");
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
+		assertFalse(mngr.contains(testB.getClass(), testA.getUri()));
+	}
+
+	@Test
+	public void testContainsWithContext() {
+		LOG.config("Test: contains by context, class and primary key.");
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		assertTrue(mngr.contains(CONTEXT_URI, testA.getClass(), testA.getUri()));
+		final URI diffContext = URI.create("http://jopa-different-context");
+		assertFalse(mngr.contains(diffContext, testA.getClass(), testA.getUri()));
+	}
+
+	@Test
+	public void testContainsNull() {
+		LOG.config("Test: contains, null passed in arguments.");
+		try {
+			assertFalse(mngr.contains(null, testA.getUri()));
+			assertFalse(mngr.contains(testA.getClass(), null));
+			assertFalse(mngr.contains(null, testA.getClass(), testA.getUri()));
+			assertFalse(mngr.contains(CONTEXT_URI, null, testA.getUri()));
+			assertFalse(mngr.contains(CONTEXT_URI, testA.getClass(), null));
+		} catch (Exception e) {
+			fail("Exception caught. Test failed. Exception: " + e);
+		}
+	}
+
+	@Test
+	public void testGetObject() {
+		LOG.config("Test: get entity.");
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		final Object res = mngr.get(testA.getClass(), testA.getUri());
 		assertEquals(testA, res);
 	}
 
 	@Test
+	public void testGetObjectWithContext() {
+		LOG.config("Test: get entity. With context.");
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		final OWLClassA res = mngr.get(CONTEXT_URI, testA.getClass(), testA.getUri());
+		assertNotNull(res);
+		final OWLClassB resTwo = mngr.get(CONTEXT_URI, testB.getClass(), testA.getUri());
+		assertNull(resTwo);
+	}
+
+	@Test
+	public void testGetObjectWithWrongContext() {
+		LOG.config("Test: get entity. With wrong context.");
+		final URI diffContext = URI.create("http://jopa-different-context");
+		mngr.add(diffContext, testA.getUri(), testA);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
+		final OWLClassA res = mngr.get(CONTEXT_URI, testA.getClass(), testA.getUri());
+		assertNull(res);
+	}
+
+	@Test
 	public void testGetObjectNull() {
+		LOG.config("Test: get entity. Null passed as primary key.");
 		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		try {
 			final Object o = mngr.get(OWLClassA.class, null);
@@ -118,7 +191,20 @@ public class CacheManagerTest {
 	}
 
 	@Test
+	public void testGetObjectWithContextNull() {
+		LOG.config("Test: get entity. Null passed as context URI.");
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		try {
+			final OWLClassA res = mngr.get(null, testA.getClass(), testA.getUri());
+			assertNull(res);
+		} catch (Exception e) {
+			fail("Exception caught. Test failed. Exception : " + e);
+		}
+	}
+
+	@Test
 	public void testGetObjectUnknownClass() {
+		LOG.config("Test: get entity. Unknown class passed.");
 		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		mngr.add(CONTEXT_URI, testB.getUri(), testB);
 		try {
@@ -131,6 +217,7 @@ public class CacheManagerTest {
 
 	@Test
 	public void testGetObjectUnknownPrimaryKey() {
+		LOG.config("Test: get entity. Unknown primary key.");
 		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		mngr.add(CONTEXT_URI, testB.getUri(), testB);
 		final URI unknownId = URI.create("http://unknownId");
@@ -140,6 +227,7 @@ public class CacheManagerTest {
 
 	@Test
 	public void testEvictAll() {
+		LOG.config("Test: evict all.");
 		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		addAllToCache(listOfBs);
 		mngr.evictAll();
@@ -149,6 +237,7 @@ public class CacheManagerTest {
 
 	@Test
 	public void testEvictByClass() {
+		LOG.config("Test: evict class.");
 		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		mngr.add(CONTEXT_URI, testB.getUri(), testB);
 		addAllToCache(listOfBs);
@@ -158,23 +247,19 @@ public class CacheManagerTest {
 		assertFalse(mngr.contains(OWLClassB.class, testB.getUri()));
 	}
 
-	@Test
+	@Test(expected = NullPointerException.class)
 	public void testEvictByClassNull() {
+		LOG.config("Test: evict class. Null passed as class.");
 		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		mngr.add(CONTEXT_URI, testB.getUri(), testB);
 		addAllToCache(listOfBs);
-		try {
-			mngr.evict((Class<?>) null);
-			assertFalse(mngr.isEmpty());
-			assertTrue(mngr.contains(OWLClassA.class, testA.getUri()));
-			assertTrue(mngr.contains(OWLClassB.class, testB.getUri()));
-		} catch (Exception e) {
-			fail("Exception caught. Test failed.");
-		}
+		mngr.evict((Class<?>) null);
+		fail("This line should not have been reached.");
 	}
 
 	@Test
 	public void testEvictByPrimaryKey() {
+		LOG.config("Test: evict by primary key.");
 		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		final URI pk = URI.create("http://testURI");
 		final OWLClassA tmp = new OWLClassA();
@@ -184,18 +269,56 @@ public class CacheManagerTest {
 		assertNull(mngr.get(OWLClassA.class, pk));
 	}
 
-	@Test
+	@Test(expected = NullPointerException.class)
 	public void testEvictByPrimaryKeyNull() {
+		LOG.config("Test: evict by primary key. Null passed as primary key.");
 		mngr.add(CONTEXT_URI, testA.getUri(), testA);
 		mngr.add(CONTEXT_URI, testB.getUri(), testB);
-		try {
-			mngr.evict(OWLClassB.class, null);
-			assertFalse(mngr.isEmpty());
-			assertTrue(mngr.contains(OWLClassA.class, testA.getUri()));
-			assertTrue(mngr.contains(OWLClassB.class, testB.getUri()));
-		} catch (Exception e) {
-			fail("Exception caught. Test failed.");
-		}
+		mngr.evict(OWLClassB.class, null);
+		fail("This line should not have been reached.");
+	}
+
+	@Test
+	public void testEvictByContext() {
+		LOG.config("Test: evict by context.");
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		mngr.add(CONTEXT_URI, testB.getUri(), testB);
+		mngr.evict(CONTEXT_URI);
+		assertFalse(mngr.contains(testA.getClass(), testA.getUri()));
+		assertFalse(mngr.contains(testB.getClass(), testB.getUri()));
+		assertTrue(mngr.isEmpty());
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testEvictByContextNull() {
+		LOG.config("Test: evict by context. Null passed as context URI.");
+		mngr.evict((URI) null);
+		fail("This line should not have been reached.");
+	}
+
+	@Test
+	public void testEvictByContextAndPrimaryKey() {
+		LOG.config("Test: evict by context, class and primary key.");
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		final OWLClassA duplicate = new OWLClassA();
+		duplicate.setUri(testA.getUri());
+		duplicate.setStringAttribute("Duplicate entity.");
+		final URI diffContext = URI.create("http://jopa-different-context");
+		mngr.add(diffContext, duplicate.getUri(), duplicate);
+		assertTrue(mngr.contains(CONTEXT_URI, testA.getClass(), testA.getUri()));
+		assertTrue(mngr.contains(diffContext, duplicate.getClass(), duplicate.getUri()));
+
+		mngr.evict(diffContext, duplicate.getClass(), duplicate.getUri());
+		assertFalse(mngr.contains(diffContext, duplicate.getClass(), duplicate.getUri()));
+		assertTrue(mngr.contains(CONTEXT_URI, testA.getClass(), testA.getUri()));
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testEvictByContextAndPrimaryKeyNull() {
+		LOG.config("Test: evict by context, class and primary key. Null passed.");
+		mngr.add(CONTEXT_URI, testA.getUri(), testA);
+		mngr.evict(CONTEXT_URI, null, null);
+		fail("This line should not have been reached.");
 	}
 
 	@Test
