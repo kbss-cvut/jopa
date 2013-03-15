@@ -1,25 +1,28 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.impl.jena.JenaStorageConnector;
 
-public class OwlapiStorageModule extends StorageModule {
+public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 
-	private OwlapiStorageConnector connector;
-	private ModuleInternal internal;
+	private JenaStorageConnector connector;
+	private ModuleInternal moduleInternal;
 
-	public OwlapiStorageModule(Context context, PersistenceProviderFacade persistenceProvider,
+	private OWLOntology ontology;
+	private OWLOntologyManager manager;
+
+	public OwlapiBasedJenaModule(Context context, PersistenceProviderFacade persistenceProvider,
 			DriverFactory factory) throws OntoDriverException {
 		super(context, persistenceProvider, factory);
 	}
@@ -27,31 +30,34 @@ public class OwlapiStorageModule extends StorageModule {
 	@Override
 	public void close() throws OntoDriverException {
 		factory.releaseStorageConnector(connector);
-		this.internal = null;
+		this.moduleInternal = null;
 		super.close();
 	}
 
 	@Override
 	public void commit() throws OntoDriverException {
 		ensureOpen();
-		final List<OWLOntologyChange> changes = internal.commitAndRetrieveChanges();
-		connector.applyChanges(changes);
-		connector.saveWorkingOntology();
+		moduleInternal.commitAndRetrieveChanges();
+		connector.applyOntologyChanges(manager, ontology);
+		connector.saveOntology();
 	}
 
 	@Override
 	public void rollback() throws OntoDriverException {
 		ensureOpen();
-		internal.rollback();
+		moduleInternal.rollback();
 	}
 
 	@Override
 	protected void initialize() throws OntoDriverException {
-		this.connector = (OwlapiStorageConnector) factory.createStorageConnector(context, false);
+		this.connector = (JenaStorageConnector) factory.createStorageConnector(context, false);
 		if (!primaryKeyCounters.containsKey(context)) {
-			primaryKeyCounters.put(context, new AtomicInteger(connector.getClassAssertionsCount()));
+			primaryKeyCounters.put(context, new AtomicInteger(0));
 		}
-		this.internal = new ModuleInternalImpl(connector.getOntologyData(), this);
+		final OwlapiConnectorDataHolder holder = connector.getOntologyDataInOwlapi();
+		this.ontology = holder.getWorkingOntology();
+		this.manager = holder.getOntologyManager();
+		this.moduleInternal = new ModuleInternalImpl(holder, this);
 	}
 
 	@Override
@@ -60,7 +66,7 @@ public class OwlapiStorageModule extends StorageModule {
 		if (primaryKey == null) {
 			throw new NullPointerException("Null passed to contains: primaryKey = " + primaryKey);
 		}
-		return internal.containsEntity(primaryKey);
+		return moduleInternal.containsEntity(primaryKey);
 	}
 
 	@Override
@@ -70,7 +76,7 @@ public class OwlapiStorageModule extends StorageModule {
 			throw new NullPointerException("Null passed to find: cls = " + cls + ", primaryKey = "
 					+ primaryKey);
 		}
-		return internal.findEntity(cls, primaryKey);
+		return moduleInternal.findEntity(cls, primaryKey);
 	}
 
 	@Override
@@ -80,7 +86,7 @@ public class OwlapiStorageModule extends StorageModule {
 			throw new NullPointerException("Null passed to loadFieldValues: entity = " + entity
 					+ ", fieldName = " + field);
 		}
-		internal.loadFieldValue(entity, field);
+		moduleInternal.loadFieldValue(entity, field);
 	}
 
 	@Override
@@ -90,7 +96,7 @@ public class OwlapiStorageModule extends StorageModule {
 			throw new NullPointerException("Null passed to merge: primaryKey = " + primaryKey
 					+ ", entity = " + entity);
 		}
-		internal.mergeEntity(primaryKey, entity);
+		moduleInternal.mergeEntity(primaryKey, entity);
 	}
 
 	@Override
@@ -99,7 +105,7 @@ public class OwlapiStorageModule extends StorageModule {
 		if (entity == null) {
 			throw new NullPointerException("Null passed to persist: entity = " + entity);
 		}
-		internal.persistEntity(primaryKey, entity);
+		moduleInternal.persistEntity(primaryKey, entity);
 	}
 
 	@Override
@@ -108,22 +114,13 @@ public class OwlapiStorageModule extends StorageModule {
 		if (primaryKey == null) {
 			throw new NullPointerException("Null passed to remove: primaryKey = " + primaryKey);
 		}
-		internal.removeEntity(primaryKey);
+		moduleInternal.removeEntity(primaryKey);
 	}
 
 	@Override
 	public ResultSet executeStatement(Statement statement) throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	/**
-	 * Returns facade to the persistence provider.
-	 * 
-	 * @return Persistence provider facade
-	 */
-	PersistenceProviderFacade getPersistenceProvider() {
-		return persistenceProvider;
 	}
 
 	/**
@@ -135,31 +132,20 @@ public class OwlapiStorageModule extends StorageModule {
 	 *             If an error during cloning occurs
 	 */
 	OwlapiConnectorDataHolder cloneOntologyData() throws OntoDriverException {
-		return connector.cloneOntologyData();
+		return connector.getOntologyDataInOwlapi();
 	}
 
 	/**
 	 * Returns the original ontology structures directly from the connector.
 	 * 
 	 * @return OwlapiConnectorDataHolder
+	 * @throws OntoDriverException
 	 */
 	OwlapiConnectorDataHolder getOntologyData() {
-		return connector.getOntologyData();
-	}
-
-	/**
-	 * Retrieves a new primary key number and increments the internal counter.
-	 * 
-	 * @return primary key number
-	 */
-	int getNewPrimaryKey() {
-		return StorageModule.getNewPrimaryKey(context);
-	}
-
-	/**
-	 * Increments the primary key counter for this module's context.
-	 */
-	void incrementPrimaryKeyCounter() {
-		StorageModule.incrementPrimaryKeyCounter(context);
+		try {
+			return connector.getOntologyDataInOwlapi();
+		} catch (OntoDriverException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

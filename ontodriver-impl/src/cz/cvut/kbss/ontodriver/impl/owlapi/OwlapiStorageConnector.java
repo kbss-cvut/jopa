@@ -84,6 +84,12 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 
 	@Override
 	public void close() throws OntoDriverException {
+		if (!open) {
+			return;
+		}
+		if (LOG.isLoggable(Level.CONFIG)) {
+			LOG.config("Closing storage connector.");
+		}
 		this.open = false;
 	}
 

@@ -13,6 +13,7 @@ import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.OntoDriverImpl;
 import cz.cvut.kbss.ontodriver.impl.owlapi.DriverOwlapiFactory;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiBasedJenaModule;
 
 public class DriverJenaFactory extends DriverAbstractFactory {
 
@@ -40,7 +41,7 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage module.");
 		}
-		final JenaStorageModule m = new JenaStorageModule(ctx, persistenceProvider, this);
+		final StorageModule m = new OwlapiBasedJenaModule(ctx, persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}
@@ -52,7 +53,8 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage connector.");
 		}
-		final JenaStorageConnector c = new JenaStorageConnector(contextsToProperties.get(ctx));
+		final JenaStorageConnector c = new JenaStorageConnector(contextsToProperties.get(ctx),
+				properties);
 		registerConnector(c);
 		return c;
 	}
