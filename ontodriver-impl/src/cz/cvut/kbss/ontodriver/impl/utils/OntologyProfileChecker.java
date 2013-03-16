@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +29,7 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.impl.owlapi.DriverOwlapiFactory;
 import de.fraunhofer.iitb.owldb.OWLDBManager;
 import de.fraunhofer.iitb.owldb.OWLDBOntology;
+import de.fraunhofer.iitb.owldb.OWLDBOntologyManager;
 
 public final class OntologyProfileChecker {
 
@@ -109,11 +111,16 @@ public final class OntologyProfileChecker {
 			OWLOntologyManager m) {
 		OWLOntology o;
 		try {
-			// TODO This doesn't work. OWLDB needs db access credentials
-			o = m.loadOntology(IRI.create(props.getPhysicalURI()));
+			final Properties p = new Properties();
+			OwlapiUtils.initHibernateProperties(p, props);
+			OwlapiUtils.setOntologyManagerIriMapper(m, props.getOntologyURI(),
+					props.getPhysicalURI());
+			o = ((OWLDBOntologyManager) m).loadOntology(IRI.create(props.getOntologyURI()), p);
 		} catch (OWLOntologyCreationException e) {
-			LOG.log(Level.SEVERE,
-					"Unable to load ontology from location " + props.getPhysicalURI(), e);
+			LOG.log(Level.WARNING,
+					"Unable to load ontology from location " + props.getPhysicalURI()
+							+ ". The ontology may not exist yet, setting profile to OWL 2.", e);
+			ctx.setExpressiveness(ContextExpressiveness.OWL2FULL);
 			return;
 		}
 		resolveProfile(ctx, o);

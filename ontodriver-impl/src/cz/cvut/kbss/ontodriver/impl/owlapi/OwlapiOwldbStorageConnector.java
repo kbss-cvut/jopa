@@ -13,13 +13,12 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.OwldbOntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.impl.utils.OwlapiUtils;
 import de.fraunhofer.iitb.owldb.OWLDBManager;
 import de.fraunhofer.iitb.owldb.OWLDBOntology;
 import de.fraunhofer.iitb.owldb.OWLDBOntologyFormat;
 import de.fraunhofer.iitb.owldb.OWLDBOntologyManager;
-import de.fraunhofer.iitb.owldb.OWLDBOntologyOutputTarget;
 
 /**
  * Implementation of OWLAPI storage connector for ontologies saved in RDBMS and
@@ -40,6 +39,7 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 	public static String HIBERNATE_JDBC_DRIVER_PROPERTY = "hibernate.connection.driver_class";
 
 	private IRI databaseIri;
+	private Properties hibernateProperties;
 
 	public OwlapiOwldbStorageConnector(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) throws OntoDriverException {
@@ -54,12 +54,8 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 		final IRI ontologyIri = IRI.create(logicalUri);
 		this.databaseIri = IRI.create(physicalUri);
 
-		final Properties props = new Properties();
-		props.setProperty(HIBERNATE_JDBC_URL_PROPERTY, physicalUri.toString());
-		if (storageProperties instanceof OwldbOntologyStorageProperties) {
-			final OwldbOntologyStorageProperties owldbProps = (OwldbOntologyStorageProperties) storageProperties;
-			initOwldbProperties(props, owldbProps);
-		}
+		this.hibernateProperties = new Properties();
+		OwlapiUtils.initHibernateProperties(hibernateProperties, storageProperties);
 
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Using database backend: " + physicalUri);
@@ -67,24 +63,24 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 		this.ontologyManager = OWLDBManager.createOWLOntologyManager(OWLDataFactoryImpl
 				.getInstance());
 
-		setIriMapper(logicalUri, physicalUri);
+		OwlapiUtils.setOntologyManagerIriMapper(ontologyManager, logicalUri, physicalUri);
 
 		this.dataFactory = this.ontologyManager.getOWLDataFactory();
 
 		try {
 			this.workingOntology = ((OWLDBOntologyManager) ontologyManager).loadOntology(
-					ontologyIri, props);
+					ontologyIri, hibernateProperties);
 		} catch (OWLOntologyCreationException e) {
 			if (LOG.isLoggable(Level.CONFIG)) {
 				LOG.config("Ontology " + logicalUri
 						+ " does not exist in the database. Creating...");
 			}
-			createOntology(ontologyIri, props);
+			createOntology(ontologyIri, hibernateProperties);
 		} catch (HibernateException e) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.finer("OWLDB database structure not present. Generating...");
 			}
-			createOntology(ontologyIri, props);
+			createOntology(ontologyIri, hibernateProperties);
 		}
 		saveWorkingOntology();
 		if (LOG.isLoggable(Level.FINE)) {
@@ -109,10 +105,16 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 		// database
 		final OWLDBOntologyFormat format = new OWLDBOntologyFormat();
 		// Lets create a target with the provided target IRI
-		final OWLDBOntologyOutputTarget target = new OWLDBOntologyOutputTarget(databaseIri);
+		// final OWLDBOntologyOutputTarget target = new
+		// OWLDBOntologyOutputTarget(databaseIri);
 		try {
-			this.ontologyManager.saveOntology(workingOntology, format, target);
+			((OWLDBOntologyManager) ontologyManager).saveOntology(workingOntology, format,
+					databaseIri, hibernateProperties);
+			// this.ontologyManager.saveOntology(workingOntology, format,
+			// target);
 		} catch (OWLOntologyStorageException e) {
+			throw new OntoDriverException(e);
+		} catch (OWLOntologyCreationException e) {
 			throw new OntoDriverException(e);
 		}
 	}
@@ -121,28 +123,5 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 	public void close() throws OntoDriverException {
 		super.close();
 		((OWLDBOntology) workingOntology).destroyConnection();
-	}
-
-	/**
-	 * Initializes properties for OWLDB's Hibernate backend based on the
-	 * specified {@code OwldbOntologyStorageProperties} instance.
-	 * 
-	 * @param target
-	 *            The target properties
-	 * @param props
-	 *            Properties data
-	 */
-	private static void initOwldbProperties(Properties target, OwldbOntologyStorageProperties props) {
-		if (props.getUsername() != null) {
-			target.setProperty(HIBERNATE_USERNAME_PROPERTY, props.getUsername());
-		}
-		if (props.getPassword() != null) {
-			target.setProperty(HIBERNATE_PASSWORD_PROPERTY, props.getPassword());
-		}
-		if (props.getJdbcDriverClass() != null) {
-			target.setProperty(HIBERNATE_JDBC_DRIVER_PROPERTY, props.getJdbcDriverClass());
-			// Let's let Hibernate to decide the correct dialect from the JDBC
-			// driver class
-		}
 	}
 }

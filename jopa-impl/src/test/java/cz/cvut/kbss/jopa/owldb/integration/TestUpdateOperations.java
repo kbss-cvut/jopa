@@ -78,6 +78,7 @@ public class TestUpdateOperations {
 			st2 = null;
 		}
 		st1.close();
+		con.close();
 		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-update", Storage.OWLDB,
 				true);
 	}

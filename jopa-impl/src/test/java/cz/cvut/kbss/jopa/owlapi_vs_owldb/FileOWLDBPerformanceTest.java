@@ -25,8 +25,7 @@ import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
 
 public class FileOWLDBPerformanceTest {
 
-	private static final Logger LOG = Logger
-			.getLogger(FileOWLDBPerformanceTest.class.getName());
+	private static final Logger LOG = Logger.getLogger(FileOWLDBPerformanceTest.class.getName());
 	private static final int COUNT = 1000;
 	private static final int FIND_CNT = COUNT / 10;
 	private static final String IRI_PREFIX = "http://classA";
@@ -67,8 +66,8 @@ public class FileOWLDBPerformanceTest {
 			Statement st1 = null;
 			Statement st2 = null;
 			ResultSet rs = null;
-			con = DriverManager.getConnection(TestEnvironment.DB_URI,
-					TestEnvironment.DB_USERNAME, TestEnvironment.DB_PASSWORD);
+			con = DriverManager.getConnection(TestEnvironment.DB_URI, TestEnvironment.DB_USERNAME,
+					TestEnvironment.DB_PASSWORD);
 			st1 = con.createStatement();
 			rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
 			final String deleteStmt = "TRUNCATE ";
@@ -80,14 +79,14 @@ public class FileOWLDBPerformanceTest {
 				st2 = null;
 			}
 			st1.close();
+			con.close();
 			shouldDropDb = false;
 		}
 	}
 
 	@Test
 	public void testFileOntologyPerformancePersist() {
-		LOG.config("Testing file ontology access performance. Persisting "
-				+ COUNT + " entities.");
+		LOG.config("Testing file ontology access performance. Persisting " + COUNT + " entities.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
 				"FileOntologyPerformanceTest-Persist", Storage.FILE, true);
 
@@ -96,13 +95,14 @@ public class FileOWLDBPerformanceTest {
 
 	@Test
 	public void testOWLDBOntologyPerformancePersist() {
-		LOG.config("Testing OWLDB ontology access performance. Persisting "
-				+ COUNT + " entities.");
+		LOG.config("Testing OWLDB ontology access performance. Persisting " + COUNT + " entities.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
 				"OWLDBOntologyPerformanceTest-Persist", Storage.OWLDB, true);
-
-		persistEntities(em);
-		em.getEntityManagerFactory().close();
+		try {
+			persistEntities(em);
+		} finally {
+			em.getEntityManagerFactory().close();
+		}
 		shouldDropDb = true;
 	}
 
@@ -135,11 +135,14 @@ public class FileOWLDBPerformanceTest {
 		LOG.config("Search for several randomly chosen entities and measure OWLDB ontology performance.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
 				"OWLDBOntologyPerformanceTest-Find", Storage.OWLDB, false);
-		persistEntities(em);
+		try {
+			persistEntities(em);
 
-		findEntities(em);
-		em.close();
-		em.getEntityManagerFactory().close();
+			findEntities(em);
+		} finally {
+			em.close();
+			em.getEntityManagerFactory().close();
+		}
 		shouldDropDb = true;
 	}
 

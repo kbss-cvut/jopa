@@ -116,6 +116,34 @@ public class Context {
 	}
 
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((connectorType == null) ? 0 : connectorType.hashCode());
+		result = prime * result + ((contextUri == null) ? 0 : contextUri.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Context other = (Context) obj;
+		if (connectorType != other.connectorType)
+			return false;
+		if (contextUri == null) {
+			if (other.contextUri != null)
+				return false;
+		} else if (!contextUri.equals(other.contextUri))
+			return false;
+		return true;
+	}
+
+	@Override
 	public String toString() {
 		String out = "Context: URI = " + contextUri.toString();
 		return out;

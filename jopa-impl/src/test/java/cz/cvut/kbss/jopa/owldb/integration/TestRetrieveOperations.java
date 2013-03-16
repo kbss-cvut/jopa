@@ -41,8 +41,8 @@ public class TestRetrieveOperations {
 		Statement st1 = null;
 		Statement st2 = null;
 		ResultSet rs = null;
-		con = DriverManager.getConnection(TestEnvironment.DB_URI,
-				TestEnvironment.DB_USERNAME, TestEnvironment.DB_PASSWORD);
+		con = DriverManager.getConnection(TestEnvironment.DB_URI, TestEnvironment.DB_USERNAME,
+				TestEnvironment.DB_PASSWORD);
 		st1 = con.createStatement();
 		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
 		final String deleteStmt = "TRUNCATE ";
@@ -54,8 +54,9 @@ public class TestRetrieveOperations {
 			st2 = null;
 		}
 		st1.close();
-		pc = TestEnvironment.getPersistenceConnector(
-				"OWLDBPersistenceTest-retrieve", Storage.OWLDB, true);
+		con.close();
+		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-retrieve",
+				Storage.OWLDB, true);
 	}
 
 	@AfterClass

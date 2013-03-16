@@ -33,8 +33,8 @@ public class BasicOperationsTest {
 		Statement st1 = null;
 		Statement st2 = null;
 		ResultSet rs = null;
-		con = DriverManager.getConnection(TestEnvironment.DB_URI,
-				TestEnvironment.DB_USERNAME, TestEnvironment.DB_PASSWORD);
+		con = DriverManager.getConnection(TestEnvironment.DB_URI, TestEnvironment.DB_USERNAME,
+				TestEnvironment.DB_PASSWORD);
 		st1 = con.createStatement();
 		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
 		final String deleteStmt = "TRUNCATE ";
@@ -46,8 +46,9 @@ public class BasicOperationsTest {
 			st2 = null;
 		}
 		st1.close();
-		em = TestEnvironment.getPersistenceConnector(
-				"OWLDBTestBasicOperations", Storage.OWLDB, true);
+		con.close();
+		em = TestEnvironment.getPersistenceConnector("OWLDBTestBasicOperations", Storage.OWLDB,
+				true);
 	}
 
 	@Before

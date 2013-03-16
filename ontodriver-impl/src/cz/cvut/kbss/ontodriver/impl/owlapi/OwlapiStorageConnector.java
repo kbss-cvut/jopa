@@ -15,7 +15,6 @@ import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyRenameException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
@@ -214,17 +213,6 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 		if (!open) {
 			throw new IllegalStateException("The connector is closed.");
 		}
-	}
-
-	protected void setIriMapper(final URI logicalUri, final URI physicalUri) {
-		ontologyManager.addIRIMapper(new OWLOntologyIRIMapper() {
-			public IRI getDocumentIRI(IRI arg0) {
-				if (!logicalUri.equals(arg0.toURI())) {
-					return arg0;
-				}
-				return IRI.create(physicalUri);
-			}
-		});
 	}
 
 	/**

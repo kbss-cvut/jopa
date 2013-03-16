@@ -14,6 +14,7 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.impl.utils.OwlapiUtils;
 
 /**
  * Implementation of OWLAPI storage connector for ontologies saved in a regular
@@ -39,7 +40,7 @@ class OwlapiFileStorageConnector extends OwlapiStorageConnector {
 		final URI physicalUri = storageProperties.getPhysicalURI();
 
 		if (physicalUri != null) {
-			setIriMapper(logicalUri, physicalUri);
+			OwlapiUtils.setOntologyManagerIriMapper(ontologyManager, logicalUri, physicalUri);
 			if (LOG.isLoggable(Level.CONFIG)) {
 				LOG.config("Loading ontology from file: " + physicalUri.toString());
 			}
@@ -52,7 +53,7 @@ class OwlapiFileStorageConnector extends OwlapiStorageConnector {
 				throw new OntoDriverException(e);
 			}
 		} else {
-			setIriMapper(logicalUri, logicalUri);
+			OwlapiUtils.setOntologyManagerIriMapper(ontologyManager, logicalUri, logicalUri);
 			if (LOG.isLoggable(Level.CONFIG)) {
 				LOG.config("Loading ontology from logical URI: " + logicalUri);
 			}
