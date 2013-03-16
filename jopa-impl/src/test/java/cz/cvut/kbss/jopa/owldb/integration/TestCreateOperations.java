@@ -20,8 +20,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.OWLPersistentObjectException;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassB;
 import cz.cvut.kbss.jopa.owlapi.OWLClassC;
@@ -130,7 +130,7 @@ public class TestCreateOperations {
 		}
 	}
 
-	@Test(expected = OWLPersistenceException.class)
+	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistViolatingIC() {
 		log.info("Test: persist Entity with IC violation");
 		pc.clear();
@@ -140,17 +140,11 @@ public class TestCreateOperations {
 		final OWLClassB entityTwo = new OWLClassB();
 		entityTwo.setUri(pkOne);
 		entityTwo.setStringAttribute("testAttribute");
-		try {
-			pc.getTransaction().begin();
-			pc.persist(entityTwo);
-			pc.persist(entityOne);
-			pc.getTransaction().commit();
-			fail("This line should not have been reached.");
-		} catch (OWLPersistenceException e) {
-			log.info("Exception caught. Correct.");
-			pc.getTransaction().rollback();
-			throw e;
-		}
+		pc.getTransaction().begin();
+		pc.persist(entityTwo);
+		pc.persist(entityOne);
+		pc.getTransaction().commit();
+		fail("This line should not have been reached.");
 	}
 
 	@Test(expected = OWLPersistenceException.class)
@@ -234,7 +228,7 @@ public class TestCreateOperations {
 		assertEquals(simples.get(5).getUri(), c.getSimpleList().get(5).getUri());
 	}
 
-	@Test(expected = OWLPersistentObjectException.class)
+	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistDetachedEntity() {
 		log.info("Test: persist detached entity.");
 		pc.clear();

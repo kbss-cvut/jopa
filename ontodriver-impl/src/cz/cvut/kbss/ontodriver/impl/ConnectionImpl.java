@@ -16,6 +16,7 @@ import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageManager;
+import cz.cvut.kbss.ontodriver.exceptions.EntityNotRegisteredException;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -104,8 +105,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException,
-			MetamodelNotSetException {
+	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException {
 		ensureOpen(true);
 		if (cls == null || primaryKey == null) {
 			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey);
@@ -132,8 +132,7 @@ public class ConnectionImpl implements Connection {
 		return null;
 	}
 
-	public <T> T find(Class<T> cls, Object primaryKey, URI context) throws OntoDriverException,
-			MetamodelNotSetException {
+	public <T> T find(Class<T> cls, Object primaryKey, URI context) throws OntoDriverException {
 		ensureOpen(true);
 		if (cls == null || primaryKey == null || context == null) {
 			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey
@@ -150,8 +149,7 @@ public class ConnectionImpl implements Connection {
 
 	@Override
 	public <T> T find(Class<T> cls, Object primaryKey, URI entityContext,
-			Map<String, URI> attributeContexts) throws OntoDriverException,
-			MetamodelNotSetException {
+			Map<String, URI> attributeContexts) throws OntoDriverException {
 		ensureOpen(true);
 		if (cls == null || primaryKey == null || entityContext == null || attributeContexts == null) {
 			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey
@@ -228,15 +226,14 @@ public class ConnectionImpl implements Connection {
 		}
 		final Context ctx = entityToContext.get(entity);
 		if (ctx == null) {
-			throw new OntoDriverException("Entity " + entity
-					+ " is not loaded within this connection.");
+			throw new EntityNotRegisteredException("Entity " + entity
+					+ " is not registered within this connection.");
 		}
 		storageManager.loadFieldValue(entity, field, ctx);
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException,
-			MetamodelNotSetException {
+	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException {
 		ensureOpen(true);
 		if (primaryKey == null || entity == null) {
 			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", primaryKey = "
@@ -245,8 +242,8 @@ public class ConnectionImpl implements Connection {
 		}
 		final Context ctx = entityToContext.get(entity);
 		if (ctx == null) {
-			throw new OntoDriverException("The entity " + entity
-					+ " is not persistent within this connection.");
+			throw new EntityNotRegisteredException("Entity " + entity
+					+ " is not registered within this connection.");
 		}
 		storageManager.merge(primaryKey, entity, ctx, Collections.<String, Context> emptyMap());
 		this.hasChanges = true;
@@ -256,8 +253,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException,
-			MetamodelNotSetException {
+	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException {
 		ensureOpen(true);
 		if (entity == null) {
 			LOG.severe("Null argument passed: entity = " + entity);
@@ -274,8 +270,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, URI context) throws OntoDriverException,
-			MetamodelNotSetException {
+	public <T> void persist(Object primaryKey, T entity, URI context) throws OntoDriverException {
 		ensureOpen(true);
 		if (entity == null || context == null) {
 			LOG.severe("Null argument passed: entity = " + entity + ", context = " + context);
@@ -291,8 +286,7 @@ public class ConnectionImpl implements Connection {
 
 	@Override
 	public <T> void persist(Object primaryKey, T entity, URI context,
-			Map<String, URI> attributeContexts) throws OntoDriverException,
-			MetamodelNotSetException {
+			Map<String, URI> attributeContexts) throws OntoDriverException {
 		ensureOpen(true);
 		if (entity == null || context == null || attributeContexts == null) {
 			LOG.severe("Null argument passed: entity = " + entity + ", entityContext = " + context
@@ -350,8 +344,8 @@ public class ConnectionImpl implements Connection {
 		}
 		Context ctx = entityToContext.get(entity);
 		if (ctx == null) {
-			throw new OntoDriverException("Context for entity with primary key " + primaryKey
-					+ " not found within this connection.");
+			throw new EntityNotRegisteredException("Entity  " + entity
+					+ " not registered within this connection.");
 		}
 		removeInternal(primaryKey, entity, ctx);
 	}

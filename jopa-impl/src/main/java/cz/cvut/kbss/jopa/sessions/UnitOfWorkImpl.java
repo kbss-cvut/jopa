@@ -19,6 +19,7 @@ import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -829,8 +830,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 		if ((storageContains(id) || isObjectManaged(entity, id) || primaryKeyAlreadyUsed(id))
 				&& !entity.getClass().isEnum()) {
-			throw new OWLPersistenceException("An entity with URI " + id
-					+ " is already persisted within the context.");
+			throw new OWLEntityExistsException("An entity with URI " + id
+					+ " is already persisted in context " + context);
 		}
 		storagePersist(id, entity, context);
 		if (id == null) {

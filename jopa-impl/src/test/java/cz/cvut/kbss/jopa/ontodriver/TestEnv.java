@@ -8,13 +8,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerFactoryImpl;
 import cz.cvut.kbss.jopa.owlapi.MetamodelImpl;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.owlapi.utils.EntityManagerFactoryMock;
+import cz.cvut.kbss.jopa.owlapi.utils.StorageInfo;
 import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
@@ -57,17 +57,16 @@ public final class TestEnv {
 	 *            Description of storages
 	 * @return DataSource
 	 */
-	public static DataSource createDataSource(String baseName,
-			Map<OntologyConnectorType, OwlapiStorageType> storages) {
+	public static DataSource createDataSource(String baseName, List<StorageInfo> storages) {
 		int i = 1;
 		final Map<String, String> properties = new HashMap<String, String>();
 		final List<OntologyStorageProperties> storageProperties = new ArrayList<OntologyStorageProperties>(
 				storages.size());
-		for (Entry<OntologyConnectorType, OwlapiStorageType> e : storages.entrySet()) {
-			final String name = baseName + e.getKey().toString() + (i++);
+		for (StorageInfo e : storages) {
+			final String name = baseName + e.getConnectorType().toString() + (i++);
 			final URI ontoUri = URI.create(IRI_BASE + name);
 			URI physicalUri = null;
-			switch (e.getValue()) {
+			switch (e.getStorageType()) {
 			case FILE:
 				final File url = new File(dir + "/" + name + ".owl");
 				if (url.exists() && deleteOntologyFile) {
@@ -79,7 +78,8 @@ public final class TestEnv {
 				physicalUri = URI.create(DB_URI);
 				break;
 			}
-			storageProperties.add(createStorageProperties(ontoUri, physicalUri, e.getValue()));
+			storageProperties
+					.add(createStorageProperties(ontoUri, physicalUri, e.getStorageType()));
 		}
 		properties.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);
 		final DataSource dataSource = new SimpleDataSource(storageProperties, properties);

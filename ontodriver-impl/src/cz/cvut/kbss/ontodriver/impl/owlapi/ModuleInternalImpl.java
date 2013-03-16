@@ -44,6 +44,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
+import cz.cvut.kbss.jopa.model.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
@@ -130,6 +131,10 @@ class ModuleInternalImpl implements ModuleInternal {
 			id = generatePrimaryKey(entity, type.getName());
 			setIdentifier(entity, id);
 		} else {
+			if (isInOntologySignature(id, true)) {
+				throw new OWLEntityExistsException("Entity with primary key " + id
+						+ " already exists in context " + storageModule.getContext());
+			}
 			storageModule.incrementPrimaryKeyCounter();
 		}
 		final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(id);

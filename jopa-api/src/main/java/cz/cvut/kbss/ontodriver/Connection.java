@@ -5,7 +5,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
+import cz.cvut.kbss.ontodriver.exceptions.EntityNotRegisteredException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -102,14 +102,11 @@ public interface Connection extends Transactional {
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, if the entity cannot be
 	 *             cast to the specified type or an ontology access error occurs
-	 * @throws MetamodelNotSetException
-	 *             If metamodel is not set for this connection
 	 * @see #setConnectionContext(URI)
 	 * @see #find(Class, Object, URI)
 	 * @see #find(Class, Object, URI, Map)
 	 */
-	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException;
 
 	/**
 	 * Finds entity with the specified primary key and returns it as the
@@ -130,13 +127,10 @@ public interface Connection extends Transactional {
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, if the entity cannot be
 	 *             cast to the specified type or an ontology access error occurs
-	 * @throws MetamodelNotSetException
-	 *             If metamodel is not set for this connection
 	 * @see #find(Class, Object)
 	 * @see #find(Class, Object, URI, Map)
 	 */
-	public <T> T find(Class<T> cls, Object primaryKey, URI context) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> T find(Class<T> cls, Object primaryKey, URI context) throws OntoDriverException;
 
 	/**
 	 * Finds entity with the specified primary key and returns it as the
@@ -159,14 +153,11 @@ public interface Connection extends Transactional {
 	 *             If called on a closed connection, if the entity cannot be
 	 *             cast to the specified type, if any of the contexts is not
 	 *             valid or an ontology access error occurs
-	 * @throws MetamodelNotSetException
-	 *             If metamodel is not set for this connection
 	 * @see #find(Class, Object)
 	 * @see #find(Class, Object, URI)
 	 */
 	public <T> T find(Class<T> cls, Object primaryKey, URI entityContext,
-			Map<String, URI> attributeContexts) throws OntoDriverException,
-			MetamodelNotSetException;
+			Map<String, URI> attributeContexts) throws OntoDriverException;
 
 	/**
 	 * Retrieves the current auto-commit status of this {@code Connection}.
@@ -249,10 +240,13 @@ public interface Connection extends Transactional {
 	 * @param field
 	 *            The field to load
 	 * @throws OntoDriverException
-	 *             If called on a closed connection, if the entity is not
-	 *             persistent or if an ontology access error occurs
+	 *             If called on a closed connection or if an ontology access
+	 *             error occurs
+	 * @throws EntityNotRegisteredException
+	 *             If {@code entity} is not registered within this connection
 	 */
-	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException;
+	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException,
+			EntityNotRegisteredException;
 
 	/**
 	 * Merges state of the specified entity into the storage. </p>
@@ -265,13 +259,13 @@ public interface Connection extends Transactional {
 	 * @param entity
 	 *            The entity to merge
 	 * @throws OntoDriverException
-	 *             If called on a closed connection, if the entity is not
-	 *             persistent yet or an ontology access error occurs
-	 * @throws MetamodelNotSetException
-	 *             If metamodel is not set for this connection
+	 *             If called on a closed connection or an ontology access error
+	 *             occurs
+	 * @throws EntityNotRegisteredException
+	 *             If {@code entity} is not registered within this connection
+	 * @throws
 	 */
-	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity into a context. </p>
@@ -291,13 +285,10 @@ public interface Connection extends Transactional {
 	 * @param entity
 	 *            The entity to persist
 	 * @throws OntoDriverException
-	 *             If called on a closed connection, the primary key is null or
-	 *             an ontology access error occurs
-	 * @throws MetamodelNotSetException
-	 *             If metamodel is not set for this connection
+	 *             If called on a closed connection or an ontology access error
+	 *             occurs
 	 */
-	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity into the specified context. </p>
@@ -312,13 +303,10 @@ public interface Connection extends Transactional {
 	 * @param context
 	 *            URI of the context the new entity will be saved to
 	 * @throws OntoDriverException
-	 *             If called on a closed connection, the primary key is null, if
-	 *             the context is not valid or an ontology access error occurs
-	 * @throws MetamodelNotSetException
-	 *             If metamodel is not set for this connection
+	 *             If called on a closed connection, if the context is not valid
+	 *             or an ontology access error occurs
 	 */
-	public <T> void persist(Object primaryKey, T entity, URI context) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> void persist(Object primaryKey, T entity, URI context) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>
@@ -339,15 +327,11 @@ public interface Connection extends Transactional {
 	 *            Map of attribute names and context URIs which the attribute
 	 *            values will be saved to
 	 * @throws OntoDriverException
-	 *             If called on a closed connection, the primary key is null, if
-	 *             any of the contexts is not valid or an ontology access error
-	 *             occurs
-	 * @throws MetamodelNotSetException
-	 *             If metamodel is not set for this connection
+	 *             If called on a closed connection, if any of the contexts is
+	 *             not valid or an ontology access error occurs
 	 */
 	public <T> void persist(Object primaryKey, T entity, URI entityContext,
-			Map<String, URI> attributeContexts) throws OntoDriverException,
-			MetamodelNotSetException;
+			Map<String, URI> attributeContexts) throws OntoDriverException;
 
 	/**
 	 * Creates and returns a new prepared SPARQL statement. </p>
@@ -393,14 +377,12 @@ public interface Connection extends Transactional {
 	 * @param entity
 	 *            The entity to remove
 	 * @throws OntoDriverException
-	 *             If called on a closed connection, if no entity with
-	 *             {@code primaryKey} is loaded within this connection or if an
-	 *             ontology access error occurs
-	 * @throws MetamodelNotSetException
-	 *             If metamodel is not set for this connection
+	 *             If called on a closed connection or if an ontology access
+	 *             error occurs
+	 * @throws EntityNotRegisteredException
+	 *             If {@code entity} is not registered within this connection
 	 */
-	public <T> void remove(Object primaryKey, T entity) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> void remove(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
 	 * Removes the specified {@code entity} from the specified {@code context}.
@@ -421,11 +403,10 @@ public interface Connection extends Transactional {
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, if the context is not valid
 	 *             or if an ontology access error occurs
-	 * @throws MetamodelNotSetException
-	 *             If metamodel is not set for this connection
+	 * @throws EntityNotRegisteredException
+	 *             If {@code entity} is not registered within this connection
 	 */
-	public <T> void remove(Object primaryKey, T entity, URI context) throws OntoDriverException,
-			MetamodelNotSetException;
+	public <T> void remove(Object primaryKey, T entity, URI context) throws OntoDriverException;
 
 	/**
 	 * Sets auto commit mode on this connection. </p>

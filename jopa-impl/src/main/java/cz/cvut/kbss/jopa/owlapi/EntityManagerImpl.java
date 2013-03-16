@@ -51,8 +51,8 @@ import org.semanticweb.owlapi.model.SetOntologyID;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
+import cz.cvut.kbss.jopa.model.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.OWLPersistentObjectException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.ic.IntegrityConstraint;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -170,8 +170,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			}.start(this, entity, CascadeType.PERSIST);
 			break;
 		case DETACHED:
-			throw new OWLPersistentObjectException("Detached entity passed to persist: "
-					+ entity.getClass().getName());
+			throw new OWLEntityExistsException("Entity " + entity + " already exists.");
 		case REMOVED:
 			getCurrentPersistenceContext().revertObject(entity);
 			break;
