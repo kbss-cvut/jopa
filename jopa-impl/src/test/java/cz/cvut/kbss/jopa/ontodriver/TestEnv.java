@@ -33,9 +33,9 @@ public final class TestEnv {
 
 	private static final String IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/";
 	private static final String dir = "ontodriverTestResults";
-	private static final String DB_URI = "jdbc:postgresql://localhost/owldb";
-	private static final String DB_USERNAME = "owldb";
-	private static final String DB_PASSWORD = "owldb";
+	public static final String DB_URI = "jdbc:postgresql://localhost/owldb";
+	public static final String DB_USERNAME = "owldb";
+	public static final String DB_PASSWORD = "owldb";
 	private static final String DB_DRIVER = "org.postgresql.Driver";
 	private static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
 
