@@ -78,8 +78,8 @@ public final class TestEnv {
 				physicalUri = URI.create(DB_URI);
 				break;
 			}
-			storageProperties
-					.add(createStorageProperties(ontoUri, physicalUri, e.getStorageType()));
+			storageProperties.add(createStorageProperties(ontoUri, physicalUri,
+					e.getConnectorType(), e.getStorageType()));
 		}
 		properties.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);
 		final DataSource dataSource = new SimpleDataSource(storageProperties, properties);
@@ -110,12 +110,11 @@ public final class TestEnv {
 	}
 
 	private static OntologyStorageProperties createStorageProperties(URI ontologyUri,
-			URI physicalUri, OwlapiStorageType storage) {
+			URI physicalUri, OntologyConnectorType connector, OwlapiStorageType storage) {
 		OntologyStorageProperties p = null;
 		switch (storage) {
 		case FILE:
-			p = new OntologyStorageProperties(ontologyUri, physicalUri,
-					OntologyConnectorType.OWLAPI);
+			p = new OntologyStorageProperties(ontologyUri, physicalUri, connector);
 			break;
 		case OWLDB:
 			p = OwldbOntologyStorageProperties.ontologyUri(ontologyUri).physicalUri(physicalUri)

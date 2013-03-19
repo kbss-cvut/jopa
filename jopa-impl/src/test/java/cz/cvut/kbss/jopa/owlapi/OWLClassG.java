@@ -8,13 +8,13 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 
-@OWLClass(iri = "http://new.owl#OWLClassG")
+@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassG")
 public class OWLClassG {
 
 	@Id
 	private URI uri;
 
-	@OWLObjectProperty(iri = "http://hasH", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasH", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	// @ParticipationConstraints({
 	// @ParticipationConstraint(owlObjectIRI="http://new.owl#OWLClassA", min=1,
 	// max=1)

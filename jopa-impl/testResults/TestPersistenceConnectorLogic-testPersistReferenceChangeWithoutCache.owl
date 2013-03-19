@@ -94,7 +94,7 @@
 
     <owl:NamedIndividual rdf:about="http://composedTestEntity">
         <rdf:type rdf:resource="http://new.owl#OWLClassD"/>
-        <http:hasA rdf:resource="http://testEntity"/>
+        <http:hasA rdf:resource="http://newReferenceToA"/>
     </owl:NamedIndividual>
     
 

@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistSimpleChangeWithoutCache#"
-     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistSimpleChangeWithoutCache"
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:new="http://new.owl#"
      xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistSimpleChangeWithoutCache"/>
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID"/>
     
 
 
@@ -33,9 +33,9 @@
     
 
 
-    <!-- http://A-stringAttribute -->
+    <!-- http://E-stringAttribute -->
 
-    <owl:DatatypeProperty rdf:about="http://A-stringAttribute"/>
+    <owl:DatatypeProperty rdf:about="http://E-stringAttribute"/>
     
 
 
@@ -50,9 +50,9 @@
     
 
 
-    <!-- http://new.owl#OWLClassA -->
+    <!-- http://new.owl#OWLClassE -->
 
-    <owl:Class rdf:about="http://new.owl#OWLClassA"/>
+    <owl:Class rdf:about="http://new.owl#OWLClassE"/>
     
 
 
@@ -67,11 +67,11 @@
     
 
 
-    <!-- http://testEntity -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#i_OWLClassE -->
 
-    <owl:NamedIndividual rdf:about="http://testEntity">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>NewStringAttribute</http:A-stringAttribute>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#i_OWLClassE">
+        <rdf:type rdf:resource="http://new.owl#OWLClassE"/>
+        <http:E-stringAttribute>someString</http:E-stringAttribute>
     </owl:NamedIndividual>
 </rdf:RDF>
 

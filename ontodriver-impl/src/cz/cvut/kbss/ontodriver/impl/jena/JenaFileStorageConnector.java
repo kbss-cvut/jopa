@@ -2,8 +2,10 @@ package cz.cvut.kbss.ontodriver.impl.jena;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
@@ -13,6 +15,7 @@ import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
+import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
@@ -35,9 +38,9 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiConnectorDataHolder;
 import cz.cvut.kbss.ontodriver.impl.utils.OntoDriverConstants;
 
-public class JenaStorageConnector implements StorageConnector {
+public class JenaFileStorageConnector implements StorageConnector {
 
-	private static final Logger LOG = Logger.getLogger(JenaStorageConnector.class.getName());
+	private static final Logger LOG = Logger.getLogger(JenaFileStorageConnector.class.getName());
 
 	private final URI ontologyUri;
 	private final URI physicalUri;
@@ -47,7 +50,12 @@ public class JenaStorageConnector implements StorageConnector {
 
 	private boolean open;
 
-	public JenaStorageConnector(OntologyStorageProperties storageProperties,
+	private OWLOntologyManager ontologyManager;
+	private OWLReasonerFactory reasonerFactory;
+	private OWLReasoner reasoner;
+	private OWLOntology workingOntology;
+
+	public JenaFileStorageConnector(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		super();
 		if (storageProperties == null) {
@@ -85,6 +93,23 @@ public class JenaStorageConnector implements StorageConnector {
 		assert properties != null;
 		this.model = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM);
 
+		final File storageFile = new File(physicalUri);
+		if (!storageFile.exists()) {
+			try {
+				if (LOG.isLoggable(Level.FINE)) {
+					LOG.fine("Ontology file at location " + storageFile
+							+ " does not exist. Creating empty file.");
+				}
+				storageFile.createNewFile();
+				// No need to try loading model from input stream if the file
+				// didn't exist
+				return;
+			} catch (IOException e) {
+				LOG.log(Level.SEVERE, "Unable to create ontology file " + storageFile, e);
+				throw new OntoDriverException(e);
+			}
+		}
+
 		final InputStream in = FileManager.get()
 				.open(storageProperties.getPhysicalURI().toString());
 		if (in == null) {
@@ -116,6 +141,30 @@ public class JenaStorageConnector implements StorageConnector {
 	 */
 	public OwlapiConnectorDataHolder getOntologyDataInOwlapi() throws OntoDriverException {
 		final OwlapiConnectorDataHolder holder = transformToOwlapi();
+		return holder;
+	}
+
+	/**
+	 * Returns the number of class assertion axioms in the working ontology.
+	 * 
+	 * @return Number of axioms or 0 if there are none
+	 */
+	public int getClassAssertionAxiomCount() {
+		final int res = workingOntology == null ? 0 : workingOntology
+				.getAxiomCount(AxiomType.CLASS_ASSERTION);
+		return res;
+	}
+
+	/**
+	 * Returns actually the current ontology data, since there is no need to
+	 * clone them because the main ontology is stored as Jena model.
+	 * 
+	 * @return {@code OwlapiConnectorDataHolder}
+	 */
+	public OwlapiConnectorDataHolder cloneOntologyData() {
+		final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
+				.ontologyManager(ontologyManager).dataFactory(ontologyManager.getOWLDataFactory())
+				.reasoner(reasoner).workingOntology(workingOntology).build();
 		return holder;
 	}
 
@@ -172,7 +221,7 @@ public class JenaStorageConnector implements StorageConnector {
 		try {
 			// We can assume that the file already exists, since it should have
 			// been at least created by the initConnector method
-			final OutputStream out = new FileOutputStream(physicalUri.toString());
+			final OutputStream out = new FileOutputStream(new File(physicalUri));
 			model.write(out);
 		} catch (FileNotFoundException e) {
 			throw new OntoDriverException(e);
@@ -187,24 +236,30 @@ public class JenaStorageConnector implements StorageConnector {
 	 */
 	private OwlapiConnectorDataHolder transformToOwlapi() throws OntoDriverException {
 		try {
+			initOwlStructures();
 			final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			model.write(bos);
 
-			final OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-			final ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-			manager.loadOntologyFromOntologyDocument(bis);
-
-			OWLOntologyMerger merger = new OWLOntologyMerger(manager);
 			final IRI ontoIri = IRI.create(ontologyUri);
-			final OWLOntology ontology = merger.createMergedOntology(manager, ontoIri);
+			final ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+			if (ontologyManager.contains(ontoIri)) {
+				ontologyManager.removeOntology(workingOntology);
+			}
+			ontologyManager.loadOntologyFromOntologyDocument(bis);
 
-			final OWLReasonerFactory reasonerFactory = (OWLReasonerFactory) Class.forName(
-					reasonerClassFactory).newInstance();
-			final OWLReasoner reasoner = reasonerFactory.createReasoner(ontology);
+			if (!ontologyManager.contains(ontoIri)) {
+				OWLOntologyMerger merger = new OWLOntologyMerger(ontologyManager);
+				this.workingOntology = merger.createMergedOntology(ontologyManager, ontoIri);
+			} else {
+				this.workingOntology = ontologyManager.getOntology(ontoIri);
+			}
+
+			this.reasoner = reasonerFactory.createReasoner(workingOntology);
 
 			final OwlapiConnectorDataHolder data = OwlapiConnectorDataHolder
-					.ontologyManager(manager).dataFactory(manager.getOWLDataFactory())
-					.workingOntology(ontology).reasoner(reasoner).build();
+					.ontologyManager(ontologyManager)
+					.dataFactory(ontologyManager.getOWLDataFactory())
+					.workingOntology(workingOntology).reasoner(reasoner).build();
 			return data;
 		} catch (OWLOntologyCreationException e) {
 			LOG.log(Level.SEVERE, "Unable to transform Jena ontology to OWL API.", e);
@@ -219,5 +274,15 @@ public class JenaStorageConnector implements StorageConnector {
 			LOG.log(Level.SEVERE, "Unable to instantiate reasoner factory class.", e);
 			throw new OntoDriverException(e);
 		}
+	}
+
+	private void initOwlStructures() throws InstantiationException, IllegalAccessException,
+			ClassNotFoundException {
+		if (ontologyManager != null) {
+			return;
+		}
+		this.ontologyManager = OWLManager.createOWLOntologyManager();
+		this.reasonerFactory = (OWLReasonerFactory) Class.forName(reasonerClassFactory)
+				.newInstance();
 	}
 }

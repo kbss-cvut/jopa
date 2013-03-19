@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 
-@OWLClass(iri = "http://new.owl#OWLClassA")
+@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
 public class OWLClassA {
 
 	@Types
@@ -32,7 +32,7 @@ public class OWLClassA {
 	@Id
 	private URI uri;
 
-	@OWLDataProperty(iri = "http://A-stringAttribute")
+	@OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
 	private String stringAttribute;
 
 	/**
@@ -66,13 +66,13 @@ public class OWLClassA {
 		return types;
 	}
 
-//	@Override
-//	public String toString() {
-//		String out = "OWLClassA: uri = " + uri;
-//		out += ", stringAttribute = " + stringAttribute;
-//		if (types != null) {
-//			out += ", types = {" + types.toString() + "}";
-//		}
-//		return out;
-//	}
+	// @Override
+	// public String toString() {
+	// String out = "OWLClassA: uri = " + uri;
+	// out += ", stringAttribute = " + stringAttribute;
+	// if (types != null) {
+	// out += ", types = {" + types.toString() + "}";
+	// }
+	// return out;
+	// }
 }

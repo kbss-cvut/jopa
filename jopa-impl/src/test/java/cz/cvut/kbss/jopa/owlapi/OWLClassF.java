@@ -11,7 +11,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 
-@OWLClass(iri = "http://new.owl#OWLClassF")
+@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassF")
 public class OWLClassF {
 
 	@Id
@@ -19,11 +19,10 @@ public class OWLClassF {
 
 	@OWLDataProperty(iri = "http://F-secondStringAttribute", inferred = true)
 	private String secondStringAttribute;
-	
-	@Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://F-hasSimpleNext")
-	@OWLObjectProperty(iri = "http://F-hasSimpleSequence")
-	private Set<OWLClassA> simpleSet;
 
+	@Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#F-hasSimpleNext")
+	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#F-hasSimpleSequence")
+	private Set<OWLClassA> simpleSet;
 
 	public URI getUri() {
 		return uri;
@@ -52,10 +51,10 @@ public class OWLClassF {
 		this.simpleSet = simpleSet;
 	}
 
-//	@Override
-//	public String toString() {
-//		String out = "OWLClassF: uri = " + uri;
-//		out += ", secondStringAttribute = " + secondStringAttribute;
-//		return out;
-//	}
+	// @Override
+	// public String toString() {
+	// String out = "OWLClassF: uri = " + uri;
+	// out += ", secondStringAttribute = " + secondStringAttribute;
+	// return out;
+	// }
 }

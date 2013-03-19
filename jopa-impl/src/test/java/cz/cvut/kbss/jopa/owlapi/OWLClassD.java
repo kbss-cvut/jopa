@@ -22,13 +22,13 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 
-@OWLClass(iri = "http://new.owl#OWLClassD")
+@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD")
 public class OWLClassD {
 
 	@Id
 	private URI uri;
 
-	@OWLObjectProperty(iri = "http://hasA", fetch = FetchType.EAGER)
+	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA", fetch = FetchType.EAGER)
 	// @ParticipationConstraints({
 	// @ParticipationConstraint(owlObjectIRI="http://new.owl#OWLClassA", min=1,
 	// max=1)
@@ -58,10 +58,10 @@ public class OWLClassD {
 		return owlClassA;
 	}
 
-//	@Override
-//	public String toString() {
-//		String out = "OWLClassD: uri = " + uri;
-//		out += ", owlClassA = " + owlClassA;
-//		return out;
-//	}
+	// @Override
+	// public String toString() {
+	// String out = "OWLClassD: uri = " + uri;
+	// out += ", owlClassA = " + owlClassA;
+	// return out;
+	// }
 }

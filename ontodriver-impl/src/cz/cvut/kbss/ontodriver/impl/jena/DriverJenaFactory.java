@@ -47,13 +47,13 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public JenaStorageConnector createStorageConnector(Context ctx, boolean autoCommit)
+	public JenaFileStorageConnector createStorageConnector(Context ctx, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(ctx);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage connector.");
 		}
-		final JenaStorageConnector c = new JenaStorageConnector(contextsToProperties.get(ctx),
+		final JenaFileStorageConnector c = new JenaFileStorageConnector(contextsToProperties.get(ctx),
 				properties);
 		registerConnector(c);
 		return c;

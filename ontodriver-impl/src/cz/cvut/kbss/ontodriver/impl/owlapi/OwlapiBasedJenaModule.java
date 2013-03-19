@@ -12,11 +12,11 @@ import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.impl.jena.JenaStorageConnector;
+import cz.cvut.kbss.ontodriver.impl.jena.JenaFileStorageConnector;
 
 public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 
-	private JenaStorageConnector connector;
+	private JenaFileStorageConnector connector;
 	private ModuleInternal moduleInternal;
 
 	private OWLOntology ontology;
@@ -31,7 +31,7 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	public void close() throws OntoDriverException {
 		factory.releaseStorageConnector(connector);
 		this.moduleInternal = null;
-		super.close();
+		this.open = false;
 	}
 
 	@Override
@@ -50,13 +50,12 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 
 	@Override
 	protected void initialize() throws OntoDriverException {
-		this.connector = (JenaStorageConnector) factory.createStorageConnector(context, false);
+		this.connector = (JenaFileStorageConnector) factory.createStorageConnector(context, false);
+		final OwlapiConnectorDataHolder holder = getOntologyData();
 		if (!primaryKeyCounters.containsKey(context)) {
-			primaryKeyCounters.put(context, new AtomicInteger(0));
+			primaryKeyCounters.put(context,
+					new AtomicInteger(connector.getClassAssertionAxiomCount()));
 		}
-		final OwlapiConnectorDataHolder holder = connector.getOntologyDataInOwlapi();
-		this.ontology = holder.getWorkingOntology();
-		this.manager = holder.getOntologyManager();
 		this.moduleInternal = new ModuleInternalImpl(holder, this);
 	}
 
@@ -132,7 +131,7 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	 *             If an error during cloning occurs
 	 */
 	OwlapiConnectorDataHolder cloneOntologyData() throws OntoDriverException {
-		return connector.getOntologyDataInOwlapi();
+		return connector.cloneOntologyData();
 	}
 
 	/**
@@ -143,7 +142,10 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	 */
 	OwlapiConnectorDataHolder getOntologyData() {
 		try {
-			return connector.getOntologyDataInOwlapi();
+			final OwlapiConnectorDataHolder holder = connector.getOntologyDataInOwlapi();
+			this.manager = holder.getOntologyManager();
+			this.ontology = holder.getWorkingOntology();
+			return holder;
 		} catch (OntoDriverException e) {
 			throw new RuntimeException(e);
 		}

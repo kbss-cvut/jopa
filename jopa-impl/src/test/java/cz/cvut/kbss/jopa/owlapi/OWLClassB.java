@@ -21,13 +21,13 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
-@OWLClass(iri = "http://OWLClassB")
+@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB")
 public class OWLClassB {
 
 	@Id
 	private URI uri;
 
-	@OWLDataProperty(iri = "http://B-stringAttribute")
+	@OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute")
 	private String stringAttribute;
 
 	/**
@@ -53,10 +53,10 @@ public class OWLClassB {
 		return stringAttribute;
 	}
 
-//	@Override
-//	public String toString() {
-//		String out = "OWLClassB: uri = " + uri;
-//		out += ", stringAttribute = " + stringAttribute;
-//		return out;
-//	}
+	// @Override
+	// public String toString() {
+	// String out = "OWLClassB: uri = " + uri;
+	// out += ", stringAttribute = " + stringAttribute;
+	// return out;
+	// }
 }

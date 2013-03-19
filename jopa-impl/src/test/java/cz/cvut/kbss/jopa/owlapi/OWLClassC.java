@@ -25,18 +25,18 @@ import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 
-@OWLClass(iri = "http://new.owl#OWLClassC")
+@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC")
 public class OWLClassC {
 
 	@Id
 	private URI uri;
 
 	@Sequence
-	@OWLObjectProperty(iri = "http://B-hasReferencedSequence", fetch = FetchType.EAGER)
+	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence", fetch = FetchType.EAGER)
 	private List<OWLClassA> referencedList;
 
-	@Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://B-hasSimpleNext")
-	@OWLObjectProperty(iri = "http://B-hasSimpleSequence")
+	@Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleNext")
+	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence")
 	private List<OWLClassA> simplelist;
 
 	public void setUri(URI uri) {
@@ -63,15 +63,15 @@ public class OWLClassC {
 		return simplelist;
 	}
 
-//	@Override
-//	public String toString() {
-//		String out = "OWLClassC: uri = " + uri;
-//		if (referencedList != null) {
-//			out += ", referencedList = {" + referencedList.toString() + "}";
-//		}
-//		if (simplelist != null) {
-//			out += ", simpleList = {" + simplelist.toString() + "}";
-//		}
-//		return out;
-//	}
+	// @Override
+	// public String toString() {
+	// String out = "OWLClassC: uri = " + uri;
+	// if (referencedList != null) {
+	// out += ", referencedList = {" + referencedList.toString() + "}";
+	// }
+	// if (simplelist != null) {
+	// out += ", simpleList = {" + simplelist.toString() + "}";
+	// }
+	// return out;
+	// }
 }
