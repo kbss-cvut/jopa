@@ -1,0 +1,19 @@
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/MixedMultiContextsRemoveFromSomeJENA3#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:tests="http://krizik.felk.cvut.cz/ontologies/jopa/tests/" > 
+  <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/MixedMultiContextsRemoveFromSomeJENA3">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Ontology"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassI">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI">
+    <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassI"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+  </rdf:Description>
+</rdf:RDF>

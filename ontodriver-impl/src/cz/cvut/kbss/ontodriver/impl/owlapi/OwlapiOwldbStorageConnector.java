@@ -76,13 +76,14 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 						+ " does not exist in the database. Creating...");
 			}
 			createOntology(ontologyIri, hibernateProperties);
+			saveWorkingOntology();
 		} catch (HibernateException e) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.finer("OWLDB database structure not present. Generating...");
 			}
 			createOntology(ontologyIri, hibernateProperties);
+			saveWorkingOntology();
 		}
-		saveWorkingOntology();
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Number of individuals in signature: "
 					+ workingOntology.getIndividualsInSignature().size());
