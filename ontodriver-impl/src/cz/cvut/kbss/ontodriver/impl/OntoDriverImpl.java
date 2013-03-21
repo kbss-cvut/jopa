@@ -30,10 +30,17 @@ public class OntoDriverImpl implements OntoDriver {
 
 	private static final Map<OntologyConnectorType, Constructor<? extends DriverFactory>> factoryClasses = new HashMap<OntologyConnectorType, Constructor<? extends DriverFactory>>();
 
-	private final Map<String, String> properties;
-	private final Map<OntologyConnectorType, DriverFactory> factories;
+	protected final Map<String, String> properties;
+	protected final Map<OntologyConnectorType, DriverFactory> factories;
 	/** Reference for easier access */
-	private final List<Context> contexts;
+	protected final List<Context> contexts;
+
+	protected OntoDriverImpl() {
+		super();
+		this.properties = Collections.emptyMap();
+		this.factories = new HashMap<OntologyConnectorType, DriverFactory>();
+		this.contexts = new ArrayList<Context>();
+	}
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties) {
 		if (storageProperties == null || storageProperties.isEmpty()) {
@@ -48,8 +55,9 @@ public class OntoDriverImpl implements OntoDriver {
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties,
 			Map<String, String> properties) {
-		if (storageProperties == null) {
-			throw new NullPointerException("Storage properties cannot be null.");
+		if (storageProperties == null || storageProperties.isEmpty()) {
+			throw new IllegalArgumentException(
+					"Storage properties cannot be neither null nor empty.");
 		}
 		if (properties == null) {
 			properties = Collections.emptyMap();
@@ -81,7 +89,7 @@ public class OntoDriverImpl implements OntoDriver {
 	public StorageManager acquireStorageManager(PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException {
 		if (persistenceProvider == null) {
-			return acquireStorageManager();
+			throw new NullPointerException("PersistenceProviderFacade cannot be null.");
 		}
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating storage manager.");
@@ -215,7 +223,7 @@ public class OntoDriverImpl implements OntoDriver {
 			factoryClasses.put(type, c);
 		} catch (NoSuchMethodException e) {
 			throw new OntoDriverException("The class " + factoryClass.getName()
-					+ " does not have the required single param constructor.");
+					+ " does not have the required constructor.");
 		} catch (SecurityException e) {
 			throw new OntoDriverException(e);
 		}

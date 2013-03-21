@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.ontodriver.exceptions.EntityNotRegisteredException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.ConnectionImpl;
 import cz.cvut.kbss.ontodriver.utils.OWLClassA;
@@ -256,7 +257,7 @@ public class ConnectionImplTest {
 		assertEquals(res, someContext.get(res.getUri()));
 	}
 
-	@Test(expected = OntoDriverException.class)
+	@Test(expected = EntityNotRegisteredException.class)
 	public void testMergeNotPersistent() throws Exception {
 		LOG.config("Test: merge unknown entity.");
 		final OWLClassB b = new OWLClassB();
