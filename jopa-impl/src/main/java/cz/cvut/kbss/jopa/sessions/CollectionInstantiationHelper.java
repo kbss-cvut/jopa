@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.util.ArrayList;
@@ -48,10 +49,11 @@ public class CollectionInstantiationHelper {
 	 *            The collection to clone.
 	 * @return A deep clone of the specified collection.
 	 */
-	public Object buildNewInstance(Object collection) throws OWLPersistenceException {
+	public Object buildNewInstance(Object collection, URI contextUri)
+			throws OWLPersistenceException {
 		Collection<?> container = (Collection<?>) collection;
 		Collection<?> clone = null;
-		clone = cloneUsingDefaultConstructor(container);
+		clone = cloneUsingDefaultConstructor(container, contextUri);
 		if (clone == null) {
 			Constructor<?> c = null;
 			final Object element = container.iterator().next();
@@ -65,7 +67,7 @@ public class CollectionInstantiationHelper {
 				throw new UnsupportedOperationException("Maps are not supported yet.");
 			} else if (arrayAsListClass.isInstance(container)) {
 				c = getFirstDeclaredConstructorFor(arrayAsListClass);
-				params[0] = builder.getCloneBuilder().cloneArray(container.toArray());
+				params[0] = builder.getCloneBuilder().cloneArray(container.toArray(), contextUri);
 			}
 			try {
 				if (!c.isAccessible()) {
@@ -103,7 +105,7 @@ public class CollectionInstantiationHelper {
 	 *            The collection to clone.
 	 * @return
 	 */
-	private Collection<?> cloneUsingDefaultConstructor(Collection<?> container) {
+	private Collection<?> cloneUsingDefaultConstructor(Collection<?> container, URI contextUri) {
 		Class<?> javaClass = container.getClass();
 		Constructor<?> ctor = InstantiationHelper.getDeclaredConstructorFor(javaClass, null);
 		if (ctor != null) {
@@ -127,8 +129,9 @@ public class CollectionInstantiationHelper {
 				e.printStackTrace();
 				throw new OWLPersistenceException(e);
 			}
-			result.addAll(cloneCollectionContent(container)); // Makes shallow
-																// copy
+			result.addAll(cloneCollectionContent(container, contextUri)); // Makes
+																			// shallow
+			// copy
 			return result;
 		} else {
 			return null;
@@ -142,7 +145,7 @@ public class CollectionInstantiationHelper {
 	 * @param collection
 	 *            The collection to clone.
 	 */
-	private Collection cloneCollectionContent(Collection<?> collection) {
+	private Collection cloneCollectionContent(Collection<?> collection, URI contextUri) {
 		Collection<Object> result = null;
 		if (collection instanceof Map) {
 			throw new UnsupportedOperationException("Maps are not supported yet.");
@@ -157,7 +160,7 @@ public class CollectionInstantiationHelper {
 				if (builder.getUnitOfWork().getManagedTypes().contains(obj.getClass())) {
 					clone = builder.getUnitOfWork().registerExistingObject(obj);
 				} else {
-					clone = builder.getCloneBuilder().buildClone(obj);
+					clone = builder.getCloneBuilder().buildClone(obj, contextUri);
 				}
 				result.add(clone);
 			}

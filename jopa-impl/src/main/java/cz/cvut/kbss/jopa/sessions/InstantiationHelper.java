@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.util.ArrayList;
@@ -11,7 +12,6 @@ import java.util.Collection;
 import java.util.List;
 
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
-import cz.cvut.kbss.jopa.sessions.CloneBuilder;
 
 /**
  * This class has responsibility for creating new instances of various kinds of
@@ -45,14 +45,14 @@ public class InstantiationHelper {
 	 * @param javaClass
 	 * @return New object of the given class.
 	 */
-	public Object buildNewInstance(final Class<?> javaClass, Object original) {
+	public Object buildNewInstance(final Class<?> javaClass, Object original, URI contextUri) {
 		if (javaClass == null || original == null) {
 			return null;
 		}
 		if (original instanceof Collection) {
 			// According to eclipselink, instanceof is much faster than
 			// isAssignableFrom
-			return collectionBuilder.buildNewInstance(original);
+			return collectionBuilder.buildNewInstance(original, contextUri);
 		}
 		Object newInstance = buildNewInstanceUsingDefaultConstructor(javaClass);
 		if (newInstance == null) {
@@ -71,8 +71,7 @@ public class InstantiationHelper {
 					} else {
 						try {
 							Object[] params = new Object[1];
-							params[0] = original.getClass().getDeclaredField(
-									f.getName());
+							params[0] = original.getClass().getDeclaredField(f.getName());
 							newInstance = c.newInstance(params);
 							if (newInstance != null) {
 								return newInstance;
@@ -80,8 +79,7 @@ public class InstantiationHelper {
 						} catch (SecurityException e) {
 							try {
 								newInstance = AccessController
-										.doPrivileged(new PrivilegedInstanceCreator(
-												c));
+										.doPrivileged(new PrivilegedInstanceCreator(c));
 							} catch (PrivilegedActionException ex) {
 								throw new OWLPersistenceException(ex);
 							}
@@ -107,8 +105,7 @@ public class InstantiationHelper {
 						} catch (SecurityException e) {
 							try {
 								newInstance = AccessController
-										.doPrivileged(new PrivilegedInstanceCreator(
-												c));
+										.doPrivileged(new PrivilegedInstanceCreator(c));
 							} catch (PrivilegedActionException ex) {
 								throw new OWLPersistenceException(ex);
 							}
@@ -141,8 +138,7 @@ public class InstantiationHelper {
 	 * @return New object of the given class, or null if the class has no
 	 *         no-argument constructor.
 	 */
-	private Object buildNewInstanceUsingDefaultConstructor(
-			final Class<?> javaClass) {
+	private Object buildNewInstanceUsingDefaultConstructor(final Class<?> javaClass) {
 		final Constructor<?> c = getDeclaredConstructorFor(javaClass, null);
 		Object newInstance = null;
 		if (c != null) {
@@ -150,8 +146,7 @@ public class InstantiationHelper {
 				newInstance = c.newInstance((Object[]) null);
 			} catch (SecurityException e) {
 				try {
-					newInstance = AccessController
-							.doPrivileged(new PrivilegedInstanceCreator(c));
+					newInstance = AccessController.doPrivileged(new PrivilegedInstanceCreator(c));
 				} catch (PrivilegedActionException ex) {
 					return null;
 				}
@@ -171,7 +166,7 @@ public class InstantiationHelper {
 	UnitOfWork getUnitOfWork() {
 		return uow;
 	}
-	
+
 	CloneBuilderImpl getCloneBuilder() {
 		return (CloneBuilderImpl) builder;
 	}
@@ -191,8 +186,8 @@ public class InstantiationHelper {
 	 * @throws SecurityException
 	 *             If the security check denies access to the constructor.
 	 */
-	public static Constructor<?> getDeclaredConstructorFor(
-			final Class<?> javaClass, Class<?>[] args) throws SecurityException {
+	public static Constructor<?> getDeclaredConstructorFor(final Class<?> javaClass, Class<?>[] args)
+			throws SecurityException {
 		Constructor<?> c = null;
 		try {
 			c = javaClass.getDeclaredConstructor(args);

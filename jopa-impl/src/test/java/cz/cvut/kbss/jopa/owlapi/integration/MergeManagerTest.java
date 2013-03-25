@@ -57,7 +57,7 @@ public class MergeManagerTest {
 		final URI pk = URI.create("http://testObject");
 		orig.setUri(pk);
 		orig.setStringAttribute("ANiceAttribute");
-		final OWLClassB clone = (OWLClassB) cloneBuilder.buildClone(orig);
+		final OWLClassB clone = (OWLClassB) cloneBuilder.buildClone(orig, CONTEXT_URI);
 		final ObjectChangeSetImpl chs = new ObjectChangeSetImpl(orig, clone, false,
 				uow.getUowChangeSet());
 		clone.setStringAttribute("AnotherStringAttribute");
@@ -94,7 +94,7 @@ public class MergeManagerTest {
 		final URI pk = URI.create("http://newOnesUri");
 		objOne.setUri(pk);
 		objOne.setStringAttribute("ABeautifulAttribute");
-		final Object clone = cloneBuilder.buildClone(objOne);
+		final Object clone = cloneBuilder.buildClone(objOne, CONTEXT_URI);
 		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(objOne, clone, true, null);
 		this.uow.getUowChangeSet().addNewObjectChangeSet(ochs);
 		this.mm.mergeChangesFromChangeSet(uow.getUowChangeSet());
@@ -107,7 +107,7 @@ public class MergeManagerTest {
 		final OWLClassB newOne = new OWLClassB();
 		final URI pk = URI.create("http://newOnesUri");
 		newOne.setUri(pk);
-		final Object clone = cloneBuilder.buildClone(newOne);
+		final Object clone = cloneBuilder.buildClone(newOne, CONTEXT_URI);
 		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(newOne, clone, true, null);
 		this.mm.mergeNewObject(ochs);
 		final IRI iri = IRI.create(pk);

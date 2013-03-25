@@ -205,7 +205,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			Object clone = it.next();
 			Object original = getNewObjectsCloneToOriginal().get(clone);
 			if (original == null) {
-				original = this.cloneBuilder.buildClone(clone);
+				// TODO
+				original = this.cloneBuilder.buildClone(clone, null);
 			}
 			if (original == null || clone == null) {
 				throw new OWLPersistenceException(
@@ -711,7 +712,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		if (getCloneToOriginals().containsValue(object)) {
 			return getCloneForOriginal(object);
 		}
-		Object clone = this.cloneBuilder.buildClone(object);
+		// TODO
+		Object clone = this.cloneBuilder.buildClone(object, null);
 		getCloneMapping().put(clone, clone);
 		getCloneToOriginals().put(clone, object);
 		registerEntityWithContext(clone, this);
