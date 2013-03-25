@@ -300,14 +300,6 @@ public class UnitOfWorkTest {
 	}
 
 	@Test
-	public void testPrimaryKeyAlreadyUsed() {
-		final IRI testKey = IRI.create(testObject.getUri());
-		assertTrue(testUOW.primaryKeyAlreadyUsed(testKey));
-		final IRI testNotUsed = IRI.create("http://notUsed");
-		assertFalse(testUOW.primaryKeyAlreadyUsed(testNotUsed));
-	}
-
-	@Test
 	public void testReleaseUnitOfWork() {
 		this.testUOW.release();
 		assertTrue(testUOW.getCloneMapping().isEmpty());

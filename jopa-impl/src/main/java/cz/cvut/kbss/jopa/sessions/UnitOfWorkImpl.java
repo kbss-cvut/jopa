@@ -5,7 +5,6 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,15 +32,14 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
+	// TODO Redesign with regards to multi contexts
+
 	private Map<Object, Object> cloneMapping;
 	private Map<Object, Object> cloneToOriginals;
 	private Map<Object, Object> deletedObjects;
 	private Map<Object, Object> newObjectsCloneToOriginal;
 	private Map<Object, Object> newObjectsOriginalToClone;
 	private Map<Object, Object> newObjectsKeyToClone;
-	// A set of primary keys (IRI or URI), which are already used and
-	// no other object can use them
-	private Set<Object> usedPrimaryKeys;
 
 	private boolean hasChanges;
 	private boolean hasNew;
@@ -227,7 +225,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		this.newObjectsCloneToOriginal = null;
 		this.newObjectsOriginalToClone = null;
 		this.newObjectsKeyToClone = null;
-		this.usedPrimaryKeys = null;
 		this.hasChanges = false;
 		this.hasDeleted = false;
 		this.hasNew = false;
@@ -343,14 +340,28 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	 * @return The state of the specified entity
 	 */
 	public State getState(Object entity) {
-		if (entity == null) {
-			return null;
+		return getState(entity, null);
+	}
+
+	/**
+	 * Checks the state of the specified entity with regards to the specified
+	 * context.
+	 * 
+	 * @param entity
+	 *            Object
+	 * @param contextUri
+	 *            URI of context
+	 * @return The state of the specified entity
+	 */
+	public State getState(Object entity, URI contextUri) {
+		if (entity == null || contextUri == null) {
+			throw new NullPointerException();
 		}
 		if (getDeletedObjects().containsKey(entity)) {
 			return State.REMOVED;
 		} else if (getCloneMapping().containsKey(entity)) {
 			return State.MANAGED;
-		} else if (storageContains(getIdentifier(entity))) {
+		} else if (storageContains(getIdentifier(entity), contextUri)) {
 			return State.DETACHED;
 		} else {
 			return State.NEW;
@@ -491,13 +502,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		return this.parent.getManagedTypes();
 	}
 
-	protected Set<Object> getUsedPrimaryKeys() {
-		if (this.usedPrimaryKeys == null) {
-			this.usedPrimaryKeys = new HashSet<Object>();
-		}
-		return this.usedPrimaryKeys;
-	}
-
 	public ChangeManager getChangeManager() {
 		if (this.changeManager == null) {
 			this.changeManager = new ChangeManagerImpl();
@@ -559,7 +563,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
 	private boolean isObjectManaged(Object entity, Object primaryKey) {
 		Object original = getOriginal(entity);
-		if (isInCache(entity.getClass(), primaryKey))
+		if (primaryKey != null && isInCache(entity.getClass(), primaryKey))
 			return true;
 		if (getCloneToOriginals().containsValue(original)) {
 			return true;
@@ -653,7 +657,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 						"The detached object is not in the ontology signature.");
 			}
 		}
-		getUsedPrimaryKeys().add(iri);
 		getCloneMapping().put(entity, entity);
 		getCloneToOriginals().put(entity, orig);
 		checkForCollections(entity);
@@ -709,10 +712,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			return getCloneForOriginal(object);
 		}
 		Object clone = this.cloneBuilder.buildClone(object);
-		IRI iri = getIdentifier(clone);
-		if (iri != null) {
-			getUsedPrimaryKeys().add(iri);
-		}
 		getCloneMapping().put(clone, clone);
 		getCloneToOriginals().put(clone, object);
 		registerEntityWithContext(clone, this);
@@ -828,7 +827,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 						+ " is null and it is not specified as \'generated\' ");
 			}
 		}
-		if ((storageContains(id) || isObjectManaged(entity, id) || primaryKeyAlreadyUsed(id))
+		if ((storageContains(id, context) || isObjectManaged(entity, id))
 				&& !entity.getClass().isEnum()) {
 			throw new OWLEntityExistsException("An entity with URI " + id
 					+ " is already persisted in context " + context);
@@ -845,22 +844,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		getCloneMapping().put(clone, clone);
 		getNewObjectsCloneToOriginal().put(clone, original);
 		registerEntityWithContext(clone, this);
-		getUsedPrimaryKeys().add(id);
 		getNewObjectsKeyToClone().put(id, clone);
 		checkForCollections(clone);
 		this.hasNew = true;
-	}
-
-	/**
-	 * Check if the specified id has been already used. Returns true, if the id
-	 * was used and hence it cannot be used anymore.
-	 * 
-	 * @param id
-	 *            Usually URI or IRI
-	 * @return boolean
-	 */
-	public boolean primaryKeyAlreadyUsed(Object id) {
-		return getUsedPrimaryKeys().contains(id);
 	}
 
 	/**
@@ -885,7 +871,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		if (hasNew() && getNewObjectsCloneToOriginal().containsKey(registered)) {
 			this.unregisterObject(registered);
 			this.getNewObjectsKeyToClone().remove(primaryKey);
-			this.getUsedPrimaryKeys().remove(primaryKey);
 		} else {
 			this.getDeletedObjects().put(object, object);
 			this.hasDeleted = true;
@@ -932,10 +917,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			return null;
 		}
 		// If we have a clone
-		Object registered = getCloneMapping().get(object);
-		if (registered != null) {
-			return registered;
+		if (getCloneMapping().containsKey(object)) {
+			return object;
 		}
+		Object registered = null;
 		if (hasNew()) {
 			registered = getNewObjectsOriginalToClone().get(object);
 		}
@@ -1179,12 +1164,16 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		return EntityPropertiesUtils.getPrimaryKey(entity, getMetamodel());
 	}
 
-	private boolean storageContains(Object primaryKey) {
+	private boolean storageContains(Object primaryKey, URI context) {
 		if (primaryKey == null) {
 			return false;
 		}
 		try {
-			return storageConnection.contains(primaryKey);
+			if (context == null) {
+				return storageConnection.contains(primaryKey);
+			} else {
+				return storageConnection.contains(primaryKey, context);
+			}
 		} catch (OntoDriverException e) {
 			throw new OWLPersistenceException(e);
 		}

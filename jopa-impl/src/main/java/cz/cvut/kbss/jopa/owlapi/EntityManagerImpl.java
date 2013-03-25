@@ -178,8 +178,62 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public void persist(Object entity, URI contextUri) {
-		// TODO Resolve primary key uniqueness issue
+	public void persist(final Object entity, final URI contextUri) {
+		if (LOG.isLoggable(Level.FINER)) {
+			LOG.config("Persisting " + entity);
+		}
+		ensureOpen();
+		if (entity == null || contextUri == null) {
+			throw new NullPointerException("Null passed to persist.");
+		}
+
+		switch (getState(entity, contextUri)) {
+		case NEW:
+			try {
+				getCurrentPersistenceContext().registerNewObject(entity, contextUri);
+			} catch (Exception e) {
+				if (getTransaction().isActive()) {
+					getTransaction().setRollbackOnly();
+				}
+				throw new OWLPersistenceException("A problem occured when persisting " + entity, e);
+			}
+		case MANAGED:
+			new OneLevelCascadeExplorer() {
+				@Override
+				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
+					try {
+						Object ox = at.getJavaField().get(o);
+						System.out.println("object=" + o + ", attribute=" + at.getName()
+								+ ", value=" + ox);
+
+						if (ox == null) {
+							return;
+						}
+
+						if (at.isCollection()) {
+							for (final Object ox2 : (Collection<?>) ox) {
+								persist(ox2, contextUri);
+							}
+						} else {
+							persist(ox, contextUri);
+						}
+					} catch (Exception e) {
+						if (getTransaction().isActive()) {
+							getTransaction().setRollbackOnly();
+						}
+						throw new OWLPersistenceException(
+								"A problem occured when persisting attribute " + at.getName()
+										+ " of with value " + o + " of object " + entity, e);
+					}
+				}
+			}.start(this, entity, CascadeType.PERSIST);
+			break;
+		case DETACHED:
+			throw new OWLEntityExistsException("Entity " + entity + " already exists.");
+		case REMOVED:
+			getCurrentPersistenceContext().revertObject(entity);
+			break;
+		}
 	}
 
 	public <T> T merge(final T entity) {
@@ -247,6 +301,12 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		default:
 			throw new IllegalArgumentException();
 		}
+	}
+
+	@Override
+	public <T> T merge(T entity, URI contextUri) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	public void remove(Object object) {
@@ -567,6 +627,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 	private State getState(Object entity) {
 		return getCurrentPersistenceContext().getState(entity);
+	}
+
+	private State getState(Object entity, URI contextUri) {
+		return getCurrentPersistenceContext().getState(entity, contextUri);
 	}
 
 	@Override

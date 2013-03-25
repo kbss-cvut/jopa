@@ -21,7 +21,7 @@ import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassD;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
-import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStorageType;
 
 public class TestRetrieveOperations {
 
@@ -56,7 +56,7 @@ public class TestRetrieveOperations {
 		st1.close();
 		con.close();
 		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-retrieve",
-				Storage.OWLDB, true);
+				OwlapiStorageType.OWLDB, true);
 	}
 
 	@AfterClass

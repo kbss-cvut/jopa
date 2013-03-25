@@ -21,7 +21,7 @@ import org.junit.Test;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
-import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStorageType;
 
 public class FileOWLDBPerformanceTest {
 
@@ -88,7 +88,7 @@ public class FileOWLDBPerformanceTest {
 	public void testFileOntologyPerformancePersist() {
 		LOG.config("Testing file ontology access performance. Persisting " + COUNT + " entities.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"FileOntologyPerformanceTest-Persist", Storage.FILE, true);
+				"FileOntologyPerformanceTest-Persist", OwlapiStorageType.FILE, true);
 
 		persistEntities(em);
 	}
@@ -97,7 +97,7 @@ public class FileOWLDBPerformanceTest {
 	public void testOWLDBOntologyPerformancePersist() {
 		LOG.config("Testing OWLDB ontology access performance. Persisting " + COUNT + " entities.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"OWLDBOntologyPerformanceTest-Persist", Storage.OWLDB, true);
+				"OWLDBOntologyPerformanceTest-Persist", OwlapiStorageType.OWLDB, true);
 		try {
 			persistEntities(em);
 		} finally {
@@ -124,7 +124,7 @@ public class FileOWLDBPerformanceTest {
 	public void testFileOntologyPerformanceRead() {
 		LOG.config("Search for several randomly chosen entities and measure file ontology performance.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"FileOntologyPerformanceTest-Find", Storage.FILE, false);
+				"FileOntologyPerformanceTest-Find", OwlapiStorageType.FILE, false);
 		persistEntities(em);
 
 		findEntities(em);
@@ -134,7 +134,7 @@ public class FileOWLDBPerformanceTest {
 	public void testOWLDBOntologyPerformanceRead() {
 		LOG.config("Search for several randomly chosen entities and measure OWLDB ontology performance.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"OWLDBOntologyPerformanceTest-Find", Storage.OWLDB, false);
+				"OWLDBOntologyPerformanceTest-Find", OwlapiStorageType.OWLDB, false);
 		try {
 			persistEntities(em);
 

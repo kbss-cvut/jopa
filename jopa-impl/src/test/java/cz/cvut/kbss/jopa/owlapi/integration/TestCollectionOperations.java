@@ -19,7 +19,7 @@ import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
-import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStorageType;
 
 public class TestCollectionOperations {
 
@@ -55,7 +55,8 @@ public class TestCollectionOperations {
 	public void testPersistEntityWithCollection() {
 		LOG.config("Test: persist entity with a simple collection of strings.");
 		this.em = TestEnvironment.getPersistenceConnector(
-				"TestCollectionOperations-persistEntityWithCollection", Storage.FILE, true);
+				"TestCollectionOperations-persistEntityWithCollection", OwlapiStorageType.FILE,
+				true);
 		em.getTransaction().begin();
 		em.persist(testA);
 		assertTrue(testA.getTypes() instanceof IndirectSet);
@@ -71,8 +72,9 @@ public class TestCollectionOperations {
 	@Test
 	public void testDetachEntityWithCollection() {
 		LOG.config("Test: persist entity and detach it before commit.");
-		this.em = TestEnvironment.getPersistenceConnector(
-				"TestCollectionOperations-detachEntityWithCollection", Storage.FILE, true);
+		this.em = TestEnvironment
+				.getPersistenceConnector("TestCollectionOperations-detachEntityWithCollection",
+						OwlapiStorageType.FILE, true);
 		em.getTransaction().begin();
 		em.persist(testA);
 		assertTrue(em.contains(testA));
@@ -88,7 +90,8 @@ public class TestCollectionOperations {
 	public void testMergeDetachedEntityWithCollection() {
 		LOG.config("Test: persist entity, detach it and merge again.");
 		this.em = TestEnvironment.getPersistenceConnector(
-				"TestCollectionOperations-mergeDetachedEntityWithCollection", Storage.FILE, true);
+				"TestCollectionOperations-mergeDetachedEntityWithCollection",
+				OwlapiStorageType.FILE, true);
 		em.getTransaction().begin();
 		em.persist(testA);
 		assertTrue(em.contains(testA));
@@ -107,8 +110,8 @@ public class TestCollectionOperations {
 	public void testMergeDetachedEntityWithCollectionChanges() {
 		LOG.config("Test: persist entity, detach it and merge again. Changes are made to the collection while detached.");
 		this.em = TestEnvironment.getPersistenceConnector(
-				"TestCollectionOperations-mergeDetachedEntityWithCollectionChanges", Storage.FILE,
-				true);
+				"TestCollectionOperations-mergeDetachedEntityWithCollectionChanges",
+				OwlapiStorageType.FILE, true);
 		em.getTransaction().begin();
 		em.persist(testA);
 		assertTrue(em.contains(testA));
@@ -129,7 +132,8 @@ public class TestCollectionOperations {
 	public void testSetNewCollectionDuringTransaction() {
 		LOG.config("Test: persist entity. Set new collection on it and make changes in the collection.");
 		this.em = TestEnvironment.getPersistenceConnector(
-				"TestCollectionOperations-setNewCollectionDuringTransaction", Storage.FILE, true);
+				"TestCollectionOperations-setNewCollectionDuringTransaction",
+				OwlapiStorageType.FILE, true);
 		em.getTransaction().begin();
 		em.persist(testA);
 		em.getTransaction().commit();

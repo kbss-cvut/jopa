@@ -18,21 +18,22 @@ package cz.cvut.kbss.jopa.owlapi;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.junit.Ignore;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.UnknownOWLOntologyException;
 
 import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.owlapi.utils.StorageInfo;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.OwldbOntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStorageType;
 
 @Ignore
 public class TestEnvironment {
@@ -56,77 +57,80 @@ public class TestEnvironment {
 	// private static final String REASONER_FACTORY_CLASS =
 	// "org.semanticweb.HermiT.Reasoner$ReasonerFactory";
 
-	public static enum Storage {
-		OWLDB, FILE
-	};
-
 	public static EntityManager getPersistenceConnector(String name) {
-		return getPersistenceConnector(name, Storage.FILE, true);
+		return getPersistenceConnector(name, OwlapiStorageType.FILE, true);
 	}
 
 	public static EntityManager getPersistenceConnector(String name, boolean cache) {
-		return getPersistenceConnector(name, Storage.FILE, cache);
+		return getPersistenceConnector(name, OwlapiStorageType.FILE, cache);
 	}
 
-	public static EntityManager getPersistenceConnector(String name, Storage storage, boolean cache) {
+	public static EntityManager getPersistenceConnector(String name, OwlapiStorageType storage,
+			boolean cache) {
+		final List<OntologyStorageProperties> storageProps = Collections
+				.singletonList(createOwlapiStorageProperties(name, new StorageInfo(
+						OntologyConnectorType.OWLAPI, storage)));
+		final Map<String, String> params = initParams(cache);
+		return Persistence.createEntityManagerFactory("context-name", storageProps, params)
+				.createEntityManager();
+	}
+
+	public static EntityManager getPersistenceConnector(String baseName,
+			List<StorageInfo> storages, boolean cache) {
+		final Map<String, String> params = initParams(cache);
+		final List<OntologyStorageProperties> storageProps = new ArrayList<OntologyStorageProperties>(
+				storages.size());
+		String name;
+		int i = 1;
+		for (StorageInfo si : storages) {
+			name = baseName + si.getConnectorType() + (i++);
+			final OntologyStorageProperties p = createOwlapiStorageProperties(name, si);
+			assert p != null;
+			storageProps.add(p);
+		}
+		return Persistence.createEntityManagerFactory("context-name", storageProps, params)
+				.createEntityManager();
+	}
+
+	private static Map<String, String> initParams(boolean cache) {
 		final Map<String, String> params = new HashMap<String, String>();
+		params.put("javax.persistence.provider", EntityManagerFactoryImpl.class.getName());
+		if (cache) {
+			params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "on");
+		} else {
+			params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "off");
+		}
+		/* Set location of the entities (package) */
+		params.put("location", "cz.cvut.kbss.jopa.owlapi");
+		params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
+				OWLAPIPersistenceProvider.class.getName());
+		params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);
+		return params;
+	}
+
+	private static OntologyStorageProperties createOwlapiStorageProperties(String name,
+			StorageInfo info) {
 		final IRI iri = IRI.create("http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/" + name);
 		URI physicalUri = null;
-		try {
-			switch (storage) {
-			case FILE:
-				// Ontology stored in a file
-				final File url = new File(dir + "/" + name + ".owl");
-				if (url.exists() && shouldDeleteOntologyFile) {
-					url.delete();
-				}
-				physicalUri = url.toURI();
-				break;
-			case OWLDB:
-				// OWLDB ontology access
-				physicalUri = URI.create(DB_URI);
-			}
-			final List<OntologyStorageProperties> storageProps = createOwlapiStorageProperties(
-					iri.toURI(), physicalUri, storage);
-			params.put("javax.persistence.provider", EntityManagerFactoryImpl.class.getName());
-			if (cache) {
-				params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "on");
-			} else {
-				params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "off");
-			}
-			/* Set location of the entities (package) */
-			params.put("location", "cz.cvut.kbss.jopa.owlapi");
-			params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
-					OWLAPIPersistenceProvider.class.getName());
-			// params.put(OWLAPIPersistenceProperties.ONTOLOGY_FILE_KEY, url
-			// .getAbsolutePath());
-			params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);
-
-			return Persistence.createEntityManagerFactory("context-name", storageProps, params)
-					.createEntityManager();
-		} catch (UnknownOWLOntologyException e) {
-			log.log(Level.SEVERE, e.getMessage(), e);
-		}
-		return null;
-	}
-
-	private static List<OntologyStorageProperties> createOwlapiStorageProperties(URI ontologyUri,
-			URI physicalUri, Storage storage) {
-		final List<OntologyStorageProperties> props = new ArrayList<OntologyStorageProperties>(1);
 		OntologyStorageProperties p = null;
-		switch (storage) {
+		switch (info.getStorageType()) {
 		case FILE:
-			p = new OntologyStorageProperties(ontologyUri, physicalUri,
-					OntologyConnectorType.OWLAPI);
+			// Ontology stored in a file
+			final File url = new File(dir + "/" + name + ".owl");
+			if (url.exists() && shouldDeleteOntologyFile) {
+				url.delete();
+			}
+			physicalUri = url.toURI();
+			p = new OntologyStorageProperties(iri.toURI(), physicalUri, info.getConnectorType());
 			break;
 		case OWLDB:
-			p = OwldbOntologyStorageProperties.ontologyUri(ontologyUri).physicalUri(physicalUri)
+			// OWLDB ontology access
+			physicalUri = URI.create(DB_URI);
+			p = OwldbOntologyStorageProperties.ontologyUri(iri.toURI()).physicalUri(physicalUri)
 					.connectorType(OntologyConnectorType.OWLAPI).username(DB_USERNAME)
 					.password(DB_PASSWORD).jdbcDriverClass(DB_DRIVER).build();
-			break;
 		}
-		props.add(p);
-		return props;
+		return p;
 	}
 
 	public static Logger getLogger() {

@@ -19,7 +19,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
-import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStorageType;
 
 public class TestDeleteOperations {
 
@@ -52,8 +52,8 @@ public class TestDeleteOperations {
 		}
 		st1.close();
 		con.close();
-		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-delete", Storage.OWLDB,
-				true);
+		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-delete",
+				OwlapiStorageType.OWLDB, true);
 	}
 
 	@AfterClass

@@ -1,0 +1,23 @@
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:JpaIntegration-PersistIntoAllCachedJENA3="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/JpaIntegration-PersistIntoAllCachedJENA3#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:attributes="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#" > 
+  <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/JpaIntegration-PersistIntoAllCachedJENA3#i_OWLClassE">
+    <attributes:E-stringAttribute>entityEStringAttribute</attributes:E-stringAttribute>
+    <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/JpaIntegration-PersistIntoAllCachedJENA3">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Ontology"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+  </rdf:Description>
+</rdf:RDF>

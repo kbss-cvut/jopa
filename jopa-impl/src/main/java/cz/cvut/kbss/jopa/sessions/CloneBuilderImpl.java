@@ -27,6 +27,8 @@ import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 public class CloneBuilderImpl implements CloneBuilder {
+	
+	// TODO Modify with regards to multi context
 
 	private static Logger log = Logger.getLogger(CloneBuilderImpl.class.getName());
 

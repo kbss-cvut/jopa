@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassC;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
-import cz.cvut.kbss.jopa.owlapi.TestEnvironment.Storage;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStorageType;
 
 public class TestUpdateOperations {
 
@@ -79,8 +79,8 @@ public class TestUpdateOperations {
 		}
 		st1.close();
 		con.close();
-		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-update", Storage.OWLDB,
-				true);
+		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-update",
+				OwlapiStorageType.OWLDB, true);
 	}
 
 	@AfterClass

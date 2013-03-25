@@ -84,6 +84,10 @@ public interface EntityManager {
 	 * (taken from javax.persistence.EntityManager)
 	 * 
 	 * Merge the state of the given entity into the current persistence context.
+	 * </p>
+	 * 
+	 * Note that this method merges the entity into the first available ontology
+	 * context.
 	 * 
 	 * @param entity
 	 * @return the instance that the state was merged to
@@ -95,6 +99,24 @@ public interface EntityManager {
 	 *             transaction.
 	 */
 	public <T> T merge(final T entity);
+
+	/**
+	 * Merge the state of the given entity into the current persistence context
+	 * and into the ontology context specified by {@code contextUri}.
+	 * 
+	 * @param entity
+	 *            The entity to merge
+	 * @param contextUri
+	 *            URI of the context to merge the entity into
+	 * @return the instance that the state was merged to
+	 * @throws IllegalArgumentException
+	 *             if instance is not an entity or is a removed entity
+	 * @throws TransactionRequiredException
+	 *             if invoked on a container-managed entity manager of type
+	 *             PersistenceContextType.TRANSACTION and there is no
+	 *             transaction.
+	 */
+	public <T> T merge(final T entity, URI contextUri);
 
 	/**
 	 * Remove the entity instance.
