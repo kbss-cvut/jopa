@@ -2,11 +2,12 @@
 <rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestCascading-testPersistDoubleCascade#"
      xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestCascading-testPersistDoubleCascade"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:new="http://new.owl#"
      xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:attributes="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#"
+     xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#">
     <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestCascading-testPersistDoubleCascade"/>
     
 
@@ -33,15 +34,15 @@
     
 
 
-    <!-- http://hasA -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA -->
 
-    <owl:ObjectProperty rdf:about="http://hasA"/>
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA"/>
     
 
 
-    <!-- http://hasH -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasH -->
 
-    <owl:ObjectProperty rdf:about="http://hasH"/>
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasH"/>
     
 
 
@@ -56,9 +57,9 @@
     
 
 
-    <!-- http://A-stringAttribute -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute -->
 
-    <owl:DatatypeProperty rdf:about="http://A-stringAttribute"/>
+    <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute"/>
     
 
 
@@ -73,21 +74,21 @@
     
 
 
-    <!-- http://new.owl#OWLClassA -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA -->
 
-    <owl:Class rdf:about="http://new.owl#OWLClassA"/>
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
     
 
 
-    <!-- http://new.owl#OWLClassG -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassG -->
 
-    <owl:Class rdf:about="http://new.owl#OWLClassG"/>
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassG"/>
     
 
 
-    <!-- http://new.owl#OWLClassH -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassH -->
 
-    <owl:Class rdf:about="http://new.owl#OWLClassH"/>
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassH"/>
     
 
 
@@ -105,8 +106,8 @@
     <!-- http://testA -->
 
     <owl:NamedIndividual rdf:about="http://testA">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>someStringAttribute</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>someStringAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -114,8 +115,8 @@
     <!-- http://testG -->
 
     <owl:NamedIndividual rdf:about="http://testG">
-        <rdf:type rdf:resource="http://new.owl#OWLClassG"/>
-        <http:hasH rdf:resource="http://testH"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassG"/>
+        <attributes:hasH rdf:resource="http://testH"/>
     </owl:NamedIndividual>
     
 
@@ -123,8 +124,8 @@
     <!-- http://testH -->
 
     <owl:NamedIndividual rdf:about="http://testH">
-        <rdf:type rdf:resource="http://new.owl#OWLClassH"/>
-        <http:hasA rdf:resource="http://testA"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassH"/>
+        <attributes:hasA rdf:resource="http://testA"/>
     </owl:NamedIndividual>
 </rdf:RDF>
 

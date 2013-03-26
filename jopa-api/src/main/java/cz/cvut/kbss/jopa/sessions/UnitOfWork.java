@@ -153,9 +153,12 @@ public interface UnitOfWork extends Session {
 	 * 
 	 * @param object
 	 *            Object
+	 * @param contextUri
+	 *            URI of the ontology context to which the object being
+	 *            registered belongs belongs
 	 * @return Object Returns clone of the registered object
 	 */
-	public Object registerExistingObject(Object object);
+	public Object registerExistingObject(Object object, URI contextUri);
 
 	/**
 	 * Registers the specified new object in this Unit of Work. </p>

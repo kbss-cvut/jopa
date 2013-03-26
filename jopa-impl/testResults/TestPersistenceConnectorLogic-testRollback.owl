@@ -5,7 +5,8 @@
      xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#">
     <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testRollback"/>
     
 
@@ -21,9 +22,9 @@
     
 
 
-    <!-- http://OWLClassB -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB -->
 
-    <owl:Class rdf:about="http://OWLClassB"/>
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB"/>
     
 
 
@@ -41,7 +42,7 @@
     <!-- http://pk -->
 
     <owl:NamedIndividual rdf:about="http://pk">
-        <rdf:type rdf:resource="http://OWLClassB"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB"/>
     </owl:NamedIndividual>
 </rdf:RDF>
 

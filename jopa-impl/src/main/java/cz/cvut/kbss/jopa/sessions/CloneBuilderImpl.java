@@ -156,7 +156,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 					if (uow.isManagedType(attValue.getClass())) {
 						final IRI pk = getIdentifier(attValue);
 						toAssign = visitedEntities.containsKey(pk) ? visitedEntities.get(pk) : uow
-								.registerExistingObject(attValue);
+								.registerExistingObject(attValue, contextUri);
 					} else {
 						toAssign = buildClone(attValue, contextUri);
 					}
@@ -366,6 +366,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 						itOrig.remove();
 					}
 				} else {
+					// TODO: This won't work for singleton collections
 					orig.clear();
 					orig.addAll(clone);
 					return;

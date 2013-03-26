@@ -12,8 +12,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.junit.After;
@@ -28,6 +29,8 @@ import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassB;
 import cz.cvut.kbss.jopa.owlapi.OWLClassD;
 import cz.cvut.kbss.jopa.owlapi.OWLClassE;
+import cz.cvut.kbss.jopa.owlapi.OWLClassG;
+import cz.cvut.kbss.jopa.owlapi.OWLClassH;
 import cz.cvut.kbss.jopa.owlapi.OWLClassI;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
 import cz.cvut.kbss.jopa.owlapi.utils.StorageInfo;
@@ -47,6 +50,9 @@ public class JpaPersistOperationsTest {
 	private static OWLClassE entityE;
 	// Lazy reference to OWLClassA
 	private static OWLClassI entityI;
+	// Two relationships
+	private static OWLClassG entityG;
+	private static OWLClassH entityH;
 
 	private static EntityManager em;
 
@@ -55,7 +61,9 @@ public class JpaPersistOperationsTest {
 		entityA = new OWLClassA();
 		entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
 		entityA.setStringAttribute("entityAStringAttribute");
-		entityA.setTypes(Collections.singleton("OWLClassA"));
+		final Set<String> types = new HashSet<String>();
+		types.add("OWLClassA");
+		entityA.setTypes(types);
 		entityB = new OWLClassB();
 		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
 		entityB.setStringAttribute("entityBStringAttribute");
@@ -67,6 +75,12 @@ public class JpaPersistOperationsTest {
 		entityI = new OWLClassI();
 		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
 		entityI.setOwlClassA(entityA);
+		entityH = new OWLClassH();
+		entityH.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH"));
+		entityH.setOwlClassA(entityA);
+		entityG = new OWLClassG();
+		entityG.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
+		entityG.setOwlClassH(entityH);
 	}
 
 	@Before
@@ -228,6 +242,35 @@ public class JpaPersistOperationsTest {
 		em.persist(entityA, ctx.getUri());
 		fail("This line should not have been reached.");
 		// The transaction is rolled back by tearDown
+	}
+
+	@Test
+	public void testPersistCascadeOverTwo() {
+		LOG.config("Test: persist with cascade over two relationships.");
+		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistCascadeOverTwo",
+				storages, false);
+		final List<Context> contexts = em.getAvailableContexts();
+		assertFalse(contexts.isEmpty());
+		final Context ctx = contexts.get(0);
+		em.getTransaction().begin();
+		em.persist(entityG, ctx.getUri());
+		assertTrue(em.contains(entityG));
+		assertTrue(em.contains(entityH));
+		assertTrue(em.contains(entityA));
+		em.getTransaction().commit();
+		em.clear();
+
+		final OWLClassG resG = em.find(OWLClassG.class, entityG.getUri(), ctx.getUri());
+		assertNotNull(resG);
+		assertNotNull(resG.getOwlClassH());
+		final OWLClassH resH = em.find(OWLClassH.class, entityH.getUri(), ctx.getUri());
+		assertNotNull(resH);
+		assertEquals(resG.getOwlClassH(), resH);
+		assertNotNull(resH.getOwlClassA());
+		final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
+		assertNotNull(resA);
+		assertEquals(resH.getOwlClassA(), resA);
+		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
 	}
 
 	private static void clearDatabase() throws Exception {

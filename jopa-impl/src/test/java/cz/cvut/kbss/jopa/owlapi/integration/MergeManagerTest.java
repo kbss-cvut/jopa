@@ -75,8 +75,8 @@ public class MergeManagerTest {
 		objTwo.setUri(pkTwo);
 		this.uow.getLiveObjectCache().add(CONTEXT_URI, IRI.create(objOne.getUri()), objOne);
 		this.uow.getLiveObjectCache().add(CONTEXT_URI, IRI.create(objTwo.getUri()), objTwo);
-		Object cloneOne = this.uow.registerExistingObject(objOne);
-		Object cloneTwo = this.uow.registerExistingObject(objTwo);
+		Object cloneOne = this.uow.registerExistingObject(objOne, CONTEXT_URI);
+		Object cloneTwo = this.uow.registerExistingObject(objTwo, CONTEXT_URI);
 		this.uow.removeObject(cloneTwo);
 		((OWLClassB) cloneOne).setStringAttribute("testAtt");
 		this.uow.getUowChangeSet().addDeletedObject(objTwo, cloneTwo);

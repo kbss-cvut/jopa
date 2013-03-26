@@ -28,6 +28,8 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 public class UnitOfWorkTest {
 
+	private static final URI CONTEXT_URI = URI.create("http://testContext");
+
 	UnitOfWorkImpl testUOW;
 	EntityManagerImpl em;
 	OWLClassA testObject;
@@ -184,7 +186,12 @@ public class UnitOfWorkTest {
 	public void testIsObjectManaged() {
 		Object o = em.find(testObjectTwo.getClass(), testObjectTwo.getUri());
 		assertTrue(testUOW.isObjectManaged(o));
-		assertFalse(testUOW.isObjectManaged(null));
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testIsObjectManagerNull() {
+		testUOW.isObjectManaged(null);
+		fail("This line should not have been reached.");
 	}
 
 	@Test
@@ -226,7 +233,7 @@ public class UnitOfWorkTest {
 	public void testRegisterExistingObject() {
 		Object o = em.find(testObjectTwo.getClass(), testObjectTwo.getUri());
 		OWLClassB orig = (OWLClassB) this.testUOW.getOriginal(o);
-		OWLClassB clone = (OWLClassB) this.testUOW.registerExistingObject(orig);
+		OWLClassB clone = (OWLClassB) this.testUOW.registerExistingObject(orig, CONTEXT_URI);
 		assertEquals(o, clone);
 	}
 
@@ -302,7 +309,6 @@ public class UnitOfWorkTest {
 	@Test
 	public void testReleaseUnitOfWork() {
 		this.testUOW.release();
-		assertTrue(testUOW.getCloneMapping().isEmpty());
 		assertFalse(testUOW.isActive());
 	}
 

@@ -158,7 +158,7 @@ public class CollectionInstantiationHelper {
 				}
 				Object clone = null;
 				if (builder.getUnitOfWork().getManagedTypes().contains(obj.getClass())) {
-					clone = builder.getUnitOfWork().registerExistingObject(obj);
+					clone = builder.getUnitOfWork().registerExistingObject(obj, contextUri);
 				} else {
 					clone = builder.getCloneBuilder().buildClone(obj, contextUri);
 				}

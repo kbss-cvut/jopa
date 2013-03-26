@@ -2,13 +2,14 @@
 <rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistEntityWithLists#"
      xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistEntityWithLists"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:new="http://new.owl#"
      xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:sequences="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:sequences2="http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#">
+     xmlns:attributes="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#"
+     xmlns:sequences2="http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#"
+     xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#">
     <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistEntityWithLists"/>
     
 
@@ -35,24 +36,6 @@
     
 
 
-    <!-- http://B-hasReferencedSequence -->
-
-    <owl:ObjectProperty rdf:about="http://B-hasReferencedSequence"/>
-    
-
-
-    <!-- http://B-hasSimpleNext -->
-
-    <owl:ObjectProperty rdf:about="http://B-hasSimpleNext"/>
-    
-
-
-    <!-- http://B-hasSimpleSequence -->
-
-    <owl:ObjectProperty rdf:about="http://B-hasSimpleSequence"/>
-    
-
-
     <!-- http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents -->
 
     <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents"/>
@@ -62,6 +45,24 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#hasNext -->
 
     <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#hasNext"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleNext -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleNext"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence"/>
     
 
 
@@ -76,9 +77,9 @@
     
 
 
-    <!-- http://A-stringAttribute -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute -->
 
-    <owl:DatatypeProperty rdf:about="http://A-stringAttribute"/>
+    <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute"/>
     
 
 
@@ -99,15 +100,15 @@
     
 
 
-    <!-- http://new.owl#OWLClassA -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA -->
 
-    <owl:Class rdf:about="http://new.owl#OWLClassA"/>
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
     
 
 
-    <!-- http://new.owl#OWLClassC -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC -->
 
-    <owl:Class rdf:about="http://new.owl#OWLClassC"/>
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC"/>
     
 
 
@@ -125,9 +126,9 @@
     <!-- http://classA0 -->
 
     <owl:NamedIndividual rdf:about="http://classA0">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>StringAttribute1</http:A-stringAttribute>
-        <http:B-hasSimpleNext rdf:resource="http://classA1"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>StringAttribute1</attributes:A-stringAttribute>
+        <attributes:C-hasSimpleNext rdf:resource="http://classA1"/>
     </owl:NamedIndividual>
     
 
@@ -135,9 +136,9 @@
     <!-- http://classA1 -->
 
     <owl:NamedIndividual rdf:about="http://classA1">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>StringAttribute2</http:A-stringAttribute>
-        <http:B-hasSimpleNext rdf:resource="http://classA2"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>StringAttribute2</attributes:A-stringAttribute>
+        <attributes:C-hasSimpleNext rdf:resource="http://classA2"/>
     </owl:NamedIndividual>
     
 
@@ -145,9 +146,9 @@
     <!-- http://classA2 -->
 
     <owl:NamedIndividual rdf:about="http://classA2">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>StringAttribute3</http:A-stringAttribute>
-        <http:B-hasSimpleNext rdf:resource="http://classA3"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>StringAttribute3</attributes:A-stringAttribute>
+        <attributes:C-hasSimpleNext rdf:resource="http://classA3"/>
     </owl:NamedIndividual>
     
 
@@ -155,9 +156,9 @@
     <!-- http://classA3 -->
 
     <owl:NamedIndividual rdf:about="http://classA3">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>StringAttribute4</http:A-stringAttribute>
-        <http:B-hasSimpleNext rdf:resource="http://classA4"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>StringAttribute4</attributes:A-stringAttribute>
+        <attributes:C-hasSimpleNext rdf:resource="http://classA4"/>
     </owl:NamedIndividual>
     
 
@@ -165,9 +166,9 @@
     <!-- http://classA4 -->
 
     <owl:NamedIndividual rdf:about="http://classA4">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>StringAttribute5</http:A-stringAttribute>
-        <http:B-hasSimpleNext rdf:resource="http://classA5"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>StringAttribute5</attributes:A-stringAttribute>
+        <attributes:C-hasSimpleNext rdf:resource="http://classA5"/>
     </owl:NamedIndividual>
     
 
@@ -175,9 +176,9 @@
     <!-- http://classA5 -->
 
     <owl:NamedIndividual rdf:about="http://classA5">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>StringAttribute6</http:A-stringAttribute>
-        <http:B-hasSimpleNext rdf:resource="http://classA6"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>StringAttribute6</attributes:A-stringAttribute>
+        <attributes:C-hasSimpleNext rdf:resource="http://classA6"/>
     </owl:NamedIndividual>
     
 
@@ -185,9 +186,9 @@
     <!-- http://classA6 -->
 
     <owl:NamedIndividual rdf:about="http://classA6">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>StringAttribute7</http:A-stringAttribute>
-        <http:B-hasSimpleNext rdf:resource="http://classA7"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>StringAttribute7</attributes:A-stringAttribute>
+        <attributes:C-hasSimpleNext rdf:resource="http://classA7"/>
     </owl:NamedIndividual>
     
 
@@ -195,9 +196,9 @@
     <!-- http://classA7 -->
 
     <owl:NamedIndividual rdf:about="http://classA7">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>StringAttribute8</http:A-stringAttribute>
-        <http:B-hasSimpleNext rdf:resource="http://classA8"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>StringAttribute8</attributes:A-stringAttribute>
+        <attributes:C-hasSimpleNext rdf:resource="http://classA8"/>
     </owl:NamedIndividual>
     
 
@@ -205,9 +206,9 @@
     <!-- http://classA8 -->
 
     <owl:NamedIndividual rdf:about="http://classA8">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>StringAttribute9</http:A-stringAttribute>
-        <http:B-hasSimpleNext rdf:resource="http://classA9"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>StringAttribute9</attributes:A-stringAttribute>
+        <attributes:C-hasSimpleNext rdf:resource="http://classA9"/>
     </owl:NamedIndividual>
     
 
@@ -215,8 +216,8 @@
     <!-- http://classA9 -->
 
     <owl:NamedIndividual rdf:about="http://classA9">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>StringAttribute10</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>StringAttribute10</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -224,8 +225,8 @@
     <!-- http://refA1 -->
 
     <owl:NamedIndividual rdf:about="http://refA1">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>strAttForRefA_1</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>strAttForRefA_1</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -233,8 +234,8 @@
     <!-- http://refA10 -->
 
     <owl:NamedIndividual rdf:about="http://refA10">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>strAttForRefA_10</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>strAttForRefA_10</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -242,8 +243,8 @@
     <!-- http://refA2 -->
 
     <owl:NamedIndividual rdf:about="http://refA2">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>strAttForRefA_2</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>strAttForRefA_2</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -251,8 +252,8 @@
     <!-- http://refA3 -->
 
     <owl:NamedIndividual rdf:about="http://refA3">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>strAttForRefA_3</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>strAttForRefA_3</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -260,8 +261,8 @@
     <!-- http://refA4 -->
 
     <owl:NamedIndividual rdf:about="http://refA4">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>strAttForRefA_4</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>strAttForRefA_4</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -269,8 +270,8 @@
     <!-- http://refA5 -->
 
     <owl:NamedIndividual rdf:about="http://refA5">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>strAttForRefA_5</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>strAttForRefA_5</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -278,8 +279,8 @@
     <!-- http://refA6 -->
 
     <owl:NamedIndividual rdf:about="http://refA6">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>strAttForRefA_6</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>strAttForRefA_6</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -287,8 +288,8 @@
     <!-- http://refA7 -->
 
     <owl:NamedIndividual rdf:about="http://refA7">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>strAttForRefA_7</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>strAttForRefA_7</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -296,8 +297,8 @@
     <!-- http://refA8 -->
 
     <owl:NamedIndividual rdf:about="http://refA8">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>strAttForRefA_8</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>strAttForRefA_8</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -305,8 +306,8 @@
     <!-- http://refA9 -->
 
     <owl:NamedIndividual rdf:about="http://refA9">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>strAttForRefA_9</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>strAttForRefA_9</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -314,9 +315,9 @@
     <!-- http://testC -->
 
     <owl:NamedIndividual rdf:about="http://testC">
-        <rdf:type rdf:resource="http://new.owl#OWLClassC"/>
-        <http:B-hasSimpleSequence rdf:resource="http://classA0"/>
-        <http:B-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistEntityWithLists#i_null-SEQ"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC"/>
+        <attributes:C-hasSimpleSequence rdf:resource="http://classA0"/>
+        <attributes:C-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistEntityWithLists#i_null-SEQ"/>
     </owl:NamedIndividual>
     
 
