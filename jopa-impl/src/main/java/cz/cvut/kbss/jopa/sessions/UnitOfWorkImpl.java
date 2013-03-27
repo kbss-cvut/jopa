@@ -33,8 +33,6 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
-	// TODO Redesign with regards to multi contexts
-
 	private final Map<Object, Object> cloneMapping;
 	private final Map<Object, Object> cloneToOriginals;
 	private Map<Object, Object> deletedObjects;
@@ -211,9 +209,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		Iterator<?> it = getNewObjectsCloneToOriginal().keySet().iterator();
 		while (it.hasNext()) {
 			Object clone = it.next();
+			final Context c = storageGetEntityContext(clone);
 			Object original = getNewObjectsCloneToOriginal().get(clone);
 			if (original == null) {
-				final Context c = storageGetEntityContext(clone);
 				original = this.cloneBuilder.buildClone(clone, c.getUri());
 			}
 			if (original == null || clone == null) {
@@ -222,7 +220,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 			}
 			getNewObjectsCloneToOriginal().put(clone, original);
 			getNewObjectsOriginalToClone().put(original, clone);
-			ObjectChangeSet oChangeSet = new ObjectChangeSetImpl(original, clone, true, changeSet);
+			ObjectChangeSet oChangeSet = new ObjectChangeSetImpl(original, clone, true, changeSet,
+					c.getUri());
 			changeSet.addNewObjectChangeSet(oChangeSet);
 		}
 	}
@@ -556,7 +555,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
 	private boolean doesEntityExist(Object entity, Object primaryKey, URI context) {
 		assert entity != null;
-		if (cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity)) {
+		assert context != null;
+		if (cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity)
+				&& isInContext(context, entity)) {
 			return true;
 		}
 		if (primaryKey != null) {
@@ -831,6 +832,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 				throw new OWLPersistenceException("The id for entity " + entity
 						+ " is null and it is not specified as \'generated\' ");
 			}
+		}
+		if (context == null) {
+			context = storageGetEntityContext(entity).getUri();
 		}
 		if ((doesEntityExist(entity, id, context) || storageContains(id, context))
 				&& !entity.getClass().isEnum()) {
@@ -1121,13 +1125,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 	}
 
-	void putObjectIntoCache(Object primaryKey, Object entity) {
+	void putObjectIntoCache(Object primaryKey, Object entity, URI contextUri) {
 		cacheManager.acquireWriteLock();
 		try {
-			cacheManager.add(storageConnection.getSaveContextFor(entity).getUri(), primaryKey,
-					entity);
-		} catch (OntoDriverException e) {
-			throw new OWLPersistenceException(e);
+			cacheManager.add(contextUri, primaryKey, entity);
 		} finally {
 			cacheManager.releaseWriteLock();
 		}
@@ -1191,7 +1192,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 				res = new ContextToEntity<T>(context, result);
 			}
 			if (result != null) {
-				putObjectIntoCache(primaryKey, result);
+				putObjectIntoCache(primaryKey, result, context);
 			}
 			return res;
 		} catch (MetamodelNotSetException e) {
