@@ -61,7 +61,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	private ChangeManager changeManager;
 	/**
 	 * This is a shortcut for the second level cache. Performance reasons (to
-	 * prevent server session method call chain.
+	 * prevent server session method call chain).
 	 */
 	protected final CacheManager cacheManager;
 
@@ -631,42 +631,57 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 	}
 
-	/**
-	 * Merge the detached entity into the current persistence context. If the
-	 * object is in the live object cache, the original is taken from there and
-	 * the argument is considered a clone. If the object is not in the live
-	 * object cache, the original is read from ontology.
-	 */
-	public void mergeDetached(Object entity) {
+	@Override
+	public <T> T mergeDetached(T entity) {
 		if (entity == null) {
-			throw new IllegalArgumentException("Null cannot be merged since it is not an entity.");
+			throw new NullPointerException("Null cannot be merged since it is not an entity.");
 		}
-		if (this.contains(entity)) {
-			return;
-		}
-		final IRI iri = getIdentifier(entity);
-		if (iri == null) {
-			throw new OWLPersistenceException("The object is not an ontology entity.");
-		}
+		return mergeDetachedInternal(entity, null);
+	}
 
-		Object orig = null;
-		final Class<?> cls = entity.getClass();
-		ContextToEntity<?> res = getObjectFromCache(null, cls, iri);
-		if (res.entity == null) {
-			res = storageFind(cls, iri, null);
-			if (res.entity == null) {
-				throw new OWLPersistenceException(
-						"The detached object is not in the ontology signature.");
-			}
+	@Override
+	public <T> T mergeDetached(T entity, URI contextUri) {
+		if (entity == null || contextUri == null) {
+			throw new NullPointerException("Null passed to mergeDetached: entity = " + entity
+					+ ", contextUri = " + contextUri);
 		}
-		orig = res.entity;
-		cloneMapping.put(entity, entity);
-		cloneToOriginals.put(entity, orig);
-		checkForCollections(entity);
+		return mergeDetachedInternal(entity, contextUri);
+	}
+
+	private <T> T mergeDetachedInternal(T entity, URI contextUri) {
+		assert entity != null;
+		final IRI iri = getIdentifier(entity);
+		if (!storageContains(iri, contextUri)) {
+			throw new OWLPersistenceException("Entity " + entity + " not found in context "
+					+ contextUri);
+		}
+		if (contextUri == null) {
+			final ContextToEntity<?> c = storageFind(entity.getClass(), iri, null);
+			contextUri = c.contextUri;
+		}
+		// This cast is OK, we just clone the entity instance
+		final T clone = (T) registerExistingObject(entity, contextUri);
+
 		if (isInTransaction()) {
-			persistChangeInTransaction(entity);
+			persistChangeInTransaction(clone);
+		}
+		cacheManager.acquireReadLock();
+		try {
+			if (cacheManager.contains(contextUri, clone.getClass(), iri)) {
+				cacheManager.releaseReadLock();
+				cacheManager.acquireWriteLock();
+				try {
+					cacheManager.evict(contextUri, entity.getClass(), iri);
+					cacheManager.acquireReadLock();
+				} finally {
+					cacheManager.releaseWriteLock();
+				}
+			}
+		} finally {
+			cacheManager.releaseReadLock();
 		}
 		setHasChanges(true);
+		return clone;
 	}
 
 	public Vector<Object> registerAllExistingObjects(Collection<Object> objects) {
@@ -724,7 +739,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		cloneMapping.put(clone, clone);
 		cloneToOriginals.put(clone, object);
 		registerEntityWithContext(clone, this);
-		storageRegisterCloneInConnection(object, clone);
+		storageRegisterCloneInConnection(clone, contextUri);
 		return clone;
 	}
 
@@ -1258,10 +1273,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		}
 	}
 
-	private <T> void storageRegisterCloneInConnection(Object original, Object clone) {
+	private <T> void storageRegisterCloneInConnection(Object clone, URI contextUri) {
+		assert clone != null;
+		assert contextUri != null;
 		try {
-			final Context ctx = storageConnection.getSaveContextFor(original);
-			storageConnection.registerWithContext(clone, ctx.getUri());
+			storageConnection.registerWithContext(clone, contextUri);
 		} catch (OntoDriverException e) {
 			throw new OWLPersistenceException(e);
 		}

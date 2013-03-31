@@ -261,10 +261,11 @@ public class CloneBuilderImpl implements CloneBuilder {
 					continue;
 				}
 				Object origVal = f.get(original);
-				if (origVal != null && this.uow.containsOriginal(origVal)) {
-					this.mergeChangesOnManaged(origVal, change.getNewValue());
-				} else if (origVal != null && containsManagedObjects(origVal)) {
-					this.mergeChangesOnManaged(origVal, change.getNewValue());
+				Object newVal = change.getNewValue();
+				if (origVal != null && newVal != null && this.uow.containsOriginal(origVal)) {
+					this.mergeChangesOnManaged(origVal, newVal);
+				} else if (origVal != null && newVal != null && containsManagedObjects(origVal)) {
+					this.mergeChangesOnManaged(origVal, newVal);
 				} else {
 					// Otherwise we can simply assign the new value
 					f.set(original, change.getNewValue());
@@ -354,6 +355,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 		}
 		Iterator<?> it = clone.iterator();
 		Iterator<?> itOrig = orig.iterator();
+		// TODO: This doesn't work for adding entities into collection
 		if (!orig.isEmpty()) {
 			List<Object> clones = new ArrayList<Object>(clone);
 			while (itOrig.hasNext()) {

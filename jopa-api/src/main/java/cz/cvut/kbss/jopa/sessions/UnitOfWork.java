@@ -72,12 +72,32 @@ public interface UnitOfWork extends Session {
 	public boolean isObjectManaged(Object entity);
 
 	/**
-	 * Merge the specified detached entity into the current persistence context.
+	 * Merge the state of the given entity into the current persistence context.
 	 * 
 	 * @param entity
-	 *            The detached entity.
+	 *            entity instance
+	 * @return the managed instance that the state was merged to
+	 * @throws NullPointerException
+	 *             If {@code entity} is {@code null}
 	 */
-	public void mergeDetached(Object entity);
+	public <T> T mergeDetached(T entity);
+
+	/**
+	 * Merge the state of the given entity into the current persistence
+	 * context.. </p>
+	 * 
+	 * The {@code contextUri} argument specified the ontology context into which
+	 * the detached entity belongs and should be merged.
+	 * 
+	 * @param entity
+	 *            entity instance
+	 * @param contextUri
+	 *            URI of the target ontology context
+	 * @return the managed instance that the state was merged to
+	 * @throws NullPointerException
+	 *             If {@code entity} or {@code contextUri} is {@code null}
+	 */
+	public <T> T mergeDetached(T entity, URI contextUri);
 
 	/**
 	 * Retrieves object with the specified primary key. </p>

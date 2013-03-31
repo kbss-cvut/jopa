@@ -156,6 +156,48 @@ public class JpaRemoveOperationsTest {
 		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
 	}
 
+	@Test
+	public void testRemoveCascade() {
+		LOG.config("Test: remove with cascade.");
+		em = TestEnvironment.getPersistenceConnector("RemoveCascade", storages, false);
+		em.getTransaction().begin();
+		final Context ctx = em.getAvailableContexts().get(em.getAvailableContexts().size() - 1);
+		em.persist(entityH, ctx.getUri());
+		assertTrue(em.contains(entityA));
+		em.getTransaction().commit();
+		em.clear();
+
+		final OWLClassH toRemove = em.find(OWLClassH.class, entityH.getUri(), ctx.getUri());
+		assertNotNull(toRemove);
+		assertNotNull(toRemove.getOwlClassA());
+		assertTrue(em.contains(toRemove.getOwlClassA()));
+		em.getTransaction().begin();
+		em.remove(toRemove);
+		assertFalse(em.contains(toRemove));
+		assertFalse(em.contains(toRemove.getOwlClassA()));
+		em.getTransaction().commit();
+
+		final OWLClassH resH = em.find(OWLClassH.class, entityH.getUri(), ctx.getUri());
+		assertNull(resH);
+		final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
+		assertNull(resA);
+	}
+
+	@Test
+	public void testRemoveBeforeCommit() {
+		LOG.config("Test: persist entity and remove it before transaction commit.");
+		em = TestEnvironment.getPersistenceConnector("RemoveBeforeCommit", storages, true);
+		em.getTransaction().begin();
+		em.persist(entityA);
+		assertTrue(em.contains(entityA));
+		em.remove(entityA);
+		assertFalse(em.contains(entityA));
+		em.getTransaction().commit();
+
+		final OWLClassA res = em.find(OWLClassA.class, entityA.getUri());
+		assertNull(res);
+	}
+
 	private static void clearDatabase() throws Exception {
 		java.sql.Connection con = null;
 		Statement st1 = null;

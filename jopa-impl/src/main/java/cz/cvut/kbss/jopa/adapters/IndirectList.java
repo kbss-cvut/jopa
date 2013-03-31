@@ -51,7 +51,6 @@ public class IndirectList<E> extends IndirectCollection implements List<E> {
 	public void add(int arg0, E arg1) {
 		internalList.add(arg0, arg1);
 		persistChange();
-
 	}
 
 	public boolean addAll(Collection<? extends E> arg0) {
