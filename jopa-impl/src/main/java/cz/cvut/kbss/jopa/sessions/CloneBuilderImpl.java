@@ -30,8 +30,6 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 public class CloneBuilderImpl implements CloneBuilder {
 
-	// TODO Modify with regards to multi context
-
 	private static Logger log = Logger.getLogger(CloneBuilderImpl.class.getName());
 
 	private static final Set<Class<?>> WRAPPER_TYPES = getWrapperTypes();
@@ -262,7 +260,9 @@ public class CloneBuilderImpl implements CloneBuilder {
 				}
 				Object origVal = f.get(original);
 				Object newVal = change.getNewValue();
-				if (origVal != null && newVal != null && this.uow.containsOriginal(origVal)) {
+				if (origVal instanceof Collection) {
+					mergeCollections((Collection<?>) origVal, (Collection<?>) newVal);
+				} else if (origVal != null && newVal != null && this.uow.containsOriginal(origVal)) {
 					this.mergeChangesOnManaged(origVal, newVal);
 				} else if (origVal != null && newVal != null && containsManagedObjects(origVal)) {
 					this.mergeChangesOnManaged(origVal, newVal);
@@ -354,32 +354,36 @@ public class CloneBuilderImpl implements CloneBuilder {
 			return;
 		}
 		Iterator<?> it = clone.iterator();
-		Iterator<?> itOrig = orig.iterator();
-		// TODO: This doesn't work for adding entities into collection
 		if (!orig.isEmpty()) {
-			List<Object> clones = new ArrayList<Object>(clone);
-			while (itOrig.hasNext()) {
-				Object or = itOrig.next();
-				if (uow.containsOriginal(or)) {
-					Object cl = uow.getCloneForOriginal(or);
-					if (clones.contains(cl)) {
-						mergeChangesOnManaged(or, cl);
-					} else {
-						itOrig.remove();
+			if (uow.isManagedType(orig.iterator().next().getClass())) {
+				List<Object> clones = new ArrayList<Object>(clone);
+				final List<Object> toAdd = new ArrayList<Object>(clones.size());
+				final List<Object> toRetain = new ArrayList<Object>(orig.size());
+				while (it.hasNext()) {
+					Object cl = it.next();
+					if (uow.contains(cl)) {
+						Object or = uow.getOriginal(cl);
+						if (orig.contains(or)) {
+							toRetain.add(or);
+						} else {
+							toAdd.add(or);
+						}
 					}
-				} else {
-					// TODO: This won't work for singleton collections
-					orig.clear();
-					orig.addAll(clone);
-					return;
 				}
+				orig.retainAll(toRetain);
+				orig.addAll(toAdd);
+			} else {
+				// TODO: This won't work for singleton collections
+				orig.clear();
+				orig.addAll(clone);
+				return;
 			}
 		} else {
+			// The original collection is empty
 			while (it.hasNext()) {
 				Object cl = it.next();
 				if (uow.contains(cl)) {
 					Object or = uow.getOriginal(cl);
-					mergeChangesOnManaged(or, cl);
 					orig.add(or);
 				} else {
 					orig.add(cl);

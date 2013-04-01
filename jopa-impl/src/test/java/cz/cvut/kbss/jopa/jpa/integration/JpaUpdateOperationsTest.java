@@ -312,7 +312,7 @@ public class JpaUpdateOperationsTest {
 		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), ctx.getUri());
 		assertNotNull(c);
 		assertFalse(c.getSimpleList().isEmpty());
-		em.getTransaction().begin();		
+		em.getTransaction().begin();
 		c.getSimpleList().add(newA);
 		em.persist(newA, ctx.getUri());
 		em.getTransaction().commit();

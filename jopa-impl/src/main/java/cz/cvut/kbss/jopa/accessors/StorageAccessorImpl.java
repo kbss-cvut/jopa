@@ -32,18 +32,14 @@ public class StorageAccessorImpl implements StorageAccessor {
 		this.provider = initPersistenceProvider();
 	}
 
-	public StorageAccessorImpl(Metamodel metamodel,
-			ServerSession serverSession,
+	public StorageAccessorImpl(Metamodel metamodel, ServerSession serverSession,
 			List<OntologyStorageProperties> storageProperties) {
 		this(metamodel, serverSession);
-		initDataSource(storageProperties,
-				Collections.<String, String> emptyMap());
+		initDataSource(storageProperties, Collections.<String, String> emptyMap());
 	}
 
-	public StorageAccessorImpl(Metamodel metamodel,
-			ServerSession serverSession,
-			List<OntologyStorageProperties> storageProps,
-			Map<String, String> properties) {
+	public StorageAccessorImpl(Metamodel metamodel, ServerSession serverSession,
+			List<OntologyStorageProperties> storageProps, Map<String, String> properties) {
 		this(metamodel, serverSession);
 		initDataSource(storageProps, properties);
 	}
