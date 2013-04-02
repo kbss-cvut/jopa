@@ -236,74 +236,36 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
+	@Override
 	public <T> T merge(final T entity) {
-		if (LOG.isLoggable(Level.FINER)) {
-			LOG.config("Merging " + entity);
+		if (entity == null) {
+			throw new NullPointerException();
 		}
-		ensureOpen();
-
-		Class<T> clz = (Class<T>) entity.getClass();
-
-		switch (getState(entity)) {
-		case NEW:
-			// TODO: What does this code really do?
-			try {
-				final T merged = clz.newInstance();
-				new OneLevelCascadeExplorer() {
-					@Override
-					protected void exploreCascaded(Attribute<?, ?> at, Object o)
-							throws IllegalAccessException {
-						at.getJavaField().set(merged, merge(o));
-					}
-
-					@Override
-					protected void exploreNonCascaded(Attribute<?, ?> at, Object o)
-							throws IllegalAccessException {
-						at.getJavaField().set(merged, at.getJavaField().get(o));
-					}
-				};
-				return entity;
-			} catch (InstantiationException e) {
-				throw new OWLPersistenceException(e);
-			} catch (IllegalAccessException e) {
-				throw new OWLPersistenceException(e);
-			}
-		case MANAGED:
-			new OneLevelCascadeExplorer() {
-				@Override
-				protected void exploreCascaded(Attribute<?, ?> at, Object o)
-						throws IllegalAccessException {
-					at.getJavaField().set(entity, merge(o));
-				}
-			}.start(this, entity, CascadeType.MERGE);
-			return entity;
-		case DETACHED:
-			final T merged;
-
-			merged = getCurrentPersistenceContext().mergeDetached(entity);
-
-			new OneLevelCascadeExplorer() {
-				@Override
-				protected void exploreCascaded(Attribute<?, ?> at, Object o)
-						throws IllegalAccessException {
-					at.getJavaField().set(merged, merge(o));
-				}
-
-				@Override
-				protected void exploreNonCascaded(Attribute<?, ?> at, Object o)
-						throws IllegalAccessException {
-					at.getJavaField().set(merged, at.getJavaField().get(o));
-				}
-			};
-			return merged;
-		case REMOVED:
-		default:
-			throw new IllegalArgumentException();
-		}
+		return mergeInternal(entity, null);
 	}
 
 	@Override
 	public <T> T merge(final T entity, final URI contextUri) {
+		if (entity == null || contextUri == null) {
+			throw new NullPointerException();
+		}
+		return mergeInternal(entity, contextUri);
+	}
+
+	/**
+	 * Merges state of the specified entity into the current persistence
+	 * context. </p>
+	 * 
+	 * @param entity
+	 *            Entity instance
+	 * @param contextUri
+	 *            URI of ontology context into which the entity should be
+	 *            merged. Optional parameter, if not specified, the entity is
+	 *            merged into the first ontology context in which it is found
+	 * @return Managed instance of the merged entity
+	 */
+	private <T> T mergeInternal(final T entity, final URI contextUri) {
+		assert entity != null;
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.config("Merging " + entity);
 		}
@@ -313,47 +275,35 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 		switch (getState(entity, contextUri)) {
 		case NEW:
-			// TODO: What does this code really do?
-			try {
-				final T merged = clz.newInstance();
-				new OneLevelCascadeExplorer() {
-					@Override
-					protected void exploreCascaded(Attribute<?, ?> at, Object o)
-							throws IllegalAccessException {
-						at.getJavaField().set(merged, merge(o, contextUri));
-					}
-
-					@Override
-					protected void exploreNonCascaded(Attribute<?, ?> at, Object o)
-							throws IllegalAccessException {
-						at.getJavaField().set(merged, at.getJavaField().get(o));
-					}
-				};
-				return entity;
-			} catch (InstantiationException e) {
-				throw new OWLPersistenceException(e);
-			} catch (IllegalAccessException e) {
-				throw new OWLPersistenceException(e);
+			if (contextUri == null) {
+				getCurrentPersistenceContext().registerNewObject(entity);
+			} else {
+				getCurrentPersistenceContext().registerNewObject(entity, contextUri);
 			}
+			// Intentional case fall-through
 		case MANAGED:
 			new OneLevelCascadeExplorer() {
 				@Override
 				protected void exploreCascaded(Attribute<?, ?> at, Object o)
 						throws IllegalAccessException {
-					at.getJavaField().set(entity, merge(o, contextUri));
+					at.getJavaField().set(entity, mergeInternal(o, contextUri));
 				}
 			}.start(this, entity, CascadeType.MERGE);
 			return entity;
 		case DETACHED:
 			final T merged;
 
-			merged = getCurrentPersistenceContext().mergeDetached(entity, contextUri);
+			if (contextUri == null) {
+				merged = getCurrentPersistenceContext().mergeDetached(entity);
+			} else {
+				merged = getCurrentPersistenceContext().mergeDetached(entity, contextUri);
+			}
 
 			new OneLevelCascadeExplorer() {
 				@Override
 				protected void exploreCascaded(Attribute<?, ?> at, Object o)
 						throws IllegalAccessException {
-					at.getJavaField().set(merged, merge(o, contextUri));
+					at.getJavaField().set(merged, mergeInternal(o, contextUri));
 				}
 
 				@Override
@@ -361,7 +311,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 						throws IllegalAccessException {
 					at.getJavaField().set(merged, at.getJavaField().get(o));
 				}
-			};
+			}.start(this, merged, CascadeType.MERGE);
 			return merged;
 		case REMOVED:
 		default:

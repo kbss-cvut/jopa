@@ -73,6 +73,11 @@
 			<artifactId>pellet-explanation</artifactId>
 			<version>2.3.3</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-ext</artifactId>
+			<version>1.7</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

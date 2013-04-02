@@ -10,6 +10,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.hibernate.HibernateException;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -117,6 +118,12 @@ public final class OntologyProfileChecker {
 					props.getPhysicalURI());
 			o = ((OWLDBOntologyManager) m).loadOntology(IRI.create(props.getOntologyURI()), p);
 		} catch (OWLOntologyCreationException e) {
+			LOG.log(Level.WARNING,
+					"Unable to load ontology from location " + props.getPhysicalURI()
+							+ ". The ontology may not exist yet, setting profile to OWL 2.", e);
+			ctx.setExpressiveness(ContextExpressiveness.OWL2FULL);
+			return;
+		} catch (HibernateException e) {
 			LOG.log(Level.WARNING,
 					"Unable to load ontology from location " + props.getPhysicalURI()
 							+ ". The ontology may not exist yet, setting profile to OWL 2.", e);
