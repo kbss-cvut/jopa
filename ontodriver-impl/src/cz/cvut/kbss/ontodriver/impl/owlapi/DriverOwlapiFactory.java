@@ -7,26 +7,16 @@ import java.util.logging.Level;
 
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.impl.OntoDriverImpl;
+import de.fraunhofer.iitb.owldb.OWLDBManager;
 
 public class DriverOwlapiFactory extends DriverAbstractFactory {
 
 	private static final String JDBC_SCHEME = "jdbc";
-
-	static {
-		try {
-			OntoDriverImpl.registerFactoryClass(OntologyConnectorType.OWLAPI,
-					DriverOwlapiFactory.class);
-		} catch (OntoDriverException e) {
-			LOG.severe("Unable to register " + DriverOwlapiFactory.class
-					+ " at the driver. Message: " + e.getMessage());
-		}
-	}
+	private boolean owldb = false;
 
 	public DriverOwlapiFactory(List<Context> contexts,
 			Map<Context, OntologyStorageProperties> ctxsToProperties, Map<String, String> properties)
@@ -66,6 +56,7 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 		switch (type) {
 		case OWLDB:
 			connector = new OwlapiOwldbStorageConnector(p, properties);
+			this.owldb = true;
 			break;
 		case FILE:
 			connector = new OwlapiFileStorageConnector(p, properties);
@@ -89,6 +80,14 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 			return OwlapiStorageType.OWLDB;
 		} else {
 			return OwlapiStorageType.FILE;
+		}
+	}
+
+	@Override
+	public void close() throws OntoDriverException {
+		super.close();
+		if (owldb) {
+			OWLDBManager.getHibernateProvider().close();
 		}
 	}
 }

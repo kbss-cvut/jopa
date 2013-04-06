@@ -130,7 +130,7 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	 * @throws OntoDriverException
 	 *             If an error during cloning occurs
 	 */
-	OwlapiConnectorDataHolder cloneOntologyData() throws OntoDriverException {
+	public OwlapiConnectorDataHolder cloneOntologyData() throws OntoDriverException {
 		return connector.cloneOntologyData();
 	}
 
@@ -140,7 +140,7 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	 * @return OwlapiConnectorDataHolder
 	 * @throws OntoDriverException
 	 */
-	OwlapiConnectorDataHolder getOntologyData() {
+	public OwlapiConnectorDataHolder getOntologyData() {
 		try {
 			final OwlapiConnectorDataHolder holder = connector.getOntologyDataInOwlapi();
 			this.manager = holder.getOntologyManager();

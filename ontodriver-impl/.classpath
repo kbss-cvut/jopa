@@ -14,5 +14,15 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/home/kidney/Development/Java/JOPA/owldb-2.04/build/owldb-2.04.jar"/>
+	<classpathentry kind="lib" path="/home/kidney/.m2/repository/hibernate/hibernate3/3.6.8.Final/hibernate3-3.6.8.Final.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="hibernate"/>
+			<attribute name="maven.artifactId" value="hibernate3"/>
+			<attribute name="maven.version" value="3.6.8.Final"/>
+			<attribute name="maven.scope" value="compile"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -23,10 +23,7 @@ import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
-import cz.cvut.kbss.ontodriver.StorageConnector;
 import cz.cvut.kbss.ontodriver.StorageManager;
-import cz.cvut.kbss.ontodriver.StorageModule;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.OntoDriverImpl;
 import cz.cvut.kbss.ontodriver.impl.jena.DriverJenaFactory;
 import cz.cvut.kbss.ontodriver.impl.owlapi.DriverOwlapiFactory;
@@ -154,50 +151,5 @@ public class OntoDriverImplTest {
 		@SuppressWarnings("unused")
 		final DriverFactory f = driver.getFactory(null);
 		fail("This line should not have been reached.");
-	}
-
-	@Test(expected = OntoDriverException.class)
-	public void testRegisterFactoryClass() throws Exception {
-		LOG.config("Test: register invalid factory class.");
-		OntoDriverImpl.registerFactoryClass(OntologyConnectorType.OWLAPI, InvalidFactory.class);
-		fail("This line should not have been reached.");
-	}
-
-	private static final class InvalidFactory implements DriverFactory {
-
-		@Override
-		public void close() throws OntoDriverException {
-		}
-
-		@Override
-		public boolean isOpen() {
-			return false;
-		}
-
-		@Override
-		public List<Context> getContexts() {
-			return null;
-		}
-
-		@Override
-		public StorageModule createStorageModule(Context ctx,
-				PersistenceProviderFacade persistenceProvider, boolean autoCommit)
-				throws OntoDriverException {
-			return null;
-		}
-
-		@Override
-		public void releaseStorageModule(StorageModule module) throws OntoDriverException {
-		}
-
-		@Override
-		public StorageConnector createStorageConnector(Context ctx, boolean autoCommit)
-				throws OntoDriverException {
-			return null;
-		}
-
-		@Override
-		public void releaseStorageConnector(StorageConnector connector) throws OntoDriverException {
-		}
 	}
 }

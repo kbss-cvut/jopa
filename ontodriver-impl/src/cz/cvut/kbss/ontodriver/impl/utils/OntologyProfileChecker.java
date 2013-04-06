@@ -79,6 +79,8 @@ public final class OntologyProfileChecker {
 					break;
 				case OWLDB:
 					resolveOwldbProfile(e.getKey(), storageProps, owldbM);
+					OWLDBManager.getHibernateProvider().releaseSessionFactory(owldbM,
+							storageProps.getPhysicalURI().toString());
 					break;
 				}
 				break;

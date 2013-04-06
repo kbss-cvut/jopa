@@ -14,7 +14,7 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
-public class OwlapiStorageModule extends StorageModule {
+public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWrapper {
 
 	private OwlapiStorageConnector connector;
 	private ModuleInternal internal;
@@ -122,7 +122,7 @@ public class OwlapiStorageModule extends StorageModule {
 	 * 
 	 * @return Persistence provider facade
 	 */
-	PersistenceProviderFacade getPersistenceProvider() {
+	public PersistenceProviderFacade getPersistenceProvider() {
 		return persistenceProvider;
 	}
 
@@ -134,7 +134,7 @@ public class OwlapiStorageModule extends StorageModule {
 	 * @throws OntoDriverException
 	 *             If an error during cloning occurs
 	 */
-	OwlapiConnectorDataHolder cloneOntologyData() throws OntoDriverException {
+	public OwlapiConnectorDataHolder cloneOntologyData() throws OntoDriverException {
 		return connector.cloneOntologyData();
 	}
 
@@ -143,7 +143,7 @@ public class OwlapiStorageModule extends StorageModule {
 	 * 
 	 * @return OwlapiConnectorDataHolder
 	 */
-	OwlapiConnectorDataHolder getOntologyData() {
+	public OwlapiConnectorDataHolder getOntologyData() {
 		return connector.getOntologyData();
 	}
 
@@ -152,14 +152,14 @@ public class OwlapiStorageModule extends StorageModule {
 	 * 
 	 * @return primary key number
 	 */
-	int getNewPrimaryKey() {
+	public int getNewPrimaryKey() {
 		return StorageModule.getNewPrimaryKey(context);
 	}
 
 	/**
 	 * Increments the primary key counter for this module's context.
 	 */
-	void incrementPrimaryKeyCounter() {
+	public void incrementPrimaryKeyCounter() {
 		StorageModule.incrementPrimaryKeyCounter(context);
 	}
 }

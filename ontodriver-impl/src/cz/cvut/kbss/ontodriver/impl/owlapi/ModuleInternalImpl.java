@@ -72,14 +72,14 @@ class ModuleInternalImpl implements ModuleInternal {
 	private OWLReasoner reasoner;
 	private String lang;
 
-	private final OwlapiStorageModule storageModule;
+	private final OwlapiModuleWrapper storageModule;
 
 	private List<OWLOntologyChange> changes;
 	private List<OWLOntologyChange> transactionalChanges;
 	private Set<IRI> temporaryIndividuals;
 	private boolean usingOriginalOntology;
 
-	ModuleInternalImpl(OwlapiConnectorDataHolder dataHolder, OwlapiStorageModule storageModule) {
+	ModuleInternalImpl(OwlapiConnectorDataHolder dataHolder, OwlapiModuleWrapper storageModule) {
 		super();
 		assert dataHolder != null;
 		assert storageModule != null;
@@ -210,6 +210,11 @@ class ModuleInternalImpl implements ModuleInternal {
 
 	@Override
 	public void rollback() {
+		reset();
+	}
+
+	@Override
+	public void reset() {
 		this.changes = createList();
 		this.transactionalChanges = createList();
 		this.temporaryIndividuals = new HashSet<IRI>();

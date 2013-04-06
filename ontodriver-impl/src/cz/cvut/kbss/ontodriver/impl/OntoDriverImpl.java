@@ -20,6 +20,7 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInitializationException;
 import cz.cvut.kbss.ontodriver.impl.jena.DriverJenaFactory;
 import cz.cvut.kbss.ontodriver.impl.owlapi.DriverOwlapiFactory;
 import cz.cvut.kbss.ontodriver.impl.utils.OntologyProfileChecker;
@@ -28,7 +29,9 @@ public class OntoDriverImpl implements OntoDriver {
 
 	private static final Logger LOG = Logger.getLogger(OntoDriverImpl.class.getName());
 
-	private static final Map<OntologyConnectorType, Constructor<? extends DriverFactory>> factoryClasses = new HashMap<OntologyConnectorType, Constructor<? extends DriverFactory>>();
+	private static final Map<OntologyConnectorType, Class<? extends DriverFactory>> DEFAULT_FACTORY_CLASSES = initDefaultFactories();
+
+	private final Map<OntologyConnectorType, Constructor<? extends DriverFactory>> factoryClasses;
 
 	protected final Map<String, String> properties;
 	protected final Map<OntologyConnectorType, DriverFactory> factories;
@@ -37,6 +40,7 @@ public class OntoDriverImpl implements OntoDriver {
 
 	protected OntoDriverImpl() {
 		super();
+		this.factoryClasses = new HashMap<OntologyConnectorType, Constructor<? extends DriverFactory>>();
 		this.properties = Collections.emptyMap();
 		this.factories = new HashMap<OntologyConnectorType, DriverFactory>();
 		this.contexts = new ArrayList<Context>();
@@ -47,10 +51,11 @@ public class OntoDriverImpl implements OntoDriver {
 			throw new IllegalArgumentException(
 					"Storage properties cannot be neither null nor empty.");
 		}
+		this.factoryClasses = new HashMap<OntologyConnectorType, Constructor<? extends DriverFactory>>();
 		this.contexts = new ArrayList<Context>(storageProperties.size());
+		this.properties = Collections.emptyMap();
 		final Map<Context, OntologyStorageProperties> contextToProps = resolveContexts(storageProperties);
 		this.factories = initFactories(contextToProps);
-		this.properties = Collections.emptyMap();
 	}
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties,
@@ -62,6 +67,7 @@ public class OntoDriverImpl implements OntoDriver {
 		if (properties == null) {
 			properties = Collections.emptyMap();
 		}
+		this.factoryClasses = new HashMap<OntologyConnectorType, Constructor<? extends DriverFactory>>();
 		this.properties = properties;
 		this.contexts = new ArrayList<Context>(storageProperties.size());
 		final Map<Context, OntologyStorageProperties> contextToProps = resolveContexts(storageProperties);
@@ -129,8 +135,8 @@ public class OntoDriverImpl implements OntoDriver {
 	 */
 	private Map<OntologyConnectorType, DriverFactory> initFactories(
 			Map<Context, OntologyStorageProperties> ctxsToPros) {
+		registerFactoryClasses();
 		final Map<OntologyConnectorType, DriverFactory> facts = new HashMap<OntologyConnectorType, DriverFactory>();
-		addDefaultFactories(facts, ctxsToPros);
 		for (Entry<OntologyConnectorType, Constructor<? extends DriverFactory>> e : factoryClasses
 				.entrySet()) {
 			final Constructor<? extends DriverFactory> c = e.getValue();
@@ -148,27 +154,6 @@ public class OntoDriverImpl implements OntoDriver {
 			}
 		}
 		return facts;
-	}
-
-	/**
-	 * TODO Temporary solution?
-	 * 
-	 * @param map
-	 * @param storageProperties
-	 */
-	private void addDefaultFactories(Map<OntologyConnectorType, DriverFactory> map,
-			Map<Context, OntologyStorageProperties> ctxsToPros) {
-		assert map != null;
-		try {
-			final DriverFactory owlapiFactory = new DriverOwlapiFactory(contexts, ctxsToPros,
-					properties);
-			map.put(OntologyConnectorType.OWLAPI, owlapiFactory);
-			final DriverFactory jenaFactory = new DriverJenaFactory(contexts, ctxsToPros,
-					properties);
-			map.put(OntologyConnectorType.JENA, jenaFactory);
-		} catch (OntoDriverException e) {
-			LOG.severe("Unable to instantiate default driver factories.");
-		}
 	}
 
 	/**
@@ -192,10 +177,10 @@ public class OntoDriverImpl implements OntoDriver {
 	}
 
 	/**
-	 * Registers the specified factory class for the specified connector type.
+	 * Registers factory classes based on properties specified to the driver.
 	 * </p>
 	 * 
-	 * The factory class is expected to have a constructor taking a list of
+	 * Each factory class is expected to have a constructor taking a list of
 	 * {@code Context}s, a map of {@code Context} to
 	 * {@code OntologyStorageProperties} and a map of properties ({@code String}
 	 * to {@code String}) as arguments. If it doesn't an exception is thrown.
@@ -204,28 +189,69 @@ public class OntoDriverImpl implements OntoDriver {
 	 *            Type of connector to associate the factory class with
 	 * @param factoryClass
 	 *            The factory class
-	 * @throws OntoDriverException
-	 *             If the {@code factoryClass} does not have the required
-	 *             constructor
+	 * @throws OntoDriverInitializationException
+	 *             If a specified factory class does not exist or does not have
+	 *             the required constructor
 	 */
-	public static void registerFactoryClass(OntologyConnectorType type,
-			Class<? extends DriverFactory> factoryClass) throws OntoDriverException {
-		if (type == null || factoryClass == null) {
-			throw new NullPointerException();
-		}
-		try {
-			if (!DriverFactory.class.isAssignableFrom(factoryClass)) {
-				throw new OntoDriverException("The class " + factoryClass.getName()
-						+ " is not an implementation of DriverFactory.");
+	private void registerFactoryClasses() throws OntoDriverInitializationException {
+		for (OntologyConnectorType t : OntologyConnectorType.values()) {
+			final String property = t.getProperty();
+			if (properties.containsKey(property)) {
+				// Custom factory class specified, register it for instantiation
+				final String factoryClassName = properties.get(property);
+				if (factoryClassName.isEmpty()) {
+					throw new OntoDriverInitializationException(new IllegalArgumentException(
+							"Factory class name cannot be empty."));
+				}
+				try {
+					// Find the class and check for its type
+					final Class<?> factoryClass = Class.forName(factoryClassName);
+					if (!DriverFactory.class.isAssignableFrom(factoryClass)) {
+						throw new OntoDriverInitializationException(new IllegalArgumentException(
+								"The factory class " + factoryClassName
+										+ " does not implement the DriverFactory interface."));
+					}
+					// This cast is safe thanks to the check above
+					final Constructor<? extends DriverFactory> ctor = (Constructor<? extends DriverFactory>) factoryClass
+							.getConstructor(List.class, Map.class, Map.class);
+					factoryClasses.put(t, ctor);
+				} catch (ClassNotFoundException e) {
+					throw new OntoDriverInitializationException("Class " + factoryClassName
+							+ " not found.", e);
+				} catch (NoSuchMethodException e) {
+					throw new OntoDriverInitializationException("Class " + factoryClassName
+							+ " does not have the required constructor.", e);
+				} catch (SecurityException e) {
+					throw new OntoDriverInitializationException(e);
+				}
+			} else {
+				// If the factory class is not specified, use the default one
+				final Class<? extends DriverFactory> cls = DEFAULT_FACTORY_CLASSES.get(t);
+				try {
+					final Constructor<? extends DriverFactory> ctor = cls.getConstructor(
+							List.class, Map.class, Map.class);
+					factoryClasses.put(t, ctor);
+				} catch (NoSuchMethodException e) {
+					// Shouldn't happen
+					throw new OntoDriverInitializationException(e);
+				} catch (SecurityException e) {
+					// Shouldn't happen
+					throw new OntoDriverInitializationException(e);
+				}
 			}
-			final Constructor<? extends DriverFactory> c = factoryClass.getConstructor(List.class,
-					Map.class, Map.class);
-			factoryClasses.put(type, c);
-		} catch (NoSuchMethodException e) {
-			throw new OntoDriverException("The class " + factoryClass.getName()
-					+ " does not have the required constructor.");
-		} catch (SecurityException e) {
-			throw new OntoDriverException(e);
 		}
+	}
+
+	/**
+	 * Initializes default factory classes which are used when no special
+	 * factory class is specified.
+	 * 
+	 * @return {@code Map}
+	 */
+	private static Map<OntologyConnectorType, Class<? extends DriverFactory>> initDefaultFactories() {
+		final Map<OntologyConnectorType, Class<? extends DriverFactory>> m = new HashMap<OntologyConnectorType, Class<? extends DriverFactory>>();
+		m.put(OntologyConnectorType.OWLAPI, DriverOwlapiFactory.class);
+		m.put(OntologyConnectorType.JENA, DriverJenaFactory.class);
+		return m;
 	}
 }

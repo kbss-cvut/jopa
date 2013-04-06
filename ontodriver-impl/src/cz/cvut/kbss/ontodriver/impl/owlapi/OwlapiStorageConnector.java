@@ -44,6 +44,18 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 
 	private boolean open;
 
+	/**
+	 * Constructor for inheritance. </p>
+	 * 
+	 * Sets only ontology URI.
+	 */
+	protected OwlapiStorageConnector(URI ontologyUri) {
+		if (ontologyUri == null) {
+			throw new NullPointerException();
+		}
+		this.ontologyUri = ontologyUri;
+	}
+
 	public OwlapiStorageConnector(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		this.ontologyUri = storageProperties.getOntologyURI();

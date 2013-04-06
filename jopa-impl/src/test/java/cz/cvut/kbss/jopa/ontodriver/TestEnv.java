@@ -55,11 +55,31 @@ public final class TestEnv {
 	 *            Base for the ontology IRI
 	 * @param storages
 	 *            Description of storages
-	 * @return DataSource
+	 * @return {@code DataSource}
+	 * @see #createDataSource(String, List, Map)
 	 */
 	public static DataSource createDataSource(String baseName, List<StorageInfo> storages) {
+		return createDataSource(baseName, storages, new HashMap<String, String>());
+	}
+
+	/**
+	 * Creates data source with initialized connection to the ontology storages
+	 * defiend by {@code storages}. </p>
+	 * 
+	 * This method takes a map of custom properties which are passed to the data
+	 * source implementation on creation.
+	 * 
+	 * @param baseName
+	 *            Base for the ontology IRI
+	 * @param storages
+	 *            Description of storages
+	 * @param properties
+	 *            Custom properties
+	 * @return {@code DataSource}
+	 */
+	public static DataSource createDataSource(String baseName, List<StorageInfo> storages,
+			Map<String, String> properties) {
 		int i = 1;
-		final Map<String, String> properties = new HashMap<String, String>();
 		final List<OntologyStorageProperties> storageProperties = new ArrayList<OntologyStorageProperties>(
 				storages.size());
 		for (StorageInfo e : storages) {

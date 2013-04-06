@@ -116,4 +116,9 @@ interface ModuleInternal {
 	 * Rolls back all pending changes.
 	 */
 	public void rollback();
+
+	/**
+	 * Resets this internal, causing the working ontology to reload.
+	 */
+	public void reset();
 }

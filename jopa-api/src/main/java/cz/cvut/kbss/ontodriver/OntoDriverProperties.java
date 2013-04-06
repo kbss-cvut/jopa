@@ -15,6 +15,21 @@ public final class OntoDriverProperties {
 	 */
 	public static final String ONTOLOGY_LANGUAGE = "cz.cvut.jopa.lang";
 
+	/**
+	 * Property for setting factory for OWL API based modules and connectors.
+	 * </p>
+	 * 
+	 * If not specified, default factories are used.
+	 */
+	public static final String OWLAPI_DRIVER_FACTORY = "cz.cvut.kbss.ontodriver.owlapi-factory";
+
+	/**
+	 * Property for setting factory for Jena based modules and connectors. </p>
+	 * 
+	 * If not specified, default factories are used.
+	 */
+	public static final String JENA_DRIVER_FACTORY = "cz.cvut.kbss.ontodriver.jena-factory";
+
 	private OntoDriverProperties() {
 		throw new AssertionError();
 	}
