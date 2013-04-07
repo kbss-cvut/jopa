@@ -90,6 +90,16 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 		}
 	}
 
+	@Override
+	protected void reloadOntology() throws OntoDriverException {
+		try {
+			this.workingOntology = ((OWLDBOntologyManager) ontologyManager).loadOntology(
+					IRI.create(ontologyUri), hibernateProperties);
+		} catch (OWLOntologyCreationException e) {
+			throw new OntoDriverException(e);
+		}
+	}
+
 	private void createOntology(IRI ontologyUri, Properties props) throws OntoDriverException {
 		try {
 			OWLOntologyID ontoId = new OWLOntologyID(ontologyUri);

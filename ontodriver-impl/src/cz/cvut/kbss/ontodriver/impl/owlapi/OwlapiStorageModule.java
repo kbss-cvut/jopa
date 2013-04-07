@@ -37,11 +37,13 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 		final List<OWLOntologyChange> changes = internal.commitAndRetrieveChanges();
 		connector.applyChanges(changes);
 		connector.saveWorkingOntology();
+		connector.reload();
 	}
 
 	@Override
 	public void rollback() throws OntoDriverException {
 		ensureOpen();
+		connector.reload();
 		internal.rollback();
 	}
 

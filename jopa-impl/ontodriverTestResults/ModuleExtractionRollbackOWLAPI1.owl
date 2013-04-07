@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/SingleFileContextPersistRelationshipOWLAPI1#"
-     xml:base="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/SingleFileContextPersistRelationshipOWLAPI1"
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/ModuleExtractionRollbackOWLAPI1#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/ModuleExtractionRollbackOWLAPI1"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
@@ -8,7 +8,7 @@
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:attributes="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#"
      xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#">
-    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/SingleFileContextPersistRelationshipOWLAPI1"/>
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/ModuleExtractionRollbackOWLAPI1"/>
     
 
 
@@ -57,6 +57,18 @@
     
 
 
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute -->
+
+    <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute -->
+
+    <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute"/>
+    
+
+
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
@@ -80,9 +92,21 @@
     
 
 
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB"/>
+    
+
+
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD -->
 
     <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE"/>
     
 
 
@@ -107,11 +131,29 @@
     
 
 
+    <!-- http://entityB -->
+
+    <owl:NamedIndividual rdf:about="http://entityB">
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB"/>
+        <attributes:B-stringAttribute>entityBStringAttribute</attributes:B-stringAttribute>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://entityD -->
 
     <owl:NamedIndividual rdf:about="http://entityD">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD"/>
         <attributes:hasA rdf:resource="http://entityA"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/ModuleExtractionRollbackOWLAPI1#i_OWLClassE -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/ModuleExtractionRollbackOWLAPI1#i_OWLClassE">
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE"/>
+        <attributes:E-stringAttribute>entityEStringAttribute</attributes:E-stringAttribute>
     </owl:NamedIndividual>
 </rdf:RDF>
 

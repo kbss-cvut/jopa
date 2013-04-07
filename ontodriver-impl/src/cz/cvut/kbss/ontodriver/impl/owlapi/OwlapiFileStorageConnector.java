@@ -1,11 +1,11 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.io.File;
-import java.net.URI;
 import java.util.Map;
 import java.util.logging.Level;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.io.OWLOntologyCreationIOException;
 import org.semanticweb.owlapi.io.OWLOntologyInputSourceException;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -36,32 +36,42 @@ class OwlapiFileStorageConnector extends OwlapiStorageConnector {
 		this.ontologyManager = OWLManager.createOWLOntologyManager();
 		this.dataFactory = this.ontologyManager.getOWLDataFactory();
 
-		final URI logicalUri = storageProperties.getOntologyURI();
-		final URI physicalUri = storageProperties.getPhysicalURI();
-
 		if (physicalUri != null) {
-			OwlapiUtils.setOntologyManagerIriMapper(ontologyManager, logicalUri, physicalUri);
+			OwlapiUtils.setOntologyManagerIriMapper(ontologyManager, ontologyUri, physicalUri);
 			if (LOG.isLoggable(Level.CONFIG)) {
 				LOG.config("Loading ontology from file: " + physicalUri.toString());
 			}
 			try {
-				this.workingOntology = ontologyManager.loadOntologyFromOntologyDocument(new File(
-						physicalUri));
+				this.workingOntology = ontologyManager.loadOntology(IRI.create(ontologyUri));
 			} catch (OWLOntologyInputSourceException e) {
-				createOntology(logicalUri, physicalUri);
+				createOntology();
+			} catch (OWLOntologyCreationIOException e) {
+				createOntology();
 			} catch (OWLOntologyCreationException e) {
 				throw new OntoDriverException(e);
 			}
 		} else {
-			OwlapiUtils.setOntologyManagerIriMapper(ontologyManager, logicalUri, logicalUri);
+			this.physicalUri = ontologyUri;
+			OwlapiUtils.setOntologyManagerIriMapper(ontologyManager, ontologyUri, ontologyUri);
 			if (LOG.isLoggable(Level.CONFIG)) {
-				LOG.config("Loading ontology from logical URI: " + logicalUri);
+				LOG.config("Loading ontology from logical URI: " + ontologyUri);
 			}
 			try {
-				this.workingOntology = ontologyManager.loadOntology(IRI.create(logicalUri));
+				this.workingOntology = ontologyManager.loadOntology(IRI.create(ontologyUri));
 			} catch (OWLOntologyCreationException e) {
 				throw new OntoDriverException(e);
 			}
+		}
+	}
+
+	@Override
+	protected void reloadOntology() throws OntoDriverException {
+		try {
+			this.workingOntology = ontologyManager.loadOntology(IRI.create(ontologyUri));
+		} catch (OWLOntologyInputSourceException e) {
+			throw new OntoDriverException(e);
+		} catch (OWLOntologyCreationException e) {
+			throw new OntoDriverException(e);
 		}
 	}
 
@@ -72,16 +82,12 @@ class OwlapiFileStorageConnector extends OwlapiStorageConnector {
 	 * leads to an exception caused by non existing ontology at the target
 	 * location.
 	 * 
-	 * @param logicalUri
-	 *            Logical URI of the ontology
-	 * @param physicalUri
-	 *            Physical URI of the ontology storage
 	 * @throws OntoDriverException
 	 *             If the ontology cannot be created
 	 */
-	private void createOntology(URI logicalUri, URI physicalUri) throws OntoDriverException {
+	private void createOntology() throws OntoDriverException {
 		try {
-			final OWLOntology newOnto = ontologyManager.createOntology(IRI.create(logicalUri));
+			final OWLOntology newOnto = ontologyManager.createOntology(IRI.create(ontologyUri));
 			ontologyManager.saveOntology(newOnto, IRI.create(physicalUri));
 			ontologyManager.removeOntology(newOnto);
 			this.workingOntology = this.ontologyManager.loadOntologyFromOntologyDocument(new File(

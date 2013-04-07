@@ -28,11 +28,12 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.StorageConnector;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
-public abstract class OwlapiStorageConnector implements StorageConnector {
+public abstract class OwlapiStorageConnector implements StorageConnector, OwlapiConnector {
 
 	protected static final Logger LOG = Logger.getLogger(OwlapiStorageConnector.class.getName());
 
 	protected final URI ontologyUri;
+	protected URI physicalUri;
 
 	protected OWLReasoner reasoner;
 	protected OWLOntology workingOntology;
@@ -49,16 +50,18 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 	 * 
 	 * Sets only ontology URI.
 	 */
-	protected OwlapiStorageConnector(URI ontologyUri) {
-		if (ontologyUri == null) {
+	protected OwlapiStorageConnector(URI ontologyUri, URI physicalUri) {
+		if (ontologyUri == null || physicalUri == null) {
 			throw new NullPointerException();
 		}
 		this.ontologyUri = ontologyUri;
+		this.physicalUri = physicalUri;
 	}
 
 	public OwlapiStorageConnector(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		this.ontologyUri = storageProperties.getOntologyURI();
+		this.physicalUri = storageProperties.getPhysicalURI();
 		this.language = properties.get(OntoDriverProperties.ONTOLOGY_LANGUAGE);
 		final String reasonerFactoryClass = properties
 				.get(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS);
@@ -72,14 +75,14 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.info("Loading model ontologyURI=" + storageProperties.getOntologyURI()
-					+ ", physicalURI=" + storageProperties.getPhysicalURI() + ".");
+					+ ", physicalURI=" + physicalUri + ".");
 		}
 		try {
 			initConnection(storageProperties);
 
 			this.reasoningOntology = new OWLOntologyMerger(this.ontologyManager)
 					.createMergedOntology(this.ontologyManager, IRI.create("http://temporary"));
-			LOG.info("Ontology " + storageProperties.getOntologyURI() + " succesfully loaded.");
+			LOG.info("Ontology " + ontologyUri + " succesfully loaded.");
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, null, e);
 			throw new OntoDriverException(e);
@@ -107,6 +110,14 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 	@Override
 	public boolean isOpen() {
 		return open;
+	}
+
+	@Override
+	public void reload() throws OntoDriverException {
+		if (LOG.isLoggable(Level.FINER)) {
+			LOG.finer("Reloading ontology from the storage.");
+		}
+		reloadInternal();
 	}
 
 	public OWLReasoner getReasoner() {
@@ -198,7 +209,8 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 	 * @throws OntoDriverException
 	 *             If an error during application of changes occurs
 	 */
-	void applyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
+	@Override
+	public void applyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
 		for (OWLOntologyChange change : changes) {
 			if (change.getOntology().getOntologyID().equals(getWorkingOntology().getOntologyID())) {
 				assert (change instanceof OntologyMutable);
@@ -217,13 +229,28 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 	 * 
 	 * @return Number of class assertions
 	 */
-	int getClassAssertionsCount() {
+	@Override
+	public int getClassAssertionsCount() {
 		return workingOntology.getAxiomCount(AxiomType.CLASS_ASSERTION);
 	}
 
 	private void ensureOpen() {
 		if (!open) {
 			throw new IllegalStateException("The connector is closed.");
+		}
+	}
+
+	private void reloadInternal() throws OntoDriverException {
+		ontologyManager.removeOntology(workingOntology);
+		ontologyManager.removeOntology(reasoningOntology);
+		reloadOntology();
+		try {
+			this.reasoningOntology = new OWLOntologyMerger(this.ontologyManager)
+					.createMergedOntology(ontologyManager, IRI.create("http://temporary"));
+			this.reasoner = reasonerFactory.createReasoner(reasoningOntology);
+			this.reasoner.precomputeInferences(InferenceType.CLASS_ASSERTIONS);
+		} catch (Exception e) {
+			throw new OntoDriverException("Unable to reload the ontology " + ontologyUri, e);
 		}
 	}
 
@@ -236,6 +263,7 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 	 * @throws OntoDriverException
 	 *             If an error during the save operation occurs
 	 */
+	@Override
 	public void saveWorkingOntology() throws OntoDriverException {
 		try {
 			ontologyManager.saveOntology(workingOntology);
@@ -243,6 +271,14 @@ public abstract class OwlapiStorageConnector implements StorageConnector {
 			throw new OntoDriverException(e);
 		}
 	}
+
+	/**
+	 * Reloads the working ontology from the storage. </p>
+	 * 
+	 * @throws OntoDriverException
+	 *             If an error during reload occurs
+	 */
+	protected abstract void reloadOntology() throws OntoDriverException;
 
 	/**
 	 * Initializes connection to the storage. </p>

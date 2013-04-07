@@ -49,7 +49,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * @param <X>
  * 
  */
-public class ModularizingStorageConnector implements StorageConnector {
+public class ModularizingStorageConnector implements StorageConnector, OwlapiConnector {
 
 	private static final Logger LOG = Logger
 			.getLogger(ModularizingStorageConnector.class.getName());
@@ -87,6 +87,12 @@ public class ModularizingStorageConnector implements StorageConnector {
 		return open;
 	}
 
+	@Override
+	public void reload() throws OntoDriverException {
+		// Do nothing
+	}
+
+	@Override
 	public void saveWorkingOntology() throws OntoDriverException {
 		WRITE.lock();
 		try {
@@ -106,6 +112,7 @@ public class ModularizingStorageConnector implements StorageConnector {
 	 * @throws NullPointerException
 	 *             If {@code changes} is {@code null}
 	 */
+	@Override
 	public void applyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
 		if (changes == null) {
 			throw new NullPointerException();
@@ -128,6 +135,7 @@ public class ModularizingStorageConnector implements StorageConnector {
 	 * 
 	 * @return Number of class assertions
 	 */
+	@Override
 	public int getClassAssertionsCount() {
 		READ.lock();
 		try {

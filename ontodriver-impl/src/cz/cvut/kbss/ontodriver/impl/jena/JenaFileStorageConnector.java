@@ -33,12 +33,11 @@ import com.hp.hpl.jena.util.FileManager;
 
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.StorageConnector;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiConnectorDataHolder;
 import cz.cvut.kbss.ontodriver.impl.utils.OntoDriverConstants;
 
-public class JenaFileStorageConnector implements StorageConnector {
+public class JenaFileStorageConnector implements OwlapiBasedJenaConnector {
 
 	private static final Logger LOG = Logger.getLogger(JenaFileStorageConnector.class.getName());
 
@@ -67,7 +66,7 @@ public class JenaFileStorageConnector implements StorageConnector {
 				.containsKey(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS) ? properties
 				.get(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS)
 				: OntoDriverConstants.REASONER_FACTORY_CLASS;
-		initConnector(storageProperties, properties);
+		initConnector();
 		this.open = true;
 	}
 
@@ -87,10 +86,14 @@ public class JenaFileStorageConnector implements StorageConnector {
 		return open;
 	}
 
-	private void initConnector(OntologyStorageProperties storageProperties,
-			Map<String, String> properties) throws OntoDriverException {
-		assert storageProperties != null;
-		assert properties != null;
+	@Override
+	public void reload() throws OntoDriverException {
+		initConnector();
+		// Force reloading of OWL API ontology
+		getOntologyDataInOwlapi();
+	}
+
+	private void initConnector() throws OntoDriverException {
 		this.model = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM);
 
 		final File storageFile = new File(physicalUri);
@@ -110,83 +113,39 @@ public class JenaFileStorageConnector implements StorageConnector {
 			}
 		}
 
-		final InputStream in = FileManager.get()
-				.open(storageProperties.getPhysicalURI().toString());
+		final InputStream in = FileManager.get().open(physicalUri.toString());
 		if (in == null) {
-			throw new OntoDriverException("Unable to load ontology in location "
-					+ storageProperties.getPhysicalURI());
+			throw new OntoDriverException("Unable to load ontology in location " + physicalUri);
 		}
 		model.read(in, null);
 	}
 
-	/**
-	 * Retrieves the Jena ontology model.
-	 * 
-	 * @return Jena model
-	 */
 	public OntModel getModel() {
 		return model;
 	}
 
-	/**
-	 * Retrieves the ontology in OWL API structures. </p>
-	 * 
-	 * This method internally performs a transformation from Jena model to OWL
-	 * API data structures so that OWL API internals can be used to work with
-	 * the data.
-	 * 
-	 * @return {@link OwlapiConnectorDataHolder}
-	 * @throws OntoDriverException
-	 *             If an error during transformation occurs
-	 */
+	@Override
 	public OwlapiConnectorDataHolder getOntologyDataInOwlapi() throws OntoDriverException {
 		final OwlapiConnectorDataHolder holder = transformToOwlapi();
 		return holder;
 	}
 
-	/**
-	 * Returns the number of class assertion axioms in the working ontology.
-	 * 
-	 * @return Number of axioms or 0 if there are none
-	 */
-	public int getClassAssertionAxiomCount() {
+	@Override
+	public int getClassAssertionAxiomsCount() {
 		final int res = workingOntology == null ? 0 : workingOntology
 				.getAxiomCount(AxiomType.CLASS_ASSERTION);
 		return res;
 	}
 
-	/**
-	 * Returns actually the current ontology data, since there is no need to
-	 * clone them because the main ontology is stored as Jena model.
-	 * 
-	 * @return {@code OwlapiConnectorDataHolder}
-	 */
-	public OwlapiConnectorDataHolder cloneOntologyData() {
+	@Override
+	public OwlapiConnectorDataHolder cloneOntologyDataInOwlapi() {
 		final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
 				.ontologyManager(ontologyManager).dataFactory(ontologyManager.getOWLDataFactory())
 				.reasoner(reasoner).workingOntology(workingOntology).build();
 		return holder;
 	}
 
-	/**
-	 * Applies changes made to the {@code ontology} to the Jena ontology model
-	 * held by this connector. </p>
-	 * 
-	 * Note that by calling this method the original model held by this
-	 * connector is closed and recreated from the specified {@code ontology}.
-	 * </p>
-	 * 
-	 * Also note that calling this method does not save the changes into the
-	 * underlying storage, this has to be done by explicitly calling
-	 * {@link #saveOntology()}.
-	 * 
-	 * @param manager
-	 *            {@code OWLOntologyManager}
-	 * @param ontology
-	 *            {@code OWLOntology} containing changes
-	 * @throws OntoDriverException
-	 *             IF an error during OWL API -> Jena transformation occurs
-	 */
+	@Override
 	public void applyOntologyChanges(OWLOntologyManager manager, OWLOntology ontology)
 			throws OntoDriverException {
 		if (manager == null || ontology == null) {
@@ -208,11 +167,7 @@ public class JenaFileStorageConnector implements StorageConnector {
 		}
 	}
 
-	/**
-	 * Outputs the ontology into its physical location.
-	 * 
-	 * @throws OntoDriverException
-	 */
+	@Override
 	public void saveOntology() throws OntoDriverException {
 		assert model != null;
 		if (LOG.isLoggable(Level.FINE)) {

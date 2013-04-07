@@ -1,5 +1,7 @@
 package cz.cvut.kbss.ontodriver;
 
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+
 /**
  * Represents connector to the physical ontology storage, e. g. OWLDB, OWLIM.
  * 
@@ -8,5 +10,11 @@ package cz.cvut.kbss.ontodriver;
  */
 public interface StorageConnector extends Closeable {
 
-	// No methods added (yet?)
+	/**
+	 * Reloads the ontology from the storage.
+	 * 
+	 * @throws OntoDriverException
+	 *             If an error during reloading occurs
+	 */
+	public void reload() throws OntoDriverException;
 }

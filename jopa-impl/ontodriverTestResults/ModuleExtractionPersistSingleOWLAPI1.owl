@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/SingleFileContextPersistRelationshipOWLAPI1#"
-     xml:base="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/SingleFileContextPersistRelationshipOWLAPI1"
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/ModuleExtractionPersistSingleOWLAPI1#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/ModuleExtractionPersistSingleOWLAPI1"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
@@ -8,7 +8,7 @@
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:attributes="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#"
      xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#">
-    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/SingleFileContextPersistRelationshipOWLAPI1"/>
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/ModuleExtractionPersistSingleOWLAPI1"/>
     
 
 
@@ -20,23 +20,6 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
-    
-
-
-    <!-- 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Object Properties
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////
-     -->
-
-    
-
-
-    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA -->
-
-    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA"/>
     
 
 
@@ -80,12 +63,6 @@
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD -->
-
-    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD"/>
-    
-
-
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
@@ -103,15 +80,6 @@
         <rdf:type rdf:resource="JustOneType"/>
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
         <attributes:A-stringAttribute>entityAStringAttribute</attributes:A-stringAttribute>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://entityD -->
-
-    <owl:NamedIndividual rdf:about="http://entityD">
-        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD"/>
-        <attributes:hasA rdf:resource="http://entityA"/>
     </owl:NamedIndividual>
 </rdf:RDF>
 
