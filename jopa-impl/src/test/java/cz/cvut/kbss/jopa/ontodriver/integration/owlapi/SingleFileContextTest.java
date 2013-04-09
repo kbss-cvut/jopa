@@ -57,7 +57,7 @@ public class SingleFileContextTest {
 		entityA = new OWLClassA();
 		entityA.setUri(URI.create("http://entityA"));
 		entityA.setStringAttribute("entityAStringAttribute");
-		entityA.setTypes(Collections.singleton("JustOneType"));
+		entityA.setTypes(Collections.singleton("http://JustOneType"));
 		entityB = new OWLClassB();
 		entityB.setUri(URI.create("http://entityB"));
 		entityB.setStringAttribute("entityBStringAttribute");
@@ -212,8 +212,8 @@ public class SingleFileContextTest {
 		c.persist(pk, entityA);
 		final OWLClassA toChange = c.find(entityA.getClass(), pk);
 		assertNotNull(toChange);
-		final String typeOne = "AddedTypeOne";
-		final String typeTwo = "AddedTypeTwo";
+		final String typeOne = "http://AddedTypeOne";
+		final String typeTwo = "http://AddedTypeTwo";
 		toChange.getTypes().add(typeOne);
 		toChange.getTypes().add(typeTwo);
 		final int size = toChange.getTypes().size();

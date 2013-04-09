@@ -210,16 +210,20 @@ class ModuleInternalImpl implements ModuleInternal {
 
 	@Override
 	public void rollback() {
-		reset();
+		clear();
 	}
 
 	@Override
 	public void reset() {
+		clear();
+		initFromHolder(storageModule.getOntologyData());
+		this.usingOriginalOntology = true;
+	}
+
+	private void clear() {
 		this.changes = createList();
 		this.transactionalChanges = createList();
 		this.temporaryIndividuals = new HashSet<IRI>();
-		initFromHolder(storageModule.getOntologyData());
-		this.usingOriginalOntology = true;
 	}
 
 	/**

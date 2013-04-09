@@ -123,4 +123,9 @@ public class StorageModuleMock extends StorageModule {
 	public boolean isCommited() {
 		return commit;
 	}
+
+	@Override
+	protected void startTransactionIfNotActive() throws OntoDriverException {
+		// do nothing
+	}
 }

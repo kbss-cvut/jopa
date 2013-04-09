@@ -5,7 +5,9 @@
      xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:attributes="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#"
+     xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#">
     <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/MultiFileContextsPersistIntoAllOWLAPI2"/>
     
 
@@ -32,9 +34,9 @@
     
 
 
-    <!-- http://B-stringAttribute -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute -->
 
-    <owl:DatatypeProperty rdf:about="http://B-stringAttribute"/>
+    <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute"/>
     
 
 
@@ -49,9 +51,9 @@
     
 
 
-    <!-- http://OWLClassB -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB -->
 
-    <owl:Class rdf:about="http://OWLClassB"/>
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB"/>
     
 
 
@@ -69,8 +71,8 @@
     <!-- http://entityB -->
 
     <owl:NamedIndividual rdf:about="http://entityB">
-        <rdf:type rdf:resource="http://OWLClassB"/>
-        <http:B-stringAttribute>entityBStringAttribute</http:B-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB"/>
+        <attributes:B-stringAttribute>entityBStringAttribute</attributes:B-stringAttribute>
     </owl:NamedIndividual>
 </rdf:RDF>
 

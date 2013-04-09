@@ -302,8 +302,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		this.uowChangeSet = null;
 		if (shouldClearCacheAfterCommit) {
 			cacheManager.acquireWriteLock();
-			cacheManager.evictAll();
-			cacheManager.releaseWriteLock();
+			try {
+				cacheManager.evictAll();
+			} finally {
+				cacheManager.releaseWriteLock();
+			}
 			this.shouldReleaseAfterCommit = true;
 		}
 	}

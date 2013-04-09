@@ -62,7 +62,7 @@ public class JpaPersistOperationsTest {
 		entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
 		entityA.setStringAttribute("entityAStringAttribute");
 		final Set<String> types = new HashSet<String>();
-		types.add("OWLClassA");
+		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
 		entityA.setTypes(types);
 		entityB = new OWLClassB();
 		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));

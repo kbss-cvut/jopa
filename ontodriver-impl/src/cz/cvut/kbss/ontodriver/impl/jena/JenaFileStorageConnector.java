@@ -66,7 +66,7 @@ public class JenaFileStorageConnector implements OwlapiBasedJenaConnector {
 				.containsKey(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS) ? properties
 				.get(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS)
 				: OntoDriverConstants.REASONER_FACTORY_CLASS;
-		initConnector();
+		this.initConnector();
 		this.open = true;
 	}
 
@@ -116,6 +116,14 @@ public class JenaFileStorageConnector implements OwlapiBasedJenaConnector {
 		final InputStream in = FileManager.get().open(physicalUri.toString());
 		if (in == null) {
 			throw new OntoDriverException("Unable to load ontology in location " + physicalUri);
+		}
+		try {
+			if (in.available() == 0) {
+				// The file is empty
+				return;
+			}
+		} catch (IOException e) {
+			throw new OntoDriverException(e);
 		}
 		model.read(in, null);
 	}

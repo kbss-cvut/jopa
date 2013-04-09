@@ -22,8 +22,9 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 
 	private OwlapiConnectorDataHolder data;
 
-	public CachingOwlapiStorageModule(Context context, PersistenceProviderFacade persistenceProvider,
-			DriverFactory factory) throws OntoDriverException {
+	public CachingOwlapiStorageModule(Context context,
+			PersistenceProviderFacade persistenceProvider, DriverFactory factory)
+			throws OntoDriverException {
 		super(context, persistenceProvider, factory);
 	}
 
@@ -37,17 +38,19 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	@Override
 	public void commit() throws OntoDriverException {
 		ensureOpen();
+		ensureTransactionActive();
+		this.transaction = TransactionState.COMMIT;
 		final List<OWLOntologyChange> changes = internal.commitAndRetrieveChanges();
 		connector.applyChanges(changes);
 		connector.saveWorkingOntology();
-		// Necessary to maintain up to-date data
-		internal.reset();
+		this.transaction = TransactionState.NO;
 	}
 
 	@Override
 	public void rollback() throws OntoDriverException {
 		ensureOpen();
 		internal.rollback();
+		this.transaction = TransactionState.NO;
 	}
 
 	@Override
@@ -63,6 +66,7 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	@Override
 	public boolean contains(Object primaryKey) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (primaryKey == null) {
 			throw new NullPointerException("Null passed to contains: primaryKey = " + primaryKey);
 		}
@@ -72,6 +76,7 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	@Override
 	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (cls == null || primaryKey == null) {
 			throw new NullPointerException("Null passed to find: cls = " + cls + ", primaryKey = "
 					+ primaryKey);
@@ -82,6 +87,7 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	@Override
 	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (entity == null || field == null) {
 			throw new NullPointerException("Null passed to loadFieldValues: entity = " + entity
 					+ ", fieldName = " + field);
@@ -92,6 +98,7 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	@Override
 	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (primaryKey == null || entity == null) {
 			throw new NullPointerException("Null passed to merge: primaryKey = " + primaryKey
 					+ ", entity = " + entity);
@@ -102,6 +109,7 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	@Override
 	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (entity == null) {
 			throw new NullPointerException("Null passed to persist: entity = " + entity);
 		}
@@ -111,6 +119,7 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	@Override
 	public void remove(Object primaryKey) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (primaryKey == null) {
 			throw new NullPointerException("Null passed to remove: primaryKey = " + primaryKey);
 		}
@@ -152,5 +161,15 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	@Override
 	public void incrementPrimaryKeyCounter() {
 		StorageModule.incrementPrimaryKeyCounter(context);
+	}
+
+	@Override
+	protected void startTransactionIfNotActive() throws OntoDriverException {
+		if (transaction == TransactionState.ACTIVE) {
+			return;
+		}
+		connector.reload();
+		internal.reset();
+		this.transaction = TransactionState.ACTIVE;
 	}
 }

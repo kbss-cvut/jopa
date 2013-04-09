@@ -58,7 +58,7 @@ public class JpaRetrieveOperationsTest {
 		entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
 		entityA.setStringAttribute("entityAStringAttribute");
 		final Set<String> types = new HashSet<String>();
-		types.add("OWLClassA");
+		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
 		entityA.setTypes(types);
 		entityD = new OWLClassD();
 		entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));

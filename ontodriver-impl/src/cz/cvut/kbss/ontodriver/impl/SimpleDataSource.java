@@ -56,21 +56,17 @@ public class SimpleDataSource implements DataSource {
 		throw new UnsupportedOperationException();
 	}
 
-	public Connection getConnection(
-			PersistenceProviderFacade persistenceProvider)
+	public Connection getConnection(PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException {
 		return createConnection(persistenceProvider);
 	}
 
-	private Connection createConnection(
-			PersistenceProviderFacade persistenceProvider)
+	private Connection createConnection(PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException {
-		final StorageManager sm = driver
-				.acquireStorageManager(persistenceProvider);
+		final StorageManager sm = driver.acquireStorageManager(persistenceProvider);
 		final Connection conn = new ConnectionImpl(sm);
-		final String strAutoCommit = properties
-				.get(OntoDriverProperties.CONNECTION_AUTO_COMMIT);
-		boolean autoCommit = false;
+		final String strAutoCommit = properties.get(OntoDriverProperties.CONNECTION_AUTO_COMMIT);
+		boolean autoCommit = true;
 		if (strAutoCommit != null) {
 			autoCommit = Boolean.parseBoolean(strAutoCommit);
 		}

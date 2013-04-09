@@ -1,7 +1,7 @@
 <rdf:RDF
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:jopa-tests="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/"
     xmlns:owl="http://www.w3.org/2002/07/owl#"
-    xmlns:j.0="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/"
     xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
     xmlns="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/MixedMultiContextsLoadFieldJENA3#"

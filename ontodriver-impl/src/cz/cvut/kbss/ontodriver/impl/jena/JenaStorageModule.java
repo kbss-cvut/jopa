@@ -77,4 +77,10 @@ public class JenaStorageModule extends StorageModule {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	protected void startTransactionIfNotActive() throws OntoDriverException {
+		// TODO Auto-generated method stub
+		
+	}
 }

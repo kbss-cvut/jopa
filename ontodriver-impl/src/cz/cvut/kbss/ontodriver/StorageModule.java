@@ -21,6 +21,16 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 public abstract class StorageModule implements Transactional {
 
 	/**
+	 * Denotes in which transactional state this module currently is.
+	 * 
+	 * @author kidney
+	 * 
+	 */
+	public static enum TransactionState {
+		NO, ACTIVE, COMMIT
+	};
+
+	/**
 	 * Counters that increment with each inserted entity so that newly generated
 	 * primary keys are unique
 	 */
@@ -34,6 +44,7 @@ public abstract class StorageModule implements Transactional {
 	protected final PersistenceProviderFacade persistenceProvider;
 	/** True if this module is open */
 	protected boolean open;
+	protected TransactionState transaction;
 
 	public StorageModule(Context context, PersistenceProviderFacade persistenceProvider,
 			DriverFactory factory) throws OntoDriverException {
@@ -51,11 +62,13 @@ public abstract class StorageModule implements Transactional {
 		this.factory = factory;
 		initialize();
 		this.open = true;
+		this.transaction = TransactionState.NO;
 	}
 
 	@Override
 	public void close() throws OntoDriverException {
 		this.open = false;
+		this.transaction = TransactionState.NO;
 	}
 
 	/**
@@ -202,6 +215,17 @@ public abstract class StorageModule implements Transactional {
 	public abstract ResultSet executeStatement(Statement statement) throws OntoDriverException;
 
 	/**
+	 * Starts an internal transaction if one is not already active. </p>
+	 * 
+	 * When an internal transaction is started an ontology snapshot should be
+	 * created and used during the transaction.
+	 * 
+	 * @throws OntoDriverException
+	 *             If an error during transaction start occurs
+	 */
+	protected abstract void startTransactionIfNotActive() throws OntoDriverException;
+
+	/**
 	 * Ensures that this module is in valid state.
 	 * 
 	 * @throws OntoDriverException
@@ -211,6 +235,19 @@ public abstract class StorageModule implements Transactional {
 		if (!open) {
 			throw new OntoDriverException(
 					new IllegalStateException("The storage module is closed."));
+		}
+	}
+
+	/**
+	 * Ensures that an internal transaction is active.
+	 * 
+	 * @throws OntoDriverException
+	 *             If transaction is not active
+	 */
+	protected void ensureTransactionActive() throws OntoDriverException {
+		if (transaction != TransactionState.ACTIVE) {
+			throw new OntoDriverException(new IllegalStateException(
+					"No internal transaction is active!"));
 		}
 	}
 

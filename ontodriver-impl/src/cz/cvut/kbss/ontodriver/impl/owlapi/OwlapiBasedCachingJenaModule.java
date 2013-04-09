@@ -34,15 +34,19 @@ public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 	@Override
 	public void commit() throws OntoDriverException {
 		ensureOpen();
+		ensureTransactionActive();
+		this.transaction = TransactionState.COMMIT;
 		moduleInternal.commitAndRetrieveChanges();
 		connector.applyOntologyChanges(data.getOntologyManager(), data.getWorkingOntology());
 		connector.saveOntology();
+		this.transaction = TransactionState.NO;
 	}
 
 	@Override
 	public void rollback() throws OntoDriverException {
 		ensureOpen();
 		moduleInternal.rollback();
+		this.transaction = TransactionState.NO;
 	}
 
 	@Override
@@ -59,6 +63,7 @@ public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 	@Override
 	public boolean contains(Object primaryKey) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (primaryKey == null) {
 			throw new NullPointerException("Null passed to contains: primaryKey = " + primaryKey);
 		}
@@ -68,6 +73,7 @@ public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 	@Override
 	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (cls == null || primaryKey == null) {
 			throw new NullPointerException("Null passed to find: cls = " + cls + ", primaryKey = "
 					+ primaryKey);
@@ -78,6 +84,7 @@ public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 	@Override
 	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (entity == null || field == null) {
 			throw new NullPointerException("Null passed to loadFieldValues: entity = " + entity
 					+ ", fieldName = " + field);
@@ -88,6 +95,7 @@ public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 	@Override
 	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (primaryKey == null || entity == null) {
 			throw new NullPointerException("Null passed to merge: primaryKey = " + primaryKey
 					+ ", entity = " + entity);
@@ -98,6 +106,7 @@ public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 	@Override
 	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (entity == null) {
 			throw new NullPointerException("Null passed to persist: entity = " + entity);
 		}
@@ -107,6 +116,7 @@ public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 	@Override
 	public void remove(Object primaryKey) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (primaryKey == null) {
 			throw new NullPointerException("Null passed to remove: primaryKey = " + primaryKey);
 		}
@@ -144,5 +154,15 @@ public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 		} catch (OntoDriverException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	protected void startTransactionIfNotActive() throws OntoDriverException {
+		if (transaction == TransactionState.ACTIVE) {
+			return;
+		}
+		connector.reload();
+		moduleInternal.reset();
+		this.transaction = TransactionState.ACTIVE;
 	}
 }

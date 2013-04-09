@@ -47,7 +47,9 @@ public class StorageAccessorImpl implements StorageAccessor {
 	@Override
 	public synchronized Connection acquireConnection() {
 		try {
-			return dataSource.getConnection(provider);
+			final Connection conn = dataSource.getConnection(provider);
+			conn.setAutoCommit(false);
+			return conn;
 		} catch (OntoDriverException e) {
 			throw new OWLPersistenceException(e);
 		}

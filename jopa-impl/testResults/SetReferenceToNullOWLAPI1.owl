@@ -3,6 +3,7 @@
      xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/SetReferenceToNullOWLAPI1"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:tests="http://krizik.felk.cvut.cz/ontologies/jopa/tests/"
+     xmlns:jopa-tests="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -20,6 +21,23 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA"/>
     
 
 
@@ -51,9 +69,9 @@
     
 
 
-    <!-- OWLClassA -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/OWLClassA -->
 
-    <owl:Class rdf:about="OWLClassA"/>
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/OWLClassA"/>
     
 
 
@@ -83,7 +101,7 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA -->
 
     <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA">
-        <rdf:type rdf:resource="OWLClassA"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/OWLClassA"/>
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
         <attributes:A-stringAttribute>entityAStringAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>

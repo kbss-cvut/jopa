@@ -126,9 +126,9 @@ public final class OntologyProfileChecker {
 			ctx.setExpressiveness(ContextExpressiveness.OWL2FULL);
 			return;
 		} catch (HibernateException e) {
-			LOG.log(Level.WARNING,
-					"Unable to load ontology from location " + props.getPhysicalURI()
-							+ ". The ontology may not exist yet, setting profile to OWL 2.", e);
+			LOG.warning("Unable to load ontology from location " + props.getPhysicalURI()
+					+ ". The ontology may not exist yet, setting profile to OWL 2.");
+			LOG.config("Exception message: " + e.getMessage());
 			ctx.setExpressiveness(ContextExpressiveness.OWL2FULL);
 			return;
 		}

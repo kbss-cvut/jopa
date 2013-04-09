@@ -174,9 +174,9 @@ public class JenaSingleFileContextTest {
 		final OWLClassA a = c.find(entityA.getClass(), uriA);
 		assertNotNull(a);
 		final Set<String> types = new HashSet<String>();
-		types.add("TOne");
-		types.add("TTwo");
-		types.add("TThree");
+		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/TOne");
+		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/TTwo");
+		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/TThree");
 		a.setTypes(types);
 		c.merge(uriA, a);
 		final OWLClassD d = c.find(entityD.getClass(), uriD);

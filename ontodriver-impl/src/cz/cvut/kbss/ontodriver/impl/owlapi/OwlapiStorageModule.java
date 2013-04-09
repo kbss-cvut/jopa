@@ -34,17 +34,19 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 	@Override
 	public void commit() throws OntoDriverException {
 		ensureOpen();
+		ensureTransactionActive();
+		this.transaction = TransactionState.COMMIT;
 		final List<OWLOntologyChange> changes = internal.commitAndRetrieveChanges();
 		connector.applyChanges(changes);
 		connector.saveWorkingOntology();
-		connector.reload();
+		this.transaction = TransactionState.NO;
 	}
 
 	@Override
 	public void rollback() throws OntoDriverException {
 		ensureOpen();
-		connector.reload();
 		internal.rollback();
+		this.transaction = TransactionState.NO;
 	}
 
 	@Override
@@ -59,6 +61,7 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 	@Override
 	public boolean contains(Object primaryKey) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (primaryKey == null) {
 			throw new NullPointerException("Null passed to contains: primaryKey = " + primaryKey);
 		}
@@ -68,6 +71,7 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 	@Override
 	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (cls == null || primaryKey == null) {
 			throw new NullPointerException("Null passed to find: cls = " + cls + ", primaryKey = "
 					+ primaryKey);
@@ -78,6 +82,7 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 	@Override
 	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (entity == null || field == null) {
 			throw new NullPointerException("Null passed to loadFieldValues: entity = " + entity
 					+ ", fieldName = " + field);
@@ -88,6 +93,7 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 	@Override
 	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (primaryKey == null || entity == null) {
 			throw new NullPointerException("Null passed to merge: primaryKey = " + primaryKey
 					+ ", entity = " + entity);
@@ -98,6 +104,7 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 	@Override
 	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (entity == null) {
 			throw new NullPointerException("Null passed to persist: entity = " + entity);
 		}
@@ -107,6 +114,7 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 	@Override
 	public void remove(Object primaryKey) throws OntoDriverException {
 		ensureOpen();
+		startTransactionIfNotActive();
 		if (primaryKey == null) {
 			throw new NullPointerException("Null passed to remove: primaryKey = " + primaryKey);
 		}
@@ -163,5 +171,15 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 	 */
 	public void incrementPrimaryKeyCounter() {
 		StorageModule.incrementPrimaryKeyCounter(context);
+	}
+
+	@Override
+	protected void startTransactionIfNotActive() throws OntoDriverException {
+		if (transaction == TransactionState.ACTIVE) {
+			return;
+		}
+		connector.reload();
+		internal.reset();
+		this.transaction = TransactionState.ACTIVE;
 	}
 }
