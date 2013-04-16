@@ -1867,14 +1867,14 @@ class ModuleInternalImpl implements ModuleInternal {
 
 	private IRI generatePrimaryKey(Object entity, String name) {
 		assert entity != null;
-		final String base = workingOntology.getOntologyID().getOntologyIRI().toString() + "#i_"
-				+ name;
-		IRI iri = IRI.create(base);
-		int i = 0;
-		while (workingOntology.containsIndividualInSignature(iri, true)) {
-			storageModule.getNewPrimaryKey();
-			iri = IRI.create(base + "_" + i);
-		}
+		IRI iri;
+		int i;
+		do {
+			i = storageModule.getNewPrimaryKey();
+			final String base = workingOntology.getOntologyID().getOntologyIRI().toString() + "#"
+					+ name + "_";
+			iri = IRI.create(base + i);
+		} while (workingOntology.containsIndividualInSignature(iri, true));
 		return iri;
 	}
 }

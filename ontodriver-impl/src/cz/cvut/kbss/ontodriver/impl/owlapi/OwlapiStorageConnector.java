@@ -220,6 +220,7 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 		try {
 			getOntologyManager().applyChanges(changes);
 		} catch (OWLOntologyRenameException e) {
+			reload();
 			throw new OntoDriverException(e);
 		}
 	}

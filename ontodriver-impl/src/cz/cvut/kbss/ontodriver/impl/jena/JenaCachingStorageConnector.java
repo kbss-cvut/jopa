@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.impl.jena;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -10,6 +11,7 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
@@ -97,14 +99,13 @@ public class JenaCachingStorageConnector implements OwlapiBasedJenaConnector {
 	}
 
 	@Override
-	public void applyOntologyChanges(OWLOntologyManager manager, OWLOntology ontology)
-			throws OntoDriverException {
-		if (manager == null || ontology == null) {
+	public void applyOntologyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
+		if (changes == null) {
 			throw new NullPointerException();
 		}
 		WRITE.lock();
 		try {
-			connector.applyOntologyChanges(manager, ontology);
+			connector.applyOntologyChanges(changes);
 		} finally {
 			WRITE.unlock();
 		}

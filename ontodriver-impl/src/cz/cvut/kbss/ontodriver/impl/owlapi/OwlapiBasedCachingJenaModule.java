@@ -1,7 +1,10 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
@@ -36,8 +39,8 @@ public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 		ensureOpen();
 		ensureTransactionActive();
 		this.transaction = TransactionState.COMMIT;
-		moduleInternal.commitAndRetrieveChanges();
-		connector.applyOntologyChanges(data.getOntologyManager(), data.getWorkingOntology());
+		final List<OWLOntologyChange> changes = moduleInternal.commitAndRetrieveChanges();
+		connector.applyOntologyChanges(changes);
 		connector.saveOntology();
 		this.transaction = TransactionState.NO;
 	}

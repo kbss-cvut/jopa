@@ -1,7 +1,8 @@
 package cz.cvut.kbss.ontodriver.impl.jena;
 
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import java.util.List;
+
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import cz.cvut.kbss.ontodriver.StorageConnector;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -55,15 +56,14 @@ public interface OwlapiBasedJenaConnector extends StorageConnector {
 	 * underlying storage, this has to be done by explicitly calling
 	 * {@link #saveOntology()}.
 	 * 
-	 * @param manager
-	 *            {@code OWLOntologyManager}
-	 * @param ontology
-	 *            {@code OWLOntology} containing changes
+	 * @param changes
+	 *            The changes to apply
 	 * @throws OntoDriverException
 	 *             IF an error during OWL API -> Jena transformation occurs
+	 * @throws NullPointerException
+	 *             If {@code changes} is {@code null}
 	 */
-	public void applyOntologyChanges(OWLOntologyManager manager, OWLOntology ontology)
-			throws OntoDriverException;
+	public void applyOntologyChanges(List<OWLOntologyChange> changes) throws OntoDriverException;
 
 	/**
 	 * Outputs the ontology into its physical location.

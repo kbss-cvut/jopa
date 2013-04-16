@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +19,7 @@ import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
 import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyFormat;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
@@ -34,6 +36,7 @@ import com.hp.hpl.jena.util.FileManager;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OntologyMutable;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiConnectorDataHolder;
 import cz.cvut.kbss.ontodriver.impl.utils.OntoDriverConstants;
 
@@ -57,8 +60,8 @@ public class JenaFileStorageConnector implements OwlapiBasedJenaConnector {
 	public JenaFileStorageConnector(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		super();
-		if (storageProperties == null) {
-			throw new NullPointerException("StorageProperties cannot be null.");
+		if (storageProperties == null || properties == null) {
+			throw new NullPointerException("Neither StorageProperties nor properties can be null.");
 		}
 		this.ontologyUri = storageProperties.getOntologyURI();
 		this.physicalUri = storageProperties.getPhysicalURI();
@@ -154,16 +157,28 @@ public class JenaFileStorageConnector implements OwlapiBasedJenaConnector {
 	}
 
 	@Override
-	public void applyOntologyChanges(OWLOntologyManager manager, OWLOntology ontology)
-			throws OntoDriverException {
-		if (manager == null || ontology == null) {
+	public void applyOntologyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
+		if (changes == null) {
 			throw new NullPointerException();
 		}
+		if (changes.isEmpty()) {
+			return;
+		}
+		assert ontologyManager != null;
+		assert workingOntology != null;
 		try {
+			for (OWLOntologyChange change : changes) {
+				if (change.getOntology().getOntologyID().equals(workingOntology.getOntologyID())) {
+					assert (change instanceof OntologyMutable);
+					((OntologyMutable) change).setOntology(workingOntology);
+				}
+			}
+			ontologyManager.applyChanges(changes);
+
 			final OWLOntologyFormat format = new RDFXMLOntologyFormat();
-			manager.setOntologyFormat(ontology, format);
+			ontologyManager.setOntologyFormat(workingOntology, format);
 			final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			manager.saveOntology(ontology, format, bos);
+			ontologyManager.saveOntology(workingOntology, format, bos);
 
 			final ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
 			model.close();
@@ -171,6 +186,7 @@ public class JenaFileStorageConnector implements OwlapiBasedJenaConnector {
 			model.read(bis, null);
 		} catch (OWLOntologyStorageException e) {
 			LOG.log(Level.SEVERE, "Unable to transform OWL API ontology to Jena.", e);
+			reload();
 			throw new OntoDriverException(e);
 		}
 	}

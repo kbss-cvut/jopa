@@ -51,6 +51,7 @@ public class CachingConnectorsTest {
 	private static DataSource ds;
 	private static PersistenceProviderFacade facade;
 	private static Connection c;
+	private static Connection cTwo;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -76,6 +77,10 @@ public class CachingConnectorsTest {
 	public void tearDown() throws Exception {
 		if (c != null) {
 			c.close();
+		}
+		if (cTwo != null) {
+			cTwo.close();
+			cTwo = null;
 		}
 		entityE.setUri(null);
 	}
@@ -107,7 +112,7 @@ public class CachingConnectorsTest {
 	public void testConcurrentConnectionsPersist() throws Exception {
 		LOG.config("Test: open two connections and persist entities in both.");
 		acquireConnection("cachingConcurrentConnectionsPersist");
-		final Connection cTwo = ds.getConnection(facade);
+		cTwo = ds.getConnection(facade);
 		c.setAutoCommit(false);
 		cTwo.setAutoCommit(false);
 		final Context c0 = c.getContexts().get(0);
@@ -133,7 +138,69 @@ public class CachingConnectorsTest {
 		assertNotNull(cTwo.find(OWLClassA.class, entityA.getUri(), c1.getUri()));
 		assertNotNull(c.find(OWLClassI.class, entityI.getUri(), c1.getUri()));
 		assertNotNull(cTwo.find(OWLClassI.class, entityI.getUri(), c1.getUri()));
-		cTwo.close();
+	}
+
+	@Test
+	public void testModifyConcurrently() throws Exception {
+		LOG.config("Test: modify an attribute in two concurrently open connections.");
+		acquireConnection("cachingConcurrentConnectionsModify");
+		c.setAutoCommit(false);
+		final Context ctx = c.getContexts().get(0);
+		final Context ctx2 = c.getContexts().get(1);
+		c.persist(entityA.getUri(), entityA, ctx.getUri());
+		c.persist(entityA.getUri(), entityA, ctx2.getUri());
+		c.commit();
+
+		cTwo = ds.getConnection(facade);
+		cTwo.setAutoCommit(false);
+		final OWLClassA cA = c.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
+		assertNotNull(cA);
+		final OWLClassA cTwoA = cTwo.find(OWLClassA.class, entityA.getUri(), ctx2.getUri());
+		assertNotNull(cTwoA);
+		final String older = "olderString";
+		final String newer = "newerString";
+		cTwoA.setStringAttribute(older);
+		cA.setStringAttribute(newer);
+		cTwo.merge(cTwoA.getUri(), cTwoA);
+		c.merge(cA.getUri(), cA);
+		cTwo.commit();
+		assertEquals(newer, cA.getStringAttribute());
+		c.commit();
+
+		final OWLClassA resC = c.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
+		assertNotNull(resC);
+		assertEquals(newer, resC.getStringAttribute());
+		final OWLClassA resCTwo = cTwo.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
+		assertNotNull(resCTwo);
+		assertEquals(newer, resCTwo.getStringAttribute());
+	}
+
+	@Test
+	public void testPersistWithPkGeneration() throws Exception {
+		LOG.config("Test: persist entities with generated pk concurrently in two connections. Assert the keys are different.");
+		acquireConnection("cachingConcurrentPersistGeneratePk");
+		c.setAutoCommit(false);
+		cTwo = ds.getConnection(facade);
+		cTwo.setAutoCommit(false);
+		final Context ctx = c.getContexts().get(c.getContexts().size() - 1);
+		final OWLClassE anotherE = new OWLClassE();
+		anotherE.setStringAttribute("another'sEStringAttribute");
+		c.persist(null, entityE, ctx.getUri());
+		assertNotNull(entityE.getUri());
+		cTwo.persist(null, anotherE, ctx.getUri());
+		assertNotNull(anotherE.getUri());
+		assertFalse(entityE.getUri().equals(anotherE.getUri()));
+		c.commit();
+		cTwo.commit();
+
+		assertNotNull(c.find(OWLClassE.class, entityE.getUri(), ctx.getUri()));
+		assertNotNull(cTwo.find(OWLClassE.class, entityE.getUri(), ctx.getUri()));
+		final OWLClassE resC = c.find(OWLClassE.class, anotherE.getUri(), ctx.getUri());
+		assertNotNull(resC);
+		assertEquals(anotherE.getStringAttribute(), resC.getStringAttribute());
+		final OWLClassE resCTwo = c.find(OWLClassE.class, anotherE.getUri(), ctx.getUri());
+		assertNotNull(resCTwo);
+		assertEquals(anotherE.getStringAttribute(), resCTwo.getStringAttribute());
 	}
 
 	private static void acquireConnection(String baseName) throws OntoDriverException {

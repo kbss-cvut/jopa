@@ -1,10 +1,10 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
@@ -18,9 +18,6 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 
 	private OwlapiBasedJenaConnector connector;
 	private ModuleInternal moduleInternal;
-
-	private OWLOntology ontology;
-	private OWLOntologyManager manager;
 
 	public OwlapiBasedJenaModule(Context context, PersistenceProviderFacade persistenceProvider,
 			DriverFactory factory) throws OntoDriverException {
@@ -39,8 +36,8 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 		ensureOpen();
 		ensureTransactionActive();
 		this.transaction = TransactionState.COMMIT;
-		moduleInternal.commitAndRetrieveChanges();
-		connector.applyOntologyChanges(manager, ontology);
+		final List<OWLOntologyChange> changes = moduleInternal.commitAndRetrieveChanges();
+		connector.applyOntologyChanges(changes);
 		connector.saveOntology();
 		this.transaction = TransactionState.NO;
 	}
@@ -153,8 +150,6 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	public OwlapiConnectorDataHolder getOntologyData() {
 		try {
 			final OwlapiConnectorDataHolder holder = connector.getOntologyDataInOwlapi();
-			this.manager = holder.getOntologyManager();
-			this.ontology = holder.getWorkingOntology();
 			return holder;
 		} catch (OntoDriverException e) {
 			throw new RuntimeException(e);

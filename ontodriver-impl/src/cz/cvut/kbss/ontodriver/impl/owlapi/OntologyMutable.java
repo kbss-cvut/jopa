@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import org.semanticweb.owlapi.model.OWLOntology;
 
-interface OntologyMutable {
+public interface OntologyMutable {
 
 	/**
 	 * Sets ontology on this object. </p>
