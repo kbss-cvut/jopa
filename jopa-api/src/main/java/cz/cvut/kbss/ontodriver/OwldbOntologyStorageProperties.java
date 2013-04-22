@@ -16,6 +16,7 @@ import java.net.URI;
  */
 public final class OwldbOntologyStorageProperties extends OntologyStorageProperties {
 
+	/** JDBC Driver class, e. g. org.postgresql.Driver */
 	private final String jdbcDriverClass;
 
 	public OwldbOntologyStorageProperties(URI ontologyUri, URI physicalUri,
@@ -28,9 +29,8 @@ public final class OwldbOntologyStorageProperties extends OntologyStoragePropert
 		this.jdbcDriverClass = jdbcDriverClass;
 	}
 
-	public OwldbOntologyStorageProperties(OwldbStoragePropertiesBuilder builder) {
-		super(builder.ontologyUri, builder.physicalUri, builder.connectorType, builder.username,
-				builder.password);
+	private OwldbOntologyStorageProperties(OwldbStoragePropertiesBuilder builder) {
+		super(builder);
 		if (builder.jdbcDriverClass == null || builder.jdbcDriverClass.isEmpty()) {
 			throw new IllegalArgumentException(
 					"The jdbc driver class cannot be neither null nor empty.");
@@ -52,10 +52,8 @@ public final class OwldbOntologyStorageProperties extends OntologyStoragePropert
 
 	@Override
 	public String toString() {
-		final StringBuilder b = new StringBuilder();
-		b.append(super.toString());
-		b.append(", JDBC driver = ");
-		b.append(jdbcDriverClass);
+		final StringBuilder b = new StringBuilder(super.toString());
+		b.append(", JDBC driver = ").append(jdbcDriverClass);
 		return b.toString();
 	}
 
@@ -89,27 +87,26 @@ public final class OwldbOntologyStorageProperties extends OntologyStoragePropert
 	 * @author kidney
 	 * 
 	 */
-	public static class OwldbStoragePropertiesBuilder {
+	public static final class OwldbStoragePropertiesBuilder extends
+			OntologyStoragePropertiesBuilder {
 
-		private URI ontologyUri;
-		private URI physicalUri;
-		private OntologyConnectorType connectorType;
 		private String jdbcDriverClass;
-		private String username;
-		private String password;
 
+		@Override
 		public OwldbStoragePropertiesBuilder ontologyUri(URI ontologyUri) {
-			this.ontologyUri = ontologyUri;
+			super.ontologyUri(ontologyUri);
 			return this;
 		}
 
+		@Override
 		public OwldbStoragePropertiesBuilder physicalUri(URI physicalUri) {
-			this.physicalUri = physicalUri;
+			super.physicalUri(physicalUri);
 			return this;
 		}
 
+		@Override
 		public OwldbStoragePropertiesBuilder connectorType(OntologyConnectorType connectorType) {
-			this.connectorType = connectorType;
+			super.connectorType(connectorType);
 			return this;
 		}
 
@@ -118,16 +115,19 @@ public final class OwldbOntologyStorageProperties extends OntologyStoragePropert
 			return this;
 		}
 
+		@Override
 		public OwldbStoragePropertiesBuilder username(String username) {
-			this.username = username;
+			super.username(username);
 			return this;
 		}
 
+		@Override
 		public OwldbStoragePropertiesBuilder password(String password) {
-			this.password = password;
+			super.password(password);
 			return this;
 		}
 
+		@Override
 		public OwldbOntologyStorageProperties build() {
 			return new OwldbOntologyStorageProperties(this);
 		}

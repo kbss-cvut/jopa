@@ -142,20 +142,18 @@ public class CachingConnectorsTest {
 
 	@Test
 	public void testModifyConcurrently() throws Exception {
-		LOG.config("Test: modify an attribute in two concurrently open connections.");
+		LOG.config("Test: modify an attribute in two concurrently open connections. Tests transaction isolation.");
 		acquireConnection("cachingConcurrentConnectionsModify");
 		c.setAutoCommit(false);
 		final Context ctx = c.getContexts().get(0);
-		final Context ctx2 = c.getContexts().get(1);
 		c.persist(entityA.getUri(), entityA, ctx.getUri());
-		c.persist(entityA.getUri(), entityA, ctx2.getUri());
 		c.commit();
 
 		cTwo = ds.getConnection(facade);
 		cTwo.setAutoCommit(false);
 		final OWLClassA cA = c.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
 		assertNotNull(cA);
-		final OWLClassA cTwoA = cTwo.find(OWLClassA.class, entityA.getUri(), ctx2.getUri());
+		final OWLClassA cTwoA = cTwo.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
 		assertNotNull(cTwoA);
 		final String older = "olderString";
 		final String newer = "newerString";

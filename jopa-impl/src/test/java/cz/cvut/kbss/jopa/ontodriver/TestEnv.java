@@ -19,6 +19,7 @@ import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.OwldbOntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.OwlimOntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.impl.SimpleDataSource;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStorageType;
@@ -37,6 +38,7 @@ public final class TestEnv {
 	public static final String DB_USERNAME = "owldb";
 	public static final String DB_PASSWORD = "owldb";
 	private static final String DB_DRIVER = "org.postgresql.Driver";
+	private static final String OWLIM_CONFIG_FILE = dir + "/owlimConfig.ttl";
 	private static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
 
 	public static boolean deleteOntologyFile = true;
@@ -88,10 +90,13 @@ public final class TestEnv {
 			URI physicalUri = null;
 			switch (e.getStorageType()) {
 			case FILE:
-				final File url = new File(dir + "/" + name + ".owl");
-				if (url.exists() && deleteOntologyFile) {
-					url.delete();
+				File url = null;
+				if (e.getConnectorType() == OntologyConnectorType.OWLIM) {
+					url = new File(dir + "/" + name);
+				} else {
+					url = new File(dir + "/" + name + ".owl");
 				}
+				removeOldTestFiles(url);
 				physicalUri = url.toURI();
 				break;
 			case OWLDB:
@@ -132,16 +137,44 @@ public final class TestEnv {
 	private static OntologyStorageProperties createStorageProperties(URI ontologyUri,
 			URI physicalUri, OntologyConnectorType connector, OwlapiStorageType storage) {
 		OntologyStorageProperties p = null;
-		switch (storage) {
-		case FILE:
-			p = new OntologyStorageProperties(ontologyUri, physicalUri, connector);
-			break;
-		case OWLDB:
-			p = OwldbOntologyStorageProperties.ontologyUri(ontologyUri).physicalUri(physicalUri)
-					.connectorType(OntologyConnectorType.OWLAPI).username(DB_USERNAME)
-					.password(DB_PASSWORD).jdbcDriverClass(DB_DRIVER).build();
-			break;
+		if (connector == OntologyConnectorType.OWLIM) {
+			p = OwlimOntologyStorageProperties.ontologyUri(ontologyUri).physicalUri(physicalUri)
+					.connectorType(connector).owlimConfigFile(OWLIM_CONFIG_FILE).build();
+		} else {
+			switch (storage) {
+			case FILE:
+				p = new OntologyStorageProperties(ontologyUri, physicalUri, connector);
+				break;
+			case OWLDB:
+				p = OwldbOntologyStorageProperties.ontologyUri(ontologyUri)
+						.physicalUri(physicalUri).connectorType(OntologyConnectorType.OWLAPI)
+						.username(DB_USERNAME).password(DB_PASSWORD).jdbcDriverClass(DB_DRIVER)
+						.build();
+				break;
+			}
 		}
 		return p;
+	}
+
+	/**
+	 * Removes (recursively) the specified file/directory. </p>
+	 * 
+	 * The removal is executed only if the file exists and
+	 * {@code deleteOntologyFile} is set to {@code true}.
+	 * 
+	 * @param file
+	 *            The file/directory to remove
+	 */
+	private static void removeOldTestFiles(File file) {
+		if (file.exists() && deleteOntologyFile) {
+			if (file.isDirectory()) {
+				for (File c : file.listFiles())
+					removeOldTestFiles(c);
+			} else {
+				if (!file.delete()) {
+					throw new RuntimeException("Unable to delete file " + file);
+				}
+			}
+		}
 	}
 }

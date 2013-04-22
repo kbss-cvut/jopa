@@ -91,6 +91,11 @@ public class OntologyStorageProperties {
 		this.password = password;
 	}
 
+	protected OntologyStorageProperties(OntologyStoragePropertiesBuilder builder) {
+		this(builder.ontologyUri, builder.physicalUri, builder.connectorType, builder.username,
+				builder.password);
+	}
+
 	public URI getOntologyURI() {
 		return ontologyUri;
 	}
@@ -127,5 +132,69 @@ public class OntologyStorageProperties {
 			b.append(password);
 		}
 		return b.toString();
+	}
+
+	public static OntologyStoragePropertiesBuilder ontologyUri(URI ontologyUri) {
+		return new OntologyStoragePropertiesBuilder().ontologyUri(ontologyUri);
+	}
+
+	public static OntologyStoragePropertiesBuilder physicalUri(URI physicalUri) {
+		return new OntologyStoragePropertiesBuilder().physicalUri(physicalUri);
+	}
+
+	public static OntologyStoragePropertiesBuilder connectorType(OntologyConnectorType connectorType) {
+		return new OntologyStoragePropertiesBuilder().connectorType(connectorType);
+	}
+
+	public static OntologyStoragePropertiesBuilder username(String username) {
+		return new OntologyStoragePropertiesBuilder().username(username);
+	}
+
+	public static OntologyStoragePropertiesBuilder password(String password) {
+		return new OntologyStoragePropertiesBuilder().password(password);
+	}
+
+	/**
+	 * Builder class for the {@code OntologyStorageProperties}.
+	 * 
+	 * @author kidney
+	 * 
+	 */
+	public static class OntologyStoragePropertiesBuilder {
+
+		protected URI ontologyUri;
+		protected URI physicalUri;
+		protected OntologyConnectorType connectorType;
+		protected String username;
+		protected String password;
+
+		public OntologyStoragePropertiesBuilder ontologyUri(URI ontologyUri) {
+			this.ontologyUri = ontologyUri;
+			return this;
+		}
+
+		public OntologyStoragePropertiesBuilder physicalUri(URI physicalUri) {
+			this.physicalUri = physicalUri;
+			return this;
+		}
+
+		public OntologyStoragePropertiesBuilder connectorType(OntologyConnectorType connectorType) {
+			this.connectorType = connectorType;
+			return this;
+		}
+
+		public OntologyStoragePropertiesBuilder username(String username) {
+			this.username = username;
+			return this;
+		}
+
+		public OntologyStoragePropertiesBuilder password(String password) {
+			this.password = password;
+			return this;
+		}
+
+		public OntologyStorageProperties build() {
+			return new OntologyStorageProperties(this);
+		}
 	}
 }

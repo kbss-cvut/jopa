@@ -46,7 +46,7 @@ public class JenaFileStorageConnector implements OwlapiBasedJenaConnector {
 
 	private final URI ontologyUri;
 	private final URI physicalUri;
-	private final String reasonerClassFactory;
+	private final String reasonerFactoryClass;
 
 	private OntModel model;
 
@@ -65,7 +65,7 @@ public class JenaFileStorageConnector implements OwlapiBasedJenaConnector {
 		}
 		this.ontologyUri = storageProperties.getOntologyURI();
 		this.physicalUri = storageProperties.getPhysicalURI();
-		this.reasonerClassFactory = properties
+		this.reasonerFactoryClass = properties
 				.containsKey(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS) ? properties
 				.get(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS)
 				: OntoDriverConstants.REASONER_FACTORY_CLASS;
@@ -80,6 +80,9 @@ public class JenaFileStorageConnector implements OwlapiBasedJenaConnector {
 		}
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Closing storage connector.");
+		}
+		if (model != null) {
+			model.close();
 		}
 		this.open = false;
 	}
@@ -181,8 +184,7 @@ public class JenaFileStorageConnector implements OwlapiBasedJenaConnector {
 			ontologyManager.saveOntology(workingOntology, format, bos);
 
 			final ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-			model.close();
-			this.model = ModelFactory.createOntologyModel();
+			model.removeAll();
 			model.read(bis, null);
 		} catch (OWLOntologyStorageException e) {
 			LOG.log(Level.SEVERE, "Unable to transform OWL API ontology to Jena.", e);
@@ -261,7 +263,7 @@ public class JenaFileStorageConnector implements OwlapiBasedJenaConnector {
 			return;
 		}
 		this.ontologyManager = OWLManager.createOWLOntologyManager();
-		this.reasonerFactory = (OWLReasonerFactory) Class.forName(reasonerClassFactory)
+		this.reasonerFactory = (OWLReasonerFactory) Class.forName(reasonerFactoryClass)
 				.newInstance();
 	}
 }

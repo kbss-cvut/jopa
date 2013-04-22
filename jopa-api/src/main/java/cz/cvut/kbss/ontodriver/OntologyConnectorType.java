@@ -8,7 +8,11 @@ public enum OntologyConnectorType {
 	/**
 	 * Jena ontology connector.
 	 */
-	JENA(OntoDriverProperties.JENA_DRIVER_FACTORY);
+	JENA(OntoDriverProperties.JENA_DRIVER_FACTORY),
+	/**
+	 * OWLIM ontology connector.
+	 */
+	OWLIM(OntoDriverProperties.OWLIM_DRIVER_FACTORY);
 
 	private final String property;
 

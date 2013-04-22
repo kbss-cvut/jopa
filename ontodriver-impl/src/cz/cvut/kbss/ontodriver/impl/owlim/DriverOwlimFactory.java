@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.impl.jena;
+package cz.cvut.kbss.ontodriver.impl.owlim;
 
 import java.util.HashMap;
 import java.util.List;
@@ -8,26 +8,29 @@ import java.util.logging.Level;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.OwlimOntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
+import cz.cvut.kbss.ontodriver.StorageConnector;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.impl.jena.JenaCachingStorageConnector;
+import cz.cvut.kbss.ontodriver.impl.jena.OwlapiBasedJenaConnector;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiBasedCachingJenaModule;
 
 /**
- * This is a better optimized factory for Jena storage modules and connectors.
- * </p>
+ * Factory for OWLIM storage connectors. </p>
  * 
- * It uses a single central connector which provides cloned data for storage
- * modules' operations.
+ * The current version uses OWLIM's Jena connector and supports only local
+ * repositories.
  * 
  * @author kidney
  * 
  */
-public class DriverCachingJenaFactory extends DriverAbstractFactory {
+public class DriverOwlimFactory extends DriverAbstractFactory {
 
 	private final Map<Context, OwlapiBasedJenaConnector> centralConnectors;
 
-	public DriverCachingJenaFactory(List<Context> contexts,
+	public DriverOwlimFactory(List<Context> contexts,
 			Map<Context, OntologyStorageProperties> ctxsToProperties, Map<String, String> properties)
 			throws OntoDriverException {
 		super(contexts, ctxsToProperties, properties);
@@ -59,16 +62,16 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public JenaCachingStorageConnector createStorageConnector(Context ctx, boolean autoCommit)
+	public StorageConnector createStorageConnector(Context ctx, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(ctx);
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Creating caching Jena storage connector.");
+			LOG.finer("Creating OWLIM storage connector.");
 		}
 		return createConnectorInternal(ctx);
 	}
 
-	private synchronized JenaCachingStorageConnector createConnectorInternal(Context ctx)
+	private synchronized OwlapiBasedJenaConnector createConnectorInternal(Context ctx)
 			throws OntoDriverException {
 		assert ctx != null;
 		if (!centralConnectors.containsKey(ctx)) {
@@ -81,8 +84,16 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 	}
 
 	private void createCentralConnector(Context ctx) throws OntoDriverException {
-		final JenaFileStorageConnector c = new JenaFileStorageConnector(
-				contextsToProperties.get(ctx), properties);
+		final OntologyStorageProperties p = contextsToProperties.get(ctx);
+		if (!(p instanceof OwlimOntologyStorageProperties)) {
+			throw new OntoDriverException(
+					"The storage properties is not suitable for OWLIM based connectors.");
+		}
+		final OwlimOntologyStorageProperties owlimP = (OwlimOntologyStorageProperties) p;
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Creating central OWLIM storage connector.");
+		}
+		final JenaBasedOwlimConnector c = new JenaBasedOwlimConnector(owlimP, properties);
 		centralConnectors.put(ctx, c);
 	}
 }

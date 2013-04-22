@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,7 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyRenameException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
+import org.semanticweb.owlapi.model.RemoveAxiom;
 import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
@@ -211,14 +213,23 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 	 */
 	@Override
 	public void applyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
+		ensureOpen();
+		final List<OWLOntologyChange> applyFirst = new ArrayList<OWLOntologyChange>();
 		for (OWLOntologyChange change : changes) {
-			if (change.getOntology().getOntologyID().equals(getWorkingOntology().getOntologyID())) {
+			if (change.getOntology().getOntologyID().equals(workingOntology.getOntologyID())) {
 				assert (change instanceof OntologyMutable);
-				((OntologyMutable) change).setOntology(getWorkingOntology());
+				((OntologyMutable) change).setOntology(workingOntology);
 			}
+			// TODO Fix transaction isolation, when one transaction modifies an
+			// attribute and the other
+			// tries to modify it afterwards, there should be policy to handle
+			// it: e. g. for Serializable
+			// level the second transaction should be rolled back with an
+			// exception
 		}
 		try {
-			getOntologyManager().applyChanges(changes);
+			ontologyManager.applyChanges(applyFirst);
+			ontologyManager.applyChanges(changes);
 		} catch (OWLOntologyRenameException e) {
 			reload();
 			throw new OntoDriverException(e);

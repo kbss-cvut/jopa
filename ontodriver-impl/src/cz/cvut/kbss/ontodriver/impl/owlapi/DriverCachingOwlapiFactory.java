@@ -99,6 +99,9 @@ public class DriverCachingOwlapiFactory extends DriverAbstractFactory {
 
 	@Override
 	public void close() throws OntoDriverException {
+		if (!isOpen()) {
+			return;
+		}
 		super.close();
 		for (OwlapiStorageConnector c : centralConnectors.values()) {
 			c.close();
