@@ -244,7 +244,7 @@ public class MultiFileContextsTest {
 
 	private static void acquireConnection(String baseName) throws OntoDriverException {
 		assert baseName != null;
-		ds = TestEnv.createDataSource(baseName, storages);
+		ds = TestEnv.createDataSource(baseName, storages, false);
 		c = ds.getConnection(facade);
 	}
 

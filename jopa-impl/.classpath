@@ -29,7 +29,7 @@
 	<classpathentry kind="lib" path="/home/kidney/Development/Java/JOPA/owldb-2.04/lib/hibernate/3.6.8/lib/oscache-2.4.1.jar"/>
 	<classpathentry kind="lib" path="/home/kidney/Development/Java/JOPA/owldb-2.04/lib/hibernate/3.6.8/lib/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="lib" path="/home/kidney/Development/Java/JOPA/owldb-2.04/lib/hibernate/3.6.8/lib/slf4j-jdk14-1.6.1.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>

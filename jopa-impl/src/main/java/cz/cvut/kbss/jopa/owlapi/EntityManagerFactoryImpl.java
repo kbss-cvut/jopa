@@ -31,8 +31,7 @@ import cz.cvut.kbss.jopa.sessions.Cache;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
-public class EntityManagerFactoryImpl implements EntityManagerFactory,
-		PersistenceUnitUtil {
+public class EntityManagerFactoryImpl implements EntityManagerFactory, PersistenceUnitUtil {
 
 	private boolean open = true;
 
@@ -50,8 +49,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 		this.storageProperties = Collections.emptyList();
 	}
 
-	public EntityManagerFactoryImpl(
-			List<OntologyStorageProperties> storageProperties,
+	public EntityManagerFactoryImpl(List<OntologyStorageProperties> storageProperties,
 			Map<String, String> properties) {
 		if (storageProperties == null) {
 			throw new NullPointerException();
@@ -68,18 +66,18 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 				m.close();
 			}
 		}
-		serverSession.close();
+		if (serverSession != null) {
+			serverSession.close();
+		}
 	}
 
 	public EntityManager createEntityManager() {
-		return this
-				.createEntityManager(Collections.<String, String> emptyMap());
+		return this.createEntityManager(Collections.<String, String> emptyMap());
 	}
 
 	public EntityManager createEntityManager(Map<String, String> map) {
 		if (!open) {
-			throw new IllegalStateException(
-					"The OWLEntityManager has been closed.");
+			throw new IllegalStateException("The OWLEntityManager has been closed.");
 		}
 
 		final Map<String, String> newMap = new HashMap<String, String>(map);
@@ -89,8 +87,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 
 		initServerSession(newMap);
 
-		final AbstractEntityManager c = new EntityManagerImpl(this, newMap,
-				this.serverSession);
+		final AbstractEntityManager c = new EntityManagerImpl(this, newMap, this.serverSession);
 
 		em.add(c);
 		return c;
@@ -105,8 +102,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 	 */
 	private void initServerSession(Map<String, String> newMap) {
 		if (this.serverSession == null) {
-			this.serverSession = new ServerSession(storageProperties, newMap,
-					getMetamodel());
+			this.serverSession = new ServerSession(storageProperties, newMap, getMetamodel());
 		}
 	}
 
@@ -149,8 +145,8 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 
 	public Object getIdentifier(Object entity) {
 		try {
-			return getMetamodel().entity(entity.getClass()).getIdentifier()
-					.getJavaField().get(entity);
+			return getMetamodel().entity(entity.getClass()).getIdentifier().getJavaField()
+					.get(entity);
 		} catch (IllegalArgumentException e) {
 			throw new OWLPersistenceException();
 		} catch (IllegalAccessException e) {
@@ -178,8 +174,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 
 	public Cache getCache() {
 		if (!isOpen()) {
-			throw new IllegalStateException(
-					"The entity manager factory is closed.");
+			throw new IllegalStateException("The entity manager factory is closed.");
 		}
 		return getServerSession().getLiveObjectCache();
 	}

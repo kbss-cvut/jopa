@@ -60,8 +60,9 @@ public final class TestEnv {
 	 * @return {@code DataSource}
 	 * @see #createDataSource(String, List, Map)
 	 */
-	public static DataSource createDataSource(String baseName, List<StorageInfo> storages) {
-		return createDataSource(baseName, storages, new HashMap<String, String>());
+	public static DataSource createDataSource(String baseName, List<StorageInfo> storages,
+			boolean directory) {
+		return createDataSource(baseName, storages, new HashMap<String, String>(), directory);
 	}
 
 	/**
@@ -80,23 +81,27 @@ public final class TestEnv {
 	 * @return {@code DataSource}
 	 */
 	public static DataSource createDataSource(String baseName, List<StorageInfo> storages,
-			Map<String, String> properties) {
+			Map<String, String> properties, boolean directory) {
 		int i = 1;
 		final List<OntologyStorageProperties> storageProperties = new ArrayList<OntologyStorageProperties>(
 				storages.size());
 		for (StorageInfo e : storages) {
-			final String name = baseName + e.getConnectorType().toString() + (i++);
+			String name = baseName + e.getConnectorType().toString() + (i++);
 			final URI ontoUri = URI.create(IRI_BASE + name);
 			URI physicalUri = null;
 			switch (e.getStorageType()) {
 			case FILE:
 				File url = null;
-				if (e.getConnectorType() == OntologyConnectorType.OWLIM) {
+				if (directory) {
 					url = new File(dir + "/" + name);
 				} else {
 					url = new File(dir + "/" + name + ".owl");
 				}
 				removeOldTestFiles(url);
+				if (directory) {
+					boolean res = url.mkdirs();
+					assert res;
+				}
 				physicalUri = url.toURI();
 				break;
 			case OWLDB:
@@ -121,7 +126,8 @@ public final class TestEnv {
 		if (providerFacade == null) {
 			try {
 				final EntityManagerFactoryMock emf = new EntityManagerFactoryMock(
-						Collections.singletonMap("location", "cz.cvut.kbss.jopa.owlapi"));
+						Collections.singletonMap(OWLAPIPersistenceProperties.ENTITY_LOCATION,
+								"cz.cvut.kbss.jopa.owlapi"));
 				final Constructor<MetamodelImpl> c = MetamodelImpl.class
 						.getDeclaredConstructor(EntityManagerFactoryImpl.class);
 				c.setAccessible(true);
@@ -170,6 +176,7 @@ public final class TestEnv {
 			if (file.isDirectory()) {
 				for (File c : file.listFiles())
 					removeOldTestFiles(c);
+				file.delete();
 			} else {
 				if (!file.delete()) {
 					throw new RuntimeException("Unable to delete file " + file);

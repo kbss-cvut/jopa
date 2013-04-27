@@ -24,6 +24,8 @@ import org.semanticweb.owlapi.profiles.OWL2RLProfile;
 import org.semanticweb.owlapi.profiles.OWLProfile;
 import org.semanticweb.owlapi.profiles.OWLProfileReport;
 
+import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
+
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.ContextExpressiveness;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
@@ -68,7 +70,8 @@ public final class OntologyProfileChecker {
 			return;
 		}
 		final OWLOntologyManager fileM = OWLManager.createOWLOntologyManager();
-		final OWLOntologyManager owldbM = OWLDBManager.createOWLOntologyManager(null);
+		final OWLOntologyManager owldbM = OWLDBManager.createOWLOntologyManager(OWLDataFactoryImpl
+				.getInstance());
 		for (Entry<Context, OntologyStorageProperties> e : contextProperties.entrySet()) {
 			final OntologyStorageProperties storageProps = e.getValue();
 			switch (storageProps.getConnectorType()) {
@@ -78,6 +81,8 @@ public final class OntologyProfileChecker {
 					resolveFileProfile(e.getKey(), storageProps, fileM);
 					break;
 				case OWLDB:
+					// TODO Resolving doesn't work for larger ontologies, OWLDB
+					// throws NPX
 					resolveOwldbProfile(e.getKey(), storageProps, owldbM);
 					OWLDBManager.getHibernateProvider().releaseSessionFactory(owldbM,
 							storageProps.getPhysicalURI().toString());
@@ -86,6 +91,9 @@ public final class OntologyProfileChecker {
 				break;
 			case JENA:
 				// TODO
+				break;
+			case OWLIM:
+				// TOOD
 				break;
 			}
 		}

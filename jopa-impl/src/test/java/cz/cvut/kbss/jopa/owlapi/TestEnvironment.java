@@ -101,7 +101,7 @@ public class TestEnvironment {
 			params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "off");
 		}
 		/* Set location of the entities (package) */
-		params.put("location", "cz.cvut.kbss.jopa.owlapi");
+		params.put(OWLAPIPersistenceProperties.ENTITY_LOCATION, "cz.cvut.kbss.jopa.owlapi");
 		params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
 				OWLAPIPersistenceProvider.class.getName());
 		params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);

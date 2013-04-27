@@ -243,7 +243,7 @@ public class MixedMultiContextsTest {
 	}
 
 	private static void acquireConnection(String baseName) throws OntoDriverException {
-		ds = TestEnv.createDataSource(baseName, storages);
+		ds = TestEnv.createDataSource(baseName, storages, false);
 		c = ds.getConnection(facade);
 	}
 

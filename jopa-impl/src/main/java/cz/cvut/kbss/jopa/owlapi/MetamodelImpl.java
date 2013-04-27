@@ -54,8 +54,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 
 public class MetamodelImpl implements Metamodel {
 
-	private static final Logger LOG = Logger.getLogger(Metamodel.class
-			.getName());
+	private static final Logger LOG = Logger.getLogger(Metamodel.class.getName());
 	private static final String ASPECTJ_CLASS = "org.aspectj.weaver.loadtime.Agent";
 	private static final String ENTITY_LOCATION_PARAM = "location";
 
@@ -95,8 +94,7 @@ public class MetamodelImpl implements Metamodel {
 	private void checkForWeaver() {
 		try {
 			@SuppressWarnings("unused")
-			Class<?> c = MetamodelImpl.class.getClassLoader().loadClass(
-					ASPECTJ_CLASS);
+			Class<?> c = MetamodelImpl.class.getClassLoader().loadClass(ASPECTJ_CLASS);
 			this.shouldUseAspectJ = true;
 		} catch (ClassNotFoundException e) {
 			LOG.severe("AspectJ not found on classpath. Cannot run without AspectJ.");
@@ -104,8 +102,8 @@ public class MetamodelImpl implements Metamodel {
 		}
 	}
 
-	private static Collection<Class<?>> validIdClasses = Arrays
-			.asList(new Class<?>[] { String.class, URI.class });
+	private static Collection<Class<?>> validIdClasses = Arrays.asList(new Class<?>[] {
+			String.class, URI.class });
 
 	<X> void processOWLClass(final Class<X> cls) {
 		if (typeMap.containsKey(cls)) {
@@ -123,8 +121,8 @@ public class MetamodelImpl implements Metamodel {
 					+ " is not an OWLPersistence entity !");
 		}
 
-		final EntityTypeImpl<X> c2 = new EntityTypeImpl<X>(cls.getSimpleName(),
-				cls, IRI.create(c.iri()));
+		final EntityTypeImpl<X> c2 = new EntityTypeImpl<X>(cls.getSimpleName(), cls, IRI.create(c
+				.iri()));
 
 		typeMap.put(cls, c2);
 
@@ -134,15 +132,13 @@ public class MetamodelImpl implements Metamodel {
 			}
 
 			if (field.getType().isPrimitive()) {
-				throw new OWLPersistenceException(
-						"Primitive types cannot be used for field types");
+				throw new OWLPersistenceException("Primitive types cannot be used for field types");
 			}
 
 			final Class<?> cxx;
 
 			if (Collection.class.isAssignableFrom(field.getType())) {
-				cxx = getSetOrListErasureType((ParameterizedType) field
-						.getGenericType());
+				cxx = getSetOrListErasureType((ParameterizedType) field.getGenericType());
 			} else {
 				cxx = field.getType();
 			}
@@ -151,11 +147,10 @@ public class MetamodelImpl implements Metamodel {
 			Types tt = field.getAnnotation(Types.class);
 			if (tt != null) {
 				if (!Set.class.isAssignableFrom(field.getType())) {
-					throw new OWLPersistenceException(
-							"The Types element must be a set of Strings.");
+					throw new OWLPersistenceException("The Types element must be a set of Strings.");
 				}
-				c2.addDirectTypes(new TypesSpecificationImpl(c2,
-						tt.fetchType(), field, cxx, tt.inferred()));
+				c2.addDirectTypes(new TypesSpecificationImpl(c2, tt.fetchType(), field, cxx, tt
+						.inferred()));
 				continue;
 			}
 
@@ -166,19 +161,17 @@ public class MetamodelImpl implements Metamodel {
 					throw new OWLPersistenceException(
 							"The Types element must be a Map<String,Set<String>>.");
 				}
-				c2.addOtherProperties(new PropertiesSpecificationImpl(c2,
-						properties.fetchType(), field, cxx, true)); // only
-																	// inferred
+				c2.addOtherProperties(new PropertiesSpecificationImpl(c2, properties.fetchType(),
+						field, cxx, true)); // only
+											// inferred
 				// @Properties annotation is supported to preserve Domain/Range
 				// constraints
 				continue;
 			}
 
-			OWLObjectProperty oop = field
-					.getAnnotation(OWLObjectProperty.class);
+			OWLObjectProperty oop = field.getAnnotation(OWLObjectProperty.class);
 			OWLDataProperty odp = field.getAnnotation(OWLDataProperty.class);
-			OWLAnnotationProperty oap = field
-					.getAnnotation(OWLAnnotationProperty.class);
+			OWLAnnotationProperty oap = field.getAnnotation(OWLAnnotationProperty.class);
 
 			cz.cvut.kbss.jopa.model.metamodel.Type<?> type = null;
 			PersistentAttributeType t = null;
@@ -188,8 +181,7 @@ public class MetamodelImpl implements Metamodel {
 			boolean inferred = false;
 
 			ParticipationConstraint[] ics = null;
-			ParticipationConstraints cons = field
-					.getAnnotation(ParticipationConstraints.class);
+			ParticipationConstraints cons = field.getAnnotation(ParticipationConstraints.class);
 			if (cons != null) {
 				if (cons.value() != null) {
 					ics = cons.value();
@@ -240,29 +232,25 @@ public class MetamodelImpl implements Metamodel {
 					final Sequence os = field.getAnnotation(Sequence.class);
 
 					if (os == null) {
-						throw new OWLPersistenceException(
-								"Expected OWLSequence annotation.");
+						throw new OWLPersistenceException("Expected OWLSequence annotation.");
 					}
 
-					a = new ListAttributeImpl(c2, field.getName(), iri,
-							List.class, type, field, t, cascadeTypes,
-							IRI.create(os.ClassOWLListIRI()), IRI.create(os
+					a = new ListAttributeImpl(c2, field.getName(), iri, List.class, type, field, t,
+							cascadeTypes, IRI.create(os.ClassOWLListIRI()), IRI.create(os
 									.ObjectPropertyHasNextIRI()), IRI.create(os
-									.ObjectPropertyHasContentsIRI()),
-							os.type(), fetchType, inferred, ics);
+									.ObjectPropertyHasContentsIRI()), os.type(), fetchType,
+							inferred, ics);
 				} else if (field.getType().isAssignableFrom(Set.class)) {
 					if (oop != null) {
 						processOWLClass(cxx);
 					}
-					a = new SetAttributeImpl(c2, field.getName(), iri,
-							Set.class, type, field, t, cascadeTypes, fetchType,
-							inferred, ics);
+					a = new SetAttributeImpl(c2, field.getName(), iri, Set.class, type, field, t,
+							cascadeTypes, fetchType, inferred, ics);
 				} else if (field.getType().isAssignableFrom(Map.class)) {
 					throw new IllegalArgumentException("NOT YET SUPPORTED");
 				} else {
-					a = new SingularAttributeImpl(c2, false, field.getName(),
-							iri, type, field, t, cascadeTypes, fetchType,
-							inferred, ics);
+					a = new SingularAttributeImpl(c2, false, field.getName(), iri, type, field, t,
+							cascadeTypes, fetchType, inferred, ics);
 				}
 				c2.addDeclaredAttribute(field.getName(), a);
 
@@ -329,7 +317,7 @@ public class MetamodelImpl implements Metamodel {
 	}
 
 	private void loadEntities() {
-		final String loc = emf.getProperties().get(ENTITY_LOCATION_PARAM);
+		final String loc = emf.getProperties().get(OWLAPIPersistenceProperties.ENTITY_LOCATION);
 		if (loc == null) {
 			LOG.warning("Cannot discover entity classes. No location specified.");
 			return;

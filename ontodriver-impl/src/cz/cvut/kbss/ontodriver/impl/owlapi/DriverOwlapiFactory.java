@@ -85,6 +85,9 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 
 	@Override
 	public void close() throws OntoDriverException {
+		if (!isOpen()) {
+			return;
+		}
 		super.close();
 		if (owldb) {
 			OWLDBManager.getHibernateProvider().close();

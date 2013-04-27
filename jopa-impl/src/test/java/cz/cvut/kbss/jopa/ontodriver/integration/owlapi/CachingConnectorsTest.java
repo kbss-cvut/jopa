@@ -202,7 +202,7 @@ public class CachingConnectorsTest {
 	}
 
 	private static void acquireConnection(String baseName) throws OntoDriverException {
-		ds = TestEnv.createDataSource(baseName, storage, properties);
+		ds = TestEnv.createDataSource(baseName, storage, properties, false);
 		c = ds.getConnection(facade);
 	}
 

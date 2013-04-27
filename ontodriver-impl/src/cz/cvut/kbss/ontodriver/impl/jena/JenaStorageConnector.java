@@ -8,80 +8,72 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.http.HTTPRepository;
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
 import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyFormat;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
+import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInitializationException;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OntologyMutable;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiConnectorDataHolder;
+import cz.cvut.kbss.ontodriver.impl.utils.OntoDriverConstants;
 
-public class OwlimJenaStorageConnector implements OwlapiBasedJenaConnector {
+abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 
-	private static final Logger LOG = Logger.getLogger(OwlimJenaStorageConnector.class.getName());
+	protected static final Logger LOG = Logger.getLogger(JenaStorageConnector.class.getName());
 
-	private final URI ontologyUri;
-	private Repository repository;
-	private RepositoryConnection connection;
+	protected final URI ontologyUri;
+	protected final URI physicalUri;
+	protected final String reasonerFactoryClass;
 
-	private Model model;
-	private OWLOntologyManager ontologyManager;
-	private OWLReasoner reasoner;
-	private OWLOntology workingOntology;
+	protected Model model;
 
 	private boolean open;
 
-	public OwlimJenaStorageConnector(OntologyStorageProperties storageProperties,
-			Map<String, String> properties) {
+	private OWLOntologyManager ontologyManager;
+	private OWLReasonerFactory reasonerFactory;
+	private OWLReasoner reasoner;
+	private OWLOntology workingOntology;
+
+	public JenaStorageConnector(OntologyStorageProperties storageProperties,
+			Map<String, String> properties) throws OntoDriverException {
+		super();
 		if (storageProperties == null || properties == null) {
-			throw new NullPointerException();
+			throw new NullPointerException("Neither StorageProperties nor properties can be null.");
 		}
-		this.open = true;
 		this.ontologyUri = storageProperties.getOntologyURI();
-		try {
-			initialize(storageProperties, properties);
-		} catch (RepositoryException e) {
-			throw new OntoDriverInitializationException(e);
-		}
-	}
-
-	private void initialize(OntologyStorageProperties storageProps, Map<String, String> props)
-			throws RepositoryException {
-		assert props != null;
-		final URI physicalUri = storageProps.getPhysicalURI();
-		this.repository = new HTTPRepository(physicalUri.toString());
-		this.connection = repository.getConnection();
-		// Create the DatasetGraph instance
-		// SesameDataset dataset = new SesameDataset(connection);
-		// Model model =
-		// ModelFactory.createModelForGraph(dataset.getDefaultGraph());
-
-		// TODO How to implement this?
-	}
-
-	@Override
-	public void reload() throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		this.physicalUri = storageProperties.getPhysicalURI();
+		this.reasonerFactoryClass = properties
+				.containsKey(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS) ? properties
+				.get(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS)
+				: OntoDriverConstants.REASONER_FACTORY_CLASS;
+		this.initConnector();
+		this.open = true;
 	}
 
 	@Override
 	public void close() throws OntoDriverException {
+		if (!open) {
+			return;
+		}
 		if (LOG.isLoggable(Level.CONFIG)) {
-			LOG.config("Closing OWLIM storage connector.");
+			LOG.config("Closing storage connector.");
+		}
+		if (model != null) {
+			model.close();
 		}
 		this.open = false;
 	}
@@ -105,7 +97,7 @@ public class OwlimJenaStorageConnector implements OwlapiBasedJenaConnector {
 	}
 
 	@Override
-	public OwlapiConnectorDataHolder cloneOntologyDataInOwlapi() throws OntoDriverException {
+	public OwlapiConnectorDataHolder cloneOntologyDataInOwlapi() {
 		final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
 				.ontologyManager(ontologyManager).dataFactory(ontologyManager.getOWLDataFactory())
 				.reasoner(reasoner).workingOntology(workingOntology).build();
@@ -114,14 +106,36 @@ public class OwlimJenaStorageConnector implements OwlapiBasedJenaConnector {
 
 	@Override
 	public void applyOntologyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
-		// TODO Auto-generated method stub
+		if (changes == null) {
+			throw new NullPointerException();
+		}
+		if (changes.isEmpty()) {
+			return;
+		}
+		assert ontologyManager != null;
+		assert workingOntology != null;
+		try {
+			for (OWLOntologyChange change : changes) {
+				if (change.getOntology().getOntologyID().equals(workingOntology.getOntologyID())) {
+					assert (change instanceof OntologyMutable);
+					((OntologyMutable) change).setOntology(workingOntology);
+				}
+			}
+			ontologyManager.applyChanges(changes);
 
-	}
+			final OWLOntologyFormat format = new RDFXMLOntologyFormat();
+			ontologyManager.setOntologyFormat(workingOntology, format);
+			final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			ontologyManager.saveOntology(workingOntology, format, bos);
 
-	@Override
-	public void saveOntology() throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+			final ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+			model.removeAll();
+			model.read(bis, null);
+		} catch (OWLOntologyStorageException e) {
+			LOG.log(Level.SEVERE, "Unable to transform OWL API ontology to Jena.", e);
+			reload();
+			throw new OntoDriverException(e);
+		}
 	}
 
 	/**
@@ -150,7 +164,7 @@ public class OwlimJenaStorageConnector implements OwlapiBasedJenaConnector {
 				this.workingOntology = ontologyManager.getOntology(ontoIri);
 			}
 
-			// this.reasoner = reasonerFactory.createReasoner(workingOntology);
+			this.reasoner = reasonerFactory.createReasoner(workingOntology);
 
 			final OwlapiConnectorDataHolder data = OwlapiConnectorDataHolder
 					.ontologyManager(ontologyManager)
@@ -178,5 +192,17 @@ public class OwlimJenaStorageConnector implements OwlapiBasedJenaConnector {
 			return;
 		}
 		this.ontologyManager = OWLManager.createOWLOntologyManager();
+		this.reasonerFactory = (OWLReasonerFactory) Class.forName(reasonerFactoryClass)
+				.newInstance();
 	}
+
+	/**
+	 * Initializes this connector. </p>
+	 * 
+	 * This method is called by the constructor of {@code JenaStorageConnector}.
+	 * 
+	 * @throws OntoDriverException
+	 *             If connector initialization fails
+	 */
+	protected abstract void initConnector() throws OntoDriverException;
 }

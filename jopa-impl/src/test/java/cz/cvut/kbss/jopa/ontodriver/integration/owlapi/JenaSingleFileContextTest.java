@@ -292,7 +292,7 @@ public class JenaSingleFileContextTest {
 	}
 
 	private static void acquireConnection(String baseName) throws OntoDriverException {
-		ds = TestEnv.createDataSource(baseName, storage);
+		ds = TestEnv.createDataSource(baseName, storage, false);
 		c = ds.getConnection(facade);
 	}
 }

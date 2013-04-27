@@ -81,8 +81,19 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 	}
 
 	private void createCentralConnector(Context ctx) throws OntoDriverException {
-		final JenaFileStorageConnector c = new JenaFileStorageConnector(
-				contextsToProperties.get(ctx), properties);
+		final OntologyStorageProperties props = contextsToProperties.get(ctx);
+		final JenaStorageType storageType = DriverJenaFactory.resolveStorageType(props);
+		JenaStorageConnector c = null;
+		switch (storageType) {
+		case FILE:
+			c = new JenaFileStorageConnector(props, properties);
+			break;
+		case TDB:
+			c = new JenaTDBStorageConnector(props, properties);
+			break;
+		default:
+			throw new IllegalArgumentException("Unsupported storage type " + storageType);
+		}
 		centralConnectors.put(ctx, c);
 	}
 }

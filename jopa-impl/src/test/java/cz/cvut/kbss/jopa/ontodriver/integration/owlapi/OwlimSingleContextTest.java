@@ -263,7 +263,7 @@ public class OwlimSingleContextTest {
 	}
 
 	private static void acquireConnection(String baseName) throws OntoDriverException {
-		ds = TestEnv.createDataSource(baseName, storage);
+		ds = TestEnv.createDataSource(baseName, storage, true);
 		c = ds.getConnection(facade);
 	}
 }
