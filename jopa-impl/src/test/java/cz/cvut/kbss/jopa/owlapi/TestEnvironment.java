@@ -94,7 +94,6 @@ public class TestEnvironment {
 
 	private static Map<String, String> initParams(boolean cache) {
 		final Map<String, String> params = new HashMap<String, String>();
-		params.put("javax.persistence.provider", EntityManagerFactoryImpl.class.getName());
 		if (cache) {
 			params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "on");
 		} else {

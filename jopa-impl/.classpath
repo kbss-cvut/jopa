@@ -13,7 +13,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>
-	<classpathentry kind="src" path="/ontodriver-impl"/>
 	<classpathentry kind="lib" path="/home/kidney/Development/Java/JOPA/owldb-2.04/build/owldb-2.04.jar" sourcepath="/home/kidney/Development/Java/JOPA/owldb-2.04/src"/>
 	<classpathentry kind="lib" path="/home/kidney/Development/Java/JOPA/owldb-2.04/lib/hibernate/3.6.8/lib/antlr-2.7.6.jar"/>
 	<classpathentry kind="lib" path="/home/kidney/Development/Java/JOPA/owldb-2.04/lib/hibernate/3.6.8/lib/c3p0-0.9.2-pre1.jar"/>
@@ -29,6 +28,7 @@
 	<classpathentry kind="lib" path="/home/kidney/Development/Java/JOPA/owldb-2.04/lib/hibernate/3.6.8/lib/oscache-2.4.1.jar"/>
 	<classpathentry kind="lib" path="/home/kidney/Development/Java/JOPA/owldb-2.04/lib/hibernate/3.6.8/lib/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="lib" path="/home/kidney/Development/Java/JOPA/owldb-2.04/lib/hibernate/3.6.8/lib/slf4j-jdk14-1.6.1.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ontodriver-impl"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
