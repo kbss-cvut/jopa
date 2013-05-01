@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
+import org.semanticweb.owlapi.formats.TurtleOntologyFormat;
 import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -33,7 +33,8 @@ import cz.cvut.kbss.ontodriver.impl.utils.OntoDriverConstants;
 
 abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 
-	protected static final Logger LOG = Logger.getLogger(JenaStorageConnector.class.getName());
+	protected static final Logger LOG = Logger
+			.getLogger(JenaStorageConnector.class.getName());
 
 	protected final URI ontologyUri;
 	protected final URI physicalUri;
@@ -52,7 +53,8 @@ abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 			Map<String, String> properties) throws OntoDriverException {
 		super();
 		if (storageProperties == null || properties == null) {
-			throw new NullPointerException("Neither StorageProperties nor properties can be null.");
+			throw new NullPointerException(
+					"Neither StorageProperties nor properties can be null.");
 		}
 		this.ontologyUri = storageProperties.getOntologyURI();
 		this.physicalUri = storageProperties.getPhysicalURI();
@@ -84,7 +86,8 @@ abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 	}
 
 	@Override
-	public OwlapiConnectorDataHolder getOntologyDataInOwlapi() throws OntoDriverException {
+	public OwlapiConnectorDataHolder getOntologyDataInOwlapi()
+			throws OntoDriverException {
 		final OwlapiConnectorDataHolder holder = transformToOwlapi();
 		return holder;
 	}
@@ -99,13 +102,15 @@ abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 	@Override
 	public OwlapiConnectorDataHolder cloneOntologyDataInOwlapi() {
 		final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
-				.ontologyManager(ontologyManager).dataFactory(ontologyManager.getOWLDataFactory())
+				.ontologyManager(ontologyManager)
+				.dataFactory(ontologyManager.getOWLDataFactory())
 				.reasoner(reasoner).workingOntology(workingOntology).build();
 		return holder;
 	}
 
 	@Override
-	public void applyOntologyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
+	public void applyOntologyChanges(List<OWLOntologyChange> changes)
+			throws OntoDriverException {
 		if (changes == null) {
 			throw new NullPointerException();
 		}
@@ -116,23 +121,26 @@ abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 		assert workingOntology != null;
 		try {
 			for (OWLOntologyChange change : changes) {
-				if (change.getOntology().getOntologyID().equals(workingOntology.getOntologyID())) {
+				if (change.getOntology().getOntologyID()
+						.equals(workingOntology.getOntologyID())) {
 					assert (change instanceof OntologyMutable);
 					((OntologyMutable) change).setOntology(workingOntology);
 				}
 			}
 			ontologyManager.applyChanges(changes);
 
-			final OWLOntologyFormat format = new RDFXMLOntologyFormat();
+			final OWLOntologyFormat format = new TurtleOntologyFormat();
 			ontologyManager.setOntologyFormat(workingOntology, format);
 			final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			ontologyManager.saveOntology(workingOntology, format, bos);
 
-			final ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+			final ByteArrayInputStream bis = new ByteArrayInputStream(
+					bos.toByteArray());
 			model.removeAll();
 			model.read(bis, null);
 		} catch (OWLOntologyStorageException e) {
-			LOG.log(Level.SEVERE, "Unable to transform OWL API ontology to Jena.", e);
+			LOG.log(Level.SEVERE,
+					"Unable to transform OWL API ontology to Jena.", e);
 			reload();
 			throw new OntoDriverException(e);
 		}
@@ -144,22 +152,26 @@ abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 	 * @return
 	 * @throws OntoDriverException
 	 */
-	private OwlapiConnectorDataHolder transformToOwlapi() throws OntoDriverException {
+	private OwlapiConnectorDataHolder transformToOwlapi()
+			throws OntoDriverException {
 		try {
 			initOwlStructures();
 			final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			model.write(bos);
+			model.write(bos, "TURTLE");
 
 			final IRI ontoIri = IRI.create(ontologyUri);
-			final ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+			final ByteArrayInputStream bis = new ByteArrayInputStream(
+					bos.toByteArray());
 			if (ontologyManager.contains(ontoIri)) {
 				ontologyManager.removeOntology(workingOntology);
 			}
 			ontologyManager.loadOntologyFromOntologyDocument(bis);
 
 			if (!ontologyManager.contains(ontoIri)) {
-				OWLOntologyMerger merger = new OWLOntologyMerger(ontologyManager);
-				this.workingOntology = merger.createMergedOntology(ontologyManager, ontoIri);
+				OWLOntologyMerger merger = new OWLOntologyMerger(
+						ontologyManager);
+				this.workingOntology = merger.createMergedOntology(
+						ontologyManager, ontoIri);
 			} else {
 				this.workingOntology = ontologyManager.getOntology(ontoIri);
 			}
@@ -169,31 +181,36 @@ abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 			final OwlapiConnectorDataHolder data = OwlapiConnectorDataHolder
 					.ontologyManager(ontologyManager)
 					.dataFactory(ontologyManager.getOWLDataFactory())
-					.workingOntology(workingOntology).reasoner(reasoner).build();
+					.workingOntology(workingOntology).reasoner(reasoner)
+					.build();
 			return data;
 		} catch (OWLOntologyCreationException e) {
-			LOG.log(Level.SEVERE, "Unable to transform Jena ontology to OWL API.", e);
+			LOG.log(Level.SEVERE,
+					"Unable to transform Jena ontology to OWL API.", e);
 			throw new OntoDriverException(e);
 		} catch (InstantiationException e) {
-			LOG.log(Level.SEVERE, "Unable to instantiate reasoner factory class.", e);
+			LOG.log(Level.SEVERE,
+					"Unable to instantiate reasoner factory class.", e);
 			throw new OntoDriverException(e);
 		} catch (IllegalAccessException e) {
-			LOG.log(Level.SEVERE, "Unable to instantiate reasoner factory class.", e);
+			LOG.log(Level.SEVERE,
+					"Unable to instantiate reasoner factory class.", e);
 			throw new OntoDriverException(e);
 		} catch (ClassNotFoundException e) {
-			LOG.log(Level.SEVERE, "Unable to instantiate reasoner factory class.", e);
+			LOG.log(Level.SEVERE,
+					"Unable to instantiate reasoner factory class.", e);
 			throw new OntoDriverException(e);
 		}
 	}
 
-	private void initOwlStructures() throws InstantiationException, IllegalAccessException,
-			ClassNotFoundException {
+	private void initOwlStructures() throws InstantiationException,
+			IllegalAccessException, ClassNotFoundException {
 		if (ontologyManager != null) {
 			return;
 		}
 		this.ontologyManager = OWLManager.createOWLOntologyManager();
-		this.reasonerFactory = (OWLReasonerFactory) Class.forName(reasonerFactoryClass)
-				.newInstance();
+		this.reasonerFactory = (OWLReasonerFactory) Class.forName(
+				reasonerFactoryClass).newInstance();
 	}
 
 	/**

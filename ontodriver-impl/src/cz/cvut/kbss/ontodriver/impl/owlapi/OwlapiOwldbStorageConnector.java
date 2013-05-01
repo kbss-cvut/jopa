@@ -41,7 +41,8 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 	private IRI databaseIri;
 	private Properties hibernateProperties;
 
-	public OwlapiOwldbStorageConnector(OntologyStorageProperties storageProperties,
+	public OwlapiOwldbStorageConnector(
+			OntologyStorageProperties storageProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		super(storageProperties, properties);
 	}
@@ -55,21 +56,23 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 		this.databaseIri = IRI.create(physicalUri);
 
 		this.hibernateProperties = new Properties();
-		OwlapiUtils.initHibernateProperties(hibernateProperties, storageProperties);
+		OwlapiUtils.initHibernateProperties(hibernateProperties,
+				storageProperties);
 
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Using database backend: " + physicalUri);
 		}
-		this.ontologyManager = OWLDBManager.createOWLOntologyManager(OWLDataFactoryImpl
-				.getInstance());
+		this.ontologyManager = OWLDBManager
+				.createOWLOntologyManager(OWLDataFactoryImpl.getInstance());
 
-		OwlapiUtils.setOntologyManagerIriMapper(ontologyManager, logicalUri, physicalUri);
+		OwlapiUtils.setOntologyManagerIriMapper(ontologyManager, logicalUri,
+				physicalUri);
 
 		this.dataFactory = this.ontologyManager.getOWLDataFactory();
 
 		try {
-			this.workingOntology = ((OWLDBOntologyManager) ontologyManager).loadOntology(
-					ontologyIri, hibernateProperties);
+			this.workingOntology = ((OWLDBOntologyManager) ontologyManager)
+					.loadOntology(ontologyIri, hibernateProperties);
 		} catch (OWLOntologyCreationException e) {
 			if (LOG.isLoggable(Level.CONFIG)) {
 				LOG.config("Ontology " + logicalUri
@@ -82,7 +85,6 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 				LOG.finer("OWLDB database structure not present. Generating...");
 			}
 			createOntology(ontologyIri, hibernateProperties);
-			saveWorkingOntology();
 		}
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Number of individuals in signature: "
@@ -93,18 +95,19 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 	@Override
 	protected void reloadOntology() throws OntoDriverException {
 		try {
-			this.workingOntology = ((OWLDBOntologyManager) ontologyManager).loadOntology(
-					IRI.create(ontologyUri), hibernateProperties);
+			this.workingOntology = ((OWLDBOntologyManager) ontologyManager)
+					.loadOntology(IRI.create(ontologyUri), hibernateProperties);
 		} catch (OWLOntologyCreationException e) {
 			throw new OntoDriverException(e);
 		}
 	}
 
-	private void createOntology(IRI ontologyUri, Properties props) throws OntoDriverException {
+	private void createOntology(IRI ontologyUri, Properties props)
+			throws OntoDriverException {
 		try {
 			OWLOntologyID ontoId = new OWLOntologyID(ontologyUri);
-			this.workingOntology = ((OWLDBOntologyManager) ontologyManager).createOntology(ontoId,
-					props);
+			this.workingOntology = ((OWLDBOntologyManager) ontologyManager)
+					.createOntology(ontoId, props);
 		} catch (OWLOntologyCreationException e) {
 			throw new OntoDriverException(e);
 		}
@@ -119,8 +122,8 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 		// final OWLDBOntologyOutputTarget target = new
 		// OWLDBOntologyOutputTarget(databaseIri);
 		try {
-			((OWLDBOntologyManager) ontologyManager).saveOntology(workingOntology, format,
-					databaseIri, hibernateProperties);
+			((OWLDBOntologyManager) ontologyManager).saveOntology(
+					workingOntology, format, databaseIri, hibernateProperties);
 			// this.ontologyManager.saveOntology(workingOntology, format,
 			// target);
 		} catch (OWLOntologyStorageException e) {

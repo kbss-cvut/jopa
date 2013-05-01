@@ -26,11 +26,13 @@ import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.adapters.IndirectList;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.model.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 public class CloneBuilderImpl implements CloneBuilder {
 
-	private static Logger log = Logger.getLogger(CloneBuilderImpl.class.getName());
+	private static Logger log = Logger.getLogger(CloneBuilderImpl.class
+			.getName());
 
 	private static final Set<Class<?>> WRAPPER_TYPES = getWrapperTypes();
 
@@ -75,8 +77,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 				return visitedClone;
 			}
 		}
-		Object clone = getInstantiationHelper().buildNewInstance(original.getClass(), original,
-				contextUri);
+		Object clone = getInstantiationHelper().buildNewInstance(
+				original.getClass(), original, contextUri);
 		visitedObjects.put(original, clone);
 		populateAttributes(original, clone, contextUri);
 		if (uow.isManagedType(cls)) {
@@ -95,7 +97,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 	 * @param clone
 	 *            Object
 	 */
-	private void populateAttributes(final Object original, Object clone, final URI contextUri) {
+	private void populateAttributes(final Object original, Object clone,
+			final URI contextUri) {
 		Class<?> theClass = original.getClass();
 		List<Field> fields = new ArrayList<Field>();
 		fields.addAll(Arrays.asList(theClass.getDeclaredFields()));
@@ -116,20 +119,24 @@ public class CloneBuilderImpl implements CloneBuilder {
 					// The field is an immutable type
 					f.set(clone, f.get(original));
 				} else if (f.get(original) instanceof Collection) {
-					final Collection<?> origCol = (Collection<?>) f.get(original);
+					final Collection<?> origCol = (Collection<?>) f
+							.get(original);
 					Collection<?> clonedCollection;
 					if (origCol instanceof IndirectCollection) {
 						// Indirect collections are cloned differently (to
 						// prevent accidental updates)
 						IndirectCollection ind = (IndirectCollection) origCol;
 						clonedCollection = (Collection<?>) getInstantiationHelper()
-								.buildNewInstance(f.getType(), ind.getReferencedCollection(),
+								.buildNewInstance(f.getType(),
+										ind.getReferencedCollection(),
 										contextUri);
 					} else {
 						clonedCollection = (Collection<?>) getInstantiationHelper()
-								.buildNewInstance(f.getType(), origCol, contextUri);
+								.buildNewInstance(f.getType(), origCol,
+										contextUri);
 					}
-					Collection<?> toUse = createIndirectCollection(clonedCollection, clone);
+					Collection<?> toUse = createIndirectCollection(
+							clonedCollection, clone);
 					f.set(clone, toUse);
 				} else if (f.getType().isArray()) {
 					Object[] arr = cloneArray(f.get(original), contextUri);
@@ -153,8 +160,9 @@ public class CloneBuilderImpl implements CloneBuilder {
 					Object toAssign = null;
 					if (uow.isManagedType(attValue.getClass())) {
 						final IRI pk = getIdentifier(attValue);
-						toAssign = visitedEntities.containsKey(pk) ? visitedEntities.get(pk) : uow
-								.registerExistingObject(attValue, contextUri);
+						toAssign = visitedEntities.containsKey(pk) ? visitedEntities
+								.get(pk) : uow.registerExistingObject(attValue,
+								contextUri);
 					} else {
 						toAssign = buildClone(attValue, contextUri);
 					}
@@ -240,12 +248,13 @@ public class CloneBuilderImpl implements CloneBuilder {
 		if (original == null) {
 			return null;
 		}
-		ObjectChangeSet chs = new ObjectChangeSetImpl(original, clone, false, changeSet);
+		ObjectChangeSet chs = new ObjectChangeSetImpl(original, clone, false,
+				changeSet);
 		return chs;
 	}
 
-	public Object mergeChanges(Object original, Object clone, ObjectChangeSet changeSet,
-			MergeManager mergeManager) {
+	public Object mergeChanges(Object original, Object clone,
+			ObjectChangeSet changeSet, MergeManager mergeManager) {
 		Map<String, ChangeRecord> changes = changeSet.getAttributesToChange();
 		try {
 			for (String att : changes.keySet()) {
@@ -261,10 +270,17 @@ public class CloneBuilderImpl implements CloneBuilder {
 				Object origVal = f.get(original);
 				Object newVal = change.getNewValue();
 				if (origVal instanceof Collection) {
-					mergeCollections((Collection<?>) origVal, (Collection<?>) newVal);
-				} else if (origVal != null && newVal != null && this.uow.containsOriginal(origVal)) {
+					mergeCollections((Collection<?>) origVal,
+							(Collection<?>) newVal);
+					final Types annotation = f.getAnnotation(Types.class);
+					if (annotation != null) {
+						checkForNewTypes((Collection<?>) newVal);
+					}
+				} else if (origVal != null && newVal != null
+						&& this.uow.containsOriginal(origVal)) {
 					this.mergeChangesOnManaged(origVal, newVal);
-				} else if (origVal != null && newVal != null && containsManagedObjects(origVal)) {
+				} else if (origVal != null && newVal != null
+						&& containsManagedObjects(origVal)) {
 					this.mergeChangesOnManaged(origVal, newVal);
 				} else {
 					// Otherwise we can simply assign the new value
@@ -295,8 +311,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-	protected boolean containsManagedObjects(Object entity) throws IllegalArgumentException,
-			IllegalAccessException {
+	protected boolean containsManagedObjects(Object entity)
+			throws IllegalArgumentException, IllegalAccessException {
 		Class<?> cls = entity.getClass();
 		List<Field> fields = getAllFields(cls);
 		for (Field f : fields) {
@@ -335,11 +351,13 @@ public class CloneBuilderImpl implements CloneBuilder {
 			}
 			Object clVal = f.get(clone);
 			Object origVal = f.get(original);
-			if (!(clVal instanceof Collection) && !uow.containsOriginal(origVal)) {
+			if (!(clVal instanceof Collection)
+					&& !uow.containsOriginal(origVal)) {
 				f.set(original, clVal);
 			} else {
 				if (clVal instanceof Collection) {
-					mergeCollections((Collection<?>) origVal, (Collection<?>) clVal);
+					mergeCollections((Collection<?>) origVal,
+							(Collection<?>) clVal);
 				} else {
 					mergeChangesOnManaged(origVal, clVal);
 				}
@@ -426,25 +444,6 @@ public class CloneBuilderImpl implements CloneBuilder {
 		return instantiationHelper;
 	}
 
-	public static synchronized boolean isFieldInferred(final Field f) {
-		Annotation[] annots = f.getAnnotations();
-		try {
-			for (Annotation a : annots) {
-				Method m = a.getClass().getDeclaredMethod("inferred", (Class<?>[]) null);
-				return (Boolean) m.invoke(a, (Object[]) null);
-			}
-		} catch (NoSuchMethodException e) {
-			return false;
-		} catch (IllegalAccessException e) {
-			return false;
-		} catch (IllegalArgumentException e) {
-			return false;
-		} catch (InvocationTargetException e) {
-			return false;
-		}
-		return false;
-	}
-
 	public void reset() {
 		visitedObjects.clear();
 		visitedEntities.clear();
@@ -457,9 +456,55 @@ public class CloneBuilderImpl implements CloneBuilder {
 		} else if (c instanceof Set) {
 			res = new IndirectSet<E>(owner, uow, (Set<E>) c);
 		} else {
-			throw new UnsupportedOperationException("Maps are not supported yet.");
+			throw new UnsupportedOperationException(
+					"Maps are not supported yet.");
 		}
 		return res;
+	}
+
+	/**
+	 * Checks if new types were added to the specified collection. </p>
+	 * 
+	 * If so, they are added to the module extraction signature managed by
+	 * Metamodel.
+	 * 
+	 * @param collection
+	 *            The collection to check
+	 * @see Types
+	 */
+	private void checkForNewTypes(Collection<?> collection) {
+		assert collection != null;
+		if (collection.isEmpty()) {
+			return;
+		}
+		final Set<URI> signature = uow.getMetamodel()
+				.getModuleExtractionExtraSignature();
+		for (Object elem : collection) {
+			final URI u = EntityPropertiesUtils.getValueAsURI(elem);
+			if (!signature.contains(u)) {
+				uow.getMetamodel().addUriToModuleExtractionSignature(u);
+			}
+		}
+	}
+
+	public static synchronized boolean isFieldInferred(final Field f) {
+		Annotation[] annots = f.getAnnotations();
+		try {
+			for (Annotation a : annots) {
+				Method m = a.getClass().getDeclaredMethod("inferred",
+						(Class<?>[]) null);
+				return (Boolean) m.invoke(a, (Object[]) null);
+			}
+		} catch (NoSuchMethodException e) {
+			return false;
+		} catch (IllegalAccessException e) {
+			return false;
+		} catch (IllegalArgumentException e) {
+			return false;
+		} catch (InvocationTargetException e) {
+			return false;
+		}
+		return false;
 	}
 
 	/**

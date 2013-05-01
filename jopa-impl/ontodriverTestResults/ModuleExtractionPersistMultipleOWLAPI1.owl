@@ -80,12 +80,6 @@
     
 
 
-    <!-- JustOneType -->
-
-    <owl:Class rdf:about="JustOneType"/>
-    
-
-
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA -->
 
     <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
@@ -130,7 +124,6 @@
     <!-- http://entityA -->
 
     <owl:NamedIndividual rdf:about="http://entityA">
-        <rdf:type rdf:resource="JustOneType"/>
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
         <attributes:A-stringAttribute>entityAStringAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>
@@ -164,9 +157,9 @@
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/ModuleExtractionPersistMultipleOWLAPI1#i_OWLClassE -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/ModuleExtractionPersistMultipleOWLAPI1#OWLClassE_5 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/ModuleExtractionPersistMultipleOWLAPI1#i_OWLClassE">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/ModuleExtractionPersistMultipleOWLAPI1#OWLClassE_5">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE"/>
         <attributes:E-stringAttribute>entityEStringAttribute</attributes:E-stringAttribute>
     </owl:NamedIndividual>

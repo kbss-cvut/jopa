@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -49,7 +50,8 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * @param <X>
  * 
  */
-public class ModularizingStorageConnector implements StorageConnector, OwlapiConnector {
+public class ModularizingStorageConnector implements StorageConnector,
+		OwlapiConnector {
 
 	private static final Logger LOG = Logger
 			.getLogger(ModularizingStorageConnector.class.getName());
@@ -113,7 +115,8 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 	 *             If {@code changes} is {@code null}
 	 */
 	@Override
-	public void applyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
+	public void applyChanges(List<OWLOntologyChange> changes)
+			throws OntoDriverException {
 		if (changes == null) {
 			throw new NullPointerException();
 		}
@@ -161,8 +164,8 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 	 * @throws NullPointerException
 	 *             If {@code metamodel} or {@code context} is {@code null}
 	 */
-	public OwlapiConnectorDataHolder extractOntologyModule(Metamodel metamodel, Context ctx)
-			throws OntoDriverException {
+	public OwlapiConnectorDataHolder extractOntologyModule(Metamodel metamodel,
+			Context ctx) throws OntoDriverException {
 		if (metamodel == null || ctx == null) {
 			throw new NullPointerException();
 		}
@@ -191,26 +194,30 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 	 * @throws OntoDriverException
 	 *             If the module extraction fails
 	 */
-	private OwlapiConnectorDataHolder extractModuleInternal(Set<OWLEntity> signature, Context ctx)
-			throws OntoDriverException {
+	private OwlapiConnectorDataHolder extractModuleInternal(
+			Set<OWLEntity> signature, Context ctx) throws OntoDriverException {
 		// Extract a syntactic locality-based module
 		try {
 			SyntacticLocalityModuleExtractor sme = new SyntacticLocalityModuleExtractor(
-					connector.ontologyManager, connector.workingOntology, ModuleType.STAR);
+					connector.ontologyManager, connector.workingOntology,
+					ModuleType.STAR);
 			Set<OWLAxiom> mod = sme.extract(signature);
 			if (LOG.isLoggable(Level.FINEST)) {
 				LOG.finest("Extracted module size: " + mod.size());
 			}
 			final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
 			final OWLDataFactory d = m.getOWLDataFactory();
-			final OWLOntology o = m.createOntology(mod, IRI.create(ctx.getUri()));
+			final OWLOntology o = m.createOntology(mod,
+					IRI.create(ctx.getUri()));
 			OWLReasoner r = connector.getReasonerFactory().createReasoner(o);
-			final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder.ontologyManager(m)
-					.workingOntology(o).reasoningOntology(o).dataFactory(d).reasoner(r)
-					.language(connector.language).build();
+			final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
+					.ontologyManager(m).workingOntology(o).reasoningOntology(o)
+					.dataFactory(d).reasoner(r).language(connector.language)
+					.build();
 			return holder;
 		} catch (OWLOntologyCreationException e) {
-			throw new OntoDriverException("Unable to extract ontology module.", e);
+			throw new OntoDriverException("Unable to extract ontology module.",
+					e);
 		}
 	}
 
@@ -218,8 +225,8 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 	 * Generates signature for entities and their fields from the the specified
 	 * metamodel. </p>
 	 * 
-	 * TODO: types are not in the extracted module, this method doesn't create
-	 * full signature of the metamodel
+	 * Plus finds and adds OWL concepts specified in extra signature in
+	 * metamodel.
 	 * 
 	 * @param metamodel
 	 *            {@code Metamodel}
@@ -229,11 +236,12 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 		assert metamodel != null;
 		final Set<EntityType<?>> entities = metamodel.getEntities();
 		// Just guess the size
-		final Set<OWLEntity> signature = new HashSet<OWLEntity>(entities.size() * 5);
+		final Set<OWLEntity> signature = new HashSet<OWLEntity>(
+				entities.size() * 5);
 		for (EntityType<?> t : entities) {
 			// Take the class
-			final OWLClass cls = connector.dataFactory.getOWLClass(IRI
-					.create(t.getIRI().toString()));
+			final OWLClass cls = connector.dataFactory.getOWLClass(IRI.create(t
+					.getIRI().toString()));
 			signature.add(cls);
 			final Set<?> atts = t.getAttributes();
 			// And all its attributes
@@ -246,13 +254,51 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 					ent = connector.dataFactory.getOWLObjectProperty(attIri);
 				} else if (attField.isAnnotationPresent(OWLDataProperty.class)) {
 					ent = connector.dataFactory.getOWLDataProperty(attIri);
-				} else if (attField.isAnnotationPresent(OWLAnnotationProperty.class)) {
-					ent = connector.dataFactory.getOWLAnnotationProperty(attIri);
+				} else if (attField
+						.isAnnotationPresent(OWLAnnotationProperty.class)) {
+					ent = connector.dataFactory
+							.getOWLAnnotationProperty(attIri);
 				}
-				// TODO Is this all?
 				signature.add(ent);
 			}
 		}
+		addExtraSignature(metamodel, signature);
 		return signature;
+	}
+
+	/**
+	 * Adds concepts specified by user to the module extraction signature. </p>
+	 * 
+	 * @param metamodel
+	 *            Metamodel
+	 * @param signature
+	 *            Current signature
+	 */
+	private void addExtraSignature(Metamodel metamodel, Set<OWLEntity> signature) {
+		final Set<URI> extraSignature = metamodel
+				.getModuleExtractionExtraSignature();
+		for (URI u : extraSignature) {
+			final IRI iri = IRI.create(u);
+			OWLEntity e = connector.dataFactory.getOWLClass(iri);
+			if (e == null) {
+				e = connector.dataFactory.getOWLObjectProperty(iri);
+				if (e == null) {
+					e = connector.dataFactory.getOWLDataProperty(iri);
+					if (e == null) {
+						e = connector.dataFactory.getOWLAnnotationProperty(iri);
+						if (e == null) {
+							e = connector.dataFactory
+									.getOWLNamedIndividual(iri);
+							if (e == null) {
+								LOG.warning("No concept corresponding to URI "
+										+ u + " found in the ontology.");
+								continue;
+							}
+						}
+					}
+				}
+			}
+			signature.add(e);
+		}
 	}
 }

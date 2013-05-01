@@ -16,7 +16,6 @@
 package cz.cvut.kbss.jopa.model;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 public class IRI implements AnnotationValue {
 
@@ -30,7 +29,7 @@ public class IRI implements AnnotationValue {
 		this.iri = iri;
 	}
 
-	public URI toURI() throws URISyntaxException {
+	public URI toURI() {
 		return URI.create(iri);
 	}
 

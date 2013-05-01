@@ -37,6 +37,26 @@ public final class OntoDriverProperties {
 	 */
 	public static final String OWLIM_DRIVER_FACTORY = "cz.cvut.kbss.ontodriver.owlim-factory";
 
+	/**
+	 * Property for specifying extra URIs which should be added to the module
+	 * extraction signature. </p>
+	 * 
+	 * The module extraction signature is generated from metamodel, but
+	 * <i>types</i> and <i>properties</i> cannot be determined from the
+	 * metamodel. Therefore it is possible to specify them using this property
+	 * so that the module is complete.
+	 */
+	public static final String MODULE_EXTRACTION_SIGNATURE = "cz.cvut.kbss.ontodriver.module-signature";
+
+	/**
+	 * Property representing module extraction signature delimiter. </p>
+	 * 
+	 * I. e. URIs in module extraction signature are delimited by this string.
+	 * 
+	 * @see #MODULE_EXTRACTION_SIGNATURE
+	 */
+	public static final String SIGNATURE_DELIMITER = "|";
+
 	private OntoDriverProperties() {
 		throw new AssertionError();
 	}

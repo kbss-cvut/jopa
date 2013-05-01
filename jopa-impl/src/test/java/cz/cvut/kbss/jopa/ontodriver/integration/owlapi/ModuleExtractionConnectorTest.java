@@ -33,10 +33,12 @@ import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStorageType;
 
 public class ModuleExtractionConnectorTest {
 
-	private static final Logger LOG = Logger.getLogger(SingleFileContextTest.class.getName());
+	private static final Logger LOG = Logger
+			.getLogger(SingleFileContextTest.class.getName());
 
-	private static final List<StorageInfo> storage = Collections.singletonList(new StorageInfo(
-			OntologyConnectorType.OWLAPI, OwlapiStorageType.FILE));
+	private static final List<StorageInfo> storage = Collections
+			.singletonList(new StorageInfo(OntologyConnectorType.OWLAPI,
+					OwlapiStorageType.FILE));
 	private static final String OWLCLASS_A_REFERENCE_FIELD = "owlClassA";
 	private static final Map<String, String> properties = initProperties();
 
@@ -57,7 +59,8 @@ public class ModuleExtractionConnectorTest {
 		entityA = new OWLClassA();
 		entityA.setUri(URI.create("http://entityA"));
 		entityA.setStringAttribute("entityAStringAttribute");
-		entityA.setTypes(Collections.singleton("JustOneType"));
+		entityA.setTypes(Collections
+				.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/entities#SomeTestType"));
 		entityB = new OWLClassB();
 		entityB.setUri(URI.create("http://entityB"));
 		entityB.setStringAttribute("entityBStringAttribute");
@@ -70,6 +73,10 @@ public class ModuleExtractionConnectorTest {
 		entityI.setUri(URI.create("http://entityI"));
 		entityI.setOwlClassA(entityA);
 		facade = TestEnv.getProviderFacade();
+		for (String t : entityA.getTypes()) {
+			facade.getMetamodel().addUriToModuleExtractionSignature(
+					URI.create(t));
+		}
 	}
 
 	@After
@@ -108,10 +115,12 @@ public class ModuleExtractionConnectorTest {
 		c.persist(entityD.getUri(), entityD);
 		c.commit();
 
-		final OWLClassD resD = c.find(OWLClassD.class, entityD.getUri(), ctx.getUri());
+		final OWLClassD resD = c.find(OWLClassD.class, entityD.getUri(),
+				ctx.getUri());
 		assertNotNull(resD);
 		assertNotNull(resD.getOwlClassA());
-		final OWLClassA resA = c.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
+		final OWLClassA resA = c.find(OWLClassA.class, entityA.getUri(),
+				ctx.getUri());
 		assertNotNull(resA);
 		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
 	}
@@ -140,7 +149,8 @@ public class ModuleExtractionConnectorTest {
 		final OWLClassE resE = c.find(OWLClassE.class, entityE.getUri());
 		assertNotNull(resE);
 		final OWLClassI resI = c.find(OWLClassI.class, entityI.getUri());
-		final Field f = OWLClassI.class.getDeclaredField(OWLCLASS_A_REFERENCE_FIELD);
+		final Field f = OWLClassI.class
+				.getDeclaredField(OWLCLASS_A_REFERENCE_FIELD);
 		f.setAccessible(true);
 		assertNull(f.get(resI));
 		c.loadFieldValue(resI, f);
@@ -210,9 +220,11 @@ public class ModuleExtractionConnectorTest {
 
 		final OWLClassA a = c.find(OWLClassA.class, entityA.getUri());
 		assertNotNull(a);
-		final String newType = entityB.getClass().getName();
+		final String newType = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB";
 		assertFalse(a.getTypes().isEmpty());
 		a.getTypes().add(newType);
+		facade.getMetamodel().addUriToModuleExtractionSignature(
+				URI.create(newType));
 		final OWLClassB b = c.find(OWLClassB.class, entityB.getUri());
 		assertNotNull(b);
 		final String newString = "NewStringAttribute";
@@ -221,17 +233,25 @@ public class ModuleExtractionConnectorTest {
 		c.merge(b.getUri(), b);
 		c.commit();
 
-		final OWLClassA resA = c.find(OWLClassA.class, entityA.getUri());
-		assertNotNull(resA);
-		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
-		assertEquals(entityA.getTypes().size() + 1, resA.getTypes().size());
-		assertTrue(resA.getTypes().contains(newType));
-		final OWLClassB resB = c.find(OWLClassB.class, entityB.getUri());
-		assertNotNull(resB);
-		assertEquals(newString, resB.getStringAttribute());
+		// Make sure the extended signature is used
+		final Connection cTwo = ds.getConnection(facade);
+		try {
+			final OWLClassA resA = cTwo.find(OWLClassA.class, entityA.getUri());
+			assertNotNull(resA);
+			assertEquals(entityA.getStringAttribute(),
+					resA.getStringAttribute());
+			assertEquals(entityA.getTypes().size() + 1, resA.getTypes().size());
+			assertTrue(resA.getTypes().contains(newType));
+			final OWLClassB resB = cTwo.find(OWLClassB.class, entityB.getUri());
+			assertNotNull(resB);
+			assertEquals(newString, resB.getStringAttribute());
+		} finally {
+			cTwo.close();
+		}
 	}
 
-	private static void acquireConnection(String baseName) throws OntoDriverException {
+	private static void acquireConnection(String baseName)
+			throws OntoDriverException {
 		ds = TestEnv.createDataSource(baseName, storage, properties, false);
 		c = ds.getConnection(facade);
 	}

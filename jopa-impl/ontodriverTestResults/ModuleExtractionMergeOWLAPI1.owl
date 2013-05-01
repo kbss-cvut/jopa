@@ -57,12 +57,6 @@
     
 
 
-    <!-- JustOneType -->
-
-    <owl:Class rdf:about="JustOneType"/>
-    
-
-
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA -->
 
     <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
@@ -72,6 +66,12 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB -->
 
     <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#SomeTestType -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#SomeTestType"/>
     
 
 
@@ -89,8 +89,9 @@
     <!-- http://entityA -->
 
     <owl:NamedIndividual rdf:about="http://entityA">
-        <rdf:type rdf:resource="JustOneType"/>
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#SomeTestType"/>
         <attributes:A-stringAttribute>entityAStringAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
@@ -100,7 +101,7 @@
 
     <owl:NamedIndividual rdf:about="http://entityB">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB"/>
-        <attributes:B-stringAttribute>entityBStringAttribute</attributes:B-stringAttribute>
+        <attributes:B-stringAttribute>NewStringAttribute</attributes:B-stringAttribute>
     </owl:NamedIndividual>
 </rdf:RDF>
 

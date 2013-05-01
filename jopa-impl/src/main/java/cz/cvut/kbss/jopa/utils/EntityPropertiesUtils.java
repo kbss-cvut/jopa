@@ -1,6 +1,8 @@
 package cz.cvut.kbss.jopa.utils;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.semanticweb.owlapi.model.IRI;
 
@@ -59,6 +61,41 @@ public class EntityPropertiesUtils {
 		} else {
 			throw new OWLPersistenceException("Unknown identifier type: "
 					+ fieldValue.getClass());
+		}
+	}
+
+	/**
+	 * Transforms the specified value to URI (if possible). </p>
+	 * 
+	 * @param value
+	 *            The value to transform
+	 * @return {@code URI}
+	 * @throws NullPointerException
+	 *             If {@code value} is {@code null}
+	 * @throws IllegalArgumentException
+	 *             If {@code value} cannot be transformed to URI
+	 */
+	public static URI getValueAsURI(Object value) {
+		if (value == null) {
+			throw new NullPointerException();
+		}
+		if (value instanceof URI) {
+			return (URI) value;
+		} else if (value instanceof String) {
+			return URI.create((String) value);
+		} else if (value instanceof IRI) {
+			return ((IRI) value).toURI();
+		} else if (value instanceof cz.cvut.kbss.jopa.model.IRI) {
+			return ((cz.cvut.kbss.jopa.model.IRI) value).toURI();
+		} else if (value instanceof URL) {
+			try {
+				return ((URL) value).toURI();
+			} catch (URISyntaxException e) {
+				throw new IllegalArgumentException(e);
+			}
+		} else {
+			throw new IllegalArgumentException("The specified " + value
+					+ " cannot be tranformed to URI.");
 		}
 	}
 }

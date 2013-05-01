@@ -35,7 +35,8 @@ public class IndirectList<E> extends IndirectCollection implements List<E> {
 	public IndirectList(Object owner, UnitOfWorkImpl uow, List<E> referencedList) {
 		super(owner, uow);
 		if (referencedList == null) {
-			throw new NullPointerException("Null passed in as the referencedList.");
+			throw new NullPointerException(
+					"Null passed in as the referencedList.");
 		}
 		this.internalList = referencedList;
 	}
@@ -151,7 +152,8 @@ public class IndirectList<E> extends IndirectCollection implements List<E> {
 	}
 
 	public List<E> subList(int arg0, int arg1) {
-		return new IndirectList<E>(owner, persistenceContext, internalList.subList(arg0, arg1));
+		return new IndirectList<E>(owner, persistenceContext,
+				internalList.subList(arg0, arg1));
 	}
 
 	public Object[] toArray() {

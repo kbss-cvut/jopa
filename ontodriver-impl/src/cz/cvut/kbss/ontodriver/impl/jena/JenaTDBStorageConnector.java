@@ -35,12 +35,14 @@ public class JenaTDBStorageConnector extends JenaStorageConnector {
 	}
 
 	@Override
-	public OwlapiConnectorDataHolder getOntologyDataInOwlapi() throws OntoDriverException {
+	public OwlapiConnectorDataHolder getOntologyDataInOwlapi()
+			throws OntoDriverException {
 		return super.getOntologyDataInOwlapi();
 	}
 
 	@Override
-	public void applyOntologyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
+	public void applyOntologyChanges(List<OWLOntologyChange> changes)
+			throws OntoDriverException {
 		dataset.begin(ReadWrite.WRITE);
 		model.begin();
 		super.applyOntologyChanges(changes);
@@ -61,7 +63,8 @@ public class JenaTDBStorageConnector extends JenaStorageConnector {
 	@Override
 	public void saveOntology() throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Committing changes to dataset in directory " + physicalUri);
+			LOG.fine("Committing changes to dataset in directory "
+					+ physicalUri);
 		}
 		model.commit();
 		dataset.commit();
@@ -69,8 +72,9 @@ public class JenaTDBStorageConnector extends JenaStorageConnector {
 
 	@Override
 	public void reload() throws OntoDriverException {
-		model.abort();
-		dataset.abort();
+		if (dataset.isInTransaction()) {
+			dataset.abort();
+		}
 		TDB.sync(dataset);
 		// Force reloading OWL API ontology
 		getOntologyDataInOwlapi();

@@ -68,12 +68,6 @@
     
 
 
-    <!-- JustOneType -->
-
-    <owl:Class rdf:about="JustOneType"/>
-    
-
-
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA -->
 
     <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
@@ -100,7 +94,6 @@
     <!-- http://entityA -->
 
     <owl:NamedIndividual rdf:about="http://entityA">
-        <rdf:type rdf:resource="JustOneType"/>
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
         <attributes:A-stringAttribute>entityAStringAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>

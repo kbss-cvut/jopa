@@ -1,5 +1,7 @@
 package cz.cvut.kbss.ontodriver.utils;
 
+import java.net.URI;
+import java.util.Collections;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.model.metamodel.EmbeddableType;
@@ -55,7 +57,12 @@ public class MetamodelMock implements Metamodel {
 	}
 
 	@Override
-	public boolean shouldUseAspectJ() {
-		return false;
+	public Set<URI> getModuleExtractionExtraSignature() {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public void addUriToModuleExtractionSignature(URI uri) {
+		// Do nothing
 	}
 }
