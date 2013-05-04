@@ -192,10 +192,10 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 			throw new OntoDriverException("Unable to clone working ontology.", e);
 		}
 		manager.addAxioms(ontology, axioms);
+		final OWLReasoner reasoner = reasonerFactory.createReasoner(ontology);
 		final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
-				.workingOntology(ontology).reasoningOntology(getReasoningOntology())
-				.ontologyManager(manager).dataFactory(factory).reasoner(getReasoner())
-				.language(language).build();
+				.workingOntology(ontology).reasoningOntology(ontology).ontologyManager(manager)
+				.dataFactory(factory).reasoner(reasoner).language(language).build();
 		return holder;
 	}
 

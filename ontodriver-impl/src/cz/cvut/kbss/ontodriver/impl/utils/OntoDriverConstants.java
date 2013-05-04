@@ -19,4 +19,9 @@ public final class OntoDriverConstants {
 	 * passed to the driver.
 	 */
 	public static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
+
+	/**
+	 * Name of the Turtle ontology format for Jena.
+	 */
+	public static final String TURTLE_FORMAT = "TURTLE";
 }

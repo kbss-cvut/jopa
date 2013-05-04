@@ -30,8 +30,9 @@ public class JenaTDBStorageConnector extends JenaStorageConnector {
 		final File f = new File(physicalUri);
 		this.dataset = TDBFactory.createDataset(f.getAbsolutePath());
 		// Maybe the named model should be retrieved?
+		dataset.begin(ReadWrite.WRITE);
 		this.model = dataset.getDefaultModel();
-
+		dataset.commit();
 	}
 
 	@Override

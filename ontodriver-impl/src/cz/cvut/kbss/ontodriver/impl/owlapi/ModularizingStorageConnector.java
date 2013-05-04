@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -50,8 +51,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * @param <X>
  * 
  */
-public class ModularizingStorageConnector implements StorageConnector,
-		OwlapiConnector {
+public class ModularizingStorageConnector implements StorageConnector, OwlapiConnector {
 
 	private static final Logger LOG = Logger
 			.getLogger(ModularizingStorageConnector.class.getName());
@@ -59,6 +59,8 @@ public class ModularizingStorageConnector implements StorageConnector,
 	private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
 	private static final Lock READ = LOCK.readLock();
 	private static final Lock WRITE = LOCK.writeLock();
+	private static final ConcurrentHashMap<Metamodel, Set<OWLEntity>> signatures = new ConcurrentHashMap<Metamodel, Set<OWLEntity>>();
+	private static final ConcurrentHashMap<Metamodel, Integer> extraSignatureSizes = new ConcurrentHashMap<Metamodel, Integer>();
 
 	private final OwlapiStorageConnector connector;
 
@@ -115,8 +117,7 @@ public class ModularizingStorageConnector implements StorageConnector,
 	 *             If {@code changes} is {@code null}
 	 */
 	@Override
-	public void applyChanges(List<OWLOntologyChange> changes)
-			throws OntoDriverException {
+	public void applyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
 		if (changes == null) {
 			throw new NullPointerException();
 		}
@@ -164,8 +165,8 @@ public class ModularizingStorageConnector implements StorageConnector,
 	 * @throws NullPointerException
 	 *             If {@code metamodel} or {@code context} is {@code null}
 	 */
-	public OwlapiConnectorDataHolder extractOntologyModule(Metamodel metamodel,
-			Context ctx) throws OntoDriverException {
+	public OwlapiConnectorDataHolder extractOntologyModule(Metamodel metamodel, Context ctx)
+			throws OntoDriverException {
 		if (metamodel == null || ctx == null) {
 			throw new NullPointerException();
 		}
@@ -194,30 +195,26 @@ public class ModularizingStorageConnector implements StorageConnector,
 	 * @throws OntoDriverException
 	 *             If the module extraction fails
 	 */
-	private OwlapiConnectorDataHolder extractModuleInternal(
-			Set<OWLEntity> signature, Context ctx) throws OntoDriverException {
+	private OwlapiConnectorDataHolder extractModuleInternal(Set<OWLEntity> signature, Context ctx)
+			throws OntoDriverException {
 		// Extract a syntactic locality-based module
 		try {
 			SyntacticLocalityModuleExtractor sme = new SyntacticLocalityModuleExtractor(
-					connector.ontologyManager, connector.workingOntology,
-					ModuleType.STAR);
+					connector.ontologyManager, connector.workingOntology, ModuleType.STAR);
 			Set<OWLAxiom> mod = sme.extract(signature);
 			if (LOG.isLoggable(Level.FINEST)) {
 				LOG.finest("Extracted module size: " + mod.size());
 			}
 			final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
 			final OWLDataFactory d = m.getOWLDataFactory();
-			final OWLOntology o = m.createOntology(mod,
-					IRI.create(ctx.getUri()));
+			final OWLOntology o = m.createOntology(mod, IRI.create(ctx.getUri()));
 			OWLReasoner r = connector.getReasonerFactory().createReasoner(o);
-			final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
-					.ontologyManager(m).workingOntology(o).reasoningOntology(o)
-					.dataFactory(d).reasoner(r).language(connector.language)
-					.build();
+			final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder.ontologyManager(m)
+					.workingOntology(o).reasoningOntology(o).dataFactory(d).reasoner(r)
+					.language(connector.language).build();
 			return holder;
 		} catch (OWLOntologyCreationException e) {
-			throw new OntoDriverException("Unable to extract ontology module.",
-					e);
+			throw new OntoDriverException("Unable to extract ontology module.", e);
 		}
 	}
 
@@ -234,33 +231,36 @@ public class ModularizingStorageConnector implements StorageConnector,
 	 */
 	private Set<OWLEntity> getSignatureForExtraction(Metamodel metamodel) {
 		assert metamodel != null;
-		final Set<EntityType<?>> entities = metamodel.getEntities();
-		// Just guess the size
-		final Set<OWLEntity> signature = new HashSet<OWLEntity>(
-				entities.size() * 5);
-		for (EntityType<?> t : entities) {
-			// Take the class
-			final OWLClass cls = connector.dataFactory.getOWLClass(IRI.create(t
-					.getIRI().toString()));
-			signature.add(cls);
-			final Set<?> atts = t.getAttributes();
-			// And all its attributes
-			for (Object o : atts) {
-				final Attribute<?, ?> att = (Attribute<?, ?>) o;
-				final Field attField = att.getJavaField();
-				OWLEntity ent = null;
-				final IRI attIri = IRI.create(att.getIRI().toString());
-				if (attField.isAnnotationPresent(OWLObjectProperty.class)) {
-					ent = connector.dataFactory.getOWLObjectProperty(attIri);
-				} else if (attField.isAnnotationPresent(OWLDataProperty.class)) {
-					ent = connector.dataFactory.getOWLDataProperty(attIri);
-				} else if (attField
-						.isAnnotationPresent(OWLAnnotationProperty.class)) {
-					ent = connector.dataFactory
-							.getOWLAnnotationProperty(attIri);
+		Set<OWLEntity> signature = null;
+		if (!signatures.containsKey(metamodel)) {
+			final Set<EntityType<?>> entities = metamodel.getEntities();
+			// Just guess the size
+			signature = new HashSet<OWLEntity>(entities.size() * 5);
+			for (EntityType<?> t : entities) {
+				// Take the class
+				final OWLClass cls = connector.dataFactory.getOWLClass(IRI.create(t.getIRI()
+						.toString()));
+				signature.add(cls);
+				final Set<?> atts = t.getAttributes();
+				// And all its attributes
+				for (Object o : atts) {
+					final Attribute<?, ?> att = (Attribute<?, ?>) o;
+					final Field attField = att.getJavaField();
+					OWLEntity ent = null;
+					final IRI attIri = IRI.create(att.getIRI().toString());
+					if (attField.isAnnotationPresent(OWLObjectProperty.class)) {
+						ent = connector.dataFactory.getOWLObjectProperty(attIri);
+					} else if (attField.isAnnotationPresent(OWLDataProperty.class)) {
+						ent = connector.dataFactory.getOWLDataProperty(attIri);
+					} else if (attField.isAnnotationPresent(OWLAnnotationProperty.class)) {
+						ent = connector.dataFactory.getOWLAnnotationProperty(attIri);
+					}
+					signature.add(ent);
 				}
-				signature.add(ent);
 			}
+			signatures.putIfAbsent(metamodel, signature);
+		} else {
+			signature = signatures.get(metamodel);
 		}
 		addExtraSignature(metamodel, signature);
 		return signature;
@@ -275,8 +275,13 @@ public class ModularizingStorageConnector implements StorageConnector,
 	 *            Current signature
 	 */
 	private void addExtraSignature(Metamodel metamodel, Set<OWLEntity> signature) {
-		final Set<URI> extraSignature = metamodel
-				.getModuleExtractionExtraSignature();
+		final Set<URI> extraSignature = metamodel.getModuleExtractionExtraSignature();
+		final Integer oldOne = extraSignatureSizes.putIfAbsent(metamodel, extraSignature.size());
+		if (oldOne != null && oldOne.intValue() == extraSignature.size()) {
+			// If the cached signature already contains all the entities from
+			// the extra signature, there is no need to add them again
+			return;
+		}
 		for (URI u : extraSignature) {
 			final IRI iri = IRI.create(u);
 			OWLEntity e = connector.dataFactory.getOWLClass(iri);
@@ -287,11 +292,10 @@ public class ModularizingStorageConnector implements StorageConnector,
 					if (e == null) {
 						e = connector.dataFactory.getOWLAnnotationProperty(iri);
 						if (e == null) {
-							e = connector.dataFactory
-									.getOWLNamedIndividual(iri);
+							e = connector.dataFactory.getOWLNamedIndividual(iri);
 							if (e == null) {
-								LOG.warning("No concept corresponding to URI "
-										+ u + " found in the ontology.");
+								LOG.warning("No concept corresponding to URI " + u
+										+ " found in the ontology.");
 								continue;
 							}
 						}

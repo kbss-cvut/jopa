@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.coode.owlapi.turtle.TurtleOntologyFormat;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
@@ -32,7 +33,6 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
 import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -228,7 +228,7 @@ public class JenaBasedOwlimConnector implements OwlapiBasedJenaConnector {
 				}
 				ontologyManager.applyChanges(changes);
 
-				final OWLOntologyFormat format = new RDFXMLOntologyFormat();
+				final OWLOntologyFormat format = new TurtleOntologyFormat();
 				ontologyManager.setOntologyFormat(workingOntology, format);
 				final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 				ontologyManager.saveOntology(workingOntology, format, bos);
@@ -236,7 +236,7 @@ public class JenaBasedOwlimConnector implements OwlapiBasedJenaConnector {
 				// We'll see how this works out.
 				final ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
 				jenaModel.removeAll();
-				jenaModel.read(bis, null);
+				jenaModel.read(bis, null, OntoDriverConstants.TURTLE_FORMAT);
 				connection.commit();
 			} catch (OWLOntologyStorageException e) {
 				LOG.log(Level.SEVERE, "Unable to transform OWL API ontology to Jena.", e);
@@ -330,7 +330,7 @@ public class JenaBasedOwlimConnector implements OwlapiBasedJenaConnector {
 		try {
 			initOwlStructures();
 			final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			jenaModel.write(bos);
+			jenaModel.write(bos, null);
 
 			final IRI ontoIri = IRI.create(props.getOntologyURI());
 			final ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());

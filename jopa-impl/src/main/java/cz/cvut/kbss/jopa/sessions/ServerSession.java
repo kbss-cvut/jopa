@@ -210,7 +210,7 @@ public class ServerSession extends AbstractSession {
 	 * @param uow
 	 *            Persistence context of the specified entity
 	 */
-	void registerEntityWithContext(Object entity, UnitOfWorkImpl uow) {
+	synchronized void registerEntityWithContext(Object entity, UnitOfWorkImpl uow) {
 		if (entity == null || uow == null) {
 			throw new NullPointerException(
 					"Null passed to as argument. Entity: " + entity
