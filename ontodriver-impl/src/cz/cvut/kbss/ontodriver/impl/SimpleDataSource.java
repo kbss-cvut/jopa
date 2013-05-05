@@ -25,6 +25,7 @@ public class SimpleDataSource implements DataSource {
 
 	private final OntoDriver driver;
 	private final Map<String, String> properties;
+	private boolean open;
 
 	public SimpleDataSource(List<OntologyStorageProperties> storageProperties) {
 		if (storageProperties == null || storageProperties.isEmpty()) {
@@ -33,6 +34,7 @@ public class SimpleDataSource implements DataSource {
 		}
 		this.properties = Collections.emptyMap();
 		this.driver = new OntoDriverImpl(storageProperties, properties);
+		this.open = true;
 	}
 
 	public SimpleDataSource(List<OntologyStorageProperties> storageProperties,
@@ -47,6 +49,7 @@ public class SimpleDataSource implements DataSource {
 		}
 		this.properties = properties;
 		this.driver = new OntoDriverImpl(storageProperties, properties);
+		this.open = true;
 	}
 
 	/**
@@ -73,4 +76,19 @@ public class SimpleDataSource implements DataSource {
 		conn.setAutoCommit(autoCommit);
 		return conn;
 	}
+
+	@Override
+	public void close() throws OntoDriverException {
+		if (!open) {
+			return;
+		}
+		driver.close();
+		this.open = false;
+	}
+
+	@Override
+	public boolean isOpen() {
+		return open;
+	}
+
 }

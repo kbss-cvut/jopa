@@ -51,15 +51,15 @@
     
 
 
-    <!-- OWLClassA -->
-
-    <owl:Class rdf:about="OWLClassA"/>
-    
-
-
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA -->
 
     <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/tests/SomeType -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/SomeType"/>
     
 
 
@@ -77,8 +77,8 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA -->
 
     <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA">
-        <rdf:type rdf:resource="OWLClassA"/>
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/tests/SomeType"/>
         <attributes:A-stringAttribute>entityAStringAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>
 </rdf:RDF>

@@ -67,9 +67,9 @@
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#i_OWLClassE -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#OWLClassE_1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#i_OWLClassE">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testGenerateID#OWLClassE_1">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE"/>
         <attributes:E-stringAttribute>someString</attributes:E-stringAttribute>
     </owl:NamedIndividual>

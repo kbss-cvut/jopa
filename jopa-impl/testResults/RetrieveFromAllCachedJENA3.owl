@@ -3,11 +3,10 @@
     xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/RetrieveFromAllCachedJENA3#"
     xmlns:j.0="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
     xmlns:owl="http://www.w3.org/2002/07/owl#"
-    xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#"
+    xmlns:j.1="http://krizik.felk.cvut.cz/ontologies/jopa/entities#"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-    xmlns:tests="http://krizik.felk.cvut.cz/ontologies/jopa/tests/"
-    xmlns:attributes="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#" > 
+    xmlns:j.2="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#" > 
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/RetrieveFromAllCachedJENA3">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Ontology"/>
   </rdf:Description>
@@ -15,10 +14,10 @@
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA">
-    <attributes:A-stringAttribute>entityAStringAttribute</attributes:A-stringAttribute>
+    <j.2:A-stringAttribute>entityAStringAttribute</j.2:A-stringAttribute>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
     <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
     <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/OWLClassA"/>
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
@@ -33,8 +32,8 @@
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD">
-    <attributes:hasA rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"/>
-    <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD"/>
+    <j.2:hasA rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"/>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+    <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD"/>
   </rdf:Description>
 </rdf:RDF>

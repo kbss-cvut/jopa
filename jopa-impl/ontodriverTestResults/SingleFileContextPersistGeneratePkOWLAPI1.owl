@@ -67,9 +67,9 @@
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/SingleFileContextPersistGeneratePkOWLAPI1#i_OWLClassE -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/SingleFileContextPersistGeneratePkOWLAPI1#OWLClassE_1 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/SingleFileContextPersistGeneratePkOWLAPI1#i_OWLClassE">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/SingleFileContextPersistGeneratePkOWLAPI1#OWLClassE_1">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE"/>
         <attributes:E-stringAttribute>entityEStringAttribute</attributes:E-stringAttribute>
     </owl:NamedIndividual>

@@ -105,5 +105,6 @@ public class DriverModularizingOwlapiFactory extends DriverAbstractFactory {
 		if (owldb) {
 			OWLDBManager.getHibernateProvider().close();
 		}
+		ModularizingStorageConnector.reset();
 	}
 }

@@ -26,6 +26,23 @@
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
     // Data properties
     //
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -54,6 +71,12 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA -->
 
     <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD"/>
     
 
 

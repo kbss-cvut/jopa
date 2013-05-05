@@ -3,6 +3,7 @@
      xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestCollectionOperations-setNewCollectionDuringTransaction"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:http="http://"
+     xmlns:jopa-tests="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -66,6 +67,66 @@
     <!-- NewStringTwo -->
 
     <owl:Class rdf:about="NewStringTwo"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_0 -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_0"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_1 -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_1"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_2 -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_2"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_3 -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_3"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_4 -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_4"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_5 -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_5"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_6 -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_6"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_7 -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_7"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_8 -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_8"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_9 -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_9"/>
     
 
 

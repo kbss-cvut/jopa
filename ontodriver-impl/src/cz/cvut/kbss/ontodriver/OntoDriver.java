@@ -13,7 +13,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * @author kidney
  * 
  */
-public interface OntoDriver {
+public interface OntoDriver extends Closeable {
 
 	/**
 	 * Acquires storage manager. </p>
@@ -44,8 +44,7 @@ public interface OntoDriver {
 	 * @throws NullPointerException
 	 *             If {@code metamodel} is {@code null}
 	 */
-	public StorageManager acquireStorageManager(Metamodel metamodel)
-			throws OntoDriverException;
+	public StorageManager acquireStorageManager(Metamodel metamodel) throws OntoDriverException;
 
 	/**
 	 * Acquires storage manager. </p>
@@ -63,7 +62,6 @@ public interface OntoDriver {
 	 * @throws NullPointerException
 	 *             If {@code persistenceProvider} is {@code null}
 	 */
-	public StorageManager acquireStorageManager(
-			PersistenceProviderFacade persistenceProvider)
+	public StorageManager acquireStorageManager(PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException;
 }

@@ -81,6 +81,12 @@
     
 
 
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#SomeTestType -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#SomeTestType"/>
+    
+
+
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
@@ -96,6 +102,7 @@
 
     <owl:NamedIndividual rdf:about="http://entityA">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#SomeTestType"/>
         <attributes:A-stringAttribute>entityAStringAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     

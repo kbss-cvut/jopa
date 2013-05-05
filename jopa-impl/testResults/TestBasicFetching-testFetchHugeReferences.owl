@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#"
      xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences"
-     xmlns:new2="http://new.owl#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:new="http://new#"
-     xmlns:http="http://"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:sequences="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:sequences2="http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#">
+     xmlns:attributes="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#"
+     xmlns:sequences2="http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#"
+     xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#">
     <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences"/>
     
 
@@ -36,12 +36,6 @@
     
 
 
-    <!-- http://B-hasReferencedSequence -->
-
-    <owl:ObjectProperty rdf:about="http://B-hasReferencedSequence"/>
-    
-
-
     <!-- http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents -->
 
     <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents"/>
@@ -51,6 +45,12 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#hasNext -->
 
     <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/2008/sequences.owl#hasNext"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence"/>
     
 
 
@@ -65,9 +65,9 @@
     
 
 
-    <!-- http://A-stringAttribute -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute -->
 
-    <owl:DatatypeProperty rdf:about="http://A-stringAttribute"/>
+    <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute"/>
     
 
 
@@ -88,15 +88,15 @@
     
 
 
-    <!-- http://new.owl#OWLClassA -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA -->
 
-    <owl:Class rdf:about="http://new.owl#OWLClassA"/>
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
     
 
 
-    <!-- http://new.owl#OWLClassC -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC -->
 
-    <owl:Class rdf:about="http://new.owl#OWLClassC"/>
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC"/>
     
 
 
@@ -111,902 +111,902 @@
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ10_112 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ">
-        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#OWLList"/>
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ1"/>
-        <sequences:hasContents rdf:resource="http://new#A-0"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ1 -->
-
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ1">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ2"/>
-        <sequences:hasContents rdf:resource="http://new#A-1"/>
-    </owl:NamedIndividual>
-    
-
-
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ10 -->
-
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ10">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ11"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ10_112">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ11_113"/>
         <sequences:hasContents rdf:resource="http://new#A-10"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ11 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ11_113 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ11">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ12"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ11_113">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ12_114"/>
         <sequences:hasContents rdf:resource="http://new#A-11"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ12 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ12_114 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ12">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ13"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ12_114">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ13_115"/>
         <sequences:hasContents rdf:resource="http://new#A-12"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ13 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ13_115 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ13">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ14"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ13_115">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ14_116"/>
         <sequences:hasContents rdf:resource="http://new#A-13"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ14 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ14_116 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ14">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ15"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ14_116">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ15_117"/>
         <sequences:hasContents rdf:resource="http://new#A-14"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ15 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ15_117 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ15">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ16"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ15_117">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ16_118"/>
         <sequences:hasContents rdf:resource="http://new#A-15"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ16 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ16_118 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ16">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ17"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ16_118">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ17_119"/>
         <sequences:hasContents rdf:resource="http://new#A-16"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ17 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ17_119 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ17">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ18"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ17_119">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ18_120"/>
         <sequences:hasContents rdf:resource="http://new#A-17"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ18 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ18_120 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ18">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ19"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ18_120">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ19_121"/>
         <sequences:hasContents rdf:resource="http://new#A-18"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ19 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ19_121 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ19">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ20"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ19_121">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ20_122"/>
         <sequences:hasContents rdf:resource="http://new#A-19"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ2 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ1_103 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ2">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ3"/>
-        <sequences:hasContents rdf:resource="http://new#A-2"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ1_103">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ2_104"/>
+        <sequences:hasContents rdf:resource="http://new#A-1"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ20 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ20_122 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ20">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ21"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ20_122">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ21_123"/>
         <sequences:hasContents rdf:resource="http://new#A-20"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ21 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ21_123 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ21">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ22"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ21_123">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ22_124"/>
         <sequences:hasContents rdf:resource="http://new#A-21"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ22 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ22_124 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ22">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ23"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ22_124">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ23_125"/>
         <sequences:hasContents rdf:resource="http://new#A-22"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ23 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ23_125 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ23">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ24"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ23_125">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ24_126"/>
         <sequences:hasContents rdf:resource="http://new#A-23"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ24 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ24_126 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ24">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ25"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ24_126">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ25_127"/>
         <sequences:hasContents rdf:resource="http://new#A-24"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ25 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ25_127 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ25">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ26"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ25_127">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ26_128"/>
         <sequences:hasContents rdf:resource="http://new#A-25"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ26 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ26_128 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ26">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ27"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ26_128">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ27_129"/>
         <sequences:hasContents rdf:resource="http://new#A-26"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ27 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ27_129 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ27">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ28"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ27_129">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ28_130"/>
         <sequences:hasContents rdf:resource="http://new#A-27"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ28 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ28_130 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ28">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ29"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ28_130">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ29_131"/>
         <sequences:hasContents rdf:resource="http://new#A-28"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ29 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ29_131 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ29">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ30"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ29_131">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ30_132"/>
         <sequences:hasContents rdf:resource="http://new#A-29"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ3 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ2_104 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ3">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ4"/>
-        <sequences:hasContents rdf:resource="http://new#A-3"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ2_104">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ3_105"/>
+        <sequences:hasContents rdf:resource="http://new#A-2"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ30 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ30_132 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ30">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ31"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ30_132">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ31_133"/>
         <sequences:hasContents rdf:resource="http://new#A-30"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ31 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ31_133 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ31">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ32"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ31_133">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ32_134"/>
         <sequences:hasContents rdf:resource="http://new#A-31"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ32 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ32_134 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ32">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ33"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ32_134">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ33_135"/>
         <sequences:hasContents rdf:resource="http://new#A-32"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ33 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ33_135 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ33">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ34"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ33_135">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ34_136"/>
         <sequences:hasContents rdf:resource="http://new#A-33"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ34 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ34_136 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ34">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ35"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ34_136">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ35_137"/>
         <sequences:hasContents rdf:resource="http://new#A-34"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ35 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ35_137 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ35">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ36"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ35_137">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ36_138"/>
         <sequences:hasContents rdf:resource="http://new#A-35"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ36 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ36_138 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ36">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ37"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ36_138">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ37_139"/>
         <sequences:hasContents rdf:resource="http://new#A-36"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ37 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ37_139 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ37">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ38"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ37_139">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ38_140"/>
         <sequences:hasContents rdf:resource="http://new#A-37"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ38 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ38_140 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ38">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ39"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ38_140">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ39_141"/>
         <sequences:hasContents rdf:resource="http://new#A-38"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ39 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ39_141 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ39">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ40"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ39_141">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ40_142"/>
         <sequences:hasContents rdf:resource="http://new#A-39"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ4 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ3_105 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ4">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ5"/>
-        <sequences:hasContents rdf:resource="http://new#A-4"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ3_105">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ4_106"/>
+        <sequences:hasContents rdf:resource="http://new#A-3"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ40 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ40_142 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ40">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ41"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ40_142">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ41_143"/>
         <sequences:hasContents rdf:resource="http://new#A-40"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ41 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ41_143 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ41">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ42"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ41_143">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ42_144"/>
         <sequences:hasContents rdf:resource="http://new#A-41"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ42 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ42_144 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ42">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ43"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ42_144">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ43_145"/>
         <sequences:hasContents rdf:resource="http://new#A-42"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ43 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ43_145 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ43">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ44"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ43_145">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ44_146"/>
         <sequences:hasContents rdf:resource="http://new#A-43"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ44 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ44_146 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ44">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ45"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ44_146">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ45_147"/>
         <sequences:hasContents rdf:resource="http://new#A-44"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ45 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ45_147 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ45">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ46"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ45_147">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ46_148"/>
         <sequences:hasContents rdf:resource="http://new#A-45"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ46 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ46_148 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ46">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ47"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ46_148">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ47_149"/>
         <sequences:hasContents rdf:resource="http://new#A-46"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ47 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ47_149 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ47">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ48"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ47_149">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ48_150"/>
         <sequences:hasContents rdf:resource="http://new#A-47"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ48 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ48_150 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ48">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ49"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ48_150">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ49_151"/>
         <sequences:hasContents rdf:resource="http://new#A-48"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ49 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ49_151 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ49">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ50"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ49_151">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ50_152"/>
         <sequences:hasContents rdf:resource="http://new#A-49"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ5 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ4_106 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ5">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ6"/>
-        <sequences:hasContents rdf:resource="http://new#A-5"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ4_106">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ5_107"/>
+        <sequences:hasContents rdf:resource="http://new#A-4"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ50 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ50_152 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ50">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ51"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ50_152">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ51_153"/>
         <sequences:hasContents rdf:resource="http://new#A-50"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ51 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ51_153 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ51">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ52"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ51_153">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ52_154"/>
         <sequences:hasContents rdf:resource="http://new#A-51"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ52 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ52_154 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ52">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ53"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ52_154">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ53_155"/>
         <sequences:hasContents rdf:resource="http://new#A-52"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ53 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ53_155 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ53">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ54"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ53_155">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ54_156"/>
         <sequences:hasContents rdf:resource="http://new#A-53"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ54 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ54_156 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ54">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ55"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ54_156">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ55_157"/>
         <sequences:hasContents rdf:resource="http://new#A-54"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ55 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ55_157 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ55">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ56"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ55_157">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ56_158"/>
         <sequences:hasContents rdf:resource="http://new#A-55"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ56 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ56_158 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ56">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ57"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ56_158">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ57_159"/>
         <sequences:hasContents rdf:resource="http://new#A-56"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ57 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ57_159 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ57">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ58"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ57_159">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ58_160"/>
         <sequences:hasContents rdf:resource="http://new#A-57"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ58 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ58_160 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ58">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ59"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ58_160">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ59_161"/>
         <sequences:hasContents rdf:resource="http://new#A-58"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ59 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ59_161 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ59">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ60"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ59_161">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ60_162"/>
         <sequences:hasContents rdf:resource="http://new#A-59"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ6 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ5_107 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ6">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ7"/>
-        <sequences:hasContents rdf:resource="http://new#A-6"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ5_107">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ6_108"/>
+        <sequences:hasContents rdf:resource="http://new#A-5"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ60 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ60_162 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ60">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ61"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ60_162">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ61_163"/>
         <sequences:hasContents rdf:resource="http://new#A-60"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ61 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ61_163 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ61">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ62"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ61_163">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ62_164"/>
         <sequences:hasContents rdf:resource="http://new#A-61"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ62 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ62_164 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ62">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ63"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ62_164">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ63_165"/>
         <sequences:hasContents rdf:resource="http://new#A-62"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ63 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ63_165 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ63">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ64"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ63_165">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ64_166"/>
         <sequences:hasContents rdf:resource="http://new#A-63"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ64 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ64_166 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ64">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ65"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ64_166">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ65_167"/>
         <sequences:hasContents rdf:resource="http://new#A-64"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ65 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ65_167 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ65">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ66"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ65_167">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ66_168"/>
         <sequences:hasContents rdf:resource="http://new#A-65"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ66 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ66_168 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ66">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ67"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ66_168">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ67_169"/>
         <sequences:hasContents rdf:resource="http://new#A-66"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ67 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ67_169 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ67">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ68"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ67_169">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ68_170"/>
         <sequences:hasContents rdf:resource="http://new#A-67"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ68 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ68_170 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ68">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ69"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ68_170">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ69_171"/>
         <sequences:hasContents rdf:resource="http://new#A-68"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ69 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ69_171 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ69">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ70"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ69_171">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ70_172"/>
         <sequences:hasContents rdf:resource="http://new#A-69"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ7 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ6_108 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ7">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ8"/>
-        <sequences:hasContents rdf:resource="http://new#A-7"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ6_108">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ7_109"/>
+        <sequences:hasContents rdf:resource="http://new#A-6"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ70 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ70_172 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ70">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ71"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ70_172">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ71_173"/>
         <sequences:hasContents rdf:resource="http://new#A-70"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ71 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ71_173 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ71">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ72"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ71_173">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ72_174"/>
         <sequences:hasContents rdf:resource="http://new#A-71"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ72 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ72_174 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ72">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ73"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ72_174">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ73_175"/>
         <sequences:hasContents rdf:resource="http://new#A-72"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ73 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ73_175 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ73">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ74"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ73_175">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ74_176"/>
         <sequences:hasContents rdf:resource="http://new#A-73"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ74 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ74_176 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ74">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ75"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ74_176">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ75_177"/>
         <sequences:hasContents rdf:resource="http://new#A-74"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ75 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ75_177 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ75">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ76"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ75_177">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ76_178"/>
         <sequences:hasContents rdf:resource="http://new#A-75"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ76 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ76_178 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ76">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ77"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ76_178">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ77_179"/>
         <sequences:hasContents rdf:resource="http://new#A-76"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ77 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ77_179 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ77">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ78"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ77_179">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ78_180"/>
         <sequences:hasContents rdf:resource="http://new#A-77"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ78 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ78_180 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ78">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ79"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ78_180">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ79_181"/>
         <sequences:hasContents rdf:resource="http://new#A-78"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ79 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ79_181 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ79">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ80"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ79_181">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ80_182"/>
         <sequences:hasContents rdf:resource="http://new#A-79"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ8 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ7_109 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ8">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ9"/>
-        <sequences:hasContents rdf:resource="http://new#A-8"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ7_109">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ8_110"/>
+        <sequences:hasContents rdf:resource="http://new#A-7"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ80 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ80_182 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ80">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ81"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ80_182">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ81_183"/>
         <sequences:hasContents rdf:resource="http://new#A-80"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ81 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ81_183 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ81">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ82"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ81_183">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ82_184"/>
         <sequences:hasContents rdf:resource="http://new#A-81"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ82 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ82_184 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ82">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ83"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ82_184">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ83_185"/>
         <sequences:hasContents rdf:resource="http://new#A-82"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ83 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ83_185 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ83">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ84"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ83_185">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ84_186"/>
         <sequences:hasContents rdf:resource="http://new#A-83"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ84 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ84_186 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ84">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ85"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ84_186">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ85_187"/>
         <sequences:hasContents rdf:resource="http://new#A-84"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ85 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ85_187 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ85">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ86"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ85_187">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ86_188"/>
         <sequences:hasContents rdf:resource="http://new#A-85"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ86 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ86_188 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ86">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ87"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ86_188">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ87_189"/>
         <sequences:hasContents rdf:resource="http://new#A-86"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ87 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ87_189 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ87">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ88"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ87_189">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ88_190"/>
         <sequences:hasContents rdf:resource="http://new#A-87"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ88 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ88_190 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ88">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ89"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ88_190">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ89_191"/>
         <sequences:hasContents rdf:resource="http://new#A-88"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ89 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ89_191 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ89">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ90"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ89_191">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ90_192"/>
         <sequences:hasContents rdf:resource="http://new#A-89"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ9 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ8_110 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ9">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ10"/>
-        <sequences:hasContents rdf:resource="http://new#A-9"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ8_110">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ9_111"/>
+        <sequences:hasContents rdf:resource="http://new#A-8"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ90 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ90_192 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ90">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ91"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ90_192">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ91_193"/>
         <sequences:hasContents rdf:resource="http://new#A-90"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ91 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ91_193 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ91">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ92"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ91_193">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ92_194"/>
         <sequences:hasContents rdf:resource="http://new#A-91"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ92 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ92_194 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ92">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ93"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ92_194">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ93_195"/>
         <sequences:hasContents rdf:resource="http://new#A-92"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ93 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ93_195 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ93">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ94"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ93_195">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ94_196"/>
         <sequences:hasContents rdf:resource="http://new#A-93"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ94 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ94_196 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ94">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ95"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ94_196">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ95_197"/>
         <sequences:hasContents rdf:resource="http://new#A-94"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ95 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ95_197 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ95">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ96"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ95_197">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ96_198"/>
         <sequences:hasContents rdf:resource="http://new#A-95"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ96 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ96_198 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ96">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ97"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ96_198">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ97_199"/>
         <sequences:hasContents rdf:resource="http://new#A-96"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ97 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ97_199 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ97">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ98"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ97_199">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ98_200"/>
         <sequences:hasContents rdf:resource="http://new#A-97"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ98 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ98_200 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ98">
-        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ99"/>
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ98_200">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ99_201"/>
         <sequences:hasContents rdf:resource="http://new#A-98"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ99 -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ99_201 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ99">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ99_201">
         <sequences:hasContents rdf:resource="http://new#A-99"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ9_111 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ9_111">
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ10_112"/>
+        <sequences:hasContents rdf:resource="http://new#A-9"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ_102 -->
+
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ_102">
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#OWLList"/>
+        <sequences2:hasNext rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ1_103"/>
+        <sequences:hasContents rdf:resource="http://new#A-0"/>
     </owl:NamedIndividual>
     
 
@@ -1014,8 +1014,8 @@
     <!-- http://new#A-0 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-0">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1023,8 +1023,8 @@
     <!-- http://new#A-1 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-1">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1032,8 +1032,8 @@
     <!-- http://new#A-10 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-10">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1041,8 +1041,8 @@
     <!-- http://new#A-11 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-11">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1050,8 +1050,8 @@
     <!-- http://new#A-12 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-12">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1059,8 +1059,8 @@
     <!-- http://new#A-13 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-13">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1068,8 +1068,8 @@
     <!-- http://new#A-14 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-14">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1077,8 +1077,8 @@
     <!-- http://new#A-15 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-15">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1086,8 +1086,8 @@
     <!-- http://new#A-16 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-16">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1095,8 +1095,8 @@
     <!-- http://new#A-17 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-17">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1104,8 +1104,8 @@
     <!-- http://new#A-18 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-18">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1113,8 +1113,8 @@
     <!-- http://new#A-19 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-19">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1122,8 +1122,8 @@
     <!-- http://new#A-2 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-2">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1131,8 +1131,8 @@
     <!-- http://new#A-20 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-20">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1140,8 +1140,8 @@
     <!-- http://new#A-21 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-21">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1149,8 +1149,8 @@
     <!-- http://new#A-22 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-22">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1158,8 +1158,8 @@
     <!-- http://new#A-23 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-23">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1167,8 +1167,8 @@
     <!-- http://new#A-24 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-24">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1176,8 +1176,8 @@
     <!-- http://new#A-25 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-25">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1185,8 +1185,8 @@
     <!-- http://new#A-26 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-26">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1194,8 +1194,8 @@
     <!-- http://new#A-27 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-27">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1203,8 +1203,8 @@
     <!-- http://new#A-28 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-28">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1212,8 +1212,8 @@
     <!-- http://new#A-29 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-29">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1221,8 +1221,8 @@
     <!-- http://new#A-3 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-3">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1230,8 +1230,8 @@
     <!-- http://new#A-30 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-30">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1239,8 +1239,8 @@
     <!-- http://new#A-31 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-31">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1248,8 +1248,8 @@
     <!-- http://new#A-32 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-32">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1257,8 +1257,8 @@
     <!-- http://new#A-33 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-33">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1266,8 +1266,8 @@
     <!-- http://new#A-34 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-34">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1275,8 +1275,8 @@
     <!-- http://new#A-35 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-35">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1284,8 +1284,8 @@
     <!-- http://new#A-36 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-36">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1293,8 +1293,8 @@
     <!-- http://new#A-37 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-37">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1302,8 +1302,8 @@
     <!-- http://new#A-38 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-38">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1311,8 +1311,8 @@
     <!-- http://new#A-39 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-39">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1320,8 +1320,8 @@
     <!-- http://new#A-4 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-4">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1329,8 +1329,8 @@
     <!-- http://new#A-40 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-40">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1338,8 +1338,8 @@
     <!-- http://new#A-41 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-41">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1347,8 +1347,8 @@
     <!-- http://new#A-42 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-42">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1356,8 +1356,8 @@
     <!-- http://new#A-43 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-43">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1365,8 +1365,8 @@
     <!-- http://new#A-44 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-44">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1374,8 +1374,8 @@
     <!-- http://new#A-45 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-45">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1383,8 +1383,8 @@
     <!-- http://new#A-46 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-46">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1392,8 +1392,8 @@
     <!-- http://new#A-47 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-47">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1401,8 +1401,8 @@
     <!-- http://new#A-48 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-48">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1410,8 +1410,8 @@
     <!-- http://new#A-49 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-49">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1419,8 +1419,8 @@
     <!-- http://new#A-5 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-5">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1428,8 +1428,8 @@
     <!-- http://new#A-50 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-50">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1437,8 +1437,8 @@
     <!-- http://new#A-51 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-51">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1446,8 +1446,8 @@
     <!-- http://new#A-52 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-52">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1455,8 +1455,8 @@
     <!-- http://new#A-53 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-53">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1464,8 +1464,8 @@
     <!-- http://new#A-54 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-54">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1473,8 +1473,8 @@
     <!-- http://new#A-55 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-55">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1482,8 +1482,8 @@
     <!-- http://new#A-56 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-56">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1491,8 +1491,8 @@
     <!-- http://new#A-57 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-57">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1500,8 +1500,8 @@
     <!-- http://new#A-58 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-58">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1509,8 +1509,8 @@
     <!-- http://new#A-59 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-59">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1518,8 +1518,8 @@
     <!-- http://new#A-6 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-6">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1527,8 +1527,8 @@
     <!-- http://new#A-60 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-60">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1536,8 +1536,8 @@
     <!-- http://new#A-61 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-61">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1545,8 +1545,8 @@
     <!-- http://new#A-62 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-62">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1554,8 +1554,8 @@
     <!-- http://new#A-63 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-63">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1563,8 +1563,8 @@
     <!-- http://new#A-64 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-64">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1572,8 +1572,8 @@
     <!-- http://new#A-65 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-65">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1581,8 +1581,8 @@
     <!-- http://new#A-66 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-66">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1590,8 +1590,8 @@
     <!-- http://new#A-67 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-67">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1599,8 +1599,8 @@
     <!-- http://new#A-68 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-68">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1608,8 +1608,8 @@
     <!-- http://new#A-69 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-69">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1617,8 +1617,8 @@
     <!-- http://new#A-7 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-7">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1626,8 +1626,8 @@
     <!-- http://new#A-70 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-70">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1635,8 +1635,8 @@
     <!-- http://new#A-71 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-71">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1644,8 +1644,8 @@
     <!-- http://new#A-72 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-72">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1653,8 +1653,8 @@
     <!-- http://new#A-73 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-73">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1662,8 +1662,8 @@
     <!-- http://new#A-74 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-74">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1671,8 +1671,8 @@
     <!-- http://new#A-75 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-75">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1680,8 +1680,8 @@
     <!-- http://new#A-76 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-76">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1689,8 +1689,8 @@
     <!-- http://new#A-77 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-77">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1698,8 +1698,8 @@
     <!-- http://new#A-78 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-78">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1707,8 +1707,8 @@
     <!-- http://new#A-79 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-79">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1716,8 +1716,8 @@
     <!-- http://new#A-8 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-8">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1725,8 +1725,8 @@
     <!-- http://new#A-80 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-80">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1734,8 +1734,8 @@
     <!-- http://new#A-81 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-81">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1743,8 +1743,8 @@
     <!-- http://new#A-82 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-82">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1752,8 +1752,8 @@
     <!-- http://new#A-83 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-83">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1761,8 +1761,8 @@
     <!-- http://new#A-84 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-84">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1770,8 +1770,8 @@
     <!-- http://new#A-85 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-85">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1779,8 +1779,8 @@
     <!-- http://new#A-86 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-86">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1788,8 +1788,8 @@
     <!-- http://new#A-87 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-87">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1797,8 +1797,8 @@
     <!-- http://new#A-88 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-88">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1806,8 +1806,8 @@
     <!-- http://new#A-89 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-89">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1815,8 +1815,8 @@
     <!-- http://new#A-9 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-9">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1824,8 +1824,8 @@
     <!-- http://new#A-90 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-90">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1833,8 +1833,8 @@
     <!-- http://new#A-91 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-91">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1842,8 +1842,8 @@
     <!-- http://new#A-92 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-92">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1851,8 +1851,8 @@
     <!-- http://new#A-93 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-93">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1860,8 +1860,8 @@
     <!-- http://new#A-94 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-94">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1869,8 +1869,8 @@
     <!-- http://new#A-95 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-95">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1878,8 +1878,8 @@
     <!-- http://new#A-96 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-96">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1887,8 +1887,8 @@
     <!-- http://new#A-97 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-97">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1896,8 +1896,8 @@
     <!-- http://new#A-98 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-98">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1905,8 +1905,8 @@
     <!-- http://new#A-99 -->
 
     <owl:NamedIndividual rdf:about="http://new#A-99">
-        <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>new-value</http:A-stringAttribute>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>new-value</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -1914,8 +1914,8 @@
     <!-- http://new#C -->
 
     <owl:NamedIndividual rdf:about="http://new#C">
-        <rdf:type rdf:resource="http://new.owl#OWLClassC"/>
-        <http:B-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#i_C-SEQ"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC"/>
+        <attributes:C-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestBasicFetching-testFetchHugeReferences#C-SEQ_102"/>
     </owl:NamedIndividual>
 </rdf:RDF>
 

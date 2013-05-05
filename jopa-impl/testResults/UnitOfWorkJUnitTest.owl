@@ -26,6 +26,23 @@
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
     // Data properties
     //
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -80,11 +97,11 @@
     
 
 
-    <!-- http://testEntity -->
+    <!-- http://testOne -->
 
-    <owl:NamedIndividual rdf:about="http://testEntity">
+    <owl:NamedIndividual rdf:about="http://testOne">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
-        <attributes:A-stringAttribute>testAtt</attributes:A-stringAttribute>
+        <attributes:A-stringAttribute>attribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 
@@ -93,6 +110,7 @@
 
     <owl:NamedIndividual rdf:about="http://testThree">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD"/>
+        <attributes:hasA rdf:resource="http://testOne"/>
     </owl:NamedIndividual>
     
 

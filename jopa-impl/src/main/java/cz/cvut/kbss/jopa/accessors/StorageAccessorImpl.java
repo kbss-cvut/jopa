@@ -21,6 +21,7 @@ public class StorageAccessorImpl implements StorageAccessor {
 	private final PersistenceProviderFacade provider;
 
 	private DataSource dataSource;
+	private boolean open;
 
 	private StorageAccessorImpl(Metamodel metamodel, ServerSession serverSession) {
 		super();
@@ -30,6 +31,7 @@ public class StorageAccessorImpl implements StorageAccessor {
 		this.metamodel = metamodel;
 		this.serverSession = serverSession;
 		this.provider = initPersistenceProvider();
+		this.open = true;
 	}
 
 	public StorageAccessorImpl(Metamodel metamodel, ServerSession serverSession,
@@ -62,5 +64,21 @@ public class StorageAccessorImpl implements StorageAccessor {
 
 	private PersistenceProviderFacade initPersistenceProvider() {
 		return new PersistenceProviderProxy(metamodel, serverSession);
+	}
+
+	@Override
+	public void close() throws OntoDriverException {
+		if (!open) {
+			return;
+		}
+		if (dataSource != null) {
+			dataSource.close();
+		}
+		this.open = false;
+	}
+
+	@Override
+	public boolean isOpen() {
+		return open;
 	}
 }

@@ -224,6 +224,11 @@ class ModuleInternalImpl implements ModuleInternal {
 		this.changes = createList();
 		this.transactionalChanges = createList();
 		this.temporaryIndividuals = new HashSet<IRI>();
+		reasoner.dispose();
+		this.reasoner = null;
+		this.reasoner = null;
+		this.workingOntology = null;
+		this.dataFactory = null;
 	}
 
 	/**

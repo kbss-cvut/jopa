@@ -2,16 +2,15 @@
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/RetrieveFirstAvailableJENA3#"
     xmlns:owl="http://www.w3.org/2002/07/owl#"
-    xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#"
+    xmlns:j.0="http://krizik.felk.cvut.cz/ontologies/jopa/entities#"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-    xmlns:tests="http://krizik.felk.cvut.cz/ontologies/jopa/tests/"
-    xmlns:attributes="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#" > 
+    xmlns:j.1="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#" > 
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA">
-    <attributes:A-stringAttribute>entityAStringAttribute</attributes:A-stringAttribute>
+    <j.1:A-stringAttribute>entityAStringAttribute</j.1:A-stringAttribute>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
     <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU"/>
     <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>

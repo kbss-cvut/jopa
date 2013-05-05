@@ -1,12 +1,12 @@
 <rdf:RDF
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    xmlns:jopa-tests="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
+    xmlns:j.0="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
     xmlns:owl="http://www.w3.org/2002/07/owl#"
     xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/RemoveCascadeJENA3#"
-    xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#"
+    xmlns:j.1="http://krizik.felk.cvut.cz/ontologies/jopa/entities#"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-    xmlns:attributes="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#" > 
+    xmlns:j.2="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#" > 
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/RemoveCascadeJENA3">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Ontology"/>
   </rdf:Description>

@@ -14,6 +14,7 @@ import org.semanticweb.owlapi.model.IRI;
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
@@ -21,6 +22,7 @@ import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
  * The ServerSession is the primary interface for accessing the ontology. </p>
@@ -89,10 +91,9 @@ public class ServerSession extends AbstractSession {
 		this.runningTransactions = new WeakHashMap<EntityTransaction, EntityManager>();
 		this.activePersistenceContexts = new WeakHashMap<Object, UnitOfWorkImpl>();
 		this.uowsToEntities = new WeakHashMap<UnitOfWorkImpl, Set<Object>>();
-		this.storageAccessor = new StorageAccessorImpl(metamodel, this,
-				storageProperties, properties);
-		String cache = properties
-				.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
+		this.storageAccessor = new StorageAccessorImpl(metamodel, this, storageProperties,
+				properties);
+		String cache = properties.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
 		if (cache == null || cache.equals("on")) {
 			this.liveObjectCache = new CacheManagerImpl(this, properties);
 			liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
@@ -165,6 +166,13 @@ public class ServerSession extends AbstractSession {
 				}
 			}
 		}
+		if (storageAccessor != null && storageAccessor.isOpen()) {
+			try {
+				storageAccessor.close();
+			} catch (OntoDriverException e) {
+				throw new OWLPersistenceException(e);
+			}
+		}
 	}
 
 	public void releaseClientSession(ClientSession session) {
@@ -175,8 +183,7 @@ public class ServerSession extends AbstractSession {
 		if (object == null) {
 			return;
 		}
-		final IRI primaryKey = EntityPropertiesUtils.getPrimaryKey(object,
-				metamodel);
+		final IRI primaryKey = EntityPropertiesUtils.getPrimaryKey(object, metamodel);
 		if (primaryKey == null) {
 			return;
 		}
@@ -212,9 +219,8 @@ public class ServerSession extends AbstractSession {
 	 */
 	synchronized void registerEntityWithContext(Object entity, UnitOfWorkImpl uow) {
 		if (entity == null || uow == null) {
-			throw new NullPointerException(
-					"Null passed to as argument. Entity: " + entity
-							+ ", unit of work: " + uow);
+			throw new NullPointerException("Null passed to as argument. Entity: " + entity
+					+ ", unit of work: " + uow);
 		}
 		activePersistenceContexts.put(entity, uow);
 		if (!uowsToEntities.containsKey(uow)) {

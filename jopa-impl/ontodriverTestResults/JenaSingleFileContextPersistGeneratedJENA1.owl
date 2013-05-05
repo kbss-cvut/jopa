@@ -1,11 +1,11 @@
 <rdf:RDF
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns:owl="http://www.w3.org/2002/07/owl#"
-    xmlns:entities="http://krizik.felk.cvut.cz/ontologies/jopa/entities#"
+    xmlns:j.0="http://krizik.felk.cvut.cz/ontologies/jopa/entities#"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-    xmlns:JenaSingleFileContextPersistGeneratedJENA1="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/JenaSingleFileContextPersistGeneratedJENA1#"
+    xmlns="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/JenaSingleFileContextPersistGeneratedJENA1#"
     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-    xmlns:attributes="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#" > 
+    xmlns:j.1="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#" > 
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
   </rdf:Description>
@@ -16,8 +16,8 @@
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/JenaSingleFileContextPersistGeneratedJENA1#OWLClassE_1">
-    <attributes:E-stringAttribute>entityEStringAttribute</attributes:E-stringAttribute>
-    <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE"/>
+    <j.1:E-stringAttribute>entityEStringAttribute</j.1:E-stringAttribute>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+    <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE"/>
   </rdf:Description>
 </rdf:RDF>

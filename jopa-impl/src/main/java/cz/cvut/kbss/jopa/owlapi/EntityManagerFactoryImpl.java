@@ -66,8 +66,10 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 				m.close();
 			}
 		}
+		em.clear();
 		if (serverSession != null) {
 			serverSession.close();
+			this.serverSession = null;
 		}
 	}
 

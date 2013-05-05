@@ -31,7 +31,9 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 	@Override
 	public void close() throws OntoDriverException {
 		factory.releaseStorageConnector(connector);
+		internal.rollback();
 		this.internal = null;
+		this.data = null;
 		super.close();
 	}
 

@@ -38,6 +38,7 @@ public class OntoDriverImpl implements OntoDriver {
 	protected final Map<OntologyConnectorType, DriverFactory> factories;
 	/** Reference for easier access */
 	protected final List<Context> contexts;
+	private boolean open;
 
 	protected OntoDriverImpl() {
 		super();
@@ -45,6 +46,7 @@ public class OntoDriverImpl implements OntoDriver {
 		this.properties = Collections.emptyMap();
 		this.factories = new HashMap<OntologyConnectorType, DriverFactory>();
 		this.contexts = new ArrayList<Context>();
+		this.open = true;
 	}
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties) {
@@ -57,6 +59,7 @@ public class OntoDriverImpl implements OntoDriver {
 		this.properties = Collections.emptyMap();
 		final Map<Context, OntologyStorageProperties> contextToProps = resolveContexts(storageProperties);
 		this.factories = initFactories(contextToProps);
+		this.open = true;
 	}
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties,
@@ -73,10 +76,12 @@ public class OntoDriverImpl implements OntoDriver {
 		this.contexts = new ArrayList<Context>(storageProperties.size());
 		final Map<Context, OntologyStorageProperties> contextToProps = resolveContexts(storageProperties);
 		this.factories = initFactories(contextToProps);
+		this.open = true;
 	}
 
 	@Override
 	public StorageManager acquireStorageManager() throws OntoDriverException {
+		ensureOpen();
 		final StorageManager m = new StorageManagerImpl(new DefaultPersistenceProvider(null),
 				contexts, this);
 		return m;
@@ -95,6 +100,7 @@ public class OntoDriverImpl implements OntoDriver {
 	@Override
 	public StorageManager acquireStorageManager(PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException {
+		ensureOpen();
 		if (persistenceProvider == null) {
 			throw new NullPointerException("PersistenceProviderFacade cannot be null.");
 		}
@@ -120,10 +126,32 @@ public class OntoDriverImpl implements OntoDriver {
 	 *             If {@code context} is null
 	 */
 	public DriverFactory getFactory(Context context) {
+		ensureOpen();
 		if (context == null) {
 			throw new NullPointerException("Context cannot be null.");
 		}
 		return factories.get(context.getConnectorType());
+	}
+
+	@Override
+	public void close() throws OntoDriverException {
+		if (!open) {
+			return;
+		}
+		if (LOG.isLoggable(Level.CONFIG)) {
+			LOG.config("Closing the OntoDriver.");
+		}
+		for (DriverFactory f : factories.values()) {
+			if (f != null && f.isOpen()) {
+				f.close();
+			}
+		}
+		this.open = false;
+	}
+
+	@Override
+	public boolean isOpen() {
+		return open;
 	}
 
 	/**
@@ -175,6 +203,12 @@ public class OntoDriverImpl implements OntoDriver {
 		}
 		OntologyProfileChecker.checkProfiles(contextsToProperties);
 		return contextsToProperties;
+	}
+
+	private void ensureOpen() throws IllegalStateException {
+		if (!open) {
+			throw new IllegalStateException("The OntoDriver is already closed.");
+		}
 	}
 
 	/**

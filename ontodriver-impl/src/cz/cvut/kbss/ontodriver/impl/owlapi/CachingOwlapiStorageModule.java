@@ -31,7 +31,9 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	@Override
 	public void close() throws OntoDriverException {
 		factory.releaseStorageConnector(connector);
+		internal.rollback();
 		this.internal = null;
+		this.data = null;
 		super.close();
 	}
 

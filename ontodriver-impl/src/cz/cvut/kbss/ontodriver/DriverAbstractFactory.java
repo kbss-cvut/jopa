@@ -1,9 +1,9 @@
 package cz.cvut.kbss.ontodriver;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,8 +16,8 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	protected final List<Context> contexts;
 	protected final Map<Context, OntologyStorageProperties> contextsToProperties;
 
-	protected final Map<StorageConnector, StorageConnector> openedConnectors;
-	protected final Map<StorageModule, StorageModule> openedModules;
+	private final Map<StorageConnector, StorageConnector> openedConnectors;
+	private final Map<StorageModule, StorageModule> openedModules;
 	protected final Map<String, String> properties;
 
 	private boolean open;
@@ -36,8 +36,8 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		}
 		this.contexts = contexts;
 		this.contextsToProperties = ctxsToProperties;
-		this.openedConnectors = new HashMap<StorageConnector, StorageConnector>();
-		this.openedModules = new HashMap<StorageModule, StorageModule>();
+		this.openedConnectors = new ConcurrentHashMap<StorageConnector, StorageConnector>();
+		this.openedModules = new ConcurrentHashMap<StorageModule, StorageModule>();
 		this.open = true;
 		this.properties = properties;
 	}

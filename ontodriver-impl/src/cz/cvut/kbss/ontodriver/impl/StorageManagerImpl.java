@@ -67,7 +67,7 @@ public class StorageManagerImpl extends StorageManager {
 			// Just close the module, any pending changes will be rolled back
 			// implicitly
 			if (m != null) {
-				m.close();
+				driver.getFactory(m.getContext()).releaseStorageModule(m);
 			}
 		}
 		super.close();

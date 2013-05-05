@@ -305,4 +305,12 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 			signature.add(e);
 		}
 	}
+
+	/**
+	 * Resets this connector's signature and signature size cache.
+	 */
+	public static void reset() {
+		signatures.clear();
+		extraSignatureSizes.clear();
+	}
 }

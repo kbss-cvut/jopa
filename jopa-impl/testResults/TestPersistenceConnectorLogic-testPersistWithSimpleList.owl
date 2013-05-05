@@ -214,14 +214,14 @@
     <owl:NamedIndividual rdf:about="http://testC">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC"/>
         <attributes:C-hasSimpleSequence rdf:resource="http://classA0"/>
-        <attributes:C-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#i_null-SEQ"/>
+        <attributes:C-hasReferencedSequence rdf:resource="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#null-SEQ_12"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#i_null-SEQ -->
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#null-SEQ_12 -->
 
-    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#i_null-SEQ">
+    <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestPersistenceConnectorLogic-testPersistWithSimpleList#null-SEQ_12">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#OWLList"/>
     </owl:NamedIndividual>
 </rdf:RDF>

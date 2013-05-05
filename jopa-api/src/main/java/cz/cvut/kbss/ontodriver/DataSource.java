@@ -14,7 +14,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * @author kidney
  * 
  */
-public interface DataSource {
+public interface DataSource extends Closeable {
 
 	/**
 	 * Requests a connection to the underlying data source. </p>
