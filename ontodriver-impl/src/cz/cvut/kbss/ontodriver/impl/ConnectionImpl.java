@@ -214,6 +214,18 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
+	public boolean isConsistent(URI context) throws OntoDriverException {
+		if (context == null) {
+			throw new NullPointerException();
+		}
+		final Context ctx = contexts.get(context);
+		if (ctx == null) {
+			throw new OntoDriverException("Unknown context URI " + context);
+		}
+		return storageManager.isConsistent(ctx);
+	}
+
+	@Override
 	public boolean isOpen() {
 		return open;
 	}

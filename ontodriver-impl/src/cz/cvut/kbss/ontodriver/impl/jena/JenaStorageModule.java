@@ -81,6 +81,12 @@ public class JenaStorageModule extends StorageModule {
 	@Override
 	protected void startTransactionIfNotActive() throws OntoDriverException {
 		// TODO Auto-generated method stub
-		
+
+	}
+
+	@Override
+	public boolean isConsistent() throws OntoDriverException {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

@@ -59,6 +59,7 @@ public class DriverFactoryMock implements DriverFactory {
 	@Override
 	public void releaseStorageModule(StorageModule module) throws OntoDriverException {
 		modules.remove(module.getContext());
+		module.close();
 	}
 
 	@Override

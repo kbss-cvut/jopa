@@ -114,6 +114,11 @@ class ModuleInternalImpl implements ModuleInternal {
 	}
 
 	@Override
+	public boolean isConsistent() throws OntoDriverException {
+		return reasoner.isConsistent();
+	}
+
+	@Override
 	public <T> void persistEntity(Object primaryKey, T entity) throws OntoDriverException {
 		checkStatus();
 		if (entity == null) {

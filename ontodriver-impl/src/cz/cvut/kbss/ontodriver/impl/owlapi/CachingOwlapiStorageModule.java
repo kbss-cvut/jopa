@@ -87,6 +87,13 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	}
 
 	@Override
+	public boolean isConsistent() throws OntoDriverException {
+		ensureOpen();
+		startTransactionIfNotActive();
+		return internal.isConsistent();
+	}
+
+	@Override
 	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
 		ensureOpen();
 		startTransactionIfNotActive();
@@ -142,6 +149,7 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	@Override
 	public OwlapiConnectorDataHolder cloneOntologyData() throws OntoDriverException {
 		// No need to clone, the data is already cloned
+		assert data != null;
 		return data;
 	}
 

@@ -129,6 +129,15 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
+	public boolean isConsistent(Context context) throws OntoDriverException {
+		if (context == null) {
+			throw new NullPointerException();
+		}
+		final StorageModule m = getModule(context);
+		return m.isConsistent();
+	}
+
+	@Override
 	public List<Context> getAvailableContexts() {
 		return Collections.unmodifiableList(contexts);
 	}

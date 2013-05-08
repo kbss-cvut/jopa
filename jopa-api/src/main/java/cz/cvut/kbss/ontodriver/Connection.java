@@ -85,6 +85,21 @@ public interface Connection extends Transactional {
 	public boolean contains(Object primaryKey, URI context) throws OntoDriverException;
 
 	/**
+	 * Checks whether the specified ontology context is consistent. </p>
+	 * 
+	 * @param context
+	 *            URI of the context
+	 * @return {@code true} if the context is consistent, {@code false}
+	 *         otherwise
+	 * @throws OntoDriverException
+	 *             If called on a closed connection or an ontology access error
+	 *             occurs
+	 * @throws NullPointerException
+	 *             if {@code context} is {@code null}
+	 */
+	public boolean isConsistent(URI context) throws OntoDriverException;
+
+	/**
 	 * Finds entity with the specified primary key and returns it as the
 	 * specified type. </p>
 	 * 

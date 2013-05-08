@@ -136,6 +136,16 @@ public abstract class StorageModule implements Transactional {
 	public abstract <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException;
 
 	/**
+	 * Checks whether the underlying ontology context is consistent.
+	 * 
+	 * @return {@code true} if the context is consistent, {@code false}
+	 *         otherwise
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 */
+	public abstract boolean isConsistent() throws OntoDriverException;
+
+	/**
 	 * Loads from the ontology and sets value of field {@code fieldName}. </p>
 	 * 
 	 * This method is intended to be used for lazy loaded field values.

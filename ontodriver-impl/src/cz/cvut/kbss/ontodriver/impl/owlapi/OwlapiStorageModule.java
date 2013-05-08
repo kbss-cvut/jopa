@@ -80,6 +80,13 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 	}
 
 	@Override
+	public boolean isConsistent() throws OntoDriverException {
+		ensureOpen();
+		startTransactionIfNotActive();
+		return internal.isConsistent();
+	}
+
+	@Override
 	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
 		ensureOpen();
 		startTransactionIfNotActive();

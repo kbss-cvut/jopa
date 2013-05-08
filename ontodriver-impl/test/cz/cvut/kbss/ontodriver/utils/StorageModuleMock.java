@@ -58,6 +58,11 @@ public class StorageModuleMock extends StorageModule {
 	}
 
 	@Override
+	public boolean isConsistent() throws OntoDriverException {
+		return true;
+	}
+
+	@Override
 	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
 		// do nothing
 	}

@@ -161,6 +161,31 @@ public class ConnectionImplTest {
 	}
 
 	@Test
+	public void testIsConsistent() throws Exception {
+		LOG.config("Test: consistency check.");
+		final URI context = StorageManagerMock.CONTEXT_THREE_URI;
+		final boolean res = connection.isConsistent(context);
+		assertTrue(res);
+	}
+
+	@Test(expected = OntoDriverException.class)
+	public void testIsConsistentUnknown() throws Exception {
+		LOG.config("Test: consistency check. Unknown context.");
+		final URI unknown = URI.create("http://www.unknown.org");
+		@SuppressWarnings("unused")
+		final boolean res = connection.isConsistent(unknown);
+		fail("This line should not have been reached.");
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testInConsistentNull() throws Exception {
+		LOG.config("Test: consistency check. Null passed as URI.");
+		@SuppressWarnings("unused")
+		final boolean res = connection.isConsistent(null);
+		fail("This line should not have been reached.");
+	}
+
+	@Test
 	public void testGetContext() throws Exception {
 		LOG.config("Test: get context by URI.");
 		final Context ctx = knownContexts.get(0);

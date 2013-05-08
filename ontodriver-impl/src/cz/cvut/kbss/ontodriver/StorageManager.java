@@ -87,6 +87,21 @@ public abstract class StorageManager implements Transactional {
 			throws OntoDriverException;
 
 	/**
+	 * Checks whether the specified ontology context is consistent.
+	 * 
+	 * @param context
+	 *            The context to check
+	 * @return {@code true} if the context is consistent, {@code false}
+	 *         otherwise
+	 * @throws OntoDriverException
+	 *             If {@code entityContext} is not valid or if an ontology
+	 *             access error occurs
+	 * @throws NullPointerException
+	 *             If {@code context} is {@code null}
+	 */
+	public abstract boolean isConsistent(Context context) throws OntoDriverException;
+
+	/**
 	 * Finds entity with the specified primary key and returns it as the
 	 * specified entity type. </p>
 	 * 

@@ -556,6 +556,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		return (cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity));
 	}
 
+	@Override
+	public boolean isContextConsistent(URI contextUri) {
+		if (contextUri == null) {
+			throw new NullPointerException();
+		}
+		try {
+			return storageConnection.isConsistent(contextUri);
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException(e);
+		}
+	}
+
 	private boolean doesEntityExist(Object entity, Object primaryKey, URI context) {
 		assert entity != null;
 		assert context != null;

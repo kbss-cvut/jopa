@@ -45,7 +45,7 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 		final List<OWLOntologyChange> changes = internal.commitAndRetrieveChanges();
 		connector.applyChanges(changes);
 		connector.saveWorkingOntology();
-		this.transaction = TransactionState.COMMIT;
+		this.transaction = TransactionState.NO;
 	}
 
 	@Override
@@ -85,6 +85,13 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 					+ primaryKey);
 		}
 		return internal.findEntity(cls, primaryKey);
+	}
+
+	@Override
+	public boolean isConsistent() throws OntoDriverException {
+		ensureOpen();
+		startTransactionIfNotActive();
+		return internal.isConsistent();
 	}
 
 	@Override

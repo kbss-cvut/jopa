@@ -72,6 +72,20 @@ public interface UnitOfWork extends Session {
 	public boolean isObjectManaged(Object entity);
 
 	/**
+	 * Checks whether an ontology context is consistent.
+	 * 
+	 * @param contextUri
+	 *            URI of the context
+	 * @return {@code true} if the context is consistent, {@code false}
+	 *         otherwise
+	 * @throws NullPointerException
+	 *             If {@code contextUri} is {@code null}
+	 * @throws OWLPersistenceException
+	 *             If an ontology access error occurs
+	 */
+	public boolean isContextConsistent(URI contextUri);
+
+	/**
 	 * Merge the state of the given entity into the current persistence context.
 	 * 
 	 * @param entity

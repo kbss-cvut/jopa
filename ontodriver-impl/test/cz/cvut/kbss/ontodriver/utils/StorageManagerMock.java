@@ -84,6 +84,11 @@ public class StorageManagerMock extends StorageManager {
 	}
 
 	@Override
+	public boolean isConsistent(Context context) throws OntoDriverException {
+		return true;
+	}
+
+	@Override
 	public List<Context> getAvailableContexts() {
 		return new ArrayList<Context>(contexts.values());
 	}

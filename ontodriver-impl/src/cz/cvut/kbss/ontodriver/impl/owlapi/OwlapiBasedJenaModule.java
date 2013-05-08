@@ -82,6 +82,13 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	}
 
 	@Override
+	public boolean isConsistent() throws OntoDriverException {
+		ensureOpen();
+		startTransactionIfNotActive();
+		return moduleInternal.isConsistent();
+	}
+
+	@Override
 	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
 		ensureOpen();
 		startTransactionIfNotActive();

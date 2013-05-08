@@ -27,6 +27,7 @@ import cz.cvut.kbss.ontodriver.utils.OWLClassA;
 import cz.cvut.kbss.ontodriver.utils.OWLClassB;
 import cz.cvut.kbss.ontodriver.utils.OntoDriverMock;
 import cz.cvut.kbss.ontodriver.utils.PersistenceProviderMock;
+import cz.cvut.kbss.ontodriver.utils.StorageManagerMock;
 import cz.cvut.kbss.ontodriver.utils.StorageModuleMock;
 
 public class StorageManagerTest {
@@ -104,6 +105,21 @@ public class StorageManagerTest {
 				OntologyConnectorType.JENA);
 
 		manager.find(entity.getClass(), pk, unknown, Collections.<String, Context> emptyMap());
+		fail("This line should not have been reached.");
+	}
+
+	@Test
+	public void testIsConsistent() throws Exception {
+		LOG.config("Test: consistency check.");
+		final boolean res = manager.isConsistent(factory.getContexts().get(0));
+		assertTrue(res);
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testIsConsistentNull() throws Exception {
+		LOG.config("Test: consistency check. Null passed as URI.");
+		@SuppressWarnings("unused")
+		final boolean res = manager.isConsistent(null);
 		fail("This line should not have been reached.");
 	}
 

@@ -40,6 +40,16 @@ interface ModuleInternal {
 	public <T> T findEntity(Class<T> cls, Object primaryKey) throws OntoDriverException;
 
 	/**
+	 * Checks whether the underlying ontology is consistent.
+	 * 
+	 * @return {@code true} if the context is consistent, {@code false}
+	 *         otherwise
+	 * @throws OntoDriverException
+	 *             If an error occurs during consistency check
+	 */
+	public boolean isConsistent() throws OntoDriverException;
+
+	/**
 	 * Persists the specified entity. </p>
 	 * 
 	 * @param primaryKey

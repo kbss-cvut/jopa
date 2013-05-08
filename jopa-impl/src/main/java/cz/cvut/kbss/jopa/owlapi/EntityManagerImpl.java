@@ -453,6 +453,23 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		return getCurrentPersistenceContext().getContexts();
 	}
 
+	/**
+	 * Checks whether ontology context is consistent.
+	 * 
+	 * TODO THis method is not part of the public API, yet
+	 * 
+	 * @param contextUri
+	 *            URI of the context
+	 * @return {@code true} if the context is consistent, {@code false}
+	 *         otherwise
+	 */
+	public boolean isContextConsistent(URI contextUri) {
+		if (contextUri == null) {
+			throw new NullPointerException();
+		}
+		return getCurrentPersistenceContext().isContextConsistent(contextUri);
+	}
+
 	public void close() {
 		ensureOpen();
 		removeCurrentPersistenceContext();
