@@ -50,24 +50,6 @@
     
 
 
-    <!-- NumberOne -->
-
-    <owl:Class rdf:about="NumberOne"/>
-    
-
-
-    <!-- NumberThree -->
-
-    <owl:Class rdf:about="NumberThree"/>
-    
-
-
-    <!-- NumberTwo -->
-
-    <owl:Class rdf:about="NumberTwo"/>
-    
-
-
     <!-- http://new.owl#OWLClassA -->
 
     <owl:Class rdf:about="http://new.owl#OWLClassA"/>
@@ -88,9 +70,6 @@
     <!-- http://testEntity -->
 
     <owl:NamedIndividual rdf:about="http://testEntity">
-        <rdf:type rdf:resource="NumberOne"/>
-        <rdf:type rdf:resource="NumberThree"/>
-        <rdf:type rdf:resource="NumberTwo"/>
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
         <http:A-stringAttribute>TestAttribute</http:A-stringAttribute>
     </owl:NamedIndividual>
