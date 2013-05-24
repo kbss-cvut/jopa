@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:cc="http://java.sun.com/jsf/composite">
+<head/>
+<body>
+<cc:interface>
+    <cc:attribute name="value" required="true" type="java.lang.String"/>
+    <cc:attribute name="schema" required="false" type="java.lang.String"/>
+    <cc:attribute name="cls" required="false" type="java.lang.String"/>
+</cc:interface>
+<cc:implementation>
+    <span id="#{cc.clientId}">
+    <h:outputStylesheet name="oform/oform.css" />
+    <!--<h:outputScript name="oform/oform.js" target="head" />-->
+    <script type="text/javascript">
+//        var data = {
+//            name: 'Tom Cruise',
+//            nationality: 'American',
+//            birthPlace: 'Syracuse, New York, U.S.',
+//            spouse: {
+//                name: 'Katie Holmes',
+//                nationality: 'American'
+//            }
+//        };
+        var data = #{cc.attrs.value};
+        var oform = {};
+        var schema = #{cc.attrs.schema};
+
+        oform.schema = JSON.retrocycle(schema);
+        //OForm.Schema.doextend(oform.schema);
+
+        oform.model = new OForm.model.Schema({schema: oform.schema.definitions["#{cc.attrs.cls}"], value: data, expanded: true});
+        oform.view = new OForm.view.Schema({model: oform.model});
+
+        oform.view.render();
+        $("#"+"#{cc.clientId}".replace(/:/g, '\\:')).append(oform.view.el);
+
+function updateForm(componentID) {
+    var entry = document.getElementById(componentID+":"+"value");
+    entry.value = JSON.stringify(oform.view.getValue());
+}
+    
+    
+    </script>    
+    <script type="text/javascript">
+//        init("","#{cc.attrs.increment}");
+    </script>
+    <h:inputText id="value" value="#{cc.attrs.value}" styleClass="spinnerText"/>
+    <h:commandButton id="send" value="Send" styleClass="btn btn-primary"
+                     onclick="return updateForm('#{cc.clientId}');" />
+    
+    </span>
+</cc:implementation>
+</body>
+</html>
