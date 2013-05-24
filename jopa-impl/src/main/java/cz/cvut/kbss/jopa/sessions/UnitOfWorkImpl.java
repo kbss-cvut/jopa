@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
+import java.util.logging.Logger;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
@@ -736,6 +737,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 
 			if (eType.getIdentifier().isGenerated()) {
 				getOntologyAccessor().generateNewIRI(entity);
+                try {
+                    id = IRI.create(getMetamodel().entity(entity.getClass())
+                    .getIdentifier().getJavaField().get(entity).toString());
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(UnitOfWorkImpl.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IllegalAccessException ex) {
+                    Logger.getLogger(UnitOfWorkImpl.class.getName()).log(Level.SEVERE, null, ex);
+                }
 			} else {
 				throw new OWLPersistenceException("The id for entity " + entity
 						+ " is null and it is not specified as 'generated' ");
