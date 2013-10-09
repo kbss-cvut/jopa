@@ -37,7 +37,6 @@ public class CachingConnectorsTest {
 	private static final Logger LOG = Logger.getLogger(SingleFileContextTest.class.getName());
 
 	private static final List<StorageInfo> storage = initStorages();
-	private static final String OWLCLASS_A_REFERENCE_FIELD = "owlClassA";
 	private static final Map<String, String> properties = initProperties();
 
 	private static OWLClassA entityA;
