@@ -6,6 +6,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.hibernate.HibernateException;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyID;
@@ -26,6 +28,8 @@ import de.fraunhofer.iitb.owldb.OWLDBOntologyManager;
  * 
  */
 class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
+
+	private static final String HIBERNATE_DIALECT = "hibernate.dialect";
 
 	// private IRI databaseIri;
 	private Properties hibernateProperties;
@@ -64,12 +68,12 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 				LOG.config("Ontology " + logicalUri
 						+ " does not exist in the database. Creating...");
 			}
-			createOntology(ontologyIri, hibernateProperties);
+			createOntology(ontologyIri);
 		} catch (HibernateException e) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.finer("OWLDB database structure not present. Generating...");
 			}
-			createOntology(ontologyIri, hibernateProperties);
+			createOntology(ontologyIri);
 		}
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Number of individuals in signature: "
@@ -87,11 +91,12 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 		}
 	}
 
-	private void createOntology(IRI ontologyUri, Properties props) throws OntoDriverException {
+	private void createOntology(IRI ontologyUri) throws OntoDriverException {
 		try {
+			generateOwldbSchema();
 			OWLOntologyID ontoId = new OWLOntologyID(ontologyUri);
 			this.workingOntology = ((OWLDBOntologyManager) ontologyManager).createOntology(ontoId,
-					props);
+					hibernateProperties);
 		} catch (OWLOntologyCreationException e) {
 			throw new OntoDriverException(e);
 		}
@@ -121,5 +126,19 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 	public void close() throws OntoDriverException {
 		super.close();
 		((OWLDBOntology) workingOntology).destroyConnection();
+	}
+
+	/**
+	 * Exports the OWLDB database schema into the database. </p>
+	 */
+	private void generateOwldbSchema() {
+		LOG.config("Generating OWLDB database schema.");
+		final Configuration cfg = new Configuration();
+		cfg.configure();
+		final String dialect = OwlapiUtils.resolveHibernateDialect(hibernateProperties);
+		hibernateProperties.setProperty(HIBERNATE_DIALECT, dialect);
+		cfg.addProperties(hibernateProperties);
+		final SchemaExport ex = new SchemaExport(cfg);
+		ex.create(false, true);
 	}
 }

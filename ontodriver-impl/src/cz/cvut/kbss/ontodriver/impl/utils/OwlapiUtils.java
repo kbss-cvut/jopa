@@ -3,12 +3,18 @@ package cz.cvut.kbss.ontodriver.impl.utils;
 import java.net.URI;
 import java.util.Properties;
 
+import org.hibernate.dialect.HSQLDialect;
+import org.hibernate.dialect.MySQLDialect;
+import org.hibernate.dialect.Oracle10gDialect;
+import org.hibernate.dialect.PostgreSQLDialect;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.OwldbOntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.exceptions.JDBCDriverNotSpecifiedException;
+import cz.cvut.kbss.ontodriver.exceptions.UnsupportedOwldbDriverException;
 
 /**
  * Contains various utility methods for OWL API backed modules.
@@ -19,13 +25,18 @@ import cz.cvut.kbss.ontodriver.OwldbOntologyStorageProperties;
 public final class OwlapiUtils {
 
 	/** Hibernate database username property. */
-	private static String HIBERNATE_USERNAME_PROPERTY = "hibernate.connection.username";
+	private static final String HIBERNATE_USERNAME_PROPERTY = "hibernate.connection.username";
 	/** Hibernate database password property. */
-	private static String HIBERNATE_PASSWORD_PROPERTY = "hibernate.connection.password";
+	private static final String HIBERNATE_PASSWORD_PROPERTY = "hibernate.connection.password";
 	/** Hibernate database URL property. */
-	private static String HIBERNATE_JDBC_URL_PROPERTY = "hibernate.connection.url";
+	private static final String HIBERNATE_JDBC_URL_PROPERTY = "hibernate.connection.url";
 	/** Hibernate JDBC driver class property. */
-	private static String HIBERNATE_JDBC_DRIVER_PROPERTY = "hibernate.connection.driver_class";
+	private static final String HIBERNATE_JDBC_DRIVER_PROPERTY = "hibernate.connection.driver_class";
+
+	private static final String POSTGRES_JDBC = "org.postgresql.Driver";
+	private static final String MYSQL_JDBC = "com.mysql.jdbc.Driver";
+	private static final String ORACLE_JDBC = "oracle.jdbc.OracleDriver";
+	private static final String HSQL_JDBC = "org.hsqldb.jdbc.JDBCDriver";
 
 	/**
 	 * Private constructor.
@@ -67,6 +78,37 @@ public final class OwlapiUtils {
 				// Let's let Hibernate decide the correct dialect from the JDBC
 				// driver class
 			}
+		}
+	}
+
+	/**
+	 * Returns Hibernate dialect class name for the specified JDBC driver class.
+	 * 
+	 * @param properties
+	 *            Properties containing JDBC driver class name
+	 * @return Hibernate dialect name
+	 * @throws JDBCDriverNotSpecifiedException
+	 *             If the properties contain no JDBC driver specification
+	 * @throws UnsupportedOwldbDriverException
+	 *             Unsupported JDBC driver passed in properties
+	 */
+	public static String resolveHibernateDialect(Properties properties) {
+		final String jdbcDriver = properties.getProperty(HIBERNATE_JDBC_DRIVER_PROPERTY);
+		if (jdbcDriver == null) {
+			throw new JDBCDriverNotSpecifiedException(
+					"Missing JDBC driver class in OWLDB connector.");
+		}
+		if (jdbcDriver.equals(POSTGRES_JDBC)) {
+			return PostgreSQLDialect.class.getCanonicalName();
+		} else if (jdbcDriver.equals(MYSQL_JDBC)) {
+			return MySQLDialect.class.getCanonicalName();
+		} else if (jdbcDriver.equals(ORACLE_JDBC)) {
+			return Oracle10gDialect.class.getCanonicalName();
+		} else if (jdbcDriver.equals(HSQL_JDBC)) {
+			return HSQLDialect.class.getCanonicalName();
+		} else {
+			throw new UnsupportedOwldbDriverException(
+					"Unable to resolve hibernate dialect for driver " + jdbcDriver);
 		}
 	}
 
