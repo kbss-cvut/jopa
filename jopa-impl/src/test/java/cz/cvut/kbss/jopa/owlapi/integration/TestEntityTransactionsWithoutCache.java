@@ -178,15 +178,16 @@ public class TestEntityTransactionsWithoutCache {
 		final OWLClassA toChange = pc.find(OWLClassA.class, testEntity.getUri());
 		assertNotNull(toChange);
 		Set<String> col = new HashSet<String>();
-		col.add("NumberOne");
-		col.add("NumberTwo");
-		col.add("NumberThree");
+		col.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberOne");
+		col.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberTwo");
+		col.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberThree");
 		toChange.setTypes(col);
 		pc.getTransaction().commit();
 		final OWLClassA changed = pc.find(OWLClassA.class, testEntity.getUri());
 		assertNotNull(changed);
 		assertNotNull(changed.getTypes());
-		assertTrue(changed.getTypes().contains("NumberTwo"));
+		assertTrue(changed.getTypes().contains(
+				"http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberTwo"));
 	}
 
 	@Test
@@ -195,9 +196,9 @@ public class TestEntityTransactionsWithoutCache {
 		EntityManager pc = TestEnvironment.getPersistenceConnector(
 				"TestPersistenceConnectorLogic-testAddObjectToCollectionWithoutCache", false);
 		final Set<String> types = new HashSet<String>();
-		types.add("TypeOne");
-		types.add("TypeTwo");
-		types.add("TypeThree");
+		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeOne");
+		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeTwo");
+		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeThree");
 		pc.getTransaction().begin();
 		testEntity.setTypes(new HashSet<String>());
 		for (String t : types) {
@@ -221,23 +222,26 @@ public class TestEntityTransactionsWithoutCache {
 				"TestPersistenceConnectorLogic-testPersistCollectionChangeWithoutCacheII", false);
 		pc.getTransaction().begin();
 		final Set<String> orSet = new HashSet<String>();
-		orSet.add("One");
-		orSet.add("Two");
-		orSet.add("Three");
+		orSet.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#One");
+		orSet.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Two");
+		orSet.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Three");
 		testEntity.setTypes(orSet);
 		pc.persist(testEntity);
 		pc.getTransaction().commit();
 		final OWLClassA toChange = pc.find(OWLClassA.class, testEntity.getUri());
 		assertNotNull(toChange);
 		pc.getTransaction().begin();
-		toChange.getTypes().remove("Two");
-		toChange.getTypes().add("Four");
-		toChange.getTypes().add("Five");
+		toChange.getTypes().remove("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Two");
+		toChange.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Four");
+		toChange.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Five");
 		pc.getTransaction().commit();
 		final OWLClassA changed = pc.find(OWLClassA.class, testEntity.getUri());
 		assertNotNull(changed);
-		assertTrue(changed.getTypes().contains("Four"));
-		assertTrue(changed.getTypes().contains("Five"));
-		assertFalse(changed.getTypes().contains("Two"));
+		assertTrue(changed.getTypes().contains(
+				"http://krizik.felk.cvut.cz/ontologies/jopa/entities#Four"));
+		assertTrue(changed.getTypes().contains(
+				"http://krizik.felk.cvut.cz/ontologies/jopa/entities#Five"));
+		assertFalse(changed.getTypes().contains(
+				"http://krizik.felk.cvut.cz/ontologies/jopa/entities#Two"));
 	}
 }

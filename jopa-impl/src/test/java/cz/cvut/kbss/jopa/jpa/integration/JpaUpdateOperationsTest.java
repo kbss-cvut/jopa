@@ -95,6 +95,7 @@ public class JpaUpdateOperationsTest {
 	@Before
 	public void setUp() throws Exception {
 		clearDatabase();
+		TestEnvironment.resetOwldbHibernateProvider();
 	}
 
 	@After

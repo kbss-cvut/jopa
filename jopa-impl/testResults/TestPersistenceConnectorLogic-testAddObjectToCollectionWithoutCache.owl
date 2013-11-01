@@ -51,27 +51,27 @@
     
 
 
-    <!-- TypeOne -->
-
-    <owl:Class rdf:about="TypeOne"/>
-    
-
-
-    <!-- TypeThree -->
-
-    <owl:Class rdf:about="TypeThree"/>
-    
-
-
-    <!-- TypeTwo -->
-
-    <owl:Class rdf:about="TypeTwo"/>
-    
-
-
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA -->
 
     <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeOne -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeOne"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeThree -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeThree"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeTwo -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeTwo"/>
     
 
 
@@ -89,10 +89,10 @@
     <!-- http://testEntity -->
 
     <owl:NamedIndividual rdf:about="http://testEntity">
-        <rdf:type rdf:resource="TypeOne"/>
-        <rdf:type rdf:resource="TypeThree"/>
-        <rdf:type rdf:resource="TypeTwo"/>
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeOne"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeThree"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeTwo"/>
         <attributes:A-stringAttribute>TestAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>
 </rdf:RDF>

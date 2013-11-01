@@ -75,6 +75,7 @@ public class JpaRemoveOperationsTest {
 	@Before
 	public void setUp() throws Exception {
 		clearDatabase();
+		TestEnvironment.resetOwldbHibernateProvider();
 	}
 
 	@After

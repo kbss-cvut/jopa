@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.PersistenceProvider;
 import cz.cvut.kbss.jopa.model.ProviderUtil;
+import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
@@ -70,7 +71,11 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider, ProviderU
 			return null;
 		}
 		for (EntityManagerFactoryImpl emf : emfs) {
-			final UnitOfWorkImpl uow = emf.getServerSession().getPersistenceContext(entity);
+			final ServerSession session = emf.getServerSession();
+			if (session == null) {
+				continue;
+			}
+			final UnitOfWorkImpl uow = session.getPersistenceContext(entity);
 			if (uow != null) {
 				return uow;
 			}

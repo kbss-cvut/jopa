@@ -25,16 +25,16 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 public class MergeManagerTest {
 
-	private static final URI CONTEXT_URI = URI.create("http://jopa-unit-tests");
 	private ServerSession session;
 	private UnitOfWorkImpl uow;
 	private CloneBuilderStub cloneBuilder;
 	private MergeManagerImpl mm;
+	private URI contextUri;
 
 	@Before
 	public void setUp() throws Exception {
-		EntityManagerImpl em = (EntityManagerImpl) TestEnvironment
-				.getPersistenceConnector("MergeManagerJUnitTest");
+		final String name = "MergeManagerJUnitTest";
+		EntityManagerImpl em = (EntityManagerImpl) TestEnvironment.getPersistenceConnector(name);
 		this.session = em.getServerSession();
 		this.uow = (UnitOfWorkImpl) session.acquireClientSession().acquireUnitOfWork();
 		this.cloneBuilder = new CloneBuilderStub(uow);
@@ -43,6 +43,7 @@ public class MergeManagerTest {
 		Field builder = mm.getClass().getDeclaredField("builder");
 		builder.setAccessible(true);
 		builder.set(mm, cloneBuilder);
+		contextUri = URI.create(TestEnvironment.DEFAULT_IRI + name);
 	}
 
 	@After
@@ -57,7 +58,7 @@ public class MergeManagerTest {
 		final URI pk = URI.create("http://testObject");
 		orig.setUri(pk);
 		orig.setStringAttribute("ANiceAttribute");
-		final OWLClassB clone = (OWLClassB) cloneBuilder.buildClone(orig, CONTEXT_URI);
+		final OWLClassB clone = (OWLClassB) cloneBuilder.buildClone(orig, contextUri);
 		final ObjectChangeSetImpl chs = new ObjectChangeSetImpl(orig, clone, false,
 				uow.getUowChangeSet());
 		clone.setStringAttribute("AnotherStringAttribute");
@@ -73,10 +74,10 @@ public class MergeManagerTest {
 		final OWLClassB objTwo = new OWLClassB();
 		final URI pkTwo = URI.create("http://objTwo");
 		objTwo.setUri(pkTwo);
-		this.uow.getLiveObjectCache().add(CONTEXT_URI, IRI.create(objOne.getUri()), objOne);
-		this.uow.getLiveObjectCache().add(CONTEXT_URI, IRI.create(objTwo.getUri()), objTwo);
-		Object cloneOne = this.uow.registerExistingObject(objOne, CONTEXT_URI);
-		Object cloneTwo = this.uow.registerExistingObject(objTwo, CONTEXT_URI);
+		this.uow.getLiveObjectCache().add(contextUri, IRI.create(objOne.getUri()), objOne);
+		this.uow.getLiveObjectCache().add(contextUri, IRI.create(objTwo.getUri()), objTwo);
+		Object cloneOne = this.uow.registerExistingObject(objOne, contextUri);
+		Object cloneTwo = this.uow.registerExistingObject(objTwo, contextUri);
 		this.uow.removeObject(cloneTwo);
 		((OWLClassB) cloneOne).setStringAttribute("testAtt");
 		this.uow.getUowChangeSet().addDeletedObject(objTwo, cloneTwo);
@@ -94,8 +95,9 @@ public class MergeManagerTest {
 		final URI pk = URI.create("http://newOnesUri");
 		objOne.setUri(pk);
 		objOne.setStringAttribute("ABeautifulAttribute");
-		final Object clone = cloneBuilder.buildClone(objOne, CONTEXT_URI);
-		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(objOne, clone, true, null);
+		final Object clone = cloneBuilder.buildClone(objOne, contextUri);
+		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(objOne, clone, true, null,
+				contextUri);
 		this.uow.getUowChangeSet().addNewObjectChangeSet(ochs);
 		this.mm.mergeChangesFromChangeSet(uow.getUowChangeSet());
 		assertTrue(uow.getLiveObjectCache()
@@ -107,8 +109,9 @@ public class MergeManagerTest {
 		final OWLClassB newOne = new OWLClassB();
 		final URI pk = URI.create("http://newOnesUri");
 		newOne.setUri(pk);
-		final Object clone = cloneBuilder.buildClone(newOne, CONTEXT_URI);
-		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(newOne, clone, true, null);
+		final Object clone = cloneBuilder.buildClone(newOne, contextUri);
+		final ObjectChangeSetImpl ochs = new ObjectChangeSetImpl(newOne, clone, true, null,
+				contextUri);
 		this.mm.mergeNewObject(ochs);
 		final IRI iri = IRI.create(pk);
 		boolean res = uow.getLiveObjectCache().contains(newOne.getClass(), iri);

@@ -86,6 +86,7 @@ public class JpaPersistOperationsTest {
 	@Before
 	public void setUp() throws Exception {
 		clearDatabase();
+		TestEnvironment.resetOwldbHibernateProvider();
 	}
 
 	@After

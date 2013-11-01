@@ -695,6 +695,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		} finally {
 			cacheManager.releaseReadLock();
 		}
+		checkForCollections(clone);
 		setHasChanges(true);
 		return clone;
 	}

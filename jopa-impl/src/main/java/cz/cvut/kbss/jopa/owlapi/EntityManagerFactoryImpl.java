@@ -44,7 +44,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 	private MetamodelImpl metamodel = null;
 
 	public EntityManagerFactoryImpl(final Map<String, String> properties) {
-		this.properties = properties;
+		this.properties = properties != null ? properties : Collections.<String, String> emptyMap();
 		// TODO The storage properties should be read from persistence.xml
 		this.storageProperties = Collections.emptyList();
 	}
@@ -54,7 +54,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 		if (storageProperties == null) {
 			throw new NullPointerException();
 		}
-		this.properties = properties;
+		this.properties = properties != null ? properties : Collections.<String, String> emptyMap();
 		this.storageProperties = storageProperties;
 	}
 
@@ -103,6 +103,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 	 *            connection to the underlying ontology.
 	 */
 	private void initServerSession(Map<String, String> newMap) {
+		assert newMap != null;
 		if (this.serverSession == null) {
 			this.serverSession = new ServerSession(storageProperties, newMap, getMetamodel());
 		}
@@ -115,9 +116,6 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 	 * @return The ServerSession for this factory.
 	 */
 	public ServerSession getServerSession() {
-		if (this.serverSession == null) {
-			this.initServerSession(Collections.<String, String> emptyMap());
-		}
 		return this.serverSession;
 	}
 
@@ -178,7 +176,10 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 		if (!isOpen()) {
 			throw new IllegalStateException("The entity manager factory is closed.");
 		}
-		return getServerSession().getLiveObjectCache();
+		if (serverSession == null) {
+			initServerSession(properties);
+		}
+		return serverSession.getLiveObjectCache();
 	}
 
 }

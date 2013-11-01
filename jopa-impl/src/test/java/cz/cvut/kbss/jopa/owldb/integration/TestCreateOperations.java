@@ -100,6 +100,7 @@ public class TestCreateOperations {
 		}
 		st1.close();
 		con.close();
+		TestEnvironment.resetOwldbHibernateProvider();
 		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-create",
 				OwlapiStorageType.OWLDB, true);
 	}

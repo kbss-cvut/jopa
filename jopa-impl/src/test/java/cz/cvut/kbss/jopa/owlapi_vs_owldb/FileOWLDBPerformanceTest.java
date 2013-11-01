@@ -82,6 +82,7 @@ public class FileOWLDBPerformanceTest {
 			con.close();
 			shouldDropDb = false;
 		}
+		TestEnvironment.resetOwldbHibernateProvider();
 	}
 
 	@Test

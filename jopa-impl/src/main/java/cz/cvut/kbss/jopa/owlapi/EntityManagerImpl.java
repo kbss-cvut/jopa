@@ -695,7 +695,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	public ServerSession getServerSession() {
-		return this.emf.getServerSession();
+		ServerSession ss = emf.getServerSession();
+		assert ss != null;
+		return ss;
 	}
 
 	/**
