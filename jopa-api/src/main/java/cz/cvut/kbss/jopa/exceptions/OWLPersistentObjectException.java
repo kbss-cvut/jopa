@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.model;
+package cz.cvut.kbss.jopa.exceptions;
 
 public class OWLPersistentObjectException extends OWLPersistenceException {
 

@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.model;
+package cz.cvut.kbss.jopa.exceptions;
 
 /**
  * Thrown when an attempt to persist entity with duplicate primary key is made.

@@ -2,7 +2,6 @@ package cz.cvut.kbss.jopa.sessions;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 
 import org.semanticweb.owlapi.model.IRI;
@@ -57,8 +56,7 @@ public class ClientSession extends AbstractSession {
 		if (object == null) {
 			return;
 		}
-		final IRI primaryKey = EntityPropertiesUtils.getPrimaryKey(object,
-				getMetamodel());
+		final IRI primaryKey = EntityPropertiesUtils.getPrimaryKey(object, getMetamodel());
 		if (primaryKey == null) {
 			return;
 		}
@@ -68,10 +66,6 @@ public class ClientSession extends AbstractSession {
 	@Override
 	protected Connection acquireConnection() {
 		return parent.acquireConnection();
-	}
-
-	public Vector<?> executeQuery(String sparqlQuery) {
-		return this.parent.executeQuery(sparqlQuery);
 	}
 
 	public Set<Class<?>> getManagedTypes() {

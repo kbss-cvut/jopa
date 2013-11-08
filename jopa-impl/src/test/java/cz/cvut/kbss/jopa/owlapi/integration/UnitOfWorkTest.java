@@ -362,4 +362,20 @@ public class UnitOfWorkTest {
 		assertEquals(testObject.getStringAttribute(), clone.getOwlClassA().getStringAttribute());
 		assertNotNull(clone.getOwlClassA().getTypes());
 	}
+
+	@Test
+	public void testUseTransactionalOntologyForQueryProcessing() {
+		assertTrue(testUOW.useTransactionalOntologyForQueryProcessing());
+		assertFalse(testUOW.useBackupOntologyForQueryProcessing());
+	}
+
+	@Test
+	public void testSwitchQueryProcessingOntology() {
+		testUOW.setUseBackupOntologyForQueryProcessing();
+		assertTrue(testUOW.useBackupOntologyForQueryProcessing());
+		assertFalse(testUOW.useTransactionalOntologyForQueryProcessing());
+		testUOW.setUseTransactionalOntologyForQueryProcessing();
+		assertTrue(testUOW.useTransactionalOntologyForQueryProcessing());
+		assertFalse(testUOW.useBackupOntologyForQueryProcessing());
+	}
 }

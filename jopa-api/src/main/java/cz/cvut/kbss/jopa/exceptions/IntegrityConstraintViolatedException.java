@@ -13,7 +13,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cz.cvut.kbss.jopa.model;
+package cz.cvut.kbss.jopa.exceptions;
 
 @SuppressWarnings("serial")
 public class IntegrityConstraintViolatedException extends OWLPersistenceException {

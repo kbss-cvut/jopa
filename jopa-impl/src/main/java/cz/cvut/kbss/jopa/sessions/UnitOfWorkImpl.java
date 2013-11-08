@@ -18,12 +18,14 @@ import java.util.logging.Level;
 import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
+import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.model.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.model.OWLInferredAttributeModifiedException;
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.query.Query;
+import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Connection;
@@ -31,7 +33,7 @@ import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
-public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
+public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory {
 
 	private final Map<Object, Object> cloneMapping;
 	private final Map<Object, Object> cloneToOriginals;
@@ -46,6 +48,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	private boolean hasDeleted;
 	private boolean shouldReleaseAfterCommit;
 	private boolean shouldClearCacheAfterCommit;
+	private boolean useTransactionalOntology;
 
 	private boolean isActive;
 	private boolean inCommit;
@@ -59,6 +62,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 	private MergeManager mergeManager;
 	private CloneBuilder cloneBuilder;
 	private ChangeManager changeManager;
+	private final QueryFactory queryFactory;
 	/**
 	 * This is a shortcut for the second level cache. Performance reasons (to
 	 * prevent server session method call chain).
@@ -75,7 +79,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		this.cloneBuilder = new CloneBuilderImpl(this);
 		this.cacheManager = parent.getLiveObjectCache();
 		this.storageConnection = acquireConnection();
+		this.queryFactory = new QueryFactoryImpl(this, storageConnection);
 		this.inCommit = false;
+		this.useTransactionalOntology = true;
 	}
 
 	/**
@@ -1031,6 +1037,46 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork {
 		} catch (IllegalAccessException e) {
 			throw new OWLPersistenceException(e);
 		}
+	}
+
+	@Override
+	public void setUseTransactionalOntologyForQueryProcessing() {
+		this.useTransactionalOntology = true;
+	}
+
+	@Override
+	public boolean useTransactionalOntologyForQueryProcessing() {
+		return useTransactionalOntology;
+	}
+
+	@Override
+	public void setUseBackupOntologyForQueryProcessing() {
+		this.useTransactionalOntology = false;
+	}
+
+	@Override
+	public boolean useBackupOntologyForQueryProcessing() {
+		return !useTransactionalOntology;
+	}
+
+	@Override
+	public Query<List<String>> createNativeQuery(String sparql, URI contextUri) {
+		return queryFactory.createNativeQuery(sparql, contextUri);
+	}
+
+	@Override
+	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass, URI contextUri) {
+		return queryFactory.createNativeQuery(sparql, resultClass, contextUri);
+	}
+
+	@Override
+	public Query createQuery(String query, URI contextUri) {
+		return queryFactory.createQuery(query, contextUri);
+	}
+
+	@Override
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, URI contextUri) {
+		return queryFactory.createQuery(query, resultClass, contextUri);
 	}
 
 	/**

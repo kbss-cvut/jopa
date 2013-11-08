@@ -51,8 +51,8 @@ import org.semanticweb.owlapi.model.SetOntologyID;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
-import cz.cvut.kbss.jopa.model.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.ic.IntegrityConstraint;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -498,19 +498,62 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	public Query<?> createQuery(String qlString) {
-		return getServerSession().createQuery(qlString, this);
+		return getCurrentPersistenceContext().createQuery(qlString, getDefaultContextUri());
+	}
+
+	@Override
+	public Query createQuery(String qlString, URI contextUri) {
+		return getCurrentPersistenceContext().createQuery(qlString, contextUri);
 	}
 
 	public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
-		return _createTypedQuery(qlString, resultClass, false);
+		return getCurrentPersistenceContext().createQuery(qlString, resultClass,
+				getDefaultContextUri());
+	}
+
+	@Override
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, URI contextUri) {
+		return getCurrentPersistenceContext().createQuery(query, resultClass, contextUri);
 	}
 
 	public Query<List<String>> createNativeQuery(String sparql) {
-		return getServerSession().createNativeQuery(sparql, this);
+		return getCurrentPersistenceContext().createNativeQuery(sparql, getDefaultContextUri());
+	}
+
+	@Override
+	public Query<List<String>> createNativeQuery(String sqlString, URI contextUri) {
+		return getCurrentPersistenceContext().createNativeQuery(sqlString, contextUri);
 	}
 
 	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass) {
-		return _createTypedQuery(sparql, resultClass, true);
+		return getCurrentPersistenceContext().createNativeQuery(sparql, resultClass,
+				getDefaultContextUri());
+	}
+
+	@Override
+	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass,
+			URI contextUri) {
+		return getCurrentPersistenceContext().createNativeQuery(sqlString, resultClass, contextUri);
+	}
+
+	@Override
+	public void setUseTransactionalOntologyForQueryProcessing() {
+		getCurrentPersistenceContext().setUseTransactionalOntologyForQueryProcessing();
+	}
+
+	@Override
+	public boolean useTransactionalOntologyForQueryProcessing() {
+		return getCurrentPersistenceContext().useTransactionalOntologyForQueryProcessing();
+	}
+
+	@Override
+	public void setUseBackupOntologyForQueryProcessing() {
+		getCurrentPersistenceContext().setUseBackupOntologyForQueryProcessing();
+	}
+
+	@Override
+	public boolean useBackupOntologyForQueryProcessing() {
+		return getCurrentPersistenceContext().useBackupOntologyForQueryProcessing();
 	}
 
 	public <T> T unwrap(Class<T> cls) {
@@ -667,10 +710,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	private <T> TypedQuery<T> _createTypedQuery(String string, Class<T> cls, boolean sparql) {
-		return getServerSession().createQuery(string, cls, sparql, this);
-	}
-
 	class ICEvaluator {
 		public boolean isSatisfied(IntegrityConstraint check) {
 
@@ -727,5 +766,11 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 */
 	private void setTransactionWrapper() {
 		this.transaction = new EntityTransactionWrapper(this);
+	}
+
+	private URI getDefaultContextUri() {
+		final Context ctx = getAvailableContexts().get(0);
+		assert ctx != null;
+		return ctx.getUri();
 	}
 }

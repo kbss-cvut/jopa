@@ -15,7 +15,7 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 
 @SuppressWarnings("serial")
 public class NotYetImplementedException extends OWLPersistenceException {

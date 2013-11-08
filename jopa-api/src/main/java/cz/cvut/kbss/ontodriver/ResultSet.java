@@ -38,6 +38,18 @@ public interface ResultSet extends Closeable {
 	public int findColumn(String columnLabel) throws OntoDriverException;
 
 	/**
+	 * Gets the count of available columns. </p>
+	 * 
+	 * This number corresponds to the number of result variables bound in the
+	 * query.
+	 * 
+	 * @return Number of columns in the result set
+	 * @throws OntoDriverException
+	 *             If this method is called on a closed result set
+	 */
+	public int getColumnCount() throws OntoDriverException;
+
+	/**
 	 * Move the cursor to the first row.
 	 * 
 	 * @throws OntoDriverException

@@ -22,8 +22,8 @@ import java.util.logging.Logger;
 
 import org.junit.Test;
 
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 
 public class TestPersistenceConnectorLogic {
 

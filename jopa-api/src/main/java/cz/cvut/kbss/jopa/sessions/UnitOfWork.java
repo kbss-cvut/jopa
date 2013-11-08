@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.ontodriver.Context;
 
 public interface UnitOfWork extends Session {
@@ -298,4 +298,32 @@ public interface UnitOfWork extends Session {
 	 * @see Context
 	 */
 	public List<Context> getContexts();
+
+	/**
+	 * Sets the transactional ontology as the one used for SPARQL query
+	 * processing.
+	 */
+	public void setUseTransactionalOntologyForQueryProcessing();
+
+	/**
+	 * Returns true if the transactional ontology is set as the one processing
+	 * SPARQL queries.
+	 * 
+	 * @return boolean
+	 */
+	public boolean useTransactionalOntologyForQueryProcessing();
+
+	/**
+	 * Sets the backup (central) ontology as the one used for SPARQL query
+	 * processing.
+	 */
+	public void setUseBackupOntologyForQueryProcessing();
+
+	/**
+	 * Returns true if the backup (central) ontology is set as the one
+	 * processing SPARQL queries.
+	 * 
+	 * @return boolean
+	 */
+	public boolean useBackupOntologyForQueryProcessing();
 }

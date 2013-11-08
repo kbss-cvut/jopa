@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.model;
+package cz.cvut.kbss.jopa.exceptions;
 
 /**
  * This exception is raised when the user modifies an inferred attribute, which

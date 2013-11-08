@@ -297,7 +297,9 @@ public interface EntityManager {
 
 	/**
 	 * Create an instance of Query for executing a Java Persistence query
-	 * language statement.
+	 * language statement. </p>
+	 * 
+	 * The query will be executed against the default ontology context.
 	 * 
 	 * @param qlString
 	 *            a Java Persistence query string
@@ -307,8 +309,38 @@ public interface EntityManager {
 	 */
 	public Query createQuery(String qlString);
 
+	/**
+	 * Create an instance of Query for executing a Java Persistence query
+	 * language statement.
+	 * 
+	 * @param qlString
+	 *            a Java Persistence query string
+	 * @param contextUri
+	 *            ontology context URI
+	 * @return the new query instance
+	 * @throws IllegalArgumentException
+	 *             if query string is not valid
+	 */
+	@NonJPA
+	public Query createQuery(String qlString, URI contextUri);
+
 	// TODO JPA 2.0 TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery)
 	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass);
+
+	/**
+	 * Creates an instance of query for executing Java persistence query
+	 * language statement.
+	 * 
+	 * @param query
+	 *            query string
+	 * @param resultClass
+	 *            result type
+	 * @param contextUri
+	 *            ontology context URI
+	 * @return the new query instance
+	 */
+	@NonJPA
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, URI contextUri);
 
 	//
 	// /**
@@ -328,13 +360,41 @@ public interface EntityManager {
 
 	/**
 	 * Create an instance of Query for executing a native SPARQL-DL query in
-	 * SPARQL syntax.
+	 * SPARQL syntax. </p>
+	 * 
+	 * The query will be executed against the default ontology context.
 	 * 
 	 * @param sqlString
-	 *            a native SQL query string
+	 *            a native SPARQL query string
 	 * @return the new query instance
 	 */
 	public Query<List<String>> createNativeQuery(String sqlString);
+
+	/**
+	 * Create an instance of Query for executing a native SPARQL-DL query in
+	 * SPARQL syntax.
+	 * 
+	 * @param sqlString
+	 *            a native SPARQL query string
+	 * @param contextUri
+	 *            ontlogy context URI
+	 * @return the new query instance
+	 */
+	public Query<List<String>> createNativeQuery(String sqlString, URI contextUri);
+
+	/**
+	 * Create an instance of Query for executing a native SPARQL-DL query
+	 * returning only specific object type. </p>
+	 * 
+	 * The query will be executed against the default ontology context.
+	 * 
+	 * @param sqlString
+	 *            a native SQL query string
+	 * @param resultClass
+	 *            the class of the resulting instance(s)
+	 * @return the new query instance
+	 */
+	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass);
 
 	/**
 	 * Create an instance of Query for executing a native SPARQL-DL query
@@ -344,9 +404,12 @@ public interface EntityManager {
 	 *            a native SQL query string
 	 * @param resultClass
 	 *            the class of the resulting instance(s)
+	 * @param contextUri
+	 *            ontology context URI
 	 * @return the new query instance
 	 */
-	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass);
+	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass,
+			URI contextUri);
 
 	// /**
 	// * Create an instance of Query for executing a native SQL query.
@@ -447,11 +510,13 @@ public interface EntityManager {
 	 * 
 	 * @return UnitOfWork
 	 */
+	@NonJPA
 	public UnitOfWork getCurrentPersistenceContext();
 
 	/**
 	 * Remove the current persistence context UnitOfWork. INTERNAL.
 	 */
+	@NonJPA
 	public void removeCurrentPersistenceContext();
 
 	/**
@@ -461,6 +526,7 @@ public interface EntityManager {
 	 * @param t
 	 *            The entity transaction that was started.
 	 */
+	@NonJPA
 	public void transactionStarted(EntityTransaction t);
 
 	/**
@@ -470,5 +536,59 @@ public interface EntityManager {
 	 * @param t
 	 *            The committed entity transaction.
 	 */
+	@NonJPA
 	public void transactionFinished(EntityTransaction t);
+
+	/**
+	 * Sets the transactional ontology as the one which will be used when
+	 * processing SPARQL queries. </p>
+	 * 
+	 * This setting may have significant impact on query results, since changes
+	 * made during transaction are propagated to the transactional ontology,
+	 * which is private to this persistence context, before commit. The ontology
+	 * can even be in an inconsistent state. </p>
+	 * 
+	 * This is the default setting, unless changed by properties passed on
+	 * persistence initialization.
+	 * 
+	 * @see #setUseBackupOntologyForQueryProcessing()
+	 */
+	@NonJPA
+	public void setUseTransactionalOntologyForQueryProcessing();
+
+	/**
+	 * Returns true if the transactional ontology should be used for SPARQL
+	 * query processing.
+	 * 
+	 * @return {@code true} if transactional ontology will be used,
+	 *         {@code false} otherwise
+	 * @see #setUseTransactionalOntologyForQueryProcessing()
+	 */
+	@NonJPA
+	public boolean useTransactionalOntologyForQueryProcessing();
+
+	/**
+	 * Sets the backup ontology as the one which will be used for processing of
+	 * SPARQL queries. </p>
+	 * 
+	 * The backup ontology represents the ontology after the last commit done by
+	 * any transaction and therefore can produce different results from those
+	 * produced by the transactional ontology, which is private to this
+	 * persistence context.
+	 * 
+	 * @see #setUseTransactionalOntologyForQueryProcessing()
+	 */
+	@NonJPA
+	public void setUseBackupOntologyForQueryProcessing();
+
+	/**
+	 * Returns true if the backup (central) ontology should be used for SPARQL
+	 * query processing. </p>
+	 * 
+	 * @return {@code true} if the central ontology will be used, {@code false}
+	 *         otherwise
+	 * @see #setUseBackupOntologyForQueryProcessing()
+	 */
+	@NonJPA
+	public boolean useBackupOntologyForQueryProcessing();
 }

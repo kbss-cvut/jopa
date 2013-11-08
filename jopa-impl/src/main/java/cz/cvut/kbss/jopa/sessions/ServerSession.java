@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import java.util.WeakHashMap;
 
 import javax.persistence.EntityTransaction;
@@ -13,8 +12,8 @@ import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
@@ -188,11 +187,6 @@ public class ServerSession extends AbstractSession {
 			return;
 		}
 		getLiveObjectCache().evict(object.getClass(), primaryKey);
-	}
-
-	public Vector<?> executeQuery(String sparqlQuery) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public Set<Class<?>> getManagedTypes() {

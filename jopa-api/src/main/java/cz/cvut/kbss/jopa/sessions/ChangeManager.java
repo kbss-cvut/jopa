@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.model.OWLInferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 
 public interface ChangeManager {
 

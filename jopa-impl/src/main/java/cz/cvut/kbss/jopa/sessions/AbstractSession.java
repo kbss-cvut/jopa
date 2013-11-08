@@ -1,14 +1,10 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.model.query.Query;
-import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.ontodriver.Connection;
 
 /**
@@ -31,35 +27,6 @@ public abstract class AbstractSession implements Session {
 			LOG.config("UnitOfWork acquired.");
 		}
 		return uow;
-	}
-
-	public Query<?> createQuery(String qlString, final EntityManager em) {
-		if (qlString == null || qlString.equalsIgnoreCase("")) {
-			return null;
-		}
-		// TODO add query support
-		return null;
-		// return getOntologyAccessor().createQuery(qlString, em);
-	}
-
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, boolean sparql,
-			final EntityManager em) {
-		if (query == null || query.equalsIgnoreCase("") || resultClass == null) {
-			return null;
-		}
-		// TODO add query support
-		return null;
-		// return getOntologyAccessor()
-		// .createQuery(query, resultClass, sparql, em);
-	}
-
-	public Query<List<String>> createNativeQuery(String sparql, final EntityManager em) {
-		if (sparql == null || sparql.equalsIgnoreCase("")) {
-			return null;
-		}
-		// TODO add query support
-		return null;
-		// return getOntologyAccessor().createNativeQuery(sparql, em);
 	}
 
 	/**
