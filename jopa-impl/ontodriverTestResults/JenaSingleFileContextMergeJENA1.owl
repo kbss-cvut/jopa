@@ -6,8 +6,8 @@
     xmlns:j.1="http://krizik.felk.cvut.cz/ontologies/jopa/entities#"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-    xmlns:j.3="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#"
-    xmlns:j.2="http://krizik.felk.cvut.cz/ontologies/jopa/tests/" > 
+    xmlns:j.2="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#"
+    xmlns:j.3="http://www.w3.org/XML/1998/namespace" > 
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
   </rdf:Description>
@@ -15,32 +15,21 @@
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB">
-    <j.3:B-stringAttribute>newStringAttributeForB</j.3:B-stringAttribute>
+    <j.2:B-stringAttribute>entityBStringAttribute</j.2:B-stringAttribute>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
     <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA">
-    <j.3:A-stringAttribute>entityAStringAttribute</j.3:A-stringAttribute>
+    <j.2:A-stringAttribute>entityAStringAttribute</j.2:A-stringAttribute>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
-    <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/tests/TTwo"/>
-    <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/tests/TThree"/>
-    <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/tests/TOne"/>
     <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/TThree">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/JustOneType"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/TTwo">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/TOne">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/JenaSingleFileContextMergeJENA1">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Ontology"/>
@@ -55,6 +44,7 @@
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
   </rdf:Description>
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD">
+    <j.2:hasA rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"/>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
     <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD"/>
   </rdf:Description>

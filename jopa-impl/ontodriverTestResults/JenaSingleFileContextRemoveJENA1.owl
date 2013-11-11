@@ -6,7 +6,8 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
     xmlns:j.2="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#"
-    xmlns="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/JenaSingleFileContextRemoveJENA1#" > 
+    xmlns="http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/JenaSingleFileContextRemoveJENA1#"
+    xmlns:j.3="http://www.w3.org/XML/1998/namespace" > 
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
   </rdf:Description>
@@ -30,5 +31,10 @@
   </rdf:Description>
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD">
+    <j.2:hasA rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#NamedIndividual"/>
+    <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD"/>
   </rdf:Description>
 </rdf:RDF>

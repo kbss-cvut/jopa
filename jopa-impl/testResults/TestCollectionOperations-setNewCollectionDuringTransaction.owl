@@ -3,7 +3,6 @@
      xml:base="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/TestCollectionOperations-setNewCollectionDuringTransaction"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:http="http://"
-     xmlns:jopa-tests="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -52,81 +51,63 @@
     
 
 
-    <!-- NewStringOne -->
+    <!-- Type_0 -->
 
-    <owl:Class rdf:about="NewStringOne"/>
+    <owl:Class rdf:about="Type_0"/>
     
 
 
-    <!-- NewStringThree -->
+    <!-- Type_1 -->
 
-    <owl:Class rdf:about="NewStringThree"/>
+    <owl:Class rdf:about="Type_1"/>
     
 
 
-    <!-- NewStringTwo -->
+    <!-- Type_2 -->
 
-    <owl:Class rdf:about="NewStringTwo"/>
+    <owl:Class rdf:about="Type_2"/>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_0 -->
+    <!-- Type_3 -->
 
-    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_0"/>
+    <owl:Class rdf:about="Type_3"/>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_1 -->
+    <!-- Type_4 -->
 
-    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_1"/>
+    <owl:Class rdf:about="Type_4"/>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_2 -->
+    <!-- Type_5 -->
 
-    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_2"/>
+    <owl:Class rdf:about="Type_5"/>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_3 -->
+    <!-- Type_6 -->
 
-    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_3"/>
+    <owl:Class rdf:about="Type_6"/>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_4 -->
+    <!-- Type_7 -->
 
-    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_4"/>
+    <owl:Class rdf:about="Type_7"/>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_5 -->
+    <!-- Type_8 -->
 
-    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_5"/>
+    <owl:Class rdf:about="Type_8"/>
     
 
 
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_6 -->
+    <!-- Type_9 -->
 
-    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_6"/>
-    
-
-
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_7 -->
-
-    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_7"/>
-    
-
-
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_8 -->
-
-    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_8"/>
-    
-
-
-    <!-- http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_9 -->
-
-    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/Type_9"/>
+    <owl:Class rdf:about="Type_9"/>
     
 
 
@@ -150,9 +131,16 @@
     <!-- http://testA -->
 
     <owl:NamedIndividual rdf:about="http://testA">
-        <rdf:type rdf:resource="NewStringOne"/>
-        <rdf:type rdf:resource="NewStringThree"/>
-        <rdf:type rdf:resource="NewStringTwo"/>
+        <rdf:type rdf:resource="Type_0"/>
+        <rdf:type rdf:resource="Type_1"/>
+        <rdf:type rdf:resource="Type_2"/>
+        <rdf:type rdf:resource="Type_3"/>
+        <rdf:type rdf:resource="Type_4"/>
+        <rdf:type rdf:resource="Type_5"/>
+        <rdf:type rdf:resource="Type_6"/>
+        <rdf:type rdf:resource="Type_7"/>
+        <rdf:type rdf:resource="Type_8"/>
+        <rdf:type rdf:resource="Type_9"/>
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
         <attributes:A-stringAttribute>someStringAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>

@@ -104,7 +104,7 @@
 
     <owl:NamedIndividual rdf:about="http://testOne">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
-        <attributes:A-stringAttribute>changedString</attributes:A-stringAttribute>
+        <attributes:A-stringAttribute>TestAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>
 </rdf:RDF>
 
