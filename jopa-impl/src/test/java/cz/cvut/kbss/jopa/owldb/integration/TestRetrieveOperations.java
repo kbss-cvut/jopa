@@ -55,6 +55,7 @@ public class TestRetrieveOperations {
 		}
 		st1.close();
 		con.close();
+		TestEnvironment.resetOwldbHibernateProvider();
 		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-retrieve",
 				OwlapiStorageType.OWLDB, true);
 	}

@@ -52,6 +52,7 @@ public class TestDeleteOperations {
 		}
 		st1.close();
 		con.close();
+		TestEnvironment.resetOwldbHibernateProvider();
 		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-delete",
 				OwlapiStorageType.OWLDB, true);
 	}

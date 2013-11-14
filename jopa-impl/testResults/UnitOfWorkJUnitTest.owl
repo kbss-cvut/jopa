@@ -97,6 +97,15 @@
     
 
 
+    <!-- http://newEntity -->
+
+    <owl:NamedIndividual rdf:about="http://newEntity">
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
+        <attributes:A-stringAttribute>stringAttributeOne</attributes:A-stringAttribute>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://testOne -->
 
     <owl:NamedIndividual rdf:about="http://testOne">

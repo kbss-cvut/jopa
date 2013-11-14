@@ -103,7 +103,7 @@
 
     <owl:NamedIndividual rdf:about="http://testOWLClassD">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD"/>
-        <attributes:hasA rdf:resource="http://testOne"/>
+        <attributes:hasA rdf:resource="http://newURIforA"/>
     </owl:NamedIndividual>
     
 

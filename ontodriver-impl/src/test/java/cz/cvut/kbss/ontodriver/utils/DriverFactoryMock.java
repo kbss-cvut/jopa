@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.cvut.kbss.ontodriver.AbstractStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
+import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -109,5 +111,11 @@ public class DriverFactoryMock implements DriverFactory {
 			// Do nothing
 		}
 		return map;
+	}
+
+	@Override
+	public DriverStatement createStatement(AbstractStatement statement) throws OntoDriverException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

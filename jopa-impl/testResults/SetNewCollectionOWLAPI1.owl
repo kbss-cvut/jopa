@@ -51,6 +51,24 @@
     
 
 
+    <!-- cz.cvut.kbss.jopa.owlapi.OWLClassE -->
+
+    <owl:Class rdf:about="cz.cvut.kbss.jopa.owlapi.OWLClassE"/>
+    
+
+
+    <!-- cz.cvut.kbss.jopa.owlapi.OWLClassH -->
+
+    <owl:Class rdf:about="cz.cvut.kbss.jopa.owlapi.OWLClassH"/>
+    
+
+
+    <!-- cz.cvut.kbss.jopa.owlapi.OWLClassI -->
+
+    <owl:Class rdf:about="cz.cvut.kbss.jopa.owlapi.OWLClassI"/>
+    
+
+
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA -->
 
     <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
@@ -77,8 +95,10 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA -->
 
     <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA">
+        <rdf:type rdf:resource="cz.cvut.kbss.jopa.owlapi.OWLClassE"/>
+        <rdf:type rdf:resource="cz.cvut.kbss.jopa.owlapi.OWLClassH"/>
+        <rdf:type rdf:resource="cz.cvut.kbss.jopa.owlapi.OWLClassI"/>
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
-        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/tests/SomeType"/>
         <attributes:A-stringAttribute>entityAStringAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>
 </rdf:RDF>

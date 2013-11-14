@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import cz.cvut.kbss.ontodriver.AbstractStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
+import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.OwlimOntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -95,5 +97,11 @@ public class DriverOwlimFactory extends DriverAbstractFactory {
 		}
 		final JenaBasedOwlimConnector c = new JenaBasedOwlimConnector(owlimP, properties);
 		centralConnectors.put(ctx, c);
+	}
+
+	@Override
+	public DriverStatement createStatement(AbstractStatement statement) throws OntoDriverException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -9,10 +9,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.ontodriver.AbstractStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
-import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -83,12 +83,21 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public ResultSet executeStatement(Statement statement) throws OntoDriverException {
+	public ResultSet executeStatement(AbstractStatement statement) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Executing statement.");
 		}
-		// TODO Read context(s) from the query and execute it
-		return null;
+		ensureState();
+		if (statement == null) {
+			LOG.severe("Null argument passed: statement");
+			throw new NullPointerException();
+		}
+		final Context c = uriToContext.get(statement.getContext());
+		if (c == null) {
+			throw new OntoDriverException("Unknown ontology context URI " + statement.getContext());
+		}
+		final StorageModule m = getModule(c);
+		return m.executeStatement(statement);
 	}
 
 	@Override

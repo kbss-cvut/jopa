@@ -6,8 +6,7 @@
     xmlns="http://krizik.felk.cvut.cz/ontologies/2009/jopa-tests/RetrieveNotFoundCachedJENA3#"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-    xmlns:j.2="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#"
-    xmlns:j.3="http://www.w3.org/XML/1998/namespace" > 
+    xmlns:j.2="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#" > 
   <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
   </rdf:Description>

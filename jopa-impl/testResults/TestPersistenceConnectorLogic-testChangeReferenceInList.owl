@@ -262,7 +262,7 @@
 
     <owl:NamedIndividual rdf:about="http://refA4">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
-        <attributes:A-stringAttribute>strAttForRefA_4</attributes:A-stringAttribute>
+        <attributes:A-stringAttribute>newString</attributes:A-stringAttribute>
     </owl:NamedIndividual>
     
 

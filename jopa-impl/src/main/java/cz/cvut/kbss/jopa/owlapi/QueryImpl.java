@@ -20,10 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLLiteral;
-import org.semanticweb.owlapi.model.OWLObject;
-
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -69,31 +65,6 @@ public class QueryImpl implements Query<List<String>> {
 		} catch (OntoDriverException e) {
 			throw new OWLPersistenceException("Exception caught when evaluating query " + query, e);
 		}
-
-		// TODO This will be in the result set
-		// final List<List<String>> list = new ArrayList<List<String>>();
-		//
-		// final QueryResult<OWLObject> l = OWL2QueryEngine.<OWLObject>
-		// exec(query, r);
-		//
-		// for (final Iterator<ResultBinding<OWLObject>> i = l.iterator(); i
-		// .hasNext();) {
-		// final List<String> solution = new ArrayList<String>();
-		// list.add(solution);
-		//
-		// final ResultBinding<OWLObject> b = i.next();
-		//
-		// for (final Variable<OWLObject> v : l.getResultVars()) {
-		// final OWLObject o = b.get(v).asGroundTerm().getWrappedObject();
-		//
-		// if (o instanceof OWLLiteral) {
-		// solution.add(""+DatatypeTransformer.transform((OWLLiteral) o));
-		// } else if (o instanceof OWLEntity) {
-		// solution.add(((OWLEntity) o).getIRI().toString());
-		// }
-		// }
-		// }
-		// return list;
 	}
 
 	public List<String> getSingleResult() {
@@ -145,18 +116,15 @@ public class QueryImpl implements Query<List<String>> {
 			final int cols = rs.getColumnCount();
 			int cnt = 0;
 			final List<List<String>> res = new ArrayList<List<String>>();
+			// TODO register this as observer on the result set so that
+			// additional results can be loaded asynchronously
 			while (rs.hasNext() && cnt < maxResults) {
 				rs.next();
 				final List<String> row = new ArrayList<String>(cols);
 				res.add(row);
 				for (int i = 0; i < cols; i++) {
-					final OWLObject ob = rs.getObject(i, OWLObject.class);
-					if (ob instanceof OWLLiteral) {
-						final String s = DatatypeTransformer.transform((OWLLiteral) ob).toString();
-						row.add(s);
-					} else if (ob instanceof OWLEntity) {
-						row.add(((OWLEntity) ob).getIRI().toString());
-					}
+					final String ob = rs.getString(i);
+					row.add(ob);
 				}
 				cnt++;
 			}

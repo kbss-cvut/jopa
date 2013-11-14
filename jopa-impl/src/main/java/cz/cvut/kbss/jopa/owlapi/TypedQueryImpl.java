@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLObject;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
@@ -77,22 +76,6 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 			throw new OWLPersistenceException("Exeption caught when evaluating query " + query, e);
 		}
 
-		// final QueryResult<OWLObject> l = OWL2QueryEngine.<OWLObject> exec(s,
-		// r);
-		//
-		// for (final Iterator<ResultBinding<OWLObject>> i cause= l.iterator();
-		// i.hasNext();) {
-		// final OWL2Ontology<OWLObject> r;
-		// if (classT != null) {
-		// final ResultBinding<OWLObject> b = i.next();
-		//
-		// final OWLNamedIndividual o = (OWLNamedIndividual) b
-		// .get(b.keySet().iterator().next()).asGroundTerm().getWrappedObject();
-		//
-		// list.add(em.find(classT, o.getIRI().toString()));
-		// }
-		// }
-
 		return list;
 	}
 
@@ -133,12 +116,13 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 		final ResultSet rs = stmt.executeQuery(query, contextUri);
 		try {
 			final List<T> res = new ArrayList<T>();
+			// TODO register this as observer on the result set so that
+			// additional results can be loaded asynchronously
 			while (rs.hasNext()) {
 				rs.next();
-				final OWLObject ob = rs.getObject(0, OWLObject.class);
-				final OWLNamedIndividual o = (OWLNamedIndividual) ob;
+				final OWLNamedIndividual ind = rs.getObject(0, OWLNamedIndividual.class);
 
-				final T entity = uow.readObject(classT, o.getIRI());
+				final T entity = uow.readObject(classT, ind.getIRI());
 				if (entity == null) {
 					throw new OWLPersistenceException(
 							"Fatal error, unable to load entity for primary key already found by query "

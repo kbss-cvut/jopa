@@ -51,6 +51,18 @@
     
 
 
+    <!-- NewTypeOne -->
+
+    <owl:Class rdf:about="NewTypeOne"/>
+    
+
+
+    <!-- NewTypeTwo -->
+
+    <owl:Class rdf:about="NewTypeTwo"/>
+    
+
+
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA -->
 
     <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
@@ -71,6 +83,8 @@
     <!-- http://testOne -->
 
     <owl:NamedIndividual rdf:about="http://testOne">
+        <rdf:type rdf:resource="NewTypeOne"/>
+        <rdf:type rdf:resource="NewTypeTwo"/>
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
         <attributes:A-stringAttribute>TestAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>

@@ -51,6 +51,24 @@
     
 
 
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberOne -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberOne"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberThree -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberThree"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberTwo -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberTwo"/>
+    
+
+
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA -->
 
     <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
@@ -71,6 +89,9 @@
     <!-- http://testEntity -->
 
     <owl:NamedIndividual rdf:about="http://testEntity">
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberOne"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberThree"/>
+        <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberTwo"/>
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"/>
         <attributes:A-stringAttribute>TestAttribute</attributes:A-stringAttribute>
     </owl:NamedIndividual>

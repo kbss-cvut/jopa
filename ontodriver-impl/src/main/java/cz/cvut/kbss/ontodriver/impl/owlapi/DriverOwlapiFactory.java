@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import cz.cvut.kbss.ontodriver.AbstractStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
@@ -92,5 +93,14 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 		if (owldb) {
 			OWLDBManager.getHibernateProvider().close();
 		}
+	}
+
+	@Override
+	public OwlapiStatement createStatement(AbstractStatement statement) throws OntoDriverException {
+		ensureOpen();
+		if (statement == null) {
+			throw new NullPointerException();
+		}
+		return new OwlapiStatement(statement);
 	}
 }

@@ -9,11 +9,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import cz.cvut.kbss.ontodriver.AbstractStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
-import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -48,7 +48,7 @@ public class StorageManagerMock extends StorageManager {
 	}
 
 	@Override
-	public ResultSet executeStatement(Statement statement) throws OntoDriverException {
+	public ResultSet executeStatement(AbstractStatement statement) throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return null;
 	}

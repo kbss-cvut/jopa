@@ -87,4 +87,15 @@ public interface DriverFactory extends Closeable {
 	 *             released or if an ontology access error occurs
 	 */
 	public void releaseStorageConnector(StorageConnector connector) throws OntoDriverException;
+
+	/**
+	 * Creates internal OntoDriver statement used for SPARQL processing.
+	 * 
+	 * @param statement
+	 *            The statement received from JOPA
+	 * @return Internal statement object
+	 * @throws OntoDriverException
+	 *             If called on a closed factory
+	 */
+	public DriverStatement createStatement(AbstractStatement statement) throws OntoDriverException;
 }

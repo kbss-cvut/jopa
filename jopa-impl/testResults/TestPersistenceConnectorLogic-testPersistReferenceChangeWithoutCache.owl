@@ -95,7 +95,7 @@
 
     <owl:NamedIndividual rdf:about="http://composedTestEntity">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD"/>
-        <attributes:hasA rdf:resource="http://testEntity"/>
+        <attributes:hasA rdf:resource="http://newReferenceToA"/>
     </owl:NamedIndividual>
     
 

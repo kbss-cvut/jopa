@@ -222,7 +222,8 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code statement} is null
 	 */
-	public abstract ResultSet executeStatement(Statement statement) throws OntoDriverException;
+	public abstract ResultSet executeStatement(AbstractStatement statement)
+			throws OntoDriverException;
 
 	/**
 	 * Starts an internal transaction if one is not already active. </p>

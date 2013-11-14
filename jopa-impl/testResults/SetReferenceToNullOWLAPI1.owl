@@ -111,7 +111,6 @@
 
     <owl:NamedIndividual rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH">
         <rdf:type rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassH"/>
-        <attributes:hasA rdf:resource="http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"/>
     </owl:NamedIndividual>
 </rdf:RDF>
 
