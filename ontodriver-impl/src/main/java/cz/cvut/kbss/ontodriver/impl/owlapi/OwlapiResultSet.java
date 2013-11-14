@@ -1,5 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -171,12 +173,7 @@ public class OwlapiResultSet implements ResultSet {
 			throw new NullPointerException();
 		}
 		final OWLObject ob = getCurrentValue(columnIndex);
-		if (cls.isAssignableFrom(ob.getClass())) {
-			return (T) ob;
-		} else {
-			// TODO
-			return null;
-		}
+		return getObjectImpl(ob, cls);
 	}
 
 	@Override
@@ -185,12 +182,7 @@ public class OwlapiResultSet implements ResultSet {
 			throw new NullPointerException();
 		}
 		final OWLObject ob = getCurrentValue(columnLabel);
-		if (cls.isAssignableFrom(ob.getClass())) {
-			return (T) ob;
-		} else {
-			// TODO
-			return null;
-		}
+		return getObjectImpl(ob, cls);
 	}
 
 	@Override
@@ -307,6 +299,26 @@ public class OwlapiResultSet implements ResultSet {
 			return ((OWLEntity) ob).getIRI().toString();
 		} else {
 			return ob.toString();
+		}
+	}
+
+	private <T> T getObjectImpl(OWLObject ob, Class<T> cls) throws OntoDriverException {
+		if (cls.isAssignableFrom(ob.getClass())) {
+			return (T) ob;
+		} else {
+			try {
+				final Constructor<?> c = cls.getDeclaredConstructor(cls);
+				c.setAccessible(true);
+				return (T) c.newInstance(ob);
+			} catch (NoSuchMethodException e) {
+				throw new OntoDriverException(
+						"Unable to find a costructor taking OWLObject argument in class "
+								+ cls.getCanonicalName());
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException e) {
+				throw new OntoDriverException("Unable to instantiate object of class "
+						+ cls.getCanonicalName() + " with argument " + ob);
+			}
 		}
 	}
 }

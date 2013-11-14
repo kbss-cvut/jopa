@@ -27,6 +27,7 @@ import cz.cvut.kbss.jopa.owlapi.OWLClassB;
 import cz.cvut.kbss.jopa.owlapi.OWLClassD;
 import cz.cvut.kbss.jopa.owlapi.OWLClassE;
 import cz.cvut.kbss.jopa.owlapi.OWLClassI;
+import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
 import cz.cvut.kbss.jopa.owlapi.utils.StorageInfo;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Context;
@@ -72,6 +73,7 @@ public class MixedMultiContextsTest {
 		entityI = new OWLClassI();
 		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
 		entityI.setOwlClassA(entityA);
+		TestEnvironment.resetOwldbHibernateProvider();
 		facade = TestEnv.getProviderFacade();
 	}
 

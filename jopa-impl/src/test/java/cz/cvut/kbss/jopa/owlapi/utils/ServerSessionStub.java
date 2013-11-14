@@ -23,7 +23,7 @@ public class ServerSessionStub extends ServerSession {
 
 	@Override
 	public Connection acquireConnection() {
-		return null;
+		return new ConnectionStub();
 	}
 
 	@Override

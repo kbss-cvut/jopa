@@ -15,6 +15,7 @@ import org.semanticweb.owlapi.model.IRI;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl;
 import cz.cvut.kbss.jopa.owlapi.OWLClassB;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
+import cz.cvut.kbss.jopa.owlapi.utils.ConnectionStub;
 import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
 import cz.cvut.kbss.jopa.sessions.MergeManager;
 import cz.cvut.kbss.jopa.sessions.MergeManagerImpl;
@@ -22,6 +23,8 @@ import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 
 public class MergeManagerTest {
 
@@ -34,6 +37,7 @@ public class MergeManagerTest {
 	@Before
 	public void setUp() throws Exception {
 		final String name = "MergeManagerJUnitTest";
+		contextUri = URI.create(TestEnvironment.DEFAULT_IRI + name);
 		EntityManagerImpl em = (EntityManagerImpl) TestEnvironment.getPersistenceConnector(name);
 		this.session = em.getServerSession();
 		this.uow = (UnitOfWorkImpl) session.acquireClientSession().acquireUnitOfWork();
@@ -43,7 +47,12 @@ public class MergeManagerTest {
 		Field builder = mm.getClass().getDeclaredField("builder");
 		builder.setAccessible(true);
 		builder.set(mm, cloneBuilder);
-		contextUri = URI.create(TestEnvironment.DEFAULT_IRI + name);
+		final Field connection = uow.getClass().getDeclaredField("storageConnection");
+		connection.setAccessible(true);
+		final ConnectionStub conn = new ConnectionStub();
+		final Context ctx = new Context(contextUri, OntologyConnectorType.OWLAPI);
+		conn.setDefaultContext(ctx);
+		connection.set(uow, conn);
 	}
 
 	@After
