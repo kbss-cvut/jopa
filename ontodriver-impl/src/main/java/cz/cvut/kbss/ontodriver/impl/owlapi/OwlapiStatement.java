@@ -8,6 +8,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import cz.cvut.kbss.ontodriver.AbstractStatement;
 import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.exceptions.QueryExecutionException;
 import cz.cvut.kbss.owl2query.engine.OWL2QueryEngine;
 import cz.cvut.kbss.owl2query.model.QueryResult;
 import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3OWL2Ontology;
@@ -39,6 +40,9 @@ public class OwlapiStatement implements DriverStatement {
 		final OWLAPIv3OWL2Ontology ont = new OWLAPIv3OWL2Ontology(manager, ontology, reasoner);
 
 		final QueryResult<OWLObject> res = OWL2QueryEngine.<OWLObject> exec(query, ont);
+		if (res == null) {
+			throw new QueryExecutionException("Unable to execute query " + query);
+		}
 		return new OwlapiResultSet(res, statement);
 	}
 

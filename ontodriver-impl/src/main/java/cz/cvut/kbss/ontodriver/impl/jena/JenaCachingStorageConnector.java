@@ -89,9 +89,8 @@ public class JenaCachingStorageConnector implements OwlapiBasedJenaConnector {
 			}
 			manager.addAxioms(ontology, axioms);
 			final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
-					.workingOntology(ontology).reasoningOntology(orig.getReasoningOntology())
-					.ontologyManager(manager).dataFactory(factory).reasoner(orig.getReasoner())
-					.language(orig.getLanguage()).build();
+					.workingOntology(ontology).ontologyManager(manager).dataFactory(factory)
+					.reasoner(orig.getReasoner()).language(orig.getLanguage()).build();
 			return holder;
 		} finally {
 			READ.unlock();

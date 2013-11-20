@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
@@ -18,11 +19,22 @@ import cz.cvut.kbss.jopa.owlapi.OWLClassE;
 
 public final class QueryTestEnvironment {
 
+	private static final Logger LOG = Logger.getLogger(QueryTestEnvironment.class.getName());
+
 	private static final String BASE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA_";
 	private static final String TYPE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA";
 	private static final String BASE_B = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB_";
 	private static final String BASE_C = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC_";
 	private static final String BASE_D = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD_";
+
+	/**
+	 * Default prefixes for SPARQL. </p>
+	 * 
+	 * Currently: owl, rdf, rdfs
+	 */
+	public static final String OWL_PREFIX = "PREFIX owl: <http://www.w3.org/2002/07/owl#>";
+	public static final String RDF_PREFIX = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>";
+	public static final String RDFS_PREFIX = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>";
 
 	private QueryTestEnvironment() {
 		// Private constructor to prevent instantiation
@@ -41,6 +53,7 @@ public final class QueryTestEnvironment {
 	public static Map<Class<?>, List<?>> generateTestData(EntityManager em) {
 		assert em != null;
 		final Map<Class<?>, List<?>> map = generate();
+		LOG.config("Persisting test data...");
 		em.getTransaction().begin();
 		try {
 			for (List<?> l : map.values()) {
@@ -59,6 +72,7 @@ public final class QueryTestEnvironment {
 	}
 
 	private static Map<Class<?>, List<?>> generate() {
+		LOG.config("Generating test data...");
 		final Map<Class<?>, List<?>> m = new HashMap<>();
 		final int count = 10;
 		final OWLClass ann = OWLClassA.class.getAnnotation(OWLClass.class);
@@ -71,6 +85,7 @@ public final class QueryTestEnvironment {
 			final Set<String> s = new HashSet<String>();
 			s.add(TYPE_A);
 			s.add(ann.iri());
+			a.setTypes(s);
 			aa.add(a);
 		}
 		final List<OWLClassB> bb = new ArrayList<>(count);

@@ -7,6 +7,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
@@ -25,7 +26,9 @@ public class ChangeManagerImpl implements ChangeManager {
 	}
 
 	public boolean hasChanges(Object original, Object clone) {
-		LOG.config("Checking for changes...");
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.config("Checking for changes...");
+		}
 		boolean res = hasChangesInternal(original, clone);
 		visitedObjects.clear();
 		return res;
@@ -155,6 +158,9 @@ public class ChangeManagerImpl implements ChangeManager {
 	protected ObjectChangeSet calculateChangesInternal(ObjectChangeSet changeSet)
 			throws IllegalArgumentException, IllegalAccessException,
 			OWLInferredAttributeModifiedException {
+		if (LOG.isLoggable(Level.FINER)) {
+			LOG.finer("Calculating changes for change set " + changeSet);
+		}
 		Object original = changeSet.getChangedObject();
 		Object clone = changeSet.getCloneObject();
 		final List<Field> fields = CloneBuilderImpl.getAllFields(clone.getClass());

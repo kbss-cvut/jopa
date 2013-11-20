@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 interface ModuleInternal {
@@ -131,4 +132,13 @@ interface ModuleInternal {
 	 * Resets this internal, causing the working ontology to reload.
 	 */
 	public void reset();
+
+	/**
+	 * Executes the specified SPARQL statement.
+	 * 
+	 * @param statement
+	 *            The statement to execute
+	 * @return Result set with statement results
+	 */
+	public ResultSet executeStatement(OwlapiStatement statement);
 }

@@ -210,8 +210,8 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 			final OWLOntology o = m.createOntology(mod, IRI.create(ctx.getUri()));
 			OWLReasoner r = connector.getReasonerFactory().createReasoner(o);
 			final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder.ontologyManager(m)
-					.workingOntology(o).reasoningOntology(o).dataFactory(d).reasoner(r)
-					.language(connector.language).build();
+					.workingOntology(o).dataFactory(d).reasoner(r).language(connector.language)
+					.build();
 			return holder;
 		} catch (OWLOntologyCreationException e) {
 			throw new OntoDriverException("Unable to extract ontology module.", e);

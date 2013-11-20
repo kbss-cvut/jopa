@@ -22,7 +22,6 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
-import org.semanticweb.owlapi.util.OWLOntologyMerger;
 
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
@@ -38,7 +37,6 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 
 	protected OWLReasoner reasoner;
 	protected OWLOntology workingOntology;
-	protected OWLOntology reasoningOntology;
 	protected OWLOntologyManager ontologyManager;
 	protected OWLReasonerFactory reasonerFactory;
 	protected OWLDataFactory dataFactory;
@@ -81,15 +79,13 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 		try {
 			initConnection(storageProperties);
 
-			this.reasoningOntology = new OWLOntologyMerger(this.ontologyManager)
-					.createMergedOntology(this.ontologyManager, IRI.create("http://temporary"));
 			LOG.info("Ontology " + ontologyUri + " succesfully loaded.");
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, null, e);
 			throw new OntoDriverException(e);
 		}
 		try {
-			this.reasoner = this.reasonerFactory.createReasoner(reasoningOntology);
+			this.reasoner = this.reasonerFactory.createReasoner(workingOntology);
 			this.reasoner.precomputeInferences(InferenceType.CLASS_ASSERTIONS);
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
@@ -131,11 +127,6 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 		return workingOntology;
 	}
 
-	public OWLOntology getReasoningOntology() {
-		ensureOpen();
-		return reasoningOntology;
-	}
-
 	public OWLOntologyManager getOntologyManager() {
 		ensureOpen();
 		return ontologyManager;
@@ -163,9 +154,8 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 	OwlapiConnectorDataHolder getOntologyData() {
 		ensureOpen();
 		final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
-				.workingOntology(workingOntology).reasoningOntology(reasoningOntology)
-				.ontologyManager(ontologyManager).dataFactory(dataFactory).language(language)
-				.reasoner(reasoner).build();
+				.workingOntology(workingOntology).ontologyManager(ontologyManager)
+				.dataFactory(dataFactory).language(language).reasoner(reasoner).build();
 		return holder;
 	}
 
@@ -193,7 +183,7 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 		}
 		final OWLReasoner reasoner = reasonerFactory.createReasoner(ontology);
 		final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
-				.workingOntology(ontology).reasoningOntology(ontology).ontologyManager(manager)
+				.workingOntology(ontology).ontologyManager(manager)
 				.dataFactory(factory).reasoner(reasoner).language(language).build();
 		return holder;
 	}
@@ -252,12 +242,9 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 
 	private void reloadInternal() throws OntoDriverException {
 		ontologyManager.removeOntology(workingOntology);
-		ontologyManager.removeOntology(reasoningOntology);
 		reloadOntology();
 		try {
-			this.reasoningOntology = new OWLOntologyMerger(this.ontologyManager)
-					.createMergedOntology(ontologyManager, IRI.create("http://temporary"));
-			this.reasoner = reasonerFactory.createReasoner(reasoningOntology);
+			this.reasoner = reasonerFactory.createReasoner(workingOntology);
 			this.reasoner.precomputeInferences(InferenceType.CLASS_ASSERTIONS);
 		} catch (Exception e) {
 			throw new OntoDriverException("Unable to reload the ontology " + ontologyUri, e);

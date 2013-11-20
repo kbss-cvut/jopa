@@ -39,7 +39,6 @@ import org.semanticweb.owlapi.model.OWLAnonymousIndividual;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyChangeVisitor;
@@ -48,13 +47,11 @@ import org.semanticweb.owlapi.model.RemoveAxiom;
 import org.semanticweb.owlapi.model.RemoveImport;
 import org.semanticweb.owlapi.model.RemoveOntologyAnnotation;
 import org.semanticweb.owlapi.model.SetOntologyID;
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
-import cz.cvut.kbss.jopa.model.ic.IntegrityConstraint;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
@@ -64,15 +61,11 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
 import cz.cvut.kbss.ontodriver.Context;
-import cz.cvut.kbss.owl2query.engine.OWL2QueryEngine;
-import cz.cvut.kbss.owl2query.model.OWL2Ontology;
-import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3OWL2Ontology;
-import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3QueryFactory;
 
 public class EntityManagerImpl extends AbstractEntityManager {
 
 	private static final Logger LOG = Logger.getLogger(EntityManagerImpl.class.getName());
-	private OWLReasoner r;
+	// private OWLReasoner r;
 	private OWLDataFactory f;
 	private OWLOntology workingOnt;
 	private OWLOntology reasoningOnt;
@@ -710,19 +703,19 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	class ICEvaluator {
-		public boolean isSatisfied(IntegrityConstraint check) {
-
-			OWL2Ontology<OWLObject> ont = new OWLAPIv3OWL2Ontology(m, workingOnt, r);
-			OWLAPIv3QueryFactory fact = new OWLAPIv3QueryFactory(m, workingOnt);
-
-			ICQueryGenerator v = new ICQueryGenerator(fact, ont);
-			check.accept(v);
-
-			return OWL2QueryEngine.exec(v.getQuery()).isEmpty();
-		}
-
-	}
+	// class ICEvaluator {
+	// public boolean isSatisfied(IntegrityConstraint check) {
+	//
+	// OWL2Ontology<OWLObject> ont = new OWLAPIv3OWL2Ontology(m, workingOnt, r);
+	// OWLAPIv3QueryFactory fact = new OWLAPIv3QueryFactory(m, workingOnt);
+	//
+	// ICQueryGenerator v = new ICQueryGenerator(fact, ont);
+	// check.accept(v);
+	//
+	// return OWL2QueryEngine.exec(v.getQuery()).isEmpty();
+	// }
+	//
+	// }
 
 	public UnitOfWorkImpl getCurrentPersistenceContext() {
 		if (this.persistenceContext == null) {

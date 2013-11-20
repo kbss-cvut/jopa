@@ -16,6 +16,8 @@
 package cz.cvut.kbss.jopa.owlapi;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import org.junit.Ignore;
@@ -61,6 +64,17 @@ public class TestEnvironment {
 
 	// private static final String REASONER_FACTORY_CLASS =
 	// "org.semanticweb.HermiT.Reasoner$ReasonerFactory";
+
+	static {
+		try {
+			// Load java.util.logging configuration
+			LogManager.getLogManager().readConfiguration(
+					new FileInputStream(
+							"src/test/java/cz/cvut/kbss/jopa/resources/logging.properties"));
+		} catch (SecurityException | IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public static EntityManager getPersistenceConnector(String name) {
 		return getPersistenceConnector(name, OwlapiStorageType.FILE, true);

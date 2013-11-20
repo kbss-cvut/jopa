@@ -8,7 +8,6 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 public final class OwlapiConnectorDataHolder {
 
 	private final OWLOntology workingOntology;
-	private final OWLOntology reasoningOntology;
 	private final OWLOntologyManager ontologyManager;
 	private final OWLDataFactory dataFactory;
 	private final OWLReasoner reasoner;
@@ -16,7 +15,6 @@ public final class OwlapiConnectorDataHolder {
 
 	OwlapiConnectorDataHolder(DataHolderBuilder builder) {
 		this.workingOntology = builder.workingOntology;
-		this.reasoningOntology = builder.reasoningOntology;
 		this.ontologyManager = builder.ontologyManager;
 		this.dataFactory = builder.dataFactory;
 		this.reasoner = builder.reasoner;
@@ -25,10 +23,6 @@ public final class OwlapiConnectorDataHolder {
 
 	public OWLOntology getWorkingOntology() {
 		return workingOntology;
-	}
-
-	public OWLOntology getReasoningOntology() {
-		return reasoningOntology;
 	}
 
 	public OWLOntologyManager getOntologyManager() {
@@ -51,10 +45,6 @@ public final class OwlapiConnectorDataHolder {
 		return new DataHolderBuilder().workingOntology(ontology);
 	}
 
-	public static DataHolderBuilder reasoningOntology(OWLOntology ontology) {
-		return new DataHolderBuilder().reasoningOntology(ontology);
-	}
-
 	public static DataHolderBuilder ontologyManager(OWLOntologyManager manager) {
 		return new DataHolderBuilder().ontologyManager(manager);
 	}
@@ -73,7 +63,6 @@ public final class OwlapiConnectorDataHolder {
 
 	public static class DataHolderBuilder {
 		private OWLOntology workingOntology;
-		private OWLOntology reasoningOntology;
 		private OWLOntologyManager ontologyManager;
 		private OWLDataFactory dataFactory;
 		private OWLReasoner reasoner;
@@ -84,11 +73,6 @@ public final class OwlapiConnectorDataHolder {
 
 		public DataHolderBuilder workingOntology(OWLOntology ontology) {
 			this.workingOntology = ontology;
-			return this;
-		}
-
-		public DataHolderBuilder reasoningOntology(OWLOntology ontology) {
-			this.reasoningOntology = ontology;
 			return this;
 		}
 

@@ -52,7 +52,6 @@ public class OwlapiResultSet implements ResultSet {
 			i++;
 		}
 		this.iterator = result.iterator();
-		this.current = iterator.hasNext() ? iterator.next() : null;
 	}
 
 	@Override

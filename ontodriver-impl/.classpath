@@ -38,5 +38,8 @@
 	<classpathentry kind="lib" path="lib/javassist-3.12.0.GA.jar"/>
 	<classpathentry kind="lib" path="lib/jta-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/oscache-2.4.1.jar"/>
+	<classpathentry kind="src" path="/owl2query-owlapi"/>
+	<classpathentry kind="src" path="/owl2query-api"/>
+	<classpathentry kind="src" path="/owl2query-engine"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

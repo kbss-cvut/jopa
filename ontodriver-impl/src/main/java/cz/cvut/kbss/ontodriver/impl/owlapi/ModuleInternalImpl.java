@@ -56,6 +56,7 @@ import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -66,7 +67,6 @@ class ModuleInternalImpl implements ModuleInternal {
 	private static final Logger LOG = Logger.getLogger(ModuleInternalImpl.class.getName());
 
 	private OWLOntology workingOntology;
-	// private OWLOntology reasoningOntology;
 	private OWLOntologyManager ontologyManager;
 	private OWLDataFactory dataFactory;
 	private OWLReasoner reasoner;
@@ -214,6 +214,22 @@ class ModuleInternalImpl implements ModuleInternal {
 	}
 
 	@Override
+	public ResultSet executeStatement(OwlapiStatement statement) {
+		assert statement != null;
+		if (statement.shouldUseTransactionalOntology()) {
+			statement.setOntology(workingOntology);
+			statement.setOntologyManager(ontologyManager);
+			statement.setReasoner(reasoner);
+		} else {
+			final OwlapiConnectorDataHolder h = storageModule.getOntologyData();
+			statement.setOntology(h.getWorkingOntology());
+			statement.setOntologyManager(h.getOntologyManager());
+			statement.setReasoner(h.getReasoner());
+		}
+		return statement.executeStatement();
+	}
+
+	@Override
 	public void rollback() {
 		clear();
 	}
@@ -270,7 +286,6 @@ class ModuleInternalImpl implements ModuleInternal {
 	 */
 	private void initFromHolder(OwlapiConnectorDataHolder holder) {
 		this.workingOntology = holder.getWorkingOntology();
-		// this.reasoningOntology = holder.getReasoningOntology();
 		this.ontologyManager = holder.getOntologyManager();
 		this.dataFactory = holder.getDataFactory();
 		this.reasoner = holder.getReasoner();
