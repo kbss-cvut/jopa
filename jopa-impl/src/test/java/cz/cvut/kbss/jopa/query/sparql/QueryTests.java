@@ -14,8 +14,12 @@ import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import cz.cvut.kbss.jopa.exceptions.NoResultException;
+import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.query.Query;
+import cz.cvut.kbss.jopa.owlapi.OWLClassA;
+import cz.cvut.kbss.jopa.owlapi.OWLClassD;
 import cz.cvut.kbss.jopa.owlapi.OWLClassE;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
 import cz.cvut.kbss.jopa.query.env.QueryTestEnvironment;
@@ -63,7 +67,7 @@ public class QueryTests {
 		final List<List<String>> res = q.getResultList();
 		assertNotNull(res);
 		assertFalse(res.isEmpty());
-		List<OWLClassE> es = (List<OWLClassE>) data.get(OWLClassE.class);
+		final List<OWLClassE> es = getData(OWLClassE.class);
 		assertEquals(es.size(), res.size());
 		boolean found = false;
 		for (OWLClassE e : es) {
@@ -77,5 +81,150 @@ public class QueryTests {
 			}
 			assertTrue(found);
 		}
+	}
+
+	@Test
+	public void testSelectByPredicate() throws Exception {
+		LOG.config("Test: select subjects having a predicate.");
+		final String query = "SELECT ?x ?y WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?y . }";
+		final Query<List<String>> q = em.createNativeQuery(query);
+		final List<List<String>> res = q.getResultList();
+		assertNotNull(res);
+		assertFalse(res.isEmpty());
+		final List<OWLClassA> as = getData(OWLClassA.class);
+		assertEquals(as.size(), res.size());
+		boolean found = false;
+		for (OWLClassA a : as) {
+			found = false;
+			final String aUri = a.getUri().toString();
+			for (List<String> ls : res) {
+				assertEquals(2, ls.size());
+				if (ls.get(0).equals(aUri)) {
+					assertEquals(a.getStringAttribute(), ls.get(1));
+					found = true;
+					break;
+				}
+			}
+			assertTrue(found);
+		}
+	}
+
+	@Test
+	public void testSelectByObjectProperty() throws Exception {
+		LOG.config("Test: select subject by object property.");
+		final OWLClassD d = getData(OWLClassD.class).get(0);
+		final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> <"
+				+ d.getOwlClassA().getUri().toString() + "> . }";
+		final Query<List<String>> q = em.createNativeQuery(query);
+		final List<List<String>> res = q.getResultList();
+		assertNotNull(res);
+		assertFalse(res.isEmpty());
+		assertEquals(1, res.size());
+		assertEquals(1, res.get(0).size());
+		final String resUri = res.get(0).get(0);
+		assertEquals(d.getUri().toString(), resUri);
+	}
+
+	@Test
+	public void testSelectByMultipleTypes() throws Exception {
+		LOG.config("Select URI and string attribute by types specified for entity OWLClassA.");
+		final String query = "SELECT ?x ?y WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> ; "
+				+ " a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA> . "
+				+ "?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?y .}";
+		final Query<List<String>> q = em.createNativeQuery(query);
+		final List<List<String>> res = q.getResultList();
+		assertNotNull(res);
+		assertFalse(res.isEmpty());
+		final List<OWLClassA> as = getData(OWLClassA.class);
+		boolean found = false;
+		for (OWLClassA a : as) {
+			found = false;
+			final String aUri = a.getUri().toString();
+			for (List<String> ls : res) {
+				assertEquals(2, ls.size());
+				if (ls.get(0).equals(aUri)) {
+					assertEquals(a.getStringAttribute(), ls.get(1));
+					found = true;
+					break;
+				}
+			}
+			assertTrue(found);
+		}
+	}
+
+	@Test
+	public void testSetMaxResults() throws Exception {
+		LOG.config("Test: set maximum number of results.");
+		final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
+		final Query<List<String>> q = em.createNativeQuery(query);
+		final int max = 5;
+		assertTrue(max < getData(OWLClassE.class).size());
+		assertEquals(Integer.MAX_VALUE, q.getMaxResults());
+		q.setMaxResults(max);
+		assertEquals(max, q.getMaxResults());
+		final List<List<String>> res = q.getResultList();
+		assertNotNull(res);
+		assertFalse(res.isEmpty());
+		assertEquals(max, res.size());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testSetMaxResultsNegative() throws Exception {
+		LOG.config("Test: set maximum number of results. Negative argument.");
+		final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
+		final Query<List<String>> q = em.createNativeQuery(query);
+		q.setMaxResults(-1);
+		fail("This line should not have been reached.");
+	}
+
+	@Test
+	public void testSetMaxResultsZero() throws Exception {
+		LOG.config("Test: set maximum number of results. Zero argument.");
+		final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
+		final Query<List<String>> q = em.createNativeQuery(query);
+		q.setMaxResults(0);
+		final List<List<String>> res = q.getResultList();
+		assertNotNull(res);
+		assertTrue(res.isEmpty());
+	}
+
+	@Test
+	public void testGetSingleResult() throws Exception {
+		LOG.config("Test: get single result.");
+		final OWLClassA a = getData(OWLClassA.class).get(0);
+		final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> \""
+				+ a.getStringAttribute() + "\" .}";
+		final Query<List<String>> q = em.createNativeQuery(query);
+		final List<String> res = q.getSingleResult();
+		assertNotNull(res);
+		assertEquals(1, res.size());
+		assertEquals(a.getUri().toString(), res.get(0));
+	}
+
+	@Test(expected = NoUniqueResultException.class)
+	public void testGetSingleResultMultiple() throws Exception {
+		LOG.config("Test: get single result. No unique result.");
+		final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
+		final Query<List<String>> q = em.createNativeQuery(query);
+		List<String> res = q.getSingleResult();
+		fail("This line should not have been reached.");
+		assertNotNull(res);
+	}
+
+	@Test(expected = NoResultException.class)
+	public void testGetSingleResultNoResult() throws Exception {
+		LOG.config("Test: get single result. No result.");
+		final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX> . }";
+		final Query<List<String>> q = em.createNativeQuery(query);
+		final List<String> res = q.getSingleResult();
+		fail("This line should not have been reached.");
+		assertNotNull(res);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> List<T> getData(Class<T> cls) {
+		assert cls != null;
+		// The data in the map are mapped by entity classes, so this cast is OK
+		return (List<T>) data.get(cls);
 	}
 }

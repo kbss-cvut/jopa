@@ -60,6 +60,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 		this.useBackupOntology = uow.useBackupOntologyForQueryProcessing();
 	}
 
+	@Override
 	public List<T> getResultList() {
 		if (!sparql) {
 			throw new NotYetImplementedException();
@@ -79,6 +80,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 		return list;
 	}
 
+	@Override
 	public T getSingleResult() {
 		try {
 			// call it with maxResults = 2 just to see whether there are
@@ -96,6 +98,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 		}
 	}
 
+	@Override
 	public TypedQuery<T> setMaxResults(int maxResults) {
 		if (maxResults < 0) {
 			throw new IllegalArgumentException(
@@ -103,6 +106,11 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 		}
 		this.maxResults = maxResults;
 		return this;
+	}
+
+	@Override
+	public int getMaxResults() {
+		return maxResults;
 	}
 
 	private List<T> getResultListImpl(int maxResults) throws OntoDriverException {

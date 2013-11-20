@@ -68,4 +68,14 @@ public interface Query<ResultElement> {
 	 */
 	Query<ResultElement> setMaxResults(int maxResult);
 
+	/**
+	 * The maximum number of results the query object was set to retrieve. </p>
+	 * 
+	 * Returns Integer.MAX_VALUE if {@link #setMaxResults(int)} was not applied
+	 * to the query object.
+	 * 
+	 * @return maximum number of results
+	 */
+	int getMaxResults();
+
 }

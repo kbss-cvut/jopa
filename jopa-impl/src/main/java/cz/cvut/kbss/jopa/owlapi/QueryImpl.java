@@ -83,6 +83,11 @@ public class QueryImpl implements Query<List<String>> {
 		}
 	}
 
+	@Override
+	public int getMaxResults() {
+		return maxResults;
+	}
+
 	public Query<List<String>> setMaxResults(int maxResults) {
 		if (maxResults < 0) {
 			throw new IllegalArgumentException(
