@@ -15,6 +15,7 @@ import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiBasedJenaModule;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStatement;
 
 public class DriverJenaFactory extends DriverAbstractFactory {
 
@@ -110,7 +111,9 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 
 	@Override
 	public DriverStatement createStatement(AbstractStatement statement) throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return null;
+		if (statement == null) {
+			throw new NullPointerException();
+		}
+		return new OwlapiStatement(statement);
 	}
 }

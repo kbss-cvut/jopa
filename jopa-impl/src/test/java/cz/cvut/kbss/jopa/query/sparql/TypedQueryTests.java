@@ -57,6 +57,7 @@ public class TypedQueryTests {
 
 	@Before
 	public void setUp() throws Exception {
+		emf.getCache().evictAll();
 		this.em = emf.createEntityManager();
 	}
 

@@ -18,6 +18,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.jena.JenaCachingStorageConnector;
 import cz.cvut.kbss.ontodriver.impl.jena.OwlapiBasedJenaConnector;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiBasedCachingJenaModule;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStatement;
 
 /**
  * Factory for OWLIM storage connectors. </p>
@@ -101,7 +102,9 @@ public class DriverOwlimFactory extends DriverAbstractFactory {
 
 	@Override
 	public DriverStatement createStatement(AbstractStatement statement) throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return null;
+		if (statement == null) {
+			throw new NullPointerException();
+		}
+		return new OwlapiStatement(statement);
 	}
 }

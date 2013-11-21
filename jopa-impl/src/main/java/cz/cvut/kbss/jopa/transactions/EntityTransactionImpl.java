@@ -74,7 +74,7 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 		} finally {
 			this.active = false;
 			this.rollbackOnly = false;
-			if (wrapper.transactionUOW.shouldReleaseAfterCommit()) {
+			if (wrapper.transactionUOW != null && wrapper.transactionUOW.shouldReleaseAfterCommit()) {
 				this.wrapper.getEntityManager().removeCurrentPersistenceContext();
 			}
 			this.wrapper.setTransactionUOW(null);

@@ -16,6 +16,7 @@ import cz.cvut.kbss.jopa.owlapi.OWLClassB;
 import cz.cvut.kbss.jopa.owlapi.OWLClassC;
 import cz.cvut.kbss.jopa.owlapi.OWLClassD;
 import cz.cvut.kbss.jopa.owlapi.OWLClassE;
+import cz.cvut.kbss.ontodriver.Context;
 
 public final class QueryTestEnvironment {
 
@@ -45,8 +46,9 @@ public final class QueryTestEnvironment {
 	/**
 	 * Generates and persists test data into the default context of the
 	 * specified entity manager. </p>
-	 * key
-	 * The generated data are then returned.
+	 * 
+	 * This method persists the same data into all ontology contexts available
+	 * to the specified entity manager.
 	 * 
 	 * @param em
 	 *            EntityManager
@@ -55,12 +57,15 @@ public final class QueryTestEnvironment {
 	public static void generateTestData(EntityManager em) {
 		assert em != null;
 		final Map<Class<?>, List<?>> map = generate();
+		final List<Context> contexts = em.getAvailableContexts();
 		LOG.config("Persisting test data...");
 		em.getTransaction().begin();
 		try {
-			for (List<?> l : map.values()) {
-				for (Object o : l) {
-					em.persist(o);
+			for (Context ctx : contexts) {
+				for (List<?> l : map.values()) {
+					for (Object o : l) {
+						em.persist(o, ctx.getUri());
+					}
 				}
 			}
 			em.getTransaction().commit();

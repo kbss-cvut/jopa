@@ -68,6 +68,8 @@ public class CollectionInstantiationHelper {
 			} else if (arrayAsListClass.isInstance(container)) {
 				c = getFirstDeclaredConstructorFor(arrayAsListClass);
 				params[0] = builder.getCloneBuilder().cloneArray(container.toArray(), contextUri);
+			} else {
+				throw new OWLPersistenceException("Encountered unsupported type of collection: " + container.getClass());
 			}
 			try {
 				if (!c.isAccessible()) {

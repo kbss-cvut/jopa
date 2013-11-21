@@ -135,8 +135,10 @@ public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 
 	@Override
 	public ResultSet executeStatement(AbstractStatement statement) throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return null;
+		ensureOpen();
+		startTransactionIfNotActive();
+		final OwlapiStatement stmt = (OwlapiStatement) factory.createStatement(statement);
+		return moduleInternal.executeStatement(stmt);
 	}
 
 	/**

@@ -154,7 +154,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 					Object toAssign = null;
 					if (uow.isManagedType(attValue.getClass())) {
 						final IRI pk = getIdentifier(attValue);
-						toAssign = visitedEntities.containsKey(pk) ? visitedEntities.get(pk) : uow
+						final Map<Object, Object> m = visitedEntities.get(contextUri);
+						toAssign = (m != null && m.containsKey(pk)) ? m.get(pk) : uow
 								.registerExistingObject(attValue, contextUri);
 					} else {
 						toAssign = buildClone(attValue, contextUri);

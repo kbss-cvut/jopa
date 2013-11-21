@@ -20,6 +20,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +36,7 @@ import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.ontodriver.TestEnv;
 import cz.cvut.kbss.jopa.owlapi.utils.StorageInfo;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
@@ -180,5 +184,30 @@ public class TestEnvironment {
 			f.setAccessible(true);
 			f.set(null, new HibernateProvider());
 		}
+	}
+
+	/**
+	 * Deletes all data in the test OWLDB ontology.
+	 * 
+	 * @throws Exception
+	 */
+	public static void clearDatabase() throws Exception {
+		java.sql.Connection con = null;
+		Statement st1 = null;
+		Statement st2 = null;
+		ResultSet rs = null;
+		con = DriverManager.getConnection(TestEnv.DB_URI, TestEnv.DB_USERNAME, TestEnv.DB_PASSWORD);
+		st1 = con.createStatement();
+		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+		final String deleteStmt = "TRUNCATE ";
+		while (rs.next()) {
+			final String table = rs.getString(1);
+			st2 = con.createStatement();
+			st2.executeUpdate(deleteStmt + table + " CASCADE");
+			st2.close();
+			st2 = null;
+		}
+		st1.close();
+		con.close();
 	}
 }

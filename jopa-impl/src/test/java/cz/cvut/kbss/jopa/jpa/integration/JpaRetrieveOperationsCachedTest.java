@@ -7,9 +7,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +19,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.ontodriver.TestEnv;
 import cz.cvut.kbss.jopa.owlapi.OWLClassA;
 import cz.cvut.kbss.jopa.owlapi.OWLClassD;
 import cz.cvut.kbss.jopa.owlapi.OWLClassG;
@@ -73,7 +69,7 @@ public class JpaRetrieveOperationsCachedTest {
 
 	@Before
 	public void setUp() throws Exception {
-		clearDatabase();
+		TestEnvironment.clearDatabase();
 		TestEnvironment.resetOwldbHibernateProvider();
 	}
 
@@ -135,7 +131,6 @@ public class JpaRetrieveOperationsCachedTest {
 		}
 	}
 
-	@Test
 	public void testRetreiveRelationship() {
 		LOG.config("Test: retrieve three entities connected by two relationships.");
 		em = TestEnvironment.getPersistenceConnector("RetrieveRelationshipCached", storages, true);
@@ -169,26 +164,6 @@ public class JpaRetrieveOperationsCachedTest {
 
 		final OWLClassI resI = em.find(OWLClassI.class, entityI.getUri(), empty.getUri());
 		assertNull(resI);
-	}
-
-	private static void clearDatabase() throws Exception {
-		java.sql.Connection con = null;
-		Statement st1 = null;
-		Statement st2 = null;
-		ResultSet rs = null;
-		con = DriverManager.getConnection(TestEnv.DB_URI, TestEnv.DB_USERNAME, TestEnv.DB_PASSWORD);
-		st1 = con.createStatement();
-		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
-		final String deleteStmt = "TRUNCATE ";
-		while (rs.next()) {
-			final String table = rs.getString(1);
-			st2 = con.createStatement();
-			st2.executeUpdate(deleteStmt + table + " CASCADE");
-			st2.close();
-			st2 = null;
-		}
-		st1.close();
-		con.close();
 	}
 
 	private static List<StorageInfo> initStorages() {
