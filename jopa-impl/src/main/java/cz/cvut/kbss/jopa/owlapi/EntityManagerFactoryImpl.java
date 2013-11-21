@@ -169,7 +169,9 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 	}
 
 	public boolean isLoaded(Object entity) {
-		return isLoaded(entity);
+		// TODO
+		return false;
+		// return isLoaded(entity);
 	}
 
 	public Cache getCache() {

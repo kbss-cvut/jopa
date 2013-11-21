@@ -8,9 +8,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -24,21 +24,27 @@ import cz.cvut.kbss.jopa.owlapi.OWLClassE;
 import cz.cvut.kbss.jopa.owlapi.TestEnvironment;
 import cz.cvut.kbss.jopa.query.env.QueryTestEnvironment;
 
+/**
+ * Tests of the Query implementation.
+ * 
+ * @author ledvima1
+ * 
+ */
 public class QueryTests {
 
 	private static final Logger LOG = Logger.getLogger(QueryTests.class.getName());
 
-	private static Map<Class<?>, List<?>> data;
 	private static EntityManager em;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		em = TestEnvironment.getPersistenceConnector("SPARQLQueryTests");
-		data = QueryTestEnvironment.generateTestData(em);
+		QueryTestEnvironment.generateTestData(em);
 		em.clear();
 		em.getEntityManagerFactory().getCache().evictAll();
 	}
 
+	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		em.close();
 		em.getEntityManagerFactory().close();
@@ -67,7 +73,7 @@ public class QueryTests {
 		final List<List<String>> res = q.getResultList();
 		assertNotNull(res);
 		assertFalse(res.isEmpty());
-		final List<OWLClassE> es = getData(OWLClassE.class);
+		final List<OWLClassE> es = QueryTestEnvironment.getData(OWLClassE.class);
 		assertEquals(es.size(), res.size());
 		boolean found = false;
 		for (OWLClassE e : es) {
@@ -91,7 +97,7 @@ public class QueryTests {
 		final List<List<String>> res = q.getResultList();
 		assertNotNull(res);
 		assertFalse(res.isEmpty());
-		final List<OWLClassA> as = getData(OWLClassA.class);
+		final List<OWLClassA> as = QueryTestEnvironment.getData(OWLClassA.class);
 		assertEquals(as.size(), res.size());
 		boolean found = false;
 		for (OWLClassA a : as) {
@@ -112,7 +118,7 @@ public class QueryTests {
 	@Test
 	public void testSelectByObjectProperty() throws Exception {
 		LOG.config("Test: select subject by object property.");
-		final OWLClassD d = getData(OWLClassD.class).get(0);
+		final OWLClassD d = QueryTestEnvironment.getData(OWLClassD.class).get(0);
 		final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> <"
 				+ d.getOwlClassA().getUri().toString() + "> . }";
 		final Query<List<String>> q = em.createNativeQuery(query);
@@ -135,7 +141,7 @@ public class QueryTests {
 		final List<List<String>> res = q.getResultList();
 		assertNotNull(res);
 		assertFalse(res.isEmpty());
-		final List<OWLClassA> as = getData(OWLClassA.class);
+		final List<OWLClassA> as = QueryTestEnvironment.getData(OWLClassA.class);
 		boolean found = false;
 		for (OWLClassA a : as) {
 			found = false;
@@ -158,7 +164,7 @@ public class QueryTests {
 		final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
 		final Query<List<String>> q = em.createNativeQuery(query);
 		final int max = 5;
-		assertTrue(max < getData(OWLClassE.class).size());
+		assertTrue(max < QueryTestEnvironment.getData(OWLClassE.class).size());
 		assertEquals(Integer.MAX_VALUE, q.getMaxResults());
 		q.setMaxResults(max);
 		assertEquals(max, q.getMaxResults());
@@ -191,7 +197,7 @@ public class QueryTests {
 	@Test
 	public void testGetSingleResult() throws Exception {
 		LOG.config("Test: get single result.");
-		final OWLClassA a = getData(OWLClassA.class).get(0);
+		final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
 		final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> \""
 				+ a.getStringAttribute() + "\" .}";
 		final Query<List<String>> q = em.createNativeQuery(query);
@@ -219,12 +225,5 @@ public class QueryTests {
 		final List<String> res = q.getSingleResult();
 		fail("This line should not have been reached.");
 		assertNotNull(res);
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <T> List<T> getData(Class<T> cls) {
-		assert cls != null;
-		// The data in the map are mapped by entity classes, so this cast is OK
-		return (List<T>) data.get(cls);
 	}
 }

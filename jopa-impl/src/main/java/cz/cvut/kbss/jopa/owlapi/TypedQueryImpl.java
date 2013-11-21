@@ -58,6 +58,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 		this.uow = uow;
 		this.connection = connection;
 		this.useBackupOntology = uow.useBackupOntologyForQueryProcessing();
+		this.maxResults = Integer.MAX_VALUE;
 	}
 
 	@Override
@@ -126,7 +127,8 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 			final List<T> res = new ArrayList<T>();
 			// TODO register this as observer on the result set so that
 			// additional results can be loaded asynchronously
-			while (rs.hasNext()) {
+			int cnt = 0;
+			while (rs.hasNext() && cnt < maxResults) {
 				rs.next();
 				final OWLNamedIndividual ind = rs.getObject(0, OWLNamedIndividual.class);
 
@@ -137,6 +139,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 									+ query);
 				}
 				res.add(entity);
+				cnt++;
 			}
 			return res;
 		} finally {

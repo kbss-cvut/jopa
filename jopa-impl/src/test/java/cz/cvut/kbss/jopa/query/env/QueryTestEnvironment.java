@@ -36,6 +36,8 @@ public final class QueryTestEnvironment {
 	public static final String RDF_PREFIX = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>";
 	public static final String RDFS_PREFIX = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>";
 
+	private static Map<Class<?>, List<?>> data;
+
 	private QueryTestEnvironment() {
 		// Private constructor to prevent instantiation
 	}
@@ -43,14 +45,14 @@ public final class QueryTestEnvironment {
 	/**
 	 * Generates and persists test data into the default context of the
 	 * specified entity manager. </p>
-	 * 
+	 * key
 	 * The generated data are then returned.
 	 * 
 	 * @param em
 	 *            EntityManager
 	 * @return Map of the persisted test data
 	 */
-	public static Map<Class<?>, List<?>> generateTestData(EntityManager em) {
+	public static void generateTestData(EntityManager em) {
 		assert em != null;
 		final Map<Class<?>, List<?>> map = generate();
 		LOG.config("Persisting test data...");
@@ -68,7 +70,29 @@ public final class QueryTestEnvironment {
 			}
 			throw e;
 		}
-		return map;
+		data = map;
+	}
+
+	/**
+	 * Get all current test data.
+	 * 
+	 * @return
+	 */
+	public static Map<Class<?>, List<?>> getData() {
+		return data;
+	}
+
+	/**
+	 * Get a list of test instances of the specified class.
+	 * 
+	 * @param cls
+	 *            The class
+	 * @return List of test data of the specified class
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> List<T> getData(Class<T> cls) {
+		assert cls != null;
+		return (List<T>) data.get(cls);
 	}
 
 	private static Map<Class<?>, List<?>> generate() {
@@ -101,7 +125,7 @@ public final class QueryTestEnvironment {
 		for (int i = 0; i < count; i++) {
 			final OWLClassC c = new OWLClassC();
 			c.setUri(URI.create(BASE_C + i));
-			if (i % 2 == 1) {
+			if (i % 2 != 0) {
 				c.setReferencedList(new ArrayList<>(aa));
 			}
 			cc.add(c);
@@ -124,5 +148,4 @@ public final class QueryTestEnvironment {
 		}
 		return m;
 	}
-
 }
