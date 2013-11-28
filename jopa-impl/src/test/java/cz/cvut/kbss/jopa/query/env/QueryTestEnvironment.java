@@ -37,6 +37,9 @@ public final class QueryTestEnvironment {
 	public static final String RDF_PREFIX = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>";
 	public static final String RDFS_PREFIX = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>";
 
+	/** owl:Thing class */
+	public static final String OWL_THING = "http://www.w3.org/2002/07/owl#Thing";
+
 	private static Map<Class<?>, List<?>> data;
 
 	private QueryTestEnvironment() {
@@ -62,6 +65,7 @@ public final class QueryTestEnvironment {
 		em.getTransaction().begin();
 		try {
 			for (Context ctx : contexts) {
+				LOG.config("Persisting test data into context " + ctx.getUri());
 				for (List<?> l : map.values()) {
 					for (Object o : l) {
 						em.persist(o, ctx.getUri());

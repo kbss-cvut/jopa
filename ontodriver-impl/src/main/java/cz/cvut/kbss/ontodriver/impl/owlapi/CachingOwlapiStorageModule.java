@@ -137,8 +137,10 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 
 	@Override
 	public ResultSet executeStatement(AbstractStatement statement) throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return null;
+		ensureOpen();
+		startTransactionIfNotActive();
+		final OwlapiStatement stmt = (OwlapiStatement) factory.createStatement(statement);
+		return internal.executeStatement(stmt);
 	}
 
 	@Override

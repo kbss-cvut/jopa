@@ -14,6 +14,7 @@ import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiBasedCachingJenaModule;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStatement;
 
 /**
  * This is a better optimized factory for Jena storage modules and connectors.
@@ -101,7 +102,9 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 
 	@Override
 	public DriverStatement createStatement(AbstractStatement statement) throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return null;
+		if (statement == null) {
+			throw new NullPointerException();
+		}
+		return new OwlapiStatement(statement);
 	}
 }
