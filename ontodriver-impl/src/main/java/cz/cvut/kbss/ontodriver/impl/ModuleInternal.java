@@ -1,14 +1,12 @@
-package cz.cvut.kbss.ontodriver.impl.owlapi;
+package cz.cvut.kbss.ontodriver.impl;
 
 import java.lang.reflect.Field;
-import java.util.List;
 
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-
+import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
-interface ModuleInternal {
+public interface ModuleInternal {
 
 	/**
 	 * Resolves whether this module contains entity with the specified primary
@@ -113,17 +111,6 @@ interface ModuleInternal {
 	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException;
 
 	/**
-	 * Retrieves changes performed since the last {@code commit} and resets the
-	 * change list. </p>
-	 * 
-	 * All changes that were applied since the last {@code commit} are returned
-	 * and the list that tracks changes in this ModuleInternal is reset.
-	 * 
-	 * @return List of changes applied since last call of this method
-	 */
-	public List<OWLOntologyChange> commitAndRetrieveChanges();
-
-	/**
 	 * Rolls back all pending changes.
 	 */
 	public void rollback();
@@ -140,5 +127,5 @@ interface ModuleInternal {
 	 *            The statement to execute
 	 * @return Result set with statement results
 	 */
-	public ResultSet executeStatement(OwlapiStatement statement);
+	public ResultSet executeStatement(DriverStatement statement);
 }

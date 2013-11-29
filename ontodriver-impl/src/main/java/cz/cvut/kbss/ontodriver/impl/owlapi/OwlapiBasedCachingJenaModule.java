@@ -17,7 +17,7 @@ import cz.cvut.kbss.ontodriver.impl.jena.OwlapiBasedJenaConnector;
 public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 
 	private OwlapiBasedJenaConnector connector;
-	private ModuleInternal moduleInternal;
+	private OwlapiModuleInternal moduleInternal;
 
 	private OwlapiConnectorDataHolder data;
 

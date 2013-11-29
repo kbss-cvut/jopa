@@ -18,7 +18,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInitializationException;
 public class CachingOwlapiStorageModule extends StorageModule implements OwlapiModuleWrapper {
 
 	private CachingOwlapiStorageConnector connector;
-	private ModuleInternal internal;
+	private OwlapiModuleInternal internal;
 
 	private OwlapiConnectorDataHolder data;
 

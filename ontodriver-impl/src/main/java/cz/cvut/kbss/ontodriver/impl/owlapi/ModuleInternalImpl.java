@@ -56,13 +56,14 @@ import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
+import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 
-class ModuleInternalImpl implements ModuleInternal {
+class ModuleInternalImpl implements OwlapiModuleInternal {
 
 	private static final Logger LOG = Logger.getLogger(ModuleInternalImpl.class.getName());
 
@@ -211,6 +212,11 @@ class ModuleInternalImpl implements ModuleInternal {
 					"There are some uncommitted and unpersisted entities in the ontology.");
 		}
 		return toReturn;
+	}
+
+	@Override
+	public ResultSet executeStatement(DriverStatement statement) {
+		return executeStatement((OwlapiStatement) statement);
 	}
 
 	@Override

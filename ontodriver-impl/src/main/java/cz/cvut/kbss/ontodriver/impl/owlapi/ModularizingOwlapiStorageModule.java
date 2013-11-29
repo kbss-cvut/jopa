@@ -18,7 +18,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInitializationException;
 public class ModularizingOwlapiStorageModule extends StorageModule implements OwlapiModuleWrapper {
 
 	private ModularizingStorageConnector connector;
-	private ModuleInternal internal;
+	private OwlapiModuleInternal internal;
 
 	private OwlapiConnectorDataHolder data;
 

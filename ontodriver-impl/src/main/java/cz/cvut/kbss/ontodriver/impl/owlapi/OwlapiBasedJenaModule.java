@@ -17,7 +17,7 @@ import cz.cvut.kbss.ontodriver.impl.jena.OwlapiBasedJenaConnector;
 public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 
 	private OwlapiBasedJenaConnector connector;
-	private ModuleInternal moduleInternal;
+	private OwlapiModuleInternal moduleInternal;
 
 	public OwlapiBasedJenaModule(Context context, PersistenceProviderFacade persistenceProvider,
 			DriverFactory factory) throws OntoDriverException {

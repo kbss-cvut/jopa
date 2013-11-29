@@ -17,7 +17,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWrapper {
 
 	private OwlapiStorageConnector connector;
-	private ModuleInternal internal;
+	private OwlapiModuleInternal internal;
 
 	public OwlapiStorageModule(Context context, PersistenceProviderFacade persistenceProvider,
 			DriverFactory factory) throws OntoDriverException {
