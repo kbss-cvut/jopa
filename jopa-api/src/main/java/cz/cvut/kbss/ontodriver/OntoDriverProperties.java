@@ -38,6 +38,25 @@ public final class OntoDriverProperties {
 	public static final String OWLIM_DRIVER_FACTORY = "cz.cvut.kbss.ontodriver.owlim-factory";
 
 	/**
+	 * Property for setting factory for Sesame based modules and connectors.
+	 * </p>
+	 * 
+	 * If not specified, default factories are used.
+	 */
+	public static final String SESAME_DRIVER_FACTORY = "cz.cvut.kbss.ontodriver.sesame-factory";
+
+	/**
+	 * Specifies whether a in-memory storage should be used for local Sesame
+	 * repositories. </p>
+	 * 
+	 * When set to true, any local Sesame repositories that are created by the
+	 * driver are created as only MemoryStores without any persistent backend.
+	 * Repositories accessed over the Internet or already existing locally are
+	 * not affected by this setting.
+	 */
+	public static final String SESAME_USE_VOLATILE_STORAGE = "cz.cvut.kbss.ontodriver.sesame.use-volatile-storage";
+
+	/**
 	 * Property for specifying extra URIs which should be added to the module
 	 * extraction signature. </p>
 	 * 

@@ -12,7 +12,11 @@ public enum OntologyConnectorType {
 	/**
 	 * OWLIM ontology connector.
 	 */
-	OWLIM(OntoDriverProperties.OWLIM_DRIVER_FACTORY);
+	OWLIM(OntoDriverProperties.OWLIM_DRIVER_FACTORY),
+	/**
+	 * Sesame ontology connector.
+	 */
+	SESAME(OntoDriverProperties.SESAME_DRIVER_FACTORY);
 
 	private final String property;
 

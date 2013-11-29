@@ -10,7 +10,6 @@ import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
-import cz.cvut.kbss.ontodriver.SesameOntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -42,8 +41,7 @@ public class DriverSesameFactory extends DriverAbstractFactory {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Sesame storage connector.");
 		}
-		final SesameOntologyStorageProperties props = (SesameOntologyStorageProperties) contextsToProperties
-				.get(ctx);
+		final OntologyStorageProperties props = contextsToProperties.get(ctx);
 		assert props != null;
 		final SesameStorageConnector c = new SesameStorageConnector(props, properties);
 		registerConnector(c);
