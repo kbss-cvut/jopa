@@ -14,11 +14,12 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInitializationException;
+import cz.cvut.kbss.ontodriver.impl.ModuleInternal;
 
 public class ModularizingOwlapiStorageModule extends StorageModule implements OwlapiModuleWrapper {
 
 	private ModularizingStorageConnector connector;
-	private OwlapiModuleInternal internal;
+	private ModuleInternal<OWLOntologyChange, OwlapiStatement> internal;
 
 	private OwlapiConnectorDataHolder data;
 
@@ -63,7 +64,7 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 			primaryKeyCounters.put(context, new AtomicInteger(connector.getClassAssertionsCount()));
 		}
 		this.data = connector.extractOntologyModule(getMetamodel(), context);
-		this.internal = new ModuleInternalImpl(data, this);
+		this.internal = new OwlapiModuleInternal(data, this);
 	}
 
 	@Override
@@ -138,8 +139,10 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 
 	@Override
 	public ResultSet executeStatement(AbstractStatement statement) throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return null;
+		ensureOpen();
+		startTransactionIfNotActive();
+		final OwlapiStatement stmt = (OwlapiStatement) factory.createStatement(statement);
+		return internal.executeStatement(stmt);
 	}
 
 	@Override

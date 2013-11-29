@@ -14,11 +14,12 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInitializationException;
+import cz.cvut.kbss.ontodriver.impl.ModuleInternal;
 
 public class CachingOwlapiStorageModule extends StorageModule implements OwlapiModuleWrapper {
 
 	private CachingOwlapiStorageConnector connector;
-	private OwlapiModuleInternal internal;
+	private ModuleInternal<OWLOntologyChange, OwlapiStatement> internal;
 
 	private OwlapiConnectorDataHolder data;
 
@@ -62,7 +63,7 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 		if (!primaryKeyCounters.containsKey(context)) {
 			primaryKeyCounters.put(context, new AtomicInteger(connector.getClassAssertionsCount()));
 		}
-		this.internal = new ModuleInternalImpl(getOntologyData(), this);
+		this.internal = new OwlapiModuleInternal(getOntologyData(), this);
 	}
 
 	@Override

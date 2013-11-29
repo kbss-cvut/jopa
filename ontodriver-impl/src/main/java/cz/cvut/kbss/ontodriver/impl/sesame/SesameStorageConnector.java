@@ -5,6 +5,7 @@ import info.aduna.iteration.Iterations;
 import java.io.File;
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -102,15 +103,19 @@ public class SesameStorageConnector implements StorageConnector {
 		}
 	}
 
-	public void applyChanges(SesameChangeSet changeSet) throws OntoDriverException {
-		assert changeSet != null;
+	public void applyChanges(List<SesameChange> changes) throws OntoDriverException {
+		assert changes != null;
 		ensureOpen();
+		if (changes.isEmpty()) {
+			return;
+		}
 		assert connection != null;
 		try {
 			assert connection.isOpen();
 			connection.begin();
-			connection.add(changeSet.getAdd());
-			connection.remove(changeSet.getRemove());
+			for (SesameChange ch : changes) {
+				ch.apply(connection);
+			}
 			connection.commit();
 		} catch (RepositoryException e) {
 			LOG.severe("Exception caught when committing changes to the repository.");

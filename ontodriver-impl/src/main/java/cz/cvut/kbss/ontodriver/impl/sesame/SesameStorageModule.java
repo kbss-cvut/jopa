@@ -1,6 +1,8 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import cz.cvut.kbss.ontodriver.AbstractStatement;
 import cz.cvut.kbss.ontodriver.Context;
@@ -9,31 +11,52 @@ import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.impl.ModuleInternal;
 
 public class SesameStorageModule extends StorageModule {
+
+	private SesameStorageConnector connector;
+	private ModuleInternal<SesameChange, SesameStatement> internal;
 
 	public SesameStorageModule(Context context, PersistenceProviderFacade persistenceProvider,
 			DriverFactory factory) throws OntoDriverException {
 		super(context, persistenceProvider, factory);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public void commit() throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		ensureOpen();
+		ensureTransactionActive();
+		this.transaction = TransactionState.COMMIT;
+		final List<SesameChange> changes = internal.commitAndRetrieveChanges();
+		connector.applyChanges(changes);
+		this.transaction = TransactionState.NO;
 	}
 
 	@Override
 	public void rollback() throws OntoDriverException {
-		// TODO Auto-generated method stub
+		ensureOpen();
+		internal.reset();
+		this.transaction = TransactionState.NO;
+	}
 
+	@Override
+	public void close() throws OntoDriverException {
+		if (!open) {
+			return;
+		}
+		factory.releaseStorageConnector(connector);
+		this.internal = null;
+		super.close();
 	}
 
 	@Override
 	protected void initialize() throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		this.connector = (SesameStorageConnector) factory.createStorageConnector(context, false);
+		if (!primaryKeyCounters.containsKey(context)) {
+			primaryKeyCounters.put(context, new AtomicInteger());
+		}
+		this.internal = new SesameModuleInternal(connector.getModel());
 	}
 
 	@Override
@@ -86,8 +109,12 @@ public class SesameStorageModule extends StorageModule {
 
 	@Override
 	protected void startTransactionIfNotActive() throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		if (transaction == TransactionState.ACTIVE) {
+			return;
+		}
+		connector.reload();
+		internal.reset();
+		this.transaction = TransactionState.ACTIVE;
 	}
 
 }

@@ -1,12 +1,26 @@
 package cz.cvut.kbss.ontodriver.impl;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
-import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
-public interface ModuleInternal {
+/**
+ * Internal storage module implementation. </p>
+ * 
+ * This interface defines the basic methods which are performed by the storage
+ * modules.
+ * 
+ * @author ledvima1
+ * 
+ * @param <X>
+ *            Type of changes returned on commit. Depends on the ontology
+ *            manipulation framework (e. g. OWLAPI, Sesame, Jena)
+ * @param <Y>
+ *            SPARQL statement implementation
+ */
+public interface ModuleInternal<X, Y> {
 
 	/**
 	 * Resolves whether this module contains entity with the specified primary
@@ -127,5 +141,16 @@ public interface ModuleInternal {
 	 *            The statement to execute
 	 * @return Result set with statement results
 	 */
-	public ResultSet executeStatement(DriverStatement statement);
+	public ResultSet executeStatement(Y statement);
+
+	/**
+	 * Retrieves changes performed since the last {@code commit} and resets the
+	 * change list. </p>
+	 * 
+	 * All changes that were applied since the last {@code commit} are returned
+	 * and the list that tracks changes in this ModuleInternal is reset.
+	 * 
+	 * @return List of changes applied since last call of this method
+	 */
+	public List<X> commitAndRetrieveChanges();
 }

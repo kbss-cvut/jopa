@@ -13,11 +13,12 @@ import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.impl.ModuleInternal;
 
 public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWrapper {
 
 	private OwlapiStorageConnector connector;
-	private OwlapiModuleInternal internal;
+	private ModuleInternal<OWLOntologyChange, OwlapiStatement> internal;
 
 	public OwlapiStorageModule(Context context, PersistenceProviderFacade persistenceProvider,
 			DriverFactory factory) throws OntoDriverException {
@@ -55,7 +56,7 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 		if (!primaryKeyCounters.containsKey(context)) {
 			primaryKeyCounters.put(context, new AtomicInteger(connector.getClassAssertionsCount()));
 		}
-		this.internal = new ModuleInternalImpl(connector.getOntologyData(), this);
+		this.internal = new OwlapiModuleInternal(connector.getOntologyData(), this);
 	}
 
 	@Override

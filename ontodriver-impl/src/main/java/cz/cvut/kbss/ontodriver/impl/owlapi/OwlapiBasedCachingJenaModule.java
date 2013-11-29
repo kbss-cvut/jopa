@@ -12,12 +12,13 @@ import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.impl.ModuleInternal;
 import cz.cvut.kbss.ontodriver.impl.jena.OwlapiBasedJenaConnector;
 
 public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 
 	private OwlapiBasedJenaConnector connector;
-	private OwlapiModuleInternal moduleInternal;
+	private ModuleInternal<OWLOntologyChange, OwlapiStatement> moduleInternal;
 
 	private OwlapiConnectorDataHolder data;
 
@@ -60,7 +61,7 @@ public class OwlapiBasedCachingJenaModule extends OwlapiStorageModule {
 			primaryKeyCounters.put(context,
 					new AtomicInteger(connector.getClassAssertionAxiomsCount()));
 		}
-		this.moduleInternal = new ModuleInternalImpl(holder, this);
+		this.moduleInternal = new OwlapiModuleInternal(holder, this);
 	}
 
 	@Override
