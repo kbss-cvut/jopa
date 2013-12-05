@@ -56,7 +56,7 @@ public class SesameStorageModule extends StorageModule {
 		if (!primaryKeyCounters.containsKey(context)) {
 			primaryKeyCounters.put(context, new AtomicInteger());
 		}
-		this.internal = new SesameModuleInternal(connector.getModel());
+		this.internal = createModuleInternal();
 	}
 
 	@Override
@@ -142,6 +142,10 @@ public class SesameStorageModule extends StorageModule {
 		this.transaction = TransactionState.ACTIVE;
 	}
 
+	SesameOntologyDataHolder getOntologyData(boolean includeInferred) throws OntoDriverException {
+		return connector.getOntologyData(includeInferred);
+	}
+
 	/**
 	 * Performs maintenance tasks needed before execution of most methods.
 	 * 
@@ -150,5 +154,19 @@ public class SesameStorageModule extends StorageModule {
 	private void beforeExecution() throws OntoDriverException {
 		ensureOpen();
 		startTransactionIfNotActive();
+	}
+
+	/**
+	 * Creates {@link ModuleInternal} implementation appropriate for this
+	 * storage module.
+	 * 
+	 * @return {@code ModuleInternal}
+	 * @throws OntoDriverException
+	 *             If we are unable to create the instance
+	 */
+	protected ModuleInternal<SesameChange, SesameStatement> createModuleInternal()
+			throws OntoDriverException {
+		// Can add more internal implementations here
+		return new SesameModuleInternal(getOntologyData(true), this);
 	}
 }

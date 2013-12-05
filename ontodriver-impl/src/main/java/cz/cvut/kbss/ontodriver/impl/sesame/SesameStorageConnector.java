@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -90,16 +91,58 @@ public class SesameStorageConnector implements StorageConnector {
 		}
 	}
 
-	public Model getModel() throws OntoDriverException {
+	/**
+	 * Returns a copy of the current state of the underlying ontology. </p>
+	 * 
+	 * @param includeInferred
+	 *            Specifies whether inferred statements should be included in
+	 *            the returned data (assuming that the underlying repository
+	 *            supports inference)
+	 * @return Data holder containing copy of the RDF graph model with explicit
+	 *         statements, optionally another containing inferred statements as
+	 *         well and a {@link ValueFactory}
+	 * @throws OntoDriverException
+	 */
+	public SesameOntologyDataHolder getOntologyData(boolean includeInferred)
+			throws OntoDriverException {
+		ensureOpen();
 		try {
-			// Get all statements from the repository
-			final RepositoryResult<Statement> statements = connection.getStatements(null, null,
-					null, true);
-			final Model model = Iterations.addAll(statements, new LinkedHashModel());
-			return model;
+			Model model = null;
+			if (includeInferred) {
+				// Get all statements from the repository
+				final RepositoryResult<Statement> statements = connection.getStatements(null, null,
+						null, includeInferred);
+				model = Iterations.addAll(statements, new LinkedHashModel());
+			}
+			final RepositoryResult<Statement> explicitStatements = connection.getStatements(null,
+					null, null, false);
+			final Model explicitModel = Iterations
+					.addAll(explicitStatements, new LinkedHashModel());
+			final ValueFactory vf = connection.getValueFactory();
+			return new SesameOntologyDataHolder(model, explicitModel, vf);
 		} catch (RepositoryException e) {
 			throw new OntoDriverException(
 					"Exception caught when extracting statements from repository.", e);
+		}
+	}
+
+	/**
+	 * Gets a connection to the underlying repository. </p>
+	 * 
+	 * The caller is expected to handle all the transaction synchronization and
+	 * connection lifecycle.
+	 * 
+	 * @return Connection to the underlying Sesame repository
+	 * @throws OntoDriverException
+	 *             If the connector is unable to get connection from the
+	 *             repository
+	 */
+	public RepositoryConnection getRepositoryConnection() throws OntoDriverException {
+		ensureOpen();
+		try {
+			return repository.getConnection();
+		} catch (RepositoryException e) {
+			throw new OntoDriverException("Unable to get connection to repository " + repository, e);
 		}
 	}
 

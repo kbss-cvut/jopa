@@ -10,7 +10,10 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * Internal storage module implementation. </p>
  * 
  * This interface defines the basic methods which are performed by the storage
- * modules.
+ * modules. </p>
+ * 
+ * The implementations perform the actual mapping between entity model and the
+ * ontology.
  * 
  * @author ledvima1
  * 
@@ -131,8 +134,12 @@ public interface ModuleInternal<X, Y> {
 
 	/**
 	 * Resets this internal, causing the working ontology to reload.
+	 * 
+	 * @throws OntoDriverException
+	 *             If an error occurs during internal reset. Typically if the
+	 *             internal is unable to reload data from ontology
 	 */
-	public void reset();
+	public void reset() throws OntoDriverException;
 
 	/**
 	 * Executes the specified SPARQL statement.

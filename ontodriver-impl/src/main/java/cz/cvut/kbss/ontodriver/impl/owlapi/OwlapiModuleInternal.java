@@ -63,6 +63,14 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 import cz.cvut.kbss.ontodriver.impl.ModuleInternal;
 
+/**
+ * This class uses assertions for checking arguments of public methods. This is
+ * because the class itself is package private and the arguments are expected to
+ * be already verified by the caller.
+ * 
+ * @author ledvima1
+ * 
+ */
 class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiStatement> {
 
 	private static final Logger LOG = Logger.getLogger(OwlapiModuleInternal.class.getName());
@@ -104,7 +112,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		assert cls != null : "argument cls is null";
 		assert primaryKey != null : "argument primaryKey is null";
 		final IRI iri = getPrimaryKeyAsIri(primaryKey);
-		if (!isInOntologySignature(iri, true) || temporaryIndividuals.contains(iri)) {
+		if (!isInOntologySignature(iri, true)) {
 			return null;
 		}
 		T entity = loadAndReconstructEntity(cls, iri);
@@ -299,9 +307,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	 *         , {@code false} otherwise
 	 */
 	private boolean isInOntologySignature(IRI iri, boolean searchImports) {
-		if (iri == null) {
-			return false;
-		}
+		assert iri != null : "argument iri is null";
 		boolean inSignature = workingOntology.containsIndividualInSignature(iri, searchImports);
 		return (inSignature && !temporaryIndividuals.contains(iri));
 	}
