@@ -150,6 +150,13 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		temporaryIndividuals = new HashSet<>();
 	}
 
+	/**
+	 * Returns the specified primary key as Sesame's URI.
+	 * 
+	 * @param primaryKey
+	 *            Entity primary key
+	 * @return Sesame URI
+	 */
 	private URI getPkAsSesameUri(Object primaryKey) {
 		assert primaryKey != null : "argument primaryKey is null";
 		if (primaryKey instanceof java.net.URI || primaryKey instanceof IRI
@@ -160,18 +167,41 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 	}
 
+	/**
+	 * Gets entity type for the specified class.
+	 * 
+	 * @param cls
+	 *            entity class
+	 * @return Entity type
+	 */
 	private <T> EntityType<T> getEntityType(Class<T> cls) {
 		assert cls != null;
 		return module.getMetamodel().entity(cls);
 	}
 
+	/**
+	 * Returns true if the specified URI is a subject or object in the current
+	 * ontology signature.
+	 * 
+	 * @param uri
+	 * @return
+	 */
 	private boolean isInOntologySignature(URI uri) {
 		assert uri != null : "argument uri is null";
-		final boolean inModel = model.contains(uri, null, null) || model.contains(null, uri, null)
-				|| model.contains(null, null, uri);
+		final boolean inModel = model.contains(uri, null, null) || model.contains(null, null, uri);
 		return (inModel && !temporaryIndividuals.contains(uri));
 	}
 
+	/**
+	 * Loads data property value for the specified entity instance.
+	 * 
+	 * @param instance
+	 *            Entity instance
+	 * @param uri
+	 *            Entity primary key
+	 * @param property
+	 *            Attribute representing the data property
+	 */
 	private <T> void loadDataProperty(T instance, URI uri, Attribute<?, ?> property) {
 		final URI propertyUri = valueFactory.createURI(property.getIRI().toString());
 		Model res = explicitModel.filter(uri, propertyUri, null);
@@ -201,6 +231,17 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 	}
 
+	/**
+	 * Loads an instance of the specified class with the specified primary key.
+	 * 
+	 * @param cls
+	 *            Entity class
+	 * @param uri
+	 *            Primary key
+	 * @return The loaded entity
+	 * @throws OntoDriverException
+	 *             If an error occurs during load
+	 */
 	private <T> T loadEntity(Class<T> cls, URI uri) throws OntoDriverException {
 		assert cls != null;
 		assert uri != null;
@@ -224,6 +265,18 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		return instance;
 	}
 
+	/**
+	 * Loads attributes of the specified instance, as defined by the metamodel.
+	 * 
+	 * @param instance
+	 *            Entity instance
+	 * @param uri
+	 *            Primary key
+	 * @param entityType
+	 *            Entity type resolved from the metamodel
+	 * @throws OntoDriverException
+	 *             If an error occurs during load
+	 */
 	private <T> void loadEntityFromModel(T instance, URI uri, EntityType<T> entityType)
 			throws OntoDriverException {
 		try {
@@ -246,6 +299,23 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 
 	}
 
+	/**
+	 * Loads properties for the specified entity. </p>
+	 * 
+	 * Properties are specified as values of properties related to subject with
+	 * the specified URI which are not part of the metamodel.
+	 * 
+	 * @param entity
+	 *            entity
+	 * @param uri
+	 *            primary key
+	 * @param properties
+	 *            properties specification
+	 * @param entityType
+	 *            entity type resolved from the metamodel
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
 	private <T> void loadPropertiesReference(T entity, URI uri,
 			PropertiesSpecification<?, ?> properties, EntityType<T> entityType)
 			throws IllegalArgumentException, IllegalAccessException {
@@ -278,6 +348,20 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		f.set(entity, map);
 	}
 
+	/**
+	 * Loads standard attribute of the specified entity, i. e. either reference
+	 * to other entitie, data value or annotation property value.
+	 * 
+	 * @param entity
+	 *            entity
+	 * @param uri
+	 *            primary key
+	 * @param attribute
+	 *            the attribute to load
+	 * @param alwaysLoad
+	 *            whether the attribute should be loaded even if it is marked as
+	 *            lazily loaded
+	 */
 	private <T> void loadReference(T entity, URI uri, Attribute<?, ?> attribute, boolean alwaysLoad) {
 		switch (attribute.getPersistentAttributeType()) {
 		case ANNOTATION:
@@ -308,6 +392,21 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		// TODO Check integrity constraints
 	}
 
+	/**
+	 * Load entity types, i. e. TBox classes to which the specified entity
+	 * belongs besides the one declared by the entity type.
+	 * 
+	 * @param entity
+	 *            entity
+	 * @param uri
+	 *            primary key
+	 * @param types
+	 *            types specification
+	 * @param entityType
+	 *            entity type resolved from the metamodel
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
 	private <T> void loadTypesReference(T entity, URI uri, TypesSpecification<?, ?> types,
 			EntityType<T> entityType) throws IllegalArgumentException, IllegalAccessException {
 		final Set<Object> res = new HashSet<>();
