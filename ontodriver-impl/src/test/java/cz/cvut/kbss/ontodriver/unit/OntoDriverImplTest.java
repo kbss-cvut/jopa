@@ -58,19 +58,19 @@ public class OntoDriverImplTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testOntoDriverImplListOfOntologyStorageProperties() {
 		LOG.config("Test: constructor, null passed.");
-		@SuppressWarnings("unused")
 		final OntoDriverImpl d = new OntoDriverImpl(null);
 		fail("This line should not have been reached.");
+		d.isOpen();
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testOntoDriverImplListOfOntologyStoragePropertiesMapOfProperties() {
 		LOG.config("Test: constructor, empty list of storage properties passed.");
-		@SuppressWarnings("unused")
 		final OntoDriverImpl d = new OntoDriverImpl(
 				Collections.<OntologyStorageProperties> emptyList(),
 				Collections.<String, String> emptyMap());
 		fail("This line should not have been reached.");
+		d.isOpen();
 	}
 
 	@Test

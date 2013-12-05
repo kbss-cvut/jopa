@@ -258,7 +258,10 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 					signature.add(ent);
 				}
 			}
-			signatures.putIfAbsent(metamodel, signature);
+			Set<OWLEntity> old = signatures.putIfAbsent(metamodel, signature);
+			if (old != null) {
+				signature = old;
+			}
 		} else {
 			signature = signatures.get(metamodel);
 		}

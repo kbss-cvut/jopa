@@ -61,50 +61,75 @@ public class SesameStorageModule extends StorageModule {
 
 	@Override
 	public boolean contains(Object primaryKey) throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return false;
+		beforeExecution();
+		if (primaryKey == null) {
+			throw new NullPointerException("PrimaryKey is null!");
+		}
+		return internal.containsEntity(primaryKey);
 	}
 
 	@Override
 	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return null;
+		beforeExecution();
+		if (cls == null || primaryKey == null) {
+			throw new NullPointerException("Null passed to find: cls = " + cls + ", primaryKey = "
+					+ primaryKey);
+		}
+		return internal.findEntity(cls, primaryKey);
 	}
 
 	@Override
 	public boolean isConsistent() throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return false;
+		beforeExecution();
+		return internal.isConsistent();
 	}
 
 	@Override
 	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		beforeExecution();
+		if (entity == null || field == null) {
+			throw new NullPointerException("Null passed to loadFieldValue: entity = " + entity
+					+ ", field = " + field);
+		}
+		internal.loadFieldValue(entity, field);
 	}
 
 	@Override
 	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		beforeExecution();
+		if (primaryKey == null || entity == null) {
+			throw new NullPointerException("Null passed to merge: primaryKey = " + primaryKey
+					+ ", entity = " + entity);
+		}
+		internal.mergeEntity(primaryKey, entity);
 	}
 
 	@Override
 	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		beforeExecution();
+		if (entity == null) {
+			throw new NullPointerException("Null passed to persist: entity = " + entity);
+		}
+		internal.persistEntity(primaryKey, entity);
 	}
 
 	@Override
 	public void remove(Object primaryKey) throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		beforeExecution();
+		if (primaryKey == null) {
+			throw new NullPointerException("Null passed to remove.");
+		}
+		internal.removeEntity(primaryKey);
 	}
 
 	@Override
 	public ResultSet executeStatement(AbstractStatement statement) throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return null;
+		beforeExecution();
+		if (statement == null) {
+			throw new NullPointerException("Null passed to executeStatement.");
+		}
+		final SesameStatement stmt = (SesameStatement) factory.createStatement(statement);
+		return internal.executeStatement(stmt);
 	}
 
 	@Override
@@ -117,4 +142,13 @@ public class SesameStorageModule extends StorageModule {
 		this.transaction = TransactionState.ACTIVE;
 	}
 
+	/**
+	 * Performs maintenance tasks needed before execution of most methods.
+	 * 
+	 * @throws OntoDriverException
+	 */
+	private void beforeExecution() throws OntoDriverException {
+		ensureOpen();
+		startTransactionIfNotActive();
+	}
 }

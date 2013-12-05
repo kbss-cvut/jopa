@@ -94,18 +94,15 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 
 	@Override
 	public boolean containsEntity(Object primaryKey) throws OntoDriverException {
-		if (primaryKey == null) {
-			throw new NullPointerException();
-		}
+		assert primaryKey != null : "Null passed to containsEntity!";
 		final IRI iri = getPrimaryKeyAsIri(primaryKey);
 		return isInOntologySignature(iri, true);
 	}
 
 	@Override
 	public <T> T findEntity(Class<T> cls, Object primaryKey) throws OntoDriverException {
-		if (cls == null || primaryKey == null) {
-			throw new NullPointerException();
-		}
+		assert cls != null : "argument cls is null";
+		assert primaryKey != null : "argument primaryKey is null";
 		final IRI iri = getPrimaryKeyAsIri(primaryKey);
 		if (!isInOntologySignature(iri, true) || temporaryIndividuals.contains(iri)) {
 			return null;
@@ -122,9 +119,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	@Override
 	public <T> void persistEntity(Object primaryKey, T entity) throws OntoDriverException {
 		checkStatus();
-		if (entity == null) {
-			throw new NullPointerException("The persisted entity cannot be null!");
-		}
+		assert entity != null : "argument entity is null";
 		final Class<?> cls = entity.getClass();
 		IRI id = getPrimaryKeyAsIri(primaryKey);
 		final EntityType<?> type = getEntityType(cls);
@@ -153,9 +148,8 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	@Override
 	public <T> void mergeEntity(Object primaryKey, T entity) throws OntoDriverException {
 		checkStatus();
-		if (entity == null) {
-			throw new NullPointerException("The persisted entity cannot be null!");
-		}
+		assert primaryKey != null : "argument primaryKey is null";
+		assert entity != null : "argument entity is null";
 		final IRI id = getPrimaryKeyAsIri(primaryKey);
 		if (!isInOntologySignature(id, true)) {
 			throw new OntoDriverException(new IllegalArgumentException("The entity " + entity
@@ -171,9 +165,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	@Override
 	public void removeEntity(Object primaryKey) throws OntoDriverException {
 		checkStatus();
-		if (primaryKey == null) {
-			throw new NullPointerException("The primary key cannot be null!");
-		}
+		assert primaryKey != null : "argument primaryKey is null";
 		OWLEntityRemover r = new OWLEntityRemover(ontologyManager,
 				Collections.singleton(workingOntology));
 		final IRI id = getPrimaryKeyAsIri(primaryKey);
@@ -184,6 +176,8 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 
 	@Override
 	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
+		assert entity != null : "argument entity is null";
+		assert field != null : "argument field is null";
 		final Class<?> cls = entity.getClass();
 		final EntityType<?> et = getEntityType(cls);
 		final IRI iri = getIdentifier(entity);
@@ -216,7 +210,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 
 	@Override
 	public ResultSet executeStatement(OwlapiStatement statement) {
-		assert statement != null;
+		assert statement != null : "argument statement is null";
 		if (statement.shouldUseTransactionalOntology()) {
 			statement.setOntology(workingOntology);
 			statement.setOntologyManager(ontologyManager);

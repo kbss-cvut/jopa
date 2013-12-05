@@ -52,9 +52,9 @@ public class ConnectionImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testConnectionImplNull() throws Exception {
 		LOG.config("Test: connection constructor. Null passed.");
-		@SuppressWarnings("unused")
 		final Connection c = new ConnectionImpl(null);
 		fail("This line should not have been reached.");
+		c.isOpen();
 	}
 
 	@Test

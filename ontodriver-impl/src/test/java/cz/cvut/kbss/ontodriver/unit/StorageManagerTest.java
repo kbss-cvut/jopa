@@ -27,7 +27,6 @@ import cz.cvut.kbss.ontodriver.utils.OWLClassA;
 import cz.cvut.kbss.ontodriver.utils.OWLClassB;
 import cz.cvut.kbss.ontodriver.utils.OntoDriverMock;
 import cz.cvut.kbss.ontodriver.utils.PersistenceProviderMock;
-import cz.cvut.kbss.ontodriver.utils.StorageManagerMock;
 import cz.cvut.kbss.ontodriver.utils.StorageModuleMock;
 
 public class StorageManagerTest {
@@ -224,9 +223,9 @@ public class StorageManagerTest {
 	@Test(expected = NullPointerException.class)
 	public void testStorageManagerImpl() {
 		LOG.config("Test: constructor. Null passed.");
-		@SuppressWarnings("unused")
 		final StorageManager m = new StorageManagerImpl(null, factory.getContexts(), null);
 		fail("This line should not have been reached.");
+		m.isOpen();
 	}
 
 	// TODO Should modules be reloaded on commit?
