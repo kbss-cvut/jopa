@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -19,6 +20,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -29,6 +31,7 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInternalException;
+import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 import cz.cvut.kbss.ontodriver.impl.ModuleInternal;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlModuleException;
 import cz.cvut.kbss.ontodriver.impl.utils.ICValidationUtils;
@@ -46,8 +49,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private static final Logger LOG = Logger.getLogger(SesameModuleInternal.class.getName());
 
 	private final SesameStorageModule module;
-	// TODO This is not the best strategy, duplicating models to keep track of
-	// inferred statements
+	// TODO This is probably not the best strategy, duplicating models to keep
+	// track of inferred statements
 	/** Contains all statements, including inferred */
 	private Model model;
 	/** Contains only explicit statements */
@@ -58,6 +61,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private List<SesameChange> changes = new LinkedList<>();
 	private Set<URI> temporaryIndividuals = new HashSet<>();
 
+	private int primaryKeyCounter;
+
 	SesameModuleInternal(SesameOntologyDataHolder data, SesameStorageModule storageModule) {
 		assert data != null : "argument data is null";
 		assert storageModule != null : "argument storageModule is null";
@@ -65,6 +70,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		this.model = data.getModel();
 		this.valueFactory = data.getValueFactory();
 		this.lang = data.getLanguage();
+		this.primaryKeyCounter = model.size() + 1;
 	}
 
 	@Override
@@ -97,8 +103,27 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 
 	@Override
 	public <T> void persistEntity(Object primaryKey, T entity) throws OntoDriverException {
-		// TODO Auto-generated method stub
+		assert primaryKey != null : "argument primaryKey is null";
+		assert entity != null : "argument entity is null";
 
+		final EntityType<T> entityType = getEntityType((Class<T>) entity.getClass());
+		URI uri = getPkAsSesameUri(primaryKey);
+		if (uri == null) {
+			if (!entityType.getIdentifier().isGenerated()) {
+				throw new PrimaryKeyNotSetException(
+						"The entity has neither primary key set nor is its id field annotated as auto generated. Entity = "
+								+ entity);
+			}
+			uri = generatePrimaryKey(entityType.getName());
+		}
+		if (isInOntologySignature(uri)) {
+			throw new OWLEntityExistsException("Entity with primary key " + uri
+					+ " already exists in context " + module.getContext());
+		}
+		addInstanceToOntology(uri, entityType);
+		saveEntityAttributes(entity, uri, entityType);
+
+		temporaryIndividuals.remove(uri);
 	}
 
 	@Override
@@ -168,6 +193,66 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private void clear() {
 		changes.clear();
 		temporaryIndividuals = new HashSet<>();
+	}
+
+	private void addStatement(Statement stmt) {
+		model.add(stmt);
+		explicitModel.add(stmt);
+		changes.add(new SesameAddChange(stmt));
+	}
+
+	private void addStatements(Collection<Statement> stmts) {
+		model.addAll(stmts);
+		explicitModel.addAll(stmts);
+		for (Statement stmt : stmts) {
+			changes.add(new SesameAddChange(stmt));
+		}
+	}
+
+	private void removeStatement(Statement stmt) {
+		model.remove(stmt);
+		explicitModel.remove(stmt);
+		changes.add(new SesameRemoveChange(stmt));
+	}
+
+	private void removeStatements(Collection<Statement> stmts) {
+		model.removeAll(stmts);
+		explicitModel.removeAll(stmts);
+		for (Statement stmt : stmts) {
+			changes.add(new SesameRemoveChange(stmt));
+		}
+	}
+
+	private void addInstanceToOntology(URI uri, EntityType<?> et) {
+		assert uri != null;
+		assert et != null;
+
+		final URI typeUri = valueFactory.createURI(et.getIRI().toString());
+		final Statement stmt = valueFactory.createStatement(uri, RDF.TYPE, typeUri);
+		addStatement(stmt);
+	}
+
+	/**
+	 * Generates new primary key. </p>
+	 * 
+	 * The primary key consists of the URI of this ontology context, name of the
+	 * RDF class and an integer, which represents counter of existing
+	 * statements.
+	 * 
+	 * @param typeName
+	 * @return
+	 */
+	private URI generatePrimaryKey(String typeName) {
+		assert typeName != null;
+
+		URI uri = null;
+		int i;
+		final String base = module.getContext().getUri() + "#" + typeName + "_";
+		do {
+			i = primaryKeyCounter++;
+			uri = valueFactory.createURI(base + i);
+		} while (isInOntologySignature(uri));
+		return uri;
 	}
 
 	/**
@@ -615,6 +700,84 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		types.getJavaField().set(entity, res);
 	}
 
+	/**
+	 * Saves all entity attributes' values.
+	 * 
+	 * @param entity
+	 *            Entity
+	 * @param primaryKey
+	 *            Entity primary key
+	 * @param entityType
+	 *            Entity type resolved from the metamodel
+	 * @throws OntoDriverException
+	 */
+	private <T> void saveEntityAttributes(T entity, URI primaryKey, EntityType<T> entityType)
+			throws OntoDriverException {
+		try {
+			final TypesSpecification<?, ?> types = entityType.getTypes();
+			if (types != null) {
+				saveTypesReference(entity, primaryKey, types, entityType);
+			}
+		} catch (RuntimeException | IllegalAccessException e) {
+			throw new OntoDriverInternalException(e);
+		}
+	}
+
+	/**
+	 * Saves type statements (with predicate rdf:type) about the specified
+	 * entity into the ontology. </p>
+	 * 
+	 * This includes removing type statements which are no longer relevant and
+	 * adding new type assertions.
+	 * 
+	 * @param entity
+	 *            The entity
+	 * @param uri
+	 *            Entity primary key
+	 * @param types
+	 *            TypesSpecification
+	 * @param entityType
+	 *            Entity type as resolved from the metamodel
+	 * @throws OntoDriverException
+	 *             If the types are inferred
+	 */
+	private <T> void saveTypesReference(T entity, URI uri, TypesSpecification<?, ?> types,
+			EntityType<T> entityType) throws OntoDriverException, IllegalArgumentException,
+			IllegalAccessException {
+		if (types.isInferred()) {
+			throw new OntoDriverException("Inferred fields must not be set externally.");
+		}
+		URI typeUri = valueFactory.createURI(entityType.getIRI().toString());
+		Object value = types.getJavaField().get(entity);
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Saving types of " + entity + " with value = " + value);
+		}
+		assert Set.class.isAssignableFrom(value.getClass());
+
+		final Set<String> set = (Set<String>) value;
+		final Set<Statement> toAdd = new HashSet<>(set.size());
+		final Set<Statement> toRemove = new HashSet<>();
+		for (String type : set) {
+			toAdd.add(valueFactory.createStatement(uri, RDF.TYPE, valueFactory.createURI(type)));
+		}
+		final Set<Statement> currentTypes = explicitModel.filter(uri, RDF.TYPE, null);
+		for (Statement stmt : currentTypes) {
+			final Value val = stmt.getObject();
+			assert val instanceof URI;
+			if (val.equals(typeUri)) {
+				continue;
+			}
+			if (!toAdd.remove(stmt)) {
+				toRemove.add(stmt);
+			}
+		}
+		removeStatements(toRemove);
+		addStatements(toAdd);
+	}
+
+	/**
+	 * Creates Sesame URI from the attribute's IRI
+	 */
 	private URI toUri(Attribute<?, ?> attribute) {
 		assert attribute != null;
 		return valueFactory.createURI(attribute.getIRI().toString());

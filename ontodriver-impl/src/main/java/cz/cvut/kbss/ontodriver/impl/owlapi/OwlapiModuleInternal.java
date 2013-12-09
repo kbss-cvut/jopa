@@ -137,7 +137,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 						"The entity has neither primary key set nor is its id field annotated as auto generated. Entity = "
 								+ entity);
 			}
-			id = generatePrimaryKey(entity, type.getName());
+			id = generatePrimaryKey(type.getName());
 			setIdentifier(entity, id);
 		} else {
 			if (isInOntologySignature(id, true)) {
@@ -149,7 +149,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(id);
 		addIndividualToOntology(entity, type);
 
-		this.saveEntityAttributes(id, entity, type, individual);
+		saveEntityAttributes(id, entity, type, individual);
 		temporaryIndividuals.remove(id);
 	}
 
@@ -1517,8 +1517,8 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		final IRI uri = getIdentifier(o);
 
 		// TODO anonymous
-		OWLNamedIndividual seq = dataFactory.getOWLNamedIndividual(generatePrimaryKey(o,
-				uri.getFragment() + "-SEQ"));
+		OWLNamedIndividual seq = dataFactory.getOWLNamedIndividual(generatePrimaryKey(uri
+				.getFragment() + "-SEQ"));
 
 		writeChange(new AddAxiom(workingOntology, dataFactory.getOWLClassAssertionAxiom(owlList,
 				seq)));
@@ -1536,8 +1536,8 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		}
 
 		for (int i = 1; i < sequence.size(); i++) {
-			OWLNamedIndividual seq2 = dataFactory.getOWLNamedIndividual(generatePrimaryKey(
-					sequence.get(i), uri.getFragment() + "-SEQ" + i));
+			OWLNamedIndividual seq2 = dataFactory.getOWLNamedIndividual(generatePrimaryKey(uri
+					.getFragment() + "-SEQ" + i));
 
 			addChange(new AddAxiom(workingOntology, dataFactory.getOWLObjectPropertyAssertionAxiom(
 					hasNext, seq, seq2)));
@@ -1850,14 +1850,14 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		transactionalChanges.addAll(toAdd);
 	}
 
-	private IRI generatePrimaryKey(Object entity, String name) {
-		assert entity != null;
+	private IRI generatePrimaryKey(String typeName) {
+		assert typeName != null;
 		IRI iri;
 		int i;
+		final String base = workingOntology.getOntologyID().getOntologyIRI().toString() + "#"
+				+ typeName + "_";
 		do {
 			i = storageModule.getNewPrimaryKey();
-			final String base = workingOntology.getOntologyID().getOntologyIRI().toString() + "#"
-					+ name + "_";
 			iri = IRI.create(base + i);
 		} while (workingOntology.containsIndividualInSignature(iri, true));
 		return iri;
