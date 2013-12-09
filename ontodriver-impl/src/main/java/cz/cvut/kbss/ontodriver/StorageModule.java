@@ -263,6 +263,22 @@ public abstract class StorageModule implements Transactional {
 	}
 
 	/**
+	 * Gets new primary key counter and increments the internal counter.
+	 * 
+	 * @return Primary key counter
+	 */
+	public int getNewPrimaryKey() {
+		return StorageModule.getNewPrimaryKey(context);
+	}
+
+	/**
+	 * Increments the primary key counter for this module's context.
+	 */
+	public void incrementPrimaryKeyCounter() {
+		StorageModule.incrementPrimaryKeyCounter(context);
+	}
+
+	/**
 	 * Retrieves a new primary key number and increments the internal counter.
 	 * 
 	 * @param ctx

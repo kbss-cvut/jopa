@@ -61,8 +61,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private List<SesameChange> changes = new LinkedList<>();
 	private Set<URI> temporaryIndividuals = new HashSet<>();
 
-	private int primaryKeyCounter;
-
 	SesameModuleInternal(SesameOntologyDataHolder data, SesameStorageModule storageModule) {
 		assert data != null : "argument data is null";
 		assert storageModule != null : "argument storageModule is null";
@@ -70,7 +68,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		this.model = data.getModel();
 		this.valueFactory = data.getValueFactory();
 		this.lang = data.getLanguage();
-		this.primaryKeyCounter = model.size() + 1;
 	}
 
 	@Override
@@ -115,6 +112,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 								+ entity);
 			}
 			uri = generatePrimaryKey(entityType.getName());
+		} else {
+			module.incrementPrimaryKeyCounter();
 		}
 		if (isInOntologySignature(uri)) {
 			throw new OWLEntityExistsException("Entity with primary key " + uri
@@ -249,7 +248,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		int i;
 		final String base = module.getContext().getUri() + "#" + typeName + "_";
 		do {
-			i = primaryKeyCounter++;
+			i = module.getNewPrimaryKey();
 			uri = valueFactory.createURI(base + i);
 		} while (isInOntologySignature(uri));
 		return uri;
