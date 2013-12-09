@@ -146,6 +146,10 @@ public class SesameStorageModule extends StorageModule {
 		return connector.getOntologyData(includeInferred);
 	}
 
+	PersistenceProviderFacade getPersistenceProvider() {
+		return persistenceProvider;
+	}
+
 	/**
 	 * Performs maintenance tasks needed before execution of most methods.
 	 * 

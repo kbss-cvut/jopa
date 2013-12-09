@@ -39,6 +39,8 @@ public class SesameStorageConnector implements StorageConnector {
 
 	private final OntologyStorageProperties storageProps;
 
+	protected String language;
+
 	private boolean open;
 
 	private Repository repository;
@@ -119,7 +121,8 @@ public class SesameStorageConnector implements StorageConnector {
 			final Model explicitModel = Iterations
 					.addAll(explicitStatements, new LinkedHashModel());
 			final ValueFactory vf = connection.getValueFactory();
-			return new SesameOntologyDataHolder(model, explicitModel, vf);
+			return SesameOntologyDataHolder.model(model).explicitModel(explicitModel)
+					.valueFactory(vf).language(language).build();
 		} catch (RepositoryException e) {
 			throw new OntoDriverException(
 					"Exception caught when extracting statements from repository.", e);
@@ -175,6 +178,7 @@ public class SesameStorageConnector implements StorageConnector {
 
 	private void initialize(Map<String, String> properties) throws OntoDriverException {
 		final URI serverUri = storageProps.getPhysicalURI();
+		this.language = properties.get(OntoDriverProperties.ONTOLOGY_LANGUAGE);
 		try {
 			this.repository = RepositoryProvider.getRepository(serverUri.toString());
 			if (repository == null) {

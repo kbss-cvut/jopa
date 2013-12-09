@@ -47,7 +47,6 @@ import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
@@ -62,6 +61,7 @@ import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 import cz.cvut.kbss.ontodriver.impl.ModuleInternal;
+import cz.cvut.kbss.ontodriver.impl.utils.ICValidationUtils;
 
 /**
  * This class uses assertions for checking arguments of public methods. This is
@@ -894,7 +894,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		} catch (IllegalAccessException e) {
 			throw new OwlModuleException(e);
 		}
-		checkIntegrityConstraints(entity, primaryKey, field);
+		ICValidationUtils.validateIntegrityConstraints(entity, primaryKey, field);
 	}
 
 	/**
@@ -914,7 +914,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		if (attribute.isInferred()) {
 			throw new OntoDriverException("Inferred fields must not be set externally.");
 		}
-		checkIntegrityConstraints(entity, id, attribute);
+		ICValidationUtils.validateIntegrityConstraints(entity, id, attribute);
 
 		Object value = attribute.getJavaField().get(entity);
 		if (LOG.isLoggable(Level.FINEST)) {
@@ -1087,7 +1087,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		if (LOG.isLoggable(Level.FINEST))
 			LOG.finest("Getting " + individual + " of " + cls);
 		Object ob = storageModule.getPersistenceProvider().getEntityFromLiveObjectCache(cls,
-				individual.getIRI());
+				individual.getIRI(), storageModule.getContext().getUri());
 		if (ob != null) {
 			if (cls.equals(ob.getClass())) {
 				if (LOG.isLoggable(Level.FINE))
@@ -1101,49 +1101,6 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			return cls.cast(getEnum(cls.asSubclass(Enum.class), individual));
 		} else {
 			return loadAndReconstructEntity(cls, individual.getIRI());
-		}
-	}
-
-	/**
-	 * Checks integrity constraints for the given entity and its attribute.
-	 * 
-	 * @param entity
-	 *            The entity
-	 * @param primaryKey
-	 *            Primary key of the entity
-	 * @param attribute
-	 *            The attribute to check
-	 */
-	private void checkIntegrityConstraints(Object entity, IRI primaryKey, Attribute<?, ?> attribute) {
-		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("CHECKING IC for " + entity + ", attribute=" + attribute.getIRI());
-		}
-		try {
-			Object value = attribute.getJavaField().get(entity);
-			Collection<?> set;
-			if (value == null) {
-				set = Collections.emptySet();
-			} else if (attribute.isCollection()) {
-				set = (Collection<?>) value;
-			} else {
-				set = Collections.singleton(value);
-			}
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.finer("    size=" + set.size());
-			}
-			for (ParticipationConstraint ic : attribute.getConstraints()) {
-				if (LOG.isLoggable(Level.FINER)) {
-					LOG.finer("         IC:" + ic.min() + " : " + ic.max());
-				}
-				if (set.size() < ic.min() || (set.size() > ic.max() && ic.max() >= 0)) {
-					throw new IntegrityConstraintViolatedException("Violated min=" + ic.min()
-							+ ", max=" + ic.max() + ", for attribute=" + attribute + " of object="
-							+ dataFactory.getOWLNamedIndividual(primaryKey));
-				}
-				// TODO FILLER
-			}
-		} catch (IllegalAccessException e) {
-			throw new OwlModuleException(e);
 		}
 	}
 
@@ -1391,7 +1348,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			final org.semanticweb.owlapi.model.OWLObjectProperty property, boolean inferred) {
 		for (final OWLObjectPropertyAssertionAxiom axiom : workingOntology
 				.getObjectPropertyAssertionAxioms(subject)) {
-			if (axiom.getProperty().equals(property) && axiom.getSubject().equals(subject)) {
+			if (axiom.getProperty().equals(property)) {
 				return axiom.getObject();
 			}
 		}

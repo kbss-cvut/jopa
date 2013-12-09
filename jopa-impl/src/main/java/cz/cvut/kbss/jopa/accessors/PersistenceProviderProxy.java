@@ -1,5 +1,7 @@
 package cz.cvut.kbss.jopa.accessors;
 
+import java.net.URI;
+
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
@@ -10,8 +12,7 @@ class PersistenceProviderProxy implements PersistenceProviderFacade {
 	private final Metamodel metamodel;
 	private final ServerSession serverSession;
 
-	public PersistenceProviderProxy(Metamodel metamodel,
-			ServerSession serverSession) {
+	public PersistenceProviderProxy(Metamodel metamodel, ServerSession serverSession) {
 		if (metamodel == null || serverSession == null) {
 			throw new NullPointerException();
 		}
@@ -25,7 +26,7 @@ class PersistenceProviderProxy implements PersistenceProviderFacade {
 	}
 
 	@Override
-	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey) {
+	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey, URI contextUri) {
 		if (cls == null || primaryKey == null) {
 			throw new NullPointerException();
 		}
@@ -33,7 +34,7 @@ class PersistenceProviderProxy implements PersistenceProviderFacade {
 		CacheManager cache = serverSession.getLiveObjectCache();
 		cache.acquireReadLock();
 		try {
-			entity = cache.get(cls, primaryKey);
+			entity = cache.get(contextUri, cls, primaryKey);
 		} finally {
 			cache.releaseReadLock();
 		}

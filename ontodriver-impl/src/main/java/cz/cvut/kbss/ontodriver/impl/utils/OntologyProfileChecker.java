@@ -93,7 +93,12 @@ public final class OntologyProfileChecker {
 				// TODO
 				break;
 			case OWLIM:
-				// TOOD
+				// TODO
+				break;
+			case SESAME:
+				// TODO
+				break;
+			default:
 				break;
 			}
 		}

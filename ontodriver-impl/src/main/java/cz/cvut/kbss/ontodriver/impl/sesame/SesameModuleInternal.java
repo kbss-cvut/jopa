@@ -28,7 +28,10 @@ import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInternalException;
 import cz.cvut.kbss.ontodriver.impl.ModuleInternal;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OwlModuleException;
+import cz.cvut.kbss.ontodriver.impl.utils.ICValidationUtils;
 
 /**
  * This class uses assertions for checking arguments of public methods. This is
@@ -51,6 +54,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private Model explicitModel;
 	// The ValueFactory can be final since it is singleton anyway
 	private final ValueFactory valueFactory;
+	private final String lang;
 	private List<SesameChange> changes = new LinkedList<>();
 	private Set<URI> temporaryIndividuals = new HashSet<>();
 
@@ -60,6 +64,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		this.module = storageModule;
 		this.model = data.getModel();
 		this.valueFactory = data.getValueFactory();
+		this.lang = data.getLanguage();
 	}
 
 	@Override
@@ -110,8 +115,23 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 
 	@Override
 	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		assert entity != null : "argument entity is null";
+		assert field != null : "argument field is null";
+		final Class<T> cls = (Class<T>) entity.getClass();
+		final EntityType<T> et = getEntityType(cls);
+		final URI uri = getIdentifier(entity);
+		try {
+			if (et.getTypes() != null && et.getTypes().getJavaField().equals(field)) {
+				loadTypesReference(entity, uri, et.getTypes(), et);
+			} else if (et.getProperties() != null
+					&& et.getProperties().getJavaField().equals(field)) {
+				loadPropertiesReference(entity, uri, et.getProperties(), et);
+			} else {
+				loadReference(entity, uri, et.getAttribute(field.getName()), true);
+			}
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, e.getMessage(), e);
+		}
 	}
 
 	@Override
@@ -179,6 +199,90 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		return module.getMetamodel().entity(cls);
 	}
 
+	private <N extends Enum<N>> N getEnum(Class<N> cls, URI uri) {
+		for (N obj : cls.getEnumConstants()) {
+			if (getIdentifier(obj).equals(uri)) {
+				return obj;
+			}
+		}
+		throw new OntoDriverInternalException(new IllegalArgumentException(
+				"Unknown enum constant = " + uri));
+	}
+
+	private URI getIdentifier(Object entity) {
+		assert entity != null;
+
+		final EntityType<?> type = getEntityType(entity.getClass());
+		try {
+			Object idValue = type.getIdentifier().getJavaField().get(entity);
+			if (idValue == null) {
+				return null;
+			}
+			if (idValue instanceof URI) {
+				return (URI) idValue;
+			} else if (idValue instanceof String) {
+				return valueFactory.createURI((String) idValue);
+			} else if (idValue instanceof java.net.URI) {
+				return valueFactory.createURI(((java.net.URI) idValue).toString());
+			} else {
+				throw new OwlModuleException("Unknown identifier type: " + idValue.getClass());
+			}
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new OntoDriverInternalException(e);
+		}
+	}
+
+	private <T> T getJavaInstanceForSubject(Class<T> cls, URI subjectUri)
+			throws OntoDriverException {
+		assert cls != null;
+		assert subjectUri != null;
+
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Getting " + subjectUri + " of " + cls);
+		}
+		final IRI pk = IRI.create(subjectUri.toString());
+		final Object ob = module.getPersistenceProvider().getEntityFromLiveObjectCache(cls, pk,
+				module.getContext().getUri());
+		if (ob != null && cls.isAssignableFrom(ob.getClass())) {
+			// We can load the instance from cache
+			return cls.cast(ob);
+		} else if (cls.isEnum()) {
+			// It is an enum value
+			return cls.cast(getEnum(cls.asSubclass(Enum.class), subjectUri));
+		} else {
+			// Otherwise load the entity
+			return loadEntity(cls, subjectUri);
+		}
+	}
+
+	/**
+	 * Gets URI of value of the specified object property.
+	 * 
+	 * @param subjectUri
+	 *            Subject URI
+	 * @param propertyUri
+	 *            Object property URI
+	 * @param includeInferred
+	 *            Whether search inferred statements as well
+	 * @return URI of the discovered object or {@code null} if none is found
+	 */
+	private URI getObjectPropertyValue(URI subjectUri, URI propertyUri, boolean includeInferred) {
+		Model res = explicitModel.filter(subjectUri, propertyUri, null);
+		if (res.isEmpty() && includeInferred) {
+			res = model.filter(subjectUri, propertyUri, null);
+		}
+		URI objectUri = null;
+		for (Statement stmt : res) {
+			final Value val = stmt.getObject();
+			if (!(val instanceof URI)) {
+				continue;
+			}
+			objectUri = (URI) val;
+			break;
+		}
+		return objectUri;
+	}
+
 	/**
 	 * Returns true if the specified URI is a subject or object in the current
 	 * ontology signature.
@@ -193,17 +297,59 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	/**
+	 * Loads annotation property value for the specified entity instance.
+	 * 
+	 * @param instance
+	 *            Entity instance
+	 * @param uri
+	 *            Entity primary key (i. e. subject URI)
+	 * @param property
+	 *            Attribute representing the annotation property
+	 */
+	private <T> void loadAnnotationProperty(T instance, URI uri, Attribute<?, ?> property) {
+		final URI annotationProperty = toUri(property);
+		Model res = explicitModel.filter(uri, annotationProperty, null);
+		if (res.isEmpty()) {
+			res = model.filter(uri, annotationProperty, null);
+		}
+		Object value = null;
+		URI datatype = null;
+		for (Statement stmt : res) {
+			final Value val = stmt.getObject();
+			if (!(val instanceof Literal)) {
+				continue;
+			}
+			final Literal lit = (Literal) val;
+			if (!lit.getLanguage().equals(lang)) {
+				continue;
+			}
+			datatype = lit.getDatatype();
+			value = SesameUtils.getDataPropertyValue(lit);
+		}
+		if (value == null && LOG.isLoggable(Level.FINER)) {
+			LOG.finer("Value of annotation property " + property.getIRI()
+					+ " not found, is not a literal or is not in the expected language.");
+		}
+		final Class<?> cls = property.getJavaType();
+		if (value != null && !cls.isAssignableFrom(value.getClass())) {
+			throw new IllegalStateException("The field type " + cls
+					+ " cannot be established from the declared data type " + datatype
+					+ ". The declared class is " + value.getClass());
+		}
+	}
+
+	/**
 	 * Loads data property value for the specified entity instance.
 	 * 
 	 * @param instance
 	 *            Entity instance
 	 * @param uri
-	 *            Entity primary key
+	 *            Entity primary key (i. e. subject URI)
 	 * @param property
 	 *            Attribute representing the data property
 	 */
 	private <T> void loadDataProperty(T instance, URI uri, Attribute<?, ?> property) {
-		final URI propertyUri = valueFactory.createURI(property.getIRI().toString());
+		final URI propertyUri = toUri(property);
 		Model res = explicitModel.filter(uri, propertyUri, null);
 		if (res.isEmpty()) {
 			res = model.filter(uri, propertyUri, null);
@@ -218,6 +364,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			Literal lit = (Literal) val;
 			datatype = lit.getDatatype();
 			value = SesameUtils.getDataPropertyValue(lit);
+			break;
 		}
 		if (value == null && LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Value of data property " + property.getIRI()
@@ -228,6 +375,35 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			throw new IllegalStateException("The field type " + cls
 					+ " cannot be established from the declared data type " + datatype
 					+ ". The declared class is " + value.getClass());
+		}
+	}
+
+	/**
+	 * Loads value of the specified object property for the specified entity
+	 * instance.
+	 * 
+	 * @param instance
+	 *            Entity instance
+	 * @param uri
+	 *            Entity primary key
+	 * @param property
+	 *            Attribute representing the object property
+	 * @throws OntoDriverException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 */
+	private <T> void loadObjectProperty(T instance, URI uri, Attribute<?, ?> property)
+			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
+		final URI propertyUri = toUri(property);
+		URI objectUri = getObjectPropertyValue(uri, propertyUri, property.isInferred());
+		if (objectUri == null && LOG.isLoggable(Level.FINER)) {
+			LOG.finer("Value of object property " + property.getIRI()
+					+ " not found or is not a resource.");
+			return;
+		}
+		final Object value = getJavaInstanceForSubject(property.getJavaType(), objectUri);
+		if (value != null) {
+			property.getJavaField().set(instance, value);
 		}
 	}
 
@@ -361,35 +537,49 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 * @param alwaysLoad
 	 *            whether the attribute should be loaded even if it is marked as
 	 *            lazily loaded
+	 * @throws OntoDriverException
 	 */
-	private <T> void loadReference(T entity, URI uri, Attribute<?, ?> attribute, boolean alwaysLoad) {
-		switch (attribute.getPersistentAttributeType()) {
-		case ANNOTATION:
-			if (attribute.isCollection()) {
-				throw new NotYetImplementedException(
-						"Collection annotation properties are not implemented yet.");
-			}
-			// TODO
-			break;
-		case DATA:
-			if (attribute.isCollection()) {
-				throw new NotYetImplementedException(
-						"Collection data properties are not implemented yet.");
-			}
-			loadDataProperty(entity, uri, attribute);
-			break;
-		case OBJECT:
-			if (!alwaysLoad && attribute.getFetchType().equals(FetchType.LAZY)) {
-				// Lazy loading
+	private <T> void loadReference(T entity, URI uri, Attribute<?, ?> attribute, boolean alwaysLoad)
+			throws OntoDriverException {
+		try {
+			switch (attribute.getPersistentAttributeType()) {
+			case ANNOTATION:
+				if (attribute.isCollection()) {
+					throw new NotYetImplementedException(
+							"Collection annotation properties are not implemented yet.");
+				}
+				loadAnnotationProperty(entity, uri, attribute);
 				break;
-			}
-			// TODO
-			break;
-		default:
-			break;
+			case DATA:
+				if (attribute.isCollection()) {
+					throw new NotYetImplementedException(
+							"Collection data properties are not implemented yet.");
+				}
+				loadDataProperty(entity, uri, attribute);
+				break;
+			case OBJECT:
+				if (!alwaysLoad && attribute.getFetchType().equals(FetchType.LAZY)) {
+					// Lazy loading
+					break;
+				}
+				if (attribute.isCollection()) {
+					// TODO
+				} else {
+					loadObjectProperty(entity, uri, attribute);
+				}
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.finest("Fetched property '" + attribute.getIRI() + "' into field "
+							+ attribute.getJavaField() + "' of object " + uri);
+				}
+				break;
+			default:
+				break;
 
+			}
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new OntoDriverException(e);
 		}
-		// TODO Check integrity constraints
+		ICValidationUtils.validateIntegrityConstraints(entity, uri, attribute);
 	}
 
 	/**
@@ -423,5 +613,10 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 
 		types.getJavaField().set(entity, res);
+	}
+
+	private URI toUri(Attribute<?, ?> attribute) {
+		assert attribute != null;
+		return valueFactory.createURI(attribute.getIRI().toString());
 	}
 }

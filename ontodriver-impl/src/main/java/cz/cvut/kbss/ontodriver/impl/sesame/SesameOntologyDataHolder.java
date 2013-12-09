@@ -16,13 +16,15 @@ final class SesameOntologyDataHolder {
 	// Model containing only explicit statements
 	private final Model explicitModel;
 	private final ValueFactory valueFactory;
+	private final String language;
 
-	SesameOntologyDataHolder(Model model, Model explicitModel, ValueFactory valueFactory) {
-		assert explicitModel != null : "argument explicitModel is null";
-		assert valueFactory != null : "argument valueFactory is null";
-		this.model = model;
-		this.explicitModel = explicitModel;
-		this.valueFactory = valueFactory;
+	SesameOntologyDataHolder(SesameDataHolderBuilder builder) {
+		assert builder.explicitModel != null : "argument explicitModel is null";
+		assert builder.vf != null : "argument valueFactory is null";
+		this.model = builder.model;
+		this.explicitModel = builder.explicitModel;
+		this.valueFactory = builder.vf;
+		this.language = builder.lang;
 	}
 
 	Model getModel() {
@@ -33,7 +35,61 @@ final class SesameOntologyDataHolder {
 		return valueFactory;
 	}
 
-	public Model getExplicitModel() {
+	Model getExplicitModel() {
 		return explicitModel;
+	}
+
+	String getLanguage() {
+		return language;
+	}
+
+	static SesameDataHolderBuilder model(Model model) {
+		return new SesameDataHolderBuilder().model(model);
+	}
+
+	static SesameDataHolderBuilder explicitModel(Model explicitModel) {
+		return new SesameDataHolderBuilder().explicitModel(explicitModel);
+	}
+
+	static SesameDataHolderBuilder valueFactory(ValueFactory vf) {
+		return new SesameDataHolderBuilder().valueFactory(vf);
+	}
+
+	static SesameDataHolderBuilder language(String lang) {
+		return new SesameDataHolderBuilder().language(lang);
+	}
+
+	static final class SesameDataHolderBuilder {
+		private Model model;
+		private Model explicitModel;
+		private ValueFactory vf;
+		private String lang;
+
+		private SesameDataHolderBuilder() {
+		}
+
+		SesameDataHolderBuilder model(Model model) {
+			this.model = model;
+			return this;
+		}
+
+		SesameDataHolderBuilder explicitModel(Model explModel) {
+			this.explicitModel = explModel;
+			return this;
+		}
+
+		SesameDataHolderBuilder valueFactory(ValueFactory valueFactory) {
+			this.vf = valueFactory;
+			return this;
+		}
+
+		SesameDataHolderBuilder language(String language) {
+			this.lang = language;
+			return this;
+		}
+
+		SesameOntologyDataHolder build() {
+			return new SesameOntologyDataHolder(this);
+		}
 	}
 }
