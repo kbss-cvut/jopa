@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +27,7 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
@@ -61,6 +63,10 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private List<SesameChange> changes = new LinkedList<>();
 	private Set<URI> temporaryIndividuals = new HashSet<>();
 
+	private static enum ObjectType {
+		LITERAL, OBJECT
+	};
+
 	SesameModuleInternal(SesameOntologyDataHolder data, SesameStorageModule storageModule) {
 		assert data != null : "argument data is null";
 		assert storageModule != null : "argument storageModule is null";
@@ -73,7 +79,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	@Override
 	public boolean containsEntity(Object primaryKey) throws OntoDriverException {
 		assert primaryKey != null : "argument primaryKey is null";
-		final URI uri = getPkAsSesameUri(primaryKey);
+		final URI uri = getAddressAsSesameUri(primaryKey);
 		return isInOntologySignature(uri);
 	}
 
@@ -82,7 +88,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		assert cls != null : "argument cls is null";
 		assert primaryKey != null : "argument primaryKey is null";
 
-		final URI uri = getPkAsSesameUri(primaryKey);
+		final URI uri = getAddressAsSesameUri(primaryKey);
 		if (!isInOntologySignature(uri)) {
 			return null;
 		}
@@ -104,7 +110,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		assert entity != null : "argument entity is null";
 
 		final EntityType<T> entityType = getEntityType((Class<T>) entity.getClass());
-		URI uri = getPkAsSesameUri(primaryKey);
+		URI uri = getAddressAsSesameUri(primaryKey);
 		if (uri == null) {
 			if (!entityType.getIdentifier().isGenerated()) {
 				throw new PrimaryKeyNotSetException(
@@ -255,13 +261,16 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	/**
-	 * Returns the specified primary key as Sesame's URI.
+	 * Returns the specified address as Sesame's URI.
+	 * 
+	 * Currently supported address types are : java.net.URI, java.net.URL and
+	 * cz.cvut.kbss.jopa.model.IRI
 	 * 
 	 * @param primaryKey
 	 *            Entity primary key
 	 * @return Sesame URI
 	 */
-	private URI getPkAsSesameUri(Object primaryKey) {
+	private URI getAddressAsSesameUri(Object primaryKey) {
 		assert primaryKey != null : "argument primaryKey is null";
 		if (primaryKey instanceof java.net.URI || primaryKey instanceof IRI
 				|| primaryKey instanceof URL) {
@@ -699,6 +708,57 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		types.getJavaField().set(entity, res);
 	}
 
+	private void removeOldDataPropertyValues(URI subject, URI property) {
+		final Model m = explicitModel.filter(subject, property, null);
+		removeStatements(m);
+	}
+
+	/**
+	 * Removes values of all properties associated with the specified subject,
+	 * which are not declared as attributes of entities of the specified type.
+	 * 
+	 * @param subject
+	 *            Subject URI
+	 * @param et
+	 *            Entity type of entity representing the subject
+	 */
+	private Map<URI, ObjectType> removeOldProperties(URI subject, EntityType<?> et) {
+		final Model props = explicitModel.filter(subject, null, null);
+		final Set<Statement> toRemove = new HashSet<>(props.size());
+		final Map<URI, ObjectType> map = new HashMap<>(props.size());
+		for (Statement stmt : props) {
+			if (!SesameUtils.isEntityAttribute(stmt.getPredicate(), et)) {
+				toRemove.add(stmt);
+				if (stmt.getObject() instanceof URI) {
+					map.put(stmt.getPredicate(), ObjectType.OBJECT);
+				} else {
+					map.put(stmt.getPredicate(), ObjectType.LITERAL);
+				}
+			}
+		}
+		removeStatements(toRemove);
+		return map;
+	}
+
+	/**
+	 * Saves data property value for the specified subject. </p>
+	 * 
+	 * This method also removes any previous values of the property.
+	 * 
+	 * @param subject
+	 *            Subject URI
+	 * @param property
+	 *            Property URI
+	 * @param value
+	 *            Property value
+	 */
+	private void saveDataProperty(URI subject, URI property, Object value) {
+		removeOldDataPropertyValues(subject, property);
+		Literal lit = SesameUtils.createDataPropertyLiteral(value, lang, valueFactory);
+		final Statement stmt = valueFactory.createStatement(subject, property, lit);
+		addStatement(stmt);
+	}
+
 	/**
 	 * Saves all entity attributes' values.
 	 * 
@@ -717,8 +777,128 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			if (types != null) {
 				saveTypesReference(entity, primaryKey, types, entityType);
 			}
+			final PropertiesSpecification<?, ?> properties = entityType.getProperties();
+			if (properties != null) {
+				savePropertiesReference(entity, primaryKey, properties, entityType);
+			}
+			for (Attribute<?, ?> att : entityType.getAttributes()) {
+				saveReference(entity, primaryKey, att, entityType);
+			}
+			// TODO
 		} catch (RuntimeException | IllegalAccessException e) {
 			throw new OntoDriverInternalException(e);
+		}
+	}
+
+	/**
+	 * Saves properties which are not declared as fields in the entity but are
+	 * listed as values associated with subject with the same URI as the entity.
+	 * 
+	 * @param entity
+	 *            The entity
+	 * @param uri
+	 *            Primary key of the entity
+	 * @param props
+	 *            Properties specification
+	 * @param entityType
+	 *            Entity type as resolved from the metamodel
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
+	private <T> void savePropertiesReference(T entity, URI uri,
+			PropertiesSpecification<?, ?> props, EntityType<T> entityType)
+			throws IllegalArgumentException, IllegalAccessException {
+		Object value = props.getJavaField().get(entity);
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Saving other properties of " + entity + " with value = " + value);
+		}
+
+		Map<URI, ObjectType> propertyTypes = removeOldProperties(uri, entityType);
+		if (!(value instanceof Map)) {
+			throw new IllegalArgumentException(
+					"The properties attribute has to be a java.util.Map.");
+		}
+		final Map<?, ?> map = (Map<?, ?>) value;
+		final List<Statement> toAdd = new LinkedList<>();
+		for (Entry<?, ?> e : map.entrySet()) {
+			Object oProperty = e.getKey();
+			Object oValue = e.getValue();
+			if (!(oValue instanceof Collection)) {
+				throw new IllegalArgumentException("The value mapped by key " + oProperty
+						+ " has to be a collection.");
+			}
+			final URI property = valueFactory.createURI(oProperty.toString());
+			Collection<?> object = (Collection<?>) oValue;
+			if (object.isEmpty()) {
+				continue;
+			}
+			// If the property type cannot be resolved, set it to object
+			// property
+			ObjectType propType = propertyTypes.containsKey(property) ? propertyTypes.get(property)
+					: ObjectType.OBJECT;
+			if (propType == ObjectType.LITERAL) {
+				for (Object val : object) {
+					Literal lit = SesameUtils.createDataPropertyLiteral(val, lang, valueFactory);
+					final Statement stmt = valueFactory.createStatement(uri, property, lit);
+					toAdd.add(stmt);
+				}
+			} else {
+				for (Object val : object) {
+					URI objRef = valueFactory.createURI(val.toString());
+					final Statement stmt = valueFactory.createStatement(uri, property, objRef);
+					toAdd.add(stmt);
+				}
+			}
+		}
+		addStatements(toAdd);
+	}
+
+	/**
+	 * Saves values of all attributes, except types and properties, of the
+	 * specified entity into the ontology. </p>
+	 * 
+	 * This includes removing old values of the properties.
+	 * 
+	 * @param entity
+	 *            The entity
+	 * @param uri
+	 *            Entity primary key
+	 * @param att
+	 *            The attribute to save
+	 * @param entityType
+	 *            Entity type as resolved from the metamodel
+	 * @throws OntoDriverException
+	 *             If the attribute is inferred
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 */
+	private <T> void saveReference(T entity, URI uri, Attribute<?, ?> att, EntityType<T> entityType)
+			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
+		if (att.isInferred()) {
+			throw new OntoDriverException("Inferred fields must not be set externally.");
+		}
+		ICValidationUtils.validateIntegrityConstraints(entity, uri, att);
+
+		final Object oValue = att.getJavaField().get(entityType);
+		if (att.isCollection()) {
+			// TODO
+		} else {
+			final SingularAttribute<?, ?> sAtt = (SingularAttribute<?, ?>) att;
+			URI propertyUri = getAddressAsSesameUri(sAtt.getIRI());
+			switch (sAtt.getPersistentAttributeType()) {
+			case ANNOTATION:
+			case DATA:
+				// Intentional fall-through, annotation and data property can be
+				// treated equally
+				saveDataProperty(uri, propertyUri, oValue);
+				break;
+			case OBJECT:
+				// TODO
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported attribute type "
+						+ att.getPersistentAttributeType());
+			}
 		}
 	}
 
@@ -751,13 +931,16 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("Saving types of " + entity + " with value = " + value);
 		}
-		assert Set.class.isAssignableFrom(value.getClass());
+		if (!(value instanceof Set)) {
+			throw new IllegalArgumentException("The types attribute has to be a java.util.Set.");
+		}
 
-		final Set<String> set = (Set<String>) value;
+		final Set<?> set = (Set<?>) value;
 		final Set<Statement> toAdd = new HashSet<>(set.size());
 		final Set<Statement> toRemove = new HashSet<>();
-		for (String type : set) {
-			toAdd.add(valueFactory.createStatement(uri, RDF.TYPE, valueFactory.createURI(type)));
+		for (Object type : set) {
+			toAdd.add(valueFactory.createStatement(uri, RDF.TYPE,
+					valueFactory.createURI(type.toString())));
 		}
 		final Set<Statement> currentTypes = explicitModel.filter(uri, RDF.TYPE, null);
 		for (Statement stmt : currentTypes) {

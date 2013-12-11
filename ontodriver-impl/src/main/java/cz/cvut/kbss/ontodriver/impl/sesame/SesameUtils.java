@@ -1,9 +1,11 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import java.lang.reflect.Field;
+import java.util.Date;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -24,6 +26,8 @@ abstract class SesameUtils {
 	 *            DataProperty value
 	 * @return Java value corresponding to the XML Schema datatype of the
 	 *         literal
+	 * @throws IllegalArgumentException
+	 *             If literal's datatype is not supported
 	 */
 	static Object getDataPropertyValue(Literal literal) {
 		assert literal != null;
@@ -54,6 +58,40 @@ abstract class SesameUtils {
 			return literal.calendarValue();
 		} else {
 			throw new IllegalArgumentException("Unsupported datatype " + datatype);
+		}
+	}
+
+	/**
+	 * Creates Sesame literal from the specified value, which can be used as
+	 * data property object.
+	 * 
+	 * @param value
+	 *            The value to transform
+	 * @param language
+	 *            Language to add to string literals
+	 * @param vf
+	 *            Sesame value factory
+	 * @return Sesame Literal
+	 * @throws IllegalArgumentException
+	 *             If the type of the value is not supported
+	 */
+	static Literal createDataPropertyLiteral(Object value, String language, ValueFactory vf) {
+		assert value != null;
+
+		if (value instanceof Integer) {
+			return vf.createLiteral((Integer) value);
+		} else if (value instanceof Boolean) {
+			return vf.createLiteral((Boolean) value);
+		} else if (value instanceof String) {
+			return vf.createLiteral((String) value, language);
+		} else if (value instanceof Double) {
+			return vf.createLiteral((Double) value);
+		} else if (value instanceof Long) {
+			return vf.createLiteral((Long) value);
+		} else if (value instanceof Date) {
+			return vf.createLiteral((Date) value);
+		} else {
+			throw new IllegalArgumentException("Unsupported literal type " + value.getClass());
 		}
 	}
 
