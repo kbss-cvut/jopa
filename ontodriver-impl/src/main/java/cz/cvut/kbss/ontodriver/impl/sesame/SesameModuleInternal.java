@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -107,11 +108,10 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 
 	@Override
 	public <T> void persistEntity(Object primaryKey, T entity) throws OntoDriverException {
-		assert primaryKey != null : "argument primaryKey is null";
 		assert entity != null : "argument entity is null";
 
 		final EntityType<T> entityType = getEntityType((Class<T>) entity.getClass());
-		URI uri = getAddressAsSesameUri(primaryKey);
+		URI uri = primaryKey != null ? getAddressAsSesameUri(primaryKey) : null;
 		if (uri == null) {
 			uri = resolveIdentifier(entity, entityType);
 		} else {
@@ -202,7 +202,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	private void clear() {
-		changes.clear();
+		this.changes = new LinkedList<>();
 		temporaryIndividuals = new HashSet<>();
 	}
 
@@ -220,21 +220,17 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 	}
 
-	private void removeStatement(Statement stmt) {
-		model.remove(stmt);
-		explicitModel.remove(stmt);
-		changes.add(new SesameRemoveChange(stmt));
-	}
-
 	private void removeStatements(Collection<Statement> stmts) {
-		model.removeAll(stmts);
-		explicitModel.removeAll(stmts);
+		// First create the changes because the statements may be backed by the
+		// model in which case they are removed from the collection as well
 		for (Statement stmt : stmts) {
 			changes.add(new SesameRemoveChange(stmt));
 		}
+		model.removeAll(stmts);
+		explicitModel.removeAll(stmts);
 	}
 
-	private void addIndividualsForReferencedEntities(Collection<?> ents) {
+	private void addIndividualsForReferencedEntities(Collection<?> ents) throws OntoDriverException {
 		assert ents != null;
 		assert !ents.isEmpty();
 
@@ -424,8 +420,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 *            Entity primary key (i. e. subject URI)
 	 * @param property
 	 *            Attribute representing the annotation property
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
 	 */
-	private <T> void loadAnnotationProperty(T instance, URI uri, Attribute<?, ?> property) {
+	private <T> void loadAnnotationProperty(T instance, URI uri, Attribute<?, ?> property)
+			throws IllegalArgumentException, IllegalAccessException {
 		final URI annotationProperty = toUri(property);
 		Model res = explicitModel.filter(uri, annotationProperty, null);
 		if (res.isEmpty()) {
@@ -455,6 +454,9 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 					+ " cannot be established from the declared data type " + datatype
 					+ ". The declared class is " + value.getClass());
 		}
+		if (value != null) {
+			property.getJavaField().set(instance, value);
+		}
 	}
 
 	/**
@@ -466,8 +468,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 *            Entity primary key (i. e. subject URI)
 	 * @param property
 	 *            Attribute representing the data property
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
 	 */
-	private <T> void loadDataProperty(T instance, URI uri, Attribute<?, ?> property) {
+	private <T> void loadDataProperty(T instance, URI uri, Attribute<?, ?> property)
+			throws IllegalArgumentException, IllegalAccessException {
 		final URI propertyUri = toUri(property);
 		Model res = explicitModel.filter(uri, propertyUri, null);
 		if (res.isEmpty()) {
@@ -495,6 +500,9 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 					+ " cannot be established from the declared data type " + datatype
 					+ ". The declared class is " + value.getClass());
 		}
+		if (value != null) {
+			property.getJavaField().set(instance, value);
+		}
 	}
 
 	/**
@@ -515,9 +523,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
 		final URI propertyUri = toUri(property);
 		URI objectUri = getObjectPropertyValue(uri, propertyUri, property.isInferred());
-		if (objectUri == null && LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Value of object property " + property.getIRI()
-					+ " not found or is not a resource.");
+		if (objectUri == null) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finer("Value of object property " + property.getIRI()
+						+ " not found or is not a resource.");
+			}
 			return;
 		}
 		final Object value = getJavaInstanceForSubject(property.getJavaType(), objectUri);
@@ -744,9 +754,18 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 */
 	private void removeEntityFromOntology(URI primaryKey) {
 		// TODO should we use only explicit model?
-		final Model m = explicitModel.filter(primaryKey, null, null);
-		m.addAll(explicitModel.filter(null, null, primaryKey));
-		removeStatements(m);
+		// Have to clear the model this way, since removeAll on the
+		// explicitModel throws ConcurrentModificationException
+		Model m = explicitModel.filter(primaryKey, null, null);
+		for (Statement stmt : m) {
+			changes.add(new SesameRemoveChange(stmt));
+		}
+		m.clear();
+		m = explicitModel.filter(null, null, primaryKey);
+		for (Statement stmt : m) {
+			changes.add(new SesameRemoveChange(stmt));
+		}
+		m.clear();
 	}
 
 	private void removeOldDataPropertyValues(URI subject, URI property) {
@@ -788,13 +807,14 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		return map;
 	}
 
-	private URI resolveIdentifier(Object entity, EntityType<?> et) {
+	private URI resolveIdentifier(Object entity, EntityType<?> et) throws OntoDriverException {
 		if (!et.getIdentifier().isGenerated()) {
 			throw new PrimaryKeyNotSetException(
 					"The entity has neither primary key set nor is its id field annotated as auto generated. Entity = "
 							+ entity);
 		}
 		final URI uri = generatePrimaryKey(et.getName());
+		setIdentifier(entity, uri, et);
 		return uri;
 	}
 
@@ -842,7 +862,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			for (Attribute<?, ?> att : entityType.getAttributes()) {
 				saveReference(entity, primaryKey, att, entityType);
 			}
-			// TODO
 		} catch (RuntimeException | IllegalAccessException e) {
 			throw new OntoDriverInternalException(e);
 		}
@@ -950,7 +969,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 		ICValidationUtils.validateIntegrityConstraints(entity, uri, att);
 
-		final Object oValue = att.getJavaField().get(entityType);
+		final Object oValue = att.getJavaField().get(entity);
 		if (att.isCollection()) {
 			// TODO
 		} else {
@@ -965,7 +984,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 				break;
 			case OBJECT:
 				if (oValue != null) {
-					addIndividualsForReferencedEntities(Collections.singletonList(entity));
+					addIndividualsForReferencedEntities(Collections.singletonList(oValue));
 				}
 				saveObjectProperty(uri, propertyUri, oValue);
 				break;
@@ -1005,11 +1024,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("Saving types of " + entity + " with value = " + value);
 		}
-		if (!(value instanceof Set)) {
+		if (value != null && !(value instanceof Set)) {
 			throw new IllegalArgumentException("The types attribute has to be a java.util.Set.");
 		}
 
-		final Set<?> set = (Set<?>) value;
+		final Set<?> set = value != null ? (Set<?>) value : Collections.emptySet();
 		final Set<Statement> toAdd = new HashSet<>(set.size());
 		final Set<Statement> toRemove = new HashSet<>();
 		for (Object type : set) {
@@ -1029,6 +1048,28 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 		removeStatements(toRemove);
 		addStatements(toAdd);
+	}
+
+	private void setIdentifier(Object entity, URI uri, EntityType<?> et) throws OntoDriverException {
+		final Field idField = et.getIdentifier().getJavaField();
+		final String strUri = uri != null ? uri.toString() : null;
+		try {
+			if (strUri == null) {
+				idField.set(entity, null);
+			} else if (String.class == idField.getType()) {
+				idField.set(entity, strUri);
+			} else if (java.net.URI.class == idField.getType()) {
+				idField.set(entity, java.net.URI.create(strUri));
+			} else if (IRI.class == idField.getType()) {
+				idField.set(entity, IRI.create(strUri));
+			} else if (java.net.URL.class == idField.getType()) {
+				idField.set(entity, new URL(strUri));
+			} else {
+				throw new IllegalArgumentException("Unknown identifier type: " + idField.getType());
+			}
+		} catch (IllegalArgumentException | IllegalAccessException | MalformedURLException e) {
+			throw new OntoDriverException("Unable to set entity identifier.", e);
+		}
 	}
 
 	/**

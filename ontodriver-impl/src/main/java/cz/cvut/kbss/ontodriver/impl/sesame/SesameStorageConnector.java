@@ -42,6 +42,7 @@ public class SesameStorageConnector implements StorageConnector {
 	protected String language;
 
 	private boolean open;
+	private long currentSubjectCount;
 
 	private Repository repository;
 	private RepositoryConnection connection;
@@ -57,6 +58,7 @@ public class SesameStorageConnector implements StorageConnector {
 			throw new NullPointerException();
 		}
 		this.storageProps = storageProps;
+		this.currentSubjectCount = -1;
 		initialize(properties);
 		this.open = true;
 	}
@@ -120,6 +122,7 @@ public class SesameStorageConnector implements StorageConnector {
 					null, null, false);
 			final Model explicitModel = Iterations
 					.addAll(explicitStatements, new LinkedHashModel());
+			this.currentSubjectCount = explicitModel.size();
 			final ValueFactory vf = connection.getValueFactory();
 			return SesameOntologyDataHolder.model(model).explicitModel(explicitModel)
 					.valueFactory(vf).language(language).build();
@@ -133,7 +136,7 @@ public class SesameStorageConnector implements StorageConnector {
 	 * Gets a connection to the underlying repository. </p>
 	 * 
 	 * The caller is expected to handle all the transaction synchronization and
-	 * connection lifecycle.
+	 * connection lifecycle.t
 	 * 
 	 * @return Connection to the underlying Sesame repository
 	 * @throws OntoDriverException
@@ -163,11 +166,29 @@ public class SesameStorageConnector implements StorageConnector {
 				ch.apply(connection);
 			}
 			connection.commit();
+			this.currentSubjectCount = -1;
 		} catch (RepositoryException e) {
 			LOG.severe("Exception caught when committing changes to the repository.");
 			throw new OntoDriverException(
 					"Exception caught when committing changes to repository.", e);
 		}
+	}
+
+	/**
+	 * Get the current count of subjects in the ontology.
+	 * 
+	 * @return
+	 * @throws RepositoryException
+	 */
+	public long getSubjectCount() throws OntoDriverException {
+		if (currentSubjectCount < 0) {
+			try {
+				this.currentSubjectCount = repository.getConnection().size();
+			} catch (RepositoryException e) {
+				throw new OntoDriverException("Unable to resolve statement count in repository.", e);
+			}
+		}
+		return currentSubjectCount;
 	}
 
 	private void ensureOpen() {
@@ -179,8 +200,16 @@ public class SesameStorageConnector implements StorageConnector {
 	private void initialize(Map<String, String> properties) throws OntoDriverException {
 		final URI serverUri = storageProps.getPhysicalURI();
 		this.language = properties.get(OntoDriverProperties.ONTOLOGY_LANGUAGE);
+		boolean useVolatile = properties
+				.containsKey(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE) ? Boolean
+				.parseBoolean(properties.get(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE))
+				: false;
 		try {
-			this.repository = RepositoryProvider.getRepository(serverUri.toString());
+			if (useVolatile) {
+				this.repository = createInMemoryRepository();
+			} else {
+				this.repository = RepositoryProvider.getRepository(serverUri.toString());
+			}
 			if (repository == null) {
 				if (isRemoteRepository(serverUri)) {
 					throw new RepositoryNotFoundException("Unable to reach repository at "
@@ -189,6 +218,7 @@ public class SesameStorageConnector implements StorageConnector {
 					createLocalRepository(properties);
 				}
 			}
+			repository.initialize();
 			this.connection = repository.getConnection();
 		} catch (RepositoryException | RepositoryConfigException e) {
 			LOG.severe("Failed to acquire Sesame repository connection.");
@@ -216,13 +246,6 @@ public class SesameStorageConnector implements StorageConnector {
 	 */
 	private void createLocalRepository(Map<String, String> props) throws OntoDriverException {
 		final URI localUri = storageProps.getPhysicalURI();
-		final String useVolatileStorage = props
-				.get(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE);
-		if (Boolean.getBoolean(useVolatileStorage)) {
-			// Use only in-memory repository, which is disposed of at shutdown
-			this.repository = new SailRepository(new MemoryStore());
-			return;
-		}
 		final String[] tmp = localUri.toString().split(LOCAL_NATIVE_REPO);
 		if (tmp.length != 2) {
 			throw new IllegalArgumentException(
@@ -238,6 +261,16 @@ public class SesameStorageConnector implements StorageConnector {
 			LOG.severe("Unable to create local repository at " + localUri);
 			throw new OntoDriverException("Unable to create local repository.", e);
 		}
+	}
+
+	/**
+	 * Creates a local in-memory Sesame repository which is disposed when the VM
+	 * shuts down.
+	 * 
+	 * @return Repository
+	 */
+	private static Repository createInMemoryRepository() {
+		return new SailRepository(new MemoryStore());
 	}
 
 	private static boolean isRemoteRepository(URI uri) {

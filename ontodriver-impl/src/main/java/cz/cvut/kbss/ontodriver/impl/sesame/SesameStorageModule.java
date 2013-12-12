@@ -53,10 +53,10 @@ public class SesameStorageModule extends StorageModule {
 	@Override
 	protected void initialize() throws OntoDriverException {
 		this.connector = (SesameStorageConnector) factory.createStorageConnector(context, false);
-		if (!primaryKeyCounters.containsKey(context)) {
-			primaryKeyCounters.put(context, new AtomicInteger());
-		}
 		this.internal = createModuleInternal();
+		if (!primaryKeyCounters.containsKey(context)) {
+			primaryKeyCounters.put(context, new AtomicInteger((int) connector.getSubjectCount()));
+		}
 	}
 
 	@Override
