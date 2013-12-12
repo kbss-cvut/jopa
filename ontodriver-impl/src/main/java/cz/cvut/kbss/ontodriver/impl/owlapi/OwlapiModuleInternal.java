@@ -6,7 +6,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -45,7 +44,6 @@ import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -132,13 +130,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		IRI id = getPrimaryKeyAsIri(primaryKey);
 		final EntityType<?> type = getEntityType(cls);
 		if (id == null) {
-			if (!type.getIdentifier().isGenerated()) {
-				throw new PrimaryKeyNotSetException(
-						"The entity has neither primary key set nor is its id field annotated as auto generated. Entity = "
-								+ entity);
-			}
-			id = generatePrimaryKey(type.getName());
-			setIdentifier(entity, id);
+			id = resolveIdentifier(entity, type);
 		} else {
 			if (isInOntologySignature(id, true)) {
 				throw new OWLEntityExistsException("Entity with primary key " + id
@@ -863,7 +855,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 						for (OWLIndividual col : getObjectProperties(individual, op(pa.getIRI()),
 								field.isInferred())) {
 							set.add(getJavaInstanceForOWLIndividual(pa.getBindableJavaType(),
-									col.asOWLNamedIndividual(), col.asOWLNamedIndividual().getIRI()));
+									col.asOWLNamedIndividual()));
 						}
 						value = set;
 						break;
@@ -877,8 +869,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 							field.isInferred());
 					if (iObject != null) {
 						value = getJavaInstanceForOWLIndividual(field.getJavaType(),
-								iObject.asOWLNamedIndividual(), iObject.asOWLNamedIndividual()
-										.getIRI());
+								iObject.asOWLNamedIndividual());
 					}
 				}
 				if (LOG.isLoggable(Level.FINEST)) {
@@ -954,7 +945,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 					Class<?> clazz = pa.getBindableJavaType();
 					removeAllObjectProperties(individual, op);
 					Set set = Set.class.cast(value);
-					checkCascadeOrPersisted(attribute.getCascadeTypes(), set);
+					addIndividualForReferencedEntity(set);
 					if (set != null) {
 						for (Object element : set) {
 							final OWLNamedIndividual objectValue = dataFactory
@@ -968,7 +959,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 					final ListAttribute<?, ?> la = (ListAttribute<?, ?>) attribute;
 					Class<?> clazz2 = pa.getBindableJavaType();
 					final List lst = List.class.cast(value);
-					checkCascadeOrPersisted(la.getCascadeTypes(), lst);
+					addIndividualForReferencedEntity(lst);
 
 					switch (la.getSequenceType()) {
 					case referenced:
@@ -999,7 +990,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 				break;
 			case OBJECT:
 				if (value != null) {
-					checkCascadeOrPersisted(pa.getCascadeTypes(), Collections.singleton(value));
+					addIndividualForReferencedEntity(Collections.singleton(value));
 				}
 				setObjectPropertyObject(individual, dataFactory.getOWLObjectProperty(iri), value);
 				break;
@@ -1078,12 +1069,10 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	 *            Type to which the returned instance should be cast
 	 * @param individual
 	 *            OWL ontology individual
-	 * @param iri
-	 *            IRI of the individual TODO
 	 * @throws OntoDriverException
 	 */
 	private <T> T getJavaInstanceForOWLIndividual(final Class<T> cls,
-			final OWLNamedIndividual individual, IRI iri) throws OntoDriverException {
+			final OWLNamedIndividual individual) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINEST))
 			LOG.finest("Getting " + individual + " of " + cls);
 		Object ob = storageModule.getPersistenceProvider().getEntityFromLiveObjectCache(cls,
@@ -1104,28 +1093,35 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		}
 	}
 
-	private void checkCascadeOrPersisted(final CascadeType[] ct, final Collection<Object> lst)
-			throws OntoDriverException {
-		final boolean cascade = (Arrays.asList(ct).contains(CascadeType.ALL) || Arrays.asList(ct)
-				.contains(CascadeType.PERSIST));
+	/**
+	 * Adds an individual into the ontology for each entity which is not
+	 * persistent yet and is referenced by the entity being handled by
+	 * {@link #persistEntity(Object, Object)} or
+	 * {@link #mergeEntity(Object, Object)}. </p>
+	 * 
+	 * More specifically, this method loops through the specified entities and
+	 * adds individuals for those which are not in the ontology yet. Such
+	 * entities are then added to temporary individuals, which are checked on
+	 * commit.
+	 * 
+	 * @param lst
+	 *            Collection of referenced entities
+	 */
+	private void addIndividualForReferencedEntity(final Collection<Object> lst) {
 
 		if (lst != null) {
 			for (final Object li : lst) {
 				final EntityType<?> e = getEntityType(li.getClass());
 				IRI id = getIdentifier(li);
-				if (!isInOntologySignature(id, false) || temporaryIndividuals.contains(id)) {
-					// if (cascade || li.getClass().isEnum()) {
-					// if (id == null && e.getIdentifier().isGenerated()) {
-					// id = generatePrimaryKey(li, e.getName());
-					// setIdentifier(li, id);
-					// }
-					// persistEntity(id, li);
-					// } else {
+				if (id == null) {
+					id = resolveIdentifier(li, e);
+				}
+				if (!isInOntologySignature(id, false) && !temporaryIndividuals.contains(id)) {
 					if (LOG.isLoggable(Level.FINEST)) {
-						LOG.finest("Adding class assertion axiom for a not yet persisted entity.");
+						LOG.finest("Adding class assertion axiom for a not yet persisted entity "
+								+ id);
 					}
 					addIndividualToOntology(li, e);
-					// }
 					temporaryIndividuals.add(id);
 				}
 			}
@@ -1165,9 +1161,9 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 				}
 			}
 		}
-		// TODO This is also a little strange. Why log a warning at every call
-		// of this method
-		LOG.warning("Label requested, but label annotation not found");
+		if (literal == null) {
+			LOG.warning("Label requested, but label annotation not found");
+		}
 		return literal;
 	}
 
@@ -1496,7 +1492,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 				// IntegrityConstraintViolatedException("No content specified for a list.");
 			}
 			// TODO asOWLNamedIndividual - not necessarily true
-			lst.add(getJavaInstanceForOWLIndividual(type, iContent.asOWLNamedIndividual(), iri));
+			lst.add(getJavaInstanceForOWLIndividual(type, iContent.asOWLNamedIndividual()));
 			seq = getObjectProperty(seq, hasNext, inferred);
 		}
 		if (lst.isEmpty()) {
@@ -1562,7 +1558,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 
 		while (o != null) {
 			// asOWLNamedIndivdiual not necessarily true
-			lst.add(getJavaInstanceForOWLIndividual(type, o.asOWLNamedIndividual(), iri));
+			lst.add(getJavaInstanceForOWLIndividual(type, o.asOWLNamedIndividual()));
 			o = getObjectProperty(o, hasNext, inferred);
 		}
 		if (lst.isEmpty()) {
@@ -1848,6 +1844,19 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			}
 		}
 		transactionalChanges.addAll(toAdd);
+	}
+
+	private IRI resolveIdentifier(Object entity, EntityType<?> et) {
+		assert getIdentifier(entity) == null;
+
+		if (!et.getIdentifier().isGenerated()) {
+			throw new PrimaryKeyNotSetException(
+					"The entity has neither primary key set nor is its id field annotated as auto generated. Entity = "
+							+ entity);
+		}
+		IRI iri = generatePrimaryKey(et.getName());
+		setIdentifier(entity, iri);
+		return iri;
 	}
 
 	private IRI generatePrimaryKey(String typeName) {

@@ -889,7 +889,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			case ANNOTATION:
 			case DATA:
 				// Intentional fall-through, annotation and data property can be
-				// treated equally
+				// treated equally in Sesame
 				saveDataProperty(uri, propertyUri, oValue);
 				break;
 			case OBJECT:
