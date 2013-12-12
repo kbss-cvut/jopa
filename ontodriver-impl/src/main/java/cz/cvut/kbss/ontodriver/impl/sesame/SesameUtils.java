@@ -12,6 +12,12 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
+/**
+ * Utility methods for the Sesame storage module and connector.
+ * 
+ * @author ledvima1
+ * 
+ */
 abstract class SesameUtils {
 
 	private SesameUtils() {
