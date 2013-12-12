@@ -129,14 +129,24 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 
 	@Override
 	public <T> void mergeEntity(Object primaryKey, T entity) throws OntoDriverException {
-		// TODO Auto-generated method stub
+		assert primaryKey != null : "argument primaryKey is null";
+		assert entity != null : "argument entity is null";
 
+		final URI uri = getAddressAsSesameUri(primaryKey);
+		if (!isInOntologySignature(uri)) {
+			throw new OntoDriverException(new IllegalArgumentException("The entity " + entity
+					+ " is not persistent within this context."));
+		}
+		final EntityType<T> et = getEntityType((Class<T>) entity.getClass());
+		saveEntityAttributes(entity, uri, et);
 	}
 
 	@Override
 	public void removeEntity(Object primaryKey) throws OntoDriverException {
-		// TODO Auto-generated method stub
+		assert primaryKey != null : "argument primaryKey is null";
 
+		final URI uri = getAddressAsSesameUri(primaryKey);
+		removeEntityFromOntology(uri);
 	}
 
 	@Override
@@ -724,12 +734,29 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		types.getJavaField().set(entity, res);
 	}
 
+	/**
+	 * Removes all occurrences of the specified resource from the ontology. </p>
+	 * 
+	 * The resource is assumed not to be a property URI.
+	 * 
+	 * @param primaryKey
+	 *            Resource URI
+	 */
+	private void removeEntityFromOntology(URI primaryKey) {
+		// TODO should we use only explicit model?
+		final Model m = explicitModel.filter(primaryKey, null, null);
+		m.addAll(explicitModel.filter(null, null, primaryKey));
+		removeStatements(m);
+	}
+
 	private void removeOldDataPropertyValues(URI subject, URI property) {
+		// TODO should we use only explicit model?
 		final Model m = explicitModel.filter(subject, property, null);
 		removeStatements(m);
 	}
 
 	private void removeOldObjectPropertyValues(URI subject, URI property) {
+		// TODO should we use only explicit model?
 		final Model m = explicitModel.filter(subject, property, null);
 		removeStatements(m);
 	}
