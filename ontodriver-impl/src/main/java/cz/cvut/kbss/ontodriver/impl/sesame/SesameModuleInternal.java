@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.impl.sesame;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -112,12 +113,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		final EntityType<T> entityType = getEntityType((Class<T>) entity.getClass());
 		URI uri = getAddressAsSesameUri(primaryKey);
 		if (uri == null) {
-			if (!entityType.getIdentifier().isGenerated()) {
-				throw new PrimaryKeyNotSetException(
-						"The entity has neither primary key set nor is its id field annotated as auto generated. Entity = "
-								+ entity);
-			}
-			uri = generatePrimaryKey(entityType.getName());
+			uri = resolveIdentifier(entity, entityType);
 		} else {
 			module.incrementPrimaryKeyCounter();
 		}
@@ -225,6 +221,26 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		explicitModel.removeAll(stmts);
 		for (Statement stmt : stmts) {
 			changes.add(new SesameRemoveChange(stmt));
+		}
+	}
+
+	private void addIndividualsForReferencedEntities(Collection<?> ents) {
+		assert ents != null;
+		assert !ents.isEmpty();
+
+		for (Object ob : ents) {
+			final EntityType<?> et = getEntityType(ob.getClass());
+			URI uri = getIdentifier(ob);
+			if (uri == null) {
+				uri = resolveIdentifier(ob, et);
+			}
+			if (!isInOntologySignature(uri) && !temporaryIndividuals.contains(uri)) {
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.finest("Adding class assertion axiom for a not yet persisted entity " + uri);
+				}
+				addInstanceToOntology(uri, et);
+				temporaryIndividuals.add(uri);
+			}
 		}
 	}
 
@@ -713,6 +729,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		removeStatements(m);
 	}
 
+	private void removeOldObjectPropertyValues(URI subject, URI property) {
+		final Model m = explicitModel.filter(subject, property, null);
+		removeStatements(m);
+	}
+
 	/**
 	 * Removes values of all properties associated with the specified subject,
 	 * which are not declared as attributes of entities of the specified type.
@@ -738,6 +759,16 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 		removeStatements(toRemove);
 		return map;
+	}
+
+	private URI resolveIdentifier(Object entity, EntityType<?> et) {
+		if (!et.getIdentifier().isGenerated()) {
+			throw new PrimaryKeyNotSetException(
+					"The entity has neither primary key set nor is its id field annotated as auto generated. Entity = "
+							+ entity);
+		}
+		final URI uri = generatePrimaryKey(et.getName());
+		return uri;
 	}
 
 	/**
@@ -787,6 +818,19 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			// TODO
 		} catch (RuntimeException | IllegalAccessException e) {
 			throw new OntoDriverInternalException(e);
+		}
+	}
+
+	private void saveObjectProperty(URI subject, URI property, Object value) {
+		removeOldObjectPropertyValues(subject, property);
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("setObjectProperty '" + property + "' of " + subject + " to " + value);
+		}
+		if (value != null) {
+			final URI uri = getIdentifier(value);
+			assert uri != null;
+			final Statement stmt = valueFactory.createStatement(subject, property, uri);
+			addStatement(stmt);
 		}
 	}
 
@@ -893,7 +937,10 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 				saveDataProperty(uri, propertyUri, oValue);
 				break;
 			case OBJECT:
-				// TODO
+				if (oValue != null) {
+					addIndividualsForReferencedEntities(Collections.singletonList(entity));
+				}
+				saveObjectProperty(uri, propertyUri, oValue);
 				break;
 			default:
 				throw new IllegalArgumentException("Unsupported attribute type "
