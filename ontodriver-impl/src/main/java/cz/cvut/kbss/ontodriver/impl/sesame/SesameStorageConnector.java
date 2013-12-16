@@ -44,6 +44,7 @@ public class SesameStorageConnector implements StorageConnector {
 
 	private static final String[] KNOWN_SCHEMES = { "http", "https", "ftp" };
 	private static final String LOCAL_NATIVE_REPO = "/repositories/";
+	private static final String FILE_SCHEME = "file";
 
 	private final OntologyStorageProperties storageProps;
 
@@ -209,19 +210,13 @@ public class SesameStorageConnector implements StorageConnector {
 	private void initialize(Map<String, String> properties) throws OntoDriverException {
 		final URI serverUri = storageProps.getPhysicalURI();
 		this.language = properties.get(OntoDriverProperties.ONTOLOGY_LANGUAGE);
-		boolean useVolatile = Boolean.parseBoolean(properties
-				.get(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE));
 		try {
 			boolean isRemote = false;
-			if (useVolatile) {
-				this.repository = createInMemoryRepository(properties);
+			isRemote = isRemoteRepository(serverUri);
+			if (isRemote) {
+				this.repository = RepositoryProvider.getRepository(serverUri.toString());
 			} else {
-				isRemote = isRemoteRepository(serverUri);
-				if (isRemote) {
-					this.repository = RepositoryProvider.getRepository(serverUri.toString());
-				} else {
-					createLocalRepository(properties);
-				}
+				createLocalRepository(properties);
 			}
 			if (repository == null) {
 				if (isRemote) {
@@ -263,6 +258,12 @@ public class SesameStorageConnector implements StorageConnector {
 	 */
 	private void createLocalRepository(Map<String, String> props) throws OntoDriverException {
 		final URI localUri = storageProps.getPhysicalURI();
+		boolean useVolatile = Boolean.parseBoolean(props
+				.get(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE));
+		if (!isFileUri(localUri) && useVolatile) {
+			this.repository = createInMemoryRepository(props);
+			return;
+		}
 		final String[] tmp = localUri.toString().split(LOCAL_NATIVE_REPO);
 		if (tmp.length != 2) {
 			throw new IllegalArgumentException(
@@ -315,6 +316,10 @@ public class SesameStorageConnector implements StorageConnector {
 		// We can use directly this, because Boolean.parseBoolean return false
 		// for null
 		return (Boolean.parseBoolean(properties.get(OntoDriverProperties.SESAME_USE_INFERENCE)));
+	}
+
+	private static boolean isFileUri(URI uri) {
+		return (uri.getScheme() != null && uri.getScheme().equals(FILE_SCHEME));
 	}
 
 	/**

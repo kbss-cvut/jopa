@@ -125,11 +125,11 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		case NEW:
 			try {
 				getCurrentPersistenceContext().registerNewObject(entity);
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				if (getTransaction().isActive()) {
 					getTransaction().setRollbackOnly();
 				}
-				throw new OWLPersistenceException("A problem occured when persisting " + entity, e);
+				throw e;
 			}
 		case MANAGED:
 			new OneLevelCascadeExplorer() {
@@ -184,11 +184,11 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		case NEW:
 			try {
 				getCurrentPersistenceContext().registerNewObject(entity, contextUri);
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				if (getTransaction().isActive()) {
 					getTransaction().setRollbackOnly();
 				}
-				throw new OWLPersistenceException("A problem occured when persisting " + entity, e);
+				throw e;
 			}
 		case MANAGED:
 			new OneLevelCascadeExplorer() {

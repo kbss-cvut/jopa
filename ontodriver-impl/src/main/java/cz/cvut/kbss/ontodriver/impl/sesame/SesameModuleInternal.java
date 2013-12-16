@@ -295,10 +295,12 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private URI getAddressAsSesameUri(Object primaryKey) {
 		assert primaryKey != null : "argument primaryKey is null";
 		if (primaryKey instanceof java.net.URI || primaryKey instanceof IRI
+				|| primaryKey instanceof org.semanticweb.owlapi.model.IRI
 				|| primaryKey instanceof URL) {
 			return valueFactory.createURI(primaryKey.toString());
 		} else {
-			throw new IllegalArgumentException("Unsupported type of primary key.");
+			throw new IllegalArgumentException("Unsupported type of primary key "
+					+ primaryKey.getClass());
 		}
 	}
 

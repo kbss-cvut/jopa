@@ -379,6 +379,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 		if (getDeletedObjects().containsKey(entity)) {
 			return State.REMOVED;
+		} else if (getNewObjectsCloneToOriginal().containsKey(entity)) {
+			return State.NEW;
 		} else if (cloneMapping.containsKey(entity)
 				&& (contextUri == null || isInContext(contextUri, entity))) {
 			return State.MANAGED;
