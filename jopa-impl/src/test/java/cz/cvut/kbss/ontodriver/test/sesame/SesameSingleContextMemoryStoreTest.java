@@ -12,12 +12,11 @@ import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
-import cz.cvut.kbss.jopa.test.utils.StorageInfo;
-import cz.cvut.kbss.jopa.test.utils.StorageType;
+import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.test.TestEnv;
@@ -27,8 +26,8 @@ public class SesameSingleContextMemoryStoreTest {
 	private static final Logger LOG = Logger.getLogger(SesameSingleContextMemoryStoreTest.class
 			.getName());
 
-	private static final List<StorageInfo> storageInfo = Collections.singletonList(new StorageInfo(
-			OntologyConnectorType.SESAME, StorageType.MEMORY));
+	private static final List<StorageConfig> storageInfo = Collections
+			.<StorageConfig> singletonList(new SesameMemoryStorageConfig());
 	private static final Map<String, String> properties = initProperties();
 
 	private static PersistenceProviderFacade facade;
@@ -131,7 +130,7 @@ public class SesameSingleContextMemoryStoreTest {
 	}
 
 	private void acquireConnection(String ontoName) throws OntoDriverException {
-		this.ds = TestEnv.createDataSource(ontoName, storageInfo, properties, false);
+		this.ds = TestEnv.createDataSource(ontoName, storageInfo, properties);
 		this.c = ds.getConnection(facade);
 		tests.setConnection(c);
 	}

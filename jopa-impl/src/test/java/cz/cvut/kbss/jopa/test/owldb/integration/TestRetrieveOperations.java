@@ -6,10 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.util.Collections;
 import java.util.logging.Logger;
 
 import org.junit.AfterClass;
@@ -21,7 +18,8 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
-import cz.cvut.kbss.jopa.test.utils.StorageType;
+import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 
 public class TestRetrieveOperations {
 
@@ -37,27 +35,10 @@ public class TestRetrieveOperations {
 	@BeforeClass
 	public static void setupBeforeClass() throws Exception {
 		index = 1;
-		Connection con = null;
-		Statement st1 = null;
-		Statement st2 = null;
-		ResultSet rs = null;
-		con = DriverManager.getConnection(TestEnvironment.DB_URI, TestEnvironment.DB_USERNAME,
-				TestEnvironment.DB_PASSWORD);
-		st1 = con.createStatement();
-		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
-		final String deleteStmt = "TRUNCATE ";
-		while (rs.next()) {
-			final String table = rs.getString(1);
-			st2 = con.createStatement();
-			st2.executeUpdate(deleteStmt + table + " CASCADE");
-			st2.close();
-			st2 = null;
-		}
-		st1.close();
-		con.close();
+		TestEnvironment.clearDatabase();
 		TestEnvironment.resetOwldbHibernateProvider();
 		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-retrieve",
-				StorageType.OWLDB, true);
+				Collections.<StorageConfig> singletonList(new OwldbStorageConfig()), true);
 	}
 
 	@AfterClass

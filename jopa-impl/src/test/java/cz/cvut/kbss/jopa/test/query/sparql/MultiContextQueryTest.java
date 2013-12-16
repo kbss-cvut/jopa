@@ -29,11 +29,12 @@ import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.query.env.QueryTestEnvironment;
-import cz.cvut.kbss.jopa.test.utils.StorageInfo;
-import cz.cvut.kbss.jopa.test.utils.StorageType;
+import cz.cvut.kbss.jopa.test.utils.JenaStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.impl.jena.DriverCachingJenaFactory;
 import cz.cvut.kbss.ontodriver.impl.owlapi.DriverCachingOwlapiFactory;
 
@@ -49,7 +50,7 @@ public class MultiContextQueryTest {
 	private static final Logger LOG = Logger.getLogger(MultiContextQueryTest.class.getName());
 
 	private static final Map<String, String> properties = initProperties();
-	private static final List<StorageInfo> storages = initStorages();
+	private static final List<StorageConfig> storages = initStorages();
 
 	private static EntityManagerFactory emf;
 	private static List<Context> contexts;
@@ -243,11 +244,11 @@ public class MultiContextQueryTest {
 		}
 	}
 
-	private static List<StorageInfo> initStorages() {
-		final List<StorageInfo> lst = new ArrayList<StorageInfo>(3);
-		lst.add(new StorageInfo(OntologyConnectorType.OWLAPI, StorageType.FILE));
-		lst.add(new StorageInfo(OntologyConnectorType.OWLAPI, StorageType.OWLDB));
-		lst.add(new StorageInfo(OntologyConnectorType.JENA, StorageType.FILE));
+	private static List<StorageConfig> initStorages() {
+		final List<StorageConfig> lst = new ArrayList<>(3);
+		lst.add(new OwlapiStorageConfig());
+		lst.add(new OwldbStorageConfig());
+		lst.add(new JenaStorageConfig());
 		return lst;
 	}
 

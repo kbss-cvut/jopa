@@ -8,8 +8,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -23,12 +23,11 @@ import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassI;
-import cz.cvut.kbss.jopa.test.utils.StorageInfo;
-import cz.cvut.kbss.jopa.test.utils.StorageType;
+import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DataSource;
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.test.TestEnv;
@@ -37,7 +36,7 @@ public class MultiFileContextsTest {
 
 	private static final Logger LOG = Logger.getLogger(MultiFileContextsTest.class.getName());
 
-	private static final List<StorageInfo> storages = initStorages();
+	private static final List<StorageConfig> storages = initStorages();
 	private static final String OWLCLASS_A_REFERENCE_FIELD = "owlClassA";
 
 	private static OWLClassA entityA;
@@ -249,15 +248,15 @@ public class MultiFileContextsTest {
 
 	private static void acquireConnection(String baseName) throws OntoDriverException {
 		assert baseName != null;
-		ds = TestEnv.createDataSource(baseName, storages, false);
+		ds = TestEnv.createDataSource(baseName, storages);
 		c = ds.getConnection(facade);
 	}
 
-	private static List<StorageInfo> initStorages() {
-		final List<StorageInfo> list = new LinkedList<StorageInfo>();
-		list.add(new StorageInfo(OntologyConnectorType.OWLAPI, StorageType.FILE));
-		list.add(new StorageInfo(OntologyConnectorType.OWLAPI, StorageType.FILE));
-		list.add(new StorageInfo(OntologyConnectorType.OWLAPI, StorageType.FILE));
+	private static List<StorageConfig> initStorages() {
+		final List<StorageConfig> list = new ArrayList<>(3);
+		list.add(new OwlapiStorageConfig());
+		list.add(new OwlapiStorageConfig());
+		list.add(new OwlapiStorageConfig());
 		return list;
 	}
 }

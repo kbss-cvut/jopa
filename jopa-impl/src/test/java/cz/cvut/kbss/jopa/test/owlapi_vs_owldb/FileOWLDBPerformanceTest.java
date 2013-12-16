@@ -3,11 +3,8 @@ package cz.cvut.kbss.jopa.test.owlapi_vs_owldb;
 import static org.junit.Assert.assertNotNull;
 
 import java.net.URI;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -21,7 +18,8 @@ import org.junit.Test;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
-import cz.cvut.kbss.jopa.test.utils.StorageType;
+import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 
 public class FileOWLDBPerformanceTest {
 
@@ -62,24 +60,7 @@ public class FileOWLDBPerformanceTest {
 	@Before
 	public void setUp() throws Exception {
 		if (shouldDropDb) {
-			Connection con = null;
-			Statement st1 = null;
-			Statement st2 = null;
-			ResultSet rs = null;
-			con = DriverManager.getConnection(TestEnvironment.DB_URI, TestEnvironment.DB_USERNAME,
-					TestEnvironment.DB_PASSWORD);
-			st1 = con.createStatement();
-			rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
-			final String deleteStmt = "TRUNCATE ";
-			while (rs.next()) {
-				final String table = rs.getString(1);
-				st2 = con.createStatement();
-				st2.executeUpdate(deleteStmt + table + " CASCADE");
-				st2.close();
-				st2 = null;
-			}
-			st1.close();
-			con.close();
+			TestEnvironment.clearDatabase();
 			shouldDropDb = false;
 		}
 		TestEnvironment.resetOwldbHibernateProvider();
@@ -89,7 +70,7 @@ public class FileOWLDBPerformanceTest {
 	public void testFileOntologyPerformancePersist() {
 		LOG.config("Testing file ontology access performance. Persisting " + COUNT + " entities.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"FileOntologyPerformanceTest-Persist", StorageType.FILE, true);
+				"FileOntologyPerformanceTest-Persist", true);
 
 		persistEntities(em);
 	}
@@ -98,7 +79,8 @@ public class FileOWLDBPerformanceTest {
 	public void testOWLDBOntologyPerformancePersist() {
 		LOG.config("Testing OWLDB ontology access performance. Persisting " + COUNT + " entities.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"OWLDBOntologyPerformanceTest-Persist", StorageType.OWLDB, true);
+				"OWLDBOntologyPerformanceTest-Persist",
+				Collections.<StorageConfig> singletonList(new OwldbStorageConfig()), true);
 		try {
 			persistEntities(em);
 		} finally {
@@ -125,7 +107,7 @@ public class FileOWLDBPerformanceTest {
 	public void testFileOntologyPerformanceRead() {
 		LOG.config("Search for several randomly chosen entities and measure file ontology performance.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"FileOntologyPerformanceTest-Find", StorageType.FILE, false);
+				"FileOntologyPerformanceTest-Find", false);
 		persistEntities(em);
 
 		findEntities(em);
@@ -135,7 +117,8 @@ public class FileOWLDBPerformanceTest {
 	public void testOWLDBOntologyPerformanceRead() {
 		LOG.config("Search for several randomly chosen entities and measure OWLDB ontology performance.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"OWLDBOntologyPerformanceTest-Find", StorageType.OWLDB, false);
+				"OWLDBOntologyPerformanceTest-Find",
+				Collections.<StorageConfig> singletonList(new OwldbStorageConfig()), false);
 		try {
 			persistEntities(em);
 

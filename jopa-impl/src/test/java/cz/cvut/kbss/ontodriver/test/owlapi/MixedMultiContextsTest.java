@@ -8,9 +8,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,12 +24,13 @@ import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassI;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
-import cz.cvut.kbss.jopa.test.utils.StorageInfo;
-import cz.cvut.kbss.jopa.test.utils.StorageType;
+import cz.cvut.kbss.jopa.test.utils.JenaStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DataSource;
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.test.TestEnv;
@@ -41,7 +39,7 @@ public class MixedMultiContextsTest {
 
 	private static final Logger LOG = Logger.getLogger(MixedMultiContextsTest.class.getName());
 
-	private static final List<StorageInfo> storages = initStorages();
+	private static final List<StorageConfig> storages = initStorages();
 	private static final String OWLCLASS_A_REFERENCE_FIELD = "owlClassA";
 
 	private static OWLClassA entityA;
@@ -79,7 +77,7 @@ public class MixedMultiContextsTest {
 
 	@Before
 	public void setUp() throws Exception {
-		clearDatabase();
+		TestEnvironment.clearDatabase();
 	}
 
 	@After
@@ -245,40 +243,15 @@ public class MixedMultiContextsTest {
 	}
 
 	private static void acquireConnection(String baseName) throws OntoDriverException {
-		ds = TestEnv.createDataSource(baseName, storages, false);
+		ds = TestEnv.createDataSource(baseName, storages);
 		c = ds.getConnection(facade);
 	}
 
-	private static List<StorageInfo> initStorages() {
-		final List<StorageInfo> list = new LinkedList<StorageInfo>();
-		final StorageInfo owlapiFile = new StorageInfo(OntologyConnectorType.OWLAPI,
-				StorageType.FILE);
-		list.add(owlapiFile);
-		final StorageInfo owlapiOwldb = new StorageInfo(OntologyConnectorType.OWLAPI,
-				StorageType.OWLDB);
-		list.add(owlapiOwldb);
-		final StorageInfo jenaFile = new StorageInfo(OntologyConnectorType.JENA, StorageType.FILE);
-		list.add(jenaFile);
+	private static List<StorageConfig> initStorages() {
+		final List<StorageConfig> list = new LinkedList<>();
+		list.add(new OwlapiStorageConfig());
+		list.add(new OwldbStorageConfig());
+		list.add(new JenaStorageConfig());
 		return list;
-	}
-
-	private static void clearDatabase() throws Exception {
-		java.sql.Connection con = null;
-		Statement st1 = null;
-		Statement st2 = null;
-		ResultSet rs = null;
-		con = DriverManager.getConnection(TestEnv.DB_URI, TestEnv.DB_USERNAME, TestEnv.DB_PASSWORD);
-		st1 = con.createStatement();
-		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
-		final String deleteStmt = "TRUNCATE ";
-		while (rs.next()) {
-			final String table = rs.getString(1);
-			st2 = con.createStatement();
-			st2.executeUpdate(deleteStmt + table + " CASCADE");
-			st2.close();
-			st2 = null;
-		}
-		st1.close();
-		con.close();
 	}
 }

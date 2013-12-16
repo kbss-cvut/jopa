@@ -29,16 +29,17 @@ import cz.cvut.kbss.jopa.test.OWLClassG;
 import cz.cvut.kbss.jopa.test.OWLClassH;
 import cz.cvut.kbss.jopa.test.OWLClassI;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
-import cz.cvut.kbss.jopa.test.utils.StorageInfo;
-import cz.cvut.kbss.jopa.test.utils.StorageType;
+import cz.cvut.kbss.jopa.test.utils.JenaStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.Context;
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 
 public class JpaPersistOperationsTest {
 
 	private static final Logger LOG = Logger.getLogger(JpaPersistOperationsTest.class.getName());
 
-	private static final List<StorageInfo> storages = initStorages();
+	private static final List<StorageConfig> storages = initStorages();
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
 	private static OWLClassD entityD;
@@ -270,11 +271,11 @@ public class JpaPersistOperationsTest {
 		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
 	}
 
-	private static List<StorageInfo> initStorages() {
-		final List<StorageInfo> lst = new ArrayList<StorageInfo>(3);
-		lst.add(new StorageInfo(OntologyConnectorType.OWLAPI, StorageType.FILE));
-		lst.add(new StorageInfo(OntologyConnectorType.OWLAPI, StorageType.OWLDB));
-		lst.add(new StorageInfo(OntologyConnectorType.JENA, StorageType.FILE));
+	private static List<StorageConfig> initStorages() {
+		final List<StorageConfig> lst = new ArrayList<>(3);
+		lst.add(new OwlapiStorageConfig());
+		lst.add(new OwldbStorageConfig());
+		lst.add(new JenaStorageConfig());
 		return lst;
 	}
 }

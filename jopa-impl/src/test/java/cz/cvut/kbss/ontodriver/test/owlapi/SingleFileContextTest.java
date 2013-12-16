@@ -21,12 +21,11 @@ import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassI;
-import cz.cvut.kbss.jopa.test.utils.StorageInfo;
-import cz.cvut.kbss.jopa.test.utils.StorageType;
+import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DataSource;
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.exceptions.EntityNotRegisteredException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -36,8 +35,8 @@ public class SingleFileContextTest {
 
 	private static final Logger LOG = Logger.getLogger(SingleFileContextTest.class.getName());
 
-	private static final List<StorageInfo> storage = Collections.singletonList(new StorageInfo(
-			OntologyConnectorType.OWLAPI, StorageType.FILE));
+	private static final List<StorageConfig> storage = Collections
+			.<StorageConfig> singletonList(new OwlapiStorageConfig());
 	private static final String OWLCLASS_A_REFERENCE_FIELD = "owlClassA";
 
 	private static OWLClassA entityA;
@@ -282,7 +281,7 @@ public class SingleFileContextTest {
 	}
 
 	private static void acquireConnection(String baseName) throws OntoDriverException {
-		ds = TestEnv.createDataSource(baseName, storage, false);
+		ds = TestEnv.createDataSource(baseName, storage);
 		c = ds.getConnection(facade);
 	}
 }

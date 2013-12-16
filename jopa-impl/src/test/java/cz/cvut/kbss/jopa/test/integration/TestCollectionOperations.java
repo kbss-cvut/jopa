@@ -19,7 +19,6 @@ import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
-import cz.cvut.kbss.jopa.test.utils.StorageType;
 
 public class TestCollectionOperations {
 
@@ -55,7 +54,7 @@ public class TestCollectionOperations {
 	public void testPersistEntityWithCollection() {
 		LOG.config("Test: persist entity with a simple collection of strings.");
 		this.em = TestEnvironment.getPersistenceConnector(
-				"TestCollectionOperations-persistEntityWithCollection", StorageType.FILE, true);
+				"TestCollectionOperations-persistEntityWithCollection", true);
 		em.getTransaction().begin();
 		em.persist(testA);
 		assertTrue(testA.getTypes() instanceof IndirectSet);
@@ -72,7 +71,7 @@ public class TestCollectionOperations {
 	public void testDetachEntityWithCollection() {
 		LOG.config("Test: persist entity and detach it before commit.");
 		this.em = TestEnvironment.getPersistenceConnector(
-				"TestCollectionOperations-detachEntityWithCollection", StorageType.FILE, true);
+				"TestCollectionOperations-detachEntityWithCollection", true);
 		em.getTransaction().begin();
 		em.persist(testA);
 		assertTrue(em.contains(testA));
@@ -88,8 +87,7 @@ public class TestCollectionOperations {
 	public void testMergeDetachedEntityWithCollection() {
 		LOG.config("Test: persist entity, detach it and merge again.");
 		this.em = TestEnvironment.getPersistenceConnector(
-				"TestCollectionOperations-mergeDetachedEntityWithCollection", StorageType.FILE,
-				true);
+				"TestCollectionOperations-mergeDetachedEntityWithCollection", true);
 		em.getTransaction().begin();
 		em.persist(testA);
 		assertTrue(em.contains(testA));
@@ -108,8 +106,7 @@ public class TestCollectionOperations {
 	public void testMergeDetachedEntityWithCollectionChanges() {
 		LOG.config("Test: persist entity, detach it and merge again. Changes are made to the collection while detached.");
 		this.em = TestEnvironment.getPersistenceConnector(
-				"TestCollectionOperations-mergeDetachedEntityWithCollectionChanges",
-				StorageType.FILE, true);
+				"TestCollectionOperations-mergeDetachedEntityWithCollectionChanges", true);
 		em.getTransaction().begin();
 		em.persist(testA);
 		assertTrue(em.contains(testA));
@@ -130,8 +127,7 @@ public class TestCollectionOperations {
 	public void testSetNewCollectionDuringTransaction() {
 		LOG.config("Test: persist entity. Set new collection on it and make changes in the collection.");
 		this.em = TestEnvironment.getPersistenceConnector(
-				"TestCollectionOperations-setNewCollectionDuringTransaction", StorageType.FILE,
-				true);
+				"TestCollectionOperations-setNewCollectionDuringTransaction", true);
 		em.getTransaction().begin();
 		em.persist(testA);
 		em.getTransaction().commit();

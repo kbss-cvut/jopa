@@ -37,7 +37,7 @@ public class MergeManagerTest {
 	@Before
 	public void setUp() throws Exception {
 		final String name = "MergeManagerJUnitTest";
-		contextUri = URI.create(TestEnvironment.DEFAULT_IRI + name);
+		contextUri = URI.create(TestEnvironment.IRI_BASE + name);
 		EntityManagerImpl em = (EntityManagerImpl) TestEnvironment.getPersistenceConnector(name);
 		this.session = em.getServerSession();
 		this.uow = (UnitOfWorkImpl) session.acquireClientSession().acquireUnitOfWork();
