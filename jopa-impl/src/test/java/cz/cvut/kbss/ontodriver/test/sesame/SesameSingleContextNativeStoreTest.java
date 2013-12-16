@@ -22,13 +22,13 @@ import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.test.TestEnv;
 
-public class SesameSingleContextMemoryStoreTest {
+public class SesameSingleContextNativeStoreTest {
 
 	private static final Logger LOG = Logger.getLogger(SesameSingleContextMemoryStoreTest.class
 			.getName());
 
 	private static final List<StorageInfo> storageInfo = Collections.singletonList(new StorageInfo(
-			OntologyConnectorType.SESAME, StorageType.MEMORY));
+			OntologyConnectorType.SESAME, StorageType.FILE));
 	private static final Map<String, String> properties = initProperties();
 
 	private static PersistenceProviderFacade facade;
@@ -131,15 +131,16 @@ public class SesameSingleContextMemoryStoreTest {
 	}
 
 	private void acquireConnection(String ontoName) throws OntoDriverException {
-		this.ds = TestEnv.createDataSource(ontoName, storageInfo, properties, false);
+		this.ds = TestEnv.createDataSource(ontoName, storageInfo, properties, true);
 		this.c = ds.getConnection(facade);
 		tests.setConnection(c);
 	}
 
 	private static Map<String, String> initProperties() {
 		final Map<String, String> m = new HashMap<>();
-		m.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
 		m.put(OWLAPIPersistenceProperties.LANG, "en");
+		m.put(OntoDriverProperties.SESAME_USE_INFERENCE, "false");
 		return m;
 	}
+
 }

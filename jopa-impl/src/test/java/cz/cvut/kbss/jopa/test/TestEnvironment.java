@@ -76,7 +76,7 @@ public class TestEnvironment {
 			// Load java.util.logging configuration
 			LogManager.getLogManager().readConfiguration(
 					new FileInputStream(
-							"src/test/java/cz/cvut/kbss/jopa/resources/logging.properties"));
+							"src/test/java/cz/cvut/kbss/jopa/tests/resources/logging.properties"));
 		} catch (SecurityException | IOException e) {
 			e.printStackTrace();
 		}
@@ -93,7 +93,7 @@ public class TestEnvironment {
 	public static EntityManager getPersistenceConnector(String name, StorageType storage,
 			boolean cache) {
 		final List<OntologyStorageProperties> storageProps = Collections
-				.singletonList(createOwlapiStorageProperties(name, new StorageInfo(
+				.singletonList(createStorageProperties(name, new StorageInfo(
 						OntologyConnectorType.OWLAPI, storage)));
 		final Map<String, String> params = initParams(cache);
 		return Persistence.createEntityManagerFactory("context-name", storageProps, params)
@@ -109,7 +109,7 @@ public class TestEnvironment {
 		int i = 1;
 		for (StorageInfo si : storages) {
 			name = baseName + si.getConnectorType() + (i++);
-			final OntologyStorageProperties p = createOwlapiStorageProperties(name, si);
+			final OntologyStorageProperties p = createStorageProperties(name, si);
 			assert p != null;
 			storageProps.add(p);
 		}
@@ -128,7 +128,7 @@ public class TestEnvironment {
 		int i = 1;
 		for (StorageInfo si : storages) {
 			name = baseName + si.getConnectorType() + (i++);
-			final OntologyStorageProperties p = createOwlapiStorageProperties(name, si);
+			final OntologyStorageProperties p = createStorageProperties(name, si);
 			assert p != null;
 			storageProps.add(p);
 		}
@@ -144,14 +144,14 @@ public class TestEnvironment {
 			params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "off");
 		}
 		/* Set location of the entities (package) */
-		params.put(OWLAPIPersistenceProperties.ENTITY_LOCATION, "cz.cvut.kbss.jopa.owlapi");
+		params.put(OWLAPIPersistenceProperties.ENTITY_LOCATION, "cz.cvut.kbss.jopa.test");
 		params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
 				OWLAPIPersistenceProvider.class.getName());
 		params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);
 		return params;
 	}
 
-	private static OntologyStorageProperties createOwlapiStorageProperties(String name,
+	private static OntologyStorageProperties createStorageProperties(String name,
 			StorageInfo info) {
 		final IRI iri = IRI.create(DEFAULT_IRI + name);
 		URI physicalUri = null;
@@ -163,6 +163,7 @@ public class TestEnvironment {
 			if (url.exists() && shouldDeleteOntologyFile) {
 				url.delete();
 			}
+			// TODO Modify this for Sesame native store
 			physicalUri = url.toURI();
 		case MEMORY:
 			// Intentional fall through

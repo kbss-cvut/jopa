@@ -93,9 +93,14 @@ public final class TestEnv {
 			case FILE:
 				File url = null;
 				if (directory) {
-					url = new File(dir + "/" + name);
+					if (e.getConnectorType() == OntologyConnectorType.SESAME) {
+						url = new File(dir + File.separator + "openrdf-sesame" + File.separator
+								+ "repositories" + File.separator + name);
+					} else {
+						url = new File(dir + File.separator + name);
+					}
 				} else {
-					url = new File(dir + "/" + name + ".owl");
+					url = new File(dir + File.separator + name + ".owl");
 				}
 				removeOldTestFiles(url);
 				if (directory) {

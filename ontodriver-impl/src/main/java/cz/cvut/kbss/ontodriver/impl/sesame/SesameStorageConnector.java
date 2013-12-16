@@ -18,16 +18,24 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
+import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.repository.manager.RepositoryProvider;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.repository.sail.config.SailRepositoryConfig;
+import org.openrdf.sail.config.SailImplConfig;
+import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
+import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerConfig;
 import org.openrdf.sail.memory.MemoryStore;
+import org.openrdf.sail.nativerdf.config.NativeStoreConfig;
 
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.StorageConnector;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exceptions.RepositoryCreationException;
 import cz.cvut.kbss.ontodriver.exceptions.RepositoryNotFoundException;
 
 public class SesameStorageConnector implements StorageConnector {
@@ -44,6 +52,7 @@ public class SesameStorageConnector implements StorageConnector {
 	private boolean open;
 	private long currentSubjectCount;
 
+	private RepositoryManager manager;
 	private Repository repository;
 	private RepositoryConnection connection;
 
@@ -200,22 +209,27 @@ public class SesameStorageConnector implements StorageConnector {
 	private void initialize(Map<String, String> properties) throws OntoDriverException {
 		final URI serverUri = storageProps.getPhysicalURI();
 		this.language = properties.get(OntoDriverProperties.ONTOLOGY_LANGUAGE);
-		boolean useVolatile = properties
-				.containsKey(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE) ? Boolean
-				.parseBoolean(properties.get(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE))
-				: false;
+		boolean useVolatile = Boolean.parseBoolean(properties
+				.get(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE));
 		try {
+			boolean isRemote = false;
 			if (useVolatile) {
-				this.repository = createInMemoryRepository();
+				this.repository = createInMemoryRepository(properties);
 			} else {
-				this.repository = RepositoryProvider.getRepository(serverUri.toString());
+				isRemote = isRemoteRepository(serverUri);
+				if (isRemote) {
+					this.repository = RepositoryProvider.getRepository(serverUri.toString());
+				} else {
+					createLocalRepository(properties);
+				}
 			}
 			if (repository == null) {
-				if (isRemoteRepository(serverUri)) {
+				if (isRemote) {
 					throw new RepositoryNotFoundException("Unable to reach repository at "
 							+ serverUri);
 				} else {
-					createLocalRepository(properties);
+					throw new RepositoryCreationException("Unable to create local repository at "
+							+ serverUri);
 				}
 			}
 			repository.initialize();
@@ -230,6 +244,9 @@ public class SesameStorageConnector implements StorageConnector {
 		try {
 			connection.close();
 			repository.shutDown();
+			if (manager != null) {
+				manager.shutDown();
+			}
 		} catch (RepositoryException e) {
 			throw new OntoDriverException(
 					"Exception caught when closing Sesame repository connection.", e);
@@ -249,18 +266,55 @@ public class SesameStorageConnector implements StorageConnector {
 		final String[] tmp = localUri.toString().split(LOCAL_NATIVE_REPO);
 		if (tmp.length != 2) {
 			throw new IllegalArgumentException(
-					"Unsupported local Sesame repository path. Expected file:///path/repositories/id but got "
+					"Unsupported local Sesame repository path. Expected file:/path/repositories/id but got "
 							+ localUri);
 		}
-		final File f = new File(tmp[0]);
-		final String repoId = tmp[1];
-		final LocalRepositoryManager m = new LocalRepositoryManager(f);
+		final File f = new File(URI.create(tmp[0]));
+		String repoId = tmp[1];
+		if (repoId.charAt(repoId.length() - 1) == '/') {
+			repoId = repoId.substring(0, repoId.length() - 1);
+		}
+		this.manager = new LocalRepositoryManager(f);
+		final RepositoryConfig cfg = createRepositoryConfig(repoId, props);
 		try {
-			this.repository = m.getRepository(repoId);
+			manager.initialize();
+			manager.addRepositoryConfig(cfg);
+			this.repository = manager.getRepository(repoId);
 		} catch (RepositoryConfigException | RepositoryException e) {
 			LOG.severe("Unable to create local repository at " + localUri);
 			throw new OntoDriverException("Unable to create local repository.", e);
 		}
+	}
+
+	/**
+	 * Creates repository configuration for local native Sesame repository.
+	 * 
+	 * @param repoId
+	 *            Repository id
+	 * @param props
+	 *            Properties map
+	 * @return Repository configuration
+	 */
+	private RepositoryConfig createRepositoryConfig(String repoId, Map<String, String> props) {
+		SailImplConfig backend = new NativeStoreConfig();
+		if (shouldUseInferenceInLocal(props)) {
+			backend = new ForwardChainingRDFSInferencerConfig(backend);
+		}
+		final SailRepositoryConfig repoType = new SailRepositoryConfig(backend);
+		return new RepositoryConfig(repoId, repoType);
+	}
+
+	/**
+	 * Returns true if inference should be used in local repositories.
+	 * 
+	 * @param properties
+	 * @return
+	 */
+	private static boolean shouldUseInferenceInLocal(Map<String, String> properties) {
+		assert properties != null;
+		// We can use directly this, because Boolean.parseBoolean return false
+		// for null
+		return (Boolean.parseBoolean(properties.get(OntoDriverProperties.SESAME_USE_INFERENCE)));
 	}
 
 	/**
@@ -269,8 +323,13 @@ public class SesameStorageConnector implements StorageConnector {
 	 * 
 	 * @return Repository
 	 */
-	private static Repository createInMemoryRepository() {
-		return new SailRepository(new MemoryStore());
+	private static Repository createInMemoryRepository(Map<String, String> props) {
+		final MemoryStore ms = new MemoryStore();
+		if (shouldUseInferenceInLocal(props)) {
+			return new SailRepository(new ForwardChainingRDFSInferencer(ms));
+		} else {
+			return new SailRepository(ms);
+		}
 	}
 
 	private static boolean isRemoteRepository(URI uri) {
