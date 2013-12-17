@@ -1,9 +1,9 @@
 package cz.cvut.kbss.jopa.test.sesame.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -15,11 +15,9 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.OWLClassA;
@@ -33,12 +31,11 @@ import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.SesameNativeStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
-import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
-public class PersistOperationsTest {
+public class TestUpdateOperations {
 
-	private static final Logger LOG = Logger.getLogger(PersistOperationsTest.class.getName());
+	private static final Logger LOG = Logger.getLogger(TestUpdateOperations.class.getName());
 
 	private static final List<StorageConfig> storages = initStorages();
 	private static final Map<String, String> properties = initProperties();
@@ -83,10 +80,6 @@ public class PersistOperationsTest {
 		entityG.setOwlClassH(entityH);
 	}
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
 	@After
 	public void tearDown() throws Exception {
 		if (em.isOpen()) {
@@ -100,86 +93,93 @@ public class PersistOperationsTest {
 	}
 
 	@Test
-	public void testPersistWithGenerated() {
-		LOG.config("Test: persist into all contexts, also with generated id.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistWithGenerated", storages, false,
+	public void testUpdateReference() {
+		LOG.config("Test: update reference to entity.");
+		em = TestEnvironment.getPersistenceConnector("SesameUpdateReference", storages, true,
 				properties);
-		final List<Context> contexts = em.getAvailableContexts();
-		final Context ctx1 = contexts.get(0);
-		final Context ctx2 = contexts.get(1);
+		final URI ctx1 = em.getAvailableContexts().get(0).getUri();
+		final URI ctx2 = em.getAvailableContexts().get(1).getUri();
 		em.getTransaction().begin();
-		em.persist(entityA, ctx1.getUri());
-		em.persist(entityA, ctx2.getUri());
-		em.persist(entityE, ctx1.getUri());
-		em.persist(entityB, ctx2.getUri());
+		em.persist(entityD, ctx1);
+		em.persist(entityA, ctx1);
+		em.persist(entityI, ctx2);
 		em.getTransaction().commit();
 
-		final OWLClassA resA1 = em.find(OWLClassA.class, entityA.getUri(), ctx1.getUri());
+		final OWLClassA newA = new OWLClassA();
+		newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/newEntityA"));
+		newA.setStringAttribute("newA");
+		em.getTransaction().begin();
+		final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
+		assertNotNull(d.getOwlClassA());
+		d.setOwlClassA(newA);
+		em.persist(newA, ctx1);
+		final OWLClassI i = em.find(OWLClassI.class, entityI.getUri(), ctx2);
+		assertNotNull(i.getOwlClassA());
+		i.setOwlClassA(newA);
+		em.persist(newA, ctx2);
+		em.getTransaction().commit();
+
+		final OWLClassA resA1 = em.find(OWLClassA.class, newA.getUri(), ctx1);
 		assertNotNull(resA1);
-		assertEquals(entityA.getStringAttribute(), resA1.getStringAttribute());
-		assertEquals(entityA.getTypes().size(), resA1.getTypes().size());
-		assertTrue(entityA.getTypes().containsAll(resA1.getTypes()));
-		final OWLClassA resA2 = em.find(OWLClassA.class, entityA.getUri(), ctx2.getUri());
-		assertNotNull(resA2);
-		assertEquals(entityA.getStringAttribute(), resA2.getStringAttribute());
-		assertEquals(entityA.getTypes().size(), resA2.getTypes().size());
-		assertTrue(entityA.getTypes().containsAll(resA2.getTypes()));
-
-		assertNotNull(entityE.getUri());
-		final OWLClassE resE = em.find(OWLClassE.class, entityE.getUri(), ctx1.getUri());
-		assertNotNull(resE);
-		assertEquals(entityE.getStringAttribute(), resE.getStringAttribute());
-
-		final OWLClassB resB = em.find(OWLClassB.class, entityB.getUri(), ctx2.getUri());
-		assertNotNull(resB);
-		assertEquals(entityB.getUri(), resB.getUri());
-		assertEquals(entityB.getStringAttribute(), resB.getStringAttribute());
-		assertTrue(em.contains(resB));
+		final OWLClassD resD = em.find(OWLClassD.class, d.getUri());
+		assertEquals(resD.getOwlClassA(), resA1);
+		assertNotNull(em.find(OWLClassA.class, entityA.getUri(), ctx1));
+		final OWLClassI resI = em.find(OWLClassI.class, i.getUri());
+		assertEquals(newA.getUri(), resI.getOwlClassA().getUri());
+		assertNotNull(em.find(OWLClassA.class, entityA.getUri(), ctx2));
 	}
 
 	@Test
-	public void testPersistCascade() {
-		LOG.config("Test: persist with cascade over two relationships.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistWithCascade", storages, false,
+	public void testMergeDetachedWithChanges() {
+		LOG.config("Test: merge detached entity with changes.");
+		em = TestEnvironment.getPersistenceConnector("SesameUpdateDetached", storages, true,
 				properties);
-		final List<Context> contexts = em.getAvailableContexts();
-		final Context ctx1 = contexts.get(0);
-		final Context ctx2 = contexts.get(1);
 		em.getTransaction().begin();
-		em.persist(entityA, ctx1.getUri());
-		em.persist(entityD, ctx1.getUri());
-		em.persist(entityG, ctx2.getUri());
+		em.persist(entityA);
 		em.getTransaction().commit();
 
-		final OWLClassD resD = em.find(OWLClassD.class, entityD.getUri());
-		assertNotNull(resD);
-		assertNotNull(resD.getOwlClassA());
-		final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), ctx1.getUri());
-		assertNotNull(resA);
-		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
-		assertEquals(resD.getOwlClassA(), resA);
+		final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
+		assertTrue(em.contains(a));
+		em.detach(a);
+		assertFalse(em.contains(a));
+		final String newType = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#AddedType";
+		a.getTypes().add(newType);
+		em.getTransaction().begin();
+		final OWLClassA merged = em.merge(a);
+		assertTrue(merged.getTypes().contains(newType));
+		em.getTransaction().commit();
 
-		final OWLClassA resA2 = em.find(OWLClassA.class, entityA.getUri(), ctx2.getUri());
-		assertNotNull(resA2);
-		final OWLClassH resH = em.find(OWLClassH.class, entityH.getUri(), ctx2.getUri());
-		assertNotNull(resH);
-		assertEquals(resH.getOwlClassA(), resA2);
-		final OWLClassG resG = em.find(OWLClassG.class, entityG.getUri(), ctx2.getUri());
-		assertNotNull(resG);
-		assertEquals(resG.getOwlClassH(), resH);
-		assertEquals(resG.getOwlClassH().getOwlClassA(), resA2);
+		final OWLClassA res = em.find(OWLClassA.class, a.getUri());
+		assertEquals(a.getTypes().size(), res.getTypes().size());
+		assertTrue(res.getTypes().containsAll(a.getTypes()));
 	}
 
-	@Test(expected = OWLEntityExistsException.class)
-	public void testPersistTwiceInOne() {
-		LOG.config("Test: persist twice into one context.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistTwice", storages, false,
+	@Test
+	public void testMergeDetachedCascade() {
+		LOG.config("Test: merge detached with cascade.");
+		em = TestEnvironment.getPersistenceConnector("SesameUpdateCascade", storages, true,
 				properties);
+		final URI ctx = em.getAvailableContexts().get(1).getUri();
 		em.getTransaction().begin();
-		em.persist(entityB);
-		em.persist(entityB);
+		em.persist(entityH, ctx);
+		assertTrue(em.contains(entityA));
 		em.getTransaction().commit();
-		fail("This line should not have been reached.");
+
+		final OWLClassH h = em.find(OWLClassH.class, entityH.getUri(), ctx);
+		assertNotNull(h.getOwlClassA());
+		em.detach(h);
+		assertFalse(em.contains(h));
+		assertFalse(em.contains(h.getOwlClassA()));
+		final String newStr = "newStringAttribute";
+		h.getOwlClassA().setStringAttribute(newStr);
+		em.getTransaction().begin();
+		final OWLClassH merged = em.merge(h, ctx);
+		assertEquals(newStr, merged.getOwlClassA().getStringAttribute());
+		em.getTransaction().commit();
+
+		final OWLClassA res = em.find(OWLClassA.class, entityA.getUri(), ctx);
+		assertNotNull(res);
+		assertEquals(newStr, res.getStringAttribute());
 	}
 
 	private static List<StorageConfig> initStorages() {

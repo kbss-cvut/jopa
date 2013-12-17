@@ -279,7 +279,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				@Override
 				protected void exploreCascaded(Attribute<?, ?> at, Object o)
 						throws IllegalAccessException {
-					at.getJavaField().set(entity, mergeInternal(o, contextUri));
+					final Object attVal = at.getJavaField().get(o);
+					at.getJavaField().set(entity, mergeInternal(attVal, contextUri));
 				}
 			}.start(this, entity, CascadeType.MERGE);
 			return entity;
@@ -296,13 +297,15 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				@Override
 				protected void exploreCascaded(Attribute<?, ?> at, Object o)
 						throws IllegalAccessException {
-					at.getJavaField().set(merged, mergeInternal(o, contextUri));
+					final Object attVal = at.getJavaField().get(o);
+					at.getJavaField().set(o, mergeInternal(attVal, contextUri));
 				}
 
 				@Override
 				protected void exploreNonCascaded(Attribute<?, ?> at, Object o)
 						throws IllegalAccessException {
-					at.getJavaField().set(merged, at.getJavaField().get(o));
+					final Object attVal = at.getJavaField().get(o);
+					at.getJavaField().set(o, attVal);
 				}
 			}.start(this, merged, CascadeType.MERGE);
 			return merged;
@@ -395,8 +398,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			this.getCurrentPersistenceContext().revertObject(object);
 			new OneLevelCascadeExplorer() {
 				@Override
-				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
-					refresh(o);
+				protected void exploreCascaded(Attribute<?, ?> at, Object o)
+						throws IllegalArgumentException, IllegalAccessException {
+					refresh(at.getJavaField().get(o));
 				}
 			}.start(this, object, CascadeType.REFRESH);
 		}
@@ -416,8 +420,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			getCurrentPersistenceContext().unregisterObject(entity);
 			new OneLevelCascadeExplorer() {
 				@Override
-				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
-					detach(o);
+				protected void exploreCascaded(Attribute<?, ?> at, Object o)
+						throws IllegalArgumentException, IllegalAccessException {
+					final Object attVal = at.getJavaField().get(o);
+					detach(attVal);
 				}
 			}.start(this, entity, CascadeType.DETACH);
 			break;
@@ -425,8 +431,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			getCurrentPersistenceContext().unregisterObject(entity);
 			new OneLevelCascadeExplorer() {
 				@Override
-				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
-					detach(o);
+				protected void exploreCascaded(Attribute<?, ?> at, Object o)
+						throws IllegalArgumentException, IllegalAccessException {
+					final Object attVal = at.getJavaField().get(o);
+					detach(attVal);
 				}
 			}.start(this, entity, CascadeType.DETACH);
 			break;

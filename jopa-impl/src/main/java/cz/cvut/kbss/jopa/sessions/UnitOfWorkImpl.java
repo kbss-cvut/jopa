@@ -788,11 +788,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
 	/**
 	 * Release this Unit of Work. Releasing an active Unit of Work with
-	 * uncommited changes causes the Unit of Work to try to write the changes
-	 * into the ontology and then releasing.
+	 * uncommitted changes causes all pending changes to be discarded.
 	 */
 	public void release() {
-		writeUncommittedChanges();
 		clear();
 		if (storageConnection != null) {
 			try {
@@ -908,7 +906,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			return;
 		}
 		if (!isObjectManaged(object)) {
-			throw new OWLPersistenceException("Cannot remove object that is not managed!");
+			throw new IllegalArgumentException(
+					"Cannot remove entity which is not managed in the current persistence context.");
 		}
 		if (getDeletedObjects().containsKey(object)) {
 			return;
@@ -1332,7 +1331,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private void storageCommit() {
 		try {
 			storageConnection.commit();
-		} catch (OntoDriverException e) {
+		} catch (Exception e) {
+			entityManager.removeCurrentPersistenceContext();
 			throw new OWLPersistenceException(e);
 		}
 	}

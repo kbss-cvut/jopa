@@ -19,7 +19,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassD;
@@ -86,7 +85,7 @@ public class JpaRemoveOperationsTest {
 		}
 	}
 
-	@Test(expected = OWLPersistenceException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testRemoveNotManaged() {
 		LOG.config("Test: removed not managed entity.");
 		em = TestEnvironment.getPersistenceConnector("RemoveNotManaged", storages, false);
