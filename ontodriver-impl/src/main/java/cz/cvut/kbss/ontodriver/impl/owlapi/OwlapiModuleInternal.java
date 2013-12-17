@@ -1555,6 +1555,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		final List<T> lst = new ArrayList<T>();
 
 		OWLIndividual o = getObjectProperty(subject, hasSequence, inferred);
+		// TODO Throw exception if multiple object of hasSequence are found
 
 		while (o != null) {
 			// asOWLNamedIndivdiual not necessarily true

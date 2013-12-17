@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.impl.sesame;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,11 +29,14 @@ import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
+import cz.cvut.kbss.ontodriver.exceptions.OWLSimpleListException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInternalException;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
@@ -391,7 +395,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		URI objectUri = null;
 		for (Statement stmt : res) {
 			final Value val = stmt.getObject();
-			if (!(val instanceof URI)) {
+			if (!isUri(val)) {
 				continue;
 			}
 			objectUri = (URI) val;
@@ -603,7 +607,44 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			throw new OntoDriverException("Exception caught when loading attributes of entity "
 					+ uri, e);
 		}
+	}
 
+	/**
+	 * Loads plural attribute (i. e. collection) value on the specified entity.
+	 * 
+	 * @param instance
+	 *            Entity instance
+	 * @param uri
+	 *            Entity primary key
+	 * @param pa
+	 *            The attribute to load
+	 * @throws OntoDriverException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 */
+	private <T> void loadPluralAttribute(T instance, URI uri, PluralAttribute<?, ?, ?> pa)
+			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
+		switch (pa.getCollectionType()) {
+		case LIST:
+			final ListAttribute<?, ?> la = (ListAttribute<?, ?>) pa;
+			List<?> lst = null;
+			switch (la.getSequenceType()) {
+			case referenced:
+				// TODO
+				break;
+			case simple:
+				lst = loadSimpleList(uri, la);
+				break;
+			}
+			pa.getJavaField().set(instance, lst);
+		case SET:
+			Set<?> set = loadReferencedSet(uri, pa);
+			pa.getJavaField().set(instance, set);
+			break;
+		case COLLECTION:
+		case MAP:
+			throw new NotYetImplementedException("NOT YET IMPLEMENTED");
+		}
 	}
 
 	/**
@@ -694,7 +735,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 					break;
 				}
 				if (attribute.isCollection()) {
-					// TODO
+					final PluralAttribute<?, ?, ?> pa = (PluralAttribute<?, ?, ?>) attribute;
+					loadPluralAttribute(entity, uri, pa);
 				} else {
 					loadObjectProperty(entity, uri, attribute);
 				}
@@ -711,6 +753,87 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			throw new OntoDriverException(e);
 		}
 		ICValidationUtils.validateIntegrityConstraints(entity, uri, attribute);
+	}
+
+	/**
+	 * Loads set of object property references.
+	 * 
+	 * @param subject
+	 *            Subject (entity) uri
+	 * @param pa
+	 *            Attribute to load
+	 * @return The loaded set or null if no references were found
+	 */
+	private Set<?> loadReferencedSet(URI subject, PluralAttribute<?, ?, ?> pa)
+			throws OntoDriverException {
+		final URI property = getAddressAsSesameUri(pa.getIRI());
+		final Model m = pa.isInferred() ? model : explicitModel;
+
+		final Class<?> cls = pa.getBindableJavaType();
+		final Collection<Statement> statements = m.filter(subject, property, null);
+		if (statements.isEmpty()) {
+			return null;
+		}
+		final Set<Object> set = new HashSet<>(statements.size());
+		for (Statement stmt : statements) {
+			final Value obj = stmt.getObject();
+			if (!isUri(obj)) {
+				continue;
+			}
+			final URI objUri = (URI) obj;
+			final Object o = getJavaInstanceForSubject(cls, objUri);
+			set.add(o);
+		}
+		return set;
+	}
+
+	/**
+	 * Loads simple list specified by the ListAttribute.
+	 * 
+	 * @param subject
+	 *            Subject (entity) URI
+	 * @param la
+	 *            attribute
+	 * @return list of entities or null if there are none
+	 */
+	private List<?> loadSimpleList(URI subject, ListAttribute<?, ?> la) throws OntoDriverException {
+		final URI property = getAddressAsSesameUri(la.getIRI());
+		final Model m = la.isInferred() ? model : explicitModel;
+		// Element type
+		final Class<?> cls = la.getBindableJavaType();
+		final URI hasNextUri = getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
+
+		final Collection<Statement> simpleList = m.filter(subject, property, null);
+		if (simpleList.isEmpty()) {
+			return null;
+		}
+		final List<Object> lst = new ArrayList<>();
+		if (simpleList.size() > 1) {
+			throw new OWLSimpleListException("Expected single value of property " + property
+					+ ", but found " + simpleList.size());
+		}
+		final Value val = simpleList.iterator().next().getObject();
+		if (!isUri(val)) {
+			throw new OWLSimpleListException("The value of property " + property
+					+ " has to be an URI.");
+		}
+		URI newSubject = (URI) val;
+		while (newSubject != null) {
+			final Object o = getJavaInstanceForSubject(cls, newSubject);
+			lst.add(o);
+			Collection<Statement> next = m.filter(newSubject, hasNextUri, null);
+			if (next.size() > 1) {
+				throw new OWLSimpleListException("Expected single value of property " + hasNextUri
+						+ ", but found " + next.size());
+			}
+			final Value nextValue = next.iterator().next().getObject();
+			if (!isUri(nextValue)) {
+				throw new OWLSimpleListException("The value of property " + hasNextUri
+						+ " has to be an URI.");
+			}
+			newSubject = (URI) nextValue;
+		}
+		return lst;
 	}
 
 	/**
@@ -798,7 +921,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		for (Statement stmt : props) {
 			if (!SesameUtils.isEntityAttribute(stmt.getPredicate(), et)) {
 				toRemove.add(stmt);
-				if (stmt.getObject() instanceof URI) {
+				if (isUri(stmt.getObject())) {
 					map.put(stmt.getPredicate(), ObjectType.OBJECT);
 				} else {
 					map.put(stmt.getPredicate(), ObjectType.LITERAL);
@@ -1040,7 +1163,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		final Set<Statement> currentTypes = explicitModel.filter(uri, RDF.TYPE, null);
 		for (Statement stmt : currentTypes) {
 			final Value val = stmt.getObject();
-			assert val instanceof URI;
+			assert isUri(val);
 			if (val.equals(typeUri)) {
 				continue;
 			}
@@ -1072,6 +1195,10 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		} catch (IllegalArgumentException | IllegalAccessException | MalformedURLException e) {
 			throw new OntoDriverException("Unable to set entity identifier.", e);
 		}
+	}
+
+	private boolean isUri(Value value) {
+		return (value instanceof URI);
 	}
 
 	/**
