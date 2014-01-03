@@ -3,7 +3,6 @@ package cz.cvut.kbss.ontodriver.impl.sesame;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,18 +25,11 @@ import org.openrdf.model.vocabulary.RDF;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.ontodriver.ResultSet;
-import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
-import cz.cvut.kbss.ontodriver.exceptions.OWLReferencedListException;
-import cz.cvut.kbss.ontodriver.exceptions.OWLSimpleListException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInternalException;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
@@ -55,9 +47,9 @@ import cz.cvut.kbss.ontodriver.impl.utils.ICValidationUtils;
  */
 class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStatement> {
 
-	private static final Logger LOG = Logger.getLogger(SesameModuleInternal.class.getName());
+	static final Logger LOG = Logger.getLogger(SesameModuleInternal.class.getName());
 
-	private final SesameStorageModule module;
+	final SesameStorageModule module;
 	// TODO This is probably not the best strategy, duplicating models to keep
 	// track of inferred statements
 	/** Contains all statements, including inferred */
@@ -211,13 +203,13 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		temporaryIndividuals = new HashSet<>();
 	}
 
-	private void addStatement(Statement stmt) {
+	void addStatement(Statement stmt) {
 		model.add(stmt);
 		explicitModel.add(stmt);
 		changes.add(new SesameAddChange(stmt));
 	}
 
-	private void addStatements(Collection<Statement> stmts) {
+	void addStatements(Collection<Statement> stmts) {
 		model.addAll(stmts);
 		explicitModel.addAll(stmts);
 		for (Statement stmt : stmts) {
@@ -225,7 +217,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 	}
 
-	private void removeStatements(Collection<Statement> stmts) {
+	void removeStatements(Collection<Statement> stmts) {
 		// First create the changes because the statements may be backed by the
 		// model in which case they are removed from the collection as well
 		for (Statement stmt : stmts) {
@@ -235,7 +227,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		explicitModel.removeAll(stmts);
 	}
 
-	private void addIndividualsForReferencedEntities(Collection<?> ents) throws OntoDriverException {
+	void addIndividualsForReferencedEntities(Collection<?> ents) throws OntoDriverException {
 		assert ents != null;
 		assert !ents.isEmpty();
 
@@ -297,7 +289,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 *            Entity primary key
 	 * @return Sesame URI
 	 */
-	private URI getAddressAsSesameUri(Object primaryKey) {
+	URI getAddressAsSesameUri(Object primaryKey) {
 		assert primaryKey != null : "argument primaryKey is null";
 		if (primaryKey instanceof java.net.URI || primaryKey instanceof IRI
 				|| primaryKey instanceof org.semanticweb.owlapi.model.IRI
@@ -331,7 +323,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 				"Unknown enum constant = " + uri));
 	}
 
-	private URI getIdentifier(Object entity) {
+	URI getIdentifier(Object entity) {
 		assert entity != null;
 
 		final EntityType<?> type = getEntityType(entity.getClass());
@@ -354,67 +346,16 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 	}
 
-	private <T> T getJavaInstanceForSubject(Class<T> cls, URI subjectUri)
-			throws OntoDriverException {
-		assert cls != null;
-		assert subjectUri != null;
-
-		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Getting " + subjectUri + " of " + cls);
-		}
-		final IRI pk = IRI.create(subjectUri.toString());
-		final Object ob = module.getPersistenceProvider().getEntityFromLiveObjectCache(cls, pk,
-				module.getContext().getUri());
-		if (ob != null && cls.isAssignableFrom(ob.getClass())) {
-			// We can load the instance from cache
-			return cls.cast(ob);
-		} else if (cls.isEnum()) {
-			// It is an enum value
-			return cls.cast(getEnum(cls.asSubclass(Enum.class), subjectUri));
-		} else {
-			// Otherwise load the entity
-			return loadEntity(cls, subjectUri);
-		}
+	String getLang() {
+		return lang;
 	}
 
-	/**
-	 * Gets URI of value of the specified object property.
-	 * 
-	 * @param subjectUri
-	 *            Subject URI
-	 * @param propertyUri
-	 *            Object property URI
-	 * @param includeInferred
-	 *            Whether search inferred statements as well
-	 * @return URI of the discovered object or {@code null} if none is found
-	 */
-	private URI getObjectPropertyValue(URI subjectUri, URI propertyUri, boolean includeInferred) {
-		Model res = explicitModel.filter(subjectUri, propertyUri, null);
-		if (res.isEmpty() && includeInferred) {
-			res = model.filter(subjectUri, propertyUri, null);
-		}
-		URI objectUri = null;
-		for (Statement stmt : res) {
-			final Value val = stmt.getObject();
-			if (!isUri(val)) {
-				continue;
-			}
-			objectUri = (URI) val;
-			break;
-		}
-		return objectUri;
+	Model getModel(boolean includeInferred) {
+		return includeInferred ? model : explicitModel;
 	}
 
-	private Value getPropertyValue(URI subjectUri, URI propertyUri, Model m) {
-		Collection<Statement> res = m.filter(subjectUri, subjectUri, null);
-		if (res.isEmpty()) {
-			return null;
-		}
-		if (res.size() > 1) {
-			// TODO should we throw exception if we expected only single value
-		}
-		final Value ob = res.iterator().next().getObject();
-		return ob;
+	ValueFactory getValueFactory() {
+		return valueFactory;
 	}
 
 	/**
@@ -431,131 +372,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	/**
-	 * Loads annotation property value for the specified entity instance.
-	 * 
-	 * @param instance
-	 *            Entity instance
-	 * @param uri
-	 *            Entity primary key (i. e. subject URI)
-	 * @param property
-	 *            Attribute representing the annotation property
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 */
-	private <T> void loadAnnotationProperty(T instance, URI uri, Attribute<?, ?> property)
-			throws IllegalArgumentException, IllegalAccessException {
-		final URI annotationProperty = toUri(property);
-		Model res = explicitModel.filter(uri, annotationProperty, null);
-		if (res.isEmpty()) {
-			res = model.filter(uri, annotationProperty, null);
-		}
-		Object value = null;
-		URI datatype = null;
-		for (Statement stmt : res) {
-			final Value val = stmt.getObject();
-			if (!(val instanceof Literal)) {
-				continue;
-			}
-			final Literal lit = (Literal) val;
-			if (!lit.getLanguage().equals(lang)) {
-				continue;
-			}
-			datatype = lit.getDatatype();
-			value = SesameUtils.getDataPropertyValue(lit);
-		}
-		if (value == null && LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Value of annotation property " + property.getIRI()
-					+ " not found, is not a literal or is not in the expected language.");
-		}
-		final Class<?> cls = property.getJavaType();
-		if (value != null && !cls.isAssignableFrom(value.getClass())) {
-			throw new IllegalStateException("The field type " + cls
-					+ " cannot be established from the declared data type " + datatype
-					+ ". The declared class is " + value.getClass());
-		}
-		if (value != null) {
-			property.getJavaField().set(instance, value);
-		}
-	}
-
-	/**
-	 * Loads data property value for the specified entity instance.
-	 * 
-	 * @param instance
-	 *            Entity instance
-	 * @param uri
-	 *            Entity primary key (i. e. subject URI)
-	 * @param property
-	 *            Attribute representing the data property
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 */
-	private <T> void loadDataProperty(T instance, URI uri, Attribute<?, ?> property)
-			throws IllegalArgumentException, IllegalAccessException {
-		final URI propertyUri = toUri(property);
-		Model res = explicitModel.filter(uri, propertyUri, null);
-		if (res.isEmpty()) {
-			res = model.filter(uri, propertyUri, null);
-		}
-		Object value = null;
-		URI datatype = null;
-		for (Statement stmt : res) {
-			Value val = stmt.getObject();
-			if (!(val instanceof Literal)) {
-				continue;
-			}
-			Literal lit = (Literal) val;
-			datatype = lit.getDatatype();
-			value = SesameUtils.getDataPropertyValue(lit);
-			break;
-		}
-		if (value == null && LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Value of data property " + property.getIRI()
-					+ " not found or is not a literal.");
-		}
-		final Class<?> cls = property.getJavaType();
-		if (value != null && !cls.isAssignableFrom(value.getClass())) {
-			throw new IllegalStateException("The field type " + cls
-					+ " cannot be established from the declared data type " + datatype
-					+ ". The declared class is " + value.getClass());
-		}
-		if (value != null) {
-			property.getJavaField().set(instance, value);
-		}
-	}
-
-	/**
-	 * Loads value of the specified object property for the specified entity
-	 * instance.
-	 * 
-	 * @param instance
-	 *            Entity instance
-	 * @param uri
-	 *            Entity primary key
-	 * @param property
-	 *            Attribute representing the object property
-	 * @throws OntoDriverException
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 */
-	private <T> void loadObjectProperty(T instance, URI uri, Attribute<?, ?> property)
-			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
-		final URI propertyUri = toUri(property);
-		URI objectUri = getObjectPropertyValue(uri, propertyUri, property.isInferred());
-		if (objectUri == null) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.finer("Value of object property " + property.getIRI()
-						+ " not found or is not a resource.");
-			}
-			return;
-		}
-		final Object value = getJavaInstanceForSubject(property.getJavaType(), objectUri);
-		if (value != null) {
-			property.getJavaField().set(instance, value);
-		}
-	}
-
-	/**
 	 * Loads an instance of the specified class with the specified primary key.
 	 * 
 	 * @param cls
@@ -566,7 +382,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 * @throws OntoDriverException
 	 *             If an error occurs during load
 	 */
-	private <T> T loadEntity(Class<T> cls, URI uri) throws OntoDriverException {
+	<T> T loadEntity(Class<T> cls, URI uri) throws OntoDriverException {
 		assert cls != null;
 		assert uri != null;
 
@@ -623,45 +439,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	/**
-	 * Loads plural attribute (i. e. collection) value on the specified entity.
-	 * 
-	 * @param instance
-	 *            Entity instance
-	 * @param uri
-	 *            Entity primary key
-	 * @param pa
-	 *            The attribute to load
-	 * @throws OntoDriverException
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 */
-	private <T> void loadPluralAttribute(T instance, URI uri, PluralAttribute<?, ?, ?> pa)
-			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
-		switch (pa.getCollectionType()) {
-		case LIST:
-			final ListAttribute<?, ?> la = (ListAttribute<?, ?>) pa;
-			List<?> lst = null;
-			switch (la.getSequenceType()) {
-			case referenced:
-				lst = loadReferencedList(uri, la);
-				break;
-			case simple:
-				lst = loadSimpleList(uri, la);
-				break;
-			}
-			pa.getJavaField().set(instance, lst);
-			break;
-		case SET:
-			Set<?> set = loadReferencedSet(uri, pa);
-			pa.getJavaField().set(instance, set);
-			break;
-		case COLLECTION:
-		case MAP:
-			throw new NotYetImplementedException("NOT YET IMPLEMENTED");
-		}
-	}
-
-	/**
 	 * Loads properties for the specified entity. </p>
 	 * 
 	 * Properties are specified as values of properties related to subject with
@@ -712,7 +489,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 
 	/**
 	 * Loads standard attribute of the specified entity, i. e. either reference
-	 * to other entitie, data value or annotation property value.
+	 * to other entities, data value or annotation property value.
 	 * 
 	 * @param entity
 	 *            entity
@@ -728,166 +505,13 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private <T> void loadReference(T entity, URI uri, Attribute<?, ?> attribute, boolean alwaysLoad)
 			throws OntoDriverException {
 		try {
-			switch (attribute.getPersistentAttributeType()) {
-			case ANNOTATION:
-				if (attribute.isCollection()) {
-					throw new NotYetImplementedException(
-							"Collection annotation properties are not implemented yet.");
-				}
-				loadAnnotationProperty(entity, uri, attribute);
-				break;
-			case DATA:
-				if (attribute.isCollection()) {
-					throw new NotYetImplementedException(
-							"Collection data properties are not implemented yet.");
-				}
-				loadDataProperty(entity, uri, attribute);
-				break;
-			case OBJECT:
-				if (!alwaysLoad && attribute.getFetchType().equals(FetchType.LAZY)) {
-					// Lazy loading
-					break;
-				}
-				if (attribute.isCollection()) {
-					final PluralAttribute<?, ?, ?> pa = (PluralAttribute<?, ?, ?>) attribute;
-					loadPluralAttribute(entity, uri, pa);
-				} else {
-					loadObjectProperty(entity, uri, attribute);
-				}
-				if (LOG.isLoggable(Level.FINEST)) {
-					LOG.finest("Fetched property '" + attribute.getIRI() + "' into field "
-							+ attribute.getJavaField() + "' of object " + uri);
-				}
-				break;
-			default:
-				break;
-
-			}
+			final AttributeStrategy strategy = AttributeStrategyFactory.createStrategy(attribute,
+					this);
+			strategy.load(entity, uri, attribute, alwaysLoad);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new OntoDriverException(e);
 		}
 		ICValidationUtils.validateIntegrityConstraints(entity, uri, attribute);
-	}
-
-	/**
-	 * Loads referenced list specified by the ListAttribute.
-	 * 
-	 * @param subject
-	 *            Subject (entity) URI
-	 * @param la
-	 *            attribute
-	 * @return list of entities or null if there are none
-	 * @throws OntoDriverException
-	 */
-	private List<?> loadReferencedList(URI subject, ListAttribute<?, ?> la)
-			throws OntoDriverException {
-		final URI hasSequenceUri = getAddressAsSesameUri(la.getIRI());
-		final boolean includeInferred = la.isInferred();
-		final Model m = includeInferred ? model : explicitModel;
-		final Class<?> cls = la.getBindableJavaType();
-		final URI hasNextUri = getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
-		final URI hasContentsUri = getAddressAsSesameUri(la.getOWLPropertyHasContentsIRI());
-
-		Value seq = getPropertyValue(subject, hasSequenceUri, m);
-		if (!isUri(seq)) {
-			throw new OWLReferencedListException("The value of property " + hasSequenceUri
-					+ " has to be an URI.");
-		}
-		List<Object> lst = new ArrayList<>();
-		URI seqUri = (URI) seq;
-		while (seq != null) {
-			URI content = getObjectPropertyValue(seqUri, hasContentsUri, includeInferred);
-			if (content == null) {
-				break;
-			}
-			Object inst = getJavaInstanceForSubject(cls, content);
-			assert inst != null;
-			lst.add(inst);
-			seq = getPropertyValue(seqUri, hasNextUri, m);
-			if (!isUri(seq)) {
-				throw new OWLReferencedListException("The value of property " + hasNextUri
-						+ " has to be an URI.");
-			}
-			seqUri = (URI) seq;
-		}
-		if (lst.isEmpty()) {
-			lst = null;
-		}
-		return lst;
-	}
-
-	/**
-	 * Loads set of object property references.
-	 * 
-	 * @param subject
-	 *            Subject (entity) uri
-	 * @param pa
-	 *            Attribute to load
-	 * @return The loaded set or null if no references were found
-	 */
-	private Set<?> loadReferencedSet(URI subject, PluralAttribute<?, ?, ?> pa)
-			throws OntoDriverException {
-		final URI property = getAddressAsSesameUri(pa.getIRI());
-		final Model m = pa.isInferred() ? model : explicitModel;
-
-		final Class<?> cls = pa.getBindableJavaType();
-		final Collection<Statement> statements = m.filter(subject, property, null);
-		if (statements.isEmpty()) {
-			return null;
-		}
-		final Set<Object> set = new HashSet<>(statements.size());
-		for (Statement stmt : statements) {
-			final Value obj = stmt.getObject();
-			if (!isUri(obj)) {
-				continue;
-			}
-			final URI objUri = (URI) obj;
-			final Object o = getJavaInstanceForSubject(cls, objUri);
-			set.add(o);
-		}
-		return set;
-	}
-
-	/**
-	 * Loads simple list specified by the ListAttribute.
-	 * 
-	 * @param subject
-	 *            Subject (entity) URI
-	 * @param la
-	 *            attribute
-	 * @return list of entities or null if there are none
-	 */
-	private List<?> loadSimpleList(URI subject, ListAttribute<?, ?> la) throws OntoDriverException {
-		final URI property = getAddressAsSesameUri(la.getIRI());
-		final Model m = la.isInferred() ? model : explicitModel;
-		// Element type
-		final Class<?> cls = la.getBindableJavaType();
-		final URI hasNextUri = getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
-
-		final List<Object> lst = new ArrayList<>();
-		final Value val = getPropertyValue(subject, property, m);
-		if (val == null) {
-			return null;
-		}
-		if (!isUri(val)) {
-			throw new OWLSimpleListException("The value of property " + property
-					+ " has to be an URI.");
-		}
-		URI newSubject = (URI) val;
-		while (newSubject != null) {
-			final Object o = getJavaInstanceForSubject(cls, newSubject);
-			lst.add(o);
-			final Value nextValue = getPropertyValue(newSubject, hasNextUri, m);
-			if (nextValue == null) {
-				break;
-			}
-			if (!isUri(nextValue)) {
-				throw new OWLSimpleListException("The value of property " + hasNextUri
-						+ " has to be an URI.");
-			}
-			newSubject = (URI) nextValue;
-		}
-		return lst;
 	}
 
 	/**
@@ -946,18 +570,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		m.clear();
 	}
 
-	private void removeOldDataPropertyValues(URI subject, URI property) {
-		// TODO should we use only explicit model?
-		final Model m = explicitModel.filter(subject, property, null);
-		removeStatements(m);
-	}
-
-	private void removeOldObjectPropertyValues(URI subject, URI property) {
-		// TODO should we use only explicit model?
-		final Model m = explicitModel.filter(subject, property, null);
-		removeStatements(m);
-	}
-
 	/**
 	 * Removes values of all properties associated with the specified subject,
 	 * which are not declared as attributes of entities of the specified type.
@@ -997,25 +609,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	/**
-	 * Saves data property value for the specified subject. </p>
-	 * 
-	 * This method also removes any previous values of the property.
-	 * 
-	 * @param subject
-	 *            Subject URI
-	 * @param property
-	 *            Property URI
-	 * @param value
-	 *            Property value
-	 */
-	private void saveDataProperty(URI subject, URI property, Object value) {
-		removeOldDataPropertyValues(subject, property);
-		Literal lit = SesameUtils.createDataPropertyLiteral(value, lang, valueFactory);
-		final Statement stmt = valueFactory.createStatement(subject, property, lit);
-		addStatement(stmt);
-	}
-
-	/**
 	 * Saves all entity attributes' values.
 	 * 
 	 * @param entity
@@ -1042,19 +635,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			}
 		} catch (RuntimeException | IllegalAccessException e) {
 			throw new OntoDriverInternalException(e);
-		}
-	}
-
-	private void saveObjectProperty(URI subject, URI property, Object value) {
-		removeOldObjectPropertyValues(subject, property);
-		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("setObjectProperty '" + property + "' of " + subject + " to " + value);
-		}
-		if (value != null) {
-			final URI uri = getIdentifier(value);
-			assert uri != null;
-			final Statement stmt = valueFactory.createStatement(subject, property, uri);
-			addStatement(stmt);
 		}
 	}
 
@@ -1148,29 +728,9 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		ICValidationUtils.validateIntegrityConstraints(entity, uri, att);
 
 		final Object oValue = att.getJavaField().get(entity);
-		if (att.isCollection()) {
-			// TODO
-		} else {
-			final SingularAttribute<?, ?> sAtt = (SingularAttribute<?, ?>) att;
-			URI propertyUri = getAddressAsSesameUri(sAtt.getIRI());
-			switch (sAtt.getPersistentAttributeType()) {
-			case ANNOTATION:
-			case DATA:
-				// Intentional fall-through, annotation and data property can be
-				// treated equally in Sesame
-				saveDataProperty(uri, propertyUri, oValue);
-				break;
-			case OBJECT:
-				if (oValue != null) {
-					addIndividualsForReferencedEntities(Collections.singletonList(oValue));
-				}
-				saveObjectProperty(uri, propertyUri, oValue);
-				break;
-			default:
-				throw new IllegalArgumentException("Unsupported attribute type "
-						+ att.getPersistentAttributeType());
-			}
-		}
+		final URI propertyUri = getAddressAsSesameUri(att.getIRI());
+		final AttributeStrategy strategy = AttributeStrategyFactory.createStrategy(att, this);
+		strategy.save(entity, uri, att, propertyUri, oValue);
 	}
 
 	/**
@@ -1250,14 +810,14 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 	}
 
-	private boolean isUri(Value value) {
+	boolean isUri(Value value) {
 		return (value instanceof URI);
 	}
 
 	/**
 	 * Creates Sesame URI from the attribute's IRI
 	 */
-	private URI toUri(Attribute<?, ?> attribute) {
+	URI toUri(Attribute<?, ?> attribute) {
 		assert attribute != null;
 		return valueFactory.createURI(attribute.getIRI().toString());
 	}
