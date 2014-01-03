@@ -36,6 +36,7 @@ import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
+import cz.cvut.kbss.ontodriver.exceptions.OWLReferencedListException;
 import cz.cvut.kbss.ontodriver.exceptions.OWLSimpleListException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInternalException;
@@ -404,6 +405,18 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		return objectUri;
 	}
 
+	private Value getPropertyValue(URI subjectUri, URI propertyUri, Model m) {
+		Collection<Statement> res = m.filter(subjectUri, subjectUri, null);
+		if (res.isEmpty()) {
+			return null;
+		}
+		if (res.size() > 1) {
+			// TODO should we throw exception if we expected only single value
+		}
+		final Value ob = res.iterator().next().getObject();
+		return ob;
+	}
+
 	/**
 	 * Returns true if the specified URI is a subject or object in the current
 	 * ontology signature.
@@ -630,13 +643,14 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			List<?> lst = null;
 			switch (la.getSequenceType()) {
 			case referenced:
-				// TODO
+				lst = loadReferencedList(uri, la);
 				break;
 			case simple:
 				lst = loadSimpleList(uri, la);
 				break;
 			}
 			pa.getJavaField().set(instance, lst);
+			break;
 		case SET:
 			Set<?> set = loadReferencedSet(uri, pa);
 			pa.getJavaField().set(instance, set);
@@ -756,6 +770,53 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	/**
+	 * Loads referenced list specified by the ListAttribute.
+	 * 
+	 * @param subject
+	 *            Subject (entity) URI
+	 * @param la
+	 *            attribute
+	 * @return list of entities or null if there are none
+	 * @throws OntoDriverException
+	 */
+	private List<?> loadReferencedList(URI subject, ListAttribute<?, ?> la)
+			throws OntoDriverException {
+		final URI hasSequenceUri = getAddressAsSesameUri(la.getIRI());
+		final boolean includeInferred = la.isInferred();
+		final Model m = includeInferred ? model : explicitModel;
+		final Class<?> cls = la.getBindableJavaType();
+		final URI hasNextUri = getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
+		final URI hasContentsUri = getAddressAsSesameUri(la.getOWLPropertyHasContentsIRI());
+
+		Value seq = getPropertyValue(subject, hasSequenceUri, m);
+		if (!isUri(seq)) {
+			throw new OWLReferencedListException("The value of property " + hasSequenceUri
+					+ " has to be an URI.");
+		}
+		List<Object> lst = new ArrayList<>();
+		URI seqUri = (URI) seq;
+		while (seq != null) {
+			URI content = getObjectPropertyValue(seqUri, hasContentsUri, includeInferred);
+			if (content == null) {
+				break;
+			}
+			Object inst = getJavaInstanceForSubject(cls, content);
+			assert inst != null;
+			lst.add(inst);
+			seq = getPropertyValue(seqUri, hasNextUri, m);
+			if (!isUri(seq)) {
+				throw new OWLReferencedListException("The value of property " + hasNextUri
+						+ " has to be an URI.");
+			}
+			seqUri = (URI) seq;
+		}
+		if (lst.isEmpty()) {
+			lst = null;
+		}
+		return lst;
+	}
+
+	/**
 	 * Loads set of object property references.
 	 * 
 	 * @param subject
@@ -803,16 +864,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		final Class<?> cls = la.getBindableJavaType();
 		final URI hasNextUri = getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
 
-		final Collection<Statement> simpleList = m.filter(subject, property, null);
-		if (simpleList.isEmpty()) {
+		final List<Object> lst = new ArrayList<>();
+		final Value val = getPropertyValue(subject, property, m);
+		if (val == null) {
 			return null;
 		}
-		final List<Object> lst = new ArrayList<>();
-		if (simpleList.size() > 1) {
-			throw new OWLSimpleListException("Expected single value of property " + property
-					+ ", but found " + simpleList.size());
-		}
-		final Value val = simpleList.iterator().next().getObject();
 		if (!isUri(val)) {
 			throw new OWLSimpleListException("The value of property " + property
 					+ " has to be an URI.");
@@ -821,12 +877,10 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		while (newSubject != null) {
 			final Object o = getJavaInstanceForSubject(cls, newSubject);
 			lst.add(o);
-			Collection<Statement> next = m.filter(newSubject, hasNextUri, null);
-			if (next.size() > 1) {
-				throw new OWLSimpleListException("Expected single value of property " + hasNextUri
-						+ ", but found " + next.size());
+			final Value nextValue = getPropertyValue(newSubject, hasNextUri, m);
+			if (nextValue == null) {
+				break;
 			}
-			final Value nextValue = next.iterator().next().getObject();
 			if (!isUri(nextValue)) {
 				throw new OWLSimpleListException("The value of property " + hasNextUri
 						+ " has to be an URI.");
@@ -878,7 +932,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 *            Resource URI
 	 */
 	private void removeEntityFromOntology(URI primaryKey) {
-		// TODO should we use only explicit model?
 		// Have to clear the model this way, since removeAll on the
 		// explicitModel throws ConcurrentModificationException
 		Model m = explicitModel.filter(primaryKey, null, null);
