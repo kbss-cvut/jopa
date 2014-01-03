@@ -1509,6 +1509,8 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			throws InterruptedException {
 		if (LOG.isLoggable(Level.FINE))
 			LOG.fine("Setting referenced list " + o + ", sequence=" + sequence);
+		// TODO is the removeList enough? The content should be probably removed
+		// as well
 		removeList(o, hasSequence, hasNext);
 		final IRI uri = getIdentifier(o);
 

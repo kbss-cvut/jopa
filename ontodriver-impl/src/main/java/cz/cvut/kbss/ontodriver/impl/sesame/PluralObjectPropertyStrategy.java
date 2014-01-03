@@ -3,6 +3,8 @@ package cz.cvut.kbss.ontodriver.impl.sesame;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -219,12 +221,53 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 
 	private void saveSimpleList(URI uri, URI propertyUri, ListAttribute<?, ?> la, List<?> values) {
 		removeOldList(uri, propertyUri,
-				internal.getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI()));
-		// TODO
+				internal.getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI()),
+				la.isInferred());
+		if (values == null || values.isEmpty()) {
+			return;
+		}
+		final List<Statement> toSave = new ArrayList<>(values.size());
+		final URI hasNext = internal.getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
+		final Iterator<?> it = values.iterator();
+		assert it.hasNext();
+		Object val = it.next();
+		URI seq = internal.getIdentifier(val);
+		toSave.add(valueFactory.createStatement(uri, propertyUri, seq));
+		while (it.hasNext()) {
+			URI next = internal.getIdentifier(it.next());
+			toSave.add(valueFactory.createStatement(seq, hasNext, next));
+			seq = next;
+		}
+		internal.addStatements(toSave);
 	}
 
-	private void removeOldList(URI uri, URI hasSequence, URI hasNext) {
-		// TODO
+	private void removeOldList(URI uri, URI hasSequence, URI hasNext, boolean includeInferred) {
+		final List<Statement> toRemove = new LinkedList<>();
+		final Model m = internal.getModel(includeInferred);
+		final Value val = getPropertyValue(uri, hasSequence, m);
+		if (val == null) {
+			return;
+		}
+		if (!internal.isUri(val)) {
+			throw new OWLSimpleListException("The value of property " + hasSequence
+					+ " has to be an URI.");
+		}
+		URI seq = (URI) val;
+		toRemove.add(valueFactory.createStatement(uri, hasSequence, seq));
+		while (seq != null) {
+			final Value next = getPropertyValue(seq, hasNext, m);
+			if (next == null) {
+				break;
+			}
+			if (!internal.isUri(next)) {
+				throw new OWLSimpleListException("The value of property " + hasNext
+						+ " has to be an URI.");
+			}
+			internal.removeTemporaryIndividual((URI) next);
+			toRemove.add(valueFactory.createStatement(seq, hasNext, next));
+			seq = (URI) next;
+		}
+		internal.removeStatements(toRemove);
 	}
 
 	private void saveReferencedList(URI uri, URI propertyUri, ListAttribute<?, ?> la, List<?> values) {

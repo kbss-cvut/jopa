@@ -247,6 +247,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 	}
 
+	void removeTemporaryIndividual(URI individual) {
+		assert individual != null;
+		temporaryIndividuals.remove(individual);
+	}
+
 	private void addInstanceToOntology(URI uri, EntityType<?> et) {
 		assert uri != null;
 		assert et != null;
