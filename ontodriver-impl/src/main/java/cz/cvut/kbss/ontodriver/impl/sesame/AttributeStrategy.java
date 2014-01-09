@@ -157,7 +157,7 @@ abstract class AttributeStrategy {
 	}
 
 	protected Value getPropertyValue(URI subjectUri, URI propertyUri, Model m) {
-		Collection<Statement> res = m.filter(subjectUri, subjectUri, null);
+		Collection<Statement> res = m.filter(subjectUri, propertyUri, null);
 		if (res.isEmpty()) {
 			return null;
 		}

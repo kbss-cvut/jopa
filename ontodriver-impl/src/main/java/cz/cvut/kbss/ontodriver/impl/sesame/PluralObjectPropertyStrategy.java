@@ -228,7 +228,8 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		addStatements(stmts);
 	}
 
-	private void saveSimpleList(URI uri, URI hasSequence, ListAttribute<?, ?> la, List<?> values) {
+	private void saveSimpleList(URI uri, URI hasSequence, ListAttribute<?, ?> la, List<?> values)
+			throws OntoDriverException {
 		removeOldList(uri, hasSequence, getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI()),
 				la.isInferred());
 		if (values == null || values.isEmpty()) {
@@ -246,6 +247,7 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 			toSave.add(valueFactory.createStatement(seq, hasNext, next));
 			seq = next;
 		}
+		addIndividualsForReferencedEntities(values);
 		addStatements(toSave);
 	}
 
@@ -300,8 +302,8 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		final URI hasContents = getAddressAsSesameUri(la.getOWLPropertyHasContentsIRI());
 		final URI hasNext = getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
 		final Iterator<?> it = values.iterator();
-		Object val = it.next();
 		assert it.hasNext();
+		Object val = it.next();
 		toSave.add(valueFactory.createStatement(listUri, hasContents, getIdentifier(val)));
 
 		int i = 1;

@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.persistence.EntityTransaction;
-import javax.persistence.RollbackException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,6 +21,7 @@ import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;

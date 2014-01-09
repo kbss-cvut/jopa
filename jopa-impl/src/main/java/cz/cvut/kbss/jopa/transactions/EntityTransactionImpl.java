@@ -3,8 +3,7 @@ package cz.cvut.kbss.jopa.transactions;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.persistence.RollbackException;
-
+import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 
 public class EntityTransactionImpl implements javax.persistence.EntityTransaction {
@@ -69,7 +68,7 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 				this.wrapper.getEntityManager().removeCurrentPersistenceContext();
 				this.wrapper.transactionUOW.release();
 				this.wrapper.transactionUOW.getParent().release();
-				throw ex;
+				throw new RollbackException(ex);
 			}
 		} finally {
 			this.active = false;

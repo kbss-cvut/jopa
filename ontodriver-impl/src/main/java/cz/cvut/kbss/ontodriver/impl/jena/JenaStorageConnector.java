@@ -38,6 +38,7 @@ abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 	protected final URI ontologyUri;
 	protected final URI physicalUri;
 	protected final String reasonerFactoryClass;
+	private final String language;
 
 	protected Model model;
 
@@ -60,6 +61,7 @@ abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 				.containsKey(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS) ? properties
 				.get(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS)
 				: OntoDriverConstants.REASONER_FACTORY_CLASS;
+		this.language = properties.get(OntoDriverProperties.ONTOLOGY_LANGUAGE);
 		this.initConnector();
 		this.open = true;
 	}
@@ -169,7 +171,7 @@ abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 			final OwlapiConnectorDataHolder data = OwlapiConnectorDataHolder
 					.ontologyManager(ontologyManager)
 					.dataFactory(ontologyManager.getOWLDataFactory())
-					.workingOntology(workingOntology).reasoner(reasoner).build();
+					.workingOntology(workingOntology).reasoner(reasoner).language(language).build();
 			return data;
 		} catch (OWLOntologyCreationException e) {
 			LOG.log(Level.SEVERE, "Unable to transform Jena ontology to OWL API.", e);

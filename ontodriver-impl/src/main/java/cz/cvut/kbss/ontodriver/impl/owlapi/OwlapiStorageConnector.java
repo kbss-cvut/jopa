@@ -183,8 +183,8 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 		}
 		final OWLReasoner reasoner = reasonerFactory.createReasoner(ontology);
 		final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
-				.workingOntology(ontology).ontologyManager(manager)
-				.dataFactory(factory).reasoner(reasoner).language(language).build();
+				.workingOntology(ontology).ontologyManager(manager).dataFactory(factory)
+				.reasoner(reasoner).language(language).build();
 		return holder;
 	}
 

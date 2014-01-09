@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassG;
@@ -43,6 +44,7 @@ public class TestDeleteOperations {
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
+	private static OWLClassC entityC;
 	private static OWLClassD entityD;
 	// Generated IRI
 	private static OWLClassE entityE;
@@ -65,6 +67,8 @@ public class TestDeleteOperations {
 		entityB = new OWLClassB();
 		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
 		entityB.setStringAttribute("entityBStringAttribute");
+		entityC = new OWLClassC();
+		entityC.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
 		entityD = new OWLClassD();
 		entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
 		entityD.setOwlClassA(entityA);
@@ -91,6 +95,8 @@ public class TestDeleteOperations {
 			em.getEntityManagerFactory().close();
 		}
 		entityE.setUri(null);
+		entityC.setReferencedList(null);
+		entityC.setSimpleList(null);
 	}
 
 	@Test
@@ -168,6 +174,141 @@ public class TestDeleteOperations {
 		assertFalse(em.contains(e));
 		em.remove(e);
 		fail("This line should not have been reached.");
+	}
+
+	@Test
+	public void testRemoveFromSimpleList() {
+		LOG.config("Test: remove entity from simple list.");
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveFromSimpleList", storages, true,
+				properties);
+		entityC.setSimpleList(createSimpleList());
+		em.getTransaction().begin();
+		em.persist(entityC);
+		for (OWLClassA a : entityC.getSimpleList()) {
+			em.persist(a);
+		}
+		em.getTransaction().commit();
+
+		final OWLClassA a = em.find(OWLClassA.class, entityC.getSimpleList().get(2).getUri());
+		assertNotNull(a);
+		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
+		assertNotNull(c);
+		em.getTransaction().begin();
+		// We have to remove A from the simple list as well because otherwise we
+		// would break the chain in instances
+		assertTrue(c.getSimpleList().remove(a));
+		em.remove(a);
+		em.getTransaction().commit();
+
+		final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
+		assertNull(resA);
+		final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
+		boolean found = false;
+		for (OWLClassA aa : resC.getSimpleList()) {
+			if (aa.getUri().equals(a.getUri())) {
+				found = true;
+				break;
+			}
+		}
+		assertFalse(found);
+	}
+
+	@Test
+	public void testRemoveFromReferencedList() {
+		LOG.config("Test: remove entity from referenced list.");
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveFromReferencedList", storages,
+				true, properties);
+		entityC.setReferencedList(createReferencedList());
+		em.getTransaction().begin();
+		em.persist(entityC);
+		for (OWLClassA a : entityC.getReferencedList()) {
+			em.persist(a);
+		}
+		em.getTransaction().commit();
+
+		final OWLClassA a = em.find(OWLClassA.class, entityC.getReferencedList().get(1).getUri());
+		assertNotNull(a);
+		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
+		assertNotNull(c);
+		em.getTransaction().begin();
+		// We have to remove A from the referenced list as well because
+		// otherwise we would break the chain in instances
+		assertTrue(c.getReferencedList().remove(a));
+		em.remove(a);
+		em.getTransaction().commit();
+
+		final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
+		assertNull(resA);
+		final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
+		boolean found = false;
+		for (OWLClassA aa : resC.getReferencedList()) {
+			if (aa.getUri().equals(a.getUri())) {
+				found = true;
+				break;
+			}
+		}
+		assertFalse(found);
+	}
+
+	@Test
+	public void testRemoveListOwner() {
+		LOG.config("Test: remove owner of simple and referenced list.");
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveListOwner", storages, true,
+				properties);
+		entityC.setSimpleList(createSimpleList());
+		entityC.setReferencedList(createReferencedList());
+		final URI ctx = em.getAvailableContexts().get(em.getAvailableContexts().size() - 1)
+				.getUri();
+		em.getTransaction().begin();
+		em.persist(entityC, ctx);
+		for (OWLClassA a : entityC.getSimpleList()) {
+			em.persist(a, ctx);
+		}
+		for (OWLClassA a : entityC.getReferencedList()) {
+			em.persist(a, ctx);
+		}
+		em.getTransaction().commit();
+
+		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), ctx);
+		assertNotNull(c);
+		em.getTransaction().begin();
+		em.remove(c);
+		em.getTransaction().commit();
+
+		em.getEntityManagerFactory().getCache().evictAll();
+		for (OWLClassA a : entityC.getSimpleList()) {
+			assertNotNull(em.find(OWLClassA.class, a.getUri(), ctx));
+		}
+		for (OWLClassA a : entityC.getReferencedList()) {
+			assertNotNull(em.find(OWLClassA.class, a.getUri(), ctx));
+		}
+	}
+
+	private static List<OWLClassA> createSimpleList() {
+		final List<OWLClassA> lst = new ArrayList<>(5);
+		int counter = 110;
+		for (int i = 0; i < 5; i++) {
+			final OWLClassA a = new OWLClassA();
+			a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityASimple"
+					+ counter));
+			a.setStringAttribute("stringAttributeeee" + counter++);
+			lst.add(a);
+		}
+		return lst;
+	}
+
+	private static List<OWLClassA> createReferencedList() {
+		final List<OWLClassA> lst = new ArrayList<>(5);
+		int counter = 101;
+		for (int i = 0; i < 5; i++) {
+			final OWLClassA a = new OWLClassA();
+			a.setUri(URI
+					.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAReferenced"
+							+ counter));
+			a.setStringAttribute("stringAttributeeee" + counter++);
+			lst.add(a);
+		}
+		return lst;
 	}
 
 	private static List<StorageConfig> initStorages() {

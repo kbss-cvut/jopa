@@ -263,10 +263,14 @@ public class CloneBuilderImpl implements CloneBuilder {
 				Object origVal = f.get(original);
 				Object newVal = change.getNewValue();
 				if (origVal instanceof Collection) {
-					mergeCollections((Collection<?>) origVal, (Collection<?>) newVal);
-					final Types annotation = f.getAnnotation(Types.class);
-					if (annotation != null) {
-						checkForNewTypes((Collection<?>) newVal);
+					if (newVal == null) {
+						f.set(original, null);
+					} else {
+						mergeCollections((Collection<?>) origVal, (Collection<?>) newVal);
+						final Types annotation = f.getAnnotation(Types.class);
+						if (annotation != null) {
+							checkForNewTypes((Collection<?>) newVal);
+						}
 					}
 				} else if (origVal != null && newVal != null && this.uow.containsOriginal(origVal)) {
 					this.mergeChangesOnManaged(origVal, newVal);

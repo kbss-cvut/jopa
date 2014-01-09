@@ -24,4 +24,11 @@ public final class OntoDriverConstants {
 	 * Name of the Turtle ontology format for Jena.
 	 */
 	public static final String TURTLE_FORMAT = "TURTLE";
+
+	/**
+	 * Default ontology language. </p>
+	 * 
+	 * Used if the language is not set explicitly.
+	 */
+	public static final String DEFAULT_LANGUAGE = "en";
 }

@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.test.sesame.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -19,11 +20,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassG;
@@ -45,6 +47,7 @@ public class TestCreateOperations {
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
+	private static OWLClassC entityC;
 	private static OWLClassD entityD;
 	// Generated IRI
 	private static OWLClassE entityE;
@@ -67,6 +70,8 @@ public class TestCreateOperations {
 		entityB = new OWLClassB();
 		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
 		entityB.setStringAttribute("entityBStringAttribute");
+		entityC = new OWLClassC();
+		entityC.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
 		entityD = new OWLClassD();
 		entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
 		entityD.setOwlClassA(entityA);
@@ -93,6 +98,8 @@ public class TestCreateOperations {
 			em.getEntityManagerFactory().close();
 		}
 		entityE.setUri(null);
+		entityC.setSimpleList(null);
+		entityC.setReferencedList(null);
 	}
 
 	@Test
@@ -178,7 +185,7 @@ public class TestCreateOperations {
 		fail("This line should not have been reached.");
 	}
 
-	@Test(expected = OWLPersistenceException.class)
+	@Test(expected = RollbackException.class)
 	public void testPersistWithoutCascade() {
 		LOG.config("Test: try persisting relationship not marked as cascade.");
 		em = TestEnvironment.getPersistenceConnector("SesamePersistWithoutCascade", storages,
@@ -187,6 +194,144 @@ public class TestCreateOperations {
 		em.persist(entityD);
 		em.getTransaction().commit();
 		fail("This line should not have been reached.");
+	}
+
+	@Test
+	public void testPersistSimpleList() {
+		LOG.config("Test: persist entity with simple list.");
+		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleList", storages, false,
+				properties);
+		URI ctx = em.getAvailableContexts().get(em.getAvailableContexts().size() - 1).getUri();
+		entityC.setSimpleList(createSimpleList());
+		em.getTransaction().begin();
+		em.persist(entityC, ctx);
+		for (OWLClassA a : entityC.getSimpleList()) {
+			em.persist(a, ctx);
+		}
+		em.getTransaction().commit();
+
+		final OWLClassA a = em.find(OWLClassA.class, entityC.getSimpleList().get(1).getUri(), ctx);
+		assertNotNull(a);
+		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), ctx);
+		assertNotNull(c);
+		assertNotNull(c.getSimpleList());
+		assertFalse(c.getSimpleList().isEmpty());
+		assertEquals(entityC.getSimpleList().size(), c.getSimpleList().size());
+		assertTrue(c.getSimpleList().contains(a));
+	}
+
+	@Test(expected = RollbackException.class)
+	public void testPersistSimpleListNoCascade() {
+		LOG.config("Test: persist entity with simple list, but don't persist the referenced entities.");
+		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleListNoCascade", storages,
+				false, properties);
+		entityC.setSimpleList(createSimpleList());
+		em.getTransaction().begin();
+		em.persist(entityC);
+		em.getTransaction().commit();
+		fail("This line should not have been reached.");
+	}
+
+	@Test
+	public void testPersistReferencedList() {
+		LOG.config("Test: persist entity with referenced list.");
+		em = TestEnvironment.getPersistenceConnector("SesamePersistReferencedList", storages,
+				false, properties);
+		entityC.setReferencedList(createReferencedList());
+		em.getTransaction().begin();
+		em.persist(entityC);
+		for (OWLClassA a : entityC.getReferencedList()) {
+			em.persist(a);
+		}
+		assertTrue(em.contains(entityC));
+		assertTrue(em.contains(entityC.getReferencedList().get(0)));
+		em.getTransaction().commit();
+
+		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
+		assertNotNull(c);
+		assertNotNull(c.getReferencedList());
+		assertFalse(c.getReferencedList().isEmpty());
+		assertEquals(entityC.getReferencedList().size(), c.getReferencedList().size());
+		for (OWLClassA a : entityC.getReferencedList()) {
+			final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
+			assertNotNull(resA);
+			assertEquals(a.getStringAttribute(), resA.getStringAttribute());
+			assertTrue(c.getReferencedList().contains(resA));
+		}
+	}
+
+	@Test(expected = RollbackException.class)
+	public void testPersistReferencedListNoCascade() {
+		LOG.config("Test: persist entity with referenced list. Don't persist the referenced entities.");
+		em = TestEnvironment.getPersistenceConnector("SesamePersistReferencedListNoCascade",
+				storages, false, properties);
+		entityC.setReferencedList(createReferencedList());
+		em.getTransaction().begin();
+		em.persist(entityC);
+		em.getTransaction().commit();
+		fail("This line should not have been reached.");
+	}
+
+	@Test
+	public void estPersistSimpleAndReferencedList() {
+		LOG.config("Test: persist entity with both simple and referenced list.");
+		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleAndReferencedList",
+				storages, false, properties);
+		entityC.setReferencedList(createReferencedList());
+		entityC.setSimpleList(createSimpleList());
+		em.getTransaction().begin();
+		em.persist(entityC);
+		for (OWLClassA a : entityC.getSimpleList()) {
+			em.persist(a);
+		}
+		for (OWLClassA a : entityC.getReferencedList()) {
+			em.persist(a);
+		}
+		em.getTransaction().commit();
+
+		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
+		assertNotNull(c);
+		assertNotNull(c.getSimpleList());
+		assertEquals(entityC.getSimpleList().size(), c.getSimpleList().size());
+		assertNotNull(c.getReferencedList());
+		assertEquals(entityC.getReferencedList().size(), c.getReferencedList().size());
+		for (OWLClassA a : entityC.getSimpleList()) {
+			final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
+			assertNotNull(resA);
+			assertTrue(c.getSimpleList().contains(resA));
+		}
+		for (OWLClassA a : entityC.getReferencedList()) {
+			final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
+			assertNotNull(resA);
+			assertTrue(c.getReferencedList().contains(resA));
+		}
+	}
+
+	private static List<OWLClassA> createSimpleList() {
+		final List<OWLClassA> lst = new ArrayList<>(5);
+		int counter = 110;
+		for (int i = 0; i < 5; i++) {
+			final OWLClassA a = new OWLClassA();
+			a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityASimple"
+					+ counter));
+			a.setStringAttribute("stringAttributeeee" + counter++);
+			lst.add(a);
+		}
+		return lst;
+	}
+
+	private static List<OWLClassA> createReferencedList() {
+		final List<OWLClassA> lst = new ArrayList<>(5);
+		int counter = 101;
+		for (int i = 0; i < 5; i++) {
+			final OWLClassA a = new OWLClassA();
+			a.setUri(URI
+					.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAReferenced"
+							+ counter));
+			a.setStringAttribute("stringAttributeeee" + counter++);
+			lst.add(a);
+		}
+		return lst;
 	}
 
 	private static List<StorageConfig> initStorages() {

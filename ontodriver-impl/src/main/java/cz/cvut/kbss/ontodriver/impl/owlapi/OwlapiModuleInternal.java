@@ -943,17 +943,8 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 				switch (pa.getCollectionType()) {
 				case SET:
 					Class<?> clazz = pa.getBindableJavaType();
-					removeAllObjectProperties(individual, op);
-					Set set = Set.class.cast(value);
-					addIndividualForReferencedEntity(set);
-					if (set != null) {
-						for (Object element : set) {
-							final OWLNamedIndividual objectValue = dataFactory
-									.getOWLNamedIndividual(IRI.create((String) getEntityType(clazz)
-											.getIdentifier().getJavaField().get(element)));
-							addObjectProperty(individual, op, objectValue);
-						}
-					}
+					Set<?> set = Set.class.cast(value);
+					setReferencedSet(individual, id, clazz, op, set);
 					break;
 				case LIST:
 					final ListAttribute<?, ?> la = (ListAttribute<?, ?>) attribute;
@@ -1418,7 +1409,8 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		}
 		removeAllObjectProperties(subject, p);
 		if (i != null) {
-			addObjectProperty(subject, p, i);
+			writeChange(new AddAxiom(workingOntology,
+					dataFactory.getOWLObjectPropertyAssertionAxiom(p, subject, i)));
 		}
 	}
 
@@ -1444,27 +1436,6 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	/**
-	 * Adds object property to the specified {@code subject}.
-	 * 
-	 * @param subject
-	 * @param property
-	 * @param object
-	 */
-	private void addObjectProperty(final OWLNamedIndividual subject,
-			final org.semanticweb.owlapi.model.OWLObjectProperty property,
-			final OWLIndividual object) {
-		writeChange(new AddAxiom(workingOntology, dataFactory.getOWLObjectPropertyAssertionAxiom(
-				property, subject, object)));
-		if (object.isNamed()) {
-			final IRI iri = object.asOWLNamedIndividual().getIRI();
-			if (!isInOntologySignature(iri, false)) {
-				addIndividualToOntology(object, getEntityType(object.getClass()));
-				temporaryIndividuals.add(iri);
-			}
-		}
-	}
-
-	/**
 	 * Gets OWLClass with the specified {@code uri}.
 	 * 
 	 * @param uri
@@ -1473,6 +1444,22 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	 */
 	private org.semanticweb.owlapi.model.OWLClass c(final cz.cvut.kbss.jopa.model.IRI uri) {
 		return dataFactory.getOWLClass(IRI.create(uri.toString()));
+	}
+
+	private void setReferencedSet(final OWLNamedIndividual subject, IRI iri, Class<?> type,
+			OWLObjectProperty op, Set<?> set) throws IllegalArgumentException,
+			IllegalAccessException {
+		removeAllObjectProperties(subject, op);
+		addIndividualForReferencedEntity(set);
+		if (set != null) {
+			for (Object element : set) {
+				final OWLNamedIndividual objectValue = dataFactory.getOWLNamedIndividual(IRI
+						.create((String) getEntityType(type).getIdentifier().getJavaField()
+								.get(element)));
+				addChange(new AddAxiom(workingOntology,
+						dataFactory.getOWLObjectPropertyAssertionAxiom(op, subject, objectValue)));
+			}
+		}
 	}
 
 	private <T> List<T> getReferencedList(final OWLNamedIndividual subject, IRI iri,
@@ -1518,8 +1505,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		OWLNamedIndividual seq = dataFactory.getOWLNamedIndividual(generatePrimaryKey(uri
 				.getFragment() + "-SEQ"));
 
-		writeChange(new AddAxiom(workingOntology, dataFactory.getOWLClassAssertionAxiom(owlList,
-				seq)));
+		addChange(new AddAxiom(workingOntology, dataFactory.getOWLClassAssertionAxiom(owlList, seq)));
 
 		setObjectProperty(dataFactory.getOWLNamedIndividual(uri), hasSequence, seq);
 
@@ -1588,6 +1574,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			setObjectProperty(next, hasNext, next2);
 			next = next2;
 		}
+		addIndividualForReferencedEntity(sequence);
 	}
 
 	/**

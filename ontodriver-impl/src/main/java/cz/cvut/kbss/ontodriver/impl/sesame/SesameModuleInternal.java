@@ -815,7 +815,14 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 	}
 
+	/**
+	 * Returns true if the specified value is an instance of URI or null.
+	 * 
+	 * @param value
+	 *            the value
+	 * @return boolean
+	 */
 	boolean isUri(Value value) {
-		return (value instanceof URI);
+		return (value == null || (value instanceof URI));
 	}
 }
