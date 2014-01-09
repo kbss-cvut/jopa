@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver.impl.jena;
 
 import java.lang.reflect.Field;
 
-import cz.cvut.kbss.ontodriver.AbstractStatement;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -73,7 +73,7 @@ public class JenaStorageModule extends StorageModule {
 	}
 
 	@Override
-	public ResultSet executeStatement(AbstractStatement statement) throws OntoDriverException {
+	public ResultSet executeStatement(JopaStatement statement) throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import cz.cvut.kbss.ontodriver.AbstractStatement;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
@@ -113,7 +113,7 @@ public class DriverCachingOwlapiFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public OwlapiStatement createStatement(AbstractStatement statement) throws OntoDriverException {
+	public OwlapiStatement createStatement(JopaStatement statement) throws OntoDriverException {
 		ensureOpen();
 		if (statement == null) {
 			throw new NullPointerException();

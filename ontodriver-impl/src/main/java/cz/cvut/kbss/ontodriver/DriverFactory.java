@@ -97,5 +97,5 @@ public interface DriverFactory extends Closeable {
 	 * @throws OntoDriverException
 	 *             If called on a closed factory
 	 */
-	public DriverStatement createStatement(AbstractStatement statement) throws OntoDriverException;
+	public DriverStatement createStatement(JopaStatement statement) throws OntoDriverException;
 }

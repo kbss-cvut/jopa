@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.cvut.kbss.ontodriver.AbstractStatement;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
@@ -114,7 +114,7 @@ public class DriverFactoryMock implements DriverFactory {
 	}
 
 	@Override
-	public DriverStatement createStatement(AbstractStatement statement) throws OntoDriverException {
+	public DriverStatement createStatement(JopaStatement statement) throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return null;
 	}

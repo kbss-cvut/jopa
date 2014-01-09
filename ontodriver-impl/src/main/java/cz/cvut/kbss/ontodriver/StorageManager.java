@@ -62,7 +62,7 @@ public abstract class StorageManager implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code statement} is {@code null}
 	 */
-	public abstract ResultSet executeStatement(AbstractStatement statement) throws OntoDriverException;
+	public abstract ResultSet executeStatement(JopaStatement statement) throws OntoDriverException;
 
 	/**
 	 * Resolves whether the specified context contains entity with the specified

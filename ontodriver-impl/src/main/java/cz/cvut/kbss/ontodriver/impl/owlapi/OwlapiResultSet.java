@@ -13,7 +13,7 @@ import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLObject;
 
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
-import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.AbstractResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.owl2query.model.GroundTerm;
@@ -21,27 +21,24 @@ import cz.cvut.kbss.owl2query.model.QueryResult;
 import cz.cvut.kbss.owl2query.model.ResultBinding;
 import cz.cvut.kbss.owl2query.model.Variable;
 
-public class OwlapiResultSet implements ResultSet {
+public class OwlapiResultSet extends AbstractResultSet {
 
 	private final QueryResult<OWLObject> result;
 	private Iterator<ResultBinding<OWLObject>> iterator;
 	private ResultBinding<OWLObject> current;
 	private final Map<String, Variable<OWLObject>> namesToVars;
 	private final Map<Integer, Variable<OWLObject>> indexesToVars;
-	private final Statement statement;
-	private boolean open;
 
 	public OwlapiResultSet(QueryResult<OWLObject> result, Statement statement) {
-		if (result == null || statement == null) {
+		super(statement);
+		if (result == null) {
 			throw new NullPointerException();
 		}
 		this.result = result;
-		this.statement = statement;
 		this.namesToVars = new HashMap<String, Variable<OWLObject>>(result.getResultVars().size());
 		this.indexesToVars = new HashMap<Integer, Variable<OWLObject>>(result.getResultVars()
 				.size());
 		init();
-		this.open = true;
 	}
 
 	private void init() {
@@ -55,17 +52,8 @@ public class OwlapiResultSet implements ResultSet {
 	}
 
 	@Override
-	public boolean isOpen() {
-		return open;
-	}
-
-	@Override
-	public void close() throws OntoDriverException {
-		this.open = false;
-	}
-
-	@Override
 	public int findColumn(String columnLabel) throws OntoDriverException {
+		ensureOpen();
 		for (Entry<Integer, Variable<OWLObject>> e : indexesToVars.entrySet()) {
 			if (e.getValue().getName().equals(columnLabel)) {
 				return e.getKey();
@@ -76,11 +64,13 @@ public class OwlapiResultSet implements ResultSet {
 
 	@Override
 	public int getColumnCount() throws OntoDriverException {
+		ensureOpen();
 		return result.getResultVars().size();
 	}
 
 	@Override
 	public void first() throws OntoDriverException {
+		ensureOpen();
 		this.iterator = result.iterator();
 	}
 
@@ -168,26 +158,20 @@ public class OwlapiResultSet implements ResultSet {
 
 	@Override
 	public <T> T getObject(int columnIndex, Class<T> cls) throws OntoDriverException {
+		final OWLObject ob = getCurrentValue(columnIndex);
 		if (cls == null) {
 			throw new NullPointerException();
 		}
-		final OWLObject ob = getCurrentValue(columnIndex);
 		return getObjectImpl(ob, cls);
 	}
 
 	@Override
 	public <T> T getObject(String columnLabel, Class<T> cls) throws OntoDriverException {
+		final OWLObject ob = getCurrentValue(columnLabel);
 		if (cls == null) {
 			throw new NullPointerException();
 		}
-		final OWLObject ob = getCurrentValue(columnLabel);
 		return getObjectImpl(ob, cls);
-	}
-
-	@Override
-	public int getRowIndex() throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 	@Override
@@ -203,11 +187,6 @@ public class OwlapiResultSet implements ResultSet {
 	}
 
 	@Override
-	public Statement getStatement() throws OntoDriverException {
-		return statement;
-	}
-
-	@Override
 	public String getString(int columnIndex) throws OntoDriverException {
 		final OWLObject ob = getCurrentValue(columnIndex);
 		return getString(ob);
@@ -220,13 +199,8 @@ public class OwlapiResultSet implements ResultSet {
 	}
 
 	@Override
-	public boolean isFirst() throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public boolean hasNext() throws OntoDriverException {
+		ensureOpen();
 		return iterator.hasNext();
 	}
 
@@ -238,6 +212,7 @@ public class OwlapiResultSet implements ResultSet {
 
 	@Override
 	public void next() throws OntoDriverException {
+		super.next();
 		current = iterator.next();
 	}
 
@@ -266,6 +241,7 @@ public class OwlapiResultSet implements ResultSet {
 	}
 
 	private OWLObject getCurrentValue(String column) {
+		ensureOpen();
 		if (current == null) {
 			throw new IllegalStateException("Current row is null.");
 		}
@@ -279,6 +255,7 @@ public class OwlapiResultSet implements ResultSet {
 	}
 
 	private OWLObject getCurrentValue(int colIndex) {
+		ensureOpen();
 		if (current == null) {
 			throw new IllegalStateException("Current row is null.");
 		}

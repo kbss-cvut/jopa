@@ -222,7 +222,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code statement} is null
 	 */
-	public abstract ResultSet executeStatement(AbstractStatement statement)
+	public abstract ResultSet executeStatement(JopaStatement statement)
 			throws OntoDriverException;
 
 	/**

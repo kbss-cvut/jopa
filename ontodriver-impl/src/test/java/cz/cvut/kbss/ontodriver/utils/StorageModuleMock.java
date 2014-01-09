@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import cz.cvut.kbss.ontodriver.AbstractStatement;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -83,7 +83,7 @@ public class StorageModuleMock extends StorageModule {
 	}
 
 	@Override
-	public ResultSet executeStatement(AbstractStatement statement) throws OntoDriverException {
+	public ResultSet executeStatement(JopaStatement statement) throws OntoDriverException {
 		// not implemented yet
 		return null;
 	}

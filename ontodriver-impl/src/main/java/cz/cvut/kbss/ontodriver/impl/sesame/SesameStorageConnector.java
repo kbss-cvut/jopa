@@ -146,7 +146,7 @@ public class SesameStorageConnector implements StorageConnector {
 	 * Gets a connection to the underlying repository. </p>
 	 * 
 	 * The caller is expected to handle all the transaction synchronization and
-	 * connection lifecycle.t
+	 * connection lifecycle.
 	 * 
 	 * @return Connection to the underlying Sesame repository
 	 * @throws OntoDriverException

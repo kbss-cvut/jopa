@@ -4,9 +4,11 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import cz.cvut.kbss.ontodriver.AbstractStatement;
+import org.openrdf.repository.RepositoryConnection;
+
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.StorageModule;
@@ -123,7 +125,7 @@ public class SesameStorageModule extends StorageModule {
 	}
 
 	@Override
-	public ResultSet executeStatement(AbstractStatement statement) throws OntoDriverException {
+	public ResultSet executeStatement(JopaStatement statement) throws OntoDriverException {
 		beforeExecution();
 		if (statement == null) {
 			throw new NullPointerException("Null passed to executeStatement.");
@@ -172,5 +174,19 @@ public class SesameStorageModule extends StorageModule {
 			throws OntoDriverException {
 		// Can add more internal implementations here
 		return new SesameModuleInternal(getOntologyData(true), this);
+	}
+
+	/**
+	 * Gets a new repository connection. </p>
+	 * 
+	 * Note that it is the caller's responsibility to close the connection once
+	 * he's done with it.
+	 * 
+	 * @return RepositoryConnection
+	 * @throws OntoDriverException
+	 *             When the connection cannot be opened
+	 */
+	RepositoryConnection getConnection() throws OntoDriverException {
+		return connector.getRepositoryConnection();
 	}
 }

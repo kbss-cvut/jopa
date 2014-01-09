@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.ontodriver.AbstractStatement;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
@@ -75,7 +75,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	public Statement createStatement() throws OntoDriverException {
-		return new AbstractStatement(storageManager);
+		return new JopaStatement(storageManager);
 	}
 
 	@Override

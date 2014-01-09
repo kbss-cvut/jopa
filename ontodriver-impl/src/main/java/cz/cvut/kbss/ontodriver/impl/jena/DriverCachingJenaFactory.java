@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import cz.cvut.kbss.ontodriver.AbstractStatement;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
@@ -101,7 +101,7 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public DriverStatement createStatement(AbstractStatement statement) throws OntoDriverException {
+	public DriverStatement createStatement(JopaStatement statement) throws OntoDriverException {
 		if (statement == null) {
 			throw new NullPointerException();
 		}

@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.ontodriver.AbstractStatement;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
@@ -83,7 +83,7 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public ResultSet executeStatement(AbstractStatement statement) throws OntoDriverException {
+	public ResultSet executeStatement(JopaStatement statement) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Executing statement.");
 		}

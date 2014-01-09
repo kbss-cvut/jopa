@@ -33,6 +33,7 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInternalException;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
+import cz.cvut.kbss.ontodriver.exceptions.QueryExecutionException;
 import cz.cvut.kbss.ontodriver.impl.ModuleInternal;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlModuleException;
 import cz.cvut.kbss.ontodriver.impl.utils.ICValidationUtils;
@@ -183,8 +184,12 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 
 	@Override
 	public ResultSet executeStatement(SesameStatement statement) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			statement.setConnection(module.getConnection());
+			return statement.executeStatement();
+		} catch (OntoDriverException e) {
+			throw new QueryExecutionException(e);
+		}
 	}
 
 	@Override

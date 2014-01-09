@@ -6,28 +6,21 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import cz.cvut.kbss.ontodriver.AbstractStatement;
-import cz.cvut.kbss.ontodriver.DriverStatement;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.QueryExecutionException;
 import cz.cvut.kbss.owl2query.engine.OWL2QueryEngine;
 import cz.cvut.kbss.owl2query.model.QueryResult;
 import cz.cvut.kbss.owl2query.model.owlapi.OWLAPIv3OWL2Ontology;
 
-public class OwlapiStatement implements DriverStatement {
-
-	private final String query;
-	private final boolean useTransactionalOntology;
-	private final AbstractStatement statement;
+public class OwlapiStatement extends AbstractStatement {
 
 	private OWLOntology ontology;
 	private OWLOntologyManager manager;
 	private OWLReasoner reasoner;
 
-	public OwlapiStatement(AbstractStatement statement) {
-		assert statement != null;
-		this.statement = statement;
-		this.query = statement.getQuery();
-		this.useTransactionalOntology = statement.useTransactionalOntology();
+	public OwlapiStatement(JopaStatement statement) {
+		super(statement);
 	}
 
 	@Override
@@ -43,7 +36,7 @@ public class OwlapiStatement implements DriverStatement {
 		if (res == null) {
 			throw new QueryExecutionException("Unable to execute query " + query);
 		}
-		return new OwlapiResultSet(res, statement);
+		return new OwlapiResultSet(res, jopaStatement);
 	}
 
 	public void setOntology(OWLOntology ontology) {
@@ -56,9 +49,5 @@ public class OwlapiStatement implements DriverStatement {
 
 	public void setReasoner(OWLReasoner reasoner) {
 		this.reasoner = reasoner;
-	}
-
-	public boolean shouldUseTransactionalOntology() {
-		return useTransactionalOntology;
 	}
 }
