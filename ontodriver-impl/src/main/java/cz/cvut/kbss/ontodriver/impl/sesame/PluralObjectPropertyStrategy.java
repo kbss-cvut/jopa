@@ -7,11 +7,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
@@ -21,6 +23,14 @@ import cz.cvut.kbss.ontodriver.exceptions.OWLReferencedListException;
 import cz.cvut.kbss.ontodriver.exceptions.OWLSimpleListException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
+/**
+ * Strategy for plural object property attributes. </p>
+ * 
+ * I. e. collections of references to other entities.
+ * 
+ * @author ledvima1
+ * 
+ */
 class PluralObjectPropertyStrategy extends AttributeStrategy {
 
 	public PluralObjectPropertyStrategy(SesameModuleInternal internal) {
@@ -96,16 +106,15 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 	 */
 	private List<?> loadReferencedList(URI subject, ListAttribute<?, ?> la)
 			throws OntoDriverException {
-		final URI hasSequenceUri = internal.getAddressAsSesameUri(la.getIRI());
+		final URI hasSequenceUri = getAddressAsSesameUri(la.getIRI());
 		final boolean includeInferred = la.isInferred();
-		final Model m = internal.getModel(includeInferred);
+		final Model m = getModel(includeInferred);
 		final Class<?> cls = la.getBindableJavaType();
-		final URI hasNextUri = internal.getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
-		final URI hasContentsUri = internal
-				.getAddressAsSesameUri(la.getOWLPropertyHasContentsIRI());
+		final URI hasNextUri = getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
+		final URI hasContentsUri = getAddressAsSesameUri(la.getOWLPropertyHasContentsIRI());
 
 		Value seq = getPropertyValue(subject, hasSequenceUri, m);
-		if (!internal.isUri(seq)) {
+		if (!isUri(seq)) {
 			throw new OWLReferencedListException("The value of property " + hasSequenceUri
 					+ " has to be an URI.");
 		}
@@ -120,7 +129,7 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 			assert inst != null;
 			lst.add(inst);
 			seq = getPropertyValue(seqUri, hasNextUri, m);
-			if (!internal.isUri(seq)) {
+			if (!isUri(seq)) {
 				throw new OWLReferencedListException("The value of property " + hasNextUri
 						+ " has to be an URI.");
 			}
@@ -143,8 +152,8 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 	 */
 	private Set<?> loadReferencedSet(URI subject, PluralAttribute<?, ?, ?> pa)
 			throws OntoDriverException {
-		final URI property = internal.getAddressAsSesameUri(pa.getIRI());
-		final Model m = internal.getModel(pa.isInferred());
+		final URI property = getAddressAsSesameUri(pa.getIRI());
+		final Model m = getModel(pa.isInferred());
 
 		final Class<?> cls = pa.getBindableJavaType();
 		final Collection<Statement> statements = m.filter(subject, property, null);
@@ -154,7 +163,7 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		final Set<Object> set = new HashSet<>(statements.size());
 		for (Statement stmt : statements) {
 			final Value obj = stmt.getObject();
-			if (!internal.isUri(obj)) {
+			if (!isUri(obj)) {
 				continue;
 			}
 			final URI objUri = (URI) obj;
@@ -174,18 +183,18 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 	 * @return list of entities or null if there are none
 	 */
 	private List<?> loadSimpleList(URI subject, ListAttribute<?, ?> la) throws OntoDriverException {
-		final URI property = internal.getAddressAsSesameUri(la.getIRI());
-		final Model m = internal.getModel(la.isInferred());
+		final URI property = getAddressAsSesameUri(la.getIRI());
+		final Model m = getModel(la.isInferred());
 		// Element type
 		final Class<?> cls = la.getBindableJavaType();
-		final URI hasNextUri = internal.getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
+		final URI hasNextUri = getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
 
 		final List<Object> lst = new ArrayList<>();
 		final Value val = getPropertyValue(subject, property, m);
 		if (val == null) {
 			return null;
 		}
-		if (!internal.isUri(val)) {
+		if (!isUri(val)) {
 			throw new OWLSimpleListException("The value of property " + property
 					+ " has to be an URI.");
 		}
@@ -197,7 +206,7 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 			if (nextValue == null) {
 				break;
 			}
-			if (!internal.isUri(nextValue)) {
+			if (!isUri(nextValue)) {
 				throw new OWLSimpleListException("The value of property " + hasNextUri
 						+ " has to be an URI.");
 			}
@@ -210,45 +219,44 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		removeOldObjectPropertyValues(uri, propertyUri);
 		final List<Statement> stmts = new ArrayList<>(values.size());
 		for (Object val : values) {
-			final URI id = internal.getIdentifier(val);
+			final URI id = getIdentifier(val);
 			assert id != null;
 			final Statement stmt = valueFactory.createStatement(id, propertyUri, uri);
 			stmts.add(stmt);
 		}
-		internal.addIndividualsForReferencedEntities(values);
-		internal.addStatements(stmts);
+		addIndividualsForReferencedEntities(values);
+		addStatements(stmts);
 	}
 
-	private void saveSimpleList(URI uri, URI propertyUri, ListAttribute<?, ?> la, List<?> values) {
-		removeOldList(uri, propertyUri,
-				internal.getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI()),
+	private void saveSimpleList(URI uri, URI hasSequence, ListAttribute<?, ?> la, List<?> values) {
+		removeOldList(uri, hasSequence, getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI()),
 				la.isInferred());
 		if (values == null || values.isEmpty()) {
 			return;
 		}
 		final List<Statement> toSave = new ArrayList<>(values.size());
-		final URI hasNext = internal.getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
+		final URI hasNext = getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
 		final Iterator<?> it = values.iterator();
 		assert it.hasNext();
 		Object val = it.next();
-		URI seq = internal.getIdentifier(val);
-		toSave.add(valueFactory.createStatement(uri, propertyUri, seq));
+		URI seq = getIdentifier(val);
+		toSave.add(valueFactory.createStatement(uri, hasSequence, seq));
 		while (it.hasNext()) {
-			URI next = internal.getIdentifier(it.next());
+			URI next = getIdentifier(it.next());
 			toSave.add(valueFactory.createStatement(seq, hasNext, next));
 			seq = next;
 		}
-		internal.addStatements(toSave);
+		addStatements(toSave);
 	}
 
 	private void removeOldList(URI uri, URI hasSequence, URI hasNext, boolean includeInferred) {
 		final List<Statement> toRemove = new LinkedList<>();
-		final Model m = internal.getModel(includeInferred);
+		final Model m = getModel(includeInferred);
 		final Value val = getPropertyValue(uri, hasSequence, m);
 		if (val == null) {
 			return;
 		}
-		if (!internal.isUri(val)) {
+		if (!isUri(val)) {
 			throw new OWLSimpleListException("The value of property " + hasSequence
 					+ " has to be an URI.");
 		}
@@ -259,18 +267,53 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 			if (next == null) {
 				break;
 			}
-			if (!internal.isUri(next)) {
+			if (!isUri(next)) {
 				throw new OWLSimpleListException("The value of property " + hasNext
 						+ " has to be an URI.");
 			}
-			internal.removeTemporaryIndividual((URI) next);
+			removeTemporaryIndividual((URI) next);
 			toRemove.add(valueFactory.createStatement(seq, hasNext, next));
 			seq = (URI) next;
 		}
-		internal.removeStatements(toRemove);
+		removeStatements(toRemove);
 	}
 
-	private void saveReferencedList(URI uri, URI propertyUri, ListAttribute<?, ?> la, List<?> values) {
-		// TODO
+	private void saveReferencedList(URI uri, URI hasSequence, ListAttribute<?, ?> la, List<?> values)
+			throws OntoDriverException {
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Setting referenced list " + uri + ", sequence=" + values);
+		}
+		removeOldList(uri, hasSequence, getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI()),
+				la.isInferred());
+		final int size = values == null ? 3 : (values.size() * 2 + 3);
+		final List<Statement> toSave = new ArrayList<>(size);
+		final String localName = uri.getLocalName(); // ~ IRI.getFragment()
+		final URI listUri = generatePrimaryKey(localName + "-SEQ");
+		toSave.add(valueFactory.createStatement(listUri, RDF.TYPE,
+				getAddressAsSesameUri(la.getOWLListClass())));
+		toSave.add(valueFactory.createStatement(uri, hasSequence, listUri));
+		if (values == null || values.isEmpty()) {
+			addStatements(toSave);
+			return;
+		}
+
+		final URI hasContents = getAddressAsSesameUri(la.getOWLPropertyHasContentsIRI());
+		final URI hasNext = getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
+		final Iterator<?> it = values.iterator();
+		Object val = it.next();
+		assert it.hasNext();
+		toSave.add(valueFactory.createStatement(listUri, hasContents, getIdentifier(val)));
+
+		int i = 1;
+		URI next = listUri;
+		while (it.hasNext()) {
+			val = it.next();
+			final URI next2 = generatePrimaryKey(localName + "-SEQ" + (i++));
+			toSave.add(valueFactory.createStatement(next, hasNext, next2));
+			toSave.add(valueFactory.createStatement(next2, hasContents, getIdentifier(val)));
+			next = next2;
+		}
+		addIndividualsForReferencedEntities(values);
+		addStatements(toSave);
 	}
 }

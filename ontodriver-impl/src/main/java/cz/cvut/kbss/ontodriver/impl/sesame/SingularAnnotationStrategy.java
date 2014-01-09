@@ -10,6 +10,12 @@ import org.openrdf.model.Value;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 
+/**
+ * Strategy for singular annotation property values.
+ * 
+ * @author ledvima1
+ * 
+ */
 class SingularAnnotationStrategy extends SingularDataPropertyStrategy {
 
 	public SingularAnnotationStrategy(SesameModuleInternal internal) {
@@ -36,10 +42,10 @@ class SingularAnnotationStrategy extends SingularDataPropertyStrategy {
 	 */
 	private <T> void loadAnnotationProperty(T instance, URI uri, Attribute<?, ?> property)
 			throws IllegalArgumentException, IllegalAccessException {
-		final URI annotationProperty = internal.toUri(property);
-		Model res = internal.getModel(false).filter(uri, annotationProperty, null);
+		final URI annotationProperty = getAddressAsSesameUri(property.getIRI());
+		Model res = getModel(false).filter(uri, annotationProperty, null);
 		if (res.isEmpty()) {
-			res = internal.getModel(true).filter(uri, annotationProperty, null);
+			res = getModel(true).filter(uri, annotationProperty, null);
 		}
 		Object value = null;
 		URI datatype = null;

@@ -15,11 +15,21 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInternalException;
 
+/**
+ * Base strategy for loading and saving entity attribute values. </p>
+ * 
+ * Defines the {@link #load(Object, URI, Attribute, boolean)} and
+ * {@link #save(Object, URI, Attribute, URI, Object)} methods and several helper
+ * methods, which are mostly only delegates to the SesameModuleInternal methods.
+ * 
+ * @author ledvima1
+ * 
+ */
 abstract class AttributeStrategy {
 
 	protected final Logger LOG = SesameModuleInternal.LOG;
 
-	protected final SesameModuleInternal internal;
+	private final SesameModuleInternal internal;
 	protected String lang;
 	protected ValueFactory valueFactory;
 
@@ -66,6 +76,31 @@ abstract class AttributeStrategy {
 	abstract <T> void save(T entity, URI uri, Attribute<?, ?> att, URI attUri, Object value)
 			throws OntoDriverException;
 
+	protected void addIndividualsForReferencedEntities(Collection<?> refs)
+			throws OntoDriverException {
+		internal.addIndividualsForReferencedEntities(refs);
+	}
+
+	protected void addStatement(Statement stmt) {
+		internal.addStatement(stmt);
+	}
+
+	protected void addStatements(Collection<Statement> stmts) {
+		internal.addStatements(stmts);
+	}
+
+	protected URI generatePrimaryKey(String typeName) {
+		return internal.generatePrimaryKey(typeName);
+	}
+
+	protected URI getAddressAsSesameUri(Object uri) {
+		return internal.getAddressAsSesameUri(uri);
+	}
+
+	protected URI getIdentifier(Object entity) {
+		return internal.getIdentifier(entity);
+	}
+
 	protected <T> T getJavaInstanceForSubject(Class<T> cls, URI subjectUri)
 			throws OntoDriverException {
 		assert cls != null;
@@ -87,6 +122,10 @@ abstract class AttributeStrategy {
 			// Otherwise load the entity
 			return internal.loadEntity(cls, subjectUri);
 		}
+	}
+
+	protected Model getModel(boolean includeInferred) {
+		return internal.getModel(includeInferred);
 	}
 
 	/**
@@ -129,6 +168,10 @@ abstract class AttributeStrategy {
 		return ob;
 	}
 
+	protected boolean isUri(Value value) {
+		return internal.isUri(value);
+	}
+
 	protected void removeOldDataPropertyValues(URI subject, URI property) {
 		// TODO should we use only explicit model?
 		final Model m = internal.getModel(false).filter(subject, property, null);
@@ -139,6 +182,14 @@ abstract class AttributeStrategy {
 		// TODO should we use only explicit model?
 		final Model m = internal.getModel(false).filter(subject, property, null);
 		internal.removeStatements(m);
+	}
+
+	protected void removeStatements(Collection<Statement> stmts) {
+		internal.removeStatements(stmts);
+	}
+
+	protected void removeTemporaryIndividual(URI uri) {
+		internal.removeTemporaryIndividual(uri);
 	}
 
 	private <N extends Enum<N>> N getEnum(Class<N> cls, URI uri) {

@@ -10,6 +10,12 @@ import org.openrdf.model.Value;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 
+/**
+ * Strategy for singular data property values. </p>
+ * 
+ * @author ledvima1
+ * 
+ */
 public class SingularDataPropertyStrategy extends AttributeStrategy {
 
 	public SingularDataPropertyStrategy(SesameModuleInternal internal) {
@@ -41,10 +47,10 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 	 */
 	private <T> void loadDataProperty(T instance, URI uri, Attribute<?, ?> property)
 			throws IllegalArgumentException, IllegalAccessException {
-		final URI propertyUri = internal.toUri(property);
-		Model res = internal.getModel(false).filter(uri, propertyUri, null);
+		final URI propertyUri = getAddressAsSesameUri(property.getIRI());
+		Model res = getModel(false).filter(uri, propertyUri, null);
 		if (res.isEmpty()) {
-			res = internal.getModel(true).filter(uri, propertyUri, null);
+			res = getModel(true).filter(uri, propertyUri, null);
 		}
 		Object value = null;
 		URI datatype = null;
@@ -89,6 +95,6 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 		removeOldDataPropertyValues(subject, property);
 		Literal lit = SesameUtils.createDataPropertyLiteral(value, lang, valueFactory);
 		final Statement stmt = valueFactory.createStatement(subject, property, lit);
-		internal.addStatement(stmt);
+		addStatement(stmt);
 	}
 }

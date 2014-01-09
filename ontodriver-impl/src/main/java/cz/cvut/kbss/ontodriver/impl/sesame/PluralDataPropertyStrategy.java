@@ -11,6 +11,14 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 
+/**
+ * Strategy for plural data property attributes. </p>
+ * 
+ * I. e. collections of non-entity types saved as data properties.
+ * 
+ * @author ledvima1
+ * 
+ */
 class PluralDataPropertyStrategy extends AttributeStrategy {
 
 	public PluralDataPropertyStrategy(SesameModuleInternal internal) {
@@ -46,6 +54,6 @@ class PluralDataPropertyStrategy extends AttributeStrategy {
 					SesameUtils.createDataPropertyLiteral(ob, lang, valueFactory));
 			stmts.add(stmt);
 		}
-		internal.addStatements(stmts);
+		addStatements(stmts);
 	}
 }

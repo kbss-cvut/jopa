@@ -10,6 +10,14 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
+/**
+ * Strategy for singular object property values. </p>
+ * 
+ * I. e. references to other entities, stored as object property values.
+ * 
+ * @author ledvima1
+ * 
+ */
 class SingularObjectPropertyStrategy extends AttributeStrategy {
 
 	public SingularObjectPropertyStrategy(SesameModuleInternal internal) {
@@ -34,7 +42,7 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 	<T> void save(T entity, URI uri, Attribute<?, ?> att, URI attUri, Object value)
 			throws OntoDriverException {
 		if (value != null) {
-			internal.addIndividualsForReferencedEntities(Collections.singletonList(value));
+			addIndividualsForReferencedEntities(Collections.singletonList(value));
 		}
 		saveObjectProperty(uri, attUri, value);
 	}
@@ -55,7 +63,7 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 	 */
 	private <T> void loadObjectProperty(T instance, URI uri, Attribute<?, ?> property)
 			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
-		final URI propertyUri = internal.toUri(property);
+		final URI propertyUri = getAddressAsSesameUri(property.getIRI());
 		URI objectUri = getObjectPropertyValue(uri, propertyUri, property.isInferred());
 		if (objectUri == null) {
 			if (LOG.isLoggable(Level.FINER)) {
@@ -76,10 +84,10 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 			LOG.finest("setObjectProperty '" + property + "' of " + subject + " to " + value);
 		}
 		if (value != null) {
-			final URI uri = internal.getIdentifier(value);
+			final URI uri = getIdentifier(value);
 			assert uri != null;
 			final Statement stmt = valueFactory.createStatement(subject, property, uri);
-			internal.addStatement(stmt);
+			addStatement(stmt);
 		}
 	}
 }

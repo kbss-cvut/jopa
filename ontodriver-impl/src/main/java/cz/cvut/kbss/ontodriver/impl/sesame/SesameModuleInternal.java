@@ -271,7 +271,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 * @param typeName
 	 * @return
 	 */
-	private URI generatePrimaryKey(String typeName) {
+	URI generatePrimaryKey(String typeName) {
 		assert typeName != null;
 
 		URI uri = null;
@@ -817,13 +817,5 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 
 	boolean isUri(Value value) {
 		return (value instanceof URI);
-	}
-
-	/**
-	 * Creates Sesame URI from the attribute's IRI
-	 */
-	URI toUri(Attribute<?, ?> attribute) {
-		assert attribute != null;
-		return valueFactory.createURI(attribute.getIRI().toString());
 	}
 }

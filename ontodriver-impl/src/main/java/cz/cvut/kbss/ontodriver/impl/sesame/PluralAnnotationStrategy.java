@@ -5,6 +5,12 @@ import org.openrdf.model.URI;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 
+/**
+ * Strategy for plural annotation property values. </p>
+ * 
+ * @author ledvima1
+ * 
+ */
 class PluralAnnotationStrategy extends PluralDataPropertyStrategy {
 
 	protected PluralAnnotationStrategy(SesameModuleInternal internal) {

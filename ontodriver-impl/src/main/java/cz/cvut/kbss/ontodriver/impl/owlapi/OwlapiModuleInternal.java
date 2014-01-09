@@ -1107,7 +1107,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	 * @param lst
 	 *            Collection of referenced entities
 	 */
-	private void addIndividualForReferencedEntity(final Collection<Object> lst) {
+	private void addIndividualForReferencedEntity(final Collection<?> lst) {
 
 		if (lst != null) {
 			for (final Object li : lst) {
@@ -1458,6 +1458,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		if (object.isNamed()) {
 			final IRI iri = object.asOWLNamedIndividual().getIRI();
 			if (!isInOntologySignature(iri, false)) {
+				addIndividualToOntology(object, getEntityType(object.getClass()));
 				temporaryIndividuals.add(iri);
 			}
 		}
@@ -1509,8 +1510,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			throws InterruptedException {
 		if (LOG.isLoggable(Level.FINE))
 			LOG.fine("Setting referenced list " + o + ", sequence=" + sequence);
-		// TODO is the removeList enough? The content should be probably removed
-		// as well
+
 		removeList(o, hasSequence, hasNext);
 		final IRI uri = getIdentifier(o);
 
@@ -1529,9 +1529,6 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		OWLNamedIndividual ind = dataFactory.getOWLNamedIndividual(getIdentifier(sequence.get(0)));
 		addChange(new AddAxiom(workingOntology, dataFactory.getOWLObjectPropertyAssertionAxiom(
 				hasContents, seq, ind)));
-		if (!isInOntologySignature(ind.getIRI(), false)) {
-			temporaryIndividuals.add(ind.getIRI());
-		}
 
 		for (int i = 1; i < sequence.size(); i++) {
 			OWLNamedIndividual seq2 = dataFactory.getOWLNamedIndividual(generatePrimaryKey(uri
@@ -1543,11 +1540,9 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 					.get(i)));
 			addChange(new AddAxiom(workingOntology, dataFactory.getOWLObjectPropertyAssertionAxiom(
 					hasContents, seq2, arg)));
-			if (!isInOntologySignature(arg.getIRI(), false)) {
-				temporaryIndividuals.add(arg.getIRI());
-			}
 			seq = seq2;
 		}
+		addIndividualForReferencedEntity(sequence);
 	}
 
 	private <T> List<T> getSimpleList(final OWLNamedIndividual subject, IRI iri,
