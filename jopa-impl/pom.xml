@@ -122,14 +122,6 @@
 			<optional>false</optional>
 		</dependency>
 		<dependency>
-			<groupId>de.fraunhofer.iitb</groupId>
-			<artifactId>owldb</artifactId>
-			<version>2.04</version>
-			<type>jar</type>
-			<scope>compile</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
 			<groupId>cz.cvut.kbss.jopa</groupId>
 			<artifactId>jopa-api</artifactId>
 			<version>${project.version}</version>
@@ -144,13 +136,6 @@
 			<type>jar</type>
 			<scope>compile</scope>
 			<optional>false</optional>
-		</dependency>
-		<dependency>
-			<groupId>cz.cvut.kbss</groupId>
-			<artifactId>owl2query</artifactId>
-			<version>1.0-SNAPSHOT</version>
-			<type>jar</type>
-			<scope>compile</scope>
 		</dependency>
 		<!--<dependency>-->
 			<!--<groupId>org.aspectj</groupId>-->
@@ -172,17 +157,28 @@
 			<artifactId>reflections</artifactId>
 			<version>0.9.5</version>
 		</dependency>
-		<dependency>
-			<groupId>postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>9.1-901-1.jdbc4</version>
-			<scope>runtime</scope>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>postgresql</groupId> -->
+<!-- 			<artifactId>postgresql</artifactId> -->
+<!-- 			<version>9.1-901-1.jdbc4</version> -->
+<!-- 			<scope>runtime</scope> -->
+<!-- 		</dependency> -->
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <version>1.7.0</version>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+        	<groupId>org.jgrapht</groupId>
+        	<artifactId>jgrapht-jdk1.5</artifactId>
+        	<version>0.7.3</version>
+        	<scope>runtime</scope>
+        </dependency>
+        <dependency>
+        	<groupId>cz.cvut.kbss.jopa</groupId>
+        	<artifactId>ontodriver-impl</artifactId>
+        	<version>${project.version}</version>
         </dependency>
 	</dependencies>
 
@@ -209,8 +205,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 
@@ -219,7 +215,7 @@
 				<artifactId>aspectj-maven-plugin</artifactId>
 				<version>1.4</version>
 				<configuration>
-					<complianceLevel>1.5</complianceLevel>
+					<complianceLevel>1.6</complianceLevel>
 					<includes>
 						<include>**/BeanListenerAspect.aj</include>
 						<include>**/EntityLoadingAspect.aj</include>

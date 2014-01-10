@@ -1,7 +1,9 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 
@@ -41,7 +43,12 @@ public class DisabledCacheManager implements CacheManager {
 		return null;
 	}
 
-	public Object get(Class<?> cls, Object iri) {
+	public <T> T get(Class<T> cls, Object iri) {
+		return null;
+	}
+
+	@Override
+	public <T> T get(URI contextUri, Class<T> cls, Object primaryKey) {
 		return null;
 	}
 
@@ -73,6 +80,16 @@ public class DisabledCacheManager implements CacheManager {
 		return false;
 	}
 
+	@Override
+	public boolean contains(URI contextUri, Class<?> cls, Object primaryKey) {
+		return false;
+	}
+
+	@Override
+	public void evict(URI contextUri, Class<?> cls, Object primaryKey) {
+		// Nothing to do
+	}
+
 	public void evict(Class<?> cls, Object primaryKey) {
 		// Nothing to do
 
@@ -88,4 +105,33 @@ public class DisabledCacheManager implements CacheManager {
 
 	}
 
+	public boolean acquireReadLock() {
+		return true;
+	}
+
+	public void releaseReadLock() {
+		// Nothing to do
+	}
+
+	public boolean acquireWriteLock() {
+		return true;
+	}
+
+	public void releaseWriteLock() {
+		// Nothing to do
+	}
+
+	public void setInferredClasses(Set<Class<?>> inferredClasses) {
+		// Nothing to do
+	}
+
+	@Override
+	public void evict(URI contextUri) {
+		// Nothing to do
+	}
+
+	@Override
+	public void add(URI contextUri, Object primaryKey, Object entity) {
+		// Nothing to do
+	}
 }

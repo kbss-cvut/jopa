@@ -15,6 +15,7 @@
 
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import java.net.URI;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.UnusedJPA;
@@ -98,12 +99,28 @@ public interface Metamodel {
 	public Set<Class<?>> getInferredClasses();
 
 	/**
-	 * Returns true if the persistence can and should use AspectJ for weaving
-	 * entities and their properties. AspectJ is essential to lazy loading
-	 * functionality, this without it all entities and their properties should
-	 * be eager loaded.
+	 * Gets a set of URIs that should be added to module extraction signature.
+	 * </p>
 	 * 
-	 * @return True if AspectJ is available and should be used.
+	 * The returned collection is not modifiable.
+	 * 
+	 * @return A set of URIs
 	 */
-	public boolean shouldUseAspectJ();
+	public Set<URI> getModuleExtractionExtraSignature();
+
+	/**
+	 * Adds the specified URI to the module extraction signature. </p>
+	 * 
+	 * Note that a module including the specified URI will be created when a new
+	 * resource level transaction is started. When that will be is
+	 * implementation dependent. However it must be guaranteed that all
+	 * subsequent connections provided by OntoDriver will include the URI in
+	 * extracted modules.
+	 * 
+	 * @param uri
+	 *            The URI to add
+	 * @throws NullPointerException
+	 *             If {@code uri} is {@code null}
+	 */
+	public void addUriToModuleExtractionSignature(URI uri);
 }

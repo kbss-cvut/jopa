@@ -18,35 +18,44 @@ package cz.cvut.kbss.jopa.owlapi;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import cz.cvut.kbss.jopa.accessors.OntologyAccessorFactory;
-import cz.cvut.kbss.jopa.accessors.OntologyAccessorFactoryImpl;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.PersistenceUnitUtil;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.Cache;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
-public class EntityManagerFactoryImpl implements EntityManagerFactory,
-		PersistenceUnitUtil {
+public class EntityManagerFactoryImpl implements EntityManagerFactory, PersistenceUnitUtil {
 
 	private boolean open = true;
 
 	private final Set<AbstractEntityManager> em = new HashSet<AbstractEntityManager>();
 	private final Map<String, String> properties;
+	private final List<OntologyStorageProperties> storageProperties;
 
 	private ServerSession serverSession;
-	private OntologyAccessorFactory accessorFactory;
 
 	private MetamodelImpl metamodel = null;
 
 	public EntityManagerFactoryImpl(final Map<String, String> properties) {
-		this.properties = properties;
-		this.accessorFactory = new OntologyAccessorFactoryImpl();
+		this.properties = properties != null ? properties : Collections.<String, String> emptyMap();
+		// TODO The storage properties should be read from persistence.xml
+		this.storageProperties = Collections.emptyList();
+	}
+
+	public EntityManagerFactoryImpl(List<OntologyStorageProperties> storageProperties,
+			Map<String, String> properties) {
+		if (storageProperties == null) {
+			throw new NullPointerException();
+		}
+		this.properties = properties != null ? properties : Collections.<String, String> emptyMap();
+		this.storageProperties = storageProperties;
 	}
 
 	public void close() {
@@ -57,18 +66,20 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 				m.close();
 			}
 		}
-		serverSession.close();
+		em.clear();
+		if (serverSession != null) {
+			serverSession.close();
+			this.serverSession = null;
+		}
 	}
 
 	public EntityManager createEntityManager() {
-		return this
-				.createEntityManager(Collections.<String, String> emptyMap());
+		return this.createEntityManager(Collections.<String, String> emptyMap());
 	}
 
 	public EntityManager createEntityManager(Map<String, String> map) {
 		if (!open) {
-			throw new IllegalStateException(
-					"The OWLEntityManager has been closed.");
+			throw new IllegalStateException("The OWLEntityManager has been closed.");
 		}
 
 		final Map<String, String> newMap = new HashMap<String, String>(map);
@@ -78,8 +89,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 
 		initServerSession(newMap);
 
-		final AbstractEntityManager c = new EntityManagerImpl(this, newMap,
-				this.serverSession);
+		final AbstractEntityManager c = new EntityManagerImpl(this, newMap, this.serverSession);
 
 		em.add(c);
 		return c;
@@ -93,9 +103,9 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 	 *            connection to the underlying ontology.
 	 */
 	private void initServerSession(Map<String, String> newMap) {
+		assert newMap != null;
 		if (this.serverSession == null) {
-			this.serverSession = new ServerSession(newMap, getMetamodel(),
-					accessorFactory);
+			this.serverSession = new ServerSession(storageProperties, newMap, getMetamodel());
 		}
 	}
 
@@ -106,9 +116,6 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 	 * @return The ServerSession for this factory.
 	 */
 	public ServerSession getServerSession() {
-		if (this.serverSession == null) {
-			this.initServerSession(Collections.<String, String> emptyMap());
-		}
 		return this.serverSession;
 	}
 
@@ -138,8 +145,8 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 
 	public Object getIdentifier(Object entity) {
 		try {
-			return getMetamodel().entity(entity.getClass()).getIdentifier()
-					.getJavaField().get(entity);
+			return getMetamodel().entity(entity.getClass()).getIdentifier().getJavaField()
+					.get(entity);
 		} catch (IllegalArgumentException e) {
 			throw new OWLPersistenceException();
 		} catch (IllegalAccessException e) {
@@ -162,15 +169,19 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory,
 	}
 
 	public boolean isLoaded(Object entity) {
-		return isLoaded(entity);
+		// TODO
+		return false;
+		// return isLoaded(entity);
 	}
 
 	public Cache getCache() {
 		if (!isOpen()) {
-			throw new IllegalStateException(
-					"The entity manager factory is closed.");
+			throw new IllegalStateException("The entity manager factory is closed.");
 		}
-		return getServerSession().getLiveObjectCache();
+		if (serverSession == null) {
+			initServerSession(properties);
+		}
+		return serverSession.getLiveObjectCache();
 	}
 
 }

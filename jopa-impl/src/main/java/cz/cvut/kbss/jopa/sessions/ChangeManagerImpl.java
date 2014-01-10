@@ -7,18 +7,18 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.OWLInferredAttributeModifiedException;
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.sessions.ChangeManager;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 
 public class ChangeManagerImpl implements ChangeManager {
 
-	private static final Logger LOG = Logger.getLogger(ChangeManagerImpl.class
-			.getName());
+	private static final Logger LOG = Logger.getLogger(ChangeManagerImpl.class.getName());
 	private Map<Object, Object> visitedObjects;
 
 	public ChangeManagerImpl() {
@@ -26,7 +26,9 @@ public class ChangeManagerImpl implements ChangeManager {
 	}
 
 	public boolean hasChanges(Object original, Object clone) {
-		LOG.config("Checking for changes...");
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.config("Checking for changes...");
+		}
 		boolean res = hasChangesInternal(original, clone);
 		visitedObjects.clear();
 		return res;
@@ -47,8 +49,7 @@ public class ChangeManagerImpl implements ChangeManager {
 		if (clone == null && original == null) {
 			return false;
 		}
-		if (clone == null && original != null || clone != null
-				&& original == null) {
+		if (clone == null && original != null || clone != null && original == null) {
 			return true;
 		}
 		if (visitedObjects.containsKey(clone)) {
@@ -67,8 +68,7 @@ public class ChangeManagerImpl implements ChangeManager {
 				}
 				Object clVal = f.get(clone);
 				Object origVal = f.get(original);
-				if ((clVal == null && origVal != null)
-						|| (clVal != null && origVal == null)) {
+				if ((clVal == null && origVal != null) || (clVal != null && origVal == null)) {
 					changes = true;
 					break;
 				}
@@ -98,8 +98,7 @@ public class ChangeManagerImpl implements ChangeManager {
 			}
 		} catch (IllegalAccessException e) {
 			throw new OWLPersistenceException(
-					"Exception caught when trying to check changes on entities.",
-					e);
+					"Exception caught when trying to check changes on entities.", e);
 		}
 		return changes;
 	}
@@ -134,7 +133,8 @@ public class ChangeManagerImpl implements ChangeManager {
 	}
 
 	public ObjectChangeSet calculateChanges(ObjectChangeSet changeSet)
-			throws IllegalAccessException, IllegalArgumentException, OWLInferredAttributeModifiedException {
+			throws IllegalAccessException, IllegalArgumentException,
+			OWLInferredAttributeModifiedException {
 		if (changeSet == null) {
 			return null;
 		}
@@ -153,14 +153,17 @@ public class ChangeManagerImpl implements ChangeManager {
 	 *         changes.
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
-	 * @throws OWLInferredAttributeModifiedException 
+	 * @throws OWLInferredAttributeModifiedException
 	 */
 	protected ObjectChangeSet calculateChangesInternal(ObjectChangeSet changeSet)
-			throws IllegalArgumentException, IllegalAccessException, OWLInferredAttributeModifiedException {
+			throws IllegalArgumentException, IllegalAccessException,
+			OWLInferredAttributeModifiedException {
+		if (LOG.isLoggable(Level.FINER)) {
+			LOG.finer("Calculating changes for change set " + changeSet);
+		}
 		Object original = changeSet.getChangedObject();
 		Object clone = changeSet.getCloneObject();
-		final List<Field> fields = CloneBuilderImpl.getAllFields(clone
-				.getClass());
+		final List<Field> fields = CloneBuilderImpl.getAllFields(clone.getClass());
 		boolean changes = false;
 		for (Field f : fields) {
 			if (!f.isAccessible()) {
@@ -181,7 +184,7 @@ public class ChangeManagerImpl implements ChangeManager {
 				changes = true;
 			} else {
 				if (CloneBuilderImpl.isPrimitiveOrString(clVal.getClass())) {
-					if (clVal != origVal) {
+					if (!clVal.equals(origVal)) {
 						changes = true;
 						r = new ChangeRecordImpl(attName, clVal);
 					} else {

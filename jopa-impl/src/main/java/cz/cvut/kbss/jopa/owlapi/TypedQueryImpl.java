@@ -15,77 +15,135 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
+import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLObject;
 
-import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.model.query.Query;
+import cz.cvut.kbss.jopa.exceptions.NoResultException;
+import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
-import cz.cvut.kbss.owl2query.engine.OWL2QueryEngine;
-import cz.cvut.kbss.owl2query.model.OWL2Ontology;
-import cz.cvut.kbss.owl2query.model.QueryResult;
-import cz.cvut.kbss.owl2query.model.ResultBinding;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.Statement;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class TypedQueryImpl<T> implements TypedQuery<T> {
 
-	final String s;
-	final boolean sparql;
-	final OWL2Ontology<OWLObject> r;
-	final Class<T> classT;
-	final EntityManager em;
+	private final String query;
+	private final URI contextUri;
+	private final boolean sparql;
+	private final Class<T> classT;
+	private final UnitOfWork uow;
+	private final Connection connection;
+	private final boolean useBackupOntology;
+
+	private int maxResults;
 
 	// sparql=false -> abstract syntax
-	public TypedQueryImpl(final String s, final Class<T> classT,
-			OWL2Ontology<OWLObject> r, final boolean sparql,
-			final EntityManager em) {
-		this.s = s;
-		this.r = r;
+	public TypedQueryImpl(final String query, final Class<T> classT, final URI contextUri,
+			final boolean sparql, final UnitOfWork uow, final Connection connection) {
+		if (query == null || contextUri == null || classT == null || uow == null
+				|| connection == null) {
+			throw new NullPointerException();
+		}
+		this.query = query;
+		this.contextUri = contextUri;
 		this.sparql = sparql;
 		this.classT = classT;
-		this.em = em;
+		this.uow = uow;
+		this.connection = connection;
+		this.useBackupOntology = uow.useBackupOntologyForQueryProcessing();
+		this.maxResults = Integer.MAX_VALUE;
 	}
 
-	
+	@Override
 	public List<T> getResultList() {
 		if (!sparql) {
 			throw new NotYetImplementedException();
 		}
 
-		final List<T> list = new ArrayList<T>();
+		if (maxResults == 0) {
+			return Collections.emptyList();
+		}
 
-		final QueryResult<OWLObject> l = OWL2QueryEngine.<OWLObject> exec(s, r);
-
-		for (final Iterator<ResultBinding<OWLObject>> i = l.iterator(); i
-				.hasNext();) {
-
-			if (classT != null) {
-				final ResultBinding<OWLObject> b = i.next();
-
-				final OWLNamedIndividual o = (OWLNamedIndividual) b.get(
-						b.keySet().iterator().next()).asGroundTerm()
-						.getWrappedObject();
-
-				list.add(em.find(classT, o.getIRI().toString()));
-			}
+		List<T> list;
+		try {
+			list = getResultListImpl(maxResults);
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException("Exeption caught when evaluating query " + query, e);
 		}
 
 		return list;
 	}
 
-	
+	@Override
 	public T getSingleResult() {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			// call it with maxResults = 2 just to see whether there are
+			// multiple results
+			final List<T> res = getResultListImpl(2);
+			if (res.isEmpty()) {
+				throw new NoResultException("No result found for query " + query);
+			}
+			if (res.size() > 1) {
+				throw new NoUniqueResultException("Multiple results found for query " + query);
+			}
+			return res.get(0);
+		} catch (OntoDriverException e) {
+			throw new OWLPersistenceException("Exception caught when evaluating query " + query, e);
+		}
 	}
 
-	
-	public Query setMaxResults(int maxResult) {
-		// TODO Auto-generated method stub
-		return null;
+	@Override
+	public TypedQuery<T> setMaxResults(int maxResults) {
+		if (maxResults < 0) {
+			throw new IllegalArgumentException(
+					"Cannot set maximum number of results to less than 0.");
+		}
+		this.maxResults = maxResults;
+		return this;
 	}
 
+	@Override
+	public int getMaxResults() {
+		return maxResults;
+	}
+
+	private List<T> getResultListImpl(int maxResults) throws OntoDriverException {
+		assert maxResults > 0;
+		final Statement stmt = connection.createStatement();
+		if (useBackupOntology) {
+			stmt.setUseBackupOntology();
+		} else {
+			stmt.setUseTransactionalOntology();
+		}
+		final ResultSet rs = stmt.executeQuery(query, contextUri);
+		try {
+			final List<T> res = new ArrayList<T>();
+			// TODO register this as observer on the result set so that
+			// additional results can be loaded asynchronously
+			int cnt = 0;
+			while (rs.hasNext() && cnt < maxResults) {
+				rs.next();
+				final OWLNamedIndividual ind = rs.getObject(0, OWLNamedIndividual.class);
+
+				final T entity = uow.readObject(classT, ind.getIRI());
+				if (entity == null) {
+					throw new OWLPersistenceException(
+							"Fatal error, unable to load entity for primary key already found by query "
+									+ query);
+				}
+				res.add(entity);
+				cnt++;
+			}
+			return res;
+		} finally {
+			rs.close();
+		}
+	}
 }

@@ -15,7 +15,11 @@
 
 package cz.cvut.kbss.jopa.model;
 
+import java.util.List;
 import java.util.Map;
+
+import cz.cvut.kbss.jopa.NonJPA;
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 /**
  * @see JPA 2.0
@@ -39,6 +43,30 @@ public interface PersistenceProvider {
 	 */
 	public EntityManagerFactory createEntityManagerFactory(String emName,
 			Map<String, String> map);
+
+	/**
+	 * Called by {@code Persistence} class when an {@code EntityManagerFactory}
+	 * is to be created.
+	 * 
+	 * @param emName
+	 *            the name of the persistence unit
+	 * @param storageProperties
+	 *            List of storage properties which specify information about
+	 *            storages the persistence should connect to
+	 * @param properties
+	 *            a {@code Map} of properties for use by the persistence
+	 *            provider. These properties may be used to override the values
+	 *            of the corresponding elements in the persistence.xml file or
+	 *            specify values for properties not specified in the
+	 *            persistence.xml (and may be null if no properties are
+	 *            specified).
+	 * @return {@code EntityManagerFactory} for the persistence unit, or null if
+	 *         the provider is not the right provider.
+	 */
+	@NonJPA
+	public EntityManagerFactory createEntityManagerFactory(String emName,
+			List<OntologyStorageProperties> storageProperties,
+			Map<String, String> properties);
 
 	// TODO JPA 2.0
 	// public EntityManagerFactory

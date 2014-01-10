@@ -1,31 +1,21 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.accessors.TransactionOntologyAccessor;
-import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.model.query.Query;
-import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.ontodriver.Connection;
 
 /**
  * This is the implementation of the basic Session operations. Other more
- * specific methods are to be implemented in descendants. Note: EL uses another
- * object to manage the live object cache. So the current implementation may
- * change if it turns out that more sophisticated access to the cache is needed.
+ * specific methods are to be implemented in descendants.
  * 
  * @author kidney
  * 
  */
 public abstract class AbstractSession implements Session {
-	protected static final Logger LOG = Logger.getLogger(AbstractSession.class
-			.getName());
-
-	// this is our session cache
-	protected CacheManager liveObjectCache;
+	protected static final Logger LOG = Logger.getLogger(AbstractSession.class.getName());
 
 	public AbstractSession() {
 		super();
@@ -37,37 +27,6 @@ public abstract class AbstractSession implements Session {
 			LOG.config("UnitOfWork acquired.");
 		}
 		return uow;
-	}
-
-	public CacheManager getLiveObjectCache() {
-		if (this.liveObjectCache == null) {
-			this.liveObjectCache = new CacheManagerImpl(this);
-		}
-		return this.liveObjectCache;
-	}
-
-	public Query<?> createQuery(String qlString, final EntityManager em) {
-		if (qlString == null || qlString.equalsIgnoreCase("")) {
-			return null;
-		}
-		return getOntologyAccessor().createQuery(qlString, em);
-	}
-
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass,
-			boolean sparql, final EntityManager em) {
-		if (query == null || query.equalsIgnoreCase("") || resultClass == null) {
-			return null;
-		}
-		return getOntologyAccessor()
-				.createQuery(query, resultClass, sparql, em);
-	}
-
-	public Query<List<String>> createNativeQuery(String sparql,
-			final EntityManager em) {
-		if (sparql == null || sparql.equalsIgnoreCase("")) {
-			return null;
-		}
-		return getOntologyAccessor().createNativeQuery(sparql, em);
 	}
 
 	/**
@@ -84,17 +43,26 @@ public abstract class AbstractSession implements Session {
 	 * our cache is no more actual.
 	 */
 	public void releaseObjectCache() {
+		getLiveObjectCache().acquireWriteLock();
 		getLiveObjectCache().evictAll();
+		getLiveObjectCache().releaseWriteLock();
 	}
 
 	/**
-	 * Get the ontology accessor. Each client session has its own
-	 * TransactionOntologyAccessor and this accessor is valid only during a
-	 * single transaction.
+	 * Get the current live object cache. </p>
 	 * 
-	 * @return Transaction ontology accessor.
+	 * This manager represents the second level cache.
+	 * 
+	 * @return Second level cache
 	 */
-	public abstract TransactionOntologyAccessor getOntologyAccessor();
+	public abstract CacheManager getLiveObjectCache();
+
+	/**
+	 * Acquires connection to the underlying ontology storage. </p>
+	 * 
+	 * @return Connection
+	 */
+	protected abstract Connection acquireConnection();
 
 	/**
 	 * Get a set of all classes managed in this persistence unit - i. e. get all

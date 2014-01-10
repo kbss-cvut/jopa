@@ -15,9 +15,13 @@
 
 package cz.cvut.kbss.jopa.model;
 
+import java.net.URI;
 import java.util.List;
 
+import javax.persistence.EntityExistsException;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.EntityTransaction;
+import javax.persistence.PersistenceException;
 import javax.transaction.TransactionRequiredException;
 
 import cz.cvut.kbss.jopa.NonJPA;
@@ -25,6 +29,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.ontodriver.Context;
 
 public interface EntityManager {
 
@@ -49,9 +54,40 @@ public interface EntityManager {
 	public void persist(final Object entity);
 
 	/**
+	 * Make an instance managed and persistent. </p>
+	 * 
+	 * The {@code contextUri} represents an ontology context into which the
+	 * entity should be persisted.
+	 * 
+	 * @param entity
+	 *            entity instance
+	 * @param contextUri
+	 *            URI of ontology context
+	 * @throws EntityExistsException
+	 *             if the entity already exists. (The EntityExistsException may
+	 *             be thrown when the persist operation is invoked, or the
+	 *             EntityExistsException or another PersistenceException may be
+	 *             thrown at flush or commit time.)
+	 * @throws IllegalArgumentException
+	 *             if not an entity
+	 * @throws NullPointerException
+	 *             If {@code entity} or {@code contextUri} is {@code null}
+	 * @throws TransactionRequiredException
+	 *             if invoked on a container-managed entity manager of type
+	 *             PersistenceContextType.TRANSACTION and there is no
+	 *             transaction.
+	 * @see #getAvailableContexts()
+	 */
+	public void persist(final Object entity, final URI contextUri);
+
+	/**
 	 * (taken from javax.persistence.EntityManager)
 	 * 
 	 * Merge the state of the given entity into the current persistence context.
+	 * </p>
+	 * 
+	 * Note that this method merges the entity into the first available ontology
+	 * context.
 	 * 
 	 * @param entity
 	 * @return the instance that the state was merged to
@@ -63,6 +99,24 @@ public interface EntityManager {
 	 *             transaction.
 	 */
 	public <T> T merge(final T entity);
+
+	/**
+	 * Merge the state of the given entity into the current persistence context
+	 * and into the ontology context specified by {@code contextUri}.
+	 * 
+	 * @param entity
+	 *            The entity to merge
+	 * @param contextUri
+	 *            URI of the context to merge the entity into
+	 * @return the instance that the state was merged to
+	 * @throws IllegalArgumentException
+	 *             if instance is not an entity or is a removed entity
+	 * @throws TransactionRequiredException
+	 *             if invoked on a container-managed entity manager of type
+	 *             PersistenceContextType.TRANSACTION and there is no
+	 *             transaction.
+	 */
+	public <T> T merge(final T entity, URI contextUri);
 
 	/**
 	 * Remove the entity instance.
@@ -87,8 +141,39 @@ public interface EntityManager {
 	 *             if the first argument does not denote an entity type or the
 	 *             second argument is not a valid type for that entity’s primary
 	 *             key
+	 * @throws NullPointerException
+	 *             If {@code entityClass} or {@code primaryKey} is {@code null}
 	 */
 	public <T> T find(final Class<T> entityClass, final Object primaryKey);
+
+	/**
+	 * Find by primary key. </p>
+	 * 
+	 * Search for an entity of the specified class and primary key. If the
+	 * entity instance is contained in the persistence context, it is returned
+	 * from there. </p>
+	 * 
+	 * The {@code contextUri} parameter represents URI of the ontology context
+	 * in which the entity should be looked for.
+	 * 
+	 * @param entityClass
+	 *            Entity class
+	 * @param primaryKey
+	 *            Primary key
+	 * @param contextUri
+	 *            URI of the ontology context
+	 * @return the found entity instance or {@code null} if the entity does not
+	 *         exist in the given ontology context
+	 * @throws IllegalArgumentException
+	 *             if the first argument does not denote an entity type or the
+	 *             second argument is not a valid type for that entity’s primary
+	 *             key
+	 * @throws NullPointerException
+	 *             If {@code entityClass}, {@code primaryKey} or
+	 *             {@code contextUri} is {@code null}
+	 * @see #getAvailableContexts()
+	 */
+	public <T> T find(final Class<T> entityClass, final Object primaryKey, final URI contextUri);
 
 	// TODO JPA 2.0 find with properties
 
@@ -212,7 +297,9 @@ public interface EntityManager {
 
 	/**
 	 * Create an instance of Query for executing a Java Persistence query
-	 * language statement.
+	 * language statement. </p>
+	 * 
+	 * The query will be executed against the default ontology context.
 	 * 
 	 * @param qlString
 	 *            a Java Persistence query string
@@ -222,8 +309,38 @@ public interface EntityManager {
 	 */
 	public Query createQuery(String qlString);
 
+	/**
+	 * Create an instance of Query for executing a Java Persistence query
+	 * language statement.
+	 * 
+	 * @param qlString
+	 *            a Java Persistence query string
+	 * @param contextUri
+	 *            ontology context URI
+	 * @return the new query instance
+	 * @throws IllegalArgumentException
+	 *             if query string is not valid
+	 */
+	@NonJPA
+	public Query createQuery(String qlString, URI contextUri);
+
 	// TODO JPA 2.0 TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery)
 	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass);
+
+	/**
+	 * Creates an instance of query for executing Java persistence query
+	 * language statement.
+	 * 
+	 * @param query
+	 *            query string
+	 * @param resultClass
+	 *            result type
+	 * @param contextUri
+	 *            ontology context URI
+	 * @return the new query instance
+	 */
+	@NonJPA
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, URI contextUri);
 
 	//
 	// /**
@@ -243,13 +360,41 @@ public interface EntityManager {
 
 	/**
 	 * Create an instance of Query for executing a native SPARQL-DL query in
-	 * SPARQL syntax.
+	 * SPARQL syntax. </p>
+	 * 
+	 * The query will be executed against the default ontology context.
 	 * 
 	 * @param sqlString
-	 *            a native SQL query string
+	 *            a native SPARQL query string
 	 * @return the new query instance
 	 */
 	public Query<List<String>> createNativeQuery(String sqlString);
+
+	/**
+	 * Create an instance of Query for executing a native SPARQL-DL query in
+	 * SPARQL syntax.
+	 * 
+	 * @param sqlString
+	 *            a native SPARQL query string
+	 * @param contextUri
+	 *            ontlogy context URI
+	 * @return the new query instance
+	 */
+	public Query<List<String>> createNativeQuery(String sqlString, URI contextUri);
+
+	/**
+	 * Create an instance of Query for executing a native SPARQL-DL query
+	 * returning only specific object type. </p>
+	 * 
+	 * The query will be executed against the default ontology context.
+	 * 
+	 * @param sqlString
+	 *            a native SQL query string
+	 * @param resultClass
+	 *            the class of the resulting instance(s)
+	 * @return the new query instance
+	 */
+	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass);
 
 	/**
 	 * Create an instance of Query for executing a native SPARQL-DL query
@@ -259,10 +404,12 @@ public interface EntityManager {
 	 *            a native SQL query string
 	 * @param resultClass
 	 *            the class of the resulting instance(s)
+	 * @param contextUri
+	 *            ontology context URI
 	 * @return the new query instance
 	 */
-	public <T> TypedQuery<T> createNativeQuery(String sqlString,
-			Class<T> resultClass);
+	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass,
+			URI contextUri);
 
 	// /**
 	// * Create an instance of Query for executing a native SQL query.
@@ -341,6 +488,19 @@ public interface EntityManager {
 	@NonJPA
 	public String getLabel(final String iri);
 
+	/**
+	 * Returns a list of ontology contexts available to this entity manager.
+	 * </p>
+	 * 
+	 * These contexts represent ontology storages that are accessible through
+	 * this manager. They are ordered descending by their priority. The list
+	 * itself is not modifiable.
+	 * 
+	 * @return
+	 */
+	@NonJPA
+	public List<Context> getAvailableContexts();
+
 	// TODO JPA 2.0 public CriteriaBuilder getCriteriaBuilder();
 	public Metamodel getMetamodel();
 
@@ -350,11 +510,13 @@ public interface EntityManager {
 	 * 
 	 * @return UnitOfWork
 	 */
+	@NonJPA
 	public UnitOfWork getCurrentPersistenceContext();
 
 	/**
 	 * Remove the current persistence context UnitOfWork. INTERNAL.
 	 */
+	@NonJPA
 	public void removeCurrentPersistenceContext();
 
 	/**
@@ -364,6 +526,7 @@ public interface EntityManager {
 	 * @param t
 	 *            The entity transaction that was started.
 	 */
+	@NonJPA
 	public void transactionStarted(EntityTransaction t);
 
 	/**
@@ -373,5 +536,59 @@ public interface EntityManager {
 	 * @param t
 	 *            The committed entity transaction.
 	 */
+	@NonJPA
 	public void transactionFinished(EntityTransaction t);
+
+	/**
+	 * Sets the transactional ontology as the one which will be used when
+	 * processing SPARQL queries. </p>
+	 * 
+	 * This setting may have significant impact on query results, since changes
+	 * made during transaction are propagated to the transactional ontology,
+	 * which is private to this persistence context, before commit. The ontology
+	 * can even be in an inconsistent state. </p>
+	 * 
+	 * This is the default setting, unless changed by properties passed on
+	 * persistence initialization.
+	 * 
+	 * @see #setUseBackupOntologyForQueryProcessing()
+	 */
+	@NonJPA
+	public void setUseTransactionalOntologyForQueryProcessing();
+
+	/**
+	 * Returns true if the transactional ontology should be used for SPARQL
+	 * query processing.
+	 * 
+	 * @return {@code true} if transactional ontology will be used,
+	 *         {@code false} otherwise
+	 * @see #setUseTransactionalOntologyForQueryProcessing()
+	 */
+	@NonJPA
+	public boolean useTransactionalOntologyForQueryProcessing();
+
+	/**
+	 * Sets the backup ontology as the one which will be used for processing of
+	 * SPARQL queries. </p>
+	 * 
+	 * The backup ontology represents the ontology after the last commit done by
+	 * any transaction and therefore can produce different results from those
+	 * produced by the transactional ontology, which is private to this
+	 * persistence context.
+	 * 
+	 * @see #setUseTransactionalOntologyForQueryProcessing()
+	 */
+	@NonJPA
+	public void setUseBackupOntologyForQueryProcessing();
+
+	/**
+	 * Returns true if the backup (central) ontology should be used for SPARQL
+	 * query processing. </p>
+	 * 
+	 * @return {@code true} if the central ontology will be used, {@code false}
+	 *         otherwise
+	 * @see #setUseBackupOntologyForQueryProcessing()
+	 */
+	@NonJPA
+	public boolean useBackupOntologyForQueryProcessing();
 }

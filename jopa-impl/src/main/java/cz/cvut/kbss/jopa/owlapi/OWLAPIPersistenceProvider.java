@@ -17,28 +17,35 @@ package cz.cvut.kbss.jopa.owlapi;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import cz.cvut.kbss.jopa.accessors.OWLOntologyAccessor;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.LoadState;
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.PersistenceProvider;
 import cz.cvut.kbss.jopa.model.ProviderUtil;
+import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
-public class OWLAPIPersistenceProvider implements PersistenceProvider,
-		ProviderUtil {
+public class OWLAPIPersistenceProvider implements PersistenceProvider, ProviderUtil {
 
 	private static Set<EntityManagerFactoryImpl> emfs = new HashSet<EntityManagerFactoryImpl>();
 
 	public OWLAPIPersistenceProvider() {
 	}
 
-	public EntityManagerFactory createEntityManagerFactory(String emName,
-			Map<String, String> map) {
+	public EntityManagerFactory createEntityManagerFactory(String emName, Map<String, String> map) {
 		final EntityManagerFactoryImpl emf = new EntityManagerFactoryImpl(map);
+		emfs.add(emf);
+		return emf;
+	}
+
+	public EntityManagerFactoryImpl createEntityManagerFactory(String emName,
+			List<OntologyStorageProperties> storageProperties, Map<String, String> properties) {
+		final EntityManagerFactoryImpl emf = new EntityManagerFactoryImpl(storageProperties,
+				properties);
 		emfs.add(emf);
 		return emf;
 	}
@@ -55,8 +62,7 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 		return LoadState.UNKNOWN;
 	}
 
-	public LoadState isLoadedWithoutReference(Object entity,
-			String attributeName) {
+	public LoadState isLoadedWithoutReference(Object entity, String attributeName) {
 		return LoadState.UNKNOWN;
 	}
 
@@ -65,8 +71,11 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 			return null;
 		}
 		for (EntityManagerFactoryImpl emf : emfs) {
-			final UnitOfWorkImpl uow = emf.getServerSession()
-					.getPersistenceContext(entity);
+			final ServerSession session = emf.getServerSession();
+			if (session == null) {
+				continue;
+			}
+			final UnitOfWorkImpl uow = session.getPersistenceContext(entity);
 			if (uow != null) {
 				return uow;
 			}
@@ -74,31 +83,20 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 		return null;
 	}
 
-	static void loadReference(Object o, Field f)
-			throws IllegalArgumentException, IllegalAccessException {
+	static void loadReference(Object o, Field f) throws IllegalArgumentException,
+			IllegalAccessException {
 		final UnitOfWorkImpl uow = getPersistenceContext(o);
 
 		if (uow != null) {
 			Object managedOrig = uow.getOriginal(o);
 			if (managedOrig == null) {
-				throw new OWLPersistenceException(
-						"Entity not managed in the current persistence context.");
+				return;
 			}
 			Object val = f.get(managedOrig);
 			if (val != null) {
 				return;
 			}
-			uow.getOntologyAccessor().loadReference(o, f, uow);
-		}
-	}
-
-	static void saveReference(Object o, Field f) {
-		final UnitOfWorkImpl uow = getPersistenceContext(o);
-
-		if (uow != null && uow.isInTransaction()) {
-			OWLOntologyAccessor accessor = (OWLOntologyAccessor) uow
-					.getOntologyAccessor();
-			accessor.saveReference(o, f, uow);
+			uow.loadEntityField(o, f);
 		}
 	}
 
@@ -108,11 +106,11 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider,
 	 * @param entity
 	 *            Entity to persist
 	 */
-	static void persistEntityChanges(Object entity) {
+	static void persistEntityChanges(Object entity, Field f) {
 		final UnitOfWorkImpl uow = getPersistenceContext(entity);
 		if (uow != null && uow.isInTransaction()) {
-			uow.getOntologyAccessor().persistEntity(entity, uow);
-			uow.setHasChanges(true);
+			uow.persistChangeInTransaction(entity);
+			uow.setIndirectCollectionIfPresent(entity, f);
 		}
 	}
 }

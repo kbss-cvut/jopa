@@ -19,6 +19,9 @@ import java.util.List;
 
 import javax.transaction.TransactionRequiredException;
 
+import cz.cvut.kbss.jopa.exceptions.NoResultException;
+import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
+
 public interface Query<ResultElement> {
 	/**
 	 * Execute a SELECT query and return the query results as an untyped List.
@@ -44,6 +47,15 @@ public interface Query<ResultElement> {
 	 */
 	List<ResultElement> getResultList();
 
+	/**
+	 * Execute a SELECT query that returns a single result.
+	 * 
+	 * @return Query result
+	 * @throws NoResultException
+	 *             There is no result
+	 * @throws NoUniqueResultException
+	 *             There are more than one results
+	 */
 	ResultElement getSingleResult();
 
 	/**
@@ -55,5 +67,15 @@ public interface Query<ResultElement> {
 	 *             if the argument is negative
 	 */
 	Query<ResultElement> setMaxResults(int maxResult);
+
+	/**
+	 * The maximum number of results the query object was set to retrieve. </p>
+	 * 
+	 * Returns Integer.MAX_VALUE if {@link #setMaxResults(int)} was not applied
+	 * to the query object.
+	 * 
+	 * @return maximum number of results
+	 */
+	int getMaxResults();
 
 }

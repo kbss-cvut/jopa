@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,9 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 	// Does this change set represent a new object
 	private boolean isNew;
 
+	// URI of the ontology context the object belongs to
+	private URI entityContext;
+
 	protected ObjectChangeSetImpl() {
 	}
 
@@ -51,14 +55,23 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 	 *            represents a new object
 	 * @param uowChangeSet
 	 */
-	public ObjectChangeSetImpl(Object changedObject, Object cloneObject,
-			boolean isNew, UnitOfWorkChangeSet uowChangeSet) {
+	public ObjectChangeSetImpl(Object changedObject, Object cloneObject, boolean isNew,
+			UnitOfWorkChangeSet uowChangeSet) {
 		super();
 		this.changedObject = changedObject;
 		this.cloneObject = cloneObject;
 		this.objectClass = cloneObject.getClass();
 		this.isNew = isNew;
 		this.uowChangeSet = uowChangeSet;
+	}
+
+	public ObjectChangeSetImpl(Object changedObject, Object cloneObject, boolean isNew,
+			UnitOfWorkChangeSet uowChangeSet, URI contextUri) {
+		this(changedObject, cloneObject, isNew, uowChangeSet);
+		if (contextUri == null) {
+			throw new NullPointerException();
+		}
+		this.entityContext = contextUri;
 	}
 
 	/**
@@ -157,4 +170,11 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 		return this.isNew;
 	}
 
+	/**
+	 * Retrieves context the referenced entity belongs to
+	 */
+	@Override
+	public URI getEntityContext() {
+		return entityContext;
+	}
 }

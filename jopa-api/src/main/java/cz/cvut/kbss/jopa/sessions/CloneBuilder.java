@@ -1,6 +1,8 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Objects of this interface are responsible for building clones for UnitOfWork
@@ -16,18 +18,22 @@ public interface CloneBuilder {
 	 * 
 	 * @param original
 	 *            Object
+	 * @param contextUri
+	 *            URI of the ontology context the original belongs to
 	 * @return Object The clone
+	 * @throws NullPointerException
+	 *             If {@code original} or {@code contextUri} is {@code null}
 	 */
-	public Object buildClone(Object original);
+	public Object buildClone(Object original, URI contextUri);
 
 	/**
 	 * Builds clones of all given objects.
 	 * 
 	 * @param originals
-	 *            List
+	 *            Map of entities mapped to ontology context they belong to
 	 * @return List
 	 */
-	public List<?> buildClones(List<?> originals);
+	public List<?> buildClones(Map<?, URI> originals);
 
 	/**
 	 * Creates ObjectChangeSet for the given object.
@@ -64,6 +70,6 @@ public interface CloneBuilder {
 	 *            MergeManager
 	 * @return
 	 */
-	public Object mergeChanges(Object original, Object clone,
-			ObjectChangeSet changeSet, MergeManager mergeManager);
+	public Object mergeChanges(Object original, Object clone, ObjectChangeSet changeSet,
+			MergeManager mergeManager);
 }

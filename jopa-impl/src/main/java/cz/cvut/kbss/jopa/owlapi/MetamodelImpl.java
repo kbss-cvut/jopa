@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,8 +33,8 @@ import java.util.logging.Logger;
 
 import org.reflections.Reflections;
 
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
@@ -51,13 +52,13 @@ import cz.cvut.kbss.jopa.model.metamodel.EmbeddableType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
 public class MetamodelImpl implements Metamodel {
 
 	private static final Logger LOG = Logger.getLogger(Metamodel.class
 			.getName());
 	private static final String ASPECTJ_CLASS = "org.aspectj.weaver.loadtime.Agent";
-	private static final String ENTITY_LOCATION_PARAM = "location";
 
 	private final Map<Class<?>, EntityType<?>> typeMap = new HashMap<Class<?>, EntityType<?>>();
 
@@ -65,13 +66,12 @@ public class MetamodelImpl implements Metamodel {
 
 	private EntityManagerFactoryImpl emf;
 
-	private boolean shouldUseAspectJ;
+	private Set<URI> moduleExtractionSignature;
 
 	private static final Set<Class<?>> entities = new HashSet<Class<?>>();
 
 	MetamodelImpl(final EntityManagerFactoryImpl emf) {
 		this.emf = emf;
-		this.shouldUseAspectJ = true;
 		build();
 	}
 
@@ -97,7 +97,6 @@ public class MetamodelImpl implements Metamodel {
 			@SuppressWarnings("unused")
 			Class<?> c = MetamodelImpl.class.getClassLoader().loadClass(
 					ASPECTJ_CLASS);
-			this.shouldUseAspectJ = true;
 		} catch (ClassNotFoundException e) {
 			LOG.severe("AspectJ not found on classpath. Cannot run without AspectJ.");
 			throw new OWLPersistenceException(e);
@@ -207,6 +206,7 @@ public class MetamodelImpl implements Metamodel {
 				t = PersistentAttributeType.OBJECT;
 				iri = IRI.create(oop.iri());
 				cascadeTypes = oop.cascade();
+				fetchType = oop.fetch();
 				processOWLClass(cxx);
 				type = typeMap.get(cxx);
 				inferred = oop.inferred();
@@ -328,7 +328,8 @@ public class MetamodelImpl implements Metamodel {
 	}
 
 	private void loadEntities() {
-		final String loc = emf.getProperties().get(ENTITY_LOCATION_PARAM);
+		final String loc = emf.getProperties().get(
+				OWLAPIPersistenceProperties.ENTITY_LOCATION);
 		if (loc == null) {
 			LOG.warning("Cannot discover entity classes. No location specified.");
 			return;
@@ -376,7 +377,44 @@ public class MetamodelImpl implements Metamodel {
 		return this.inferredClasses;
 	}
 
-	public boolean shouldUseAspectJ() {
-		return shouldUseAspectJ;
+	@Override
+	public Set<URI> getModuleExtractionExtraSignature() {
+		return Collections.unmodifiableSet(getSignatureInternal());
+	}
+
+	@Override
+	public void addUriToModuleExtractionSignature(URI uri) {
+		if (uri == null) {
+			throw new NullPointerException();
+		}
+		synchronized (this) {
+			getSignatureInternal().add(uri);
+		}
+	}
+
+	private synchronized Set<URI> getSignatureInternal() {
+		// This can be lazily loaded since we don't know if we'll need it
+		if (moduleExtractionSignature == null) {
+			final String sig = emf.getProperties().get(
+					OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE);
+			if (sig == null) {
+				this.moduleExtractionSignature = new HashSet<URI>();
+			} else {
+				final String[] signature = sig
+						.split(OntoDriverProperties.SIGNATURE_DELIMITER);
+				this.moduleExtractionSignature = new HashSet<URI>(
+						signature.length);
+				try {
+					for (String uri : signature) {
+						moduleExtractionSignature.add(new URI(uri));
+					}
+				} catch (URISyntaxException e) {
+					throw new OWLPersistenceException(
+							"Invalid URI encountered in module extraction signature.",
+							e);
+				}
+			}
+		}
+		return moduleExtractionSignature;
 	}
 }

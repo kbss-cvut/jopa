@@ -26,4 +26,17 @@ public interface OWLAPIPersistenceProperties extends PersistenceProperties {
 	public static final String MAPPING_FILE_URI_KEY = "cz.cvut.jopa.mappingFileURI";
 	public static final String REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
 	public static final String LANG = "cz.cvut.jopa.lang";
+	public static final String CACHE_PROPERTY = "cz.cvut.jopa.cache";
+	/**
+	 * Cached entity time to live. In seconds.
+	 */
+	public static final String CACHE_TTL = "cz.cvut.jopa.cache.ttl";
+	/**
+	 * How often should the cache be swept for dead entities. In sceonds.
+	 */
+	public static final String CACHE_SWEEP_RATE = "cz.cvut.jopa.cache.sweepRate";
+	/**
+	 * Package containing entity classes.
+	 */
+	public static final String ENTITY_LOCATION = "cz.cvut.jopa.entity.location";
 }

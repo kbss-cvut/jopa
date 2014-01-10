@@ -3,15 +3,12 @@ package cz.cvut.kbss.jopa.transactions;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.persistence.RollbackException;
-
+import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 
-public class EntityTransactionImpl implements
-		javax.persistence.EntityTransaction {
+public class EntityTransactionImpl implements javax.persistence.EntityTransaction {
 
-	private static final Logger LOG = Logger
-			.getLogger(EntityTransactionImpl.class.getName());
+	private static final Logger LOG = Logger.getLogger(EntityTransactionImpl.class.getName());
 
 	private boolean active = false;
 
@@ -38,7 +35,7 @@ public class EntityTransactionImpl implements
 		this.wrapper.transactionUOW = em.getCurrentPersistenceContext();
 		this.active = true;
 		em.transactionStarted(this);
-		if (LOG.isLoggable(Level.CONFIG)) {
+		if (LOG.isLoggable(Level.FINE)) {
 			LOG.config("EntityTransaction begin.");
 		}
 	}
@@ -51,11 +48,10 @@ public class EntityTransactionImpl implements
 	 */
 	public void commit() {
 		if (!this.isActive()) {
-			throw new IllegalStateException(
-					"Cannot commit inactive transaction!");
+			throw new IllegalStateException("Cannot commit inactive transaction!");
 		}
 		try {
-			if (LOG.isLoggable(Level.CONFIG)) {
+			if (LOG.isLoggable(Level.FINER)) {
 				LOG.fine("EntityTransaction commit started.");
 			}
 			if (this.wrapper.transactionUOW != null) {
@@ -69,22 +65,20 @@ public class EntityTransactionImpl implements
 		} catch (RuntimeException ex) {
 			ex.printStackTrace();
 			if (this.wrapper.transactionUOW != null) {
-				this.wrapper.getEntityManager()
-						.removeCurrentPersistenceContext();
+				this.wrapper.getEntityManager().removeCurrentPersistenceContext();
 				this.wrapper.transactionUOW.release();
 				this.wrapper.transactionUOW.getParent().release();
-				throw ex;
+				throw new RollbackException(ex);
 			}
 		} finally {
 			this.active = false;
 			this.rollbackOnly = false;
-			if (wrapper.transactionUOW.shouldReleaseAfterCommit()) {
-				this.wrapper.getEntityManager()
-						.removeCurrentPersistenceContext();
+			if (wrapper.transactionUOW != null && wrapper.transactionUOW.shouldReleaseAfterCommit()) {
+				this.wrapper.getEntityManager().removeCurrentPersistenceContext();
 			}
 			this.wrapper.setTransactionUOW(null);
 			this.wrapper.getEntityManager().transactionFinished(this);
-			if (LOG.isLoggable(Level.CONFIG)) {
+			if (LOG.isLoggable(Level.FINE)) {
 				LOG.config("EntityTransaction commit finished.");
 			}
 		}
@@ -98,8 +92,7 @@ public class EntityTransactionImpl implements
 	 */
 	public void rollback() {
 		if (!this.isActive()) {
-			throw new IllegalStateException(
-					"Cannot rollback inactive transaction!");
+			throw new IllegalStateException("Cannot rollback inactive transaction!");
 		}
 		if (wrapper.getTransactionUOW() != null) {
 			this.wrapper.transactionUOW.release();
@@ -110,7 +103,7 @@ public class EntityTransactionImpl implements
 		this.wrapper.getEntityManager().removeCurrentPersistenceContext();
 		this.wrapper.setTransactionUOW(null);
 		this.wrapper.getEntityManager().transactionFinished(this);
-		if (LOG.isLoggable(Level.CONFIG)) {
+		if (LOG.isLoggable(Level.FINE)) {
 			LOG.config("EntityTransaction rolled back.");
 		}
 	}
@@ -124,8 +117,7 @@ public class EntityTransactionImpl implements
 	 */
 	public void setRollbackOnly() {
 		if (!this.isActive()) {
-			throw new IllegalStateException(
-					"Cannot set rollbackOnly on inactive transaction!");
+			throw new IllegalStateException("Cannot set rollbackOnly on inactive transaction!");
 		}
 		this.rollbackOnly = true;
 	}
@@ -138,8 +130,7 @@ public class EntityTransactionImpl implements
 	 */
 	public boolean getRollbackOnly() {
 		if (!this.isActive()) {
-			throw new IllegalStateException(
-					"Accessing rollbackOnly on inactive transaction!");
+			throw new IllegalStateException("Accessing rollbackOnly on inactive transaction!");
 		}
 		return this.rollbackOnly;
 	}
