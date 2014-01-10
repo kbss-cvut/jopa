@@ -5,7 +5,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-parent</artifactId>
-        <version>0.3-SNAPSHOT</version>
+        <version>0.4-SNAPSHOT</version>
         <relativePath>../jopa-parent/pom.xml</relativePath>
     </parent>
 
@@ -19,25 +19,7 @@
 			<name>KBSS Maven 2 Repository</name>
 			<url>http://krizik.felk.cvut.cz/m2repo</url>
 		</repository>
-		<repository>
-			<id>jena</id>
-			<url>http://repo1.maven.org/maven2</url>
-		</repository>
 	</repositories>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>mc-release</id>
-			<name>Local Maven repository of releases</name>
-			<url>http://mc-repo.googlecode.com/svn/maven2/releases</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</pluginRepository>
-	</pluginRepositories>
 
 	<dependencies>
         <!-- TODO remove dependency on OWLAPI-->

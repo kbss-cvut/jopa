@@ -6,7 +6,7 @@
 
     <groupId>cz.cvut.kbss.jopa</groupId>
     <artifactId>jopa-parent</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
     <name>JOPA - parent</name>
     <packaging>pom</packaging>
     <url>http://jopa.sourceforge.net</url>
