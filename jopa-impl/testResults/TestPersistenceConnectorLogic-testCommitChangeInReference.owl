@@ -103,7 +103,7 @@
 
     <owl:NamedIndividual rdf:about="http://testOne">
         <rdf:type rdf:resource="http://new.owl#OWLClassA"/>
-        <http:A-stringAttribute>changedString</http:A-stringAttribute>
+        <http:A-stringAttribute>TestAttribute</http:A-stringAttribute>
     </owl:NamedIndividual>
 </rdf:RDF>
 
