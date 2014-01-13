@@ -327,7 +327,7 @@ public class OWL2JavaTransformer {
 		return cls;
 	}
 
-	private void generateVocabulary(final JCodeModel cm) {
+	private void generateVocabulary(final JCodeModel cm, boolean withOWLAPI) {
 		LOG.info("Generating Vocabulary");
 
 		final Collection<OWLEntity> col = new HashSet<OWLEntity>();
@@ -366,8 +366,10 @@ public class OWL2JavaTransformer {
 			final JFieldVar fv1 = voc.field(JMod.PUBLIC | JMod.STATIC
 					| JMod.FINAL, String.class, sFieldName,
 					JExpr.lit(c.getIRI().toString()));
-			voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class, id, cm
+            if ( withOWLAPI) {
+			    voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class, id, cm
 					.ref(IRI.class).staticInvoke("create").arg(fv1));
+            }
 
 			entities.put(c, voc.staticRef(fv1));
 		}
@@ -687,7 +689,7 @@ public class OWL2JavaTransformer {
 		NO, ONE, MULTIPLE;
 	}
 
-	public void transform(String context, String p, String dir) {
+	public void transform(String context, String p, String dir, Boolean withOWLAPI) {
 		LOG.info("Transforming context '" + p + "'.");
 
 		final JCodeModel cm = new JCodeModel();
@@ -695,7 +697,7 @@ public class OWL2JavaTransformer {
 		try {
 			voc = cm._class(p + ".Vocabulary");
 
-			generateVocabulary(cm);
+			generateVocabulary(cm, withOWLAPI);
 			generateModel(cm, contexts.get(context), p + ".model.");
 
 			final File file = new File(dir);

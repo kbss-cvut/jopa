@@ -46,8 +46,10 @@ public class OWL2Java {
 						String.class);
 				accepts("p", "package").withRequiredArg().ofType(String.class)
 						.defaultsTo("generated");
-				accepts("c", "context name").withRequiredArg().ofType(
-						String.class);
+                accepts("c", "context name").withRequiredArg().ofType(
+                        String.class);
+                accepts("w", "with owlapi IRIs").withRequiredArg().ofType(
+                        Boolean.class).defaultsTo(false);
 				accepts("d", "output directory").withRequiredArg()
 						.ofType(String.class).defaultsTo("");
 			}
@@ -207,7 +209,7 @@ public class OWL2Java {
 			}
 
 			oj.transform(os.valueOf("c").toString(),
-					os.valueOf("p").toString(), os.valueOf("d").toString());
+					os.valueOf("p").toString(), os.valueOf("d").toString(),(Boolean) os.valueOf("w"));
 
 			break;
 		case version:
