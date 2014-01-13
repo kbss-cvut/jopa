@@ -96,7 +96,7 @@ public class OWL2JavaTransformer {
 
     private OWLOntology merged;
 
-    private String ontologyIRI;
+    private Set<OWLOntology> imports;
 
 	private Map<OWLClass, JDefinedClass> classes = new HashMap<OWLClass, JDefinedClass>();
 
@@ -134,11 +134,11 @@ public class OWL2JavaTransformer {
 
 	private final ValidContextAnnotationValueVisitor v = new ValidContextAnnotationValueVisitor();
 
-	public void setOntology(final OWLOntology merged, final String owlOntologyIRI, boolean includeImports) {
+	public void setOntology(final OWLOntology merged, final Set<OWLOntology> imports, boolean includeImports) {
 
 		f = merged.getOWLOntologyManager().getOWLDataFactory();
 
-        ontologyIRI = owlOntologyIRI;
+        this.imports = imports;
 
 		LOG.info("Parsing integrity constraints");
 		// final IntegrityConstraintParserImpl icp = new
@@ -229,7 +229,7 @@ public class OWL2JavaTransformer {
 			throw new IllegalArgumentException(e);
 		}
 
-		setOntology(merged, owlOntologyName, includeImports);
+		setOntology(merged, m.getOntologies(), includeImports);
 	}
 
 	private JFieldVar addField(final String name, final JDefinedClass cls,
@@ -347,9 +347,12 @@ public class OWL2JavaTransformer {
         col.add(f.getOWLThing());
 		col.addAll(merged.getSignature());
 
-        final JFieldVar ONTOLOGY_IRI = voc.field(JMod.PUBLIC | JMod.STATIC
-                | JMod.FINAL, String.class, "ONTOLOGY_IRI",
-                JExpr.lit(ontologyIRI));
+        for (final OWLOntology s : imports) {
+            IRI iri =  s.getOntologyID().getOntologyIRI();
+            voc.field(JMod.PUBLIC | JMod.STATIC
+                    | JMod.FINAL, String.class, "ONTOLOGY_IRI_"+validJavaIDForIRI(iri),
+                    JExpr.lit(iri.toString()));
+        }
 
 		for (final OWLEntity c : col) {
 			String prefix = "";
