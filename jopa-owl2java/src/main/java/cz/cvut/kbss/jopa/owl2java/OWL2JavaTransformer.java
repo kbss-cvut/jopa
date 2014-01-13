@@ -74,10 +74,11 @@ import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.jopa.util.MappingFileParser;
 
 class ContextDefinition {
-	final Set<OWLClass> classes = new HashSet<OWLClass>();
-	final Set<org.semanticweb.owlapi.model.OWLObjectProperty> objectProperties = new HashSet<org.semanticweb.owlapi.model.OWLObjectProperty>();
-	final Set<org.semanticweb.owlapi.model.OWLDataProperty> dataProperties = new HashSet<org.semanticweb.owlapi.model.OWLDataProperty>();
-	final Set<OWLAxiom> axioms = new HashSet<OWLAxiom>();
+	final Set<OWLClass> classes = new HashSet<>();
+	final Set<org.semanticweb.owlapi.model.OWLObjectProperty> objectProperties = new HashSet<>();
+    final Set<org.semanticweb.owlapi.model.OWLDataProperty> dataProperties = new HashSet<>();
+    final Set<org.semanticweb.owlapi.model.OWLAnnotationProperty> annotationProperties = new HashSet<>();
+	final Set<OWLAxiom> axioms = new HashSet<>();
 
 	final IntegrityConstraintParserImpl parser = new IntegrityConstraintParserImpl(
 			OWLManager.getOWLDataFactory(), this);
@@ -93,7 +94,9 @@ public class OWL2JavaTransformer {
 
 	private OWLDataFactory f;
 
-	private OWLOntology merged;
+    private OWLOntology merged;
+
+    private String ontologyIRI;
 
 	private Map<OWLClass, JDefinedClass> classes = new HashMap<OWLClass, JDefinedClass>();
 
@@ -131,9 +134,11 @@ public class OWL2JavaTransformer {
 
 	private final ValidContextAnnotationValueVisitor v = new ValidContextAnnotationValueVisitor();
 
-	public void setOntology(final OWLOntology merged, boolean includeImports) {
+	public void setOntology(final OWLOntology merged, final String owlOntologyIRI, boolean includeImports) {
 
 		f = merged.getOWLOntologyManager().getOWLDataFactory();
+
+        ontologyIRI = owlOntologyIRI;
 
 		LOG.info("Parsing integrity constraints");
 		// final IntegrityConstraintParserImpl icp = new
@@ -143,10 +148,6 @@ public class OWL2JavaTransformer {
 
 		for (final OWLAxiom a : merged.getAxioms()) {
 			for (final OWLAnnotation p : a.getAnnotations()) {
-				if (!p.getProperty().getIRI().equals(pIsIntegrityConstraintFor)) {
-					continue;
-				}
-
 				p.getValue().accept(v);
 				final String icContextName = v.getName();
 				if (icContextName == null) {
@@ -161,9 +162,21 @@ public class OWL2JavaTransformer {
 				}
 
 				LOG.config("Found IC " + a + " for context " + icContextName);
-				ctx.classes.addAll(a.getClassesInSignature());
-				ctx.objectProperties.addAll(a.getObjectPropertiesInSignature());
-				ctx.dataProperties.addAll(a.getDataPropertiesInSignature());
+
+                for (final OWLEntity e : a.getSignature()) {
+                    if ( e.isOWLClass() ) {
+                        ctx.classes.add(e.asOWLClass());
+                    }
+                    if ( e.isOWLObjectProperty() ) {
+                        ctx.objectProperties.add(e.asOWLObjectProperty());
+                    }
+                    if ( e.isOWLDataProperty() ) {
+                        ctx.dataProperties.add(e.asOWLDataProperty());
+                    }
+                    if ( e.isOWLAnnotationProperty() ) {
+                        ctx.annotationProperties.add(e.asOWLAnnotationProperty());
+                    }
+                }
 				ctx.axioms.add(a);
 				// ics.add(a);
 			}
@@ -210,13 +223,13 @@ public class OWL2JavaTransformer {
 					.create(owlOntologyName));
 			merged = new OWLOntologyMerger(m)
 					.createMergedOntology(m, org.semanticweb.owlapi.model.IRI
-							.create("http://generated"));
+							.create(owlOntologyName+"-generated"));
 		} catch (OWLOntologyCreationException e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
 			throw new IllegalArgumentException(e);
 		}
 
-		setOntology(merged, includeImports);
+		setOntology(merged, owlOntologyName, includeImports);
 	}
 
 	private JFieldVar addField(final String name, final JDefinedClass cls,
@@ -331,8 +344,12 @@ public class OWL2JavaTransformer {
 		LOG.info("Generating Vocabulary");
 
 		final Collection<OWLEntity> col = new HashSet<OWLEntity>();
+        col.add(f.getOWLThing());
 		col.addAll(merged.getSignature());
-		col.add(f.getOWLThing());
+
+        final JFieldVar ONTOLOGY_IRI = voc.field(JMod.PUBLIC | JMod.STATIC
+                | JMod.FINAL, String.class, "ONTOLOGY_IRI",
+                JExpr.lit(ontologyIRI));
 
 		for (final OWLEntity c : col) {
 			String prefix = "";
@@ -347,13 +364,6 @@ public class OWL2JavaTransformer {
 			} else if (c.isOWLNamedIndividual()) {
 				prefix = "i_";
 			}
-
-			// TODO
-			if (c.isOWLAnnotationProperty()) {
-				continue;
-			}
-
-            System.out.println("c=" + c + ", iri=" + c.getIRI());
 
             String id = prefix + validJavaIDForIRI(c.getIRI());
 

@@ -372,7 +372,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 		axiom.getEntity().accept(new OWLEntityVisitor() {
 
 			public void visit(OWLAnnotationProperty property) {
-				notSupported(axiom);
+                ctx.annotationProperties.add(property);
 			}
 
 			public void visit(OWLDatatype datatype) {
