@@ -29,7 +29,7 @@ public class OWL2Java {
 	private static final Logger LOG = Logger
 			.getLogger(OWL2Java.class.getName());
 
-	public static final String VERSION = "0.2";
+	public static final String VERSION = "0.4";
 
 	// CLI map
 	private static final Map<COMMAND, OptionParser> map = new HashMap<COMMAND, OptionParser>();

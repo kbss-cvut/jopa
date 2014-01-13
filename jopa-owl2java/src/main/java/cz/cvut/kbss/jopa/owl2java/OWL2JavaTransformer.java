@@ -249,7 +249,7 @@ public class OWL2JavaTransformer {
 
 		JDefinedClass cls;
 
-		String name = pkg + validJavaID(clazz.getIRI().getFragment());
+		String name = pkg + validJavaIDForIRI(clazz.getIRI());
 
 		try {
 			cls = cm._class(name);
@@ -353,7 +353,9 @@ public class OWL2JavaTransformer {
 				continue;
 			}
 
-			String id = prefix + validJavaID(c.getIRI().getFragment());
+            System.out.println("c=" + c + ", iri=" + c.getIRI());
+
+            String id = prefix + validJavaIDForIRI(c.getIRI());
 
 			while (voc.fields().keySet().contains("s_" + id)) {
 				id += "_A";
@@ -371,8 +373,17 @@ public class OWL2JavaTransformer {
 		}
 	}
 
+    private static String validJavaIDForIRI(final IRI iri) {
+        if ( iri.getFragment() != null ) {
+            return validJavaID(iri.getFragment());
+        } else {
+            int x = iri.toString().lastIndexOf("/");
+            return validJavaID(iri.toString().substring(x+1));
+        }
+    }
+
 	private static String validJavaID(final String s) {
-		return s.trim().replace("-", "_").replace("'", "_quote_");
+		return s.trim().replace("-", "_").replace("'", "_quote_").replace(".","_dot_");
 	}
 
 	// class MaxICRestrictor implements IntegrityConstraintVisitor {
@@ -576,8 +587,7 @@ public class OWL2JavaTransformer {
 				final JDefinedClass obj = ensureCreated(context, pkg, cm,
 						comp.getFiller());
 
-				final String fieldName = validJavaID(prop.getIRI()
-						.getFragment());
+				final String fieldName = validJavaIDForIRI(prop.getIRI());
 
 				final JFieldVar fv;
 
@@ -629,8 +639,8 @@ public class OWL2JavaTransformer {
 				final JType obj = cm._ref(DatatypeTransformer
 						.transformOWLType(comp.getFiller()));
 
-				final String fieldName = validJavaID(prop.getIRI()
-						.getFragment());
+				final String fieldName = validJavaIDForIRI(
+                        prop.getIRI());
 
 				JFieldVar fv;
 
