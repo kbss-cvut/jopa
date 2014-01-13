@@ -25,6 +25,9 @@ public class OWL2JavaMojo extends AbstractMojo {
     @Parameter(alias = "output-directory")
     private String pOutputDirectory;
 
+    @Parameter(alias = "with-owlapi",defaultValue = "false")
+    private Boolean pWithOWLAPI;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         OWL2JavaTransformer owl2java = new OWL2JavaTransformer();
@@ -56,7 +59,7 @@ public class OWL2JavaMojo extends AbstractMojo {
         }
 
         owl2java.transform(pContextName,
-                pPackage, pOutputDirectory);
+                pPackage, pOutputDirectory, pWithOWLAPI);
 
         getLog().info( "OWL2Java successfully generated!" );
     }
