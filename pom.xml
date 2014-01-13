@@ -24,6 +24,15 @@
 		<finalName>jopa-${project.version}</finalName>
 		<directory>target</directory>
 
+            <extensions>
+                <!-- Enabling the use of FTP -->
+                <extension>
+                    <groupId>org.apache.maven.wagon</groupId>
+                    <artifactId>wagon-ssh</artifactId>
+                    <version>2.3</version>
+                </extension>
+            </extensions>
+
 		<plugins>
 			<!--plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-dependency-plugin</artifactId> 
 				<executions> <execution> <id>copy</id> <phase>compile</phase> <goals> <goal>copy-dependencies</goal> 
@@ -88,4 +97,18 @@
 			</plugin>
 		</plugins>
 	</reporting>
+
+    <distributionManagement>
+        <repository>
+            <id>krizik</id>
+            <name>KBSS Maven 2 Repository</name>
+            <url>scp://krizik.felk.cvut.cz/var/www/m2repo</url>
+        </repository>
+        <site>
+            <id>jopa</id>
+            <name>JOPA</name>
+            <url>http://jopa.sourceforge.net</url>
+        </site>
+        <downloadUrl>http://sourceforge.net/projects/jopa/files/</downloadUrl>
+    </distributionManagement>
 </project>

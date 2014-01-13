@@ -17,7 +17,25 @@
     </properties>
 
     <build>
+        <extensions>
+            <!-- Enabling the use of FTP -->
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>2.3</version>
+            </extension>
+        </extensions>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
@@ -42,7 +60,8 @@
             <name>Petr Křemen</name>
             <email>petr.kremen@fel.cvut.cz</email>
             <url>http://cyber.felk.cvut.cz/people</url>
-            <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group</organization>
+            <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group
+            </organization>
             <organizationUrl>http://kbss.felk.cvut.cz</organizationUrl>
             <roles>
             </roles>
@@ -51,7 +70,8 @@
             <name>Martin Ledvinka</name>
             <email>ledvima1@fit.cvut.cz</email>
             <!--<url>http://cyber.felk.cvut.cz/people</url>-->
-            <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group</organization>
+            <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group
+            </organization>
             <organizationUrl>http://kbss.felk.cvut.cz</organizationUrl>
             <roles>
             </roles>
@@ -73,7 +93,7 @@
         <repository>
             <id>krizik</id>
             <name>KBSS Maven 2 Repository</name>
-            <url>http://krizik.felk.cvut.cz/m2repo</url>
+            <url>scp://krizik.felk.cvut.cz/var/www/m2repo</url>
         </repository>
         <site>
             <id>jopa</id>
