@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>jopa-all</artifactId>
+        <groupId>cz.cvut.kbss.jopa</groupId>
+        <version>0.4-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>testMVN</artifactId>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>cz.cvut.kbss.jopa</groupId>
+                <artifactId>jopa-maven-plugin</artifactId>
+                <version>0.4-SNAPSHOT</version>
+                <configuration>
+                    <ontology-iri>http://onto.mondis.cz/resource/mdr/ic-mondis-webapp</ontology-iri>
+                    <package>cz.cvut.kbss.mondistest</package>
+                    <mapping-file>/home/kremep1/fel/projects/11mondis/internal-svn/impl/data/ontologies/ontology-mapping-file</mapping-file>
+                    <output-directory>${project.basedir}/generated-owl2java</output-directory>
+                    <context-name>mondis-mobile-1.0</context-name>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>owl2java-transform</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
