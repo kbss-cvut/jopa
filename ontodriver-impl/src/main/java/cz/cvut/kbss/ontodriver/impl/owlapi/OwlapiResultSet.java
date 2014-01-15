@@ -52,7 +52,7 @@ public class OwlapiResultSet extends AbstractResultSet {
 	}
 
 	@Override
-	public int findColumn(String columnLabel) throws OntoDriverException {
+	public int findColumn(String columnLabel) {
 		ensureOpen();
 		for (Entry<Integer, Variable<OWLObject>> e : indexesToVars.entrySet()) {
 			if (e.getValue().getName().equals(columnLabel)) {
@@ -63,7 +63,7 @@ public class OwlapiResultSet extends AbstractResultSet {
 	}
 
 	@Override
-	public int getColumnCount() throws OntoDriverException {
+	public int getColumnCount() {
 		ensureOpen();
 		return result.getResultVars().size();
 	}
@@ -72,6 +72,7 @@ public class OwlapiResultSet extends AbstractResultSet {
 	public void first() throws OntoDriverException {
 		ensureOpen();
 		this.iterator = result.iterator();
+		next();
 	}
 
 	@Override
@@ -206,8 +207,10 @@ public class OwlapiResultSet extends AbstractResultSet {
 
 	@Override
 	public void last() throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		ensureOpen();
+		while (hasNext()) {
+			next();
+		}
 	}
 
 	@Override
@@ -218,8 +221,7 @@ public class OwlapiResultSet extends AbstractResultSet {
 
 	@Override
 	public void previous() throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		throw new UnsupportedOperationException("Going back is not supported by this result set.");
 	}
 
 	@Override
@@ -230,14 +232,22 @@ public class OwlapiResultSet extends AbstractResultSet {
 
 	@Override
 	public void relative(int rows) throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		setRowIndex(index + rows);
 	}
 
 	@Override
 	public void setRowIndex(int rowIndex) throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		ensureOpen();
+		if (rowIndex < index) {
+			throw new UnsupportedOperationException(
+					"Going back in this result set is not supported.");
+		}
+		if (rowIndex == index) {
+			return;
+		}
+		while (index <= rowIndex) {
+			next();
+		}
 	}
 
 	private OWLObject getCurrentValue(String column) {
@@ -280,12 +290,12 @@ public class OwlapiResultSet extends AbstractResultSet {
 
 	private <T> T getObjectImpl(OWLObject ob, Class<T> cls) throws OntoDriverException {
 		if (cls.isAssignableFrom(ob.getClass())) {
-			return (T) ob;
+			return cls.cast(ob);
 		} else {
 			try {
-				final Constructor<?> c = cls.getDeclaredConstructor(cls);
+				final Constructor<T> c = cls.getDeclaredConstructor(cls);
 				c.setAccessible(true);
-				return (T) c.newInstance(ob);
+				return c.newInstance(ob);
 			} catch (NoSuchMethodException e) {
 				throw new OntoDriverException(
 						"Unable to find a costructor taking OWLObject argument in class "

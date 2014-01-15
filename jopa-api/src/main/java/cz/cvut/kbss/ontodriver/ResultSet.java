@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver;
 
+import java.util.NoSuchElementException;
 import java.util.Observer;
 
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -29,13 +30,11 @@ public interface ResultSet extends Closeable {
 	 * 
 	 * @param columnLabel
 	 *            Label of the column
-	 * @return index of the column
-	 * @throws OntoDriverException
-	 *             If there is no column with the specified label, this method
-	 *             is called on closed result set or there occurs some other
-	 *             error
+	 * @return index of the column or -1 if there is no such column
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 */
-	public int findColumn(String columnLabel) throws OntoDriverException;
+	public int findColumn(String columnLabel);
 
 	/**
 	 * Gets the count of available columns. </p>
@@ -44,17 +43,18 @@ public interface ResultSet extends Closeable {
 	 * query.
 	 * 
 	 * @return Number of columns in the result set
-	 * @throws OntoDriverException
-	 *             If this method is called on a closed result set
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 */
-	public int getColumnCount() throws OntoDriverException;
+	public int getColumnCount();
 
 	/**
 	 * Move the cursor to the first row.
 	 * 
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
-	 *             If this method is called on closed result set or some other
-	 *             error occurs
+	 *             If some other error occurs
 	 */
 	public void first() throws OntoDriverException;
 
@@ -65,10 +65,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnIndex
 	 *            Column index, the first column has index 0
 	 * @return {@code boolean} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If the {@code columnIndex} is not a valid column index, the
-	 *             value cannot be cast to {@code boolean}, this method is
-	 *             called on closed result set or there occurs some other error
+	 *             value cannot be cast to {@code boolean} or there occurs some
+	 *             other error
 	 */
 	public boolean getBoolean(int columnIndex) throws OntoDriverException;
 
@@ -79,10 +81,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnLabel
 	 *            Label of the column
 	 * @return {@code boolean} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If there is no column with the specified label, the value
-	 *             cannot be cast to {@code boolean}, this method is called on
-	 *             closed result set or there occurs some other error
+	 *             cannot be cast to {@code boolean} or there occurs some other
+	 *             error
 	 */
 	public boolean getBoolean(String columnLabel) throws OntoDriverException;
 
@@ -93,10 +97,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnIndex
 	 *            Column index, the first column has index 0
 	 * @return {@code byte} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If the {@code columnIndex} is not a valid column index, the
-	 *             value cannot be cast to {@code byte}, this method is called
-	 *             on closed result set or there occurs some other error
+	 *             value cannot be cast to {@code byte} or there occurs some
+	 *             other error
 	 */
 	public byte getByte(int columnIndex) throws OntoDriverException;
 
@@ -107,10 +113,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnLabel
 	 *            Label of the column
 	 * @return {@code byte} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If there is no column with the specified label, the value
-	 *             cannot be cast to {@code byte}, this method is called on
-	 *             closed result set or there occurs some other error
+	 *             cannot be cast to {@code byte} or there occurs some other
+	 *             error
 	 */
 	public byte getByte(String columnLabel) throws OntoDriverException;
 
@@ -121,10 +129,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnIndex
 	 *            Column index, the first column has index 0
 	 * @return {@code double} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If the {@code columnIndex} is not a valid column index, the
-	 *             value cannot be cast to {@code double}, this method is called
-	 *             on closed result set or there occurs some other error
+	 *             value cannot be cast to {@code double} or there occurs some
+	 *             other error
 	 */
 	public double getDouble(int columnIndex) throws OntoDriverException;
 
@@ -135,10 +145,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnLabel
 	 *            Label of the column
 	 * @return {@code double} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If there is no column with the specified label, the value
-	 *             cannot be cast to {@code double}, this method is called on
-	 *             closed result set or there occurs some other error
+	 *             cannot be cast to {@code double} or there occurs some other
+	 *             error
 	 */
 	public double getDouble(String columnLabel) throws OntoDriverException;
 
@@ -149,10 +161,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnIndex
 	 *            Column index, the first column has index 0
 	 * @return {@code float} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If the {@code columnIndex} is not a valid column index, the
-	 *             value cannot be cast to {@code float}, this method is called
-	 *             on closed result set or there occurs some other error
+	 *             value cannot be cast to {@code float} or there occurs some
+	 *             other error
 	 */
 	public float getFloat(int columnIndex) throws OntoDriverException;
 
@@ -163,10 +177,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnLabel
 	 *            Label of the column
 	 * @return {@code float} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If there is no column with the specified label, the value
-	 *             cannot be cast to {@code float}, this method is called on
-	 *             closed result set or there occurs some other error
+	 *             cannot be cast to {@code float} or there occurs some other
+	 *             error
 	 */
 	public float getFloat(String columnLabel) throws OntoDriverException;
 
@@ -177,10 +193,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnIndex
 	 *            Column index, the first column has index 0
 	 * @return {@code int} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If the {@code columnIndex} is not a valid column index, the
-	 *             value cannot be cast to {@code int}, this method is called on
-	 *             closed result set or there occurs some other error
+	 *             value cannot be cast to {@code int} or there occurs some
+	 *             other error
 	 */
 	public int getInt(int columnIndex) throws OntoDriverException;
 
@@ -191,10 +209,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnLabel
 	 *            Label of the column
 	 * @return {@code int} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If there is no column with the specified label, the value
-	 *             cannot be cast to {@code int}, this method is called on
-	 *             closed result set or there occurs some other error
+	 *             cannot be cast to {@code int} or there occurs some other
+	 *             error
 	 */
 	public int getInt(String columnLabel) throws OntoDriverException;
 
@@ -205,10 +225,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnIndex
 	 *            Column index, the first column has index 0
 	 * @return {@code long} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If the {@code columnIndex} is not a valid column index, the
-	 *             value cannot be cast to {@code long}, this method is called
-	 *             on closed result set or there occurs some other error
+	 *             value cannot be cast to {@code long} or there occurs some
+	 *             other error
 	 */
 	public long getLong(int columnIndex) throws OntoDriverException;
 
@@ -219,10 +241,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnLabel
 	 *            Label of the column
 	 * @return {@code long} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If there is no column with the specified label, the value
-	 *             cannot be cast to {@code long}, this method is called on
-	 *             closed result set or there occurs some other error
+	 *             cannot be cast to {@code long} or there occurs some other
+	 *             error
 	 */
 	public long getLong(String columnLabel) throws OntoDriverException;
 
@@ -233,10 +257,11 @@ public interface ResultSet extends Closeable {
 	 * @param columnIndex
 	 *            Column index, the first column has index 0
 	 * @return column value cast to {@code Object}
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
-	 *             If the {@code columnIndex} is not a valid column index, this
-	 *             method is called on closed result set or there occurs some
-	 *             other error
+	 *             If the {@code columnIndex} is not a valid column index or
+	 *             there occurs some other error
 	 */
 	public Object getObject(int columnIndex) throws OntoDriverException;
 
@@ -247,10 +272,11 @@ public interface ResultSet extends Closeable {
 	 * @param columnLabel
 	 *            Label of the column
 	 * @return column value cast to {@code Object}
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
-	 *             If there is no column with the specified label, this method
-	 *             is called on closed result set or there occurs some other
-	 *             error
+	 *             If there is no column with the specified label or there
+	 *             occurs some other error
 	 */
 	public Object getObject(String columnLabel) throws OntoDriverException;
 
@@ -267,10 +293,12 @@ public interface ResultSet extends Closeable {
 	 * @param cls
 	 *            Requested class type
 	 * @return Value of the column
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If the {@code columnIndex} is not a valid column index, the
-	 *             value cannot be cast to the specified type, this method is
-	 *             called on closed result set or there occurs some other error
+	 *             value cannot be cast to the specified type or there occurs
+	 *             some other error
 	 */
 	public <T> T getObject(int columnIndex, Class<T> cls) throws OntoDriverException;
 
@@ -286,11 +314,13 @@ public interface ResultSet extends Closeable {
 	 *            Label of the column
 	 * @param cls
 	 *            Requested class type
-	 * @return Value of the column
+	 * @return Value of the column.
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If there is no column with the specified label, the value
-	 *             cannot be cast to the specified type, this method is called
-	 *             on closed result set or there occurs some other error
+	 *             cannot be cast to the specified type or there occurs some
+	 *             other error
 	 */
 	public <T> T getObject(String columnLabel, Class<T> cls) throws OntoDriverException;
 
@@ -300,9 +330,10 @@ public interface ResultSet extends Closeable {
 	 * The first row has index 0.
 	 * 
 	 * @return the current row index, -1 if there is no current row
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
-	 *             If this method is called on closed result set or some other
-	 *             error occurs
+	 *             If some other error occurs
 	 */
 	public int getRowIndex() throws OntoDriverException;
 
@@ -313,10 +344,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnIndex
 	 *            Column index, the first column has index 0
 	 * @return {@code short} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If the {@code columnIndex} is not a valid column index, the
-	 *             value cannot be cast to {@code short}, this method is called
-	 *             on closed result set or there occurs some other error
+	 *             value cannot be cast to {@code short} or there occurs some
+	 *             other error
 	 */
 	public short getShort(int columnIndex) throws OntoDriverException;
 
@@ -327,10 +360,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnLabel
 	 *            Label of the column
 	 * @return {@code short} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If there is no column with the specified label, the value
-	 *             cannot be cast to {@code short}, this method is called on
-	 *             closed result set or there occurs some other error
+	 *             cannot be cast to {@code short} or there occurs some other
+	 *             error
 	 */
 	public short getShort(String columnLabel) throws OntoDriverException;
 
@@ -341,9 +376,10 @@ public interface ResultSet extends Closeable {
 	 * 
 	 * @return The {@code Statement} that produced this {@code ResultSet} or
 	 *         null
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
-	 *             If this method is called on closed result set or some other
-	 *             error occurs
+	 *             If some other error occurs
 	 */
 	public Statement getStatement() throws OntoDriverException;
 
@@ -354,10 +390,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnIndex
 	 *            Column index, the first column has index 0
 	 * @return {@code String} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If the {@code columnIndex} is not a valid column index, the
-	 *             value cannot be cast to {@code String}, this method is called
-	 *             on closed result set or there occurs some other error
+	 *             value cannot be cast to {@code String} or there occurs some
+	 *             other error
 	 */
 	public String getString(int columnIndex) throws OntoDriverException;
 
@@ -368,10 +406,12 @@ public interface ResultSet extends Closeable {
 	 * @param columnLabel
 	 *            Label of the column
 	 * @return {@code String} value
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
 	 *             If there is no column with the specified label, the value
-	 *             cannot be cast to {@code String}, this method is called on
-	 *             closed result set or there occurs some other error
+	 *             cannot be cast to {@code String} or there occurs some other
+	 *             error
 	 */
 	public String getString(String columnLabel) throws OntoDriverException;
 
@@ -379,9 +419,10 @@ public interface ResultSet extends Closeable {
 	 * Returns true if the cursor is at the first row of this result set.
 	 * 
 	 * @return True if the cursor is at the first row, false otherwise
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
-	 *             If this method is called on closed result set or some other
-	 *             error occurs
+	 *             If some other error occurs
 	 */
 	public boolean isFirst() throws OntoDriverException;
 
@@ -390,9 +431,10 @@ public interface ResultSet extends Closeable {
 	 * set.
 	 * 
 	 * @return True if there is at least one next row
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
-	 *             If this method is called on closed result set or some other
-	 *             error occurs
+	 *             If some other error occurs
 	 */
 	public boolean hasNext() throws OntoDriverException;
 
@@ -402,27 +444,33 @@ public interface ResultSet extends Closeable {
 	 * Note that since the result set may be asynchronously updated, the last
 	 * row does not have to always be the same.
 	 * 
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
-	 *             If this method is called on closed result set or some other
-	 *             error occurs
+	 *             If some other error occurs
 	 */
 	public void last() throws OntoDriverException;
 
 	/**
 	 * Move the cursor one row forward.
 	 * 
+	 * @throws NoSuchElementException
+	 *             If there are no more elements
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
-	 *             If there are no more rows, this method is called on closed
-	 *             result set or some other error occurs
+	 *             If some other error occurs
 	 */
 	public void next() throws OntoDriverException;
 
 	/**
 	 * Move the cursor one row backwards.
 	 * 
+	 * @throws IllegalStateException
+	 *             If called on a closed result set or the cursor is at the
+	 *             first row
 	 * @throws OntoDriverException
-	 *             If the cursor is at the first row, this method is called on
-	 *             closed result set or some other error occurs
+	 *             If some other error occurs
 	 */
 	public void previous() throws OntoDriverException;
 
@@ -434,9 +482,10 @@ public interface ResultSet extends Closeable {
 	 * 
 	 * @param observer
 	 *            The observer to register
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
-	 *             If this method is called on closed result set or some other
-	 *             error occurs
+	 *             If or some other error occurs
 	 */
 	public void registerObserver(Observer observer) throws OntoDriverException;
 
@@ -445,9 +494,11 @@ public interface ResultSet extends Closeable {
 	 * 
 	 * @param rows
 	 *            The number of rows to move the cursor of
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
-	 *             If the {@code rows} number is not valid, this method is
-	 *             called on closed result set or some other error occurs
+	 *             If the {@code rows} number is not valid or some other error
+	 *             occurs
 	 */
 	public void relative(int rows) throws OntoDriverException;
 
@@ -458,9 +509,11 @@ public interface ResultSet extends Closeable {
 	 * 
 	 * @param rowIndex
 	 *            Index to move the cursor to
+	 * @throws IllegalStateException
+	 *             If called on a closed result set
 	 * @throws OntoDriverException
-	 *             If the index is not valid row index, this method is called on
-	 *             closed result set or some other error occurs
+	 *             If the index is not valid row index or some other error
+	 *             occurs
 	 */
 	public void setRowIndex(int rowIndex) throws OntoDriverException;
 }
