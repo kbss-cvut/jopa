@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Observer;
 
+import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLObject;
@@ -292,7 +293,47 @@ public class OwlapiResultSet extends AbstractResultSet {
 		if (cls.isAssignableFrom(ob.getClass())) {
 			return cls.cast(ob);
 		} else {
+			Object lit = (ob instanceof OWLLiteral) ? DatatypeTransformer
+					.transform((OWLLiteral) ob) : null;
+			if (lit != null && cls.isAssignableFrom(lit.getClass())) {
+				return cls.cast(lit);
+			}
+			OWLEntity ent = (ob instanceof OWLEntity) ? (OWLEntity) ob : null;
 			try {
+				final Constructor<?>[] ctors = cls.getDeclaredConstructors();
+				for (Constructor<?> c : ctors) {
+					if (c.getParameterTypes().length != 1) {
+						continue;
+					}
+					c.setAccessible(true);
+					final Class<?> type = c.getParameterTypes()[0];
+					if (lit != null && type.isAssignableFrom(lit.getClass())) {
+						// Constructor takes literal value
+						return (T) c.newInstance(lit);
+					}
+					if (ent != null && type.isAssignableFrom(ent.getClass())) {
+						// Constructor takes OWLEntity sub-class
+						return (T) c.newInstance(ent);
+					}
+					if (ent != null && type.isAssignableFrom(IRI.class)) {
+						// Constructor takes IRI
+						return (T) c.newInstance(ent.getIRI());
+					}
+					if (type.isAssignableFrom(ob.getClass())) {
+						// Constructor takes OWLObject sub-class
+						return (T) c.newInstance(ob);
+					}
+					if (type.isAssignableFrom(String.class)) {
+						// Fallback, constructor taking String
+						if (lit != null) {
+							return (T) c.newInstance(lit.toString());
+						} else if (ent != null) {
+							return (T) c.newInstance(ent.getIRI().toString());
+						} else {
+							return (T) c.newInstance(ob.toString());
+						}
+					}
+				}
 				final Constructor<T> c = cls.getDeclaredConstructor(cls);
 				c.setAccessible(true);
 				return c.newInstance(ob);

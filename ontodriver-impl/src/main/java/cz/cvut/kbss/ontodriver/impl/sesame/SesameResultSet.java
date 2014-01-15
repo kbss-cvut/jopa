@@ -10,6 +10,8 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 
 import cz.cvut.kbss.ontodriver.AbstractResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
@@ -17,22 +19,34 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class SesameResultSet extends AbstractResultSet {
 
+	private final RepositoryConnection connection;
 	private final TupleQueryResult result;
 	private List<String> bindings;
 	private BindingSet current;
 
-	public SesameResultSet(TupleQueryResult result, Statement statement)
-			throws QueryEvaluationException {
+	public SesameResultSet(RepositoryConnection connection, TupleQueryResult result,
+			Statement statement) throws QueryEvaluationException {
 		super(statement);
-		if (result == null) {
+		if (connection == null || result == null) {
 			throw new NullPointerException();
 		}
+		this.connection = connection;
 		this.result = result;
 		init();
 	}
 
 	private void init() throws QueryEvaluationException {
 		this.bindings = result.getBindingNames();
+	}
+
+	@Override
+	public void close() throws OntoDriverException {
+		super.close();
+		try {
+			connection.close();
+		} catch (RepositoryException e) {
+			throw new OntoDriverException(e);
+		}
 	}
 
 	@Override
@@ -256,14 +270,16 @@ public class SesameResultSet extends AbstractResultSet {
 				if (c.getParameterTypes().length != 1) {
 					continue;
 				}
+				c.setAccessible(true);
 				final Class<?> type = c.getParameterTypes()[0];
 				if (type.isAssignableFrom(ob.getClass())) {
-					c.setAccessible(true);
 					return (T) c.newInstance(ob);
 				}
-				if (type.isAssignableFrom(Value.class) || type.isAssignableFrom(val.getClass())) {
-					c.setAccessible(true);
+				if (type.isAssignableFrom(val.getClass())) {
 					return (T) c.newInstance(val);
+				}
+				if (type.isAssignableFrom(String.class)) {
+					return (T) c.newInstance(ob.toString());
 				}
 			}
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException

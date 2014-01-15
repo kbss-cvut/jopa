@@ -28,7 +28,7 @@ class SesameStatement extends AbstractStatement {
 			final TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 
 			final TupleQueryResult tqr = tq.evaluate();
-			return new SesameResultSet(tqr, jopaStatement);
+			return new SesameResultSet(conn, tqr, jopaStatement);
 		} catch (QueryEvaluationException e) {
 			throw new QueryExecutionException("Exception caught when evaluating query " + query, e);
 		} catch (RepositoryException e) {
@@ -36,13 +36,6 @@ class SesameStatement extends AbstractStatement {
 		} catch (MalformedQueryException e) {
 			throw new QueryExecutionException(
 					"Malformed query exception caught for query " + query, e);
-		} finally {
-			try {
-				conn.close();
-			} catch (RepositoryException e) {
-				throw new QueryExecutionException(
-						"Exception caught when closing repository connection.", e);
-			}
 		}
 	}
 
