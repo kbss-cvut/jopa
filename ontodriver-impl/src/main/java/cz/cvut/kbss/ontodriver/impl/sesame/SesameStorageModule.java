@@ -4,8 +4,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.openrdf.repository.RepositoryConnection;
-
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -38,7 +36,7 @@ public class SesameStorageModule extends StorageModule {
 	@Override
 	public void rollback() throws OntoDriverException {
 		ensureOpen();
-		internal.reset();
+		internal.rollback();
 		this.transaction = TransactionState.NO;
 	}
 
@@ -47,8 +45,9 @@ public class SesameStorageModule extends StorageModule {
 		if (!open) {
 			return;
 		}
-		factory.releaseStorageConnector(connector);
+		internal.rollback();
 		this.internal = null;
+		factory.releaseStorageConnector(connector);
 		super.close();
 	}
 
@@ -139,13 +138,12 @@ public class SesameStorageModule extends StorageModule {
 		if (transaction == TransactionState.ACTIVE) {
 			return;
 		}
-		connector.reload();
 		internal.reset();
 		this.transaction = TransactionState.ACTIVE;
 	}
 
-	SesameOntologyDataHolder getOntologyData(boolean includeInferred) throws OntoDriverException {
-		return connector.getOntologyData(includeInferred);
+	SesameOntologyDataHolder getOntologyData() throws OntoDriverException {
+		return connector.getOntologyData();
 	}
 
 	PersistenceProviderFacade getPersistenceProvider() {
@@ -173,20 +171,6 @@ public class SesameStorageModule extends StorageModule {
 	protected ModuleInternal<SesameChange, SesameStatement> createModuleInternal()
 			throws OntoDriverException {
 		// Can add more internal implementations here
-		return new SesameModuleInternal(getOntologyData(true), this);
-	}
-
-	/**
-	 * Gets a new repository connection. </p>
-	 * 
-	 * Note that it is the caller's responsibility to close the connection once
-	 * he's done with it.
-	 * 
-	 * @return RepositoryConnection
-	 * @throws OntoDriverException
-	 *             When the connection cannot be opened
-	 */
-	RepositoryConnection getConnection() throws OntoDriverException {
-		return connector.getRepositoryConnection();
+		return new SesameModuleInternal(getOntologyData(), this);
 	}
 }

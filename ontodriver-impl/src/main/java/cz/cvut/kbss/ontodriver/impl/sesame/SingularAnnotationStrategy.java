@@ -43,9 +43,9 @@ class SingularAnnotationStrategy extends SingularDataPropertyStrategy {
 	private <T> void loadAnnotationProperty(T instance, URI uri, Attribute<?, ?> property)
 			throws IllegalArgumentException, IllegalAccessException {
 		final URI annotationProperty = getAddressAsSesameUri(property.getIRI());
-		Model res = getModel(false).filter(uri, annotationProperty, null);
+		Model res = storage.filter(uri, annotationProperty, null, false);
 		if (res.isEmpty()) {
-			res = getModel(true).filter(uri, annotationProperty, null);
+			res = storage.filter(uri, annotationProperty, null, true);
 		}
 		Object value = null;
 		URI datatype = null;

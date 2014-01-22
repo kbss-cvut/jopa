@@ -16,6 +16,17 @@ public final class OntoDriverProperties {
 	public static final String ONTOLOGY_LANGUAGE = "cz.cvut.jopa.lang";
 
 	/**
+	 * This setting tells the driver whether to use the transactional ontology
+	 * for retrieving entities and answering queries. </p>
+	 * 
+	 * If so, uncommitted changes made during transaction will be included in
+	 * query evaluation, entity retrieval etc. Otherwise the driver will use the
+	 * ontology as it was when the transaction was started and uncommitted
+	 * changes will not be visible until commit.
+	 */
+	public static final String USE_TRANSACTIONAL_ONTOLOGY = "cz.cvut.kbss.ontodriver.use-transactional-onto";
+
+	/**
 	 * Property for setting factory for OWL API based modules and connectors.
 	 * </p>
 	 * 

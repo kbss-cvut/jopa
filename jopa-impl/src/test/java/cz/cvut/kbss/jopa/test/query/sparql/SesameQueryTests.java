@@ -124,6 +124,7 @@ public class SesameQueryTests {
 		final Map<String, String> props = new HashMap<>();
 		props.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.TRUE.toString());
 		props.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
+		props.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
 		return props;
 	}
 

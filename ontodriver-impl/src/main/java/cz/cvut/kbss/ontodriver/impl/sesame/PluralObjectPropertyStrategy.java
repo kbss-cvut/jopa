@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -108,12 +107,11 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 			throws OntoDriverException {
 		final URI hasSequenceUri = getAddressAsSesameUri(la.getIRI());
 		final boolean includeInferred = la.isInferred();
-		final Model m = getModel(includeInferred);
 		final Class<?> cls = la.getBindableJavaType();
 		final URI hasNextUri = getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
 		final URI hasContentsUri = getAddressAsSesameUri(la.getOWLPropertyHasContentsIRI());
 
-		Value seq = getPropertyValue(subject, hasSequenceUri, m);
+		Value seq = getPropertyValue(subject, hasSequenceUri, includeInferred);
 		if (!isUri(seq)) {
 			throw new OWLReferencedListException("The value of property " + hasSequenceUri
 					+ " has to be an URI.");
@@ -128,7 +126,7 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 			Object inst = getJavaInstanceForSubject(cls, content);
 			assert inst != null;
 			lst.add(inst);
-			seq = getPropertyValue(seqUri, hasNextUri, m);
+			seq = getPropertyValue(seqUri, hasNextUri, includeInferred);
 			if (!isUri(seq)) {
 				throw new OWLReferencedListException("The value of property " + hasNextUri
 						+ " has to be an URI.");
@@ -153,10 +151,10 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 	private Set<?> loadReferencedSet(URI subject, PluralAttribute<?, ?, ?> pa)
 			throws OntoDriverException {
 		final URI property = getAddressAsSesameUri(pa.getIRI());
-		final Model m = getModel(pa.isInferred());
 
 		final Class<?> cls = pa.getBindableJavaType();
-		final Collection<Statement> statements = m.filter(subject, property, null);
+		final Collection<Statement> statements = storage.filter(subject, property, null,
+				pa.isInferred());
 		if (statements.isEmpty()) {
 			return null;
 		}
@@ -184,13 +182,13 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 	 */
 	private List<?> loadSimpleList(URI subject, ListAttribute<?, ?> la) throws OntoDriverException {
 		final URI property = getAddressAsSesameUri(la.getIRI());
-		final Model m = getModel(la.isInferred());
+		final boolean includeInferred = la.isInferred();
 		// Element type
 		final Class<?> cls = la.getBindableJavaType();
 		final URI hasNextUri = getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI());
 
 		final List<Object> lst = new ArrayList<>();
-		final Value val = getPropertyValue(subject, property, m);
+		final Value val = getPropertyValue(subject, property, includeInferred);
 		if (val == null) {
 			return null;
 		}
@@ -202,7 +200,7 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		while (newSubject != null) {
 			final Object o = getJavaInstanceForSubject(cls, newSubject);
 			lst.add(o);
-			final Value nextValue = getPropertyValue(newSubject, hasNextUri, m);
+			final Value nextValue = getPropertyValue(newSubject, hasNextUri, includeInferred);
 			if (nextValue == null) {
 				break;
 			}
@@ -253,8 +251,7 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 
 	private void removeOldList(URI uri, URI hasSequence, URI hasNext, boolean includeInferred) {
 		final List<Statement> toRemove = new LinkedList<>();
-		final Model m = getModel(includeInferred);
-		final Value val = getPropertyValue(uri, hasSequence, m);
+		final Value val = getPropertyValue(uri, hasSequence, includeInferred);
 		if (val == null) {
 			return;
 		}
@@ -265,7 +262,7 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		URI seq = (URI) val;
 		toRemove.add(valueFactory.createStatement(uri, hasSequence, seq));
 		while (seq != null) {
-			final Value next = getPropertyValue(seq, hasNext, m);
+			final Value next = getPropertyValue(seq, hasNext, includeInferred);
 			if (next == null) {
 				break;
 			}

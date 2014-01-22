@@ -137,6 +137,7 @@ public class SesameSingleContextMemoryStoreTest {
 	private static Map<String, String> initProperties() {
 		final Map<String, String> m = new HashMap<>();
 		m.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
+		m.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
 		return m;
 	}
 }

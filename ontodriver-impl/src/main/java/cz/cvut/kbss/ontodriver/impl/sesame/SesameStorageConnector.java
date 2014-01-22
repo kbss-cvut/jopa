@@ -1,7 +1,5 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
-import info.aduna.iteration.Iterations;
-
 import java.io.File;
 import java.net.URI;
 import java.util.Collections;
@@ -10,14 +8,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.openrdf.model.Model;
-import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
@@ -47,15 +41,15 @@ public class SesameStorageConnector implements StorageConnector {
 	private static final String FILE_SCHEME = "file";
 
 	private final OntologyStorageProperties storageProps;
+	private final Map<String, String> props;
 
 	protected String language;
 
-	private boolean open;
-	private long currentSubjectCount;
+	private volatile boolean open;
+	private volatile long currentSubjectCount;
 
 	private RepositoryManager manager;
 	private Repository repository;
-	private RepositoryConnection connection;
 
 	public SesameStorageConnector(OntologyStorageProperties storageProps)
 			throws OntoDriverException {
@@ -68,8 +62,9 @@ public class SesameStorageConnector implements StorageConnector {
 			throw new NullPointerException();
 		}
 		this.storageProps = storageProps;
+		this.props = properties;
 		this.currentSubjectCount = -1;
-		initialize(properties);
+		initialize();
 		this.open = true;
 	}
 
@@ -79,7 +74,6 @@ public class SesameStorageConnector implements StorageConnector {
 			return;
 		}
 		assert repository != null;
-		assert connection != null;
 
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Closing Sesame storage connector.");
@@ -96,13 +90,7 @@ public class SesameStorageConnector implements StorageConnector {
 	@Override
 	public void reload() throws OntoDriverException {
 		ensureOpen();
-		try {
-			connection.close();
-			this.connection = repository.getConnection();
-		} catch (RepositoryException e) {
-			LOG.severe("Failed to reload repository connection.");
-			throw new OntoDriverException("Failed to reload repository connection.", e);
-		}
+		// no-op
 	}
 
 	/**
@@ -117,48 +105,17 @@ public class SesameStorageConnector implements StorageConnector {
 	 *         well and a {@link ValueFactory}
 	 * @throws OntoDriverException
 	 */
-	public SesameOntologyDataHolder getOntologyData(boolean includeInferred)
-			throws OntoDriverException {
+	public SesameOntologyDataHolder getOntologyData() throws OntoDriverException {
 		ensureOpen();
 		try {
-			Model model = null;
-			if (includeInferred) {
-				// Get all statements from the repository
-				final RepositoryResult<Statement> statements = connection.getStatements(null, null,
-						null, includeInferred);
-				model = Iterations.addAll(statements, new LinkedHashModel());
-			}
-			final RepositoryResult<Statement> explicitStatements = connection.getStatements(null,
-					null, null, false);
-			final Model explicitModel = Iterations
-					.addAll(explicitStatements, new LinkedHashModel());
-			this.currentSubjectCount = explicitModel.size();
-			final ValueFactory vf = connection.getValueFactory();
-			return SesameOntologyDataHolder.model(model).explicitModel(explicitModel)
-					.valueFactory(vf).language(language).build();
+			final RepositoryConnection conn = repository.getConnection();
+			this.currentSubjectCount = conn.size();
+			final ValueFactory vf = conn.getValueFactory();
+			return SesameOntologyDataHolder.storage(createStorageProxy(conn)).valueFactory(vf)
+					.language(language).build();
 		} catch (RepositoryException e) {
 			throw new OntoDriverException(
 					"Exception caught when extracting statements from repository.", e);
-		}
-	}
-
-	/**
-	 * Gets a connection to the underlying repository. </p>
-	 * 
-	 * The caller is expected to handle all the transaction synchronization and
-	 * connection lifecycle.
-	 * 
-	 * @return Connection to the underlying Sesame repository
-	 * @throws OntoDriverException
-	 *             If the connector is unable to get connection from the
-	 *             repository
-	 */
-	public RepositoryConnection getRepositoryConnection() throws OntoDriverException {
-		ensureOpen();
-		try {
-			return repository.getConnection();
-		} catch (RepositoryException e) {
-			throw new OntoDriverException("Unable to get connection to repository " + repository, e);
 		}
 	}
 
@@ -168,19 +125,29 @@ public class SesameStorageConnector implements StorageConnector {
 		if (changes.isEmpty()) {
 			return;
 		}
-		assert connection != null;
+		RepositoryConnection connection;
 		try {
-			assert connection.isOpen();
+			connection = repository.getConnection();
+		} catch (RepositoryException ex) {
+			throw new OntoDriverException("Unable to open repository connection.", ex);
+		}
+		try {
 			connection.begin();
 			for (SesameChange ch : changes) {
 				ch.apply(connection);
 			}
 			connection.commit();
-			this.currentSubjectCount = -1;
+			this.currentSubjectCount = connection.size();
 		} catch (RepositoryException e) {
 			LOG.severe("Exception caught when committing changes to the repository.");
 			throw new OntoDriverException(
 					"Exception caught when committing changes to repository.", e);
+		} finally {
+			try {
+				connection.close();
+			} catch (RepositoryException e) {
+				LOG.log(Level.SEVERE, "Exception caught when closing repository connection.", e);
+			}
 		}
 	}
 
@@ -191,13 +158,6 @@ public class SesameStorageConnector implements StorageConnector {
 	 * @throws RepositoryException
 	 */
 	public long getSubjectCount() throws OntoDriverException {
-		if (currentSubjectCount < 0) {
-			try {
-				this.currentSubjectCount = repository.getConnection().size();
-			} catch (RepositoryException e) {
-				throw new OntoDriverException("Unable to resolve statement count in repository.", e);
-			}
-		}
 		return currentSubjectCount;
 	}
 
@@ -207,16 +167,16 @@ public class SesameStorageConnector implements StorageConnector {
 		}
 	}
 
-	private void initialize(Map<String, String> properties) throws OntoDriverException {
+	private void initialize() throws OntoDriverException {
 		final URI serverUri = storageProps.getPhysicalURI();
-		this.language = properties.get(OntoDriverProperties.ONTOLOGY_LANGUAGE);
+		this.language = props.get(OntoDriverProperties.ONTOLOGY_LANGUAGE);
 		try {
 			boolean isRemote = false;
 			isRemote = isRemoteRepository(serverUri);
 			if (isRemote) {
 				this.repository = RepositoryProvider.getRepository(serverUri.toString());
 			} else {
-				createLocalRepository(properties);
+				createLocalRepository();
 			}
 			if (repository == null) {
 				if (isRemote) {
@@ -228,7 +188,6 @@ public class SesameStorageConnector implements StorageConnector {
 				}
 			}
 			repository.initialize();
-			this.connection = repository.getConnection();
 		} catch (RepositoryException | RepositoryConfigException e) {
 			LOG.severe("Failed to acquire Sesame repository connection.");
 			throw new OntoDriverException("Failed to acquire sesame repository connection.", e);
@@ -237,7 +196,6 @@ public class SesameStorageConnector implements StorageConnector {
 
 	private void closeRepository() throws OntoDriverException {
 		try {
-			connection.close();
 			repository.shutDown();
 			if (manager != null) {
 				manager.shutDown();
@@ -256,7 +214,7 @@ public class SesameStorageConnector implements StorageConnector {
 	 * @throws OntoDriverException
 	 *             If the repository cannot be created
 	 */
-	private void createLocalRepository(Map<String, String> props) throws OntoDriverException {
+	private void createLocalRepository() throws OntoDriverException {
 		final URI localUri = storageProps.getPhysicalURI();
 		boolean useVolatile = Boolean.parseBoolean(props
 				.get(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE));
@@ -305,6 +263,14 @@ public class SesameStorageConnector implements StorageConnector {
 		return new RepositoryConfig(repoId, repoType);
 	}
 
+	private StorageProxy createStorageProxy(RepositoryConnection conn) throws OntoDriverException {
+		if (Boolean.parseBoolean(props.get(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY))) {
+			return new CachingStorageProxy(conn);
+		} else {
+			return new TransparentStorageProxy(conn);
+		}
+	}
+
 	/**
 	 * Returns true if inference should be used in local repositories.
 	 * 
@@ -313,7 +279,7 @@ public class SesameStorageConnector implements StorageConnector {
 	 */
 	private static boolean shouldUseInferenceInLocal(Map<String, String> properties) {
 		assert properties != null;
-		// We can use directly this, because Boolean.parseBoolean return false
+		// We can use directly this, because Boolean.parseBoolean returns false
 		// for null
 		return (Boolean.parseBoolean(properties.get(OntoDriverProperties.SESAME_USE_INFERENCE)));
 	}

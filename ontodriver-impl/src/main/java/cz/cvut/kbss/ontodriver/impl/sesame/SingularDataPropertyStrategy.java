@@ -48,9 +48,9 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 	private <T> void loadDataProperty(T instance, URI uri, Attribute<?, ?> property)
 			throws IllegalArgumentException, IllegalAccessException {
 		final URI propertyUri = getAddressAsSesameUri(property.getIRI());
-		Model res = getModel(false).filter(uri, propertyUri, null);
+		Model res = storage.filter(uri, propertyUri, null, false);
 		if (res.isEmpty()) {
-			res = getModel(true).filter(uri, propertyUri, null);
+			res = storage.filter(uri, propertyUri, null, true);
 		}
 		Object value = null;
 		URI datatype = null;

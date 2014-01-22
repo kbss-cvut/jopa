@@ -10,8 +10,6 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 
 import cz.cvut.kbss.ontodriver.AbstractResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
@@ -19,18 +17,16 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class SesameResultSet extends AbstractResultSet {
 
-	private final RepositoryConnection connection;
 	private final TupleQueryResult result;
 	private List<String> bindings;
 	private BindingSet current;
 
-	public SesameResultSet(RepositoryConnection connection, TupleQueryResult result,
-			Statement statement) throws QueryEvaluationException {
+	public SesameResultSet(TupleQueryResult result, Statement statement)
+			throws QueryEvaluationException {
 		super(statement);
-		if (connection == null || result == null) {
+		if (result == null) {
 			throw new NullPointerException();
 		}
-		this.connection = connection;
 		this.result = result;
 		init();
 	}
@@ -43,8 +39,8 @@ public class SesameResultSet extends AbstractResultSet {
 	public void close() throws OntoDriverException {
 		super.close();
 		try {
-			connection.close();
-		} catch (RepositoryException e) {
+			result.close();
+		} catch (QueryEvaluationException e) {
 			throw new OntoDriverException(e);
 		}
 	}

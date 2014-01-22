@@ -71,8 +71,10 @@ public class FileOWLDBPerformanceTest {
 		LOG.config("Testing file ontology access performance. Persisting " + COUNT + " entities.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
 				"FileOntologyPerformanceTest-Persist", true);
-
+		final long start = System.currentTimeMillis();
 		persistEntities(em);
+		final long end = System.currentTimeMillis();
+		LOG.config("Persist performance (FILE): " + (end - start) + "ms.");
 	}
 
 	@Test
@@ -82,7 +84,10 @@ public class FileOWLDBPerformanceTest {
 				"OWLDBOntologyPerformanceTest-Persist",
 				Collections.<StorageConfig> singletonList(new OwldbStorageConfig()), true);
 		try {
+			final long start = System.currentTimeMillis();
 			persistEntities(em);
+			final long end = System.currentTimeMillis();
+			LOG.config("Persist performance (OWLDB): " + (end - start) + "ms.");
 		} finally {
 			em.getEntityManagerFactory().close();
 		}
@@ -110,7 +115,10 @@ public class FileOWLDBPerformanceTest {
 				"FileOntologyPerformanceTest-Find", false);
 		persistEntities(em);
 
+		final long start = System.currentTimeMillis();
 		findEntities(em);
+		final long end = System.currentTimeMillis();
+		LOG.config("Retrieve performance (FILE): " + (end - start) + "ms.");
 	}
 
 	@Test
@@ -122,7 +130,10 @@ public class FileOWLDBPerformanceTest {
 		try {
 			persistEntities(em);
 
+			final long start = System.currentTimeMillis();
 			findEntities(em);
+			final long end = System.currentTimeMillis();
+			LOG.config("Retrieve performance (OWLDB): " + (end - start) + "ms.");
 		} finally {
 			em.close();
 			em.getEntityManagerFactory().close();
