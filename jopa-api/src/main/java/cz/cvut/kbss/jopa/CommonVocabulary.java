@@ -18,5 +18,7 @@ package cz.cvut.kbss.jopa;
 public class CommonVocabulary {
 
 	public static final String RDFS_LABEL = "http://www.w3.org/2000/01/rdf-schema#label";
+
+    public static final String DC_DESCRIPTION = "http://purl.org/dc/elements/1.1/description";
 	
 }

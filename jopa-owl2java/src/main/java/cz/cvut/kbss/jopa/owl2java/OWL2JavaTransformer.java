@@ -282,6 +282,12 @@ public class OWL2JavaTransformer {
 			fvLabel.annotate(OWLAnnotationProperty.class).param("iri",
 					cm.ref(CommonVocabulary.class).staticRef("RDFS_LABEL"));
 
+            // DC description
+            final JClass ftDescription = cm.ref(String.class);
+            final JFieldVar fvDescription = addField("description", cls, ftDescription);
+            fvDescription.annotate(OWLAnnotationProperty.class).param("iri",
+                    cm.ref(CommonVocabulary.class).staticRef("DC_DESCRIPTION"));
+
 			// @Types Set<String> types;
 			final JClass ftTypes = cm.ref(Set.class).narrow(String.class);
 			final JFieldVar fvTypes = addField("types", cls, ftTypes);
