@@ -31,7 +31,7 @@ public class DriverCachingOwlapiFactory extends DriverAbstractFactory {
 			Map<Context, OntologyStorageProperties> ctxsToProperties, Map<String, String> properties)
 			throws OntoDriverException {
 		super(contexts, ctxsToProperties, properties);
-		this.centralConnectors = new HashMap<Context, OwlapiStorageConnector>();
+		this.centralConnectors = new HashMap<>(contexts.size());
 	}
 
 	@Override

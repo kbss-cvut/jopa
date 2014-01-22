@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -15,10 +16,13 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class DriverSesameFactory extends DriverAbstractFactory {
 
+	private final Map<Context, SesameStorageConnectorImpl> centralConnectors;
+
 	public DriverSesameFactory(List<Context> contexts,
 			Map<Context, OntologyStorageProperties> ctxsToProperties, Map<String, String> properties)
 			throws OntoDriverException {
 		super(contexts, ctxsToProperties, properties);
+		this.centralConnectors = new HashMap<>(contexts.size());
 	}
 
 	@Override
@@ -41,11 +45,7 @@ public class DriverSesameFactory extends DriverAbstractFactory {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Sesame storage connector.");
 		}
-		final OntologyStorageProperties props = contextsToProperties.get(ctx);
-		assert props != null;
-		final SesameStorageConnector c = new SesameStorageConnector(props, properties);
-		registerConnector(c);
-		return c;
+		return createConnectorImpl(ctx, autoCommit);
 	}
 
 	@Override
@@ -55,6 +55,38 @@ public class DriverSesameFactory extends DriverAbstractFactory {
 			throw new NullPointerException();
 		}
 		return new SesameStatement(statement);
+	}
+
+	@Override
+	public void close() throws OntoDriverException {
+		if (!isOpen()) {
+			return;
+		}
+		super.close();
+		for (SesameStorageConnector c : centralConnectors.values()) {
+			c.close();
+		}
+	}
+
+	private SesameStorageConnector createConnectorImpl(Context ctx, boolean autoCommit)
+			throws OntoDriverException {
+		final OntologyStorageProperties props = contextsToProperties.get(ctx);
+		assert props != null;
+		SesameStorageConnectorImpl central = null;
+		synchronized (this) {
+			if (!centralConnectors.containsKey(ctx)) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.finer("Creating central connector for context " + ctx);
+				}
+				central = new SesameStorageConnectorImpl(props, properties);
+				centralConnectors.put(ctx, central);
+			} else {
+				central = centralConnectors.get(ctx);
+			}
+		}
+		final SesameStorageConnectorProxy c = new SesameStorageConnectorProxy(central);
+		registerConnector(c);
+		return c;
 	}
 
 }
