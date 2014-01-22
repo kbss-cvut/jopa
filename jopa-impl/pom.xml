@@ -114,6 +114,12 @@
 			<optional>false</optional>
 		</dependency>
 		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.3-1100-jdbc41</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.semanticweb</groupId>
 			<artifactId>owlapi</artifactId>
 			<version>${owlapi.version}</version>

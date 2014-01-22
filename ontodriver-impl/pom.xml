@@ -12,36 +12,36 @@
 	<name>OntoDriver - Impl</name>
 
 	<repositories>
-        <repository>
-            <id>krizik</id>
-            <name>KBSS Maven 2 Repository</name>
-            <url>http://krizik.felk.cvut.cz/m2repo</url>
-            <releases>
-                <checksumPolicy>warn</checksumPolicy>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </releases>
-            <snapshots>
-                <checksumPolicy>warn</checksumPolicy>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>krizik-private</id>
-            <name>KBSS Maven 2 Repository</name>
-            <url>https://krizik.felk.cvut.cz/m2repo-private</url>
-            <releases>
-                <checksumPolicy>warn</checksumPolicy>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </releases>
-             <snapshots>
-                <checksumPolicy>warn</checksumPolicy>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
+		<repository>
+			<id>krizik</id>
+			<name>KBSS Maven 2 Repository</name>
+			<url>http://krizik.felk.cvut.cz/m2repo</url>
+			<releases>
+				<checksumPolicy>warn</checksumPolicy>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</releases>
+			<snapshots>
+				<checksumPolicy>warn</checksumPolicy>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>krizik-private</id>
+			<name>KBSS Maven 2 Repository</name>
+			<url>https://krizik.felk.cvut.cz/m2repo-private</url>
+			<releases>
+				<checksumPolicy>warn</checksumPolicy>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</releases>
+			<snapshots>
+				<checksumPolicy>warn</checksumPolicy>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
 		<repository>
 			<id>berkeley</id>
 			<name>Berkeley Maven 2 Repository</name>
@@ -51,15 +51,15 @@
 			<id>Maven Repo</id>
 			<url>http://repo1.maven.org/maven2/</url>
 			<releases>
-                <checksumPolicy>warn</checksumPolicy>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </releases>
-             <snapshots>
-                <checksumPolicy>warn</checksumPolicy>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
+				<checksumPolicy>warn</checksumPolicy>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</releases>
+			<snapshots>
+				<checksumPolicy>warn</checksumPolicy>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
 		</repository>
 		<repository>
 			<id>repository.jboss.org-public</id>
@@ -75,53 +75,53 @@
 			<version>2.7.3</version>
 			<type>pom</type>
 		</dependency>
-        <dependency>
-            <groupId>org.ow2.orchestra</groupId>
-            <artifactId>orchestra-core</artifactId>
-            <version>4.7.0</version>
-        </dependency>
-        <dependency>
-            <groupId>opensymphony</groupId>
-            <artifactId>oscache</artifactId>
-            <version>2.4.1</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.9</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>c3p0</groupId>
-            <artifactId>c3p0</artifactId>
-            <version>0.9.1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-c3p0</artifactId>
-            <version>3.5.4-Final</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>3.5.4-Final</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openrdf.sesame</groupId>
-            <artifactId>sesame-runtime</artifactId>
-            <version>2.7.8</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ontotext</groupId>
-            <artifactId>owlim-se</artifactId>
-            <version>5.3.5689</version>
-        </dependency>
-        <dependency>
-            <groupId>de.fraunhofer.iitb</groupId>
-            <artifactId>owldb</artifactId>
-            <version>2.04-cvut</version>
-        </dependency>
-        <dependency>
+		<dependency>
+			<groupId>org.ow2.orchestra</groupId>
+			<artifactId>orchestra-core</artifactId>
+			<version>4.7.0</version>
+		</dependency>
+		<dependency>
+			<groupId>opensymphony</groupId>
+			<artifactId>oscache</artifactId>
+			<version>2.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.9</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>c3p0</groupId>
+			<artifactId>c3p0</artifactId>
+			<version>0.9.1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-c3p0</artifactId>
+			<version>3.5.4-Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>3.5.4-Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openrdf.sesame</groupId>
+			<artifactId>sesame-runtime</artifactId>
+			<version>2.7.8</version>
+		</dependency>
+		<dependency>
+			<groupId>com.ontotext</groupId>
+			<artifactId>owlim-se</artifactId>
+			<version>5.3.5689</version>
+		</dependency>
+		<dependency>
+			<groupId>de.fraunhofer.iitb</groupId>
+			<artifactId>owldb</artifactId>
+			<version>2.04-cvut</version>
+		</dependency>
+		<dependency>
 			<groupId>cz.cvut.kbss.jopa</groupId>
 			<artifactId>jopa-owlapi-utils</artifactId>
 			<version>${project.version}</version>
@@ -137,7 +137,7 @@
 			<version>1.0-SNAPSHOT</version>
 			<type>jar</type>
 			<scope>compile</scope>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>com.github.ansell.pellet</groupId>
 			<artifactId>pellet-core</artifactId>
