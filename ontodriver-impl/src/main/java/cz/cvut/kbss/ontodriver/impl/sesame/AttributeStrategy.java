@@ -32,6 +32,7 @@ abstract class AttributeStrategy {
 	private final SesameModuleInternal internal;
 	protected String lang;
 	protected ValueFactory valueFactory;
+	protected StorageProxy storage;
 
 	protected AttributeStrategy(SesameModuleInternal internal) {
 		this.internal = internal;
@@ -41,6 +42,7 @@ abstract class AttributeStrategy {
 	private void init() {
 		this.lang = internal.getLang();
 		this.valueFactory = internal.getValueFactory();
+		this.storage = internal.getStorage();
 	}
 
 	/**
@@ -124,10 +126,6 @@ abstract class AttributeStrategy {
 		}
 	}
 
-	protected Model getModel(boolean includeInferred) {
-		return internal.getModel(includeInferred);
-	}
-
 	/**
 	 * Gets URI of value of the specified object property.
 	 * 
@@ -140,9 +138,9 @@ abstract class AttributeStrategy {
 	 * @return URI of the discovered object or {@code null} if none is found
 	 */
 	protected URI getObjectPropertyValue(URI subjectUri, URI propertyUri, boolean includeInferred) {
-		Model res = internal.getModel(false).filter(subjectUri, propertyUri, null);
+		Model res = storage.filter(subjectUri, propertyUri, null, false);
 		if (res.isEmpty() && includeInferred) {
-			res = internal.getModel(true).filter(subjectUri, propertyUri, null);
+			res = storage.filter(subjectUri, propertyUri, null, true);
 		}
 		URI objectUri = null;
 		for (Statement stmt : res) {
@@ -156,8 +154,8 @@ abstract class AttributeStrategy {
 		return objectUri;
 	}
 
-	protected Value getPropertyValue(URI subjectUri, URI propertyUri, Model m) {
-		Collection<Statement> res = m.filter(subjectUri, propertyUri, null);
+	protected Value getPropertyValue(URI subjectUri, URI propertyUri, boolean includeInferred) {
+		Collection<Statement> res = storage.filter(subjectUri, propertyUri, null, includeInferred);
 		if (res.isEmpty()) {
 			return null;
 		}
@@ -174,13 +172,13 @@ abstract class AttributeStrategy {
 
 	protected void removeOldDataPropertyValues(URI subject, URI property) {
 		// TODO should we use only explicit model?
-		final Model m = internal.getModel(false).filter(subject, property, null);
+		final Model m = storage.filter(subject, property, null, false);
 		internal.removeStatements(m);
 	}
 
 	protected void removeOldObjectPropertyValues(URI subject, URI property) {
 		// TODO should we use only explicit model?
-		final Model m = internal.getModel(false).filter(subject, property, null);
+		final Model m = storage.filter(subject, property, null, false);
 		internal.removeStatements(m);
 	}
 

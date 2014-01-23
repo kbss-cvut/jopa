@@ -1,6 +1,5 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
-import org.openrdf.model.Model;
 import org.openrdf.model.ValueFactory;
 
 /**
@@ -11,44 +10,32 @@ import org.openrdf.model.ValueFactory;
  */
 final class SesameOntologyDataHolder {
 
-	// Model containing explicit and inferred statements
-	private final Model model;
-	// Model containing only explicit statements
-	private final Model explicitModel;
+	private final StorageProxy storage;
 	private final ValueFactory valueFactory;
 	private final String language;
 
 	SesameOntologyDataHolder(SesameDataHolderBuilder builder) {
-		assert builder.explicitModel != null : "argument explicitModel is null";
+		assert builder.storage != null : "argument storage is null";
 		assert builder.vf != null : "argument valueFactory is null";
-		this.model = builder.model;
-		this.explicitModel = builder.explicitModel;
+		this.storage = builder.storage;
 		this.valueFactory = builder.vf;
 		this.language = builder.lang;
 	}
 
-	Model getModel() {
-		return model;
+	public StorageProxy getStorage() {
+		return storage;
 	}
 
 	ValueFactory getValueFactory() {
 		return valueFactory;
 	}
 
-	Model getExplicitModel() {
-		return explicitModel;
-	}
-
 	String getLanguage() {
 		return language;
 	}
 
-	static SesameDataHolderBuilder model(Model model) {
-		return new SesameDataHolderBuilder().model(model);
-	}
-
-	static SesameDataHolderBuilder explicitModel(Model explicitModel) {
-		return new SesameDataHolderBuilder().explicitModel(explicitModel);
+	static SesameDataHolderBuilder storage(StorageProxy st) {
+		return new SesameDataHolderBuilder().storage(st);
 	}
 
 	static SesameDataHolderBuilder valueFactory(ValueFactory vf) {
@@ -60,21 +47,15 @@ final class SesameOntologyDataHolder {
 	}
 
 	static final class SesameDataHolderBuilder {
-		private Model model;
-		private Model explicitModel;
+		private StorageProxy storage;
 		private ValueFactory vf;
 		private String lang;
 
 		private SesameDataHolderBuilder() {
 		}
 
-		SesameDataHolderBuilder model(Model model) {
-			this.model = model;
-			return this;
-		}
-
-		SesameDataHolderBuilder explicitModel(Model explModel) {
-			this.explicitModel = explModel;
+		SesameDataHolderBuilder storage(StorageProxy st) {
+			this.storage = st;
 			return this;
 		}
 

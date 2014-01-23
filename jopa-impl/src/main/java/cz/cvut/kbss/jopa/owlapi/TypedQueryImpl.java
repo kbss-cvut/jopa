@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -130,9 +128,9 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 			int cnt = 0;
 			while (rs.hasNext() && cnt < maxResults) {
 				rs.next();
-				final OWLNamedIndividual ind = rs.getObject(0, OWLNamedIndividual.class);
+				final URI uri = URI.create(rs.getString(0));
 
-				final T entity = uow.readObject(classT, ind.getIRI());
+				final T entity = uow.readObject(classT, uri);
 				if (entity == null) {
 					throw new OWLPersistenceException(
 							"Fatal error, unable to load entity for primary key already found by query "

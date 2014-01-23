@@ -50,6 +50,8 @@ abstract class SesameUtils {
 				|| datatype.equals(XMLSchema.NEGATIVE_INTEGER)
 				|| datatype.equals(XMLSchema.NON_POSITIVE_INTEGER)) {
 			return literal.integerValue();
+		} else if (datatype.equals(XMLSchema.BOOLEAN)) {
+			return literal.booleanValue();
 		} else if (datatype.equals(XMLSchema.LONG) || datatype.equals(XMLSchema.UNSIGNED_LONG)) {
 			return Long.valueOf(literal.longValue());
 		} else if (datatype.equals(XMLSchema.DECIMAL)) {

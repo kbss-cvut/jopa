@@ -486,8 +486,9 @@ public class TestUpdateOperations {
 
 	private static Map<String, String> initProperties() {
 		final Map<String, String> map = new HashMap<>();
-		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, "true");
-		map.put(OntoDriverProperties.SESAME_USE_INFERENCE, "false");
+		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
+		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
+		map.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
 		return map;
 	}

@@ -11,7 +11,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.Connection;
@@ -138,7 +137,7 @@ public class SesameSingleContextMemoryStoreTest {
 	private static Map<String, String> initProperties() {
 		final Map<String, String> m = new HashMap<>();
 		m.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-		m.put(OWLAPIPersistenceProperties.LANG, "en");
+		m.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
 		return m;
 	}
 }

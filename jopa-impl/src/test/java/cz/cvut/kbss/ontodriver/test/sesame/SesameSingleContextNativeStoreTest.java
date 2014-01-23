@@ -138,7 +138,8 @@ public class SesameSingleContextNativeStoreTest {
 	private static Map<String, String> initProperties() {
 		final Map<String, String> m = new HashMap<>();
 		m.put(OWLAPIPersistenceProperties.LANG, "en");
-		m.put(OntoDriverProperties.SESAME_USE_INFERENCE, "false");
+		m.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
+		m.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
 		return m;
 	}
 

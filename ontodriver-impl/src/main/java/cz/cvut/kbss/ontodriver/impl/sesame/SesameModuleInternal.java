@@ -33,7 +33,6 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInternalException;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
-import cz.cvut.kbss.ontodriver.exceptions.QueryExecutionException;
 import cz.cvut.kbss.ontodriver.impl.ModuleInternal;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlModuleException;
 import cz.cvut.kbss.ontodriver.impl.utils.ICValidationUtils;
@@ -51,12 +50,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	static final Logger LOG = Logger.getLogger(SesameModuleInternal.class.getName());
 
 	final SesameStorageModule module;
-	// TODO This is probably not the best strategy, duplicating models to keep
-	// track of inferred statements
-	/** Contains all statements, including inferred */
-	private Model model;
-	/** Contains only explicit statements */
-	private Model explicitModel;
+	private StorageProxy storage;
 	// The ValueFactory can be final since it is singleton anyway
 	private final ValueFactory valueFactory;
 	private final String lang;
@@ -71,7 +65,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		assert data != null : "argument data is null";
 		assert storageModule != null : "argument storageModule is null";
 		this.module = storageModule;
-		this.model = data.getModel();
+		this.storage = data.getStorage();
 		this.valueFactory = data.getValueFactory();
 		this.lang = data.getLanguage();
 	}
@@ -176,20 +170,14 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	@Override
 	public void reset() throws OntoDriverException {
 		clear();
-		final SesameOntologyDataHolder data = module.getOntologyData(true);
-		this.model = data.getModel();
-		assert model != null;
-		this.explicitModel = data.getExplicitModel();
+		final SesameOntologyDataHolder data = module.getOntologyData();
+		this.storage = data.getStorage();
 	}
 
 	@Override
 	public ResultSet executeStatement(SesameStatement statement) {
-		try {
-			statement.setConnection(module.getConnection());
-			return statement.executeStatement();
-		} catch (OntoDriverException e) {
-			throw new QueryExecutionException(e);
-		}
+		statement.setStorage(storage);
+		return statement.executeStatement();
 	}
 
 	@Override
@@ -206,17 +194,22 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private void clear() {
 		this.changes = new LinkedList<>();
 		temporaryIndividuals = new HashSet<>();
+		if (storage.isOpen()) {
+			try {
+				storage.close();
+			} catch (OntoDriverException e) {
+				LOG.severe("Exception caught when closing Sesame storage proxy: " + e);
+			}
+		}
 	}
 
 	void addStatement(Statement stmt) {
-		model.add(stmt);
-		explicitModel.add(stmt);
+		storage.addStatement(stmt);
 		changes.add(new SesameAddChange(stmt));
 	}
 
 	void addStatements(Collection<Statement> stmts) {
-		model.addAll(stmts);
-		explicitModel.addAll(stmts);
+		storage.addStatements(stmts);
 		for (Statement stmt : stmts) {
 			changes.add(new SesameAddChange(stmt));
 		}
@@ -228,8 +221,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		for (Statement stmt : stmts) {
 			changes.add(new SesameRemoveChange(stmt));
 		}
-		model.removeAll(stmts);
-		explicitModel.removeAll(stmts);
+		storage.removeStatements(stmts);
 	}
 
 	void addIndividualsForReferencedEntities(Collection<?> ents) throws OntoDriverException {
@@ -323,16 +315,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		return module.getMetamodel().entity(cls);
 	}
 
-	private <N extends Enum<N>> N getEnum(Class<N> cls, URI uri) {
-		for (N obj : cls.getEnumConstants()) {
-			if (getIdentifier(obj).equals(uri)) {
-				return obj;
-			}
-		}
-		throw new OntoDriverInternalException(new IllegalArgumentException(
-				"Unknown enum constant = " + uri));
-	}
-
 	URI getIdentifier(Object entity) {
 		assert entity != null;
 
@@ -360,8 +342,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		return lang;
 	}
 
-	Model getModel(boolean includeInferred) {
-		return includeInferred ? model : explicitModel;
+	StorageProxy getStorage() {
+		return storage;
 	}
 
 	ValueFactory getValueFactory() {
@@ -377,7 +359,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 */
 	private boolean isInOntologySignature(URI uri) {
 		assert uri != null : "argument uri is null";
-		final boolean inModel = model.contains(uri, null, null) || model.contains(null, null, uri);
+		final boolean inModel = storage.contains(uri);
 		return (inModel && !temporaryIndividuals.contains(uri));
 	}
 
@@ -469,10 +451,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			PropertiesSpecification<?, ?> properties, EntityType<T> entityType)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Map<String, Set<String>> map = new HashMap<>();
-		// Include inferred statements or not
-		final Model m = properties.isInferred() ? model : explicitModel;
 
-		for (Statement stmt : m.filter(uri, null, null)) {
+		for (Statement stmt : storage.filter(uri, null, null, properties.isInferred())) {
 			if (SesameUtils.isEntityAttribute(stmt.getPredicate(), entityType)) {
 				continue;
 			}
@@ -543,10 +523,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			EntityType<T> entityType) throws IllegalArgumentException, IllegalAccessException {
 		final Set<Object> res = new HashSet<>();
 		final String typeIri = entityType.getIRI().toString();
-		// Include inferred statements or not
-		final Model m = types.isInferred() ? model : explicitModel;
 
-		for (Statement stmt : m.filter(uri, RDF.TYPE, null)) {
+		for (Statement stmt : storage.filter(uri, RDF.TYPE, null, types.isInferred())) {
 			final String tp = stmt.getObject().stringValue();
 			if (tp.equals(typeIri)) {
 				continue;
@@ -566,18 +544,16 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 *            Resource URI
 	 */
 	private void removeEntityFromOntology(URI primaryKey) {
-		// Have to clear the model this way, since removeAll on the
-		// explicitModel throws ConcurrentModificationException
-		Model m = explicitModel.filter(primaryKey, null, null);
-		for (Statement stmt : m) {
+		final List<Statement> stmts = new LinkedList<>();
+		for (Statement stmt : storage.filter(primaryKey, null, null, false)) {
 			changes.add(new SesameRemoveChange(stmt));
+			stmts.add(stmt);
 		}
-		m.clear();
-		m = explicitModel.filter(null, null, primaryKey);
-		for (Statement stmt : m) {
+		for (Statement stmt : storage.filter(null, null, primaryKey, false)) {
 			changes.add(new SesameRemoveChange(stmt));
+			stmts.add(stmt);
 		}
-		m.clear();
+		storage.removeStatements(stmts);
 	}
 
 	/**
@@ -590,7 +566,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 *            Entity type of entity representing the subject
 	 */
 	private Map<URI, ObjectType> removeOldProperties(URI subject, EntityType<?> et) {
-		final Model props = explicitModel.filter(subject, null, null);
+		final Model props = storage.filter(subject, null, null, false);
 		final Set<Statement> toRemove = new HashSet<>(props.size());
 		final Map<URI, ObjectType> map = new HashMap<>(props.size());
 		for (Statement stmt : props) {
@@ -783,7 +759,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			toAdd.add(valueFactory.createStatement(uri, RDF.TYPE,
 					valueFactory.createURI(type.toString())));
 		}
-		final Set<Statement> currentTypes = explicitModel.filter(uri, RDF.TYPE, null);
+		final Set<Statement> currentTypes = storage.filter(uri, RDF.TYPE, null, false);
 		for (Statement stmt : currentTypes) {
 			final Value val = stmt.getObject();
 			assert isUri(val);

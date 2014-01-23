@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Observer;
 
+import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLObject;
@@ -52,7 +53,7 @@ public class OwlapiResultSet extends AbstractResultSet {
 	}
 
 	@Override
-	public int findColumn(String columnLabel) throws OntoDriverException {
+	public int findColumn(String columnLabel) {
 		ensureOpen();
 		for (Entry<Integer, Variable<OWLObject>> e : indexesToVars.entrySet()) {
 			if (e.getValue().getName().equals(columnLabel)) {
@@ -63,7 +64,7 @@ public class OwlapiResultSet extends AbstractResultSet {
 	}
 
 	@Override
-	public int getColumnCount() throws OntoDriverException {
+	public int getColumnCount() {
 		ensureOpen();
 		return result.getResultVars().size();
 	}
@@ -72,6 +73,7 @@ public class OwlapiResultSet extends AbstractResultSet {
 	public void first() throws OntoDriverException {
 		ensureOpen();
 		this.iterator = result.iterator();
+		next();
 	}
 
 	@Override
@@ -206,8 +208,10 @@ public class OwlapiResultSet extends AbstractResultSet {
 
 	@Override
 	public void last() throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		ensureOpen();
+		while (hasNext()) {
+			next();
+		}
 	}
 
 	@Override
@@ -218,8 +222,7 @@ public class OwlapiResultSet extends AbstractResultSet {
 
 	@Override
 	public void previous() throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		throw new UnsupportedOperationException("Going back is not supported by this result set.");
 	}
 
 	@Override
@@ -230,14 +233,22 @@ public class OwlapiResultSet extends AbstractResultSet {
 
 	@Override
 	public void relative(int rows) throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		setRowIndex(index + rows);
 	}
 
 	@Override
 	public void setRowIndex(int rowIndex) throws OntoDriverException {
-		// TODO Auto-generated method stub
-
+		ensureOpen();
+		if (rowIndex < index) {
+			throw new UnsupportedOperationException(
+					"Going back in this result set is not supported.");
+		}
+		if (rowIndex == index) {
+			return;
+		}
+		while (index <= rowIndex) {
+			next();
+		}
 	}
 
 	private OWLObject getCurrentValue(String column) {
@@ -280,12 +291,52 @@ public class OwlapiResultSet extends AbstractResultSet {
 
 	private <T> T getObjectImpl(OWLObject ob, Class<T> cls) throws OntoDriverException {
 		if (cls.isAssignableFrom(ob.getClass())) {
-			return (T) ob;
+			return cls.cast(ob);
 		} else {
+			Object lit = (ob instanceof OWLLiteral) ? DatatypeTransformer
+					.transform((OWLLiteral) ob) : null;
+			if (lit != null && cls.isAssignableFrom(lit.getClass())) {
+				return cls.cast(lit);
+			}
+			OWLEntity ent = (ob instanceof OWLEntity) ? (OWLEntity) ob : null;
 			try {
-				final Constructor<?> c = cls.getDeclaredConstructor(cls);
+				final Constructor<?>[] ctors = cls.getDeclaredConstructors();
+				for (Constructor<?> c : ctors) {
+					if (c.getParameterTypes().length != 1) {
+						continue;
+					}
+					c.setAccessible(true);
+					final Class<?> type = c.getParameterTypes()[0];
+					if (lit != null && type.isAssignableFrom(lit.getClass())) {
+						// Constructor takes literal value
+						return (T) c.newInstance(lit);
+					}
+					if (ent != null && type.isAssignableFrom(ent.getClass())) {
+						// Constructor takes OWLEntity sub-class
+						return (T) c.newInstance(ent);
+					}
+					if (ent != null && type.isAssignableFrom(IRI.class)) {
+						// Constructor takes IRI
+						return (T) c.newInstance(ent.getIRI());
+					}
+					if (type.isAssignableFrom(ob.getClass())) {
+						// Constructor takes OWLObject sub-class
+						return (T) c.newInstance(ob);
+					}
+					if (type.isAssignableFrom(String.class)) {
+						// Fallback, constructor taking String
+						if (lit != null) {
+							return (T) c.newInstance(lit.toString());
+						} else if (ent != null) {
+							return (T) c.newInstance(ent.getIRI().toString());
+						} else {
+							return (T) c.newInstance(ob.toString());
+						}
+					}
+				}
+				final Constructor<T> c = cls.getDeclaredConstructor(cls);
 				c.setAccessible(true);
-				return (T) c.newInstance(ob);
+				return c.newInstance(ob);
 			} catch (NoSuchMethodException e) {
 				throw new OntoDriverException(
 						"Unable to find a costructor taking OWLObject argument in class "

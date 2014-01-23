@@ -1,5 +1,7 @@
 package cz.cvut.kbss.ontodriver;
 
+import java.util.NoSuchElementException;
+
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public abstract class AbstractResultSet implements ResultSet {
@@ -47,6 +49,9 @@ public abstract class AbstractResultSet implements ResultSet {
 	@Override
 	public void next() throws OntoDriverException {
 		ensureOpen();
+		if (!hasNext()) {
+			throw new NoSuchElementException();
+		}
 		index++;
 	}
 

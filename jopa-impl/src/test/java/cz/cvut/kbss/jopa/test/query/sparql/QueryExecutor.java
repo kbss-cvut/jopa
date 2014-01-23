@@ -6,97 +6,25 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.query.env.QueryTestEnvironment;
-import cz.cvut.kbss.jopa.test.utils.JenaStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.Context;
-import cz.cvut.kbss.ontodriver.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver.impl.jena.DriverCachingJenaFactory;
-import cz.cvut.kbss.ontodriver.impl.owlapi.DriverCachingOwlapiFactory;
 
-/**
- * These tests use the same data in multiple ontology contexts and compare query
- * results, which should be the same for all the contexts.
- * 
- * @author ledvima1
- * 
- */
-public class MultiContextQueryTest {
+public class QueryExecutor {
 
-	private static final Logger LOG = Logger.getLogger(MultiContextQueryTest.class.getName());
-
-	private static final Map<String, String> properties = initProperties();
-	private static final List<StorageConfig> storages = initStorages();
-
-	private static EntityManagerFactory emf;
-	private static List<Context> contexts;
-
-	private EntityManager em;
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		TestEnvironment.clearDatabase();
-		TestEnvironment.resetOwldbHibernateProvider();
-		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"SPARQLMultiContextQueryTests", storages, true, properties);
-		QueryTestEnvironment.generateTestData(em);
-		emf = em.getEntityManagerFactory();
-		contexts = em.getAvailableContexts();
-		em.close();
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		emf.close();
-		TestEnvironment.clearDatabase();
-	}
-
-	@Before
-	public void setUp() throws Exception {
-		emf.getCache().evictAll();
-		this.em = emf.createEntityManager();
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		em.close();
-	}
-
-	// --------------------
-	//
-	// This part uses Query
-	//
-	// --------------------
-
-	@Test
-	public void testSelectFromSingleContext() {
-		LOG.config("Test: select subjects by type from a single context.");
+	public void testSelectFromSingleContext(EntityManager em) {
 		final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA> . }";
-		final Query<List<String>> q = em.createNativeQuery(query, contexts.get(contexts.size() - 1)
+		final Query<List<String>> q = em.createNativeQuery(query, em.getAvailableContexts().get(0)
 				.getUri());
 		assertNotNull(q);
 		final List<List<String>> res = q.getResultList();
@@ -118,12 +46,10 @@ public class MultiContextQueryTest {
 		}
 	}
 
-	@Test
-	public void testSelectByDataProperty() {
-		LOG.config("Test: select data property values from all contexts.");
+	public void testSelectByDataProperty(EntityManager em) {
 		final String query = "SELECT ?y WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> ?y . }";
-		final List<List<List<String>>> res = new ArrayList<>(contexts.size());
-		for (Context ctx : contexts) {
+		final List<List<List<String>>> res = new ArrayList<>(em.getAvailableContexts().size());
+		for (Context ctx : em.getAvailableContexts()) {
 			final Query<List<String>> q = em.createNativeQuery(query, ctx.getUri());
 			final List<List<String>> subRes = q.getResultList();
 			assertNotNull(subRes);
@@ -144,13 +70,11 @@ public class MultiContextQueryTest {
 		}
 	}
 
-	@Test
-	public void testSelectByObjectProperty() {
-		LOG.config("Test: select subjects having the same object property value.");
+	public void testSelectByObjectProperty(EntityManager em) {
 		final OWLClassD d = QueryTestEnvironment.getData(OWLClassD.class).get(0);
 		final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> <"
 				+ d.getOwlClassA().getUri().toString() + "> . }";
-		for (Context ctx : contexts) {
+		for (Context ctx : em.getAvailableContexts()) {
 			final Query<List<String>> q = em.createNativeQuery(query, ctx.getUri());
 			final List<List<String>> res = q.getResultList();
 			assertEquals(1, res.size());
@@ -160,21 +84,27 @@ public class MultiContextQueryTest {
 		}
 	}
 
-	@Test
-	public void testSelectTypes() {
-		LOG.config("Test: select types of a subject.");
+	public void testSelectTypes(EntityManager em) {
 		final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
 		final Set<String> types = a.getTypes();
 		types.add(a.getClass().getAnnotation(OWLClass.class).iri());
-		types.add(QueryTestEnvironment.OWL_THING);
 		final String query = "SELECT ?x WHERE { <" + a.getUri().toString() + "> a ?x . }";
-		for (Context ctx : contexts) {
+		for (Context ctx : em.getAvailableContexts()) {
 			final Query<List<String>> q = em.createNativeQuery(query, ctx.getUri());
 			final List<List<String>> res = q.getResultList();
-			assertEquals(types.size(), res.size());
-			for (List<String> lst : res) {
-				assertEquals(1, lst.size());
-				assertTrue(types.contains(lst.get(0)));
+			// The result can contain more types (inference)
+			assertTrue(res.size() >= types.size());
+			boolean found = false;
+			for (String type : types) {
+				found = false;
+				for (List<String> lst : res) {
+					assertEquals(1, lst.size());
+					if (type.equals(lst.get(0))) {
+						found = true;
+						break;
+					}
+				}
+				assertTrue(found);
 			}
 		}
 	}
@@ -185,12 +115,10 @@ public class MultiContextQueryTest {
 	//
 	// -------------------------
 
-	@Test
-	public void testSelectInstancesOfClass_Typed() {
-		LOG.config("Test: select all instances of a single class. Typed query.");
+	public void testSelectInstancesOfClass_Typed(EntityManager em) {
 		final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD> .}";
 		final List<OWLClassD> ds = QueryTestEnvironment.getData(OWLClassD.class);
-		for (Context ctx : contexts) {
+		for (Context ctx : em.getAvailableContexts()) {
 			final TypedQuery<OWLClassD> q = em.createNativeQuery(query, OWLClassD.class,
 					ctx.getUri());
 			final List<OWLClassD> res = q.getResultList();
@@ -213,13 +141,11 @@ public class MultiContextQueryTest {
 		}
 	}
 
-	@Test
-	public void testSelectByTypeAndDataPropertyValue_Typed() {
-		LOG.config("Test: select an instance by class and data property value. Typed query.");
+	public void testSelectByTypeAndDataPropertyValue_Typed(EntityManager em) {
 		final OWLClassB b = QueryTestEnvironment.getData(OWLClassB.class).get(5);
 		final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB> ; <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> \""
 				+ b.getStringAttribute() + "\" . }";
-		for (Context ctx : contexts) {
+		for (Context ctx : em.getAvailableContexts()) {
 			final TypedQuery<OWLClassB> q = em.createNativeQuery(query, OWLClassB.class,
 					ctx.getUri());
 			final OWLClassB res = q.getSingleResult();
@@ -229,14 +155,12 @@ public class MultiContextQueryTest {
 		}
 	}
 
-	@Test
-	public void testSelectByObjectProperty_Typed() {
-		LOG.config("Test: select instances by object property. Using setMaxResults. Typed query.");
+	public void testSelectByObjectProperty_Typed(EntityManager em) {
 		final List<OWLClassD> ds = QueryTestEnvironment.getData(OWLClassD.class);
 		final int cnt = ds.size() / 2;
 		assertTrue(cnt > 1);
 		final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> ?y . }";
-		for (Context ctx : contexts) {
+		for (Context ctx : em.getAvailableContexts()) {
 			final TypedQuery<OWLClassD> q = em.createNativeQuery(query, OWLClassD.class,
 					ctx.getUri());
 			final List<OWLClassD> res = q.setMaxResults(cnt).getResultList();
@@ -244,20 +168,4 @@ public class MultiContextQueryTest {
 		}
 	}
 
-	private static List<StorageConfig> initStorages() {
-		final List<StorageConfig> lst = new ArrayList<>(5);
-		lst.add(new OwlapiStorageConfig());
-		lst.add(new OwldbStorageConfig());
-		lst.add(new JenaStorageConfig());
-		return lst;
-	}
-
-	private static Map<String, String> initProperties() {
-		final Map<String, String> props = new HashMap<>();
-		props.put(OntoDriverProperties.OWLAPI_DRIVER_FACTORY,
-				DriverCachingOwlapiFactory.class.getName());
-		props.put(OntoDriverProperties.JENA_DRIVER_FACTORY,
-				DriverCachingJenaFactory.class.getName());
-		return props;
-	}
 }

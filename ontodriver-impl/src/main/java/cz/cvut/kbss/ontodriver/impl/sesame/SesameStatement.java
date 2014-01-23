@@ -1,12 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
-import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 
 import cz.cvut.kbss.ontodriver.AbstractStatement;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -15,7 +10,7 @@ import cz.cvut.kbss.ontodriver.exceptions.QueryExecutionException;
 
 class SesameStatement extends AbstractStatement {
 
-	private RepositoryConnection conn;
+	private StorageProxy storage;
 
 	public SesameStatement(JopaStatement statement) {
 		super(statement);
@@ -23,32 +18,18 @@ class SesameStatement extends AbstractStatement {
 
 	@Override
 	public ResultSet executeStatement() throws QueryExecutionException {
-		assert conn != null;
+		assert storage != null;
 		try {
-			final TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 
-			final TupleQueryResult tqr = tq.evaluate();
+			final TupleQueryResult tqr = storage.executeQuery(query);
 			return new SesameResultSet(tqr, jopaStatement);
 		} catch (QueryEvaluationException e) {
 			throw new QueryExecutionException("Exception caught when evaluating query " + query, e);
-		} catch (RepositoryException e) {
-			throw new QueryExecutionException("Exception caught when preparing query " + query, e);
-		} catch (MalformedQueryException e) {
-			throw new QueryExecutionException(
-					"Malformed query exception caught for query " + query, e);
-		} finally {
-			try {
-				conn.close();
-			} catch (RepositoryException e) {
-				throw new QueryExecutionException(
-						"Exception caught when closing repository connection.", e);
-			}
 		}
 	}
 
-	void setConnection(RepositoryConnection connection) {
-		assert connection != null;
-
-		this.conn = connection;
+	void setStorage(StorageProxy storage) {
+		assert storage != null;
+		this.storage = storage;
 	}
 }
