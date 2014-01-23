@@ -94,7 +94,7 @@ public class OWL2JavaTransformer {
 
 	private OWLDataFactory f;
 
-    private OWLOntology merged;
+	private OWLOntology merged;
 
     private Set<OWLOntology> imports;
 
@@ -386,7 +386,7 @@ public class OWL2JavaTransformer {
 					| JMod.FINAL, String.class, sFieldName,
 					JExpr.lit(c.getIRI().toString()));
             if ( withOWLAPI) {
-			    voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class, id, cm
+			voc.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, IRI.class, id, cm
 					.ref(IRI.class).staticInvoke("create").arg(fv1));
             }
 

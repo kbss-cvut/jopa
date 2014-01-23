@@ -207,6 +207,7 @@ public class MixedMultiContextsTest {
 	public void testLoadField() throws Exception {
 		LOG.config("Test: load field value from a context.");
 		acquireConnection("MixedMultiContextsLoadField");
+		c.setAutoCommit(false);
 		final List<Context> contexts = c.getContexts();
 		assertEquals(3, contexts.size());
 		final Context cLoad = contexts.get(1);

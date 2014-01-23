@@ -1803,7 +1803,9 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 
 	private void writeChanges(List<OWLOntologyChange> changesToWrite) {
 		assert changesToWrite != null;
-		assert (!changesToWrite.isEmpty());
+		if (changesToWrite.isEmpty()) {
+            return;
+        }
 		ontologyManager.applyChanges(changesToWrite);
 		addTransactionChanges(changesToWrite);
 	}
