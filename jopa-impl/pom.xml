@@ -209,8 +209,9 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>aspectj-maven-plugin</artifactId>
 				<version>1.5</version>
-				<configuration>
-					<complianceLevel>1.7</complianceLevel>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
 					<includes>
 						<include>**/BeanListenerAspect.aj</include>
 						<include>**/EntityLoadingAspect.aj</include>
@@ -224,8 +225,13 @@
                     </dependency>
                 </dependencies>
 				<executions>
-					<execution>
-						<goals>
+                    <execution>
+                        <configuration>
+                            <source>1.7</source>
+                            <target>1.7</target>
+                            <complianceLevel>1.7</complianceLevel>
+                        </configuration>
+                        <goals>
 							<goal>compile</goal>       <!-- use this goal to weave all your main classes -->
 							<goal>test-compile</goal>  <!-- use this goal to weave all your test classes -->
 						</goals>
