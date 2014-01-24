@@ -30,7 +30,7 @@
 		<repository>
 			<id>krizik-private</id>
 			<name>KBSS Maven 2 Repository</name>
-			<url>https://krizik.felk.cvut.cz/m2repo-private</url>
+			<url>http://krizik.felk.cvut.cz/m2repo-private</url>
 			<releases>
 				<checksumPolicy>warn</checksumPolicy>
 				<enabled>true</enabled>
@@ -119,7 +119,7 @@
 		<dependency>
 			<groupId>com.ontotext</groupId>
 			<artifactId>owlim-se</artifactId>
-			<version>5.3.5689</version>
+			<version>5.4.6287</version>
 		</dependency>
 		<dependency>
 			<groupId>de.fraunhofer.iitb</groupId>

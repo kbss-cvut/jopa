@@ -49,7 +49,7 @@ abstract class SesameUtils {
 				|| datatype.equals(XMLSchema.NON_NEGATIVE_INTEGER)
 				|| datatype.equals(XMLSchema.NEGATIVE_INTEGER)
 				|| datatype.equals(XMLSchema.NON_POSITIVE_INTEGER)) {
-			return literal.integerValue();
+			return literal.intValue();
 		} else if (datatype.equals(XMLSchema.BOOLEAN)) {
 			return literal.booleanValue();
 		} else if (datatype.equals(XMLSchema.LONG) || datatype.equals(XMLSchema.UNSIGNED_LONG)) {
@@ -63,7 +63,7 @@ abstract class SesameUtils {
 		} else if (datatype.equals(XMLSchema.BYTE) || datatype.equals(XMLSchema.UNSIGNED_BYTE)) {
 			return Byte.valueOf(literal.byteValue());
 		} else if (datatype.equals(XMLSchema.DATE) || datatype.equals(XMLSchema.DATETIME)) {
-			return literal.calendarValue();
+			return literal.calendarValue().toGregorianCalendar().getTime();
 		} else {
 			throw new IllegalArgumentException("Unsupported datatype " + datatype);
 		}
@@ -87,11 +87,15 @@ abstract class SesameUtils {
 		assert value != null;
 
 		if (value instanceof Integer) {
-			return vf.createLiteral((Integer) value);
-		} else if (value instanceof Boolean) {
+            return vf.createLiteral((Integer) value);
+        } else if (value instanceof String) {
+            return vf.createLiteral((String) value, language);
+        } else if (value instanceof Byte) {
+            return vf.createLiteral((Byte) value);
+        } else if (value instanceof Short) {
+            return vf.createLiteral((Short) value);
+        } else if (value instanceof Boolean) {
 			return vf.createLiteral((Boolean) value);
-		} else if (value instanceof String) {
-			return vf.createLiteral((String) value, language);
 		} else if (value instanceof Double) {
 			return vf.createLiteral((Double) value);
 		} else if (value instanceof Long) {

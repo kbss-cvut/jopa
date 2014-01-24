@@ -206,7 +206,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 			return clonedArr;
 		} else {
 			for (int i = 0; i < clonedArr.length; i++) {
-				clonedArr[i] = buildClone(originalArr[i], contextUri);
+				clonedArr[i] = originalArr[i] == null ? null : buildClone(originalArr[i], contextUri);
 			}
 		}
 		return clonedArr;
