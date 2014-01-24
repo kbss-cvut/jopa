@@ -136,13 +136,13 @@
 			<artifactId>jopa-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>cz.cvut.kbss</groupId> -->
-<!-- 			<artifactId>owl2query</artifactId> -->
-<!-- 			<version>1.0-SNAPSHOT</version> -->
-<!-- 			<type>jar</type> -->
-<!-- 			<scope>compile</scope> -->
-<!-- 		</dependency> -->
+		<dependency>
+			<groupId>cz.cvut.kbss</groupId>
+			<artifactId>owl2query</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>com.github.ansell.pellet</groupId>
 			<artifactId>pellet-core</artifactId>
