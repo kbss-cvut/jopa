@@ -35,8 +35,4 @@ public interface OWLAPIPersistenceProperties extends PersistenceProperties {
 	 * How often should the cache be swept for dead entities. In sceonds.
 	 */
 	public static final String CACHE_SWEEP_RATE = "cz.cvut.jopa.cache.sweepRate";
-	/**
-	 * Package containing entity classes.
-	 */
-	public static final String ENTITY_LOCATION = "cz.cvut.jopa.entity.location";
 }

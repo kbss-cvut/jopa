@@ -31,9 +31,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.reflections.Reflections;
-
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -328,14 +327,7 @@ public class MetamodelImpl implements Metamodel {
 	}
 
 	private void loadEntities() {
-		final String loc = emf.getProperties().get(
-				OWLAPIPersistenceProperties.ENTITY_LOCATION);
-		if (loc == null) {
-			LOG.warning("Cannot discover entity classes. No location specified.");
-			return;
-		}
-		Reflections reflections = new Reflections(loc);
-		Set<Class<?>> ents = reflections.getTypesAnnotatedWith(OWLClass.class);
+		Set<Class<?>> ents = EntityLoader.discoverEntityClasses();
 		entities.addAll(ents);
 	}
 

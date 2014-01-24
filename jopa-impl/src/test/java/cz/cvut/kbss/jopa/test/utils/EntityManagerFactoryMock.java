@@ -23,11 +23,12 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
  */
 public class EntityManagerFactoryMock extends EntityManagerFactoryImpl {
 
-	public EntityManagerFactoryMock(Map<String, String> properties) {
-		super(properties);
+	public EntityManagerFactoryMock() {
+		super(null);
 	}
 
-	public EntityManagerFactoryMock(List<OntologyStorageProperties> storageProperties,
+	public EntityManagerFactoryMock(
+			List<OntologyStorageProperties> storageProperties,
 			Map<String, String> properties) {
 		super(storageProperties, properties);
 	}

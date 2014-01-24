@@ -40,8 +40,9 @@ class SingularAnnotationStrategy extends SingularDataPropertyStrategy {
 	 * @throws IllegalAccessException
 	 * @throws IllegalArgumentException
 	 */
-	private <T> void loadAnnotationProperty(T instance, URI uri, Attribute<?, ?> property)
-			throws IllegalArgumentException, IllegalAccessException {
+	private <T> void loadAnnotationProperty(T instance, URI uri,
+			Attribute<?, ?> property) throws IllegalArgumentException,
+			IllegalAccessException {
 		final URI annotationProperty = getAddressAsSesameUri(property.getIRI());
 		Model res = storage.filter(uri, annotationProperty, null, false);
 		if (res.isEmpty()) {
@@ -55,21 +56,22 @@ class SingularAnnotationStrategy extends SingularDataPropertyStrategy {
 				continue;
 			}
 			final Literal lit = (Literal) val;
-			if (!lit.getLanguage().equals(lang)) {
+			if (!lang.equals(lit.getLanguage())) {
 				continue;
 			}
 			datatype = lit.getDatatype();
 			value = SesameUtils.getDataPropertyValue(lit);
 		}
 		if (value == null && LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Value of annotation property " + property.getIRI()
+			LOG.finer("Value of annotation property "
+					+ property.getIRI()
 					+ " not found, is not a literal or is not in the expected language.");
 		}
 		final Class<?> cls = property.getJavaType();
 		if (value != null && !cls.isAssignableFrom(value.getClass())) {
 			throw new IllegalStateException("The field type " + cls
-					+ " cannot be established from the declared data type " + datatype
-					+ ". The declared class is " + value.getClass());
+					+ " cannot be established from the declared data type "
+					+ datatype + ". The declared class is " + value.getClass());
 		}
 		if (value != null) {
 			property.getJavaField().set(instance, value);

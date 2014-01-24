@@ -2,7 +2,6 @@ package cz.cvut.kbss.ontodriver.test;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,8 +45,10 @@ public final class TestEnv {
 	 * @return {@code DataSource}
 	 * @see #createDataSource(String, List, Map)
 	 */
-	public static DataSource createDataSource(String baseName, List<StorageConfig> storages) {
-		return createDataSource(baseName, storages, new HashMap<String, String>());
+	public static DataSource createDataSource(String baseName,
+			List<StorageConfig> storages) {
+		return createDataSource(baseName, storages,
+				new HashMap<String, String>());
 	}
 
 	/**
@@ -65,10 +66,11 @@ public final class TestEnv {
 	 *            Custom properties
 	 * @return {@code DataSource}
 	 */
-	public static DataSource createDataSource(String baseName, List<StorageConfig> storages,
-			Map<String, String> properties) {
+	public static DataSource createDataSource(String baseName,
+			List<StorageConfig> storages, Map<String, String> properties) {
 		int i = 1;
-		final List<OntologyStorageProperties> storageProperties = new ArrayList<>(storages.size());
+		final List<OntologyStorageProperties> storageProperties = new ArrayList<>(
+				storages.size());
 		for (StorageConfig c : storages) {
 			c.setName(baseName);
 			c.setDirectory(dir);
@@ -76,7 +78,8 @@ public final class TestEnv {
 		}
 		properties.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
 				TestEnvironment.REASONER_FACTORY_CLASS);
-		final DataSource dataSource = new SimpleDataSource(storageProperties, properties);
+		final DataSource dataSource = new SimpleDataSource(storageProperties,
+				properties);
 		return dataSource;
 	}
 
@@ -89,9 +92,7 @@ public final class TestEnv {
 	public static PersistenceProviderFacade getProviderFacade() {
 		if (providerFacade == null) {
 			try {
-				final EntityManagerFactoryMock emf = new EntityManagerFactoryMock(
-						Collections.singletonMap(OWLAPIPersistenceProperties.ENTITY_LOCATION,
-								"cz.cvut.kbss.jopa.test"));
+				final EntityManagerFactoryMock emf = new EntityManagerFactoryMock();
 				final Constructor<MetamodelImpl> c = MetamodelImpl.class
 						.getDeclaredConstructor(EntityManagerFactoryImpl.class);
 				c.setAccessible(true);
