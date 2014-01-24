@@ -56,7 +56,7 @@ class SingularAnnotationStrategy extends SingularDataPropertyStrategy {
 				continue;
 			}
 			final Literal lit = (Literal) val;
-			if (!lang.equals(lit.getLanguage())) {
+			if (lang != null && !lang.equals(lit.getLanguage())) {
 				continue;
 			}
 			datatype = lit.getDatatype();
