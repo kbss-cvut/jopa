@@ -19,6 +19,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 
 	MapInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
 		super(builder, uow);
+		this.populates = true;
 	}
 
 	@Override
@@ -27,6 +28,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 		if (original instanceof IndirectCollection) {
 			orig = ((IndirectCollection<Map<?, ?>>) original)
 					.getReferencedCollection();
+			origCls = orig.getClass();
 		}
 		Map<?, ?> clone = null;
 		clone = buildUsingDefaultConstructor(origCls, orig, contextUri);
@@ -45,7 +47,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 	private Map<?, ?> buildUsingDefaultConstructor(Class<?> origCls,
 			Map<?, ?> original, URI contextUri) {
 		Map<?, ?> result = null;
-		final Class<?>[] types = { Integer.class };
+		final Class<?>[] types = { int.class };
 		Object[] params = null;
 		Constructor<?> c = getDeclaredConstructorFor(origCls, types);
 		if (c != null) {

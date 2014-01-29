@@ -30,7 +30,7 @@ public class IndirectMap<K, V> extends IndirectCollection<Map<K, V>> implements
 
 	@Override
 	public Map<K, V> getReferencedCollection() {
-		throw new UnsupportedOperationException();
+		return internalMap;
 	}
 
 	@Override

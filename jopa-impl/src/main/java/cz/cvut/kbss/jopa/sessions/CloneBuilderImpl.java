@@ -82,10 +82,13 @@ public class CloneBuilderImpl implements CloneBuilder {
 				return visitedClone;
 			}
 		}
-		Object clone = getInstanceBuilder(original).buildClone(
-				original.getClass(), original, contextUri);
+		final AbstractInstanceBuilder builder = getInstanceBuilder(original);
+		Object clone = builder.buildClone(original.getClass(), original,
+				contextUri);
 		visitedObjects.put(original, clone);
-		populateAttributes(original, clone, contextUri);
+		if (!builder.populatesAttributes()) {
+			populateAttributes(original, clone, contextUri);
+		}
 		if (managed) {
 			final IRI pk = getIdentifier(clone);
 			putVisitedEntity(contextUri, pk, clone);
@@ -266,6 +269,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 				}
 				Object origVal = f.get(original);
 				Object newVal = change.getNewValue();
+				// TODO Merge map
 				if (origVal instanceof Collection) {
 					if (newVal == null) {
 						f.set(original, null);

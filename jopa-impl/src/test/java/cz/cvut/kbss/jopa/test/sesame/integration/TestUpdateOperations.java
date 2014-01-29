@@ -8,10 +8,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -37,7 +39,8 @@ import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
 public class TestUpdateOperations {
 
-	private static final Logger LOG = Logger.getLogger(TestUpdateOperations.class.getName());
+	private static final Logger LOG = Logger
+			.getLogger(TestUpdateOperations.class.getName());
 
 	private static final List<StorageConfig> storages = initStorages();
 	private static final Map<String, String> properties = initProperties();
@@ -59,29 +62,36 @@ public class TestUpdateOperations {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		entityA = new OWLClassA();
-		entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
+		entityA.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
 		entityA.setStringAttribute("entityAStringAttribute");
 		final Set<String> types = new HashSet<String>();
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
 		entityA.setTypes(types);
 		entityB = new OWLClassB();
-		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
+		entityB.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
 		entityB.setStringAttribute("entityBStringAttribute");
 		entityC = new OWLClassC();
-		entityC.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
+		entityC.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
 		entityD = new OWLClassD();
-		entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
+		entityD.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
 		entityD.setOwlClassA(entityA);
 		entityE = new OWLClassE();
 		entityE.setStringAttribute("entityEStringAttribute");
 		entityI = new OWLClassI();
-		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
+		entityI.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
 		entityI.setOwlClassA(entityA);
 		entityH = new OWLClassH();
-		entityH.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH"));
+		entityH.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH"));
 		entityH.setOwlClassA(entityA);
 		entityG = new OWLClassG();
-		entityG.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
+		entityG.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
 		entityG.setOwlClassH(entityH);
 	}
 
@@ -94,16 +104,17 @@ public class TestUpdateOperations {
 			em.close();
 			em.getEntityManagerFactory().close();
 		}
-		entityE.setUri(null);
+		entityB.setProperties(null);
 		entityC.setSimpleList(null);
 		entityC.setReferencedList(null);
+		entityE.setUri(null);
 	}
 
 	@Test
 	public void testUpdateReference() {
 		LOG.config("Test: update reference to entity.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateReference", storages, true,
-				properties);
+		em = TestEnvironment.getPersistenceConnector("SesameUpdateReference",
+				storages, true, properties);
 		final URI ctx1 = em.getAvailableContexts().get(0).getUri();
 		final URI ctx2 = em.getAvailableContexts().get(1).getUri();
 		em.getTransaction().begin();
@@ -113,7 +124,8 @@ public class TestUpdateOperations {
 		em.getTransaction().commit();
 
 		final OWLClassA newA = new OWLClassA();
-		newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/newEntityA"));
+		newA.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/newEntityA"));
 		newA.setStringAttribute("newA");
 		em.getTransaction().begin();
 		final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
@@ -139,8 +151,8 @@ public class TestUpdateOperations {
 	@Test
 	public void testMergeDetachedWithChanges() {
 		LOG.config("Test: merge detached entity with changes.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateDetached", storages, true,
-				properties);
+		em = TestEnvironment.getPersistenceConnector("SesameUpdateDetached",
+				storages, true, properties);
 		em.getTransaction().begin();
 		em.persist(entityA);
 		em.getTransaction().commit();
@@ -164,8 +176,8 @@ public class TestUpdateOperations {
 	@Test
 	public void testMergeDetachedCascade() {
 		LOG.config("Test: merge detached with cascade.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateCascade", storages, true,
-				properties);
+		em = TestEnvironment.getPersistenceConnector("SesameUpdateCascade",
+				storages, true, properties);
 		final URI ctx = em.getAvailableContexts().get(1).getUri();
 		em.getTransaction().begin();
 		em.persist(entityH, ctx);
@@ -192,8 +204,8 @@ public class TestUpdateOperations {
 	@Test
 	public void testRemoveFromSimpleList() {
 		LOG.config("Test: remove entity from simple list. (But keep it in the ontology.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateRemoveFromSimpleList", storages,
-				true, properties);
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameUpdateRemoveFromSimpleList", storages, true, properties);
 		entityC.setSimpleList(createSimpleList());
 		em.getTransaction().begin();
 		em.persist(entityC);
@@ -213,7 +225,8 @@ public class TestUpdateOperations {
 		assertNotNull(resA);
 		final OWLClassC resC = em.find(OWLClassC.class, c.getUri());
 		assertEquals(c.getSimpleList().size(), resC.getSimpleList().size());
-		assertEquals(entityC.getSimpleList().size() - 1, resC.getSimpleList().size());
+		assertEquals(entityC.getSimpleList().size() - 1, resC.getSimpleList()
+				.size());
 		for (OWLClassA aa : resC.getSimpleList()) {
 			assertFalse(resA.getUri().equals(aa.getUri()));
 		}
@@ -222,10 +235,10 @@ public class TestUpdateOperations {
 	@Test
 	public void testAddToSimpleList() {
 		LOG.config("Test: add entity to simple list.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateAddToSimpleList", storages, true,
-				properties);
-		final URI ctx = em.getAvailableContexts().get(em.getAvailableContexts().size() - 1)
-				.getUri();
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameUpdateAddToSimpleList", storages, true, properties);
+		final URI ctx = em.getAvailableContexts()
+				.get(em.getAvailableContexts().size() - 1).getUri();
 		entityC.setSimpleList(createSimpleList());
 		em.getTransaction().begin();
 		em.persist(entityC, ctx);
@@ -246,7 +259,8 @@ public class TestUpdateOperations {
 
 		final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), ctx);
 		assertEquals(c.getSimpleList().size(), resC.getSimpleList().size());
-		assertEquals(entityC.getSimpleList().size() + 1, resC.getSimpleList().size());
+		assertEquals(entityC.getSimpleList().size() + 1, resC.getSimpleList()
+				.size());
 		final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), ctx);
 		assertNotNull(resA);
 		assertTrue(resC.getSimpleList().contains(resA));
@@ -255,8 +269,8 @@ public class TestUpdateOperations {
 	@Test
 	public void testClearSimpleList() {
 		LOG.config("Test: clear a simple list (but keep the entities in ontology).");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateClearSimpleList", storages, true,
-				properties);
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameUpdateClearSimpleList", storages, true, properties);
 		entityC.setSimpleList(createSimpleList());
 		em.getTransaction().begin();
 		em.persist(entityC);
@@ -283,10 +297,10 @@ public class TestUpdateOperations {
 	@Test
 	public void testReplaceSimpleList() {
 		LOG.config("Test: replace simple list with a new one.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateReplaceSimpleList", storages,
-				true, properties);
-		final URI ctx = em.getAvailableContexts().get(em.getAvailableContexts().size() - 1)
-				.getUri();
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameUpdateReplaceSimpleList", storages, true, properties);
+		final URI ctx = em.getAvailableContexts()
+				.get(em.getAvailableContexts().size() - 1).getUri();
 		entityC.setSimpleList(createSimpleList());
 		em.getTransaction().begin();
 		em.persist(entityC, ctx);
@@ -325,8 +339,9 @@ public class TestUpdateOperations {
 	@Test
 	public void testRemoveFromReferencedList() {
 		LOG.config("Test: remove entity from referenced list. (But keep it in the ontology.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateRemoveFromReferencedList",
-				storages, true, properties);
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameUpdateRemoveFromReferencedList", storages, true,
+				properties);
 		entityC.setReferencedList(createReferencedList());
 		em.getTransaction().begin();
 		em.persist(entityC);
@@ -345,8 +360,10 @@ public class TestUpdateOperations {
 		final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
 		assertNotNull(resA);
 		final OWLClassC resC = em.find(OWLClassC.class, c.getUri());
-		assertEquals(c.getReferencedList().size(), resC.getReferencedList().size());
-		assertEquals(entityC.getReferencedList().size() - 1, resC.getReferencedList().size());
+		assertEquals(c.getReferencedList().size(), resC.getReferencedList()
+				.size());
+		assertEquals(entityC.getReferencedList().size() - 1, resC
+				.getReferencedList().size());
 		for (OWLClassA aa : resC.getReferencedList()) {
 			assertFalse(resA.getUri().equals(aa.getUri()));
 		}
@@ -355,10 +372,10 @@ public class TestUpdateOperations {
 	@Test
 	public void testAddToReferencedList() {
 		LOG.config("Test: add entity to Referenced list.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateAddToReferencedList", storages,
-				true, properties);
-		final URI ctx = em.getAvailableContexts().get(em.getAvailableContexts().size() - 1)
-				.getUri();
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameUpdateAddToReferencedList", storages, true, properties);
+		final URI ctx = em.getAvailableContexts()
+				.get(em.getAvailableContexts().size() - 1).getUri();
 		entityC.setReferencedList(createReferencedList());
 		em.getTransaction().begin();
 		em.persist(entityC, ctx);
@@ -375,8 +392,10 @@ public class TestUpdateOperations {
 		em.getTransaction().commit();
 
 		final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), ctx);
-		assertEquals(c.getReferencedList().size(), resC.getReferencedList().size());
-		assertEquals(entityC.getReferencedList().size() + 1, resC.getReferencedList().size());
+		assertEquals(c.getReferencedList().size(), resC.getReferencedList()
+				.size());
+		assertEquals(entityC.getReferencedList().size() + 1, resC
+				.getReferencedList().size());
 		final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), ctx);
 		assertNotNull(resA);
 		assertTrue(resC.getReferencedList().contains(resA));
@@ -385,8 +404,8 @@ public class TestUpdateOperations {
 	@Test
 	public void testClearReferencedList() {
 		LOG.config("Test: clear referenced list (but keep the entities in ontology).");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateClearReferencedList", storages,
-				true, properties);
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameUpdateClearReferencedList", storages, true, properties);
 		entityC.setReferencedList(createReferencedList());
 		em.getTransaction().begin();
 		em.persist(entityC);
@@ -413,8 +432,9 @@ public class TestUpdateOperations {
 	@Test
 	public void testReplaceReferencedList() {
 		LOG.config("Test: replace referenced list with a new one.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateReplaceReferencedList", storages,
-				true, properties);
+		em = TestEnvironment
+				.getPersistenceConnector("SesameUpdateReplaceReferencedList",
+						storages, true, properties);
 		entityC.setReferencedList(createReferencedList());
 		em.getTransaction().begin();
 		em.persist(entityC);
@@ -450,13 +470,48 @@ public class TestUpdateOperations {
 		}
 	}
 
+	@Test
+	public void testAddNewToProperties() {
+		LOG.config("Test: add a new property value to entity's properties.");
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameUpdateAddNewToProperties", storages, false, properties);
+		entityB.setProperties(createProperties());
+		em.getTransaction().begin();
+		em.persist(entityB);
+		em.getTransaction().commit();
+		em.clear();
+
+		final OWLClassB b = em.find(OWLClassB.class, entityB.getUri());
+		assertNotNull(b);
+		assertEquals(entityB.getProperties().size(), b.getProperties().size());
+		em.getTransaction().begin();
+		b.getProperties()
+				.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyFour",
+						Collections
+								.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/Stroustrup"));
+		em.getTransaction().commit();
+
+		final OWLClassB res = em.find(OWLClassB.class, b.getUri());
+		assertNotNull(res);
+		assertEquals(b.getProperties().size(), res.getProperties().size());
+		for (Entry<String, Set<String>> e : b.getProperties().entrySet()) {
+			assertTrue(res.getProperties().containsKey(e.getKey()));
+			final Set<String> s = e.getValue();
+			assertEquals(1, s.size());
+			final Set<String> resS = res.getProperties().get(e.getKey());
+			assertEquals(s.size(), resS.size());
+			assertTrue(resS.contains(s.iterator().next()));
+		}
+	}
+
 	private static List<OWLClassA> createSimpleList() {
 		final List<OWLClassA> lst = new ArrayList<>(5);
 		int counter = 110;
 		for (int i = 0; i < 5; i++) {
 			final OWLClassA a = new OWLClassA();
-			a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityASimple"
-					+ counter));
+			a.setUri(URI
+					.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityASimple"
+							+ counter));
 			a.setStringAttribute("stringAttributeeee" + counter++);
 			lst.add(a);
 		}
@@ -477,6 +532,20 @@ public class TestUpdateOperations {
 		return lst;
 	}
 
+	private static Map<String, Set<String>> createProperties() {
+		final Map<String, Set<String>> m = new HashMap<>(3);
+		m.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyOne",
+				Collections
+						.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/vonNeumann"));
+		m.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyTwo",
+				Collections
+						.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/Turing"));
+		m.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyThree",
+				Collections
+						.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/Dijkstra"));
+		return m;
+	}
+
 	private static List<StorageConfig> initStorages() {
 		final List<StorageConfig> lst = new ArrayList<>(2);
 		lst.add(new SesameNativeStorageConfig());
@@ -486,9 +555,12 @@ public class TestUpdateOperations {
 
 	private static Map<String, String> initProperties() {
 		final Map<String, String> map = new HashMap<>();
-		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-		map.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
+		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY,
+				Boolean.TRUE.toString());
+		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE,
+				Boolean.TRUE.toString());
+		map.put(OntoDriverProperties.SESAME_USE_INFERENCE,
+				Boolean.FALSE.toString());
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
 		return map;
 	}

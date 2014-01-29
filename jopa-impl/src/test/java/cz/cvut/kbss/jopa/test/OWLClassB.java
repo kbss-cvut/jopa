@@ -16,10 +16,13 @@
 package cz.cvut.kbss.jopa.test;
 
 import java.net.URI;
+import java.util.Map;
+import java.util.Set;
 
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.Properties;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB")
 public class OWLClassB {
@@ -29,6 +32,9 @@ public class OWLClassB {
 
 	@OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute")
 	private String stringAttribute;
+
+	@Properties
+	private Map<String, Set<String>> properties;
 
 	/**
 	 * @param uri
@@ -51,6 +57,14 @@ public class OWLClassB {
 
 	public String getStringAttribute() {
 		return stringAttribute;
+	}
+
+	public void setProperties(Map<String, Set<String>> properties) {
+		this.properties = properties;
+	}
+
+	public Map<String, Set<String>> getProperties() {
+		return properties;
 	}
 
 	// @Override

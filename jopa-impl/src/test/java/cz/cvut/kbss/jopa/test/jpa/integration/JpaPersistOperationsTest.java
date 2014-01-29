@@ -37,7 +37,8 @@ import cz.cvut.kbss.ontodriver.Context;
 
 public class JpaPersistOperationsTest {
 
-	private static final Logger LOG = Logger.getLogger(JpaPersistOperationsTest.class.getName());
+	private static final Logger LOG = Logger
+			.getLogger(JpaPersistOperationsTest.class.getName());
 
 	private static final List<StorageConfig> storages = initStorages();
 	private static OWLClassA entityA;
@@ -56,27 +57,33 @@ public class JpaPersistOperationsTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		entityA = new OWLClassA();
-		entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
+		entityA.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
 		entityA.setStringAttribute("entityAStringAttribute");
 		final Set<String> types = new HashSet<String>();
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
 		entityA.setTypes(types);
 		entityB = new OWLClassB();
-		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
+		entityB.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
 		entityB.setStringAttribute("entityBStringAttribute");
 		entityD = new OWLClassD();
-		entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
+		entityD.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
 		entityD.setOwlClassA(entityA);
 		entityE = new OWLClassE();
 		entityE.setStringAttribute("entityEStringAttribute");
 		entityI = new OWLClassI();
-		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
+		entityI.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
 		entityI.setOwlClassA(entityA);
 		entityH = new OWLClassH();
-		entityH.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH"));
+		entityH.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH"));
 		entityH.setOwlClassA(entityA);
 		entityG = new OWLClassG();
-		entityG.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
+		entityG.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
 		entityG.setOwlClassH(entityH);
 	}
 
@@ -95,14 +102,15 @@ public class JpaPersistOperationsTest {
 			em.close();
 			em.getEntityManagerFactory().close();
 		}
+		entityB.setProperties(null);
 		entityE.setUri(null);
 	}
 
 	@Test
 	public void testPersistIntoAllCached() {
 		LOG.config("Test: test persist entities into all contexts. Cached.");
-		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistIntoAllCached",
-				storages, true);
+		em = TestEnvironment.getPersistenceConnector(
+				"JpaIntegration-PersistIntoAllCached", storages, true);
 		final List<Context> contexts = em.getAvailableContexts();
 		assertNotNull(contexts);
 		assertEquals(storages.size(), contexts.size());
@@ -127,7 +135,8 @@ public class JpaPersistOperationsTest {
 		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
 		assertEquals(entityA.getTypes().size(), resA.getTypes().size());
 		assertTrue(entityA.getTypes().containsAll(resA.getTypes()));
-		final OWLClassB resB = em.find(OWLClassB.class, entityB.getUri(), ctxB.getUri());
+		final OWLClassB resB = em.find(OWLClassB.class, entityB.getUri(),
+				ctxB.getUri());
 		assertNotNull(resB);
 		assertEquals(entityB.getStringAttribute(), resB.getStringAttribute());
 		final OWLClassE resE = em.find(OWLClassE.class, entityE.getUri());
@@ -139,8 +148,8 @@ public class JpaPersistOperationsTest {
 	@Test
 	public void testPersistIntoAllNotCached() {
 		LOG.config("Test: test persist entities into all contexts. Not cached.");
-		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistIntoAllNotCached",
-				storages, false);
+		em = TestEnvironment.getPersistenceConnector(
+				"JpaIntegration-PersistIntoAllNotCached", storages, false);
 		final List<Context> contexts = em.getAvailableContexts();
 		assertNotNull(contexts);
 		assertEquals(storages.size(), contexts.size());
@@ -165,7 +174,8 @@ public class JpaPersistOperationsTest {
 		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
 		assertEquals(entityA.getTypes().size(), resA.getTypes().size());
 		assertTrue(entityA.getTypes().containsAll(resA.getTypes()));
-		final OWLClassB resB = em.find(OWLClassB.class, entityB.getUri(), ctxB.getUri());
+		final OWLClassB resB = em.find(OWLClassB.class, entityB.getUri(),
+				ctxB.getUri());
 		assertNotNull(resB);
 		assertEquals(entityB.getStringAttribute(), resB.getStringAttribute());
 		final OWLClassE resE = em.find(OWLClassE.class, entityE.getUri());
@@ -177,8 +187,8 @@ public class JpaPersistOperationsTest {
 	@Test
 	public void testPersistTheSameIntoAll() {
 		LOG.config("Test: persist entity with the same primary key into all available contexts.");
-		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistSamePrimaryKeyIntoAll",
-				storages, false);
+		em = TestEnvironment.getPersistenceConnector(
+				"JpaIntegration-PersistSamePrimaryKeyIntoAll", storages, false);
 		final List<Context> contexts = em.getAvailableContexts();
 		assertFalse(contexts.isEmpty());
 		em.getTransaction().begin();
@@ -194,7 +204,8 @@ public class JpaPersistOperationsTest {
 		em.clear();
 		i = 1;
 		for (Context ctx : contexts) {
-			final OWLClassB resB = em.find(OWLClassB.class, entityB.getUri(), ctx.getUri());
+			final OWLClassB resB = em.find(OWLClassB.class, entityB.getUri(),
+					ctx.getUri());
 			assertNotNull(resB);
 			final String expected = attBase + (i++);
 			assertEquals(expected, resB.getStringAttribute());
@@ -204,8 +215,8 @@ public class JpaPersistOperationsTest {
 	@Test
 	public void testPersistCascade() {
 		LOG.config("Test: persist cascaded relationship.");
-		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistCascade", storages,
-				false);
+		em = TestEnvironment.getPersistenceConnector(
+				"JpaIntegration-PersistCascade", storages, false);
 		final List<Context> contexts = em.getAvailableContexts();
 		assertFalse(contexts.isEmpty());
 		assertTrue(contexts.size() > 1);
@@ -221,7 +232,8 @@ public class JpaPersistOperationsTest {
 		em.clear();
 		final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri());
 		assertNotNull(resA);
-		final OWLClassI resI = em.find(OWLClassI.class, entityI.getUri(), ctx.getUri());
+		final OWLClassI resI = em.find(OWLClassI.class, entityI.getUri(),
+				ctx.getUri());
 		assertNotNull(resI);
 		final OWLClassB resB = em.find(OWLClassB.class, entityB.getUri());
 		assertNotNull(resB);
@@ -230,8 +242,8 @@ public class JpaPersistOperationsTest {
 	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistDuplicate() {
 		LOG.config("Test: persist entity twice into the same context.");
-		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistDuplicate", storages,
-				false);
+		em = TestEnvironment.getPersistenceConnector(
+				"JpaIntegration-PersistDuplicate", storages, false);
 		final List<Context> contexts = em.getAvailableContexts();
 		assertFalse(contexts.isEmpty());
 		final Context ctx = contexts.get(contexts.size() - 1);
@@ -245,8 +257,8 @@ public class JpaPersistOperationsTest {
 	@Test
 	public void testPersistCascadeOverTwo() {
 		LOG.config("Test: persist with cascade over two relationships.");
-		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistCascadeOverTwo",
-				storages, false);
+		em = TestEnvironment.getPersistenceConnector(
+				"JpaIntegration-PersistCascadeOverTwo", storages, false);
 		final List<Context> contexts = em.getAvailableContexts();
 		assertFalse(contexts.isEmpty());
 		final Context ctx = contexts.get(0);
@@ -258,14 +270,17 @@ public class JpaPersistOperationsTest {
 		em.getTransaction().commit();
 		em.clear();
 
-		final OWLClassG resG = em.find(OWLClassG.class, entityG.getUri(), ctx.getUri());
+		final OWLClassG resG = em.find(OWLClassG.class, entityG.getUri(),
+				ctx.getUri());
 		assertNotNull(resG);
 		assertNotNull(resG.getOwlClassH());
-		final OWLClassH resH = em.find(OWLClassH.class, entityH.getUri(), ctx.getUri());
+		final OWLClassH resH = em.find(OWLClassH.class, entityH.getUri(),
+				ctx.getUri());
 		assertNotNull(resH);
 		assertEquals(resG.getOwlClassH(), resH);
 		assertNotNull(resH.getOwlClassA());
-		final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
+		final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(),
+				ctx.getUri());
 		assertNotNull(resA);
 		assertEquals(resH.getOwlClassA(), resA);
 		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());

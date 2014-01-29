@@ -32,6 +32,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 
 	CollectionInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
 		super(builder, uow);
+		this.populates = true;
 	}
 
 	/**
@@ -53,10 +54,17 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 		if (container instanceof IndirectCollection<?>) {
 			container = (Collection<?>) ((IndirectCollection<?>) container)
 					.getReferencedCollection();
+			origCls = container.getClass();
 		}
 		Collection<?> clone = null;
 		clone = cloneUsingDefaultConstructor(container, contextUri);
 		if (clone == null) {
+			if (Collections.EMPTY_LIST == container) {
+				return Collections.EMPTY_LIST;
+			}
+			if (Collections.EMPTY_SET == container) {
+				return Collections.EMPTY_SET;
+			}
 			Constructor<?> c = null;
 			final Object element = container.iterator().next();
 			Object[] params = new Object[1];
@@ -110,7 +118,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 		Class<?> javaClass = container.getClass();
 		Constructor<?> ctor = null;
 		Object[] params = null;
-		Class<?>[] types = { Integer.class };
+		Class<?>[] types = { int.class };
 		// Look for constructor taking initial size as parameter
 		ctor = getDeclaredConstructorFor(javaClass, types);
 		if (ctor != null) {

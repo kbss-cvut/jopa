@@ -3,15 +3,18 @@ package cz.cvut.kbss.jopa.test.sesame.integration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -40,7 +43,8 @@ import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
 public class TestCreateOperations {
 
-	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());
+	private static final Logger LOG = Logger
+			.getLogger(TestCreateOperations.class.getName());
 
 	private static final List<StorageConfig> storages = initStorages();
 	private static final Map<String, String> properties = initProperties();
@@ -62,29 +66,36 @@ public class TestCreateOperations {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		entityA = new OWLClassA();
-		entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
+		entityA.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
 		entityA.setStringAttribute("entityAStringAttribute");
 		final Set<String> types = new HashSet<String>();
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
 		entityA.setTypes(types);
 		entityB = new OWLClassB();
-		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
+		entityB.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
 		entityB.setStringAttribute("entityBStringAttribute");
 		entityC = new OWLClassC();
-		entityC.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
+		entityC.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
 		entityD = new OWLClassD();
-		entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
+		entityD.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
 		entityD.setOwlClassA(entityA);
 		entityE = new OWLClassE();
 		entityE.setStringAttribute("entityEStringAttribute");
 		entityI = new OWLClassI();
-		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
+		entityI.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
 		entityI.setOwlClassA(entityA);
 		entityH = new OWLClassH();
-		entityH.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH"));
+		entityH.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH"));
 		entityH.setOwlClassA(entityA);
 		entityG = new OWLClassG();
-		entityG.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
+		entityG.setUri(URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
 		entityG.setOwlClassH(entityH);
 	}
 
@@ -105,8 +116,8 @@ public class TestCreateOperations {
 	@Test
 	public void testPersistWithGenerated() {
 		LOG.config("Test: persist into all contexts, also with generated id.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistWithGenerated", storages, false,
-				properties);
+		em = TestEnvironment.getPersistenceConnector(
+				"SesamePersistWithGenerated", storages, false, properties);
 		final List<Context> contexts = em.getAvailableContexts();
 		final Context ctx1 = contexts.get(0);
 		final Context ctx2 = contexts.get(1);
@@ -117,23 +128,27 @@ public class TestCreateOperations {
 		em.persist(entityB, ctx2.getUri());
 		em.getTransaction().commit();
 
-		final OWLClassA resA1 = em.find(OWLClassA.class, entityA.getUri(), ctx1.getUri());
+		final OWLClassA resA1 = em.find(OWLClassA.class, entityA.getUri(),
+				ctx1.getUri());
 		assertNotNull(resA1);
 		assertEquals(entityA.getStringAttribute(), resA1.getStringAttribute());
 		assertEquals(entityA.getTypes().size(), resA1.getTypes().size());
 		assertTrue(entityA.getTypes().containsAll(resA1.getTypes()));
-		final OWLClassA resA2 = em.find(OWLClassA.class, entityA.getUri(), ctx2.getUri());
+		final OWLClassA resA2 = em.find(OWLClassA.class, entityA.getUri(),
+				ctx2.getUri());
 		assertNotNull(resA2);
 		assertEquals(entityA.getStringAttribute(), resA2.getStringAttribute());
 		assertEquals(entityA.getTypes().size(), resA2.getTypes().size());
 		assertTrue(entityA.getTypes().containsAll(resA2.getTypes()));
 
 		assertNotNull(entityE.getUri());
-		final OWLClassE resE = em.find(OWLClassE.class, entityE.getUri(), ctx1.getUri());
+		final OWLClassE resE = em.find(OWLClassE.class, entityE.getUri(),
+				ctx1.getUri());
 		assertNotNull(resE);
 		assertEquals(entityE.getStringAttribute(), resE.getStringAttribute());
 
-		final OWLClassB resB = em.find(OWLClassB.class, entityB.getUri(), ctx2.getUri());
+		final OWLClassB resB = em.find(OWLClassB.class, entityB.getUri(),
+				ctx2.getUri());
 		assertNotNull(resB);
 		assertEquals(entityB.getUri(), resB.getUri());
 		assertEquals(entityB.getStringAttribute(), resB.getStringAttribute());
@@ -143,8 +158,8 @@ public class TestCreateOperations {
 	@Test
 	public void testPersistCascade() {
 		LOG.config("Test: persist with cascade over two relationships.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistWithCascade", storages, false,
-				properties);
+		em = TestEnvironment.getPersistenceConnector(
+				"SesamePersistWithCascade", storages, false, properties);
 		final List<Context> contexts = em.getAvailableContexts();
 		final Context ctx1 = contexts.get(0);
 		final Context ctx2 = contexts.get(1);
@@ -157,17 +172,21 @@ public class TestCreateOperations {
 		final OWLClassD resD = em.find(OWLClassD.class, entityD.getUri());
 		assertNotNull(resD);
 		assertNotNull(resD.getOwlClassA());
-		final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), ctx1.getUri());
+		final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(),
+				ctx1.getUri());
 		assertNotNull(resA);
 		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
 		assertEquals(resD.getOwlClassA(), resA);
 
-		final OWLClassA resA2 = em.find(OWLClassA.class, entityA.getUri(), ctx2.getUri());
+		final OWLClassA resA2 = em.find(OWLClassA.class, entityA.getUri(),
+				ctx2.getUri());
 		assertNotNull(resA2);
-		final OWLClassH resH = em.find(OWLClassH.class, entityH.getUri(), ctx2.getUri());
+		final OWLClassH resH = em.find(OWLClassH.class, entityH.getUri(),
+				ctx2.getUri());
 		assertNotNull(resH);
 		assertEquals(resH.getOwlClassA(), resA2);
-		final OWLClassG resG = em.find(OWLClassG.class, entityG.getUri(), ctx2.getUri());
+		final OWLClassG resG = em.find(OWLClassG.class, entityG.getUri(),
+				ctx2.getUri());
 		assertNotNull(resG);
 		assertEquals(resG.getOwlClassH(), resH);
 		assertEquals(resG.getOwlClassH().getOwlClassA(), resA2);
@@ -176,8 +195,8 @@ public class TestCreateOperations {
 	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistTwiceInOne() {
 		LOG.config("Test: persist twice into one context.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistTwice", storages, false,
-				properties);
+		em = TestEnvironment.getPersistenceConnector("SesamePersistTwice",
+				storages, false, properties);
 		em.getTransaction().begin();
 		em.persist(entityB);
 		em.persist(entityB);
@@ -188,8 +207,8 @@ public class TestCreateOperations {
 	@Test(expected = RollbackException.class)
 	public void testPersistWithoutCascade() {
 		LOG.config("Test: try persisting relationship not marked as cascade.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistWithoutCascade", storages,
-				false, properties);
+		em = TestEnvironment.getPersistenceConnector(
+				"SesamePersistWithoutCascade", storages, false, properties);
 		em.getTransaction().begin();
 		em.persist(entityD);
 		em.getTransaction().commit();
@@ -199,9 +218,10 @@ public class TestCreateOperations {
 	@Test
 	public void testPersistSimpleList() {
 		LOG.config("Test: persist entity with simple list.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleList", storages, false,
-				properties);
-		URI ctx = em.getAvailableContexts().get(em.getAvailableContexts().size() - 1).getUri();
+		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleList",
+				storages, false, properties);
+		URI ctx = em.getAvailableContexts()
+				.get(em.getAvailableContexts().size() - 1).getUri();
 		entityC.setSimpleList(createSimpleList());
 		em.getTransaction().begin();
 		em.persist(entityC, ctx);
@@ -210,7 +230,8 @@ public class TestCreateOperations {
 		}
 		em.getTransaction().commit();
 
-		final OWLClassA a = em.find(OWLClassA.class, entityC.getSimpleList().get(1).getUri(), ctx);
+		final OWLClassA a = em.find(OWLClassA.class, entityC.getSimpleList()
+				.get(1).getUri(), ctx);
 		assertNotNull(a);
 		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), ctx);
 		assertNotNull(c);
@@ -223,8 +244,9 @@ public class TestCreateOperations {
 	@Test(expected = RollbackException.class)
 	public void testPersistSimpleListNoCascade() {
 		LOG.config("Test: persist entity with simple list, but don't persist the referenced entities.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleListNoCascade", storages,
-				false, properties);
+		em = TestEnvironment
+				.getPersistenceConnector("SesamePersistSimpleListNoCascade",
+						storages, false, properties);
 		entityC.setSimpleList(createSimpleList());
 		em.getTransaction().begin();
 		em.persist(entityC);
@@ -235,8 +257,8 @@ public class TestCreateOperations {
 	@Test
 	public void testPersistReferencedList() {
 		LOG.config("Test: persist entity with referenced list.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistReferencedList", storages,
-				false, properties);
+		em = TestEnvironment.getPersistenceConnector(
+				"SesamePersistReferencedList", storages, false, properties);
 		entityC.setReferencedList(createReferencedList());
 		em.getTransaction().begin();
 		em.persist(entityC);
@@ -251,7 +273,8 @@ public class TestCreateOperations {
 		assertNotNull(c);
 		assertNotNull(c.getReferencedList());
 		assertFalse(c.getReferencedList().isEmpty());
-		assertEquals(entityC.getReferencedList().size(), c.getReferencedList().size());
+		assertEquals(entityC.getReferencedList().size(), c.getReferencedList()
+				.size());
 		for (OWLClassA a : entityC.getReferencedList()) {
 			final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
 			assertNotNull(resA);
@@ -263,8 +286,9 @@ public class TestCreateOperations {
 	@Test(expected = RollbackException.class)
 	public void testPersistReferencedListNoCascade() {
 		LOG.config("Test: persist entity with referenced list. Don't persist the referenced entities.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistReferencedListNoCascade",
-				storages, false, properties);
+		em = TestEnvironment.getPersistenceConnector(
+				"SesamePersistReferencedListNoCascade", storages, false,
+				properties);
 		entityC.setReferencedList(createReferencedList());
 		em.getTransaction().begin();
 		em.persist(entityC);
@@ -275,8 +299,9 @@ public class TestCreateOperations {
 	@Test
 	public void estPersistSimpleAndReferencedList() {
 		LOG.config("Test: persist entity with both simple and referenced list.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleAndReferencedList",
-				storages, false, properties);
+		em = TestEnvironment.getPersistenceConnector(
+				"SesamePersistSimpleAndReferencedList", storages, false,
+				properties);
 		entityC.setReferencedList(createReferencedList());
 		entityC.setSimpleList(createSimpleList());
 		em.getTransaction().begin();
@@ -294,7 +319,8 @@ public class TestCreateOperations {
 		assertNotNull(c.getSimpleList());
 		assertEquals(entityC.getSimpleList().size(), c.getSimpleList().size());
 		assertNotNull(c.getReferencedList());
-		assertEquals(entityC.getReferencedList().size(), c.getReferencedList().size());
+		assertEquals(entityC.getReferencedList().size(), c.getReferencedList()
+				.size());
 		for (OWLClassA a : entityC.getSimpleList()) {
 			final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
 			assertNotNull(resA);
@@ -307,13 +333,78 @@ public class TestCreateOperations {
 		}
 	}
 
+	@Test
+	public void testPersistProperties() {
+		LOG.config("Test: persist entity with properties.");
+		em = TestEnvironment.getPersistenceConnector(
+				"JpaIntegration-PersistWithProperties", storages, false,
+				properties);
+		final Map<String, Set<String>> props = new HashMap<>(3);
+		props.put(
+				"http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyOne",
+				Collections
+						.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/Individial10"));
+		props.put(
+				"http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyTwo",
+				Collections
+						.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/SomeEntity"));
+		props.put(
+				"http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyThree",
+				Collections
+						.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
+		entityB.setProperties(props);
+		em.getTransaction().begin();
+		em.persist(entityB);
+		em.getTransaction().commit();
+		em.clear();
+
+		final OWLClassB res = em.find(OWLClassB.class, entityB.getUri());
+		assertNotNull(res);
+		assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
+		assertNotNull(res.getProperties());
+		assertFalse(res.getProperties().isEmpty());
+		assertEquals(props.size(), res.getProperties().size());
+		for (Entry<String, Set<String>> e : props.entrySet()) {
+			assertTrue(res.getProperties().containsKey(e.getKey()));
+			final Set<String> s = e.getValue();
+			final Set<String> resS = res.getProperties().get(e.getKey());
+			assertNotNull(resS);
+			assertEquals(1, resS.size());
+			assertEquals(s.iterator().next(), resS.iterator().next());
+		}
+	}
+
+	@Test
+	public void testPersistPropertiesEmpty() {
+		LOG.config("Test: persist entity with properties. The properties will be an empty map.");
+		em = TestEnvironment.getPersistenceConnector(
+				"JpaIntegration-PersistWithPropertiesEmpty", storages, false,
+				properties);
+		entityB.setProperties(Collections.<String, Set<String>> emptyMap());
+		final Context ctx = em.getAvailableContexts().get(
+				em.getAvailableContexts().size() - 1);
+		em.getTransaction().begin();
+		em.persist(entityB, ctx.getUri());
+		assertTrue(em.contains(entityB));
+		em.getTransaction().commit();
+		em.clear();
+
+		final OWLClassB b = em.find(OWLClassB.class, entityB.getUri(),
+				ctx.getUri());
+		assertNotNull(b);
+		assertEquals(entityB.getUri(), b.getUri());
+		assertEquals(entityB.getStringAttribute(), b.getStringAttribute());
+		assertNull(b.getProperties());
+	}
+
 	private static List<OWLClassA> createSimpleList() {
 		final List<OWLClassA> lst = new ArrayList<>(5);
 		int counter = 110;
 		for (int i = 0; i < 5; i++) {
 			final OWLClassA a = new OWLClassA();
-			a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityASimple"
-					+ counter));
+			a.setUri(URI
+					.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityASimple"
+							+ counter));
 			a.setStringAttribute("stringAttributeeee" + counter++);
 			lst.add(a);
 		}
@@ -343,9 +434,12 @@ public class TestCreateOperations {
 
 	private static Map<String, String> initProperties() {
 		final Map<String, String> map = new HashMap<>();
-		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-		map.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
+		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY,
+				Boolean.TRUE.toString());
+		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE,
+				Boolean.TRUE.toString());
+		map.put(OntoDriverProperties.SESAME_USE_INFERENCE,
+				Boolean.FALSE.toString());
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
 		return map;
 	}

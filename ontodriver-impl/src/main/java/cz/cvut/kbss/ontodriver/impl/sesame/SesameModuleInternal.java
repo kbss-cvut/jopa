@@ -45,9 +45,11 @@ import cz.cvut.kbss.ontodriver.impl.utils.ICValidationUtils;
  * @author ledvima1
  * 
  */
-class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStatement> {
+class SesameModuleInternal implements
+		ModuleInternal<SesameChange, SesameStatement> {
 
-	static final Logger LOG = Logger.getLogger(SesameModuleInternal.class.getName());
+	static final Logger LOG = Logger.getLogger(SesameModuleInternal.class
+			.getName());
 
 	final SesameStorageModule module;
 	private StorageProxy storage;
@@ -61,7 +63,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		LITERAL, OBJECT
 	};
 
-	SesameModuleInternal(SesameOntologyDataHolder data, SesameStorageModule storageModule) {
+	SesameModuleInternal(SesameOntologyDataHolder data,
+			SesameStorageModule storageModule) {
 		assert data != null : "argument data is null";
 		assert storageModule != null : "argument storageModule is null";
 		this.module = storageModule;
@@ -78,7 +81,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	@Override
-	public <T> T findEntity(Class<T> cls, Object primaryKey) throws OntoDriverException {
+	public <T> T findEntity(Class<T> cls, Object primaryKey)
+			throws OntoDriverException {
 		assert cls != null : "argument cls is null";
 		assert primaryKey != null : "argument primaryKey is null";
 
@@ -99,10 +103,12 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	@Override
-	public <T> void persistEntity(Object primaryKey, T entity) throws OntoDriverException {
+	public <T> void persistEntity(Object primaryKey, T entity)
+			throws OntoDriverException {
 		assert entity != null : "argument entity is null";
 
-		final EntityType<T> entityType = getEntityType((Class<T>) entity.getClass());
+		final EntityType<T> entityType = getEntityType((Class<T>) entity
+				.getClass());
 		URI uri = primaryKey != null ? getAddressAsSesameUri(primaryKey) : null;
 		if (uri == null) {
 			uri = resolveIdentifier(entity, entityType);
@@ -120,14 +126,16 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	@Override
-	public <T> void mergeEntity(Object primaryKey, T entity) throws OntoDriverException {
+	public <T> void mergeEntity(Object primaryKey, T entity)
+			throws OntoDriverException {
 		assert primaryKey != null : "argument primaryKey is null";
 		assert entity != null : "argument entity is null";
 
 		final URI uri = getAddressAsSesameUri(primaryKey);
 		if (!isInOntologySignature(uri)) {
-			throw new OntoDriverException(new IllegalArgumentException("The entity " + entity
-					+ " is not persistent within this context."));
+			throw new OntoDriverException(new IllegalArgumentException(
+					"The entity " + entity
+							+ " is not persistent within this context."));
 		}
 		final EntityType<T> et = getEntityType((Class<T>) entity.getClass());
 		saveEntityAttributes(entity, uri, et);
@@ -142,20 +150,23 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
+	public <T> void loadFieldValue(T entity, Field field)
+			throws OntoDriverException {
 		assert entity != null : "argument entity is null";
 		assert field != null : "argument field is null";
 		final Class<T> cls = (Class<T>) entity.getClass();
 		final EntityType<T> et = getEntityType(cls);
 		final URI uri = getIdentifier(entity);
 		try {
-			if (et.getTypes() != null && et.getTypes().getJavaField().equals(field)) {
+			if (et.getTypes() != null
+					&& et.getTypes().getJavaField().equals(field)) {
 				loadTypesReference(entity, uri, et.getTypes(), et);
 			} else if (et.getProperties() != null
 					&& et.getProperties().getJavaField().equals(field)) {
 				loadPropertiesReference(entity, uri, et.getProperties(), et);
 			} else {
-				loadReference(entity, uri, et.getAttribute(field.getName()), true);
+				loadReference(entity, uri, et.getAttribute(field.getName()),
+						true);
 			}
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
@@ -198,7 +209,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			try {
 				storage.close();
 			} catch (OntoDriverException e) {
-				LOG.severe("Exception caught when closing Sesame storage proxy: " + e);
+				LOG.severe("Exception caught when closing Sesame storage proxy: "
+						+ e);
 			}
 		}
 	}
@@ -224,7 +236,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		storage.removeStatements(stmts);
 	}
 
-	void addIndividualsForReferencedEntities(Collection<?> ents) throws OntoDriverException {
+	void addIndividualsForReferencedEntities(Collection<?> ents)
+			throws OntoDriverException {
 		assert ents != null;
 		assert !ents.isEmpty();
 
@@ -234,9 +247,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			if (uri == null) {
 				uri = resolveIdentifier(ob, et);
 			}
-			if (!isInOntologySignature(uri) && !temporaryIndividuals.contains(uri)) {
+			if (!isInOntologySignature(uri)
+					&& !temporaryIndividuals.contains(uri)) {
 				if (LOG.isLoggable(Level.FINEST)) {
-					LOG.finest("Adding class assertion axiom for a not yet persisted entity " + uri);
+					LOG.finest("Adding class assertion axiom for a not yet persisted entity "
+							+ uri);
 				}
 				addInstanceToOntology(uri, et);
 				temporaryIndividuals.add(uri);
@@ -254,7 +269,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		assert et != null;
 
 		final URI typeUri = valueFactory.createURI(et.getIRI().toString());
-		final Statement stmt = valueFactory.createStatement(uri, RDF.TYPE, typeUri);
+		final Statement stmt = valueFactory.createStatement(uri, RDF.TYPE,
+				typeUri);
 		addStatement(stmt);
 	}
 
@@ -298,8 +314,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 				|| primaryKey instanceof URL) {
 			return valueFactory.createURI(primaryKey.toString());
 		} else {
-			throw new IllegalArgumentException("Unsupported type of primary key "
-					+ primaryKey.getClass());
+			throw new IllegalArgumentException(
+					"Unsupported type of primary key " + primaryKey.getClass());
 		}
 	}
 
@@ -329,9 +345,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			} else if (idValue instanceof String) {
 				return valueFactory.createURI((String) idValue);
 			} else if (idValue instanceof java.net.URI) {
-				return valueFactory.createURI(((java.net.URI) idValue).toString());
+				return valueFactory.createURI(((java.net.URI) idValue)
+						.toString());
 			} else {
-				throw new OwlModuleException("Unknown identifier type: " + idValue.getClass());
+				throw new OwlModuleException("Unknown identifier type: "
+						+ idValue.getClass());
 			}
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new OntoDriverInternalException(e);
@@ -383,14 +401,16 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 		final EntityType<T> type = getEntityType(cls);
 		if (type == null) {
-			throw new IllegalArgumentException("Class " + cls + " is not a registered entity type.");
+			throw new IllegalArgumentException("Class " + cls
+					+ " is not a registered entity type.");
 		}
 
 		T instance = null;
 		try {
 			instance = cls.newInstance();
 		} catch (IllegalAccessException | InstantiationException e) {
-			throw new OntoDriverException("Unable to instantiate class " + cls, e);
+			throw new OntoDriverException("Unable to instantiate class " + cls,
+					e);
 		}
 		SesameUtils.setEntityIdentifier(type, instance, uri);
 		loadEntityFromModel(instance, uri, type);
@@ -409,15 +429,16 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 * @throws OntoDriverException
 	 *             If an error occurs during load
 	 */
-	private <T> void loadEntityFromModel(T instance, URI uri, EntityType<T> entityType)
-			throws OntoDriverException {
+	private <T> void loadEntityFromModel(T instance, URI uri,
+			EntityType<T> entityType) throws OntoDriverException {
 		try {
 			final TypesSpecification<?, ?> types = entityType.getTypes();
 			if (types != null) {
 				loadTypesReference(instance, uri, types, entityType);
 			}
 
-			final PropertiesSpecification<?, ?> properties = entityType.getProperties();
+			final PropertiesSpecification<?, ?> properties = entityType
+					.getProperties();
 			if (properties != null) {
 				loadPropertiesReference(instance, uri, properties, entityType);
 			}
@@ -425,8 +446,9 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 				loadReference(instance, uri, att, false);
 			}
 		} catch (IllegalArgumentException | IllegalAccessException e) {
-			throw new OntoDriverException("Exception caught when loading attributes of entity "
-					+ uri, e);
+			throw new OntoDriverException(
+					"Exception caught when loading attributes of entity " + uri,
+					e);
 		}
 	}
 
@@ -450,10 +472,13 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private <T> void loadPropertiesReference(T entity, URI uri,
 			PropertiesSpecification<?, ?> properties, EntityType<T> entityType)
 			throws IllegalArgumentException, IllegalAccessException {
-		final Map<String, Set<String>> map = new HashMap<>();
+		Map<String, Set<String>> map = new HashMap<>();
 
-		for (Statement stmt : storage.filter(uri, null, null, properties.isInferred())) {
-			if (SesameUtils.isEntityAttribute(stmt.getPredicate(), entityType)) {
+		for (Statement stmt : storage.filter(uri, null, null,
+				properties.isInferred())) {
+			// TODO Add more filtering conditions on the properties?
+			if (SesameUtils.isEntityAttribute(stmt.getPredicate(), entityType)
+					|| RDF.TYPE.equals(stmt.getPredicate())) {
 				continue;
 			}
 
@@ -461,7 +486,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			final Value value = stmt.getObject();
 			String strValue = null;
 			if (value instanceof Literal) {
-				strValue = SesameUtils.getDataPropertyValue((Literal) value).toString();
+				strValue = SesameUtils.getDataPropertyValue((Literal) value)
+						.toString();
 			} else {
 				strValue = value.stringValue();
 			}
@@ -471,6 +497,9 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 				map.put(property, set);
 			}
 			set.add(strValue);
+		}
+		if (map.isEmpty()) {
+			map = null;
 		}
 
 		final Field f = properties.getJavaField();
@@ -492,11 +521,12 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 *            lazily loaded
 	 * @throws OntoDriverException
 	 */
-	private <T> void loadReference(T entity, URI uri, Attribute<?, ?> attribute, boolean alwaysLoad)
+	private <T> void loadReference(T entity, URI uri,
+			Attribute<?, ?> attribute, boolean alwaysLoad)
 			throws OntoDriverException {
 		try {
-			final AttributeStrategy strategy = AttributeStrategyFactory.createStrategy(attribute,
-					this);
+			final AttributeStrategy strategy = AttributeStrategyFactory
+					.createStrategy(attribute, this);
 			strategy.load(entity, uri, attribute, alwaysLoad);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new OntoDriverException(e);
@@ -519,12 +549,14 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-	private <T> void loadTypesReference(T entity, URI uri, TypesSpecification<?, ?> types,
-			EntityType<T> entityType) throws IllegalArgumentException, IllegalAccessException {
+	private <T> void loadTypesReference(T entity, URI uri,
+			TypesSpecification<?, ?> types, EntityType<T> entityType)
+			throws IllegalArgumentException, IllegalAccessException {
 		final Set<Object> res = new HashSet<>();
 		final String typeIri = entityType.getIRI().toString();
 
-		for (Statement stmt : storage.filter(uri, RDF.TYPE, null, types.isInferred())) {
+		for (Statement stmt : storage.filter(uri, RDF.TYPE, null,
+				types.isInferred())) {
 			final String tp = stmt.getObject().stringValue();
 			if (tp.equals(typeIri)) {
 				continue;
@@ -565,12 +597,15 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 * @param et
 	 *            Entity type of entity representing the subject
 	 */
-	private Map<URI, ObjectType> removeOldProperties(URI subject, EntityType<?> et) {
+	private Map<URI, ObjectType> removeOldProperties(URI subject,
+			EntityType<?> et) {
 		final Model props = storage.filter(subject, null, null, false);
 		final Set<Statement> toRemove = new HashSet<>(props.size());
 		final Map<URI, ObjectType> map = new HashMap<>(props.size());
 		for (Statement stmt : props) {
-			if (!SesameUtils.isEntityAttribute(stmt.getPredicate(), et)) {
+			// TODO Add more predicates which shouldn't be removed?
+			if (!SesameUtils.isEntityAttribute(stmt.getPredicate(), et)
+					&& !RDF.TYPE.equals(stmt.getPredicate())) {
 				toRemove.add(stmt);
 				if (isUri(stmt.getObject())) {
 					map.put(stmt.getPredicate(), ObjectType.OBJECT);
@@ -583,7 +618,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		return map;
 	}
 
-	private URI resolveIdentifier(Object entity, EntityType<?> et) throws OntoDriverException {
+	private URI resolveIdentifier(Object entity, EntityType<?> et)
+			throws OntoDriverException {
 		if (!et.getIdentifier().isGenerated()) {
 			throw new PrimaryKeyNotSetException(
 					"The entity has neither primary key set nor is its id field annotated as auto generated. Entity = "
@@ -605,16 +641,18 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 *            Entity type resolved from the metamodel
 	 * @throws OntoDriverException
 	 */
-	private <T> void saveEntityAttributes(T entity, URI primaryKey, EntityType<T> entityType)
-			throws OntoDriverException {
+	private <T> void saveEntityAttributes(T entity, URI primaryKey,
+			EntityType<T> entityType) throws OntoDriverException {
 		try {
 			final TypesSpecification<?, ?> types = entityType.getTypes();
 			if (types != null) {
 				saveTypesReference(entity, primaryKey, types, entityType);
 			}
-			final PropertiesSpecification<?, ?> properties = entityType.getProperties();
+			final PropertiesSpecification<?, ?> properties = entityType
+					.getProperties();
 			if (properties != null) {
-				savePropertiesReference(entity, primaryKey, properties, entityType);
+				savePropertiesReference(entity, primaryKey, properties,
+						entityType);
 			}
 			for (Attribute<?, ?> att : entityType.getAttributes()) {
 				saveReference(entity, primaryKey, att, entityType);
@@ -644,10 +682,15 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			throws IllegalArgumentException, IllegalAccessException {
 		Object value = props.getJavaField().get(entity);
 		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Saving other properties of " + entity + " with value = " + value);
+			LOG.finest("Saving other properties of " + entity
+					+ " with value = " + value);
 		}
 
-		Map<URI, ObjectType> propertyTypes = removeOldProperties(uri, entityType);
+		Map<URI, ObjectType> propertyTypes = removeOldProperties(uri,
+				entityType);
+		if (value == null) {
+			return;
+		}
 		if (!(value instanceof Map)) {
 			throw new IllegalArgumentException(
 					"The properties attribute has to be a java.util.Map.");
@@ -658,8 +701,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			Object oProperty = e.getKey();
 			Object oValue = e.getValue();
 			if (!(oValue instanceof Collection)) {
-				throw new IllegalArgumentException("The value mapped by key " + oProperty
-						+ " has to be a collection.");
+				throw new IllegalArgumentException("The value mapped by key "
+						+ oProperty + " has to be a collection.");
 			}
 			final URI property = valueFactory.createURI(oProperty.toString());
 			Collection<?> object = (Collection<?>) oValue;
@@ -668,18 +711,21 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			}
 			// If the property type cannot be resolved, set it to object
 			// property
-			ObjectType propType = propertyTypes.containsKey(property) ? propertyTypes.get(property)
-					: ObjectType.OBJECT;
+			ObjectType propType = propertyTypes.containsKey(property) ? propertyTypes
+					.get(property) : ObjectType.OBJECT;
 			if (propType == ObjectType.LITERAL) {
 				for (Object val : object) {
-					Literal lit = SesameUtils.createDataPropertyLiteral(val, lang, valueFactory);
-					final Statement stmt = valueFactory.createStatement(uri, property, lit);
+					Literal lit = SesameUtils.createDataPropertyLiteral(val,
+							lang, valueFactory);
+					final Statement stmt = valueFactory.createStatement(uri,
+							property, lit);
 					toAdd.add(stmt);
 				}
 			} else {
 				for (Object val : object) {
 					URI objRef = valueFactory.createURI(val.toString());
-					final Statement stmt = valueFactory.createStatement(uri, property, objRef);
+					final Statement stmt = valueFactory.createStatement(uri,
+							property, objRef);
 					toAdd.add(stmt);
 				}
 			}
@@ -706,16 +752,19 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 * @throws IllegalAccessException
 	 * @throws IllegalArgumentException
 	 */
-	private <T> void saveReference(T entity, URI uri, Attribute<?, ?> att, EntityType<T> entityType)
-			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
+	private <T> void saveReference(T entity, URI uri, Attribute<?, ?> att,
+			EntityType<T> entityType) throws OntoDriverException,
+			IllegalArgumentException, IllegalAccessException {
 		if (att.isInferred()) {
-			throw new OntoDriverException("Inferred fields must not be set externally.");
+			throw new OntoDriverException(
+					"Inferred fields must not be set externally.");
 		}
 		ICValidationUtils.validateIntegrityConstraints(entity, uri, att);
 
 		final Object oValue = att.getJavaField().get(entity);
 		final URI propertyUri = getAddressAsSesameUri(att.getIRI());
-		final AttributeStrategy strategy = AttributeStrategyFactory.createStrategy(att, this);
+		final AttributeStrategy strategy = AttributeStrategyFactory
+				.createStrategy(att, this);
 		strategy.save(entity, uri, att, propertyUri, oValue);
 	}
 
@@ -737,11 +786,13 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 * @throws OntoDriverException
 	 *             If the types are inferred
 	 */
-	private <T> void saveTypesReference(T entity, URI uri, TypesSpecification<?, ?> types,
-			EntityType<T> entityType) throws OntoDriverException, IllegalArgumentException,
+	private <T> void saveTypesReference(T entity, URI uri,
+			TypesSpecification<?, ?> types, EntityType<T> entityType)
+			throws OntoDriverException, IllegalArgumentException,
 			IllegalAccessException {
 		if (types.isInferred()) {
-			throw new OntoDriverException("Inferred fields must not be set externally.");
+			throw new OntoDriverException(
+					"Inferred fields must not be set externally.");
 		}
 		URI typeUri = valueFactory.createURI(entityType.getIRI().toString());
 		Object value = types.getJavaField().get(entity);
@@ -749,17 +800,20 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			LOG.finest("Saving types of " + entity + " with value = " + value);
 		}
 		if (value != null && !(value instanceof Set)) {
-			throw new IllegalArgumentException("The types attribute has to be a java.util.Set.");
+			throw new IllegalArgumentException(
+					"The types attribute has to be a java.util.Set.");
 		}
 
-		final Set<?> set = value != null ? (Set<?>) value : Collections.emptySet();
+		final Set<?> set = value != null ? (Set<?>) value : Collections
+				.emptySet();
 		final Set<Statement> toAdd = new HashSet<>(set.size());
 		final Set<Statement> toRemove = new HashSet<>();
 		for (Object type : set) {
 			toAdd.add(valueFactory.createStatement(uri, RDF.TYPE,
 					valueFactory.createURI(type.toString())));
 		}
-		final Set<Statement> currentTypes = storage.filter(uri, RDF.TYPE, null, false);
+		final Set<Statement> currentTypes = storage.filter(uri, RDF.TYPE, null,
+				false);
 		for (Statement stmt : currentTypes) {
 			final Value val = stmt.getObject();
 			assert isUri(val);
@@ -774,7 +828,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		addStatements(toAdd);
 	}
 
-	private void setIdentifier(Object entity, URI uri, EntityType<?> et) throws OntoDriverException {
+	private void setIdentifier(Object entity, URI uri, EntityType<?> et)
+			throws OntoDriverException {
 		final Field idField = et.getIdentifier().getJavaField();
 		final String strUri = uri != null ? uri.toString() : null;
 		try {
@@ -789,9 +844,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			} else if (java.net.URL.class == idField.getType()) {
 				idField.set(entity, new URL(strUri));
 			} else {
-				throw new IllegalArgumentException("Unknown identifier type: " + idField.getType());
+				throw new IllegalArgumentException("Unknown identifier type: "
+						+ idField.getType());
 			}
-		} catch (IllegalArgumentException | IllegalAccessException | MalformedURLException e) {
+		} catch (IllegalArgumentException | IllegalAccessException
+				| MalformedURLException e) {
 			throw new OntoDriverException("Unable to set entity identifier.", e);
 		}
 	}

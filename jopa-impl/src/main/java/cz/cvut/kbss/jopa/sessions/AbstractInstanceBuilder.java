@@ -7,18 +7,31 @@ import java.net.URI;
 
 abstract class AbstractInstanceBuilder {
 
+	protected boolean populates;
 	protected final CloneBuilderImpl builder;
 	protected final UnitOfWork uow;
 
 	AbstractInstanceBuilder() {
 		this.builder = null;
 		this.uow = null;
+		this.populates = false;
 	}
 
-	public AbstractInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
+	AbstractInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
 		super();
 		this.builder = builder;
 		this.uow = uow;
+		this.populates = false;
+	}
+
+	/**
+	 * Returns true if this builder instances automatically populates the
+	 * created instance's attribute.
+	 * 
+	 * @return boolean
+	 */
+	boolean populatesAttributes() {
+		return populates;
 	}
 
 	/**

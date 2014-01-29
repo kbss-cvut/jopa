@@ -115,7 +115,6 @@ public class DriverFactoryMock implements DriverFactory {
 
 	@Override
 	public DriverStatement createStatement(JopaStatement statement) throws OntoDriverException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

@@ -18,7 +18,8 @@ import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 
 public class ChangeManagerImpl implements ChangeManager {
 
-	private static final Logger LOG = Logger.getLogger(ChangeManagerImpl.class.getName());
+	private static final Logger LOG = Logger.getLogger(ChangeManagerImpl.class
+			.getName());
 	private Map<Object, Object> visitedObjects;
 
 	public ChangeManagerImpl() {
@@ -49,7 +50,8 @@ public class ChangeManagerImpl implements ChangeManager {
 		if (clone == null && original == null) {
 			return false;
 		}
-		if (clone == null && original != null || clone != null && original == null) {
+		if (clone == null && original != null || clone != null
+				&& original == null) {
 			return true;
 		}
 		if (visitedObjects.containsKey(clone)) {
@@ -68,7 +70,8 @@ public class ChangeManagerImpl implements ChangeManager {
 				}
 				Object clVal = f.get(clone);
 				Object origVal = f.get(original);
-				if ((clVal == null && origVal != null) || (clVal != null && origVal == null)) {
+				if ((clVal == null && origVal != null)
+						|| (clVal != null && origVal == null)) {
 					changes = true;
 					break;
 				}
@@ -84,6 +87,8 @@ public class ChangeManagerImpl implements ChangeManager {
 					}
 				} else if (clVal instanceof Collection) {
 					changes = hasCollectionChanged(clVal, origVal);
+				} else if (clVal instanceof Map) {
+					changes = hasMapChanges(clVal, origVal);
 				} else {
 					visitedObjects.put(clVal, clVal);
 					composedObjects.put(clVal, origVal);
@@ -98,7 +103,8 @@ public class ChangeManagerImpl implements ChangeManager {
 			}
 		} catch (IllegalAccessException e) {
 			throw new OWLPersistenceException(
-					"Exception caught when trying to check changes on entities.", e);
+					"Exception caught when trying to check changes on entities.",
+					e);
 		}
 		return changes;
 	}
@@ -132,6 +138,17 @@ public class ChangeManagerImpl implements ChangeManager {
 		return hasChanged;
 	}
 
+	private boolean hasMapChanges(Object clone, Object original) {
+		final Map<?, ?> cl = (Map<?, ?>) clone;
+		final Map<?, ?> orig = (Map<?, ?>) original;
+		if (orig.size() != cl.size()) {
+			return true;
+		}
+		return false;
+		// TODO Continue with this
+		// TODO Also move the has changes to the MapCloneBuilder
+	}
+
 	public ObjectChangeSet calculateChanges(ObjectChangeSet changeSet)
 			throws IllegalAccessException, IllegalArgumentException,
 			OWLInferredAttributeModifiedException {
@@ -163,7 +180,8 @@ public class ChangeManagerImpl implements ChangeManager {
 		}
 		Object original = changeSet.getChangedObject();
 		Object clone = changeSet.getCloneObject();
-		final List<Field> fields = CloneBuilderImpl.getAllFields(clone.getClass());
+		final List<Field> fields = CloneBuilderImpl.getAllFields(clone
+				.getClass());
 		boolean changes = false;
 		for (Field f : fields) {
 			if (!f.isAccessible()) {
@@ -192,6 +210,13 @@ public class ChangeManagerImpl implements ChangeManager {
 					}
 				} else if (clVal instanceof Collection) {
 					if (hasCollectionChanged(origVal, clVal)) {
+						changes = true;
+						r = new ChangeRecordImpl(attName, clVal);
+					} else {
+						continue;
+					}
+				} else if (clVal instanceof Map) {
+					if (hasMapChanges(origVal, clVal)) {
 						changes = true;
 						r = new ChangeRecordImpl(attName, clVal);
 					} else {
