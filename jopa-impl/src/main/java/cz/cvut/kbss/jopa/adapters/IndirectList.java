@@ -8,14 +8,15 @@ import java.util.ListIterator;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
-public class IndirectList<E> extends IndirectCollection implements List<E> {
+public class IndirectList<E> extends IndirectCollection<List<E>> implements
+		List<E> {
 
 	private final List<E> internalList;
 
 	/**
-	 * Private constructor to allow clone building.
+	 * No-arg constructor to allow clone building.
 	 */
-	private IndirectList() {
+	IndirectList() {
 		super();
 		this.internalList = new ArrayList<E>();
 	}
@@ -165,7 +166,7 @@ public class IndirectList<E> extends IndirectCollection implements List<E> {
 	}
 
 	@Override
-	public Collection<?> getReferencedCollection() {
+	public List<E> getReferencedCollection() {
 		return internalList;
 	}
 

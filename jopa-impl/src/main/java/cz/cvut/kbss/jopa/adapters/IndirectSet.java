@@ -7,14 +7,15 @@ import java.util.Set;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
-public class IndirectSet<E> extends IndirectCollection implements Set<E> {
+public class IndirectSet<E> extends IndirectCollection<Set<E>> implements
+		Set<E> {
 
 	private Set<E> internalSet;
 
 	/**
-	 * Private constructor to allow clone building.
+	 * No-arg constructor to allow clone building.
 	 */
-	private IndirectSet() {
+	IndirectSet() {
 		super();
 		this.internalSet = new HashSet<E>();
 	}
@@ -22,7 +23,8 @@ public class IndirectSet<E> extends IndirectCollection implements Set<E> {
 	public IndirectSet(Object owner, UnitOfWorkImpl uow, Set<E> referencedSet) {
 		super(owner, uow);
 		if (referencedSet == null) {
-			throw new NullPointerException("Null passed in as the referencedSet.");
+			throw new NullPointerException(
+					"Null passed in as the referencedSet.");
 		}
 		this.internalSet = referencedSet;
 	}
@@ -123,7 +125,7 @@ public class IndirectSet<E> extends IndirectCollection implements Set<E> {
 	}
 
 	@Override
-	public Collection<?> getReferencedCollection() {
+	public Set<E> getReferencedCollection() {
 		return internalSet;
 	}
 

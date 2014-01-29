@@ -1,10 +1,8 @@
 package cz.cvut.kbss.jopa.adapters;
 
-import java.util.Collection;
-
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
-public abstract class IndirectCollection {
+public abstract class IndirectCollection<T> {
 
 	protected final Object owner;
 	protected final UnitOfWorkImpl persistenceContext;
@@ -28,17 +26,24 @@ public abstract class IndirectCollection {
 	 */
 	protected IndirectCollection(Object owner, UnitOfWorkImpl persistenceContext) {
 		if (persistenceContext == null) {
-			throw new NullPointerException("Null passed in as persistenceContext.");
+			throw new NullPointerException(
+					"Null passed in as persistenceContext.");
 		}
 		this.owner = owner;
 		this.persistenceContext = persistenceContext;
 	}
 
 	protected void persistChange() {
-		if (persistenceContext.isInTransaction() && !persistenceContext.isInCommit()) {
+		if (persistenceContext.isInTransaction()
+				&& !persistenceContext.isInCommit()) {
 			persistenceContext.persistChangeInTransaction(owner);
 		}
 	}
 
-	public abstract Collection<?> getReferencedCollection();
+	/**
+	 * The returned type is determined by the instance type parameter.
+	 * 
+	 * @return The collection wrapped in this indirect collection
+	 */
+	public abstract T getReferencedCollection();
 }

@@ -33,7 +33,8 @@ import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
-public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory {
+public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork,
+		QueryFactory {
 
 	private final Map<Object, Object> cloneMapping;
 	private final Map<Object, Object> cloneToOriginals;
@@ -101,8 +102,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	@Override
 	public <T> T readObject(Class<T> cls, Object primaryKey) {
 		if (cls == null || primaryKey == null) {
-			throw new NullPointerException("Null passed to readObject. cls = " + cls
-					+ ", primaryKey = " + primaryKey);
+			throw new NullPointerException("Null passed to readObject. cls = "
+					+ cls + ", primaryKey = " + primaryKey);
 		}
 		return readObjectInternal(cls, primaryKey, null);
 	}
@@ -110,13 +111,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	@Override
 	public <T> T readObject(Class<T> cls, Object primaryKey, URI context) {
 		if (cls == null || primaryKey == null || context == null) {
-			throw new NullPointerException("Null passed to readObject. cls = " + cls
-					+ ", primaryKey = " + primaryKey + ", context = " + context);
+			throw new NullPointerException("Null passed to readObject. cls = "
+					+ cls + ", primaryKey = " + primaryKey + ", context = "
+					+ context);
 		}
 		return readObjectInternal(cls, primaryKey, context);
 	}
 
-	private <T> T readObjectInternal(Class<T> cls, Object primaryKey, URI context) {
+	private <T> T readObjectInternal(Class<T> cls, Object primaryKey,
+			URI context) {
 		assert cls != null;
 		assert primaryKey != null;
 		// First try to find the object among new uncommitted objects
@@ -161,7 +164,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			for (Object clone : getDeletedObjects().keySet()) {
 				Object original = cloneToOriginals.get(clone);
 				if (original == null) {
-					throw new OWLPersistenceException("Cannot find an original for clone!");
+					throw new OWLPersistenceException(
+							"Cannot find an original for clone!");
 				}
 				toDelete.put(clone, original);
 			}
@@ -175,14 +179,17 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 						continue;
 					}
 					Object original = cloneToOriginals.get(clone);
-					if (original == null && !getNewObjectsCloneToOriginal().containsKey(clone)) {
-						throw new OWLPersistenceException("Cannot find an original for clone!");
+					if (original == null
+							&& !getNewObjectsCloneToOriginal().containsKey(
+									clone)) {
+						throw new OWLPersistenceException(
+								"Cannot find an original for clone!");
 					}
 					if (original == null) {
 						continue; // It was a new object
 					}
-					ObjectChangeSet chSet = cloneBuilder.createObjectChangeSet(original, clone,
-							changeSet);
+					ObjectChangeSet chSet = cloneBuilder.createObjectChangeSet(
+							original, clone, changeSet);
 					chSet = getChangeManager().calculateChanges(chSet);
 					if (chSet != null) {
 						changeSet.addObjectChangeSet(chSet);
@@ -226,8 +233,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			}
 			getNewObjectsCloneToOriginal().put(clone, original);
 			getNewObjectsOriginalToClone().put(original, clone);
-			ObjectChangeSet oChangeSet = new ObjectChangeSetImpl(original, clone, true, changeSet,
-					c.getUri());
+			ObjectChangeSet oChangeSet = new ObjectChangeSetImpl(original,
+					clone, true, changeSet, c.getUri());
 			changeSet.addNewObjectChangeSet(oChangeSet);
 		}
 	}
@@ -256,7 +263,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			LOG.fine("UnitOfWork commit started.");
 		}
 		if (!isActive()) {
-			throw new OWLPersistenceException("Cannot commit inactive Unit of Work!");
+			throw new OWLPersistenceException(
+					"Cannot commit inactive Unit of Work!");
 		}
 		this.inCommit = true;
 		commitUnitOfWork();
@@ -270,7 +278,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			LOG.fine("UnitOfWork rollback started.");
 		}
 		if (!isActive()) {
-			throw new OWLPersistenceException("Cannot rollback inactive Unit of Work!");
+			throw new OWLPersistenceException(
+					"Cannot rollback inactive Unit of Work!");
 		}
 		rollbackInternal();
 		clear();
@@ -437,7 +446,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * @return The clone or null, if there is none.
 	 */
 	Object getCloneForOriginal(Object original) {
-		Iterator<Entry<Object, Object>> it = cloneToOriginals.entrySet().iterator();
+		Iterator<Entry<Object, Object>> it = cloneToOriginals.entrySet()
+				.iterator();
 		while (it.hasNext()) {
 			Entry<Object, Object> entry = it.next();
 			// We use IdentityMap, so we can use ==
@@ -561,7 +571,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		if (entity == null) {
 			throw new NullPointerException();
 		}
-		return (cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity));
+		return (cloneMapping.containsKey(entity) && !getDeletedObjects()
+				.containsKey(entity));
 	}
 
 	@Override
@@ -576,10 +587,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 	}
 
-	private boolean doesEntityExist(Object entity, Object primaryKey, URI context) {
+	private boolean doesEntityExist(Object entity, Object primaryKey,
+			URI context) {
 		assert entity != null;
 		assert context != null;
-		if (cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity)
+		if (cloneMapping.containsKey(entity)
+				&& !getDeletedObjects().containsKey(entity)
 				&& isInContext(context, entity)) {
 			return true;
 		}
@@ -589,7 +602,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			}
 			getLiveObjectCache().acquireReadLock();
 			try {
-				return getLiveObjectCache().contains(context, entity.getClass(), primaryKey);
+				return getLiveObjectCache().contains(context,
+						entity.getClass(), primaryKey);
 			} finally {
 				getLiveObjectCache().releaseReadLock();
 			}
@@ -608,7 +622,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 */
 	public void persistChangeInTransaction(Object entity) {
 		if (!isInTransaction()) {
-			throw new IllegalStateException("This unit of work is not in a transaction.");
+			throw new IllegalStateException(
+					"This unit of work is not in a transaction.");
 		}
 		storageMerge(getIdentifier(entity), entity);
 		setHasChanges(true);
@@ -645,7 +660,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 		// Remove the clones and originals of the deleted objects from the
 		// context
-		Iterator<?> deletedIt = getUowChangeSet().getDeletedObjects().keySet().iterator();
+		Iterator<?> deletedIt = getUowChangeSet().getDeletedObjects().keySet()
+				.iterator();
 		while (deletedIt.hasNext()) {
 			ObjectChangeSet ochSet = (ObjectChangeSet) deletedIt.next();
 			Object clone = ochSet.getCloneObject();
@@ -657,7 +673,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	@Override
 	public <T> T mergeDetached(T entity) {
 		if (entity == null) {
-			throw new NullPointerException("Null cannot be merged since it is not an entity.");
+			throw new NullPointerException(
+					"Null cannot be merged since it is not an entity.");
 		}
 		return mergeDetachedInternal(entity, null);
 	}
@@ -665,8 +682,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	@Override
 	public <T> T mergeDetached(T entity, URI contextUri) {
 		if (entity == null || contextUri == null) {
-			throw new NullPointerException("Null passed to mergeDetached: entity = " + entity
-					+ ", contextUri = " + contextUri);
+			throw new NullPointerException(
+					"Null passed to mergeDetached: entity = " + entity
+							+ ", contextUri = " + contextUri);
 		}
 		return mergeDetachedInternal(entity, contextUri);
 	}
@@ -675,11 +693,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		assert entity != null;
 		final IRI iri = getIdentifier(entity);
 		if (!storageContains(iri, contextUri)) {
-			throw new OWLPersistenceException("Entity " + entity + " not found in context "
-					+ contextUri);
+			throw new OWLPersistenceException("Entity " + entity
+					+ " not found in context " + contextUri);
 		}
 		if (contextUri == null) {
-			final ContextToEntity<?> c = storageFind(entity.getClass(), iri, null);
+			final ContextToEntity<?> c = storageFind(entity.getClass(), iri,
+					null);
 			contextUri = c.contextUri;
 		}
 		// This cast is OK, we just clone the entity instance
@@ -718,7 +737,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			Object original = it.next();
 			URI context;
 			try {
-				context = storageConnection.getSaveContextFor(original).getUri();
+				context = storageConnection.getSaveContextFor(original)
+						.getUri();
 			} catch (OntoDriverException e) {
 				throw new OWLPersistenceException(e);
 			}
@@ -776,7 +796,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	public Object registerObject(Object object) {
 		IRI primaryKey = getIdentifier(object);
 		if (primaryKey == null) {
-			throw new OWLPersistenceException("The specified object is not a valid entity.");
+			throw new OWLPersistenceException(
+					"The specified object is not a valid entity.");
 		}
 		Object clone = readObject(object.getClass(), primaryKey);
 		if (clone != null) {
@@ -796,7 +817,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			try {
 				storageConnection.close();
 			} catch (OntoDriverException e) {
-				LOG.log(Level.SEVERE, "Exception caugth when closing connection.", e);
+				LOG.log(Level.SEVERE,
+						"Exception caugth when closing connection.", e);
 			}
 		}
 		this.isActive = false;
@@ -806,7 +828,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	public Object revertObject(Object object) {
-		ObjectChangeSet chSet = new ObjectChangeSetImpl(object, getOriginal(object), false, null);
+		ObjectChangeSet chSet = new ObjectChangeSetImpl(object,
+				getOriginal(object), false, null);
 		try {
 			getChangeManager().calculateChanges(chSet);
 		} catch (IllegalAccessException e) {
@@ -836,7 +859,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	@Override
 	public void registerNewObject(Object entity) {
 		if (entity == null) {
-			throw new NullPointerException("Null passed to registerNewObject: entity " + entity);
+			throw new NullPointerException(
+					"Null passed to registerNewObject: entity " + entity);
 		}
 		registerNewObjectInternal(entity, null);
 	}
@@ -844,8 +868,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	@Override
 	public void registerNewObject(Object entity, URI context) {
 		if (entity == null || context == null) {
-			throw new NullPointerException("Null passed to registerNewObject: entity " + entity
-					+ ", context = " + context);
+			throw new NullPointerException(
+					"Null passed to registerNewObject: entity " + entity
+							+ ", context = " + context);
 		}
 		registerNewObjectInternal(entity, context);
 	}
@@ -873,8 +898,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		if (context == null) {
 			context = storageGetEntityContext(entity).getUri();
 		}
-		if ((doesEntityExist(entity, id, context) || storageContains(id, context))
-				&& !entity.getClass().isEnum()) {
+		if ((doesEntityExist(entity, id, context) || storageContains(id,
+				context)) && !entity.getClass().isEnum()) {
 			throw new OWLEntityExistsException("An entity with URI " + id
 					+ " is already persisted in context " + context);
 		}
@@ -1023,7 +1048,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 		try {
 			storageConnection.loadFieldValue(entity, field);
-			final URI context = storageConnection.getSaveContextFor(entity).getUri();
+			final URI context = storageConnection.getSaveContextFor(entity)
+					.getUri();
 			final Class<?> cls = field.getType();
 			if (isManagedType(cls)) {
 				final Object orig = field.get(entity);
@@ -1066,7 +1092,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	@Override
-	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass, URI contextUri) {
+	public <T> TypedQuery<T> createNativeQuery(String sparql,
+			Class<T> resultClass, URI contextUri) {
 		return queryFactory.createNativeQuery(sparql, resultClass, contextUri);
 	}
 
@@ -1076,7 +1103,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	@Override
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, URI contextUri) {
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass,
+			URI contextUri) {
 		return queryFactory.createQuery(query, resultClass, contextUri);
 	}
 
@@ -1115,17 +1143,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		if (entity == null || field == null) {
 			throw new NullPointerException();
 		}
+		if (!field.isAccessible()) {
+			field.setAccessible(true);
+		}
 		try {
-			if (Collection.class.isAssignableFrom(field.getType())) {
-				if (!field.isAccessible()) {
-					field.setAccessible(true);
-				}
-				Collection<?> col = (Collection<?>) field.get(entity);
-				if (col == null || col instanceof IndirectCollection) {
-					return;
-				}
-				Object indirectCollection = ((CloneBuilderImpl) cloneBuilder)
-						.createIndirectCollection(col, entity);
+			Object value = field.get(entity);
+			Object indirectCollection = null;
+			if (value == null || value instanceof IndirectCollection) {
+				return;
+			}
+			if (value instanceof Collection || value instanceof Map) {
+				indirectCollection = ((CloneBuilderImpl) cloneBuilder)
+						.createIndirectCollection(value, entity);
 				field.set(entity, indirectCollection);
 			}
 		} catch (IllegalAccessException e) {
@@ -1145,15 +1174,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		Field[] fields = entity.getClass().getDeclaredFields();
 		try {
 			for (Field f : fields) {
-				if (Collection.class.isAssignableFrom(f.getType())) {
-					if (!f.isAccessible()) {
-						f.setAccessible(true);
-					}
-					Collection<?> col = (Collection<?>) f.get(entity);
-					if (col == null || !(col instanceof IndirectCollection)) {
-						continue;
-					}
-					IndirectCollection indCol = (IndirectCollection) col;
+				if (!f.isAccessible()) {
+					f.setAccessible(true);
+				}
+				final Object ob = f.get(entity);
+				if (ob == null) {
+					continue;
+				}
+				if (ob instanceof IndirectCollection) {
+					IndirectCollection<?> indCol = (IndirectCollection<?>) ob;
 					f.set(entity, indCol.getReferencedCollection());
 				}
 			}
@@ -1175,8 +1204,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * @param primaryKey
 	 * @return Cached object or null
 	 */
-	private <T> ContextToEntity<T> getObjectFromCache(URI contextUri, Class<T> cls,
-			Object primaryKey) {
+	private <T> ContextToEntity<T> getObjectFromCache(URI contextUri,
+			Class<T> cls, Object primaryKey) {
 		assert cls != null;
 		assert primaryKey != null;
 		cacheManager.acquireReadLock();
@@ -1253,7 +1282,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 	}
 
-	private <T> ContextToEntity<T> storageFind(Class<T> cls, Object primaryKey, URI context) {
+	private <T> ContextToEntity<T> storageFind(Class<T> cls, Object primaryKey,
+			URI context) {
 		assert cls != null;
 		assert primaryKey != null;
 		try {
@@ -1262,7 +1292,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			if (context == null) {
 				result = storageConnection.find(cls, primaryKey);
 				if (result != null) {
-					context = storageConnection.getSaveContextFor(result).getUri();
+					context = storageConnection.getSaveContextFor(result)
+							.getUri();
 				}
 				res = new ContextToEntity<T>(context, result);
 			} else {
@@ -1337,7 +1368,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 	}
 
-	private <T> void storageRegisterCloneInConnection(Object clone, URI contextUri) {
+	private <T> void storageRegisterCloneInConnection(Object clone,
+			URI contextUri) {
 		assert clone != null;
 		assert contextUri != null;
 		try {

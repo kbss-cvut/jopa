@@ -3,12 +3,10 @@ package cz.cvut.kbss.jopa.sessions;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -20,23 +18,10 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
  * @author kidney
  * 
  */
-public class InstantiationHelper {
+class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 
-	private final CloneBuilder builder;
-	private final CollectionInstantiationHelper collectionBuilder;
-	private final UnitOfWork uow;
-
-	public InstantiationHelper() {
-		this.builder = null;
-		this.collectionBuilder = null;
-		this.uow = null;
-	}
-
-	public InstantiationHelper(CloneBuilder builder, UnitOfWork uow) {
-		super();
-		this.builder = builder;
-		this.uow = uow;
-		this.collectionBuilder = new CollectionInstantiationHelper(this);
+	DefaultInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
+		super(builder, uow);
 	}
 
 	/**
@@ -45,14 +30,10 @@ public class InstantiationHelper {
 	 * @param javaClass
 	 * @return New object of the given class.
 	 */
-	public Object buildNewInstance(final Class<?> javaClass, Object original, URI contextUri) {
+	Object buildClone(final Class<?> javaClass, Object original,
+			URI contextUri) {
 		if (javaClass == null || original == null) {
 			return null;
-		}
-		if (original instanceof Collection) {
-			// According to eclipselink, instanceof is much faster than
-			// isAssignableFrom
-			return collectionBuilder.buildNewInstance(original, contextUri);
 		}
 		Object newInstance = buildNewInstanceUsingDefaultConstructor(javaClass);
 		if (newInstance == null) {
@@ -71,7 +52,8 @@ public class InstantiationHelper {
 					} else {
 						try {
 							Object[] params = new Object[1];
-							params[0] = original.getClass().getDeclaredField(f.getName());
+							params[0] = original.getClass().getDeclaredField(
+									f.getName());
 							newInstance = c.newInstance(params);
 							if (newInstance != null) {
 								return newInstance;
@@ -79,7 +61,8 @@ public class InstantiationHelper {
 						} catch (SecurityException e) {
 							try {
 								newInstance = AccessController
-										.doPrivileged(new PrivilegedInstanceCreator(c));
+										.doPrivileged(new PrivilegedInstanceCreator(
+												c));
 							} catch (PrivilegedActionException ex) {
 								throw new OWLPersistenceException(ex);
 							}
@@ -105,7 +88,8 @@ public class InstantiationHelper {
 						} catch (SecurityException e) {
 							try {
 								newInstance = AccessController
-										.doPrivileged(new PrivilegedInstanceCreator(c));
+										.doPrivileged(new PrivilegedInstanceCreator(
+												c));
 							} catch (PrivilegedActionException ex) {
 								throw new OWLPersistenceException(ex);
 							}
@@ -138,7 +122,8 @@ public class InstantiationHelper {
 	 * @return New object of the given class, or null if the class has no
 	 *         no-argument constructor.
 	 */
-	private Object buildNewInstanceUsingDefaultConstructor(final Class<?> javaClass) {
+	private Object buildNewInstanceUsingDefaultConstructor(
+			final Class<?> javaClass) {
 		final Constructor<?> c = getDeclaredConstructorFor(javaClass, null);
 		Object newInstance = null;
 		if (c != null) {
@@ -146,7 +131,8 @@ public class InstantiationHelper {
 				newInstance = c.newInstance((Object[]) null);
 			} catch (SecurityException e) {
 				try {
-					newInstance = AccessController.doPrivileged(new PrivilegedInstanceCreator(c));
+					newInstance = AccessController
+							.doPrivileged(new PrivilegedInstanceCreator(c));
 				} catch (PrivilegedActionException ex) {
 					return null;
 				}
@@ -161,56 +147,5 @@ public class InstantiationHelper {
 			}
 		}
 		return newInstance;
-	}
-
-	UnitOfWork getUnitOfWork() {
-		return uow;
-	}
-
-	CloneBuilderImpl getCloneBuilder() {
-		return (CloneBuilderImpl) builder;
-	}
-
-	/**
-	 * Return the declared constructor for the specified class. If the
-	 * constructor is not accessible, it is set accessible. If there is no
-	 * constructor corresponding to the specified argument list, null is
-	 * returned.
-	 * 
-	 * @param javaClass
-	 *            The class of the constructor.
-	 * @param args
-	 *            An Array of classes, which should take the constructor as
-	 *            parameters.
-	 * @return Constructor<?>
-	 * @throws SecurityException
-	 *             If the security check denies access to the constructor.
-	 */
-	public static Constructor<?> getDeclaredConstructorFor(final Class<?> javaClass, Class<?>[] args)
-			throws SecurityException {
-		Constructor<?> c = null;
-		try {
-			c = javaClass.getDeclaredConstructor(args);
-			if (c == null) {
-				return null;
-			}
-			if (!c.isAccessible()) {
-				c.setAccessible(true);
-			}
-		} catch (NoSuchMethodException e) {
-			return null;
-		}
-		return c;
-	}
-
-	/**
-	 * Checks if the specified field was declared static in its class.
-	 * 
-	 * @param f
-	 *            The field to examine.
-	 * @return True when the Field is static.
-	 */
-	private static boolean isFieldStatic(final Field f) {
-		return Modifier.isStatic(f.getModifiers());
 	}
 }

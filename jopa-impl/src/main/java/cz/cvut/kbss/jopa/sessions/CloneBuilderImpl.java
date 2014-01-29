@@ -24,6 +24,7 @@ import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.adapters.IndirectList;
+import cz.cvut.kbss.jopa.adapters.IndirectMap;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Types;
@@ -31,7 +32,8 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 public class CloneBuilderImpl implements CloneBuilder {
 
-	private static Logger log = Logger.getLogger(CloneBuilderImpl.class.getName());
+	private static final Logger LOG = Logger.getLogger(CloneBuilderImpl.class
+			.getName());
 
 	private static final Set<Class<?>> WRAPPER_TYPES = getWrapperTypes();
 
@@ -39,7 +41,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 	// process. We use this to prevent cloning already cloned objects.
 	private final Map<Object, Object> visitedObjects;
 	private final Map<URI, Map<Object, Object>> visitedEntities;
-	private InstantiationHelper instantiationHelper;
+
+	private final Builders builders;
 
 	private final UnitOfWorkImpl uow;
 
@@ -47,17 +50,19 @@ public class CloneBuilderImpl implements CloneBuilder {
 		this.uow = null;
 		this.visitedObjects = new IdentityHashMap<Object, Object>();
 		this.visitedEntities = new HashMap<URI, Map<Object, Object>>();
+		this.builders = new Builders();
 	}
 
 	public CloneBuilderImpl(UnitOfWorkImpl uow) {
 		this.uow = uow;
 		this.visitedObjects = new IdentityHashMap<Object, Object>();
 		this.visitedEntities = new HashMap<URI, Map<Object, Object>>();
+		this.builders = new Builders();
 	}
 
 	public Object buildClone(final Object original, final URI contextUri) {
-		if (log.isLoggable(Level.FINER)) {
-			log.finer("Cloning object...");
+		if (LOG.isLoggable(Level.FINER)) {
+			LOG.finer("Cloning object...");
 		}
 		if (original == null || contextUri == null) {
 			throw new NullPointerException();
@@ -69,18 +74,19 @@ public class CloneBuilderImpl implements CloneBuilder {
 			return uow.getCloneForOriginal(original);
 		}
 		final Class<?> cls = original.getClass();
-		if (uow.isManagedType(cls)) {
+		final boolean managed = isTypeManaged(cls);
+		if (managed) {
 			final IRI pk = getIdentifier(original);
 			final Object visitedClone = getVisitedEntity(contextUri, pk);
 			if (visitedClone != null) {
 				return visitedClone;
 			}
 		}
-		Object clone = getInstantiationHelper().buildNewInstance(original.getClass(), original,
-				contextUri);
+		Object clone = getInstanceBuilder(original).buildClone(
+				original.getClass(), original, contextUri);
 		visitedObjects.put(original, clone);
 		populateAttributes(original, clone, contextUri);
-		if (uow.isManagedType(cls)) {
+		if (managed) {
 			final IRI pk = getIdentifier(clone);
 			putVisitedEntity(contextUri, pk, clone);
 		}
@@ -96,7 +102,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 	 * @param clone
 	 *            Object
 	 */
-	private void populateAttributes(final Object original, Object clone, final URI contextUri) {
+	private void populateAttributes(final Object original, Object clone,
+			final URI contextUri) {
 		Class<?> theClass = original.getClass();
 		List<Field> fields = new ArrayList<Field>();
 		fields.addAll(Arrays.asList(theClass.getDeclaredFields()));
@@ -113,52 +120,47 @@ public class CloneBuilderImpl implements CloneBuilder {
 				if (!f.isAccessible()) {
 					f.setAccessible(true);
 				}
-				if (isPrimitiveOrString(f.getType())) {
+				final Object origVal = f.get(original);
+				if (origVal == null) {
+					continue;
+				}
+				final Class<?> origClass = origVal.getClass();
+				if (isPrimitiveOrString(origClass)) {
 					// The field is an immutable type
-					f.set(clone, f.get(original));
-				} else if (f.get(original) instanceof Collection) {
-					final Collection<?> origCol = (Collection<?>) f.get(original);
-					Collection<?> clonedCollection;
-					if (origCol instanceof IndirectCollection) {
-						// Indirect collections are cloned differently (to
-						// prevent accidental updates)
-						IndirectCollection ind = (IndirectCollection) origCol;
-						clonedCollection = (Collection<?>) getInstantiationHelper()
-								.buildNewInstance(f.getType(), ind.getReferencedCollection(),
-										contextUri);
-					} else {
-						clonedCollection = (Collection<?>) getInstantiationHelper()
-								.buildNewInstance(f.getType(), origCol, contextUri);
-					}
-					Collection<?> toUse = createIndirectCollection(clonedCollection, clone);
+					f.set(clone, origVal);
+				} else if (origVal instanceof Collection
+						|| origVal instanceof Map) {
+					// Collection or a Map
+					final Object clonedCollection = getInstanceBuilder(origVal)
+							.buildClone(origClass, origVal, contextUri);
+					Object toUse = createIndirectCollection(clonedCollection,
+							clone);
 					f.set(clone, toUse);
 				} else if (f.getType().isArray()) {
-					Object[] arr = cloneArray(f.get(original), contextUri);
+					Object[] arr = cloneArray(origVal, contextUri);
 					f.set(clone, arr);
 				} else {
 					// Else we have a relationship and we need to clone its
 					// target as well
-					Object attValue = f.get(original);
-					if (attValue == null) {
+					if (visitedObjects.containsKey(origVal)) {
+						f.set(clone, visitedObjects.get(origVal));
 						continue;
 					}
-					if (visitedObjects.containsKey(attValue)) {
-						f.set(clone, visitedObjects.get(attValue));
-						continue;
-					}
-					if (uow.containsOriginal(attValue)) {
+					if (uow.containsOriginal(origVal)) {
 						// If the reference is already managed
-						f.set(clone, uow.getCloneForOriginal(attValue));
+						f.set(clone, uow.getCloneForOriginal(origVal));
 						continue;
 					}
 					Object toAssign = null;
-					if (uow.isManagedType(attValue.getClass())) {
-						final IRI pk = getIdentifier(attValue);
-						final Map<Object, Object> m = visitedEntities.get(contextUri);
-						toAssign = (m != null && m.containsKey(pk)) ? m.get(pk) : uow
-								.registerExistingObject(attValue, contextUri);
+					if (isTypeManaged(origClass)) {
+						final IRI pk = getIdentifier(origVal);
+						final Map<Object, Object> m = visitedEntities
+								.get(contextUri);
+						toAssign = (m != null && m.containsKey(pk)) ? m.get(pk)
+								: uow.registerExistingObject(origVal,
+										contextUri);
 					} else {
-						toAssign = buildClone(attValue, contextUri);
+						toAssign = buildClone(origVal, contextUri);
 					}
 					f.set(clone, toAssign);
 				}
@@ -206,7 +208,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 			return clonedArr;
 		} else {
 			for (int i = 0; i < clonedArr.length; i++) {
-				clonedArr[i] = originalArr[i] == null ? null : buildClone(originalArr[i], contextUri);
+				clonedArr[i] = originalArr[i] == null ? null : buildClone(
+						originalArr[i], contextUri);
 			}
 		}
 		return clonedArr;
@@ -242,12 +245,13 @@ public class CloneBuilderImpl implements CloneBuilder {
 		if (original == null) {
 			return null;
 		}
-		ObjectChangeSet chs = new ObjectChangeSetImpl(original, clone, false, changeSet);
+		ObjectChangeSet chs = new ObjectChangeSetImpl(original, clone, false,
+				changeSet);
 		return chs;
 	}
 
-	public Object mergeChanges(Object original, Object clone, ObjectChangeSet changeSet,
-			MergeManager mergeManager) {
+	public Object mergeChanges(Object original, Object clone,
+			ObjectChangeSet changeSet, MergeManager mergeManager) {
 		Map<String, ChangeRecord> changes = changeSet.getAttributesToChange();
 		try {
 			for (String att : changes.keySet()) {
@@ -266,15 +270,18 @@ public class CloneBuilderImpl implements CloneBuilder {
 					if (newVal == null) {
 						f.set(original, null);
 					} else {
-						mergeCollections((Collection<?>) origVal, (Collection<?>) newVal);
+						mergeCollections((Collection<?>) origVal,
+								(Collection<?>) newVal);
 						final Types annotation = f.getAnnotation(Types.class);
 						if (annotation != null) {
 							checkForNewTypes((Collection<?>) newVal);
 						}
 					}
-				} else if (origVal != null && newVal != null && this.uow.containsOriginal(origVal)) {
+				} else if (origVal != null && newVal != null
+						&& this.uow.containsOriginal(origVal)) {
 					this.mergeChangesOnManaged(origVal, newVal);
-				} else if (origVal != null && newVal != null && containsManagedObjects(origVal)) {
+				} else if (origVal != null && newVal != null
+						&& containsManagedObjects(origVal)) {
 					this.mergeChangesOnManaged(origVal, newVal);
 				} else {
 					// Otherwise we can simply assign the new value
@@ -305,8 +312,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-	protected boolean containsManagedObjects(Object entity) throws IllegalArgumentException,
-			IllegalAccessException {
+	protected boolean containsManagedObjects(Object entity)
+			throws IllegalArgumentException, IllegalAccessException {
 		Class<?> cls = entity.getClass();
 		List<Field> fields = getAllFields(cls);
 		for (Field f : fields) {
@@ -321,7 +328,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 			if (val instanceof Collection) {
 				Collection<?> c = (Collection<?>) val;
 				Iterator<?> it = c.iterator();
-				if (it.hasNext() && this.uow.containsOriginal(it.next())) {
+				if (it.hasNext() && uow.containsOriginal(it.next())) {
 					return true;
 				}
 			}
@@ -345,11 +352,13 @@ public class CloneBuilderImpl implements CloneBuilder {
 			}
 			Object clVal = f.get(clone);
 			Object origVal = f.get(original);
-			if (!(clVal instanceof Collection) && !uow.containsOriginal(origVal)) {
+			if (!(clVal instanceof Collection)
+					&& !uow.containsOriginal(origVal)) {
 				f.set(original, clVal);
 			} else {
 				if (clVal instanceof Collection) {
-					mergeCollections((Collection<?>) origVal, (Collection<?>) clVal);
+					mergeCollections((Collection<?>) origVal,
+							(Collection<?>) clVal);
 				} else {
 					mergeChangesOnManaged(origVal, clVal);
 				}
@@ -429,11 +438,12 @@ public class CloneBuilderImpl implements CloneBuilder {
 		return EntityPropertiesUtils.getPrimaryKey(entity, uow.getMetamodel());
 	}
 
-	protected InstantiationHelper getInstantiationHelper() {
-		if (instantiationHelper == null) {
-			this.instantiationHelper = new InstantiationHelper(this, uow);
-		}
-		return instantiationHelper;
+	private AbstractInstanceBuilder getInstanceBuilder(Object toClone) {
+		return builders.getBuilder(toClone);
+	}
+
+	boolean isTypeManaged(Class<?> cls) {
+		return uow.isManagedType(cls);
 	}
 
 	public void reset() {
@@ -441,14 +451,17 @@ public class CloneBuilderImpl implements CloneBuilder {
 		visitedEntities.clear();
 	}
 
-	<E> Collection<E> createIndirectCollection(Collection<E> c, Object owner) {
-		Collection<E> res = null;
+	IndirectCollection<?> createIndirectCollection(Object c, Object owner) {
+		IndirectCollection<?> res = null;
 		if (c instanceof List) {
-			res = new IndirectList<E>(owner, uow, (List<E>) c);
+			res = new IndirectList<>(owner, uow, (List<?>) c);
 		} else if (c instanceof Set) {
-			res = new IndirectSet<E>(owner, uow, (Set<E>) c);
+			res = new IndirectSet<>(owner, uow, (Set<?>) c);
+		} else if (c instanceof Map) {
+			res = new IndirectMap<>(owner, uow, (Map<?, ?>) c);
 		} else {
-			throw new UnsupportedOperationException("Maps are not supported yet.");
+			throw new UnsupportedOperationException(
+					"Unsupported collection type " + c.getClass());
 		}
 		return res;
 	}
@@ -468,7 +481,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 		if (collection.isEmpty()) {
 			return;
 		}
-		final Set<URI> signature = uow.getMetamodel().getModuleExtractionExtraSignature();
+		final Set<URI> signature = uow.getMetamodel()
+				.getModuleExtractionExtraSignature();
 		for (Object elem : collection) {
 			final URI u = EntityPropertiesUtils.getValueAsURI(elem);
 			if (!signature.contains(u)) {
@@ -481,7 +495,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 		Annotation[] annots = f.getAnnotations();
 		try {
 			for (Annotation a : annots) {
-				Method m = a.getClass().getDeclaredMethod("inferred", (Class<?>[]) null);
+				Method m = a.getClass().getDeclaredMethod("inferred",
+						(Class<?>[]) null);
 				return (Boolean) m.invoke(a, (Object[]) null);
 			}
 		} catch (NoSuchMethodException e) {
@@ -537,4 +552,33 @@ public class CloneBuilderImpl implements CloneBuilder {
 		return ret;
 	}
 
+	private final class Builders {
+		private AbstractInstanceBuilder defaultBuilder;
+		// Lists and Sets
+		private AbstractInstanceBuilder collectionBuilder;
+		private AbstractInstanceBuilder mapBuilder;
+
+		private Builders() {
+			this.defaultBuilder = new DefaultInstanceBuilder(
+					CloneBuilderImpl.this, uow);
+		}
+
+		private AbstractInstanceBuilder getBuilder(Object toClone) {
+			if (toClone instanceof Map) {
+				if (mapBuilder == null) {
+					this.mapBuilder = new MapInstanceBuilder(
+							CloneBuilderImpl.this, uow);
+				}
+				return mapBuilder;
+			} else if (toClone instanceof Collection) {
+				if (collectionBuilder == null) {
+					this.collectionBuilder = new CollectionInstanceBuilder(
+							CloneBuilderImpl.this, uow);
+				}
+				return collectionBuilder;
+			} else {
+				return defaultBuilder;
+			}
+		}
+	}
 }
