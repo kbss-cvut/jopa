@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
@@ -71,8 +72,14 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 				return Collections.EMPTY_SET;
 			}
 			Constructor<?> c = null;
-			final Object element = container.iterator().next();
+			Object element = container.iterator().next();
 			Object[] params = new Object[1];
+			if (!CloneBuilderImpl.isPrimitiveOrString(element.getClass())) {
+				element = builder.buildClone(element, contextUri);
+				if (element instanceof Collection || element instanceof Map) {
+					element = builder.createIndirectCollection(element, cloneOwner);
+				}
+			}
 			params[0] = element;
 			if (singletonListClass.isInstance(container)) {
 				c = getFirstDeclaredConstructorFor(singletonListClass);
@@ -186,7 +193,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 				clone = uow.registerExistingObject(obj, contextUri);
 			} else {
 				clone = builder.buildClone(obj, contextUri);
-				if (clone instanceof IndirectCollection) {
+				if (clone instanceof Collection || clone instanceof Map) {
 					clone = builder.createIndirectCollection(clone, cloneOwner);
 				}
 			}
@@ -197,7 +204,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	@Override
 	void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue)
 			throws IllegalArgumentException, IllegalAccessException {
-		assert originalValue instanceof Collection;
+		assert (originalValue == null || originalValue instanceof Collection);
 		assert cloneValue instanceof Collection;
 
 		Collection<Object> orig = (Collection<Object>) originalValue;

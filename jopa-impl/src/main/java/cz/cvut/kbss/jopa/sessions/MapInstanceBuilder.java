@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +36,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 		clone = cloneUsingDefaultConstructor(cloneOwner, origCls, orig, contextUri);
 		if (clone == null) {
 			if (singletonMapClass.isInstance(orig)) {
-				clone = buildSingletonClone(orig, contextUri);
+				clone = buildSingletonClone(cloneOwner, orig, contextUri);
 			} else {
 				throw new IllegalArgumentException("Unsupported map type " + origCls);
 			}
@@ -85,7 +86,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 		return result;
 	}
 
-	private Map<?, ?> buildSingletonClone(Map<?, ?> orig, URI contextUri) {
+	private Map<?, ?> buildSingletonClone(Object cloneOwner, Map<?, ?> orig, URI contextUri) {
 		final Constructor<?> c = getFirstDeclaredConstructorFor(singletonMapClass);
 		if (!c.isAccessible()) {
 			c.setAccessible(true);
@@ -95,6 +96,9 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 				: cloneObject(e.getKey(), contextUri);
 		Object value = CloneBuilderImpl.isPrimitiveOrString(e.getValue().getClass()) ? e.getValue()
 				: cloneObject(e.getValue(), contextUri);
+		if (value instanceof Collection || value instanceof Map) {
+			value = builder.createIndirectCollection(value, cloneOwner);
+		}
 		try {
 			return (Map<?, ?>) c.newInstance(key, value);
 		} catch (IllegalAccessException ex) {
@@ -132,7 +136,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 				key = cloneObject(e.getKey(), contextUri);
 				value = valuePrimitive ? e.getValue() : cloneObject(e.getValue(), contextUri);
 			}
-			if (value instanceof IndirectCollection) {
+			if (value instanceof Collection || value instanceof Map) {
 				value = builder.createIndirectCollection(value, cloneOwner);
 			}
 			m.put(key, value);

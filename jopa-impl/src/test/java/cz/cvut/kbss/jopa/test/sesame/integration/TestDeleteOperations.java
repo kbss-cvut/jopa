@@ -30,6 +30,7 @@ import cz.cvut.kbss.jopa.test.OWLClassG;
 import cz.cvut.kbss.jopa.test.OWLClassH;
 import cz.cvut.kbss.jopa.test.OWLClassI;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
+import cz.cvut.kbss.jopa.test.utils.Generators;
 import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.SesameNativeStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
@@ -181,7 +182,7 @@ public class TestDeleteOperations {
 		LOG.config("Test: remove entity from simple list.");
 		em = TestEnvironment.getPersistenceConnector("SesameRemoveFromSimpleList", storages, true,
 				properties);
-		entityC.setSimpleList(createSimpleList());
+		entityC.setSimpleList(Generators.createSimpleList(5));
 		em.getTransaction().begin();
 		em.persist(entityC);
 		for (OWLClassA a : entityC.getSimpleList()) {
@@ -218,7 +219,7 @@ public class TestDeleteOperations {
 		LOG.config("Test: remove entity from referenced list.");
 		em = TestEnvironment.getPersistenceConnector("SesameRemoveFromReferencedList", storages,
 				true, properties);
-		entityC.setReferencedList(createReferencedList());
+		entityC.setReferencedList(Generators.createReferencedList(10));
 		em.getTransaction().begin();
 		em.persist(entityC);
 		for (OWLClassA a : entityC.getReferencedList()) {
@@ -255,8 +256,8 @@ public class TestDeleteOperations {
 		LOG.config("Test: remove owner of simple and referenced list.");
 		em = TestEnvironment.getPersistenceConnector("SesameRemoveListOwner", storages, true,
 				properties);
-		entityC.setSimpleList(createSimpleList());
-		entityC.setReferencedList(createReferencedList());
+		entityC.setSimpleList(Generators.createSimpleList());
+		entityC.setReferencedList(Generators.createReferencedList());
 		final URI ctx = em.getAvailableContexts().get(em.getAvailableContexts().size() - 1)
 				.getUri();
 		em.getTransaction().begin();
@@ -282,33 +283,6 @@ public class TestDeleteOperations {
 		for (OWLClassA a : entityC.getReferencedList()) {
 			assertNotNull(em.find(OWLClassA.class, a.getUri(), ctx));
 		}
-	}
-
-	private static List<OWLClassA> createSimpleList() {
-		final List<OWLClassA> lst = new ArrayList<>(5);
-		int counter = 110;
-		for (int i = 0; i < 5; i++) {
-			final OWLClassA a = new OWLClassA();
-			a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityASimple"
-					+ counter));
-			a.setStringAttribute("stringAttributeeee" + counter++);
-			lst.add(a);
-		}
-		return lst;
-	}
-
-	private static List<OWLClassA> createReferencedList() {
-		final List<OWLClassA> lst = new ArrayList<>(5);
-		int counter = 101;
-		for (int i = 0; i < 5; i++) {
-			final OWLClassA a = new OWLClassA();
-			a.setUri(URI
-					.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAReferenced"
-							+ counter));
-			a.setStringAttribute("stringAttributeeee" + counter++);
-			lst.add(a);
-		}
-		return lst;
 	}
 
 	private static List<StorageConfig> initStorages() {
