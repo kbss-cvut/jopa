@@ -113,10 +113,8 @@ public class CloneBuilderTest {
 	public void testCloneCollection() {
 		final OWLClassA clone = (OWLClassA) builder.buildClone(testEntity, DEFAULT_URI);
 		assertEquals(testEntity.getTypes().size(), clone.getTypes().size());
-		Iterator<String> it1 = testEntity.getTypes().iterator();
-		Iterator<String> it2 = clone.getTypes().iterator();
-		while (it1.hasNext() && it2.hasNext()) {
-			assertEquals(it1.next(), it2.next());
+		for (String t : testEntity.getTypes()) {
+			assertTrue(clone.getTypes().contains(t));
 		}
 	}
 

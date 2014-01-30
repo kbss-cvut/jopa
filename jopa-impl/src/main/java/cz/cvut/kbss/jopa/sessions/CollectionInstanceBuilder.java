@@ -1,16 +1,24 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 /**
  * Special class for cloning collections. Introduced because some Java
@@ -23,12 +31,9 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
  */
 class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 
-	private static final Class<?> singletonListClass = Collections
-			.singletonList(null).getClass();
-	private static final Class<?> singletonSetClass = Collections.singleton(
-			null).getClass();
-	private static final Class<?> arrayAsListClass = Arrays
-			.asList(new Object()).getClass();
+	private static final Class<?> singletonListClass = Collections.singletonList(null).getClass();
+	private static final Class<?> singletonSetClass = Collections.singleton(null).getClass();
+	private static final Class<?> arrayAsListClass = Arrays.asList(new Object()).getClass();
 
 	CollectionInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
 		super(builder, uow);
@@ -47,7 +52,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 * @return A deep clone of the specified collection
 	 */
 	@Override
-	Object buildClone(Class<?> origCls, Object collection, URI contextUri)
+	Object buildClone(Object cloneOwner, Class<?> origCls, Object collection, URI contextUri)
 			throws OWLPersistenceException {
 		assert (collection instanceof Collection);
 		Collection<?> container = (Collection<?>) collection;
@@ -57,7 +62,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 			origCls = container.getClass();
 		}
 		Collection<?> clone = null;
-		clone = cloneUsingDefaultConstructor(container, contextUri);
+		clone = cloneUsingDefaultConstructor(cloneOwner, container, contextUri);
 		if (clone == null) {
 			if (Collections.EMPTY_LIST == container) {
 				return Collections.EMPTY_LIST;
@@ -77,9 +82,8 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 				c = getFirstDeclaredConstructorFor(arrayAsListClass);
 				params[0] = builder.cloneArray(container.toArray(), contextUri);
 			} else {
-				throw new OWLPersistenceException(
-						"Encountered unsupported type of collection: "
-								+ container.getClass());
+				throw new OWLPersistenceException("Encountered unsupported type of collection: "
+						+ container.getClass());
 			}
 			try {
 				if (!c.isAccessible()) {
@@ -113,20 +117,28 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 *            The collection to clone.
 	 * @return
 	 */
-	private Collection<?> cloneUsingDefaultConstructor(Collection<?> container,
+	private Collection<?> cloneUsingDefaultConstructor(Object cloneOwner, Collection<?> container,
 			URI contextUri) {
 		Class<?> javaClass = container.getClass();
+		Collection<?> result = createNewInstance(javaClass, container.size());
+		if (result != null) {
+			// Makes shallow copy
+			cloneCollectionContent(cloneOwner, container, result, contextUri);
+		}
+		return result;
+	}
+
+	private Collection<?> createNewInstance(Class<?> type, int size) {
 		Constructor<?> ctor = null;
 		Object[] params = null;
 		Class<?>[] types = { int.class };
 		// Look for constructor taking initial size as parameter
-		ctor = getDeclaredConstructorFor(javaClass, types);
+		ctor = getDeclaredConstructorFor(type, types);
 		if (ctor != null) {
 			params = new Object[1];
-			params[0] = Integer.valueOf(container.size());
+			params[0] = Integer.valueOf(size);
 		} else {
-			ctor = DefaultInstanceBuilder.getDeclaredConstructorFor(javaClass,
-					null);
+			ctor = DefaultInstanceBuilder.getDeclaredConstructorFor(type, null);
 		}
 		if (ctor == null) {
 			return null;
@@ -141,15 +153,13 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 				result = (Collection<?>) AccessController
 						.doPrivileged(new PrivilegedInstanceCreator(ctor));
 			} catch (PrivilegedActionException ex) {
-				return null;
+				// Do nothing
 			}
 		} catch (IllegalArgumentException e) {
 			throw new OWLPersistenceException(e);
 		} catch (InvocationTargetException e) {
 			throw new OWLPersistenceException(e);
 		}
-		// Makes shallow copy
-		cloneCollectionContent(container, result, contextUri);
 		return result;
 	}
 
@@ -160,7 +170,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 * @param source
 	 *            The collection to clone.
 	 */
-	private void cloneCollectionContent(Collection<?> source,
+	private void cloneCollectionContent(Object cloneOwner, Collection<?> source,
 			Collection<?> target, URI contextUri) {
 		if (source.isEmpty()) {
 			return;
@@ -176,8 +186,78 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 				clone = uow.registerExistingObject(obj, contextUri);
 			} else {
 				clone = builder.buildClone(obj, contextUri);
+				if (clone instanceof IndirectCollection) {
+					clone = builder.createIndirectCollection(clone, cloneOwner);
+				}
 			}
 			tg.add(clone);
+		}
+	}
+
+	@Override
+	void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue)
+			throws IllegalArgumentException, IllegalAccessException {
+		assert originalValue instanceof Collection;
+		assert cloneValue instanceof Collection;
+
+		Collection<Object> orig = (Collection<Object>) originalValue;
+		Collection<Object> clone = (Collection<Object>) cloneValue;
+		if (clone instanceof IndirectCollection) {
+			clone = ((IndirectCollection<Collection<Object>>) clone).getReferencedCollection();
+		}
+		if (originalValue == null) {
+			orig = (Collection<Object>) createNewInstance(clone.getClass(), clone.size());
+			if (orig == null) {
+				orig = createDefaultCollection(clone.getClass());
+			}
+			field.set(target, orig);
+		}
+		orig.clear();
+		if (clone.isEmpty()) {
+			return;
+		}
+		final Iterator<Object> it = clone.iterator();
+		while (it.hasNext()) {
+			final Object cl = it.next();
+			orig.add(uow.contains(cl) ? builder.getOriginal(cl) : cl);
+		}
+		final Types types = field.getAnnotation(Types.class);
+		if (types != null) {
+			checkForNewTypes(orig);
+		}
+	}
+
+	private Collection<Object> createDefaultCollection(Class<?> cls) {
+		if (Set.class.isAssignableFrom(cls)) {
+			return new HashSet<>();
+		} else if (List.class.isAssignableFrom(cls)) {
+			return new ArrayList<>();
+		} else {
+			throw new IllegalArgumentException("Unsupported type of collection: " + cls);
+		}
+	}
+
+	/**
+	 * Checks if new types were added to the specified collection. </p>
+	 * 
+	 * If so, they are added to the module extraction signature managed by
+	 * Metamodel.
+	 * 
+	 * @param collection
+	 *            The collection to check
+	 * @see Types
+	 */
+	private void checkForNewTypes(Collection<?> collection) {
+		assert collection != null;
+		if (collection.isEmpty()) {
+			return;
+		}
+		final Set<URI> signature = builder.getMetamodel().getModuleExtractionExtraSignature();
+		for (Object elem : collection) {
+			final URI u = EntityPropertiesUtils.getValueAsURI(elem);
+			if (!signature.contains(u)) {
+				builder.getMetamodel().addUriToModuleExtractionSignature(u);
+			}
 		}
 	}
 }

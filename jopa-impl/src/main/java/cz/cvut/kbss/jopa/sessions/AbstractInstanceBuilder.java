@@ -40,6 +40,7 @@ abstract class AbstractInstanceBuilder {
 	 * For some implementations this may mean creating an empty object, others
 	 * might choose to initialize it using the original data.
 	 * 
+	 * @param cloneOwner Instance owning the clone which will be created
 	 * @param origCls
 	 *            Type of the original object
 	 * @param original
@@ -48,7 +49,25 @@ abstract class AbstractInstanceBuilder {
 	 *            Context URI
 	 * @return
 	 */
-	abstract Object buildClone(Class<?> origCls, Object original, URI contextUri);
+	abstract Object buildClone(Object cloneOwner, Class<?> origCls, Object original, URI contextUri);
+
+	/**
+	 * Merges changes from clone to the original.
+	 * 
+	 * @param field
+	 *            The field we are merging
+	 * @param The
+	 *            target object on which the values are merged
+	 * @param originalValue
+	 *            The original value
+	 * @param cloneValue
+	 *            The clone value
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 */
+	abstract void mergeChanges(Field field, Object target,
+			Object originalValue, Object cloneValue)
+			throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * Return the declared constructor for the specified class. If the

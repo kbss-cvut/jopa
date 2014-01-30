@@ -7,9 +7,11 @@ import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 /**
  * This class has responsibility for creating new instances of various kinds of
@@ -30,8 +32,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 	 * @param javaClass
 	 * @return New object of the given class.
 	 */
-	Object buildClone(final Class<?> javaClass, Object original,
-			URI contextUri) {
+	Object buildClone(Object cloneOwner, final Class<?> javaClass, Object original, URI contextUri) {
 		if (javaClass == null || original == null) {
 			return null;
 		}
@@ -52,8 +53,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 					} else {
 						try {
 							Object[] params = new Object[1];
-							params[0] = original.getClass().getDeclaredField(
-									f.getName());
+							params[0] = original.getClass().getDeclaredField(f.getName());
 							newInstance = c.newInstance(params);
 							if (newInstance != null) {
 								return newInstance;
@@ -61,8 +61,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 						} catch (SecurityException e) {
 							try {
 								newInstance = AccessController
-										.doPrivileged(new PrivilegedInstanceCreator(
-												c));
+										.doPrivileged(new PrivilegedInstanceCreator(c));
 							} catch (PrivilegedActionException ex) {
 								throw new OWLPersistenceException(ex);
 							}
@@ -88,8 +87,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 						} catch (SecurityException e) {
 							try {
 								newInstance = AccessController
-										.doPrivileged(new PrivilegedInstanceCreator(
-												c));
+										.doPrivileged(new PrivilegedInstanceCreator(c));
 							} catch (PrivilegedActionException ex) {
 								throw new OWLPersistenceException(ex);
 							}
@@ -114,6 +112,33 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 		return newInstance;
 	}
 
+	@Override
+	void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue)
+			throws IllegalArgumentException, IllegalAccessException {
+		if (originalValue == null) {
+			Object clOrig = builder.getOriginal(cloneValue);
+			if (clOrig == null) {
+				clOrig = cloneValue;
+			}
+			field.set(target, clOrig);
+			return;
+		}
+		Class<?> cls = originalValue.getClass();
+		List<Field> fields = EntityPropertiesUtils.getAllFields(cls);
+		for (Field f : fields) {
+			if (!f.isAccessible()) {
+				f.setAccessible(true);
+			}
+			Object clVal = f.get(cloneValue);
+			Object origVal = f.get(originalValue);
+			if (!(clVal instanceof Collection) && !builder.isOriginalInUoW(origVal)) {
+				f.set(originalValue, clVal);
+			} else {
+				builder.getInstanceBuilder(origVal).mergeChanges(f, originalValue, origVal, clVal);
+			}
+		}
+	}
+
 	/**
 	 * Builds a new instance of the specified class, using its no-argument
 	 * constructor.
@@ -122,28 +147,24 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 	 * @return New object of the given class, or null if the class has no
 	 *         no-argument constructor.
 	 */
-	private Object buildNewInstanceUsingDefaultConstructor(
-			final Class<?> javaClass) {
+	private Object buildNewInstanceUsingDefaultConstructor(final Class<?> javaClass) {
 		final Constructor<?> c = getDeclaredConstructorFor(javaClass, null);
 		Object newInstance = null;
 		if (c != null) {
 			try {
-				newInstance = c.newInstance((Object[]) null);
-			} catch (SecurityException e) {
 				try {
-					newInstance = AccessController
-							.doPrivileged(new PrivilegedInstanceCreator(c));
-				} catch (PrivilegedActionException ex) {
-					return null;
+					newInstance = c.newInstance((Object[]) null);
+				} catch (SecurityException e) {
+					try {
+						newInstance = AccessController
+								.doPrivileged(new PrivilegedInstanceCreator(c));
+					} catch (PrivilegedActionException ex) {
+						return null;
+					}
 				}
-			} catch (InstantiationException e) {
-				return null;
-			} catch (IllegalAccessException e) {
-				return null;
-			} catch (IllegalArgumentException e) {
-				return null;
-			} catch (InvocationTargetException e) {
-				return null;
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException e) {
+				// Do nothing
 			}
 		}
 		return newInstance;

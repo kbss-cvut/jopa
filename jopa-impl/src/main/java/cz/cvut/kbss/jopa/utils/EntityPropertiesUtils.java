@@ -1,8 +1,14 @@
 package cz.cvut.kbss.jopa.utils;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import org.semanticweb.owlapi.model.IRI;
 
@@ -97,5 +103,31 @@ public class EntityPropertiesUtils {
 			throw new IllegalArgumentException("The specified " + value
 					+ " cannot be tranformed to URI.");
 		}
+	}
+
+	/**
+	 * Gets all instance fields of the specified class, including inherited
+	 * ones. </p>
+	 * 
+	 * @param cls
+	 *            The class to search
+	 * @return List of declared fields
+	 */
+	public static List<Field> getAllFields(Class<?> cls) {
+		final List<Field> fields = new ArrayList<Field>();
+		fields.addAll(Arrays.asList(cls.getDeclaredFields()));
+		Class<?> tmp = cls.getSuperclass();
+		while (tmp != null) {
+			fields.addAll(Arrays.asList(tmp.getDeclaredFields()));
+			tmp = tmp.getSuperclass();
+		}
+		Iterator<Field> it = fields.iterator();
+		while (it.hasNext()) {
+			Field f = it.next();
+			if (Modifier.isStatic(f.getModifiers())) {
+				it.remove();
+			}
+		}
+		return fields;
 	}
 }

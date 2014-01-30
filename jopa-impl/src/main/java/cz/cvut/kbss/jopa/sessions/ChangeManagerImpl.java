@@ -7,14 +7,13 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.sessions.ChangeManager;
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 public class ChangeManagerImpl implements ChangeManager {
 
@@ -59,7 +58,7 @@ public class ChangeManagerImpl implements ChangeManager {
 		}
 		boolean changes = false;
 		final Class<?> cls = clone.getClass();
-		List<Field> fields = CloneBuilderImpl.getAllFields(cls);
+		List<Field> fields = EntityPropertiesUtils.getAllFields(cls);
 		Map<Object, Object> composedObjects = new HashMap<Object, Object>();
 		Iterator<Field> it = fields.iterator();
 		try {
@@ -144,9 +143,19 @@ public class ChangeManagerImpl implements ChangeManager {
 		if (orig.size() != cl.size()) {
 			return true;
 		}
+		for (Entry<?, ?> e : orig.entrySet()) {
+			final Object origKey = e.getKey();
+			if (!cl.containsKey(origKey)) {
+				return true;
+			}
+			// TODO Maybe we should check also for key changes
+			final Object origVal = e.getValue();
+			Object clVal = cl.get(origKey);
+			if (hasChangesInternal(origVal, clVal)) {
+				return true;
+			}
+		}
 		return false;
-		// TODO Continue with this
-		// TODO Also move the has changes to the MapCloneBuilder
 	}
 
 	public ObjectChangeSet calculateChanges(ObjectChangeSet changeSet)
@@ -180,7 +189,7 @@ public class ChangeManagerImpl implements ChangeManager {
 		}
 		Object original = changeSet.getChangedObject();
 		Object clone = changeSet.getCloneObject();
-		final List<Field> fields = CloneBuilderImpl.getAllFields(clone
+		final List<Field> fields = EntityPropertiesUtils.getAllFields(clone
 				.getClass());
 		boolean changes = false;
 		for (Field f : fields) {
