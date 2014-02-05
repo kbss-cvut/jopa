@@ -65,6 +65,10 @@ public class OWLClassA {
 	public Set<String> getTypes() {
 		return types;
 	}
+	
+	public static String getClassIri() {
+		return OWLClassA.class.getAnnotation(OWLClass.class).iri();
+	}
 
 	// @Override
 	// public String toString() {

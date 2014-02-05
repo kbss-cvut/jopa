@@ -12,6 +12,7 @@ import org.openrdf.model.ValueFactory;
 
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInternalException;
 
@@ -184,6 +185,10 @@ abstract class AttributeStrategy {
 
 	protected void removeStatements(Collection<Statement> stmts) {
 		internal.removeStatements(stmts);
+	}
+
+	protected <T> EntityType<T> getEntityType(Class<T> cls) {
+		return internal.getEntityType(cls);
 	}
 
 	protected void removeTemporaryIndividual(URI uri) {

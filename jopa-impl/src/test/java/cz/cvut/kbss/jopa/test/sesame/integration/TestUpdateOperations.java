@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openrdf.model.vocabulary.RDF;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
@@ -460,6 +461,9 @@ public class TestUpdateOperations {
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateAddNewToProperties", storages,
 				false, properties);
 		entityB.setProperties(createProperties());
+		final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
+		expected.putAll(entityB.getProperties());
+		expected.put(RDF.TYPE.toString(), Collections.singleton(OWLClassB.getClassIri()));
 		em.getTransaction().begin();
 		em.persist(entityB);
 		em.getTransaction().commit();
@@ -467,16 +471,17 @@ public class TestUpdateOperations {
 
 		final OWLClassB b = em.find(OWLClassB.class, entityB.getUri());
 		assertNotNull(b);
-		assertEquals(entityB.getProperties().size(), b.getProperties().size());
+		assertEquals(expected.size(), b.getProperties().size());
 		em.getTransaction().begin();
 		b.getProperties().put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyFour",
 				Collections.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/Stroustrup"));
+		expected.putAll(b.getProperties());
 		em.getTransaction().commit();
 
 		final OWLClassB res = em.find(OWLClassB.class, b.getUri());
 		assertNotNull(res);
-		assertEquals(b.getProperties().size(), res.getProperties().size());
-		for (Entry<String, Set<String>> e : b.getProperties().entrySet()) {
+		assertEquals(expected.size(), res.getProperties().size());
+		for (Entry<String, Set<String>> e : expected.entrySet()) {
 			assertTrue(res.getProperties().containsKey(e.getKey()));
 			final Set<String> s = e.getValue();
 			assertEquals(1, s.size());

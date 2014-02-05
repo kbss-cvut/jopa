@@ -43,4 +43,8 @@ public class OWLClassI {
 	public OWLClassA getOwlClassA() {
 		return owlClassA;
 	}
+	
+	public static String getClassIri() {
+		return OWLClassI.class.getAnnotation(OWLClass.class).iri();
+	}
 }

@@ -66,6 +66,10 @@ public class OWLClassB {
 	public Map<String, Set<String>> getProperties() {
 		return properties;
 	}
+	
+	public static String getClassIri() {
+		return OWLClassB.class.getAnnotation(OWLClass.class).iri();
+	}
 
 	// @Override
 	// public String toString() {

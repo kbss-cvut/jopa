@@ -79,6 +79,7 @@ class TransparentStorageProxy implements StorageProxy {
 
 	@Override
 	public void addStatements(Collection<Statement> statements) {
+		ensureOpen();
 		for (Statement stmt : statements) {
 			if (stmt.getPredicate().equals(RDF.TYPE)) {
 				persisted.add((URI) stmt.getSubject());
@@ -89,6 +90,7 @@ class TransparentStorageProxy implements StorageProxy {
 
 	@Override
 	public void addStatement(Statement statement) {
+		ensureOpen();
 		if (statement.getPredicate().equals(RDF.TYPE)) {
 			persisted.add((URI) statement.getSubject());
 		}
@@ -97,15 +99,26 @@ class TransparentStorageProxy implements StorageProxy {
 
 	@Override
 	public void removeStatements(Collection<Statement> statements) {
+		ensureOpen();
 		// no-op
 	}
 
 	@Override
 	public boolean contains(URI uri) {
-		// TODO add some check for added entities
+		ensureOpen();
 		try {
 			return conn.hasStatement(uri, null, null, false)
 					|| conn.hasStatement(null, null, uri, false) || persisted.contains(uri);
+		} catch (RepositoryException e) {
+			throw new SesameModuleException(e);
+		}
+	}
+
+	@Override
+	public boolean isSubjectOfType(URI subject, URI type) {
+		ensureOpen();
+		try {
+			return conn.hasStatement(subject, RDF.TYPE, type, true);
 		} catch (RepositoryException e) {
 			throw new SesameModuleException(e);
 		}

@@ -3,7 +3,6 @@ package cz.cvut.kbss.jopa.test.sesame.integration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -21,6 +20,7 @@ import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openrdf.model.vocabulary.RDF;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
@@ -323,6 +323,9 @@ public class TestCreateOperations {
 				.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/SomeEntity"));
 		props.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyThree",
 				Collections.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
+		final Map<String, Set<String>> expected = new HashMap<>(4);
+		expected.putAll(props);
+		expected.put(RDF.TYPE.toString(), Collections.singleton(OWLClassB.getClassIri()));
 		entityB.setProperties(props);
 		em.getTransaction().begin();
 		em.persist(entityB);
@@ -334,8 +337,8 @@ public class TestCreateOperations {
 		assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
 		assertNotNull(res.getProperties());
 		assertFalse(res.getProperties().isEmpty());
-		assertEquals(props.size(), res.getProperties().size());
-		for (Entry<String, Set<String>> e : props.entrySet()) {
+		assertEquals(expected.size(), res.getProperties().size());
+		for (Entry<String, Set<String>> e : expected.entrySet()) {
 			assertTrue(res.getProperties().containsKey(e.getKey()));
 			final Set<String> s = e.getValue();
 			final Set<String> resS = res.getProperties().get(e.getKey());
@@ -351,6 +354,8 @@ public class TestCreateOperations {
 		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistWithPropertiesEmpty",
 				storages, false, properties);
 		entityB.setProperties(Collections.<String, Set<String>> emptyMap());
+		final Map<String, Set<String>> expected = Collections.singletonMap(RDF.TYPE.toString(),
+				Collections.singleton(OWLClassB.getClassIri()));
 		final Context ctx = em.getAvailableContexts().get(em.getAvailableContexts().size() - 1);
 		em.getTransaction().begin();
 		em.persist(entityB, ctx.getUri());
@@ -362,7 +367,16 @@ public class TestCreateOperations {
 		assertNotNull(b);
 		assertEquals(entityB.getUri(), b.getUri());
 		assertEquals(entityB.getStringAttribute(), b.getStringAttribute());
-		assertNull(b.getProperties());
+		assertNotNull(b.getProperties());
+		assertEquals(expected.size(), b.getProperties().size());
+		for (Entry<String, Set<String>> e : expected.entrySet()) {
+			assertTrue(b.getProperties().containsKey(e.getKey()));
+			final Set<String> s = e.getValue();
+			final Set<String> resS = b.getProperties().get(e.getKey());
+			assertNotNull(resS);
+			assertEquals(1, resS.size());
+			assertEquals(s.iterator().next(), resS.iterator().next());
+		}
 	}
 
 	private static List<StorageConfig> initStorages() {

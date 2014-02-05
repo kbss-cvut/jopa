@@ -10,6 +10,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
@@ -72,5 +73,11 @@ class CachingStorageProxy extends TransparentStorageProxy {
 	public boolean contains(URI uri) {
 		ensureOpen();
 		return explicitModel.contains(uri, null, null) || explicitModel.contains(null, null, uri);
+	}
+
+	@Override
+	public boolean isSubjectOfType(URI subject, URI type) {
+		ensureOpen();
+		return model.contains(subject, RDF.TYPE, type);
 	}
 }

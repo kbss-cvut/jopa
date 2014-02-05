@@ -30,6 +30,10 @@ public class OWLClassE {
 	public void setStringAttribute(String stringAttribute) {
 		this.stringAttribute = stringAttribute;
 	}
+	
+	public static String getClassIri() {
+		return OWLClassE.class.getAnnotation(OWLClass.class).iri();
+	}
 
 	// @Override
 	// public String toString() {

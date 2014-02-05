@@ -62,6 +62,10 @@ public class OWLClassC {
 	public List<OWLClassA> getSimpleList() {
 		return simplelist;
 	}
+	
+	public static String getClassIri() {
+		return OWLClassC.class.getAnnotation(OWLClass.class).iri();
+	}
 
 	// @Override
 	// public String toString() {

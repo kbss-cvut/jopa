@@ -75,6 +75,21 @@ interface StorageProxy extends Closeable {
 	public boolean contains(URI uri);
 
 	/**
+	 * Whether the data in the storage assert that the specified subject is an
+	 * instance of {@code type}. </p>
+	 * 
+	 * This method searches in both explicit and inferred statements.
+	 * 
+	 * @param subject
+	 *            Subject URI
+	 * @param type
+	 *            Class URI
+	 * @return True if storage asserts the type of the subject to be
+	 *         {@code type}, false otherwise
+	 */
+	public boolean isSubjectOfType(URI subject, URI type);
+
+	/**
 	 * Executes the specified SPARQL query.
 	 * 
 	 * @param query

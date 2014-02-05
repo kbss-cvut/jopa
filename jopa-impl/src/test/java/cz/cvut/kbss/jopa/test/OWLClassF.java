@@ -50,6 +50,10 @@ public class OWLClassF {
 	public void setSimpleSet(Set<OWLClassA> simpleSet) {
 		this.simpleSet = simpleSet;
 	}
+	
+	public static String getClassIri() {
+		return OWLClassF.class.getAnnotation(OWLClass.class).iri();
+	}
 
 	// @Override
 	// public String toString() {
