@@ -158,7 +158,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 	@Override
 	void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue)
 			throws IllegalArgumentException, IllegalAccessException {
-		assert originalValue instanceof Map;
+		assert (originalValue == null) || (originalValue instanceof Map);
 		assert cloneValue instanceof Map;
 
 		Map<Object, Object> orig = (Map<Object, Object>) originalValue;
