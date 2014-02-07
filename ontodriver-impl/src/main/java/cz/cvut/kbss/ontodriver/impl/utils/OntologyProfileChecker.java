@@ -30,6 +30,7 @@ import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.ContextExpressiveness;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.impl.owlapi.DriverOwlapiFactory;
+import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiUtils;
 import de.fraunhofer.iitb.owldb.OWLDBManager;
 import de.fraunhofer.iitb.owldb.OWLDBOntology;
 import de.fraunhofer.iitb.owldb.OWLDBOntologyManager;

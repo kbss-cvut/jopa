@@ -14,7 +14,6 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.impl.utils.OwlapiUtils;
 
 /**
  * Implementation of OWLAPI storage connector for ontologies saved in a regular

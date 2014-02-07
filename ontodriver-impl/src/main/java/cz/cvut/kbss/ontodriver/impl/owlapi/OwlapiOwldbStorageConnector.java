@@ -15,7 +15,6 @@ import org.semanticweb.owlapi.model.OWLOntologyID;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.impl.utils.OwlapiUtils;
 import de.fraunhofer.iitb.owldb.OWLDBManager;
 import de.fraunhofer.iitb.owldb.OWLDBOntology;
 import de.fraunhofer.iitb.owldb.OWLDBOntologyManager;
