@@ -199,8 +199,12 @@ class PropertiesHandler {
 	private boolean shouldLoad(Statement stmt, Map<URI, Attribute<?, ?>> atts) {
 		final URI property = stmt.getPredicate();
 		final Value value = stmt.getObject();
-		// Class assertions or property not modeled by the metamodel
-		if (property.equals(RDF.TYPE) || !atts.containsKey(property)) {
+		// Class assertions
+		if (RDF.TYPE.equals(property)) {
+			return false;
+		}
+		// property not modeled by the metamodel
+		if (!atts.containsKey(property)) {
 			return true;
 		}
 		final Attribute<?, ?> att = atts.get(property);

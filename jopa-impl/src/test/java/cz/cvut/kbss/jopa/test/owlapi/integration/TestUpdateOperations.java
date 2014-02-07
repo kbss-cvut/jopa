@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.sesame.integration;
+package cz.cvut.kbss.jopa.test.owlapi.integration;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -15,8 +15,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.integration.runners.UpdateOperationsRunner;
-import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.SesameNativeStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
@@ -51,124 +50,122 @@ public class TestUpdateOperations {
 	@Test
 	public void testUpdateReference() {
 		LOG.config("Test: update reference to entity.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateReference", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateReference", storages, true,
 				properties);
-		runner.updateReference(em, context(0));
+		runner.updateReference(em, context());
 	}
 
 	@Test
 	public void testMergeDetachedWithChanges() {
 		LOG.config("Test: merge detached entity with changes.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateDetached", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDetached", storages, true,
 				properties);
-		runner.mergeDetachedWithChanges(em, context(1));
+		runner.mergeDetachedWithChanges(em, context());
 	}
 
 	@Test
 	public void testMergeDetachedCascade() {
 		LOG.config("Test: merge detached with cascade.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateCascade", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateCascade", storages, true,
 				properties);
-		runner.mergeDetachedCascade(em, context(0));
+		runner.mergeDetachedCascade(em, context());
 	}
 
 	@Test
 	public void testRemoveFromSimpleList() {
 		LOG.config("Test: remove entity from simple list. (But keep it in the ontology.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateRemoveFromSimpleList", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateRemoveFromSimpleList", storages,
 				true, properties);
-		runner.removeFromSimpleList(em, context(1));
+		runner.removeFromSimpleList(em, context());
 	}
 
 	@Test
 	public void testAddToSimpleList() {
 		LOG.config("Test: add entity to simple list.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateAddToSimpleList", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddToSimpleList", storages, true,
 				properties);
-		runner.addToSimpleList(em, context(0));
+		runner.addToSimpleList(em, context());
 	}
 
 	@Test
 	public void testClearSimpleList() {
 		LOG.config("Test: clear a simple list (but keep the entities in ontology).");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateClearSimpleList", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateClearSimpleList", storages, true,
 				properties);
-		runner.clearSimpleList(em, context(1));
+		runner.clearSimpleList(em, context());
 	}
 
 	@Test
 	public void testReplaceSimpleList() {
 		LOG.config("Test: replace simple list with a new one.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateReplaceSimpleList", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateReplaceSimpleList", storages,
 				true, properties);
-		runner.replaceSimpleList(em, context(0));
+		runner.replaceSimpleList(em, context());
 	}
 
 	@Test
 	public void testRemoveFromReferencedList() {
 		LOG.config("Test: remove entity from referenced list. (But keep it in the ontology.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateRemoveFromReferencedList",
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateRemoveFromReferencedList",
 				storages, true, properties);
-		runner.removeFromReferencedList(em, context(1));
+		runner.removeFromReferencedList(em, context());
 	}
 
 	@Test
 	public void testAddToReferencedList() {
 		LOG.config("Test: add entity to Referenced list.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateAddToReferencedList", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddToReferencedList", storages,
 				true, properties);
-		runner.addToReferencedList(em, context(0));
+		runner.addToReferencedList(em, context());
 	}
 
 	@Test
 	public void testClearReferencedList() {
 		LOG.config("Test: clear referenced list (but keep the entities in ontology).");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateClearReferencedList", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateClearReferencedList", storages,
 				true, properties);
-		runner.clearReferencedList(em, context(1));
+		runner.clearReferencedList(em, context());
 	}
 
 	@Test
 	public void testReplaceReferencedList() {
 		LOG.config("Test: replace referenced list with a new one.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateReplaceReferencedList", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateReplaceReferencedList", storages,
 				true, properties);
-		runner.replaceReferencedList(em, context(0));
+		runner.replaceReferencedList(em, context());
 	}
 
 	@Test
 	public void testAddNewToProperties() {
 		LOG.config("Test: add a new property value to entity's properties.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateAddNewToProperties", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddNewToProperties", storages,
 				false, properties);
-		runner.addNewToProperties(em, context(1));
+		runner.addNewToProperties(em, context());
 	}
 
 	@Test
 	public void testAddPropertyValue() {
 		LOG.config("Test: add another value to an existing property.");
-		em = TestEnvironment.getPersistenceConnector("SesameUpdateAddPropertyValue", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddPropertyValue", storages,
 				false, properties);
-		runner.addPropertyValue(em, context(0));
+		runner.addPropertyValue(em, context());
 	}
 
-	private URI context(int index) {
-		return em.getAvailableContexts().get(index).getUri();
+	private URI context() {
+		return em.getAvailableContexts().get(0).getUri();
 	}
 
 	private static List<StorageConfig> initStorages() {
-		final List<StorageConfig> lst = new ArrayList<>(2);
-		lst.add(new SesameNativeStorageConfig());
-		lst.add(new SesameMemoryStorageConfig());
+		final List<StorageConfig> lst = new ArrayList<>(1);
+		lst.add(new OwlapiStorageConfig());
 		return lst;
 	}
 
 	private static Map<String, String> initProperties() {
 		final Map<String, String> map = new HashMap<>();
 		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-		map.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
 		return map;
 	}
+
 }

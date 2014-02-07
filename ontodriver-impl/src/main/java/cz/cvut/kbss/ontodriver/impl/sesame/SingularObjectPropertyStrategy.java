@@ -41,9 +41,6 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 	@Override
 	<T> void save(T entity, URI uri, Attribute<?, ?> att, URI attUri, Object value)
 			throws OntoDriverException {
-		if (value != null) {
-			addIndividualsForReferencedEntities(Collections.singletonList(value));
-		}
 		saveObjectProperty(uri, attUri, value);
 	}
 
@@ -78,12 +75,14 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 		}
 	}
 
-	private void saveObjectProperty(URI subject, URI property, Object value) {
+	private void saveObjectProperty(URI subject, URI property, Object value)
+			throws OntoDriverException {
 		removeOldObjectPropertyValues(subject, property);
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("setObjectProperty '" + property + "' of " + subject + " to " + value);
 		}
 		if (value != null) {
+			addIndividualsForReferencedEntities(Collections.singletonList(value));
 			final URI uri = getIdentifier(value);
 			assert uri != null;
 			final Statement stmt = valueFactory.createStatement(subject, property, uri);

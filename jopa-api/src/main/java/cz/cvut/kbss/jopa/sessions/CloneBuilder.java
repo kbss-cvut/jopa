@@ -27,6 +27,27 @@ public interface CloneBuilder {
 	public Object buildClone(Object original, URI contextUri);
 
 	/**
+	 * Builds clone of the given object. </p>
+	 * 
+	 * This method differs from {@link #buildClone(Object, URI)} in that it
+	 * accepts another argument which represents the owner of the built clone.
+	 * This is useful in situations when we are cloning attributes directly, e.
+	 * g. when lazily loading a field value.
+	 * 
+	 * @param cloneOwner
+	 *            The owner of the created clone
+	 * @param original
+	 *            The original to clone
+	 * @param contextUri
+	 *            context URI of the ontology context the original belongs to
+	 * @return The clone
+	 * @throws NullPointerException
+	 *             If {@code cloneOwner}, {@code original} or {@code contextUri}
+	 *             is {@code null}
+	 */
+	public Object buildClone(Object cloneOwner, Object original, URI contextUri);
+
+	/**
 	 * Builds clones of all given objects.
 	 * 
 	 * @param originals

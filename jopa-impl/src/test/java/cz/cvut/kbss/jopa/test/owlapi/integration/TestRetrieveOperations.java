@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.sesame.integration;
+package cz.cvut.kbss.jopa.test.owlapi.integration;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -15,8 +15,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.integration.runners.RetrieveOperationsRunner;
-import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.SesameNativeStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
@@ -51,50 +50,47 @@ public class TestRetrieveOperations {
 	@Test
 	public void testRetrieveLazy() throws Exception {
 		LOG.config("Test: retrieve entity with lazy loaded attribute.");
-		em = TestEnvironment.getPersistenceConnector("SesameRetrieveLazy", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveLazy", storages, false,
 				properties);
-		runner.retrieveLazily(em, context(1));
+		runner.retrieveLazily(em, context());
 	}
 
 	@Test
 	public void testRetrieveGenerated() throws Exception {
 		LOG.config("Test: persist and retrieve several entities with generated identifiers.");
-		em = TestEnvironment.getPersistenceConnector("SesameRetrieveGenerated", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveGenerated", storages, false,
 				properties);
-		runner.retrieveGenerated(em, context(0));
+		runner.retrieveGenerated(em, context());
 	}
 
 	@Test
 	public void testRetrieveNotExisting() {
 		LOG.config("Test: retrieve entity which does not exist in the specified context.");
-		em = TestEnvironment.getPersistenceConnector("SesameRetrieveNotExisting", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveNotExisting", storages, false,
 				properties);
-		runner.retrieveNotExisting(em, context(1));
+		runner.retrieveNotExisting(em, context());
 	}
 
 	@Test
 	public void testRefresh() {
 		LOG.config("Test: refresh entity.");
-		em = TestEnvironment.getPersistenceConnector("SesameRefresh", storages, false, properties);
-		runner.refresh(em, context(0));
+		em = TestEnvironment.getPersistenceConnector("OwlapiRefresh", storages, false, properties);
+		runner.refresh(em, context());
 	}
 
-	private URI context(int index) {
-		return em.getAvailableContexts().get(index).getUri();
+	private URI context() {
+		return em.getAvailableContexts().get(0).getUri();
 	}
 
 	private static List<StorageConfig> initStorages() {
-		final List<StorageConfig> lst = new ArrayList<>(2);
-		lst.add(new SesameNativeStorageConfig());
-		lst.add(new SesameMemoryStorageConfig());
+		final List<StorageConfig> lst = new ArrayList<>(1);
+		lst.add(new OwlapiStorageConfig());
 		return lst;
 	}
 
 	private static Map<String, String> initProperties() {
 		final Map<String, String> map = new HashMap<>();
 		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-		map.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
 		return map;
 	}

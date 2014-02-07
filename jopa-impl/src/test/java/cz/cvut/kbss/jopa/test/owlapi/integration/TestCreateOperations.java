@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.sesame.integration;
+package cz.cvut.kbss.jopa.test.owlapi.integration;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -17,8 +17,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.integration.runners.CreateOperationsRunner;
-import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.SesameNativeStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
@@ -53,107 +52,104 @@ public class TestCreateOperations {
 	@Test
 	public void testPersistWithGenerated() {
 		LOG.config("Test: persist into all contexts, also with generated id.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistWithGenerated", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithGenerated", storages, false,
 				properties);
-		runner.persistWithGenerated(em, context(1));
+		runner.persistWithGenerated(em, context());
 	}
 
 	@Test
 	public void testPersistCascade() {
 		LOG.config("Test: persist with cascade over two relationships.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistWithCascade", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithCascade", storages, false,
 				properties);
-		runner.persistCascade(em, context(0));
+		runner.persistCascade(em, context());
 	}
 
 	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistTwiceInOne() {
 		LOG.config("Test: persist twice into one context.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistTwice", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistTwice", storages, false,
 				properties);
-		runner.persistTwice(em, context(0));
+		runner.persistTwice(em, context());
 	}
 
 	@Test(expected = RollbackException.class)
 	public void testPersistWithoutCascade() {
 		LOG.config("Test: try persisting relationship not marked as cascade.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistWithoutCascade", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithoutCascade", storages,
 				false, properties);
-		runner.persistWithoutCascade(em, context(0));
+		runner.persistWithoutCascade(em, context());
 	}
 
 	@Test
 	public void testPersistSimpleList() {
 		LOG.config("Test: persist entity with simple list.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleList", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleList", storages, false,
 				properties);
-		runner.persistSimpleList(em, context(1));
+		runner.persistSimpleList(em, context());
 	}
 
 	@Test(expected = RollbackException.class)
 	public void testPersistSimpleListNoCascade() {
 		LOG.config("Test: persist entity with simple list, but don't persist the referenced entities.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleListNoCascade", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleListNoCascade", storages,
 				false, properties);
-		runner.persistSimpleListNoCascade(em, context(1));
+		runner.persistSimpleListNoCascade(em, context());
 	}
 
 	@Test
 	public void testPersistReferencedList() {
 		LOG.config("Test: persist entity with referenced list.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistReferencedList", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistReferencedList", storages,
 				false, properties);
-		runner.persistReferencedList(em, context(0));
+		runner.persistReferencedList(em, context());
 	}
 
 	@Test(expected = RollbackException.class)
 	public void testPersistReferencedListNoCascade() {
 		LOG.config("Test: persist entity with referenced list. Don't persist the referenced entities.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistReferencedListNoCascade",
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistReferencedListNoCascade",
 				storages, false, properties);
-		runner.persistReferencedListNoCascade(em, context(0));
+		runner.persistReferencedListNoCascade(em, context());
 	}
 
 	@Test
 	public void testPersistSimpleAndReferencedList() {
 		LOG.config("Test: persist entity with both simple and referenced list.");
-		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleAndReferencedList",
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleAndReferencedList",
 				storages, false, properties);
-		runner.persistSimpleAndReferencedList(em, context(0));
+		runner.persistSimpleAndReferencedList(em, context());
 	}
 
 	@Test
 	public void testPersistProperties() {
 		LOG.config("Test: persist entity with properties.");
-		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistWithProperties",
-				storages, false, properties);
-		runner.persistProperties(em, context(1));
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithProperties", storages,
+				false, properties);
+		runner.persistProperties(em, context());
 	}
 
 	@Test
 	public void testPersistPropertiesEmpty() {
 		LOG.config("Test: persist entity with properties. The properties will be an empty map.");
-		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistWithPropertiesEmpty",
-				storages, false, properties);
-		runner.persistPropertiesEmpty(em, context(0));
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithPropertiesEmpty", storages,
+				false, properties);
+		runner.persistPropertiesEmpty(em, context());
 	}
 
-	private URI context(int index) {
-		return em.getAvailableContexts().get(index).getUri();
+	private URI context() {
+		return em.getAvailableContexts().get(0).getUri();
 	}
 
 	private static List<StorageConfig> initStorages() {
-		final List<StorageConfig> lst = new ArrayList<>(2);
-		lst.add(new SesameNativeStorageConfig());
-		lst.add(new SesameMemoryStorageConfig());
+		final List<StorageConfig> lst = new ArrayList<>(1);
+		lst.add(new OwlapiStorageConfig());
 		return lst;
 	}
 
 	private static Map<String, String> initProperties() {
 		final Map<String, String> map = new HashMap<>();
 		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-		map.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
 		return map;
 	}

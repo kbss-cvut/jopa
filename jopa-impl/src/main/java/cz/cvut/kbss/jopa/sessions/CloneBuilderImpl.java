@@ -60,12 +60,28 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	@Override
 	public Object buildClone(final Object original, final URI contextUri) {
-		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Cloning object...");
-		}
 		if (original == null || contextUri == null) {
 			throw new NullPointerException();
 		}
+		if (LOG.isLoggable(Level.FINER)) {
+			LOG.finer("Cloning object " + original);
+		}
+		return buildCloneImpl(null, original, contextUri);
+	}
+
+	@Override
+	public Object buildClone(Object cloneOwner, Object original, URI contextUri) {
+		if (cloneOwner == null || original == null || contextUri == null) {
+			throw new NullPointerException();
+		}
+		if (LOG.isLoggable(Level.FINER)) {
+			LOG.finer("Cloning object " + original + " with owner " + cloneOwner);
+		}
+		return buildCloneImpl(cloneOwner, original, contextUri);
+	}
+
+	private Object buildCloneImpl(Object cloneOwner, Object original, URI contextUri) {
+
 		if (visitedObjects.containsKey(original)) {
 			return visitedObjects.get(original);
 		}
@@ -82,7 +98,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 			}
 		}
 		final AbstractInstanceBuilder builder = getInstanceBuilder(original);
-		Object clone = builder.buildClone(null, original.getClass(), original, contextUri);
+		Object clone = builder.buildClone(cloneOwner, original.getClass(), original, contextUri);
 		visitedObjects.put(original, clone);
 		if (!builder.populatesAttributes()) {
 			populateAttributes(original, clone, contextUri);

@@ -9,6 +9,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.LinkedHashModel;
 
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -174,13 +175,19 @@ abstract class AttributeStrategy {
 	protected void removeOldDataPropertyValues(URI subject, URI property) {
 		// TODO should we use only explicit model?
 		final Model m = storage.filter(subject, property, null, false);
-		internal.removeStatements(m);
+		// Create new model to prevent ConcurrentModificationException (we would
+		// be removing statements backed by the model from which we are removing
+		// tem)
+		internal.removeStatements(new LinkedHashModel(m));
 	}
 
 	protected void removeOldObjectPropertyValues(URI subject, URI property) {
 		// TODO should we use only explicit model?
 		final Model m = storage.filter(subject, property, null, false);
-		internal.removeStatements(m);
+		// Create new model to prevent ConcurrentModificationException (we would
+		// be removing statements backed by the model from which we are removing
+		// tem)
+		internal.removeStatements(new LinkedHashModel(m));
 	}
 
 	protected void removeStatements(Collection<Statement> stmts) {

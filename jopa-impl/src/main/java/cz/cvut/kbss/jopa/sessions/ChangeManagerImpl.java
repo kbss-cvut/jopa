@@ -17,9 +17,12 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 public class ChangeManagerImpl implements ChangeManager {
 
-	private static final Logger LOG = Logger.getLogger(ChangeManagerImpl.class
-			.getName());
+	private static final Logger LOG = Logger.getLogger(ChangeManagerImpl.class.getName());
 	private Map<Object, Object> visitedObjects;
+
+	private static enum Changed {
+		TRUE, FALSE, UNDETERMINED
+	}
 
 	public ChangeManagerImpl() {
 		visitedObjects = new IdentityHashMap<Object, Object>();
@@ -49,8 +52,7 @@ public class ChangeManagerImpl implements ChangeManager {
 		if (clone == null && original == null) {
 			return false;
 		}
-		if (clone == null && original != null || clone != null
-				&& original == null) {
+		if (clone == null && original != null || clone != null && original == null) {
 			return true;
 		}
 		if (visitedObjects.containsKey(clone)) {
@@ -69,28 +71,26 @@ public class ChangeManagerImpl implements ChangeManager {
 				}
 				Object clVal = f.get(clone);
 				Object origVal = f.get(original);
-				if ((clVal == null && origVal != null)
-						|| (clVal != null && origVal == null)) {
+				if ((clVal == null && origVal != null) || (clVal != null && origVal == null)) {
 					changes = true;
 					break;
 				}
 				if (clVal == null && origVal == null) {
 					continue;
 				}
-				if (CloneBuilderImpl.isPrimitiveOrString(clVal.getClass())) {
-					if (!clVal.equals(origVal)) {
-						changes = true;
-						break;
-					} else {
-						continue;
-					}
-				} else if (clVal instanceof Collection) {
-					changes = hasCollectionChanged(clVal, origVal);
-				} else if (clVal instanceof Map) {
-					changes = hasMapChanges(clVal, origVal);
-				} else {
+				final Changed ch = valueChanged(origVal, clVal);
+				switch (ch) {
+				case TRUE:
+					changes = true;
+					break;
+				case FALSE:
+					changes = false;
+					// continue the while cycle
+					continue;
+				case UNDETERMINED:
 					visitedObjects.put(clVal, clVal);
 					composedObjects.put(clVal, origVal);
+					break;
 				}
 			}
 			// First check all primitive values - performance, then do composed
@@ -102,10 +102,27 @@ public class ChangeManagerImpl implements ChangeManager {
 			}
 		} catch (IllegalAccessException e) {
 			throw new OWLPersistenceException(
-					"Exception caught when trying to check changes on entities.",
-					e);
+					"Exception caught when trying to check changes on entities.", e);
 		}
 		return changes;
+	}
+
+	private Changed valueChanged(Object orig, Object clone) {
+		boolean changes = false;
+		if (CloneBuilderImpl.isPrimitiveOrString(clone.getClass())) {
+			if (!clone.equals(orig)) {
+				return Changed.TRUE;
+			} else {
+				return Changed.FALSE;
+			}
+		} else if (clone instanceof Collection) {
+			changes = hasCollectionChanged(clone, orig);
+		} else if (clone instanceof Map) {
+			changes = hasMapChanges(clone, orig);
+		} else {
+			return Changed.UNDETERMINED;
+		}
+		return changes ? Changed.TRUE : Changed.FALSE;
 	}
 
 	/**
@@ -132,7 +149,18 @@ public class ChangeManagerImpl implements ChangeManager {
 		while (itOrig.hasNext() && itClone.hasNext() && hasChanged == false) {
 			Object cl = itClone.next();
 			Object orig = itOrig.next();
-			hasChanged = hasChangesInternal(orig, cl);
+			final Changed ch = valueChanged(orig, cl);
+			switch (ch) {
+			case TRUE:
+				hasChanged = true;
+				break;
+			case FALSE:
+				hasChanged = false;
+				break;
+			case UNDETERMINED:
+				hasChanged = hasChangesInternal(orig, cl);
+				break;
+			}
 		}
 		return hasChanged;
 	}
@@ -151,8 +179,15 @@ public class ChangeManagerImpl implements ChangeManager {
 			// TODO Maybe we should check also for key changes
 			final Object origVal = e.getValue();
 			Object clVal = cl.get(origKey);
-			if (hasChangesInternal(origVal, clVal)) {
+
+			final Changed ch = valueChanged(origVal, clVal);
+			switch (ch) {
+			case TRUE:
 				return true;
+			case FALSE:
+				return false;
+			case UNDETERMINED:
+				return hasChangesInternal(origVal, clVal);
 			}
 		}
 		return false;
@@ -189,8 +224,7 @@ public class ChangeManagerImpl implements ChangeManager {
 		}
 		Object original = changeSet.getChangedObject();
 		Object clone = changeSet.getCloneObject();
-		final List<Field> fields = EntityPropertiesUtils.getAllFields(clone
-				.getClass());
+		final List<Field> fields = EntityPropertiesUtils.getAllFields(clone.getClass());
 		boolean changes = false;
 		for (Field f : fields) {
 			if (!f.isAccessible()) {

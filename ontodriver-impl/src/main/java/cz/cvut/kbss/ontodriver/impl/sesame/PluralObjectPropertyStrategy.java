@@ -14,6 +14,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
@@ -39,6 +40,10 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 	@Override
 	<T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad)
 			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
+		if (!alwaysLoad && att.getFetchType().equals(FetchType.LAZY)) {
+			// Lazy loading
+			return;
+		}
 		assert (att instanceof PluralAttribute<?, ?, ?>);
 		final PluralAttribute<?, ?, ?> pa = (PluralAttribute<?, ?, ?>) att;
 		switch (pa.getCollectionType()) {
