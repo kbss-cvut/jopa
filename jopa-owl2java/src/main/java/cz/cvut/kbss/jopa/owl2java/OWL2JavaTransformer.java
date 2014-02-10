@@ -278,7 +278,7 @@ public class OWL2JavaTransformer {
 			// if (clazz.equals(f.getOWLThing())) {
 			// RDFS label
 			final JClass ftLabel = cm.ref(String.class);
-			final JFieldVar fvLabel = addField("label", cls, ftLabel);
+			final JFieldVar fvLabel = addField("name", cls, ftLabel);
 			fvLabel.annotate(OWLAnnotationProperty.class).param("iri",
 					cm.ref(CommonVocabulary.class).staticRef("RDFS_LABEL"));
 
