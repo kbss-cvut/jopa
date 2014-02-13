@@ -166,7 +166,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
-            <version>1.7.0</version>
+            <version>${aspectj.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -208,7 +208,7 @@
                     <complianceLevel>1.7</complianceLevel>
                     <sources>
                         <source>
-                            <basedir>src/main/java</basedir>
+                            <basedir>${basedir}/src/main/java</basedir>
                             <includes>
                                 <include>**/BeanListenerAspect.aj</include>
                                 <include>**/EntityLoadingAspect.aj</include>

@@ -3,11 +3,7 @@ package cz.cvut.kbss.jopa.loaders;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -24,7 +20,7 @@ public class EntityLoader {
 
 	private static final String EXT = ".class";
 
-	private List<URL> classUrls;
+	private Map<URL,ClassLoader> classUrls;
 	private Set<Class<?>> classes;
 
 	private EntityLoader() {
@@ -52,12 +48,12 @@ public class EntityLoader {
 			LOG.fine("Searching for entity classes.");
 		}
 		loadUrls();
-		for (URL url : classUrls) {
+		for (URL url : classUrls.keySet()) {
 			final File f = new File(url.getPath());
 			if (!f.exists()) {
 				continue;
 			}
-			discover(f, f);
+			discover(f, f, classUrls.get(url));
 		}
 		if (LOG.isLoggable(Level.CONFIG)) {
 			// 5 is the statistically most probable length of a word + the comma
@@ -77,7 +73,7 @@ public class EntityLoader {
 	 * These files are then used to determine whether they contain entity
 	 * classes.
 	 */
-	private void discover(File root, File file) {
+	private void discover(File root, File file, ClassLoader c) {
 		if (!file.exists()) {
 			return;
 		}
@@ -90,7 +86,7 @@ public class EntityLoader {
 				if (!f.exists()) {
 					continue;
 				}
-				discover(root, f);
+				discover(root, f, c);
 			}
 		} else if (fileName.toLowerCase().endsWith(".jar")) {
 			if (LOG.isLoggable(Level.FINEST)) {
@@ -110,12 +106,12 @@ public class EntityLoader {
 					final int extInd = name.lastIndexOf(EXT);
 					if (extInd > 0) {
 						final String clsName = name.substring(0, extInd).replace('/', '.');
-						entity(clsName);
+						entity(clsName, c);
 					}
 				}
 			}
 		} else if (fileName.toLowerCase().endsWith(".class")) {
-			entity(buildClassName(root, file));
+			entity(buildClassName(root, file),c);
 		}
 	}
 
@@ -133,7 +129,7 @@ public class EntityLoader {
 	 * Finds the root URLs from which classes are loaded.
 	 */
 	private void loadUrls() {
-		final List<URL> all = new ArrayList<>();
+		final Map<URL,ClassLoader> all = new HashMap<>();
 		final ClassLoader[] loaders = getClassLoaders();
 		try {
 			for (ClassLoader c : loaders) {
@@ -141,7 +137,7 @@ public class EntityLoader {
 				while (urls.hasMoreElements()) {
 					final URL url = urls.nextElement();
 					final URL normalizedUrl = new URL(url.toExternalForm());
-					all.add(normalizedUrl);
+					all.put(normalizedUrl,c);
 				}
 			}
 		} catch (IOException e) {
@@ -175,12 +171,12 @@ public class EntityLoader {
 	 * Determines whether class with the specified fully qualified name is an
 	 * entity class.
 	 */
-	private void entity(String className) {
+	private void entity(String className ,ClassLoader c) {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Testing class " + className + " for the OWLClass annotation.");
 		}
 		try {
-			Class<?> cls = Class.forName(className);
+			Class<?> cls = Class.forName(className,true,c);
 			OWLClass a = cls.getAnnotation(OWLClass.class);
 			if (a != null) {
 				classes.add(cls);
