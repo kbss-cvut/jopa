@@ -49,10 +49,18 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testUpdateDataLeaveLazy() throws Exception {
-		LOG.config("Test: updates data property. Leaves lazily loaded field empty and checks that after commit the field's value hasn't changed.");
+		LOG.config("Test: update data property. Leaves lazily loaded field empty and checks that after commit the field's value hasn't changed.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDataProperty", storages, false,
 				properties);
 		runner.updateDataPropertyKeepLazyEmpty(em, context());
+	}
+	
+	@Test
+	public void testUpdateDataPropertySetNull() {
+		LOG.config("Test: update data property. Set it to null.");
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDataPropertyToNull", storages,
+				true, properties);
+		runner.updateDataPropertySetNull(em, context());
 	}
 
 	@Test

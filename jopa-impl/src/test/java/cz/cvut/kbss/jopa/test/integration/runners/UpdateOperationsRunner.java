@@ -104,6 +104,24 @@ public class UpdateOperationsRunner {
 		assertEquals(entityB.getProperties(), res.getProperties());
 	}
 
+	public void updateDataPropertySetNull(EntityManager em, URI ctx) {
+		em.getTransaction().begin();
+		em.persist(entityA, ctx);
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), ctx);
+		assertNotNull(a);
+		assertNotNull(a.getStringAttribute());
+		a.setStringAttribute(null);
+		em.getTransaction().commit();
+
+		final OWLClassA res = em.find(OWLClassA.class, entityA.getUri(), ctx);
+		assertNotNull(res);
+		assertNull(res.getStringAttribute());
+		assertEquals(entityA.getTypes(), res.getTypes());
+	}
+
 	public void updateReference(EntityManager em, URI ctx) {
 		em.getTransaction().begin();
 		em.persist(entityD, ctx);

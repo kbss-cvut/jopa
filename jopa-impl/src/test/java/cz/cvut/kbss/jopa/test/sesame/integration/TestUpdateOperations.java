@@ -53,7 +53,15 @@ public class TestUpdateOperations {
 		LOG.config("Test: updates data property. Leaves lazily loaded field empty and checks that after commit the field's value hasn't changed.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateDataProperty", storages, false,
 				properties);
-		runner.updateDataPropertyKeepLazyEmpty(em, context(1));
+		runner.updateDataPropertyKeepLazyEmpty(em, context(0));
+	}
+
+	@Test
+	public void testUpdateDataPropertySetNull() {
+		LOG.config("Test: update data property. Set it to null.");
+		em = TestEnvironment.getPersistenceConnector("SesameUpdateDataPropertyToNull", storages,
+				true, properties);
+		runner.updateDataPropertySetNull(em, context(1));
 	}
 
 	@Test
