@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -162,8 +163,9 @@ public class StorageManagerTest {
 		final OWLClassB merged = new OWLClassB();
 		merged.setUri(URI.create("http://mergedB"));
 		merged.setStringAttribute("mergedBStringAttribute");
+		final Field f = OWLClassB.getStrAttField();
 		// Simulate merging by passing new entity
-		manager.merge(merged.getUri(), merged, ctx, Collections.<String, Context> emptyMap());
+		manager.merge(merged.getUri(), merged, f, ctx, Collections.<String, Context> emptyMap());
 		final OWLClassB res = (OWLClassB) e.getEntities().get(merged.getUri());
 		assertNotNull(res);
 	}
@@ -171,7 +173,8 @@ public class StorageManagerTest {
 	@Test(expected = NullPointerException.class)
 	public void testMergeNull() throws Exception {
 		LOG.config("Test: merge. Null passed.");
-		manager.merge(null, null, factory.getContexts().get(0),
+		final Field f = OWLClassB.getStrAttField();
+		manager.merge(null, null, f, factory.getContexts().get(0),
 				Collections.<String, Context> emptyMap());
 		fail("This line should not have been reached.");
 	}

@@ -163,19 +163,22 @@ public abstract class StorageModule implements Transactional {
 	public abstract <T> void loadFieldValue(T entity, Field field) throws OntoDriverException;
 
 	/**
-	 * Merges changes on the specified entity into this module. </p>
+	 * Merges changes on the specified entity field into this module. </p>
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the entity
 	 * @param entity
 	 *            The entity to merge
+	 * @param mergedField
+	 *            The field to merge
 	 * @throws OntoDriverException
 	 *             If the entity does not exist in this module or if an ontology
 	 *             access error occurs
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code entity} is null
 	 */
-	public abstract <T> void merge(Object primaryKey, T entity) throws OntoDriverException;
+	public abstract <T> void merge(Object primaryKey, T entity, Field mergedField)
+			throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity into this module. </p>
@@ -222,8 +225,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code statement} is null
 	 */
-	public abstract ResultSet executeStatement(JopaStatement statement)
-			throws OntoDriverException;
+	public abstract ResultSet executeStatement(JopaStatement statement) throws OntoDriverException;
 
 	/**
 	 * Starts an internal transaction if one is not already active. </p>

@@ -36,7 +36,6 @@ public class OwlimSingleContextTest {
 
 	private static final List<StorageConfig> storage = Collections
 			.<StorageConfig> singletonList(new OwlimStorageConfig());
-	private static final String OWLCLASS_A_FIELD = "owlClassA";
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
@@ -161,11 +160,13 @@ public class OwlimSingleContextTest {
 		final OWLClassB b = c.find(OWLClassB.class, entityB.getUri());
 		assertNotNull(b);
 		b.setStringAttribute("changedStringAttribute");
-		c.merge(b.getUri(), b);
+		final Field bStrField = OWLClassB.getStrAttField();
+		c.merge(b.getUri(), b, bStrField);
 		final OWLClassE e = c.find(OWLClassE.class, entityE.getUri());
 		assertNotNull(e);
 		e.setStringAttribute("anotherChangedStringAttribute");
-		c.merge(e.getUri(), e);
+		final Field eStrField = OWLClassE.getStrAttField();
+		c.merge(e.getUri(), e, eStrField);
 		c.commit();
 
 		final OWLClassB resB = c.find(OWLClassB.class, entityB.getUri());
@@ -193,7 +194,8 @@ public class OwlimSingleContextTest {
 		newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/newA"));
 		c.persist(newA.getUri(), newA);
 		d.setOwlClassA(newA);
-		c.merge(entityD.getUri(), d);
+		final Field aField = OWLClassD.getOwlClassAField();
+		c.merge(entityD.getUri(), d, aField);
 		entityI.setOwlClassA(a);
 		c.persist(entityI.getUri(), entityI);
 		c.commit();
@@ -211,7 +213,7 @@ public class OwlimSingleContextTest {
 		final OWLClassI resI = c.find(OWLClassI.class, entityI.getUri());
 		assertNotNull(resI);
 		assertNull(resI.getOwlClassA());
-		final Field f = OWLClassI.class.getDeclaredField(OWLCLASS_A_FIELD);
+		final Field f = OWLClassI.getOwlClassAField();
 		c.loadFieldValue(resI, f);
 		assertNotNull(resI.getOwlClassA());
 		assertEquals(resATwo.getUri(), resI.getOwlClassA().getUri());

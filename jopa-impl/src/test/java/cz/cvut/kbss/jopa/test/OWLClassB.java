@@ -15,6 +15,7 @@
 
 package cz.cvut.kbss.jopa.test;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,9 @@ import cz.cvut.kbss.jopa.model.annotations.Properties;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB")
 public class OWLClassB {
+
+	private static final String STR_ATT_FIELD = "stringAttribute";
+	private static final String PROPERTIES_FIELD = "properties";
 
 	@Id
 	private URI uri;
@@ -66,9 +70,17 @@ public class OWLClassB {
 	public Map<String, Set<String>> getProperties() {
 		return properties;
 	}
-	
+
 	public static String getClassIri() {
 		return OWLClassB.class.getAnnotation(OWLClass.class).iri();
+	}
+
+	public static Field getStrAttField() throws NoSuchFieldException, SecurityException {
+		return OWLClassB.class.getDeclaredField(STR_ATT_FIELD);
+	}
+
+	public static Field getPropertiesField() throws NoSuchFieldException, SecurityException {
+		return OWLClassB.class.getDeclaredField(PROPERTIES_FIELD);
 	}
 
 	// @Override

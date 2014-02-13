@@ -122,7 +122,7 @@ public class ConnectionStub implements Connection {
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException {
+	public <T> void merge(Object primaryKey, T entity, Field field) throws OntoDriverException {
 		// // Do nothing
 
 	}

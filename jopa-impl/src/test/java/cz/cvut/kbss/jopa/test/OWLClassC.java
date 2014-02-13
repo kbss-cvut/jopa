@@ -15,6 +15,7 @@
 
 package cz.cvut.kbss.jopa.test;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 
@@ -27,6 +28,9 @@ import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC")
 public class OWLClassC {
+	
+	private static final String REF_LIST_FIELD = "referencedList";
+	private static final String SIMPLE_LIST_FIELD = "simpleList";
 
 	@Id
 	private URI uri;
@@ -65,6 +69,14 @@ public class OWLClassC {
 	
 	public static String getClassIri() {
 		return OWLClassC.class.getAnnotation(OWLClass.class).iri();
+	}
+	
+	public static Field getRefListField() throws NoSuchFieldException, SecurityException {
+		return OWLClassC.class.getDeclaredField(REF_LIST_FIELD);
+	}
+	
+	public static Field getSimpleListField() throws NoSuchFieldException, SecurityException {
+		return OWLClassC.class.getDeclaredField(SIMPLE_LIST_FIELD);
 	}
 
 	// @Override

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +38,6 @@ public class MultiFileContextsTest {
 	private static final Logger LOG = Logger.getLogger(MultiFileContextsTest.class.getName());
 
 	private static final List<StorageConfig> storages = initStorages();
-	private static final String OWLCLASS_A_REFERENCE_FIELD = "owlClassA";
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
@@ -164,7 +164,8 @@ public class MultiFileContextsTest {
 		newA.setStringAttribute("newAStringAttribute");
 		toChange.setOwlClassA(newA);
 		c.persist(newA.getUri(), newA, ctxD.getUri());
-		c.merge(toChange.getUri(), toChange);
+		final Field aField = OWLClassD.getOwlClassAField();
+		c.merge(toChange.getUri(), toChange, aField);
 		c.commit();
 		assertTrue(c.contains(entityA.getUri(), ctxD.getUri()));
 		assertTrue(c.contains(newA.getUri(), ctxD.getUri()));
@@ -193,7 +194,7 @@ public class MultiFileContextsTest {
 		final OWLClassI i = c.find(entityI.getClass(), entityI.getUri());
 		assertNotNull(i);
 		assertNull(i.getOwlClassA());
-		c.loadFieldValue(i, i.getClass().getDeclaredField(OWLCLASS_A_REFERENCE_FIELD));
+		c.loadFieldValue(i, OWLClassI.getOwlClassAField());
 		assertNotNull(i.getOwlClassA());
 		assertEquals(entityA.getUri(), i.getOwlClassA().getUri());
 		assertEquals(entityA.getStringAttribute(), i.getOwlClassA().getStringAttribute());

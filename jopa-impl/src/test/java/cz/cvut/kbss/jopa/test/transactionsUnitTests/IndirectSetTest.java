@@ -2,10 +2,10 @@ package cz.cvut.kbss.jopa.test.transactionsUnitTests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -27,13 +27,13 @@ import cz.cvut.kbss.jopa.test.utils.UnitOfWorkImplStub;
 
 public class IndirectSetTest {
 
-	private static final Logger LOG = Logger.getLogger(IndirectListTest.class
-			.getName());
+	private static final Logger LOG = Logger.getLogger(IndirectListTest.class.getName());
 
 	private static UnitOfWorkImplStub uow;
 	private static Set<OWLClassA> set;
 	private static Set<OWLClassA> backupSet;
 	private static OWLClassF owner;
+	private static Field ownerField;
 
 	private static IndirectSet<OWLClassA> target;
 
@@ -43,6 +43,7 @@ public class IndirectSetTest {
 		uow = new UnitOfWorkImplStub(new ServerSessionStub());
 		owner = new OWLClassF();
 		owner.setUri(URI.create("http://C"));
+		ownerField = OWLClassF.class.getDeclaredField("simpleSet");
 		backupSet = new HashSet<OWLClassA>();
 		set = new HashSet<OWLClassA>();
 		for (byte i = 0; i < 10; i++) {
@@ -52,7 +53,7 @@ public class IndirectSetTest {
 			backupSet.add(a);
 		}
 		set.addAll(backupSet);
-		target = new IndirectSet<OWLClassA>(owner, uow, set);
+		target = new IndirectSet<OWLClassA>(owner, ownerField, uow, set);
 		owner.setSimpleSet(target);
 	}
 
@@ -66,9 +67,9 @@ public class IndirectSetTest {
 	@Test(expected = NullPointerException.class)
 	public void testIndirectSet() {
 		LOG.config("Test: create new IndirectSet with null owner. Should throw exception.");
-		final IndirectSet<OWLClassA> res = new IndirectSet<OWLClassA>(owner,
-				null, set);
-		assertNull(res);
+		@SuppressWarnings("unused")
+		final IndirectSet<OWLClassA> res = new IndirectSet<OWLClassA>(owner, ownerField, null, set);
+		fail("This line should not have been reached.");
 	}
 
 	@Test

@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.test;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,6 +14,9 @@ import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassF")
 public class OWLClassF {
+
+	private static final String STR_ATT_FIELD = "secondStringAttribute";
+	private static final String SET_FIELD = "simpleSet";
 
 	@Id
 	private URI uri;
@@ -50,9 +54,17 @@ public class OWLClassF {
 	public void setSimpleSet(Set<OWLClassA> simpleSet) {
 		this.simpleSet = simpleSet;
 	}
-	
+
 	public static String getClassIri() {
 		return OWLClassF.class.getAnnotation(OWLClass.class).iri();
+	}
+
+	public static Field getStrAttField() throws NoSuchFieldException, SecurityException {
+		return OWLClassF.class.getDeclaredField(STR_ATT_FIELD);
+	}
+
+	public static Field getSimpleSetField() throws NoSuchFieldException, SecurityException {
+		return OWLClassF.class.getDeclaredField(SET_FIELD);
 	}
 
 	// @Override

@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.StorageManager;
@@ -169,7 +169,7 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity, Context entityContext,
+	public <T> void merge(Object primaryKey, T entity, Field mergedField, Context entityContext,
 			Map<String, Context> attributeContexts) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Merging entity with primary key " + primaryKey + " into context "
@@ -186,7 +186,7 @@ public class StorageManagerImpl extends StorageManager {
 		// NOTE: We cannot handle attribute contexts yet
 		checkForContextValidity(entityContext);
 		final StorageModule module = getModule(entityContext);
-		module.merge(primaryKey, entity);
+		module.merge(primaryKey, entity, mergedField);
 		modulesWithChanges.put(entityContext, module);
 	}
 

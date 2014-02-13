@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
@@ -166,7 +167,8 @@ final class SesameSingleContextTests {
 		assertNotNull(b);
 		final String newString = "newStringAttributeValue";
 		b.setStringAttribute(newString);
-		c.merge(entityB.getUri(), b);
+		final Field strField = OWLClassB.getStrAttField();
+		c.merge(entityB.getUri(), b, strField);
 		c.commit();
 		final OWLClassB res = c.find(OWLClassB.class, entityB.getUri());
 		assertNotNull(res);
@@ -184,7 +186,8 @@ final class SesameSingleContextTests {
 		final String toRemove = entityA.getTypes().iterator().next();
 		a.getTypes().remove(toRemove);
 		a.getTypes().add(newType);
-		c.merge(a.getUri(), a);
+		final Field typesField = OWLClassA.getTypesField();
+		c.merge(a.getUri(), a, typesField);
 		c.commit();
 
 		final OWLClassA res = c.find(OWLClassA.class, entityA.getUri());
@@ -206,7 +209,8 @@ final class SesameSingleContextTests {
 		final OWLClassD d = c.find(OWLClassD.class, entityD.getUri());
 		assertNotNull(d);
 		d.setOwlClassA(newA);
-		c.merge(d.getUri(), d);
+		final Field aField = OWLClassD.getOwlClassAField();
+		c.merge(d.getUri(), d, aField);
 		c.persist(newA.getUri(), newA);
 		c.commit();
 
@@ -230,7 +234,8 @@ final class SesameSingleContextTests {
 		final OWLClassD d = c.find(OWLClassD.class, entityD.getUri());
 		assertNotNull(d);
 		d.setOwlClassA(null);
-		c.merge(d.getUri(), d);
+		final Field aField = OWLClassD.getOwlClassAField();
+		c.merge(d.getUri(), d, aField);
 		c.commit();
 		final OWLClassD resD = c.find(OWLClassD.class, d.getUri());
 		assertNotNull(resD);
@@ -248,7 +253,8 @@ final class SesameSingleContextTests {
 		assertNotNull(a);
 		assertNotNull(a.getStringAttribute());
 		a.setStringAttribute(null);
-		c.merge(a.getUri(), a);
+		final Field strField = OWLClassA.getStrAttField();
+		c.merge(a.getUri(), a, strField);
 		c.commit();
 
 		final OWLClassA res = c.find(OWLClassA.class, entityA.getUri());

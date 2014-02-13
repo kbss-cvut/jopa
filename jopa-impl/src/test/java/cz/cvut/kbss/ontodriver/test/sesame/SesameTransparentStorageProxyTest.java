@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -90,7 +91,8 @@ public class SesameTransparentStorageProxyTest {
 		c.setAutoCommit(false);
 		final OWLClassA a = c.find(OWLClassA.class, entityA.getUri());
 		a.setStringAttribute("newString");
-		c.merge(a.getUri(), a);
+		final Field strField = OWLClassA.getStrAttField();
+		c.merge(a.getUri(), a, strField);
 		final OWLClassA other = c.find(OWLClassA.class, entityA.getUri());
 		assertEquals(entityA.getStringAttribute(), other.getStringAttribute());
 	}
@@ -111,7 +113,8 @@ public class SesameTransparentStorageProxyTest {
 		final OWLClassD d = c.find(OWLClassD.class, entityD.getUri());
 		final OWLClassA a = c.find(OWLClassA.class, newA.getUri());
 		d.setOwlClassA(a);
-		c.merge(d.getUri(), d);
+		final Field aField = OWLClassD.getOwlClassAField();
+		c.merge(d.getUri(), d, aField);
 		final OWLClassD other = c.find(OWLClassD.class, entityD.getUri());
 		assertEquals(d.getUri(), other.getUri());
 		c.loadFieldValue(d, OWLClassD.class.getDeclaredField("owlClassA"));

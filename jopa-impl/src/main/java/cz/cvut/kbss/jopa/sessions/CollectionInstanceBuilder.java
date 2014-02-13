@@ -53,17 +53,16 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 * @return A deep clone of the specified collection
 	 */
 	@Override
-	Object buildClone(Object cloneOwner, Class<?> origCls, Object collection, URI contextUri)
+	Object buildClone(Object cloneOwner, Field field, Object collection, URI contextUri)
 			throws OWLPersistenceException {
 		assert (collection instanceof Collection);
 		Collection<?> container = (Collection<?>) collection;
 		if (container instanceof IndirectCollection<?>) {
 			container = (Collection<?>) ((IndirectCollection<?>) container)
 					.getReferencedCollection();
-			origCls = container.getClass();
 		}
 		Collection<?> clone = null;
-		clone = cloneUsingDefaultConstructor(cloneOwner, container, contextUri);
+		clone = cloneUsingDefaultConstructor(cloneOwner, field, container, contextUri);
 		if (clone == null) {
 			if (Collections.EMPTY_LIST == container) {
 				return Collections.EMPTY_LIST;
@@ -77,7 +76,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 			if (!CloneBuilderImpl.isPrimitiveOrString(element.getClass())) {
 				element = builder.buildClone(element, contextUri);
 				if (element instanceof Collection || element instanceof Map) {
-					element = builder.createIndirectCollection(element, cloneOwner);
+					element = builder.createIndirectCollection(element, cloneOwner, field);
 				}
 			}
 			params[0] = element;
@@ -112,6 +111,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 				throw new OWLPersistenceException(e);
 			}
 		}
+		clone = (Collection<?>) builder.createIndirectCollection(clone, cloneOwner, field);
 		return clone;
 	}
 
@@ -124,13 +124,13 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 *            The collection to clone.
 	 * @return
 	 */
-	private Collection<?> cloneUsingDefaultConstructor(Object cloneOwner, Collection<?> container,
-			URI contextUri) {
+	private Collection<?> cloneUsingDefaultConstructor(Object cloneOwner, Field field,
+			Collection<?> container, URI contextUri) {
 		Class<?> javaClass = container.getClass();
 		Collection<?> result = createNewInstance(javaClass, container.size());
 		if (result != null) {
 			// Makes shallow copy
-			cloneCollectionContent(cloneOwner, container, result, contextUri);
+			cloneCollectionContent(cloneOwner, field, container, result, contextUri);
 		}
 		return result;
 	}
@@ -177,7 +177,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 * @param source
 	 *            The collection to clone.
 	 */
-	private void cloneCollectionContent(Object cloneOwner, Collection<?> source,
+	private void cloneCollectionContent(Object cloneOwner, Field field, Collection<?> source,
 			Collection<?> target, URI contextUri) {
 		if (source.isEmpty()) {
 			return;
@@ -192,10 +192,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 			if (builder.isTypeManaged(obj.getClass())) {
 				clone = uow.registerExistingObject(obj, contextUri);
 			} else {
-				clone = builder.buildClone(obj, contextUri);
-				if (clone instanceof Collection || clone instanceof Map) {
-					clone = builder.createIndirectCollection(clone, cloneOwner);
-				}
+				clone = builder.buildClone(cloneOwner, field, obj, contextUri);
 			}
 			tg.add(clone);
 		}

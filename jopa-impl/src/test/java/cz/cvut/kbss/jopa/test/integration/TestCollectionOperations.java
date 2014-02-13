@@ -94,6 +94,8 @@ public class TestCollectionOperations {
 		em.getTransaction().commit();
 		OWLClassA res = em.find(OWLClassA.class, testA.getUri());
 		assertNotNull(res);
+		// Trigger lazy loading
+		res.getTypes();
 		em.detach(res);
 		final String newString = "newStringAttribute";
 		res.setStringAttribute(newString);

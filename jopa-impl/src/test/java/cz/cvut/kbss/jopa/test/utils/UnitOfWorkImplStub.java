@@ -1,5 +1,7 @@
 package cz.cvut.kbss.jopa.test.utils;
 
+import java.lang.reflect.Field;
+
 import cz.cvut.kbss.jopa.sessions.AbstractSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
@@ -16,7 +18,7 @@ public class UnitOfWorkImplStub extends UnitOfWorkImpl {
 	 * This is the only method we need to override.
 	 */
 	@Override
-	public void persistChangeInTransaction(Object entity) {
+	public void attributeChanged(Object entity, Field field) {
 		this.lastEntity = entity;
 	}
 

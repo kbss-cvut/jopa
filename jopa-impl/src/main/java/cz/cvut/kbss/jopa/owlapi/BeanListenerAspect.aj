@@ -16,6 +16,7 @@
 package cz.cvut.kbss.jopa.owlapi;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,8 +30,7 @@ import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
 
 public aspect BeanListenerAspect {
 
-	private static final Logger LOG = Logger.getLogger(BeanListenerAspect.class
-			.getName());
+	private static final Logger LOG = Logger.getLogger(BeanListenerAspect.class.getName());
 
 	pointcut getter() : get( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
 
@@ -61,8 +61,7 @@ public aspect BeanListenerAspect {
 			throw new OWLPersistenceException(e.getMessage());
 		}
 		if (CloneBuilderImpl.isFieldInferred(field)) {
-			throw new OWLPersistenceException(
-					"Modifying inferred attributes is forbidden.");
+			throw new OWLPersistenceException("Modifying inferred attributes is forbidden.");
 		}
 	}
 
@@ -71,8 +70,10 @@ public aspect BeanListenerAspect {
 		final Object entity = thisJoinPoint.getTarget();
 		Field f;
 		try {
-			f = entity.getClass().getDeclaredField(
-					thisJoinPoint.getSignature().getName());
+			f = entity.getClass().getDeclaredField(thisJoinPoint.getSignature().getName());
+			if (Modifier.isStatic(f.getModifiers())) {
+				return;
+			}
 			OWLAPIPersistenceProvider.persistEntityChanges(entity, f);
 		} catch (NoSuchFieldException e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
@@ -89,12 +90,15 @@ public aspect BeanListenerAspect {
 			final Object object = thisJoinPoint.getTarget();
 			final Field field = object.getClass().getDeclaredField(
 					thisJoinPoint.getSignature().getName());
+			if (Modifier.isStatic(field.getModifiers())) {
+				return;
+			}
 
 			field.setAccessible(true);
 
 			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("*** Fetching " + field.getName() + " of "
-						+ object.getClass() + ":" + object.hashCode());
+				LOG.finest("*** Fetching " + field.getName() + " of " + object.getClass() + ":"
+						+ object.hashCode());
 			}
 
 			OWLAPIPersistenceProvider.loadReference(object, field);

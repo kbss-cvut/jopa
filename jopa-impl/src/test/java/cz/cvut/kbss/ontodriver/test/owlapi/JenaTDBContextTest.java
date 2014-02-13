@@ -48,7 +48,6 @@ public class JenaTDBContextTest {
 	private static final List<StorageConfig> storage = Collections
 			.<StorageConfig> singletonList(new JenaTDBStorageConfig());
 	private static final Map<String, String> properties = initProperties();
-	private static final String OWLCLASS_A_FIELD = "owlClassA";
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
@@ -143,12 +142,14 @@ public class JenaTDBContextTest {
 		assertNotNull(a);
 		final String newType = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/OWLClassANew";
 		a.getTypes().add(newType);
-		c.merge(a.getUri(), a);
+		final Field typesField = OWLClassA.getTypesField();
+		c.merge(a.getUri(), a, typesField);
 		final OWLClassB b = c.find(OWLClassB.class, entityB.getUri());
 		assertNotNull(b);
 		final String newStr = "newStringAttribute";
 		b.setStringAttribute(newStr);
-		c.merge(b.getUri(), b);
+		final Field strField = OWLClassB.getStrAttField();
+		c.merge(b.getUri(), b, strField);
 
 		final OWLClassA resA = c.find(OWLClassA.class, entityA.getUri());
 		assertNotNull(resA);
@@ -171,7 +172,7 @@ public class JenaTDBContextTest {
 		final OWLClassI i = c.find(OWLClassI.class, entityI.getUri());
 		assertNotNull(i);
 		assertNull(i.getOwlClassA());
-		final Field f = OWLClassI.class.getDeclaredField(OWLCLASS_A_FIELD);
+		final Field f = OWLClassI.getOwlClassAField();
 		c.loadFieldValue(i, f);
 		assertNotNull(i.getOwlClassA());
 		final OWLClassA newA = new OWLClassA();
@@ -179,7 +180,8 @@ public class JenaTDBContextTest {
 		newA.setStringAttribute("someString");
 		i.setOwlClassA(newA);
 		c.persist(newA.getUri(), newA);
-		c.merge(i.getUri(), i);
+		final Field aField = OWLClassI.getOwlClassAField();
+		c.merge(i.getUri(), i, aField);
 		c.commit();
 
 		final OWLClassI resI = c.find(OWLClassI.class, entityI.getUri());

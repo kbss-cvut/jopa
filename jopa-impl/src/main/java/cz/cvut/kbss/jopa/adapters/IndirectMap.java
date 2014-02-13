@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.adapters;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,8 +8,7 @@ import java.util.Set;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
-public class IndirectMap<K, V> extends IndirectCollection<Map<K, V>> implements
-		Map<K, V> {
+public class IndirectMap<K, V> extends IndirectCollection<Map<K, V>> implements Map<K, V> {
 
 	private final Map<K, V> internalMap;
 
@@ -19,9 +19,8 @@ public class IndirectMap<K, V> extends IndirectCollection<Map<K, V>> implements
 		this.internalMap = new HashMap<>();
 	}
 
-	public IndirectMap(Object owner, UnitOfWorkImpl persistenceContext,
-			Map<K, V> map) {
-		super(owner, persistenceContext);
+	public IndirectMap(Object owner, Field f, UnitOfWorkImpl persistenceContext, Map<K, V> map) {
+		super(owner, f, persistenceContext);
 		if (map == null) {
 			throw new NullPointerException();
 		}

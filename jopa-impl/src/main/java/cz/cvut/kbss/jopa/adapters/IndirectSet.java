@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.adapters;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -7,8 +8,7 @@ import java.util.Set;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
-public class IndirectSet<E> extends IndirectCollection<Set<E>> implements
-		Set<E> {
+public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E> {
 
 	private Set<E> internalSet;
 
@@ -20,11 +20,10 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements
 		this.internalSet = new HashSet<E>();
 	}
 
-	public IndirectSet(Object owner, UnitOfWorkImpl uow, Set<E> referencedSet) {
-		super(owner, uow);
+	public IndirectSet(Object owner, Field f, UnitOfWorkImpl uow, Set<E> referencedSet) {
+		super(owner, f, uow);
 		if (referencedSet == null) {
-			throw new NullPointerException(
-					"Null passed in as the referencedSet.");
+			throw new NullPointerException("Null passed in as the referencedSet.");
 		}
 		this.internalSet = referencedSet;
 	}

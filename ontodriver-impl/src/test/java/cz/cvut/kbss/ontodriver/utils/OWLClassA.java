@@ -15,6 +15,7 @@
 
 package cz.cvut.kbss.ontodriver.utils;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Set;
 
@@ -25,6 +26,9 @@ import cz.cvut.kbss.jopa.model.annotations.Types;
 
 @OWLClass(iri = "http://new.owl#OWLClassA")
 public class OWLClassA {
+
+	private static final String TYPES_FIELD = "types";
+	private static final String STR_ATT_FIELD = "stringAttribute";
 
 	@Types
 	private Set<String> types;
@@ -66,13 +70,21 @@ public class OWLClassA {
 		return types;
 	}
 
-//	@Override
-//	public String toString() {
-//		String out = "OWLClassA: uri = " + uri;
-//		out += ", stringAttribute = " + stringAttribute;
-//		if (types != null) {
-//			out += ", types = {" + types.toString() + "}";
-//		}
-//		return out;
-//	}
+	public static Field getStrAttField() throws NoSuchFieldException, SecurityException {
+		return OWLClassA.class.getDeclaredField(STR_ATT_FIELD);
+	}
+
+	public static Field getTypesField() throws NoSuchFieldException, SecurityException {
+		return OWLClassA.class.getDeclaredField(TYPES_FIELD);
+	}
+
+	// @Override
+	// public String toString() {
+	// String out = "OWLClassA: uri = " + uri;
+	// out += ", stringAttribute = " + stringAttribute;
+	// if (types != null) {
+	// out += ", types = {" + types.toString() + "}";
+	// }
+	// return out;
+	// }
 }

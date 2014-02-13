@@ -32,10 +32,11 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 	 * @param javaClass
 	 * @return New object of the given class.
 	 */
-	Object buildClone(Object cloneOwner, final Class<?> javaClass, Object original, URI contextUri) {
-		if (javaClass == null || original == null) {
+	Object buildClone(Object cloneOwner, Field field, Object original, URI contextUri) {
+		if (original == null) {
 			return null;
 		}
+		final Class<?> javaClass = original.getClass();
 		if (CloneBuilderImpl.isPrimitiveOrString(javaClass)) {
 			return original;
 		}

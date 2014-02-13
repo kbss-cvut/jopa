@@ -22,8 +22,11 @@ import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
@@ -460,8 +463,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		return this.hasNew;
 	}
 
-	public void setHasChanges(boolean hasChanges) {
-		this.hasChanges = hasChanges;
+	public void setHasChanges() {
+		this.hasChanges = true;
 	}
 
 	public Map<Object, Object> getDeletedObjects() {
@@ -598,22 +601,23 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	/**
-	 * Persist changes made to the specified entity to the underlying
-	 * transactional ontology.
+	 * Persists changed value of the specified field.
 	 * 
 	 * @param entity
-	 *            The entity with changes
+	 *            Entity with changes (the clone)
+	 * @param f
+	 *            The field whose value has changed
 	 * @throws IllegalStateException
-	 *             If this {@code UnitOfWork} is not in transaction
+	 *             If this UoW is not in transaction
 	 */
-	public void persistChangeInTransaction(Object entity) {
+	public void attributeChanged(Object entity, Field f) {
 		if (!isInTransaction()) {
 			throw new IllegalStateException("This unit of work is not in a transaction.");
 		}
-		storageMerge(getIdentifier(entity), entity);
-		setHasChanges(true);
+		storageMerge(getIdentifier(entity), entity, f);
+		setHasChanges();
 		// Let's see how this works
-		checkForCollections(entity);
+		setIndirectCollectionIfPresent(entity, f);
 	}
 
 	/**
@@ -685,9 +689,23 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		// This cast is OK, we just clone the entity instance
 		final T clone = (T) registerExistingObject(entity, contextUri);
 
-		if (isInTransaction()) {
-			persistChangeInTransaction(clone);
+		// Propagate the entity's state into storage
+		final EntityType<?> et = getMetamodel().entity(entity.getClass());
+		for (Attribute<?, ?> att : et.getAttributes()) {
+			storageMerge(iri, clone, att.getJavaField());
+			setIndirectCollectionIfPresent(clone, att.getJavaField());
 		}
+		final TypesSpecification<?, ?> ts = et.getTypes();
+		if (ts != null) {
+			storageMerge(iri, clone, ts.getJavaField());
+			setIndirectCollectionIfPresent(clone, ts.getJavaField());
+		}
+		final PropertiesSpecification<?, ?> ps = et.getProperties();
+		if (ps != null) {
+			storageMerge(iri, clone, ps.getJavaField());
+			setIndirectCollectionIfPresent(clone, ps.getJavaField());
+		}
+
 		cacheManager.acquireReadLock();
 		try {
 			if (cacheManager.contains(contextUri, clone.getClass(), iri)) {
@@ -703,8 +721,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		} finally {
 			cacheManager.releaseReadLock();
 		}
-		checkForCollections(clone);
-		setHasChanges(true);
+		setHasChanges();
 		return clone;
 	}
 
@@ -1029,6 +1046,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			final URI context = storageConnection.getSaveContextFor(entity).getUri();
 			final Class<?> cls = field.getType();
 			final Object orig = field.get(entity);
+			final Object entityOriginal = getOriginal(entity);
+			if (entityOriginal != null) {
+				field.set(entityOriginal, orig);
+			}
 			Object clone;
 			if (orig == null) {
 				clone = null;
@@ -1036,11 +1057,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 				if (isManagedType(cls)) {
 					clone = registerExistingObject(orig, context);
 				} else {
-					clone = cloneBuilder.buildClone(entity, orig, context);
+					clone = cloneBuilder.buildClone(entity, field, orig, context);
 				}
 			}
 			field.set(entity, clone);
-			checkForCollections(entity);
 		} catch (OntoDriverException e) {
 			throw new OWLPersistenceException(e);
 		} catch (IllegalArgumentException e) {
@@ -1136,7 +1156,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			}
 			if (value instanceof Collection || value instanceof Map) {
 				indirectCollection = ((CloneBuilderImpl) cloneBuilder).createIndirectCollection(
-						value, entity);
+						value, entity, field);
 				field.set(entity, indirectCollection);
 			}
 		} catch (IllegalAccessException e) {
@@ -1291,11 +1311,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 	}
 
-	private <T> void storageMerge(Object primaryKey, T entity) {
+	private <T> void storageMerge(Object primaryKey, T entity, Field field) {
 		assert primaryKey != null;
 		assert entity != null;
 		try {
-			storageConnection.merge(primaryKey, entity);
+			storageConnection.merge(primaryKey, entity, field);
 		} catch (MetamodelNotSetException e) {
 			throw new OWLPersistenceException(e);
 		} catch (OntoDriverException e) {

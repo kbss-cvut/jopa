@@ -4,7 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,13 +25,13 @@ import cz.cvut.kbss.jopa.test.utils.UnitOfWorkImplStub;
 
 public class IndirectListTest {
 
-	private static final Logger LOG = Logger.getLogger(IndirectListTest.class
-			.getName());
+	private static final Logger LOG = Logger.getLogger(IndirectListTest.class.getName());
 
 	private static UnitOfWorkImplStub uow;
 	private static List<OWLClassA> list;
 	private static List<OWLClassA> backupList;
 	private static OWLClassC owner;
+	private static Field ownerField;
 
 	private static IndirectList<OWLClassA> target;
 
@@ -39,6 +41,7 @@ public class IndirectListTest {
 		uow = new UnitOfWorkImplStub(new ServerSessionStub());
 		owner = new OWLClassC();
 		owner.setUri(URI.create("http://C"));
+		ownerField = OWLClassC.class.getDeclaredField("referencedList");
 		backupList = new ArrayList<OWLClassA>();
 		list = new ArrayList<OWLClassA>();
 		for (byte i = 0; i < 10; i++) {
@@ -48,7 +51,7 @@ public class IndirectListTest {
 			backupList.add(a);
 		}
 		list.addAll(backupList);
-		target = new IndirectList<OWLClassA>(owner, uow, list);
+		target = new IndirectList<OWLClassA>(owner, ownerField, uow, list);
 		owner.setReferencedList(target);
 	}
 
@@ -61,16 +64,16 @@ public class IndirectListTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testConstructorNull() {
-		final IndirectList<OWLClassA> l = new IndirectList<OWLClassA>(owner,
-				uow, null);
-		assertNull(l);
+		@SuppressWarnings("unused")
+		final IndirectList<OWLClassA> l = new IndirectList<OWLClassA>(owner, ownerField, uow, null);
+		fail("This line should not have been reached.");
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testConstructorNullTwo() {
-		final IndirectList<OWLClassA> l = new IndirectList<OWLClassA>(owner,
-				null, list);
-		assertNull(l);
+		@SuppressWarnings("unused")
+		final IndirectList<OWLClassA> l = new IndirectList<OWLClassA>(owner, ownerField, null, list);
+		fail("This line should not have been reached.");
 	}
 
 	@Test

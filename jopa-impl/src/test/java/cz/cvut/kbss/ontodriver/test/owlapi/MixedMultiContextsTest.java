@@ -40,7 +40,6 @@ public class MixedMultiContextsTest {
 	private static final Logger LOG = Logger.getLogger(MixedMultiContextsTest.class.getName());
 
 	private static final List<StorageConfig> storages = initStorages();
-	private static final String OWLCLASS_A_REFERENCE_FIELD = "owlClassA";
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
@@ -132,12 +131,14 @@ public class MixedMultiContextsTest {
 		newA.setStringAttribute("newA'sStringAttribute");
 		d.setOwlClassA(newA);
 		c.persist(newA.getUri(), newA, ctxD.getUri());
-		c.merge(d.getUri(), d);
+		final Field aField = OWLClassD.getOwlClassAField();
+		c.merge(d.getUri(), d, aField);
 		final OWLClassE e = c.find(entityE.getClass(), entityE.getUri(), ctxIE.getUri());
 		assertNotNull(e);
 		final String newString = "newStringAttributeForE";
 		e.setStringAttribute(newString);
-		c.merge(e.getUri(), e);
+		final Field strField = OWLClassE.getStrAttField();
+		c.merge(e.getUri(), e, strField);
 		c.commit();
 
 		// Assert that entityA is still present although D is referencing
@@ -189,7 +190,8 @@ public class MixedMultiContextsTest {
 		assertNotNull(modifyI);
 		c.remove(removeB.getUri(), removeB);
 		modifyI.setOwlClassA(null);
-		c.merge(modifyI.getUri(), modifyI);
+		final Field aField = OWLClassI.getOwlClassAField();
+		c.merge(modifyI.getUri(), modifyI, aField);
 		c.remove(removeA.getUri(), removeA, ctxI.getUri());
 		c.commit();
 
@@ -221,11 +223,12 @@ public class MixedMultiContextsTest {
 		final OWLClassA changeOne = c.find(entityA.getClass(), entityA.getUri(), contexts.get(0)
 				.getUri());
 		changeOne.setStringAttribute(changed);
-		c.merge(changeOne.getUri(), changeOne);
+		final Field strField = OWLClassA.getStrAttField();
+		c.merge(changeOne.getUri(), changeOne, strField);
 		final OWLClassA changeTwo = c.find(entityA.getClass(), entityA.getUri(), contexts.get(2)
 				.getUri());
 		changeTwo.setStringAttribute(changed);
-		c.merge(changeTwo.getUri(), changeTwo);
+		c.merge(changeTwo.getUri(), changeTwo, strField);
 		c.commit();
 		final OWLClassA testOne = c.find(entityA.getClass(), entityA.getUri(), contexts.get(0)
 				.getUri());
@@ -237,7 +240,7 @@ public class MixedMultiContextsTest {
 		final OWLClassI entI = c.find(entityI.getClass(), entityI.getUri(), cLoad.getUri());
 		assertNotNull(entI);
 		assertNull(entI.getOwlClassA());
-		final Field f = entI.getClass().getDeclaredField(OWLCLASS_A_REFERENCE_FIELD);
+		final Field f = OWLClassI.getOwlClassAField();
 		c.loadFieldValue(entI, f);
 		assertNotNull(entI.getOwlClassA());
 		assertEquals(entityA.getStringAttribute(), entI.getOwlClassA().getStringAttribute());

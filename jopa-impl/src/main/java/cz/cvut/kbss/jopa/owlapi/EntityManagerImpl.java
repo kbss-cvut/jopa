@@ -137,9 +137,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
 					try {
 						Object ox = at.getJavaField().get(o);
-						System.out.println("object=" + o + ", attribute=" + at.getName()
-								+ ", value=" + ox);
-
+						if (LOG.isLoggable(Level.FINEST)) {
+							LOG.finest("object=" + o + ", attribute=" + at.getName() + ", value="
+									+ ox);
+						}
 						if (ox == null) {
 							return;
 						}
@@ -196,9 +197,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
 					try {
 						Object ox = at.getJavaField().get(o);
-						System.out.println("object=" + o + ", attribute=" + at.getName()
-								+ ", value=" + ox);
-
+						if (LOG.isLoggable(Level.FINEST)) {
+							LOG.finest("object=" + o + ", attribute=" + at.getName() + ", value="
+									+ ox);
+						}
 						if (ox == null) {
 							return;
 						}

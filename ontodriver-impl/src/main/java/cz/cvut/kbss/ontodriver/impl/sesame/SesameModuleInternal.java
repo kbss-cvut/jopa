@@ -119,7 +119,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	@Override
-	public <T> void mergeEntity(Object primaryKey, T entity) throws OntoDriverException {
+	public <T> void mergeEntity(Object primaryKey, T entity, Field mergedField)
+			throws OntoDriverException {
 		assert primaryKey != null : "argument primaryKey is null";
 		assert entity != null : "argument entity is null";
 
@@ -128,8 +129,28 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			throw new OntoDriverException(new IllegalArgumentException("The entity " + entity
 					+ " is not persistent within this context."));
 		}
+		if (LOG.isLoggable(Level.FINEST)) {
+			LOG.finest("Saving value of field " + mergedField + " for entity with id = "
+					+ primaryKey);
+		}
 		final EntityType<T> et = getEntityType((Class<T>) entity.getClass());
-		saveEntityAttributes(entity, uri, et);
+		if (!mergedField.isAccessible()) {
+			mergedField.setAccessible(true);
+		}
+		final TypesSpecification<?, ?> ts = et.getTypes();
+		final PropertiesSpecification<?, ?> ps = et.getProperties();
+		try {
+			if (ts != null && ts.getJavaField().equals(mergedField)) {
+				typesHandler.save(entity, uri, ts, et);
+			} else if (ps != null && ps.getJavaField().equals(mergedField)) {
+				propertiesHandler.save(entity, uri, ps, et);
+			} else {
+				final Attribute<?, ?> att = et.getAttribute(mergedField.getName());
+				saveReference(entity, uri, att, et);
+			}
+		} catch (RuntimeException | IllegalAccessException e) {
+			throw new OntoDriverInternalException(e);
+		}
 	}
 
 	@Override
@@ -511,7 +532,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			}
 			final PropertiesSpecification<?, ?> properties = entityType.getProperties();
 			if (properties != null) {
-				savePropertiesReference(entity, primaryKey, properties, entityType);
+				propertiesHandler.save(entity, primaryKey, properties, entityType);
 			}
 			for (Attribute<?, ?> att : entityType.getAttributes()) {
 				saveReference(entity, primaryKey, att, entityType);
@@ -519,27 +540,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		} catch (RuntimeException | IllegalAccessException e) {
 			throw new OntoDriverInternalException(e);
 		}
-	}
-
-	/**
-	 * Saves properties which are not declared as fields in the entity but are
-	 * listed as values associated with subject with the same URI as the entity.
-	 * 
-	 * @param entity
-	 *            The entity
-	 * @param uri
-	 *            Primary key of the entity
-	 * @param props
-	 *            Properties specification
-	 * @param entityType
-	 *            Entity type as resolved from the metamodel
-	 * @throws IllegalArgumentException
-	 * @throws IllegalAccessException
-	 */
-	private <T> void savePropertiesReference(T entity, URI uri,
-			PropertiesSpecification<?, ?> props, EntityType<T> entityType)
-			throws IllegalArgumentException, IllegalAccessException {
-		propertiesHandler.save(entity, uri, props, entityType);
 	}
 
 	/**

@@ -9,9 +9,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.StorageModule;
@@ -68,7 +68,8 @@ public class StorageModuleMock extends StorageModule {
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException {
+	public <T> void merge(Object primaryKey, T entity, Field mergedField)
+			throws OntoDriverException {
 		entities.put(primaryKey, entity);
 	}
 

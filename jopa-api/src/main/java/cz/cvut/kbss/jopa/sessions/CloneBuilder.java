@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,8 @@ public interface CloneBuilder {
 	 * 
 	 * @param cloneOwner
 	 *            The owner of the created clone
+	 * @param clonedField
+	 *            The field whose value is being cloned
 	 * @param original
 	 *            The original to clone
 	 * @param contextUri
@@ -45,7 +48,7 @@ public interface CloneBuilder {
 	 *             If {@code cloneOwner}, {@code original} or {@code contextUri}
 	 *             is {@code null}
 	 */
-	public Object buildClone(Object cloneOwner, Object original, URI contextUri);
+	public Object buildClone(Object cloneOwner, Field clonedField, Object original, URI contextUri);
 
 	/**
 	 * Builds clones of all given objects.

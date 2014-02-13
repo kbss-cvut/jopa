@@ -82,20 +82,22 @@ public interface ModuleInternal<X, Y> {
 	public <T> void persistEntity(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
-	 * Merges state of the specified entity into this module. </p>
+	 * Merges state of the specified entity field into this module. </p>
 	 * 
 	 * @param primaryKey
 	 *            Primary key
 	 * @param entity
 	 *            The entity to merge
-	 * 
+	 * @param mergedField
+	 *            The field to merge
 	 * @throws OntoDriverException
 	 *             If the entity is not persistent or if an error occurs during
 	 *             merge
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code primaryKey} is null
 	 */
-	public <T> void mergeEntity(Object primaryKey, T entity) throws OntoDriverException;
+	public <T> void mergeEntity(Object primaryKey, T entity, Field mergedField)
+			throws OntoDriverException;
 
 	/**
 	 * Removes entity with the specified primary key. </p>

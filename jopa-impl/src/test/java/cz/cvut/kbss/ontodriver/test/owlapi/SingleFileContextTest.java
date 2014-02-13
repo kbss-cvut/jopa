@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +38,6 @@ public class SingleFileContextTest {
 
 	private static final List<StorageConfig> storage = Collections
 			.<StorageConfig> singletonList(new OwlapiStorageConfig());
-	private static final String OWLCLASS_A_REFERENCE_FIELD = "owlClassA";
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
@@ -196,7 +196,8 @@ public class SingleFileContextTest {
 		assertNotNull(changed);
 		final String newString = "newStringAttributeForEntityB";
 		changed.setStringAttribute(newString);
-		c.merge(pk, changed);
+		final Field strField = OWLClassB.getStrAttField();
+		c.merge(pk, changed, strField);
 		final OWLClassB res = c.find(entityB.getClass(), pk);
 		assertNotNull(res);
 		assertEquals(newString, res.getStringAttribute());
@@ -216,7 +217,8 @@ public class SingleFileContextTest {
 		toChange.getTypes().add(typeOne);
 		toChange.getTypes().add(typeTwo);
 		final int size = toChange.getTypes().size();
-		c.merge(pk, toChange);
+		final Field typesField = OWLClassA.getTypesField();
+		c.merge(pk, toChange, typesField);
 		final OWLClassA res = c.find(entityA.getClass(), pk);
 		assertNotNull(res);
 		assertEquals(size, res.getTypes().size());
@@ -238,7 +240,7 @@ public class SingleFileContextTest {
 		final OWLClassI i = c.find(entityI.getClass(), pk);
 		assertNotNull(i);
 		assertNull(i.getOwlClassA());
-		c.loadFieldValue(i, i.getClass().getDeclaredField(OWLCLASS_A_REFERENCE_FIELD));
+		c.loadFieldValue(i, OWLClassI.getOwlClassAField());
 		assertNotNull(i.getOwlClassA());
 		assertEquals(a.getUri(), i.getOwlClassA().getUri());
 		assertEquals(a.getStringAttribute(), i.getOwlClassA().getStringAttribute());
@@ -253,7 +255,7 @@ public class SingleFileContextTest {
 		c.persist(pk, entityI);
 		c.persist(entityA.getUri(), entityA);
 		c.commit();
-		c.loadFieldValue(entityI, entityI.getClass().getDeclaredField(OWLCLASS_A_REFERENCE_FIELD));
+		c.loadFieldValue(entityI, OWLClassI.getOwlClassAField());
 		fail("This line should not have been reached.");
 	}
 

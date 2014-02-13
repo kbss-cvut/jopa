@@ -41,7 +41,6 @@ public class JenaSingleFileContextTest {
 
 	private static final List<StorageConfig> storage = Collections
 			.<StorageConfig> singletonList(new JenaStorageConfig());
-	private static final String OWLCLASS_A_FIELD = "owlClassA";
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
@@ -169,7 +168,8 @@ public class JenaSingleFileContextTest {
 		final OWLClassB b = c.find(entityB.getClass(), uriB);
 		assertNotNull(b);
 		b.setStringAttribute(newString);
-		c.merge(uriB, b);
+		final Field strField = OWLClassB.getStrAttField();
+		c.merge(uriB, b, strField);
 		final OWLClassA a = c.find(entityA.getClass(), uriA);
 		assertNotNull(a);
 		final Set<String> types = new HashSet<String>();
@@ -177,11 +177,13 @@ public class JenaSingleFileContextTest {
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/TTwo");
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/TThree");
 		a.setTypes(types);
-		c.merge(uriA, a);
+		final Field typesField = OWLClassA.getTypesField();
+		c.merge(uriA, a, typesField);
 		final OWLClassD d = c.find(entityD.getClass(), uriD);
 		assertNotNull(d);
 		d.setOwlClassA(null);
-		c.merge(uriD, d);
+		final Field aField = OWLClassD.getOwlClassAField();
+		c.merge(uriD, d, aField);
 		c.commit();
 
 		assertTrue(c.contains(uriB));
@@ -282,7 +284,7 @@ public class JenaSingleFileContextTest {
 		c = ds.getConnection(facade);
 		final OWLClassI res = c.find(entityI.getClass(), uriI);
 		assertNull(res.getOwlClassA());
-		final Field aField = entityI.getClass().getDeclaredField(OWLCLASS_A_FIELD);
+		final Field aField = OWLClassI.getOwlClassAField();
 		c.loadFieldValue(res, aField);
 		assertNotNull(res.getOwlClassA());
 		assertEquals(entityA.getUri(), res.getOwlClassA().getUri());

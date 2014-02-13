@@ -107,14 +107,15 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException {
+	public <T> void merge(Object primaryKey, T entity, Field mergedField)
+			throws OntoDriverException {
 		ensureOpen();
 		startTransactionIfNotActive();
-		if (primaryKey == null || entity == null) {
+		if (primaryKey == null || entity == null || mergedField == null) {
 			throw new NullPointerException("Null passed to merge: primaryKey = " + primaryKey
-					+ ", entity = " + entity);
+					+ ", entity = " + entity + ", mergedField = " + mergedField);
 		}
-		internal.mergeEntity(primaryKey, entity);
+		internal.mergeEntity(primaryKey, entity, mergedField);
 	}
 
 	@Override

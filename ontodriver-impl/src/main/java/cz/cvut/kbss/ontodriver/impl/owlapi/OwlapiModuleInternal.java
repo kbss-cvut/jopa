@@ -144,7 +144,8 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public <T> void mergeEntity(Object primaryKey, T entity) throws OntoDriverException {
+	public <T> void mergeEntity(Object primaryKey, T entity, Field mergedField)
+			throws OntoDriverException {
 		checkStatus();
 		assert primaryKey != null : "argument primaryKey is null";
 		assert entity != null : "argument entity is null";
@@ -152,11 +153,39 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		if (!isInOntologySignature(id, true)) {
 			throw new OntoDriverException(new IllegalArgumentException("The entity " + entity
 					+ " is not persistent within this context."));
-		} else {
-			final Class<?> cls = entity.getClass();
-			final EntityType<?> type = getEntityType(cls);
-			final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(id);
-			saveEntityAttributes(id, entity, type, individual);
+		}
+		final Class<?> cls = entity.getClass();
+		final EntityType<?> type = getEntityType(cls);
+		final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(id);
+		try {
+			if (!mergedField.isAccessible()) {
+				mergedField.setAccessible(true);
+			}
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Saving value of field " + mergedField + " for entity with id = "
+						+ primaryKey);
+			}
+			final TypesSpecification<?, ?> ts = type.getTypes();
+			final PropertiesSpecification<?, ?> ps = type.getProperties();
+			if (ts != null && ts.getJavaField().equals(mergedField)) {
+				_saveTypesReference(entity, type, ts, individual);
+			} else if (ps != null && ps.getJavaField().equals(mergedField)) {
+				_savePropertiesReference(entity, type, ps, individual);
+			} else {
+				final Attribute<?, ?> att = type.getAttribute(mergedField.getName());
+				_saveReference(entity, id, att, individual);
+			}
+		} catch (Exception e) {
+			throw new OntoDriverException("An error occured when" + " persisting entity "
+					+ entity.toString() + " IRI: " + id.toString(), e);
+		} finally {
+			try {
+				writeChanges();
+			} catch (Exception e) {
+				for (OWLOntologyChange ch : changes) {
+					LOG.severe(ch.toString());
+				}
+			}
 		}
 	}
 
@@ -368,9 +397,9 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			for (final Attribute<?, ?> a : type.getAttributes()) {
 				_saveReference(entity, id, a, individual);
 			}
-		} catch (Exception E) {
+		} catch (Exception e) {
 			throw new OntoDriverException("An error occured when" + " persisting entity "
-					+ entity.toString() + " IRI: " + id.toString(), E);
+					+ entity.toString() + " IRI: " + id.toString(), e);
 		} finally {
 			try {
 				writeChanges();

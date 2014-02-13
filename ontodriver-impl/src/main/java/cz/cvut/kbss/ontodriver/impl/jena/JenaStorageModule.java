@@ -2,9 +2,9 @@ package cz.cvut.kbss.ontodriver.impl.jena;
 
 import java.lang.reflect.Field;
 
-import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.StorageModule;
@@ -55,7 +55,8 @@ public class JenaStorageModule extends StorageModule {
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException {
+	public <T> void merge(Object primaryKey, T entity, Field mergedField)
+			throws OntoDriverException {
 		// TODO Auto-generated method stub
 
 	}

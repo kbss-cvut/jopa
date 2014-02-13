@@ -1,14 +1,18 @@
 package cz.cvut.kbss.jopa.adapters;
 
+import java.lang.reflect.Field;
+
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 public abstract class IndirectCollection<T> {
 
 	protected final Object owner;
+	protected final Field field;
 	protected final UnitOfWorkImpl persistenceContext;
 
 	protected IndirectCollection() {
 		owner = null;
+		field = null;
 		persistenceContext = null;
 	}
 
@@ -19,24 +23,25 @@ public abstract class IndirectCollection<T> {
 	 * 
 	 * @param owner
 	 *            Owner of the indirect collection
+	 * @param f
+	 *            The field holding this collection
 	 * @param persistenceContext
 	 *            Persistence context the owner belongs to
 	 * @throws NullPointerException
 	 *             If the persistence context is null
 	 */
-	protected IndirectCollection(Object owner, UnitOfWorkImpl persistenceContext) {
+	protected IndirectCollection(Object owner, Field f, UnitOfWorkImpl persistenceContext) {
 		if (persistenceContext == null) {
-			throw new NullPointerException(
-					"Null passed in as persistenceContext.");
+			throw new NullPointerException("Null passed in as persistenceContext.");
 		}
 		this.owner = owner;
+		this.field = f;
 		this.persistenceContext = persistenceContext;
 	}
 
 	protected void persistChange() {
-		if (persistenceContext.isInTransaction()
-				&& !persistenceContext.isInCommit()) {
-			persistenceContext.persistChangeInTransaction(owner);
+		if (persistenceContext.isInTransaction() && !persistenceContext.isInCommit()) {
+			persistenceContext.attributeChanged(owner, field);
 		}
 	}
 

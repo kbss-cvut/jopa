@@ -40,16 +40,17 @@ abstract class AbstractInstanceBuilder {
 	 * For some implementations this may mean creating an empty object, others
 	 * might choose to initialize it using the original data.
 	 * 
-	 * @param cloneOwner Instance owning the clone which will be created
-	 * @param origCls
-	 *            Type of the original object
+	 * @param cloneOwner
+	 *            Instance owning the clone which will be created
+	 * @param field
+	 *            Field which will contain the clone
 	 * @param original
 	 *            The original object
 	 * @param contextUri
 	 *            Context URI
 	 * @return
 	 */
-	abstract Object buildClone(Object cloneOwner, Class<?> origCls, Object original, URI contextUri);
+	abstract Object buildClone(Object cloneOwner, Field field, Object original, URI contextUri);
 
 	/**
 	 * Merges changes from clone to the original.
@@ -65,8 +66,7 @@ abstract class AbstractInstanceBuilder {
 	 * @throws IllegalAccessException
 	 * @throws IllegalArgumentException
 	 */
-	abstract void mergeChanges(Field field, Object target,
-			Object originalValue, Object cloneValue)
+	abstract void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue)
 			throws IllegalArgumentException, IllegalAccessException;
 
 	/**
@@ -84,8 +84,8 @@ abstract class AbstractInstanceBuilder {
 	 * @throws SecurityException
 	 *             If the security check denies access to the constructor.
 	 */
-	protected static Constructor<?> getDeclaredConstructorFor(
-			final Class<?> javaClass, Class<?>[] args) throws SecurityException {
+	protected static Constructor<?> getDeclaredConstructorFor(final Class<?> javaClass,
+			Class<?>[] args) throws SecurityException {
 		Constructor<?> c = null;
 		try {
 			c = javaClass.getDeclaredConstructor(args);
@@ -112,8 +112,7 @@ abstract class AbstractInstanceBuilder {
 	 *            The class whose constructors should be searched.
 	 * @return The first declared constructor of the specified class.
 	 */
-	protected static Constructor<?> getFirstDeclaredConstructorFor(
-			Class<?> javaClass) {
+	protected static Constructor<?> getFirstDeclaredConstructorFor(Class<?> javaClass) {
 		Constructor<?>[] ctors = javaClass.getDeclaredConstructors();
 		return ctors[0];
 	}

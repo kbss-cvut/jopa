@@ -173,8 +173,8 @@ public abstract class StorageManager implements Transactional {
 			throws OntoDriverException;
 
 	/**
-	 * Merges the state of the specified entity into the appropriate ontology.
-	 * </p>
+	 * Merges the state of the specified entity field into the appropriate
+	 * ontology. </p>
 	 * 
 	 * The {@code entityContext} represents the context into which the entity
 	 * should be merged. If the context does not contain such individual, an
@@ -189,6 +189,8 @@ public abstract class StorageManager implements Transactional {
 	 *            Primary key of the merged entity
 	 * @param entity
 	 *            The merged entity
+	 * @param mergedField
+	 *            The field to merge
 	 * @param entityContext
 	 *            Context of the entity
 	 * @param attributeContexts
@@ -201,8 +203,9 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code primaryKey}, {@code entity} or
 	 *             {@code attributeContexts} is {@code null}
 	 */
-	public abstract <T> void merge(Object primaryKey, T entity, Context entityContext,
-			Map<String, Context> attributeContexts) throws OntoDriverException;
+	public abstract <T> void merge(Object primaryKey, T entity, Field mergedField,
+			Context entityContext, Map<String, Context> attributeContexts)
+			throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>

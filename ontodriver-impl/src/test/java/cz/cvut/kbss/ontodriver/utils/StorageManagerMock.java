@@ -105,10 +105,11 @@ public class StorageManagerMock extends StorageManager {
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity, Context entityContext,
+	public <T> void merge(Object primaryKey, T entity, Field mergedField, Context entityContext,
 			Map<String, Context> attributeContexts) throws OntoDriverException {
 		assert primaryKey != null;
 		assert entity != null;
+		assert mergedField != null;
 		assert entityContext != null;
 		final Map<Object, Object> m = entities.get(entityContext);
 		assert m != null;

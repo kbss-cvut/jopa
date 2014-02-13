@@ -66,21 +66,22 @@ public class CloneBuilderImpl implements CloneBuilder {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Cloning object " + original);
 		}
-		return buildCloneImpl(null, original, contextUri);
+		return buildCloneImpl(null, null, original, contextUri);
 	}
 
 	@Override
-	public Object buildClone(Object cloneOwner, Object original, URI contextUri) {
+	public Object buildClone(Object cloneOwner, Field clonedField, Object original, URI contextUri) {
 		if (cloneOwner == null || original == null || contextUri == null) {
 			throw new NullPointerException();
 		}
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Cloning object " + original + " with owner " + cloneOwner);
 		}
-		return buildCloneImpl(cloneOwner, original, contextUri);
+		return buildCloneImpl(cloneOwner, clonedField, original, contextUri);
 	}
 
-	private Object buildCloneImpl(Object cloneOwner, Object original, URI contextUri) {
+	private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original,
+			URI contextUri) {
 
 		if (visitedObjects.containsKey(original)) {
 			return visitedObjects.get(original);
@@ -98,7 +99,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 			}
 		}
 		final AbstractInstanceBuilder builder = getInstanceBuilder(original);
-		Object clone = builder.buildClone(cloneOwner, original.getClass(), original, contextUri);
+		// TODO
+		Object clone = builder.buildClone(cloneOwner, clonedField, original, contextUri);
 		visitedObjects.put(original, clone);
 		if (!builder.populatesAttributes() && !isPrimitiveOrString(original.getClass())) {
 			populateAttributes(original, clone, contextUri);
@@ -147,9 +149,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 				} else if (origVal instanceof Collection || origVal instanceof Map) {
 					// Collection or a Map
 					final Object clonedCollection = getInstanceBuilder(origVal).buildClone(clone,
-							origClass, origVal, contextUri);
-					Object toUse = createIndirectCollection(clonedCollection, clone);
-					f.set(clone, toUse);
+							f, origVal, contextUri);
+					f.set(clone, clonedCollection);
 				} else if (f.getType().isArray()) {
 					Object[] arr = cloneArray(origVal, contextUri);
 					f.set(clone, arr);
@@ -351,14 +352,14 @@ public class CloneBuilderImpl implements CloneBuilder {
 		visitedEntities.clear();
 	}
 
-	IndirectCollection<?> createIndirectCollection(Object c, Object owner) {
+	IndirectCollection<?> createIndirectCollection(Object c, Object owner, Field f) {
 		IndirectCollection<?> res = null;
 		if (c instanceof List) {
-			res = new IndirectList<>(owner, uow, (List<?>) c);
+			res = new IndirectList<>(owner, f, uow, (List<?>) c);
 		} else if (c instanceof Set) {
-			res = new IndirectSet<>(owner, uow, (Set<?>) c);
+			res = new IndirectSet<>(owner, f, uow, (Set<?>) c);
 		} else if (c instanceof Map) {
-			res = new IndirectMap<>(owner, uow, (Map<?, ?>) c);
+			res = new IndirectMap<>(owner, f, uow, (Map<?, ?>) c);
 		} else {
 			throw new UnsupportedOperationException("Unsupported collection type " + c.getClass());
 		}

@@ -11,9 +11,9 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageManager;
@@ -245,7 +245,8 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException {
+	public <T> void merge(Object primaryKey, T entity, Field mergedField)
+			throws OntoDriverException {
 		ensureOpen(true);
 		if (primaryKey == null || entity == null) {
 			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", primaryKey = "
@@ -257,7 +258,8 @@ public class ConnectionImpl implements Connection {
 			throw new EntityNotRegisteredException("Entity " + entity
 					+ " is not registered within this connection.");
 		}
-		storageManager.merge(primaryKey, entity, ctx, Collections.<String, Context> emptyMap());
+		storageManager.merge(primaryKey, entity, mergedField, ctx,
+				Collections.<String, Context> emptyMap());
 		this.hasChanges = true;
 		if (autoCommit) {
 			commit();

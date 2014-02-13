@@ -40,7 +40,6 @@ public class ModuleExtractionConnectorTest {
 
 	private static final List<StorageConfig> storage = Collections
 			.<StorageConfig> singletonList(new OwlapiStorageConfig());
-	private static final String OWLCLASS_A_REFERENCE_FIELD = "owlClassA";
 	private static final Map<String, String> properties = initProperties();
 
 	private static OWLClassA entityA;
@@ -147,7 +146,7 @@ public class ModuleExtractionConnectorTest {
 		final OWLClassE resE = c.find(OWLClassE.class, entityE.getUri());
 		assertNotNull(resE);
 		final OWLClassI resI = c.find(OWLClassI.class, entityI.getUri());
-		final Field f = OWLClassI.class.getDeclaredField(OWLCLASS_A_REFERENCE_FIELD);
+		final Field f = OWLClassI.getOwlClassAField();
 		f.setAccessible(true);
 		assertNull(f.get(resI));
 		c.loadFieldValue(resI, f);
@@ -225,8 +224,10 @@ public class ModuleExtractionConnectorTest {
 		assertNotNull(b);
 		final String newString = "NewStringAttribute";
 		b.setStringAttribute(newString);
-		c.merge(a.getUri(), a);
-		c.merge(b.getUri(), b);
+		final Field typesField = OWLClassA.getTypesField();
+		final Field strField = OWLClassB.getStrAttField();
+		c.merge(a.getUri(), a, typesField);
+		c.merge(b.getUri(), b, strField);
 		c.commit();
 
 		// Make sure the extended signature is used

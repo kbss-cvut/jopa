@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -277,7 +278,8 @@ public class ConnectionImplTest {
 		assertNotNull(res);
 		someContext.remove(res.getUri());
 		res.setStringAttribute("ModifiedString");
-		connection.merge(res.getUri(), res);
+		final Field strField = OWLClassA.getStrAttField();
+		connection.merge(res.getUri(), res, strField);
 		assertTrue(someContext.containsKey(res.getUri()));
 		assertEquals(res, someContext.get(res.getUri()));
 	}
@@ -288,7 +290,8 @@ public class ConnectionImplTest {
 		final OWLClassB b = new OWLClassB();
 		b.setUri(URI.create("http://connectionTestB"));
 		b.setStringAttribute("string");
-		connection.merge(b.getUri(), b);
+		final Field strField = OWLClassB.getStrAttField();
+		connection.merge(b.getUri(), b, strField);
 	}
 
 	@Test

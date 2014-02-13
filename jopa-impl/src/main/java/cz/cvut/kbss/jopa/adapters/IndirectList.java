@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.adapters;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -8,8 +9,7 @@ import java.util.ListIterator;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
-public class IndirectList<E> extends IndirectCollection<List<E>> implements
-		List<E> {
+public class IndirectList<E> extends IndirectCollection<List<E>> implements List<E> {
 
 	private final List<E> internalList;
 
@@ -26,6 +26,8 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements
 	 * 
 	 * @param owner
 	 *            Owner of the list
+	 * @param f
+	 *            The field holding this list
 	 * @param uow
 	 *            Persistence context the owner belongs to
 	 * @param referencedList
@@ -33,11 +35,10 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements
 	 * @throws NullPointerException
 	 *             If the {@code referencedList} is null
 	 */
-	public IndirectList(Object owner, UnitOfWorkImpl uow, List<E> referencedList) {
-		super(owner, uow);
+	public IndirectList(Object owner, Field f, UnitOfWorkImpl uow, List<E> referencedList) {
+		super(owner, f, uow);
 		if (referencedList == null) {
-			throw new NullPointerException(
-					"Null passed in as the referencedList.");
+			throw new NullPointerException("Null passed in as the referencedList.");
 		}
 		this.internalList = referencedList;
 	}
@@ -153,8 +154,7 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements
 	}
 
 	public List<E> subList(int arg0, int arg1) {
-		return new IndirectList<E>(owner, persistenceContext,
-				internalList.subList(arg0, arg1));
+		return new IndirectList<E>(owner, field, persistenceContext, internalList.subList(arg0, arg1));
 	}
 
 	public Object[] toArray() {

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -161,8 +162,9 @@ public class CachingConnectorsTest {
 		final String newer = "newerString";
 		cTwoA.setStringAttribute(older);
 		cA.setStringAttribute(newer);
-		cTwo.merge(cTwoA.getUri(), cTwoA);
-		c.merge(cA.getUri(), cA);
+		final Field field = OWLClassA.getStrAttField();
+		cTwo.merge(cTwoA.getUri(), cTwoA, field);
+		c.merge(cA.getUri(), cA, field);
 		cTwo.commit();
 		assertEquals(newer, cA.getStringAttribute());
 		c.commit();

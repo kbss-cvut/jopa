@@ -264,7 +264,8 @@ public interface Connection extends Transactional {
 			EntityNotRegisteredException;
 
 	/**
-	 * Merges state of the specified entity into the storage. </p>
+	 * Merges value of the specified field on the specified entity into the
+	 * storage. </p>
 	 * 
 	 * This method is meant only for merging state of existing entities, trying
 	 * to {@code merge} a new entity will result in an exception.
@@ -273,6 +274,8 @@ public interface Connection extends Transactional {
 	 *            Primary key of the merged entity
 	 * @param entity
 	 *            The entity to merge
+	 * @param The
+	 *            field to merge
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
@@ -280,7 +283,7 @@ public interface Connection extends Transactional {
 	 *             If {@code entity} is not registered within this connection
 	 * @throws
 	 */
-	public <T> void merge(Object primaryKey, T entity) throws OntoDriverException;
+	public <T> void merge(Object primaryKey, T entity, Field mergedField) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity into a context. </p>
