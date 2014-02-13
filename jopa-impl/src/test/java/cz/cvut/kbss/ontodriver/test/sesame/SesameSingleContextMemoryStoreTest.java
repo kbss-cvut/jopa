@@ -123,6 +123,12 @@ public class SesameSingleContextMemoryStoreTest {
 	}
 
 	@Test
+	public void testUpdateDataPropertyToNull() throws Exception {
+		acquireConnection("UpdateDataPropertyToNull");
+		tests.updateDataPropertyToNull();
+	}
+
+	@Test
 	public void testRemove() throws Exception {
 		acquireConnection("RemoveEntity");
 		tests.testRemove();

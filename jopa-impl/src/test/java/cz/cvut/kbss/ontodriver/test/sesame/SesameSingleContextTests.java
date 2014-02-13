@@ -20,6 +20,8 @@ import cz.cvut.kbss.ontodriver.Connection;
 
 final class SesameSingleContextTests {
 
+	static final String A_STRING_ATT = "entityAStringAttribute";
+
 	OWLClassA entityA;
 	OWLClassB entityB;
 	OWLClassD entityD;
@@ -34,7 +36,7 @@ final class SesameSingleContextTests {
 
 		this.entityA = new OWLClassA();
 		entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
-		entityA.setStringAttribute("entityAStringAttribute");
+		entityA.setStringAttribute(A_STRING_ATT);
 		final Set<String> types = new HashSet<String>();
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLTypeForA");
@@ -235,6 +237,23 @@ final class SesameSingleContextTests {
 		assertNull(resD.getOwlClassA());
 		final OWLClassA resA = c.find(OWLClassA.class, entityA.getUri());
 		assertNotNull(resA);
+	}
+
+	public void updateDataPropertyToNull() throws Exception {
+		LOG.config("Test: update data property value. Set it to null.");
+		c.persist(entityA.getUri(), entityA);
+
+		c.setAutoCommit(false);
+		final OWLClassA a = c.find(OWLClassA.class, entityA.getUri());
+		assertNotNull(a);
+		assertNotNull(a.getStringAttribute());
+		a.setStringAttribute(null);
+		c.merge(a.getUri(), a);
+		c.commit();
+
+		final OWLClassA res = c.find(OWLClassA.class, entityA.getUri());
+		assertNotNull(res);
+		assertNull(res.getStringAttribute());
 	}
 
 	public void testRemove() throws Exception {

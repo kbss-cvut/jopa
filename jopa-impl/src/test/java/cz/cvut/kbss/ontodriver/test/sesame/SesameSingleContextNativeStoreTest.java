@@ -49,6 +49,7 @@ public class SesameSingleContextNativeStoreTest {
 		}
 		ds.close();
 		tests.entityE.setUri(null);
+		tests.entityA.setStringAttribute(SesameSingleContextTests.A_STRING_ATT);
 	}
 
 	@Test
@@ -121,6 +122,12 @@ public class SesameSingleContextNativeStoreTest {
 	public void testUpdateObjectPropertyToNull() throws Exception {
 		acquireConnection("UpdateObjectPropertyToNull");
 		tests.testUpdateObjectPropertyToNull();
+	}
+	
+	@Test
+	public void testUpdateDataPropertyToNull() throws Exception {
+		acquireConnection("UpdateDataPropertyToNull");
+		tests.updateDataPropertyToNull();
 	}
 
 	@Test

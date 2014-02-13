@@ -94,6 +94,9 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 	 */
 	private void saveDataProperty(URI subject, URI property, Object value) {
 		removeOldDataPropertyValues(subject, property);
+		if (value == null) {
+			return;
+		}
 		Literal lit = SesameUtils.createDataPropertyLiteral(value, lang, valueFactory);
 		final Statement stmt = valueFactory.createStatement(subject, property, lit);
 		addStatement(stmt);
