@@ -103,4 +103,19 @@ public class IndirectMap<K, V> extends IndirectCollection<Map<K, V>> implements 
 	public Set<java.util.Map.Entry<K, V>> entrySet() {
 		return internalMap.entrySet();
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		return internalMap.equals(o);
+	}
+
+	@Override
+	public int hashCode() {
+		return internalMap.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return internalMap.toString();
+	}
 }

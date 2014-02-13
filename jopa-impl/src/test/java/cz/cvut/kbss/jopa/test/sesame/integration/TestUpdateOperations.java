@@ -49,6 +49,14 @@ public class TestUpdateOperations {
 	}
 
 	@Test
+	public void testUpdateDataLeaveLazy() throws Exception {
+		LOG.config("Test: updates data property. Leaves lazily loaded field empty and checks that after commit the field's value hasn't changed.");
+		em = TestEnvironment.getPersistenceConnector("SesameUpdateDataProperty", storages, false,
+				properties);
+		runner.updateDataPropertyKeepLazyEmpty(em, context(1));
+	}
+
+	@Test
 	public void testUpdateReference() {
 		LOG.config("Test: update reference to entity.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateReference", storages, true,

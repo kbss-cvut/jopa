@@ -2,8 +2,11 @@ package cz.cvut.kbss.jopa.test.utils;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.test.OWLClassA;
@@ -60,6 +63,23 @@ public abstract class Generators {
 			lst.add(a);
 		}
 		return lst;
+	}
+
+	public static Map<String, Set<String>> createProperties() {
+		return createProperties(DEFAULT_SIZE);
+	}
+
+	public static Map<String, Set<String>> createProperties(int size) {
+		assert size > 0;
+		final Map<String, Set<String>> m = new HashMap<>(size);
+		for (int i = 0; i < size; i++) {
+			m.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#property" + i,
+					Collections
+							.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/ObjectPropertyValue"
+									+ i));
+
+		}
+		return m;
 	}
 
 	private static Set<String> getTypes() {

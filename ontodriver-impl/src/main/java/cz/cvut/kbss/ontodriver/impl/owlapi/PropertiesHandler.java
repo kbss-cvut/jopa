@@ -22,6 +22,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.RemoveAxiom;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -60,9 +61,15 @@ class PropertiesHandler {
 	 *            Entity type
 	 * @param properties
 	 *            Specification of the properties attribute
+	 * @param alwaysLoad
+	 *            Whether the properties should be loaded even if the field is
+	 *            declared as lazily loaded
 	 */
 	void load(Object entity, OWLNamedIndividual individual, EntityType<?> entityType,
-			PropertiesSpecification<?, ?> properties) {
+			PropertiesSpecification<?, ?> properties, boolean alwaysLoad) {
+		if (!alwaysLoad && properties.getFetchType() == FetchType.LAZY) {
+			return;
+		}
 		Map<String, Set<String>> map = new HashMap<String, Set<String>>();
 		if (properties.isInferred()) {
 			map = loadInferredPropertiesReference(entity, entityType, individual, properties);

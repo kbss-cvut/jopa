@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,6 +79,29 @@ public class UpdateOperationsRunner {
 		entityC.setSimpleList(null);
 		entityC.setReferencedList(null);
 		entityE.setUri(null);
+	}
+
+	public void updateDataPropertyKeepLazyEmpty(EntityManager em, URI ctx) throws Exception {
+		entityB.setProperties(Generators.createProperties());
+		em.getTransaction().begin();
+		em.persist(entityB, ctx);
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		final OWLClassB b = em.find(OWLClassB.class, entityB.getUri(), ctx);
+		assertNotNull(b);
+		final Field propsField = OWLClassB.getPropertiesField();
+		propsField.setAccessible(true);
+		assertNull(propsField.get(b));
+		final String newString = "NewString";
+		b.setStringAttribute(newString);
+		em.getTransaction().commit();
+
+		final OWLClassB res = em.find(OWLClassB.class, entityB.getUri(), ctx);
+		assertNotNull(res);
+		assertEquals(newString, res.getStringAttribute());
+		assertNotNull(res.getProperties());
+		assertEquals(entityB.getProperties(), res.getProperties());
 	}
 
 	public void updateReference(EntityManager em, URI ctx) {
@@ -379,7 +403,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void addNewToProperties(EntityManager em, URI ctx) {
-		entityB.setProperties(createProperties());
+		entityB.setProperties(Generators.createProperties());
 		final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
 		expected.putAll(entityB.getProperties());
 		em.getTransaction().begin();
@@ -410,7 +434,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void addPropertyValue(EntityManager em, URI ctx) {
-		entityB.setProperties(createProperties());
+		entityB.setProperties(Generators.createProperties());
 		final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
 		final String prop = entityB.getProperties().keySet().iterator().next();
 		expected.putAll(entityB.getProperties());
@@ -444,16 +468,5 @@ public class UpdateOperationsRunner {
 				assertTrue(resS.contains(s.iterator().next()));
 			}
 		}
-	}
-
-	private static Map<String, Set<String>> createProperties() {
-		final Map<String, Set<String>> m = new HashMap<>(3);
-		m.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyOne", Collections
-				.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/vonNeumann"));
-		m.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyTwo",
-				Collections.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/Turing"));
-		m.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyThree",
-				Collections.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/Dijkstra"));
-		return m;
 	}
 }

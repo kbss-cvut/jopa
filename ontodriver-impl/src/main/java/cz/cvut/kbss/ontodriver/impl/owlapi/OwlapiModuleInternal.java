@@ -211,10 +211,10 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		final OWLNamedIndividual ind = dataFactory.getOWLNamedIndividual(iri);
 		try {
 			if (et.getTypes() != null && et.getTypes().getJavaField().equals(field)) {
-				_loadTypesReference(entity, ind, et.getTypes());
+				_loadTypesReference(entity, ind, et.getTypes(), true);
 			} else if (et.getProperties() != null
 					&& et.getProperties().getJavaField().equals(field)) {
-				_loadPropertiesReference(entity, ind, et, et.getProperties());
+				propertiesHandler.load(entity, ind, et, et.getProperties(), true);
 			} else {
 				_loadReference(entity, ind, iri, et.getAttribute(field.getName()), true);
 			}
@@ -467,12 +467,12 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		try {
 			final TypesSpecification<?, ?> types = type.getTypes();
 			if (types != null) {
-				_loadTypesReference(entity, individual, types);
+				_loadTypesReference(entity, individual, types, false);
 			}
 
 			final PropertiesSpecification<?, ?> properties = type.getProperties();
 			if (properties != null) {
-				_loadPropertiesReference(entity, individual, type, properties);
+				propertiesHandler.load(entity, individual, type, properties, false);
 			}
 
 			for (final Attribute<?, ?> field : type.getAttributes()) {
@@ -484,7 +484,10 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	private void _loadTypesReference(Object entity, OWLNamedIndividual individual,
-			TypesSpecification<?, ?> types) throws IllegalAccessException {
+			TypesSpecification<?, ?> types, boolean alwaysLoad) throws IllegalAccessException {
+		if (!alwaysLoad && types.getFetchType() == FetchType.LAZY) {
+			return;
+		}
 		Set<Object> set = new HashSet<Object>();
 
 		final EntityType<?> type = getEntityType(entity.getClass());
@@ -552,21 +555,6 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 						dataFactory.getOWLClass(IRI.create(x)), individual)));
 			}
 		}
-	}
-
-	/**
-	 * Loads data and object properties of the specified {@code entity}.
-	 * 
-	 * @param entity
-	 *            Entity
-	 * @param individual
-	 *            OWL Individual
-	 * @param properties
-	 *            Properties specification
-	 */
-	private void _loadPropertiesReference(Object entity, OWLNamedIndividual individual,
-			EntityType<?> entityType, PropertiesSpecification<?, ?> properties) {
-		propertiesHandler.load(entity, individual, entityType, properties);
 	}
 
 	/**

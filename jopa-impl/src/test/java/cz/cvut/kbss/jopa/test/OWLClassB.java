@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
@@ -37,7 +38,7 @@ public class OWLClassB {
 	@OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute")
 	private String stringAttribute;
 
-	@Properties
+	@Properties(fetchType = FetchType.LAZY)
 	private Map<String, Set<String>> properties;
 
 	/**
