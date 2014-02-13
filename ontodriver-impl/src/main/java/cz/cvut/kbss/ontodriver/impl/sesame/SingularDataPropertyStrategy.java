@@ -22,6 +22,10 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 		super(internal);
 	}
 
+	protected SingularDataPropertyStrategy(SesameModuleInternal internal, SubjectModels models) {
+		super(internal, models);
+	}
+
 	@Override
 	<T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad)
 			throws IllegalAccessException, IllegalArgumentException {
@@ -48,10 +52,7 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 	private <T> void loadDataProperty(T instance, URI uri, Attribute<?, ?> property)
 			throws IllegalArgumentException, IllegalAccessException {
 		final URI propertyUri = getAddressAsSesameUri(property.getIRI());
-		Model res = storage.filter(uri, propertyUri, null, false);
-		if (res.isEmpty()) {
-			res = storage.filter(uri, propertyUri, null, true);
-		}
+		final Model res = filter(uri, propertyUri, null, property.isInferred());
 		Object value = null;
 		URI datatype = null;
 		for (Statement stmt : res) {

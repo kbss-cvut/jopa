@@ -62,35 +62,32 @@ class PropertiesHandler {
 	 */
 	<T> void load(T entity, URI uri, PropertiesSpecification<?, ?> att, EntityType<T> entityType)
 			throws IllegalAccessException, IllegalArgumentException {
-		final Set<Statement> statements = storage.filter(uri, null, null, att.isInferred());
-		Map<String, Set<String>> map = new HashMap<>(statements.size());
-		final Map<URI, Attribute<?, ?>> atts = analyzeAttributes(entityType);
+		final Model statements = storage.filter(uri, null, null, att.isInferred());
+		loadImpl(entity, att, entityType, statements);
+	}
 
-		for (Statement stmt : statements) {
-			if (!shouldLoad(stmt, atts)) {
-				continue;
-			}
-			final String property = stmt.getPredicate().stringValue();
-			final Value value = stmt.getObject();
-			String strValue = null;
-			if (value instanceof Literal) {
-				strValue = SesameUtils.getDataPropertyValue((Literal) value).toString();
-			} else {
-				strValue = value.stringValue();
-			}
-			Set<String> set = map.get(property);
-			if (set == null) {
-				set = new HashSet<>();
-				map.put(property, set);
-			}
-			set.add(strValue);
-		}
-		if (map.isEmpty()) {
-			map = null;
-		}
-
-		final Field f = att.getJavaField();
-		f.set(entity, map);
+	/**
+	 * Loads properties for the specified entity. </p>
+	 * 
+	 * Properties are specified as values of properties related to subject with
+	 * the specified URI which are not part of the metamodel.
+	 * 
+	 * @param entity
+	 *            entity
+	 * @param properties
+	 *            properties specification
+	 * @param entityType
+	 *            entity type resolved from the metamodel
+	 * @param models
+	 *            Models containing all the statements with the entity's primary
+	 *            key as subject
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
+	<T> void load(T entity, PropertiesSpecification<?, ?> att, EntityType<T> entityType,
+			SubjectModels models) throws IllegalArgumentException, IllegalAccessException {
+		final Model m = att.isInferred() ? models.getInferredModel() : models.getAssertedModel();
+		loadImpl(entity, att, entityType, m);
 	}
 
 	/**
@@ -156,6 +153,38 @@ class PropertiesHandler {
 			}
 		}
 		internal.addStatements(toAdd);
+	}
+
+	private <T> void loadImpl(T entity, PropertiesSpecification<?, ?> att, EntityType<T> et,
+			Model values) throws IllegalArgumentException, IllegalAccessException {
+		Map<String, Set<String>> map = new HashMap<>(values.size());
+		final Map<URI, Attribute<?, ?>> atts = analyzeAttributes(et);
+
+		for (Statement stmt : values) {
+			if (!shouldLoad(stmt, atts)) {
+				continue;
+			}
+			final String property = stmt.getPredicate().stringValue();
+			final Value value = stmt.getObject();
+			String strValue = null;
+			if (value instanceof Literal) {
+				strValue = SesameUtils.getDataPropertyValue((Literal) value).toString();
+			} else {
+				strValue = value.stringValue();
+			}
+			Set<String> set = map.get(property);
+			if (set == null) {
+				set = new HashSet<>();
+				map.put(property, set);
+			}
+			set.add(strValue);
+		}
+		if (map.isEmpty()) {
+			map = null;
+		}
+
+		final Field f = att.getJavaField();
+		f.set(entity, map);
 	}
 
 	/**

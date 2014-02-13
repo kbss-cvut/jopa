@@ -17,6 +17,10 @@ class PluralAnnotationStrategy extends PluralDataPropertyStrategy {
 		super(internal);
 	}
 
+	protected PluralAnnotationStrategy(SesameModuleInternal internal, SubjectModels models) {
+		super(internal, models);
+	}
+
 	@Override
 	<T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad) {
 		throw new NotYetImplementedException(

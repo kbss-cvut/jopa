@@ -24,11 +24,14 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 		super(internal);
 	}
 
+	protected SingularObjectPropertyStrategy(SesameModuleInternal internal, SubjectModels models) {
+		super(internal, models);
+	}
+
 	@Override
 	<T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad)
 			throws IllegalArgumentException, IllegalAccessException, OntoDriverException {
-		if (!alwaysLoad && att.getFetchType().equals(FetchType.LAZY)) {
-			// Lazy loading
+		if (!alwaysLoad && att.getFetchType() == FetchType.LAZY) {
 			return;
 		}
 		loadObjectProperty(entity, uri, att);
@@ -61,7 +64,7 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 	private <T> void loadObjectProperty(T instance, URI uri, Attribute<?, ?> property)
 			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
 		final URI propertyUri = getAddressAsSesameUri(property.getIRI());
-		URI objectUri = getObjectPropertyValue(uri, propertyUri, property.isInferred());
+		URI objectUri = getObjectPropertyValue(uri, propertyUri, property.isInferred(), true);
 		if (objectUri == null) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.finer("Value of object property " + property.getIRI()

@@ -36,6 +36,9 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 		if (javaClass == null || original == null) {
 			return null;
 		}
+		if (CloneBuilderImpl.isPrimitiveOrString(javaClass)) {
+			return original;
+		}
 		Object newInstance = buildNewInstanceUsingDefaultConstructor(javaClass);
 		if (newInstance == null) {
 			final Field[] fields = javaClass.getDeclaredFields();

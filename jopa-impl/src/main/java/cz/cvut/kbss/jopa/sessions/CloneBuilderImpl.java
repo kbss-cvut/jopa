@@ -100,7 +100,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 		final AbstractInstanceBuilder builder = getInstanceBuilder(original);
 		Object clone = builder.buildClone(cloneOwner, original.getClass(), original, contextUri);
 		visitedObjects.put(original, clone);
-		if (!builder.populatesAttributes()) {
+		if (!builder.populatesAttributes() && !isPrimitiveOrString(original.getClass())) {
 			populateAttributes(original, clone, contextUri);
 		}
 		if (managed) {

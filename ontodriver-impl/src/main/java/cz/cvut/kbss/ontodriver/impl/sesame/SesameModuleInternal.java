@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,6 +47,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	final SesameStorageModule module;
 	private StorageProxy storage;
 	private PropertiesHandler propertiesHandler;
+	private TypesHandler typesHandler;
 	// The ValueFactory can be final since it is singleton anyway
 	private final ValueFactory valueFactory;
 	private final String lang;
@@ -66,6 +66,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		this.valueFactory = data.getValueFactory();
 		this.lang = data.getLanguage();
 		this.propertiesHandler = new PropertiesHandler(this);
+		this.typesHandler = new TypesHandler(this);
 	}
 
 	@Override
@@ -148,12 +149,12 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		final URI uri = getIdentifier(entity);
 		try {
 			if (et.getTypes() != null && et.getTypes().getJavaField().equals(field)) {
-				loadTypesReference(entity, uri, et.getTypes(), et);
+				typesHandler.load(entity, uri, et.getTypes(), et);
 			} else if (et.getProperties() != null
 					&& et.getProperties().getJavaField().equals(field)) {
-				loadPropertiesReference(entity, uri, et.getProperties(), et, true);
+				propertiesHandler.load(entity, uri, et.getProperties(), et);
 			} else {
-				loadReference(entity, uri, et.getAttribute(field.getName()), true);
+				loadReference(entity, uri, et.getAttribute(field.getName()), null, true);
 			}
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
@@ -171,6 +172,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		final SesameOntologyDataHolder data = module.getOntologyData();
 		this.storage = data.getStorage();
 		this.propertiesHandler = new PropertiesHandler(this);
+		this.typesHandler = new TypesHandler(this);
 	}
 
 	@Override
@@ -411,51 +413,23 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private <T> void loadEntityFromModel(T instance, URI uri, EntityType<T> entityType)
 			throws OntoDriverException {
 		try {
+			final SubjectModels sm = new SubjectModels(storage, uri);
 			final TypesSpecification<?, ?> types = entityType.getTypes();
-			if (types != null) {
-				loadTypesReference(instance, uri, types, entityType);
+			if (types != null && types.getFetchType() != FetchType.LAZY) {
+				typesHandler.load(instance, types, entityType, sm);
 			}
 
 			final PropertiesSpecification<?, ?> properties = entityType.getProperties();
-			if (properties != null) {
-				loadPropertiesReference(instance, uri, properties, entityType, false);
+			if (properties != null && properties.getFetchType() != FetchType.LAZY) {
+				propertiesHandler.load(instance, properties, entityType, sm);
 			}
 			for (Attribute<?, ?> att : entityType.getAttributes()) {
-				loadReference(instance, uri, att, false);
+				loadReference(instance, uri, att, sm, false);
 			}
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new OntoDriverException("Exception caught when loading attributes of entity "
 					+ uri, e);
 		}
-	}
-
-	/**
-	 * Loads properties for the specified entity. </p>
-	 * 
-	 * Properties are specified as values of properties related to subject with
-	 * the specified URI which are not part of the metamodel.
-	 * 
-	 * @param entity
-	 *            entity
-	 * @param uri
-	 *            primary key
-	 * @param properties
-	 *            properties specification
-	 * @param entityType
-	 *            entity type resolved from the metamodel
-	 * @param alwaysLoad
-	 *            Load even if the properties are specified as lazily loaded
-	 * @throws IllegalArgumentException
-	 * @throws IllegalAccessException
-	 */
-	private <T> void loadPropertiesReference(T entity, URI uri,
-			PropertiesSpecification<?, ?> properties, EntityType<T> entityType, boolean alwaysLoad)
-			throws IllegalArgumentException, IllegalAccessException {
-		if (!alwaysLoad && properties.getFetchType() == FetchType.LAZY) {
-			// Lazy loading
-			return;
-		}
-		propertiesHandler.load(entity, uri, properties, entityType);
 	}
 
 	/**
@@ -473,47 +447,16 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 *            lazily loaded
 	 * @throws OntoDriverException
 	 */
-	private <T> void loadReference(T entity, URI uri, Attribute<?, ?> attribute, boolean alwaysLoad)
-			throws OntoDriverException {
+	private <T> void loadReference(T entity, URI uri, Attribute<?, ?> attribute,
+			SubjectModels models, boolean alwaysLoad) throws OntoDriverException {
 		try {
 			final AttributeStrategy strategy = AttributeStrategyFactory.createStrategy(attribute,
-					this);
+					this, models);
 			strategy.load(entity, uri, attribute, alwaysLoad);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new OntoDriverException(e);
 		}
 		ICValidationUtils.validateIntegrityConstraints(entity, uri, attribute);
-	}
-
-	/**
-	 * Load entity types, i. e. TBox classes to which the specified entity
-	 * belongs besides the one declared by the entity type.
-	 * 
-	 * @param entity
-	 *            entity
-	 * @param uri
-	 *            primary key
-	 * @param types
-	 *            types specification
-	 * @param entityType
-	 *            entity type resolved from the metamodel
-	 * @throws IllegalArgumentException
-	 * @throws IllegalAccessException
-	 */
-	private <T> void loadTypesReference(T entity, URI uri, TypesSpecification<?, ?> types,
-			EntityType<T> entityType) throws IllegalArgumentException, IllegalAccessException {
-		final Set<Object> res = new HashSet<>();
-		final String typeIri = entityType.getIRI().toString();
-
-		for (Statement stmt : storage.filter(uri, RDF.TYPE, null, types.isInferred())) {
-			final String tp = stmt.getObject().stringValue();
-			if (tp.equals(typeIri)) {
-				continue;
-			}
-			res.add(tp);
-		}
-
-		types.getJavaField().set(entity, res);
 	}
 
 	/**
@@ -564,7 +507,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		try {
 			final TypesSpecification<?, ?> types = entityType.getTypes();
 			if (types != null) {
-				saveTypesReference(entity, primaryKey, types, entityType);
+				typesHandler.save(entity, primaryKey, types, entityType);
 			}
 			final PropertiesSpecification<?, ?> properties = entityType.getProperties();
 			if (properties != null) {
@@ -629,61 +572,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		final URI propertyUri = getAddressAsSesameUri(att.getIRI());
 		final AttributeStrategy strategy = AttributeStrategyFactory.createStrategy(att, this);
 		strategy.save(entity, uri, att, propertyUri, oValue);
-	}
-
-	/**
-	 * Saves type statements (with predicate rdf:type) about the specified
-	 * entity into the ontology. </p>
-	 * 
-	 * This includes removing type statements which are no longer relevant and
-	 * adding new type assertions.
-	 * 
-	 * @param entity
-	 *            The entity
-	 * @param uri
-	 *            Entity primary key
-	 * @param types
-	 *            TypesSpecification
-	 * @param entityType
-	 *            Entity type as resolved from the metamodel
-	 * @throws OntoDriverException
-	 *             If the types are inferred
-	 */
-	private <T> void saveTypesReference(T entity, URI uri, TypesSpecification<?, ?> types,
-			EntityType<T> entityType) throws OntoDriverException, IllegalArgumentException,
-			IllegalAccessException {
-		if (types.isInferred()) {
-			throw new OntoDriverException("Inferred fields must not be set externally.");
-		}
-		URI typeUri = valueFactory.createURI(entityType.getIRI().toString());
-		Object value = types.getJavaField().get(entity);
-		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("Saving types of " + entity + " with value = " + value);
-		}
-		if (value != null && !(value instanceof Set)) {
-			throw new IllegalArgumentException("The types attribute has to be a java.util.Set.");
-		}
-
-		final Set<?> set = value != null ? (Set<?>) value : Collections.emptySet();
-		final Set<Statement> toAdd = new HashSet<>(set.size());
-		final Set<Statement> toRemove = new HashSet<>();
-		for (Object type : set) {
-			toAdd.add(valueFactory.createStatement(uri, RDF.TYPE,
-					valueFactory.createURI(type.toString())));
-		}
-		final Set<Statement> currentTypes = storage.filter(uri, RDF.TYPE, null, false);
-		for (Statement stmt : currentTypes) {
-			final Value val = stmt.getObject();
-			assert isUri(val);
-			if (val.equals(typeUri)) {
-				continue;
-			}
-			if (!toAdd.remove(stmt)) {
-				toRemove.add(stmt);
-			}
-		}
-		removeStatements(toRemove);
-		addStatements(toAdd);
 	}
 
 	private void setIdentifier(Object entity, URI uri, EntityType<?> et) throws OntoDriverException {

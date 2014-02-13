@@ -25,6 +25,10 @@ class PluralDataPropertyStrategy extends AttributeStrategy {
 		super(internal);
 	}
 
+	protected PluralDataPropertyStrategy(SesameModuleInternal internal, SubjectModels models) {
+		super(internal, models);
+	}
+
 	@Override
 	<T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad) {
 		throw new NotYetImplementedException("Collection data properties are not implemented yet.");

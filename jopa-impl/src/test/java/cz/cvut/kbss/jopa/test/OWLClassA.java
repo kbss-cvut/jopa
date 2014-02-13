@@ -18,6 +18,7 @@ package cz.cvut.kbss.jopa.test;
 import java.net.URI;
 import java.util.Set;
 
+import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
@@ -26,7 +27,7 @@ import cz.cvut.kbss.jopa.model.annotations.Types;
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
 public class OWLClassA {
 
-	@Types
+	@Types(fetchType = FetchType.EAGER)
 	private Set<String> types;
 
 	@Id
@@ -65,7 +66,7 @@ public class OWLClassA {
 	public Set<String> getTypes() {
 		return types;
 	}
-	
+
 	public static String getClassIri() {
 		return OWLClassA.class.getAnnotation(OWLClass.class).iri();
 	}

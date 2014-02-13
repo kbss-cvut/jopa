@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -35,9 +36,16 @@ abstract class AttributeStrategy {
 	protected String lang;
 	protected ValueFactory valueFactory;
 	protected StorageProxy storage;
+	protected SubjectModels models;
 
 	protected AttributeStrategy(SesameModuleInternal internal) {
 		this.internal = internal;
+		init();
+	}
+
+	protected AttributeStrategy(SesameModuleInternal internal, SubjectModels models) {
+		this.internal = internal;
+		this.models = models;
 		init();
 	}
 
@@ -57,8 +65,8 @@ abstract class AttributeStrategy {
 	 * @param att
 	 *            The attribute to load
 	 * @param alwaysLoad
-	 *            Whether to load the value even though the attribute is
-	 *            specified as lazily loaded
+	 *            Whether to load the attribute value even if it is specified as
+	 *            lazy
 	 */
 	abstract <T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad)
 			throws IllegalAccessException, IllegalArgumentException, OntoDriverException;
@@ -129,6 +137,30 @@ abstract class AttributeStrategy {
 	}
 
 	/**
+	 * Filters the model. </p>
+	 * 
+	 * If the models with only subject's statements are available, they are
+	 * queried, otherwise the storage is queried.
+	 * 
+	 * @param subject
+	 *            Subject URI
+	 * @param predicate
+	 *            Predicate URI
+	 * @param value
+	 *            Value
+	 * @param includeInferred
+	 *            Whether to include inferred statements
+	 * @return Model with matching statements
+	 */
+	protected Model filter(Resource subject, URI predicate, Value value, boolean includeInferred) {
+		if (models != null) {
+			final Model m = includeInferred ? models.getInferredModel() : models.getAssertedModel();
+			return m.filter(subject, predicate, value);
+		}
+		return storage.filter(subject, predicate, value, includeInferred);
+	}
+
+	/**
 	 * Gets URI of value of the specified object property.
 	 * 
 	 * @param subjectUri
@@ -139,10 +171,13 @@ abstract class AttributeStrategy {
 	 *            Whether search inferred statements as well
 	 * @return URI of the discovered object or {@code null} if none is found
 	 */
-	protected URI getObjectPropertyValue(URI subjectUri, URI propertyUri, boolean includeInferred) {
-		Model res = storage.filter(subjectUri, propertyUri, null, false);
-		if (res.isEmpty() && includeInferred) {
-			res = storage.filter(subjectUri, propertyUri, null, true);
+	protected URI getObjectPropertyValue(URI subjectUri, URI propertyUri, boolean includeInferred,
+			boolean canUseSubjectModel) {
+		Model res = null;
+		if (canUseSubjectModel) {
+			res = filter(subjectUri, propertyUri, null, includeInferred);
+		} else {
+			res = storage.filter(subjectUri, propertyUri, null, includeInferred);
 		}
 		URI objectUri = null;
 		for (Statement stmt : res) {

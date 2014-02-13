@@ -37,11 +37,14 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		super(internal);
 	}
 
+	protected PluralObjectPropertyStrategy(SesameModuleInternal internal, SubjectModels models) {
+		super(internal, models);
+	}
+
 	@Override
 	<T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad)
 			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
-		if (!alwaysLoad && att.getFetchType().equals(FetchType.LAZY)) {
-			// Lazy loading
+		if (!alwaysLoad && att.getFetchType() == FetchType.LAZY) {
 			return;
 		}
 		assert (att instanceof PluralAttribute<?, ?, ?>);
@@ -124,7 +127,7 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		List<Object> lst = new ArrayList<>();
 		URI seqUri = (URI) seq;
 		while (seq != null) {
-			URI content = getObjectPropertyValue(seqUri, hasContentsUri, includeInferred);
+			URI content = getObjectPropertyValue(seqUri, hasContentsUri, includeInferred, false);
 			if (content == null) {
 				break;
 			}
@@ -158,8 +161,7 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		final URI property = getAddressAsSesameUri(pa.getIRI());
 
 		final Class<?> cls = pa.getBindableJavaType();
-		final Collection<Statement> statements = storage.filter(subject, property, null,
-				pa.isInferred());
+		final Collection<Statement> statements = filter(subject, property, null, pa.isInferred());
 		if (statements.isEmpty()) {
 			return null;
 		}
@@ -220,6 +222,9 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 
 	private void saveSet(URI uri, URI propertyUri, Set<?> values) throws OntoDriverException {
 		removeOldObjectPropertyValues(uri, propertyUri);
+		if (values == null || values.isEmpty()) {
+			return;
+		}
 		final List<Statement> stmts = new ArrayList<>(values.size());
 		for (Object val : values) {
 			final URI id = getIdentifier(val);

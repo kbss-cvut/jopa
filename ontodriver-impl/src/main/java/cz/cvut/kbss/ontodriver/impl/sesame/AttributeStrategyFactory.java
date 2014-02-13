@@ -24,21 +24,38 @@ abstract class AttributeStrategyFactory {
 	 * @return Strategy instance
 	 */
 	static AttributeStrategy createStrategy(Attribute<?, ?> att, SesameModuleInternal internal) {
-		return createImpl(att, internal);
+		return createImpl(att, internal, null);
 	}
 
-	private static AttributeStrategy createImpl(Attribute<?, ?> att, SesameModuleInternal internal) {
+	/**
+	 * Creates strategy for loading and saving of the specified attribute.
+	 * 
+	 * @param att
+	 *            Attribute
+	 * @param internal
+	 *            Instance which does the object-ontological mapping
+	 * @param models
+	 *            Models with statements about a subject
+	 * @return Strategy instance
+	 */
+	static AttributeStrategy createStrategy(Attribute<?, ?> att, SesameModuleInternal internal,
+			SubjectModels models) {
+		return createImpl(att, internal, models);
+	}
+
+	private static AttributeStrategy createImpl(Attribute<?, ?> att, SesameModuleInternal internal,
+			SubjectModels models) {
 		AttributeStrategy s = null;
 		if (att.isCollection()) {
 			switch (att.getPersistentAttributeType()) {
 			case ANNOTATION:
-				s = new PluralAnnotationStrategy(internal);
+				s = new PluralAnnotationStrategy(internal, models);
 				break;
 			case DATA:
-				s = new PluralDataPropertyStrategy(internal);
+				s = new PluralDataPropertyStrategy(internal, models);
 				break;
 			case OBJECT:
-				s = new PluralObjectPropertyStrategy(internal);
+				s = new PluralObjectPropertyStrategy(internal, models);
 				break;
 			default:
 				throw new IllegalArgumentException("Unsupported attribute type "
@@ -47,13 +64,13 @@ abstract class AttributeStrategyFactory {
 		} else {
 			switch (att.getPersistentAttributeType()) {
 			case ANNOTATION:
-				s = new SingularAnnotationStrategy(internal);
+				s = new SingularAnnotationStrategy(internal, models);
 				break;
 			case DATA:
-				s = new SingularDataPropertyStrategy(internal);
+				s = new SingularDataPropertyStrategy(internal, models);
 				break;
 			case OBJECT:
-				s = new SingularObjectPropertyStrategy(internal);
+				s = new SingularObjectPropertyStrategy(internal, models);
 				break;
 			default:
 				throw new IllegalArgumentException("Unsupported attribute type "

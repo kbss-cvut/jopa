@@ -74,10 +74,12 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 	}
 
 	public EntityManager createEntityManager() {
+		// TODO Handle concurrency
 		return this.createEntityManager(Collections.<String, String> emptyMap());
 	}
 
 	public EntityManager createEntityManager(Map<String, String> map) {
+		// TODO Handle concurrency
 		if (!open) {
 			throw new IllegalStateException("The OWLEntityManager has been closed.");
 		}
