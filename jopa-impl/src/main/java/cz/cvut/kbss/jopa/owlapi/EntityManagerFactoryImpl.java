@@ -17,10 +17,10 @@ package cz.cvut.kbss.jopa.owlapi;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -33,17 +33,19 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 public class EntityManagerFactoryImpl implements EntityManagerFactory, PersistenceUnitUtil {
 
-	private boolean open = true;
+	private volatile boolean open = true;
 
-	private final Set<AbstractEntityManager> em = new HashSet<AbstractEntityManager>();
+	private final Set<AbstractEntityManager> em;
 	private final Map<String, String> properties;
 	private final List<OntologyStorageProperties> storageProperties;
 
-	private ServerSession serverSession;
+	private volatile ServerSession serverSession;
 
-	private MetamodelImpl metamodel = null;
+	private volatile MetamodelImpl metamodel;
 
 	public EntityManagerFactoryImpl(final Map<String, String> properties) {
+		this.em = Collections
+				.newSetFromMap(new ConcurrentHashMap<AbstractEntityManager, Boolean>());
 		this.properties = properties != null ? properties : Collections.<String, String> emptyMap();
 		// TODO The storage properties should be read from persistence.xml
 		this.storageProperties = Collections.emptyList();
@@ -54,32 +56,40 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 		if (storageProperties == null) {
 			throw new NullPointerException();
 		}
+		this.em = Collections
+				.newSetFromMap(new ConcurrentHashMap<AbstractEntityManager, Boolean>());
 		this.properties = properties != null ? properties : Collections.<String, String> emptyMap();
 		this.storageProperties = storageProperties;
 	}
 
 	public void close() {
-		open = false;
-
-		for (final EntityManager m : em) {
-			if (m.isOpen()) {
-				m.close();
-			}
+		if (!open) {
+			return;
 		}
-		em.clear();
-		if (serverSession != null) {
-			serverSession.close();
-			this.serverSession = null;
+		synchronized (this) {
+			if (!open) {
+				return;
+			}
+			open = false;
+
+			for (final EntityManager m : em) {
+				if (m.isOpen()) {
+					m.close();
+				}
+			}
+			em.clear();
+			if (serverSession != null) {
+				serverSession.close();
+				this.serverSession = null;
+			}
 		}
 	}
 
 	public EntityManager createEntityManager() {
-		// TODO Handle concurrency
 		return this.createEntityManager(Collections.<String, String> emptyMap());
 	}
 
 	public EntityManager createEntityManager(Map<String, String> map) {
-		// TODO Handle concurrency
 		if (!open) {
 			throw new IllegalStateException("The OWLEntityManager has been closed.");
 		}
@@ -106,8 +116,13 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 	 */
 	private void initServerSession(Map<String, String> newMap) {
 		assert newMap != null;
-		if (this.serverSession == null) {
-			this.serverSession = new ServerSession(storageProperties, newMap, getMetamodel());
+		if (serverSession == null) {
+			synchronized (this) {
+				if (serverSession == null) {
+					this.serverSession = new ServerSession(storageProperties, newMap,
+							getMetamodel());
+				}
+			}
 		}
 	}
 
@@ -118,7 +133,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 	 * @return The ServerSession for this factory.
 	 */
 	public ServerSession getServerSession() {
-		return this.serverSession;
+		return serverSession;
 	}
 
 	public boolean isOpen() {
@@ -134,11 +149,15 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 	}
 
 	public Metamodel getMetamodel() {
-		if (metamodel == null) {
-			metamodel = new MetamodelImpl(this);
+		MetamodelImpl mm = metamodel;
+		if (mm == null) {
+			synchronized (this) {
+				if (mm == null) {
+					metamodel = mm = new MetamodelImpl(this);
+				}
+			}
 		}
-
-		return metamodel;
+		return mm;
 	}
 
 	public PersistenceUnitUtil getPersistenceUnitUtil() {
@@ -180,9 +199,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 		if (!isOpen()) {
 			throw new IllegalStateException("The entity manager factory is closed.");
 		}
-		if (serverSession == null) {
-			initServerSession(properties);
-		}
+		initServerSession(properties);
 		return serverSession.getLiveObjectCache();
 	}
 
