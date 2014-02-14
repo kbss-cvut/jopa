@@ -18,20 +18,16 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassC;
-import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.OWLClassE;
-import cz.cvut.kbss.jopa.test.OWLClassG;
-import cz.cvut.kbss.jopa.test.OWLClassH;
-import cz.cvut.kbss.jopa.test.OWLClassI;
+import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.utils.Generators;
+import org.junit.Test;
 
 public class UpdateOperationsRunner {
 
 	private OWLClassA entityA;
-	private OWLClassB entityB;
+    private OWLClassA entityA2;
+
+    private OWLClassB entityB;
 	private OWLClassC entityC;
 	private OWLClassD entityD;
 	// Generated IRI
@@ -41,8 +37,10 @@ public class UpdateOperationsRunner {
 	// Two relationships
 	private OWLClassG entityG;
 	private OWLClassH entityH;
+    private OWLClassJ entityJ;
 
-	public UpdateOperationsRunner() {
+
+    public UpdateOperationsRunner() {
 		init();
 	}
 
@@ -72,6 +70,15 @@ public class UpdateOperationsRunner {
 		entityG = new OWLClassG();
 		entityG.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
 		entityG.setOwlClassH(entityH);
+
+        entityA2 = new OWLClassA();
+        entityA2.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA2"));
+        entityJ = new OWLClassJ();
+        entityJ.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityJ"));
+        final Set<OWLClassA> set = new HashSet<>(2);
+        set.add(entityA);
+        set.add(entityA2);
+        entityJ.setOwlClassA(set);
 	}
 
 	public void initBeforeTest() {
@@ -81,7 +88,26 @@ public class UpdateOperationsRunner {
 		entityE.setUri(null);
 	}
 
-	public void updateDataPropertyKeepLazyEmpty(EntityManager em, URI ctx) throws Exception {
+    public void mergeList(EntityManager em, URI ctx) {
+        em.getTransaction().begin();
+        em.persist(entityJ, ctx);
+        em.getTransaction().commit();
+        em.clear();
+
+        for(final OWLClassA a : entityJ.getOwlClassA()) {
+            a.setStringAttribute("NEWVALUE");
+        }
+
+        em.getTransaction().begin();
+        OWLClassJ merged = em.merge(entityJ, ctx);
+
+        for(final OWLClassA a : merged.getOwlClassA()) {
+            assertEquals(a.getStringAttribute(), "NEWVALUE");
+        }
+        em.getTransaction().commit();
+    }
+
+    public void updateDataPropertyKeepLazyEmpty(EntityManager em, URI ctx) throws Exception {
 		entityB.setProperties(Generators.createProperties());
 		em.getTransaction().begin();
 		em.persist(entityB, ctx);

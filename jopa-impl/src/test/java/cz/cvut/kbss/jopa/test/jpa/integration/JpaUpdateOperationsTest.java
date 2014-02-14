@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.jopa.test.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -23,15 +24,6 @@ import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassC;
-import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.OWLClassE;
-import cz.cvut.kbss.jopa.test.OWLClassG;
-import cz.cvut.kbss.jopa.test.OWLClassH;
-import cz.cvut.kbss.jopa.test.OWLClassI;
-import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.utils.JenaStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;

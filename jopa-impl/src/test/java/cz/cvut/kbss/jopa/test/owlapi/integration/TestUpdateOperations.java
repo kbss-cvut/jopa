@@ -47,6 +47,14 @@ public class TestUpdateOperations {
 		runner.initBeforeTest();
 	}
 
+    @Test
+    public void testMergeSet() throws Exception {
+        LOG.config("Test: merge set property.");
+        em = TestEnvironment.getPersistenceConnector("OwlapiMergeSet", storages, false,
+                properties);
+        runner.mergeList(em, context());
+    }
+
 	@Test
 	public void testUpdateDataLeaveLazy() throws Exception {
 		LOG.config("Test: update data property. Leaves lazily loaded field empty and checks that after commit the field's value hasn't changed.");
