@@ -1242,8 +1242,8 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		if (set != null) {
 			for (Object element : set) {
 				final OWLNamedIndividual objectValue = dataFactory.getOWLNamedIndividual(IRI
-						.create((String) getEntityType(type).getIdentifier().getJavaField()
-								.get(element)));
+						.create(getEntityType(type).getIdentifier().getJavaField()
+								.get(element).toString()));
 				addChange(new AddAxiom(workingOntology,
 						dataFactory.getOWLObjectPropertyAssertionAxiom(op, subject, objectValue)));
 			}

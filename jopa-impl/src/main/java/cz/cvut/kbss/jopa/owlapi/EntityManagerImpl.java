@@ -320,7 +320,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
                 c.add(mergeInternal(ox2, context));
             }
         } else {
-            attVal = mergeInternal(attVal, context);
+            if ( attVal != null ) {
+                attVal = mergeInternal(attVal, context);
+            }
         }
         at.getJavaField().set(o, attVal);
     }
