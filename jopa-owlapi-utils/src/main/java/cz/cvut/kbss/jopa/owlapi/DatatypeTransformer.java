@@ -15,6 +15,7 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,7 +44,8 @@ public class DatatypeTransformer {
 		map.put(OWL2Datatype.XSD_DATE_TIME_STAMP, Date.class);
 		map.put(OWL2Datatype.XSD_SHORT, Short.class);
 		map.put(OWL2Datatype.XSD_LONG, Long.class);
-		map.put(OWL2Datatype.XSD_ANY_URI, URI.class);
+        map.put(OWL2Datatype.XSD_ANY_URI, URI.class);
+        map.put(OWL2Datatype.XSD_DECIMAL, BigDecimal.class);
 	}
 
 	public static Class<?> transformOWLType(final OWLDatatype dt) {

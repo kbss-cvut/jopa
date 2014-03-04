@@ -394,8 +394,63 @@ public class OWL2JavaTransformer {
         }
     }
 
+    private static final String[] keywords={"abstract",
+            "assert",
+            "boolean",
+            "break" +
+            "byte",
+            "case",
+            "catch",
+            "char",
+            "class",
+            "const",
+            "continue",
+            "default",
+            "do",
+            "double",
+            "else",
+            "enum",
+            "extends",
+            "final",
+            "finally",
+            "float",
+            "for",
+            "goto",
+            "if",
+            "implements",
+            "import",
+            "instanceof",
+            "int",
+            "interface",
+            "long",
+            "native",
+            "new",
+            "package",
+            "private",
+            "protected",
+            "public",
+            "return",
+            "short",
+            "static",
+            "strictfp",
+            "super",
+            "switch",
+            "synchronized",
+            "this",
+            "throw",
+            "throws",
+            "transient",
+            "try",
+            "void",
+            "volatile",
+            "while"};
+
 	private static String validJavaID(final String s) {
-		return s.trim().replace("-", "_").replace("'", "_quote_").replace(".","_dot_");
+		String res=s.trim().replace("-", "_").replace("'", "_quote_").replace(".","_dot_");
+        if ( Arrays.binarySearch(keywords, res) >= 0 ) {
+            res = "_"+res;
+        }
+        return res;
 	}
 
 	// class MaxICRestrictor implements IntegrityConstraintVisitor {
