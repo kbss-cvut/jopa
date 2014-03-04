@@ -18,14 +18,13 @@ package cz.cvut.kbss.jopa.owl2java;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
+import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Properties;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
@@ -58,14 +57,6 @@ import com.sun.codemodel.JType;
 import com.sun.codemodel.JVar;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
-import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
-import cz.cvut.kbss.jopa.model.annotations.Properties;
-import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.ic.DataParticipationConstraint;
 import cz.cvut.kbss.jopa.model.ic.ObjectParticipationConstraint;
 import cz.cvut.kbss.jopa.owl2java.IntegrityConstraintParserImpl.ClassDataPropertyComputer;
@@ -78,6 +69,7 @@ class ContextDefinition {
 	final Set<org.semanticweb.owlapi.model.OWLObjectProperty> objectProperties = new HashSet<>();
     final Set<org.semanticweb.owlapi.model.OWLDataProperty> dataProperties = new HashSet<>();
     final Set<org.semanticweb.owlapi.model.OWLAnnotationProperty> annotationProperties = new HashSet<>();
+
 	final Set<OWLAxiom> axioms = new HashSet<>();
 
 	final IntegrityConstraintParserImpl parser = new IntegrityConstraintParserImpl(
@@ -89,8 +81,7 @@ public class OWL2JavaTransformer {
 	private static final Logger LOG = Logger
 			.getLogger(OWL2JavaTransformer.class.getName());
 
-	private static final IRI pIsIntegrityConstraintFor = IRI
-			.create("http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#isIntegrityConstraintFor");
+    private static final List<IRI> skipped = Arrays.asList(IRI.create(SequencesVocabulary.c_Collection), IRI.create(SequencesVocabulary.c_List), IRI.create(SequencesVocabulary.c_OWLSimpleList), IRI.create(SequencesVocabulary.c_OWLReferencedList));
 
 	private OWLDataFactory f;
 
@@ -164,16 +155,16 @@ public class OWL2JavaTransformer {
 				LOG.config("Found IC " + a + " for context " + icContextName);
 
                 for (final OWLEntity e : a.getSignature()) {
-                    if ( e.isOWLClass() ) {
+                    if ( e.isOWLClass() && !skipped.contains(e.getIRI())) {
                         ctx.classes.add(e.asOWLClass());
                     }
-                    if ( e.isOWLObjectProperty() ) {
+                    if ( e.isOWLObjectProperty() && !skipped.contains(e.getIRI()) ) {
                         ctx.objectProperties.add(e.asOWLObjectProperty());
                     }
-                    if ( e.isOWLDataProperty() ) {
+                    if ( e.isOWLDataProperty() && !skipped.contains(e.getIRI())) {
                         ctx.dataProperties.add(e.asOWLDataProperty());
                     }
-                    if ( e.isOWLAnnotationProperty() ) {
+                    if ( e.isOWLAnnotationProperty() && !skipped.contains(e.getIRI()) ) {
                         ctx.annotationProperties.add(e.asOWLAnnotationProperty());
                     }
                 }
@@ -592,35 +583,40 @@ public class OWL2JavaTransformer {
 
 		context.classes.add(f.getOWLThing());
 
-		for (final OWLClass clazz : context.classes) {
+        for (final OWLClass clazz : context.classes) {
 			LOG.info("  Generating class '" + clazz + "'.");
 			final JDefinedClass subj = ensureCreated(context, pkg, cm, clazz);
 
 			for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
 
-				final ClassObjectPropertyComputer comp = context.parser
-						.getClassObjectPropertyComputer(clazz, prop, merged);
+				final ClassObjectPropertyComputer comp = context.parser.new ClassObjectPropertyComputer(clazz, prop, merged);
 
-				if (Card.NO.equals(comp.getCard())) {
-					continue;
-				}
+                if ( Card.NO.equals(comp.getCard())) {
+                    continue;
+                }
 
-				final JDefinedClass obj = ensureCreated(context, pkg, cm,
-						comp.getFiller());
+                JClass filler = ensureCreated(context, pkg, cm,
+                        comp.getObject());
+                final String fieldName = validJavaIDForIRI(prop.getIRI());
 
-				final String fieldName = validJavaIDForIRI(prop.getIRI());
+                switch(comp.getCard()) {
+                    case ONE : break;
+                    case MULTIPLE :
+                        filler = cm.ref(java.util.Set.class).narrow(filler);
+                        break;
+                    case SIMPLELIST:
+                    case LIST :
+                        filler = cm.ref(java.util.List.class).narrow(filler);
+                        break;
+                }
 
-				final JFieldVar fv;
+				final JFieldVar fv = addField(fieldName, subj, filler);
 
-				if (Card.MULTIPLE.equals(comp.getCard())) {
-					fv = addField(fieldName, subj, cm.ref(java.util.Set.class)
-							.narrow(obj));
-				} else if (Card.ONE.equals(comp.getCard())) {
-					fv = addField(fieldName, subj, obj);
-				} else {
-					assert false : "Unknown cardinality type";
-					continue;
-				}
+                if ( comp.getCard().equals(Card.SIMPLELIST ) ) {
+                            fv.annotate(Sequence.class)
+                            .param("type", SequenceType.simple);
+                }
+
 
 				fv.annotate(OWLObjectProperty.class).param("iri",
 						entities.get(prop));
@@ -705,7 +701,7 @@ public class OWL2JavaTransformer {
 	}
 
 	enum Card {
-		NO, ONE, MULTIPLE;
+		NO, ONE, MULTIPLE, LIST, SIMPLELIST, REFERENCEDLIST;
 	}
 
 	public void transform(String context, String p, String dir, Boolean withOWLAPI) {
