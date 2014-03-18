@@ -1,12 +1,12 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.Context;
 
 public interface UnitOfWork extends Session {
@@ -72,85 +72,58 @@ public interface UnitOfWork extends Session {
 	public boolean isObjectManaged(Object entity);
 
 	/**
-	 * Checks whether an ontology context is consistent.
+	 * Checks whether contexts specified by {@code repository} are consistent.
 	 * 
-	 * @param contextUri
-	 *            URI of the context
-	 * @return {@code true} if the context is consistent, {@code false}
+	 * @param repository
+	 *            Repository identifier
+	 * @return {@code true} if the repository is consistent, {@code false}
 	 *         otherwise
 	 * @throws NullPointerException
-	 *             If {@code contextUri} is {@code null}
+	 *             If {@code repository} is {@code null}
 	 * @throws OWLPersistenceException
 	 *             If an ontology access error occurs
 	 */
-	public boolean isContextConsistent(URI contextUri);
+	public boolean checkConsistency(RepositoryID repository);
 
 	/**
-	 * Merge the state of the given entity into the current persistence context.
+	 * Merges the state of the given entity into the current persistence
+	 * context. </p>
 	 * 
-	 * @param entity
-	 *            entity instance
-	 * @return the managed instance that the state was merged to
-	 * @throws NullPointerException
-	 *             If {@code entity} is {@code null}
-	 */
-	public <T> T mergeDetached(T entity);
-
-	/**
-	 * Merge the state of the given entity into the current persistence
-	 * context.. </p>
-	 * 
-	 * The {@code contextUri} argument specified the ontology context into which
+	 * The {@code repository} argument specified the ontology context into which
 	 * the detached entity belongs and should be merged.
 	 * 
 	 * @param entity
 	 *            entity instance
-	 * @param contextUri
-	 *            URI of the target ontology context
+	 * @param repository
+	 *            Repository identifier
 	 * @return the managed instance that the state was merged to
 	 * @throws NullPointerException
-	 *             If {@code entity} or {@code contextUri} is {@code null}
+	 *             If {@code entity} or {@code repository} is {@code null}
 	 */
-	public <T> T mergeDetached(T entity, URI contextUri);
+	public <T> T mergeDetached(T entity, RepositoryID repository);
 
 	/**
 	 * Retrieves object with the specified primary key. </p>
 	 * 
-	 * The object is cast to the specified type.
+	 * The object is looked for in context specified by the repository
+	 * identifier. The result is then cast to the specified type.
 	 * 
 	 * @param cls
 	 *            The type of the returned object
 	 * @param primaryKey
 	 *            Primary key
+	 * @param repository
+	 *            repository identifier
 	 * @return The retrieved object or {@code null} if there is no object with
-	 *         the specified primary key
+	 *         the specified primary key in the specified repository
 	 * @throws NullPointerException
-	 *             If {@code cls} or {@code primaryKey} is {@code null}
-	 */
-	public <T> T readObject(Class<T> cls, Object primaryKey);
-
-	/**
-	 * Retrieves object with the specified primary key. </p>
-	 * 
-	 * The object is looked for in context specified by the {@code context} URI.
-	 * The result is then cast to the specified type.
-	 * 
-	 * @param cls
-	 *            The type of the returned object
-	 * @param primaryKey
-	 *            Primary key
-	 * @param context
-	 *            Context in which to search
-	 * @return The retrieved object or {@code null} if there is no object with
-	 *         the specified primary key in the specified context
-	 * @throws NullPointerException
-	 *             If {@code cls}, {@code primaryKey} or {@code context} is
+	 *             If {@code cls}, {@code primaryKey} or {@code repository} is
 	 *             {@code null}
 	 * @throws OWLPersistenceException
-	 *             If {@code context} is not a valid context URI or if an error
-	 *             during object load occurs
+	 *             If {@code repository} is not valid or if an error during
+	 *             object loading occurs
 	 */
-	public <T> T readObject(Class<T> cls, Object primaryKey, URI context);
+	public <T> T readObject(Class<T> cls, Object primaryKey, RepositoryID repository);
 
 	/**
 	 * Register objects from the given collection in this {@code UnitOfWork}.
@@ -187,12 +160,12 @@ public interface UnitOfWork extends Session {
 	 * 
 	 * @param object
 	 *            Object
-	 * @param contextUri
-	 *            URI of the ontology context to which the object being
-	 *            registered belongs belongs
+	 * @param repository
+	 *            Identifier of the repository to which the object being
+	 *            registered belongs
 	 * @return Object Returns clone of the registered object
 	 */
-	public Object registerExistingObject(Object object, URI contextUri);
+	public Object registerExistingObject(Object object, RepositoryID repository);
 
 	/**
 	 * Registers the specified new object in this Unit of Work. </p>
@@ -210,20 +183,21 @@ public interface UnitOfWork extends Session {
 	/**
 	 * Registers the specified new object in this Unit of Work. </p>
 	 * 
-	 * The object will be persisted in the context specified by {@code context}
-	 * URI.
+	 * The object will be persisted in the context specified by
+	 * {@code repository} URI.
 	 * 
 	 * @param object
 	 *            The object to register
-	 * @param context
-	 *            URI of the context into which the object should be persisted
+	 * @param repository
+	 *            Identifier of the repository into which the object should be
+	 *            persisted
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code context} is {@code null}
 	 * @throws OWLPersistenceException
 	 *             If {@code context} is not a valid context URI or if an error
 	 *             during registration occurs
 	 */
-	public void registerNewObject(Object object, URI context);
+	public void registerNewObject(Object object, RepositoryID repository);
 
 	/**
 	 * Remove the given object. Calling this method causes the entity to be

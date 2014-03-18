@@ -12,7 +12,7 @@ public enum OntologyConnectorType {
 	/**
 	 * OWLIM ontology connector.
 	 */
-	// TODO Sesame will be removed since it is a Sesame SAIL implementation
+	// TODO OWLIM will be removed since it is a Sesame SAIL implementation
 	OWLIM("owlim", OntoDriverProperties.OWLIM_DRIVER_FACTORY),
 	/**
 	 * Sesame ontology connector. Name: sesame

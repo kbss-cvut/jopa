@@ -1,7 +1,8 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.net.URI;
 import java.util.Set;
+
+import cz.cvut.kbss.jopa.model.RepositoryID;
 
 /**
  * This interface defines basic methods for accessing the shared live object
@@ -17,14 +18,16 @@ public interface CacheManager extends Cache {
 	 * 
 	 * This method gets the primary key of the object in parameter, so it does
 	 * not need to extract it itself.
-	 * @param contextUri
-	 *            URI of the context to which the specified entity belongs
+	 * 
+	 * @param repository
+	 *            Identifier of the context to which the specified entity
+	 *            belongs
 	 * @param primaryKey
 	 *            Primary key of the specified object
 	 * @param entity
 	 *            The object to be added into the cache
 	 */
-	public void add(URI contextUri, Object primaryKey, Object entity);
+	public void add(RepositoryID repository, Object primaryKey, Object entity);
 
 	/**
 	 * Gets entity with the specified primary key from the cache.
@@ -41,11 +44,12 @@ public interface CacheManager extends Cache {
 	/**
 	 * Gets entity with the specified primary key from the cache. </p>
 	 * 
-	 * The entity is searched for in the context specified by {@code contextUri}
-	 * . Thus all three conditions - class, primary key and context must match
-	 * to return a result.
-	 * @param contextUri
-	 *            URI of the context
+	 * The entity is searched for in the context specified by {@code repository}
+	 * . Thus all three conditions - class, primary key and repository
+	 * identifier must match to return a result.
+	 * 
+	 * @param repository
+	 *            Repository identifier
 	 * @param cls
 	 *            Class of the entity
 	 * @param primaryKey
@@ -53,7 +57,7 @@ public interface CacheManager extends Cache {
 	 * 
 	 * @return Entity with the specified primary key or {@code null}
 	 */
-	public <T> T get(URI contextUri, Class<T> cls, Object primaryKey);
+	public <T> T get(RepositoryID repository, Class<T> cls, Object primaryKey);
 
 	/**
 	 * Remove objects with inferred attributes from the cache, since there are

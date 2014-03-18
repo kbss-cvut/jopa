@@ -5,6 +5,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
+import cz.cvut.kbss.jopa.model.RepositoryID;
+
 /**
  * Objects of this interface are responsible for building clones for UnitOfWork
  * transactions.
@@ -19,13 +21,13 @@ public interface CloneBuilder {
 	 * 
 	 * @param original
 	 *            Object
-	 * @param contextUri
-	 *            URI of the ontology context the original belongs to
+	 * @param repository
+	 *            Repository identifier
 	 * @return Object The clone
 	 * @throws NullPointerException
-	 *             If {@code original} or {@code contextUri} is {@code null}
+	 *             If {@code original} or {@code repository} is {@code null}
 	 */
-	public Object buildClone(Object original, URI contextUri);
+	public Object buildClone(Object original, RepositoryID repository);
 
 	/**
 	 * Builds clone of the given object. </p>
@@ -41,14 +43,15 @@ public interface CloneBuilder {
 	 *            The field whose value is being cloned
 	 * @param original
 	 *            The original to clone
-	 * @param contextUri
-	 *            context URI of the ontology context the original belongs to
+	 * @param repository
+	 *            Repository identifier
 	 * @return The clone
 	 * @throws NullPointerException
 	 *             If {@code cloneOwner}, {@code original} or {@code contextUri}
 	 *             is {@code null}
 	 */
-	public Object buildClone(Object cloneOwner, Field clonedField, Object original, URI contextUri);
+	public Object buildClone(Object cloneOwner, Field clonedField, Object original,
+			RepositoryID repository);
 
 	/**
 	 * Builds clones of all given objects.

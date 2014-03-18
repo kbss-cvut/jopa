@@ -2,6 +2,8 @@ package cz.cvut.kbss.jopa.sessions;
 
 import java.net.URI;
 
+import cz.cvut.kbss.jopa.model.RepositoryID;
+
 /**
  * Interface used to interact with the second-level cache. If a cache is not in
  * use, the methods of this interface have no effect, except for contains, which
@@ -33,15 +35,15 @@ public interface Cache {
 	 * Checks whether the cache contains data for the given entity (in the given
 	 * context only).
 	 * 
-	 * @param contextUri
-	 *            URI of context
+	 * @param repository
+	 *            repository identifier
 	 * @param cls
 	 *            Entity class
 	 * @param primaryKey
 	 *            Primary key
 	 * @return {@code boolean} indicating whether the entity is in the cache
 	 */
-	public boolean contains(URI contextUri, Class<?> cls, Object primaryKey);
+	public boolean contains(RepositoryID repository, Class<?> cls, Object primaryKey);
 
 	/**
 	 * Removes the data for the given entity from the cache. </p>
@@ -59,14 +61,14 @@ public interface Cache {
 	/**
 	 * Removes the data for the given entity from the cache.
 	 * 
-	 * @param contextUri
-	 *            URI of context
+	 * @param repository
+	 *            Repository identifier
 	 * @param cls
 	 *            Entity class
 	 * @param primaryKey
 	 *            Primary key
 	 */
-	public void evict(URI contextUri, Class<?> cls, Object primaryKey);
+	public void evict(RepositoryID repository, Class<?> cls, Object primaryKey);
 
 	/**
 	 * Removes the data for entities of the specified class (and its subclasses)
@@ -80,12 +82,13 @@ public interface Cache {
 	public void evict(Class<?> cls);
 
 	/**
-	 * Removes the data for entities of the specified context from the cache.
+	 * Removes the data for entities of the specified repository contexts from
+	 * the cache.
 	 * 
 	 * @param contextUri
 	 *            URI of {@code Context}
 	 */
-	public void evict(URI contextUri);
+	public void evict(RepositoryID repository);
 
 	/**
 	 * Clears the cache.
