@@ -30,18 +30,6 @@ public interface CacheManager extends Cache {
 	public void add(RepositoryID repository, Object primaryKey, Object entity);
 
 	/**
-	 * Gets entity with the specified primary key from the cache.
-	 * 
-	 * @param cls
-	 *            Class of the entity
-	 * @param primaryKey
-	 *            Primary key of the entity to search for
-	 * 
-	 * @return Entity with the specified primary key or null
-	 */
-	public <T> T get(Class<T> cls, Object primaryKey);
-
-	/**
 	 * Gets entity with the specified primary key from the cache. </p>
 	 * 
 	 * The entity is searched for in the context specified by {@code repository}

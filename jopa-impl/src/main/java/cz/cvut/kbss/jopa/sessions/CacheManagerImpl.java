@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +20,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 
 /**
@@ -41,10 +44,12 @@ public class CacheManagerImpl implements CacheManager {
 
 	private Set<Class<?>> inferredClasses;
 
-	private final Map<URI, Map<Class<?>, Map<Object, Object>>> objCache;
-	private final Map<URI, Map<Class<?>, Map<Object, Long>>> ttls;
+	private final List<Map<URI, Map<Class<?>, Map<Object, Object>>>> objCache;
+	// The sweeper will work on repository context level
+	private final List<Map<URI, Long>> ttls;
+	private final List<Repository> repositories;
 
-	protected final AbstractSession session;
+	protected final ServerSession session;
 
 	private final ReadWriteLock lock;
 	private final Lock readLock;
@@ -57,10 +62,15 @@ public class CacheManagerImpl implements CacheManager {
 	private Long timeToLive;
 	private volatile boolean sweepRunning;
 
-	public CacheManagerImpl(AbstractSession session, Map<String, String> properties) {
+	public CacheManagerImpl(ServerSession session, int repositories, Map<String, String> properties) {
 		this.session = session;
-		this.objCache = new HashMap<URI, Map<Class<?>, Map<Object, Object>>>();
-		this.ttls = new HashMap<URI, Map<Class<?>, Map<Object, Long>>>();
+		this.objCache = new ArrayList<>(repositories);
+		this.ttls = new ArrayList<>(repositories);
+		for (int i = 0; i < repositories; i++) {
+			objCache.add(new HashMap<URI, Map<Class<?>, Map<Object, Object>>>());
+			ttls.add(new HashMap<URI, Long>());
+		}
+		this.repositories = session.getRepositories();
 		initSettings(properties);
 		this.lock = new ReentrantReadWriteLock();
 		this.readLock = lock.readLock();
@@ -98,12 +108,15 @@ public class CacheManagerImpl implements CacheManager {
 	}
 
 	@Override
-	public void add(URI contextUri, Object primaryKey, Object entity) {
-		if (primaryKey == null || entity == null || contextUri == null) {
+	public void add(RepositoryID repository, Object primaryKey, Object entity) {
+		if (primaryKey == null || entity == null || repository == null) {
 			throw new NullPointerException("Null passed to add: primaryKey = " + primaryKey
-					+ ", entity = " + entity + ", contextUri = " + contextUri);
+					+ ", entity = " + entity + ", repository = " + repository);
 		}
-		putObjectIntoCache(primaryKey, entity, contextUri);
+		if (repository.getContexts().isEmpty()) {
+			throw new IllegalArgumentException("The repository has to specify specify context.");
+		}
+		putObjectIntoCache(primaryKey, entity, repository);
 	}
 
 	/**
@@ -114,37 +127,33 @@ public class CacheManagerImpl implements CacheManager {
 	 * @param entity
 	 *            The entity to cache
 	 */
-	protected final void putObjectIntoCache(Object primaryKey, Object entity, URI contextUri) {
+	protected final void putObjectIntoCache(Object primaryKey, Object entity,
+			RepositoryID repository) {
 		assert entity != null;
 		assert primaryKey != null;
-		assert contextUri != null;
+		assert repository != null;
+		assert !repository.getContexts().isEmpty();
 		final Class<?> cls = entity.getClass();
-		if (contains(contextUri, cls, primaryKey)) {
+		if (contains(repository, cls, primaryKey)) {
 			return;
 		}
-		Map<Class<?>, Map<Object, Object>> m = objCache.get(contextUri);
+		final URI contextUri = repository.getContexts().iterator().next();
+		final Map<URI, Map<Class<?>, Map<Object, Object>>> repo = objCache.get(repository
+				.getRepository());
+		Map<Class<?>, Map<Object, Object>> m = repo.get(contextUri);
 		if (m == null) {
 			m = new HashMap<Class<?>, Map<Object, Object>>();
-			objCache.put(contextUri, m);
+			repo.put(contextUri, m);
 		}
 		Map<Object, Object> entityMap = m.get(cls);
 		if (entityMap == null) {
 			entityMap = createMap();
 			m.put(cls, entityMap);
 		}
-		Map<Class<?>, Map<Object, Long>> ttlM = ttls.get(contextUri);
-		if (ttlM == null) {
-			ttlM = new HashMap<Class<?>, Map<Object, Long>>();
-			ttls.put(contextUri, ttlM);
-		}
-		Map<Object, Long> ttlMap = ttlM.get(cls);
-		if (ttlMap == null) {
-			ttlMap = new HashMap<Object, Long>();
-			ttlM.put(cls, ttlMap);
-
-		}
+		Map<URI, Long> ttlM = ttls.get(repository.getRepository());
 		entityMap.put(primaryKey, entity);
-		ttlMap.put(primaryKey, System.currentTimeMillis());
+		// Just rewrite the last value
+		ttlM.put(contextUri, System.currentTimeMillis());
 	}
 
 	/**
@@ -171,40 +180,16 @@ public class CacheManagerImpl implements CacheManager {
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public <T> T get(Class<T> cls, Object primaryKey) {
-		if (cls == null || primaryKey == null) {
-			return null;
-		}
-		for (Entry<URI, Map<Class<?>, Map<Object, Object>>> e : objCache.entrySet()) {
-			final Map<Class<?>, Map<Object, Object>> m = e.getValue();
-			final Object entity = getMapForClass(m, cls).get(primaryKey);
-			if (entity == null) {
-				continue;
-			}
-			updateEntityTimeToLive(e.getKey(), cls, primaryKey);
-			// We can assume that the entity can be cast to cls (based on
-			// insertion
-			// logic)
-			return cls.cast(entity);
-		}
-		return null;
-	}
-
 	@Override
-	public <T> T get(URI contextUri, Class<T> cls, Object primaryKey) {
-		if (cls == null || primaryKey == null || contextUri == null) {
-			return null;
+	public <T> T get(RepositoryID repository, Class<T> cls, Object primaryKey) {
+		if (repository == null || cls == null || primaryKey == null) {
+			throw new NullPointerException("Null passed to CacheManager.get: repository = "
+					+ repository + ", cls = " + cls + ", primaryKey = " + primaryKey);
 		}
-		final Object entity = getMapForClass(getMapForContext(contextUri), cls).get(primaryKey);
-		if (entity == null) {
-			return null;
+		final Object entity = getMapForClass(repository, cls).get(primaryKey);
+		if (entity != null) {
+			updateContextTimeToLive(repository);
 		}
-		updateEntityTimeToLive(contextUri, cls, primaryKey);
-		// We can assume that the entity can be cast to cls (based on insertion
-		// logic)
 		return cls.cast(entity);
 	}
 
@@ -243,51 +228,24 @@ public class CacheManagerImpl implements CacheManager {
 		if (cls == null || primaryKey == null) {
 			return false;
 		}
-		for (Map<Class<?>, Map<Object, Object>> m : objCache.values()) {
-			final Map<Object, Object> map = getMapForClass(m, cls);
-			if (map.containsKey(primaryKey)) {
-				return true;
+		for (Map<URI, Map<Class<?>, Map<Object, Object>>> repo : objCache) {
+			for (Map<Class<?>, Map<Object, Object>> ctx : repo.values()) {
+				if (!ctx.containsKey(cls)) {
+					return false;
+				}
+				return ctx.get(cls).containsKey(primaryKey);
 			}
 		}
 		return false;
 	}
 
 	@Override
-	public boolean contains(URI contextUri, Class<?> cls, Object primaryKey) {
-		if (contextUri == null || cls == null || primaryKey == null) {
-			return false;
+	public boolean contains(RepositoryID repository, Class<?> cls, Object primaryKey) {
+		if (repository == null || cls == null || primaryKey == null) {
+			throw new NullPointerException("Null passed to CacheManager.contains: repository = "
+					+ repository + ", cls = " + cls + ", primaryKey = " + primaryKey);
 		}
-		return getMapForClass(getMapForContext(contextUri), cls).containsKey(primaryKey);
-	}
-
-	@Override
-	public void evict(URI contextUri, Class<?> cls, Object primaryKey) {
-		if (contextUri == null || cls == null || primaryKey == null) {
-			throw new NullPointerException("Null passed to evict: primaryKey = " + primaryKey
-					+ ", cls = " + cls + ", contextUri = " + contextUri);
-		}
-		Object e = getMapForClass(getMapForContext(contextUri), cls).remove(primaryKey);
-		if (e != null) {
-			getTtlMapForClass(getTtlMapForContext(contextUri), cls).remove(primaryKey);
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public void evict(Class<?> cls, Object primaryKey) {
-		if (cls == null || primaryKey == null) {
-			throw new NullPointerException("Null passed to evict: primaryKey = " + primaryKey
-					+ ", cls = " + cls);
-		}
-		for (Map<Class<?>, Map<Object, Object>> m : objCache.values()) {
-			final Map<Object, Object> map = getMapForClass(m, cls);
-			map.remove(primaryKey);
-		}
-		for (Map<Class<?>, Map<Object, Long>> m : ttls.values()) {
-			final Map<Object, Long> map = getTtlMapForClass(m, cls);
-			map.remove(primaryKey);
-		}
+		return getMapForClass(repository, cls).containsKey(primaryKey);
 	}
 
 	/**
@@ -297,19 +255,39 @@ public class CacheManagerImpl implements CacheManager {
 		if (cls == null) {
 			throw new NullPointerException("Null passed to evict: cls = " + cls);
 		}
-		for (Map<Class<?>, Map<Object, Object>> m : objCache.values()) {
-			m.remove(cls);
-			// Evict also subclasses
-			for (Class<?> c : m.keySet()) {
-				if (cls.isAssignableFrom(c)) {
-					m.remove(c);
+		int length = objCache.size();
+		for (int i = 0; i < length; i++) {
+			final Map<URI, Map<Class<?>, Map<Object, Object>>> repo = objCache.get(i);
+			for (Entry<URI, Map<Class<?>, Map<Object, Object>>> ctx : repo.entrySet()) {
+				Map<Class<?>, Map<Object, Object>> m = ctx.getValue();
+				if (!m.containsKey(cls)) {
+					continue;
+				}
+				m.remove(cls);
+				if (m.isEmpty()) {
+					ttls.get(i).remove(ctx.getKey());
 				}
 			}
 		}
-		for (Map<Class<?>, Map<Object, Long>> m : ttls.values()) {
-			final Map<Object, Long> ttlMap = getTtlMapForClass(m, cls);
-			ttlMap.clear();
+	}
+
+	@Override
+	public void evict(RepositoryID repository, Class<?> cls, Object primaryKey) {
+		if (repository == null || cls == null || primaryKey == null) {
+			throw new NullPointerException("Null passed to CacheManager.contains: repository = "
+					+ repository + ", cls = " + cls + ", primaryKey = " + primaryKey);
 		}
+		getMapForClass(repository, cls).remove(primaryKey);
+
+	}
+
+	@Override
+	public void evict(RepositoryID repository) {
+		if (repository == null) {
+			throw new NullPointerException();
+		}
+		objCache.get(repository.getRepository()).clear();
+		ttls.get(repository.getRepository()).clear();
 	}
 
 	/**
@@ -317,15 +295,6 @@ public class CacheManagerImpl implements CacheManager {
 	 */
 	public void evictAll() {
 		releaseCache();
-	}
-
-	@Override
-	public void evict(URI contextUri) {
-		if (contextUri == null) {
-			throw new NullPointerException("Null passed to evict: contextUri = " + contextUri);
-		}
-		objCache.remove(contextUri);
-		ttls.get(contextUri).clear();
 	}
 
 	/**
@@ -339,15 +308,6 @@ public class CacheManagerImpl implements CacheManager {
 		return objCache.isEmpty();
 	}
 
-	private Map<Class<?>, Map<Object, Object>> getMapForContext(URI context) {
-		assert context != null;
-		Map<Class<?>, Map<Object, Object>> m = objCache.get(context);
-		if (m == null) {
-			m = Collections.emptyMap();
-		}
-		return m;
-	}
-
 	/**
 	 * Get the map of primary keys and entities of the specified class.
 	 * 
@@ -356,29 +316,17 @@ public class CacheManagerImpl implements CacheManager {
 	 * @return Map of pairs primary key - entity. If the specified class is not
 	 *         registered in the cache, an empty map is returned.
 	 */
-	private Map<Object, Object> getMapForClass(Map<Class<?>, Map<Object, Object>> context,
-			Class<?> cls) {
+	private Map<Object, Object> getMapForClass(RepositoryID repository, Class<?> cls) {
+		assert repository != null;
 		assert cls != null;
+		assert !repository.getContexts().isEmpty();
+		final URI contextUri = repository.getContexts().iterator().next();
+		Map<Class<?>, Map<Object, Object>> context = objCache.get(repository.getRepository()).get(
+				contextUri);
+		if (context == null) {
+			context = Collections.emptyMap();
+		}
 		Map<Object, Object> m = context.get(cls);
-		if (m == null) {
-			m = Collections.emptyMap();
-		}
-		return m;
-	}
-
-	private Map<Class<?>, Map<Object, Long>> getTtlMapForContext(URI contextUri) {
-		assert contextUri != null;
-		Map<Class<?>, Map<Object, Long>> m = ttls.get(contextUri);
-		if (m == null) {
-			m = Collections.emptyMap();
-		}
-		return m;
-	}
-
-	private Map<Object, Long> getTtlMapForClass(Map<Class<?>, Map<Object, Long>> context,
-			Class<?> cls) {
-		assert cls != null;
-		Map<Object, Long> m = context.get(cls);
 		if (m == null) {
 			m = Collections.emptyMap();
 		}
@@ -393,15 +341,12 @@ public class CacheManagerImpl implements CacheManager {
 	 * @param primaryKey
 	 *            Primary key of the entity
 	 */
-	private void updateEntityTimeToLive(URI contextUri, Class<?> cls, Object primaryKey) {
-		assert cls != null;
-		assert primaryKey != null;
-		if (!ttls.containsKey(contextUri)) {
-			return;
-		}
-		final Map<Class<?>, Map<Object, Long>> ttlMap = getTtlMapForContext(contextUri);
-		// We know that there is a cls key in the ttlMap
-		ttlMap.get(cls).put(primaryKey, System.currentTimeMillis());
+	private void updateContextTimeToLive(RepositoryID repository) {
+		assert repository != null;
+		assert !repository.getContexts().isEmpty();
+		final Map<URI, Long> ttlMap = ttls.get(repository.getRepository());
+		final URI contextUri = repository.getContexts().iterator().next();
+		ttlMap.put(contextUri, System.currentTimeMillis());
 	}
 
 	public boolean acquireReadLock() {
@@ -442,23 +387,26 @@ public class CacheManagerImpl implements CacheManager {
 				}
 				CacheManagerImpl.this.sweepRunning = true;
 				final long currentTime = System.currentTimeMillis();
-				final List<RecordToEvict> toEvict = new LinkedList<RecordToEvict>();
+				final List<RepositoryID> toEvict = new LinkedList<>();
 				// Mark the objects to evict (can't evict them now, it would
 				// cause ConcurrentModificationException)
-				for (Entry<URI, Map<Class<?>, Map<Object, Long>>> ctxTtl : CacheManagerImpl.this.ttls
-						.entrySet()) {
-					for (Entry<Class<?>, Map<Object, Long>> ttl : ctxTtl.getValue().entrySet()) {
-						for (Entry<Object, Long> e : ttl.getValue().entrySet()) {
-							if (e.getValue() + CacheManagerImpl.this.timeToLive < currentTime) {
-								toEvict.add(new RecordToEvict(ctxTtl.getKey(), ttl.getKey(), e
-										.getKey()));
-							}
+				int length = CacheManagerImpl.this.repositories.size();
+				for (int i = 0; i < length; i++) {
+					Map<URI, Long> m = CacheManagerImpl.this.ttls.get(i);
+					final RepositoryID repo = new RepositoryID(
+							CacheManagerImpl.this.repositories.get(i));
+					for (Entry<URI, Long> ttl : m.entrySet()) {
+						if (ttl.getValue() + CacheManagerImpl.this.timeToLive < currentTime) {
+							repo.addContext(ttl.getKey());
 						}
+					}
+					if (!repo.getContexts().isEmpty()) {
+						toEvict.add(repo);
 					}
 				}
 				// Evict them
-				for (RecordToEvict r : toEvict) {
-					CacheManagerImpl.this.evict(r.context, r.cls, r.primaryKey);
+				for (RepositoryID r : toEvict) {
+					CacheManagerImpl.this.evict(r);
 				}
 			} finally {
 				CacheManagerImpl.this.sweepRunning = false;
@@ -466,17 +414,5 @@ public class CacheManagerImpl implements CacheManager {
 			}
 		}
 
-	}
-
-	private static final class RecordToEvict {
-		private final URI context;
-		private final Class<?> cls;
-		private final Object primaryKey;
-
-		RecordToEvict(URI context, Class<?> cls, Object primaryKey) {
-			this.context = context;
-			this.cls = cls;
-			this.primaryKey = primaryKey;
-		}
 	}
 }

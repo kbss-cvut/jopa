@@ -129,7 +129,7 @@ public interface Connection extends Transactional {
 	 * The repositories are sorted in descending order by their priority, i. e.
 	 * as they were passed in initialization.
 	 * 
-	 * @return List of available repositories
+	 * @return Unmodifiable list of available repositories
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs

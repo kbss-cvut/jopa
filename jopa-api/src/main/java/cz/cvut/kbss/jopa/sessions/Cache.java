@@ -46,19 +46,6 @@ public interface Cache {
 	public boolean contains(RepositoryID repository, Class<?> cls, Object primaryKey);
 
 	/**
-	 * Removes the data for the given entity from the cache. </p>
-	 * 
-	 * This method removes all occurrences of the matching entity from all the
-	 * available contexts.
-	 * 
-	 * @param cls
-	 *            entity class
-	 * @param primaryKey
-	 *            primary key
-	 */
-	public void evict(Class<?> cls, Object primaryKey);
-
-	/**
 	 * Removes the data for the given entity from the cache.
 	 * 
 	 * @param repository
