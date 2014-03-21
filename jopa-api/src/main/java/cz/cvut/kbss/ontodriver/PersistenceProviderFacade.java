@@ -1,7 +1,6 @@
 package cz.cvut.kbss.ontodriver;
 
-import java.net.URI;
-
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 
 /**
@@ -23,19 +22,19 @@ public interface PersistenceProviderFacade {
 	 * Retrieves entity with the specified {@code primaryKey} from the second
 	 * level cache. </p>
 	 * 
-	 * This method is likely to return null, since no entity with
-	 * {@code primaryKey} may by present in the second level cache or the cache
-	 * may be disabled.
+	 * This method may return null, since no entity with {@code primaryKey} may
+	 * by present in the second level cache or the cache may be disabled.
 	 * 
 	 * @param cls
 	 *            Type of the entity
 	 * @param primaryKey
 	 *            Primary key of the entity to retrieve
-	 * @param contextUri
-	 *            URI of the ontology context to which the entity belongs
+	 * @param repository
+	 *            Repository identifier
 	 * @return Entity or null
 	 * @throws NullPointerException
 	 *             If {@code cls} or {@code primaryKey} is {@code null}
 	 */
-	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey, URI contextUri);
+	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey,
+			RepositoryID repository);
 }

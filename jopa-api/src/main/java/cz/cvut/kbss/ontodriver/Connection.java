@@ -1,10 +1,10 @@
 package cz.cvut.kbss.ontodriver;
 
 import java.lang.reflect.Field;
-import java.net.URI;
 import java.util.List;
-import java.util.Map;
 
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.exceptions.EntityNotRegisteredException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -47,132 +47,59 @@ public interface Connection extends Transactional {
 	public Statement createStatement() throws OntoDriverException;
 
 	/**
-	 * Resolves whether entity with the specified primary key is present in this
-	 * connection's default context. </p>
-	 * 
-	 * This method also searches ontologies imported by the ontology represented
-	 * by the default context.
+	 * Resolves whether entity with the specified primary key is present in the
+	 * specified repository. </p>
 	 * 
 	 * @param primaryKey
 	 *            Primary key
-	 * @return {@code true} if the default context contains entity with the
-	 *         specified primary key, {@code false} otherwise
+	 * @param repository
+	 *            Repository identifier
+	 * @return {@code true} if the specified repository contains entity with the
+	 *         given id, {@code false} otherwise
 	 * @throws NullPointerException
-	 *             If {@code primaryKey} is null
+	 *             If {@code primaryKey} or {@code repository} is null
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
-	 * @see #contains(Object, URI)
 	 */
-	public boolean contains(Object primaryKey) throws OntoDriverException;
+	public boolean contains(Object primaryKey, RepositoryID repository) throws OntoDriverException;
 
 	/**
-	 * Resolves whether entity with the specified primary key is present in
-	 * context with the specified URI. </p>
+	 * Checks whether the specified repository is consistent. </p>
 	 * 
-	 * @param primaryKey
-	 *            Primary key
-	 * @param context
-	 *            URI of Context to search in
-	 * @return {@code true} if the default context contains entity with the
-	 *         specified primary key, {@code false} otherwise
-	 * @throws NullPointerException
-	 *             If {@code primaryKey} or {@code context} is null
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 */
-	public boolean contains(Object primaryKey, URI context) throws OntoDriverException;
-
-	/**
-	 * Checks whether the specified ontology context is consistent. </p>
-	 * 
-	 * @param context
-	 *            URI of the context
-	 * @return {@code true} if the context is consistent, {@code false}
-	 *         otherwise
+	 * @param repository
+	 *            Repository identifier
+	 * @return {@code true} if the contexts specified by {@code repository} are
+	 *         consistent, {@code false} otherwise
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
 	 * @throws NullPointerException
-	 *             if {@code context} is {@code null}
+	 *             if {@code repository} is {@code null}
 	 */
-	public boolean isConsistent(URI context) throws OntoDriverException;
+	public boolean isConsistent(RepositoryID repository) throws OntoDriverException;
 
 	/**
 	 * Finds entity with the specified primary key and returns it as the
 	 * specified type. </p>
 	 * 
-	 * This methods searches for the entity in the default context of this
-	 * connection. If the context is not set or if no entity with the
-	 * {@code primaryKey} is found in it, the rest of the available contexts are
-	 * searched (ordered by their priority). Attribute values are looked for in
-	 * the same context where the entity was found.
-	 * 
-	 * @param cls
-	 *            Type of the returned instance
-	 * @param primaryKey
-	 *            Primary key
-	 * @return Entity or null if there is none with the specified primary key
-	 * @throws OntoDriverException
-	 *             If called on a closed connection, if the entity cannot be
-	 *             cast to the specified type or an ontology access error occurs
-	 * @see #setConnectionContext(URI)
-	 * @see #find(Class, Object, URI)
-	 * @see #find(Class, Object, URI, Map)
-	 */
-	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException;
-
-	/**
-	 * Finds entity with the specified primary key and returns it as the
-	 * specified type. </p>
-	 * 
-	 * This method searches the specified {@code context} and if no entity is
+	 * This method searches the specified {@code repository} and if no entity is
 	 * found, {@code null} is immediately returned and no further search is
-	 * conducted. Attribute values are looked for in the same context as the
-	 * entity.
+	 * conducted.
 	 * 
 	 * @param cls
 	 *            The of the returned instance
 	 * @param primaryKey
 	 *            Primary key
-	 * @param context
-	 *            URI of Context to search in
+	 * @param repository
+	 *            Repository identifier
 	 * @return Entity or null if there is none with the specified primary key
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, if the entity cannot be
 	 *             cast to the specified type or an ontology access error occurs
-	 * @see #find(Class, Object)
-	 * @see #find(Class, Object, URI, Map)
 	 */
-	public <T> T find(Class<T> cls, Object primaryKey, URI context) throws OntoDriverException;
-
-	/**
-	 * Finds entity with the specified primary key and returns it as the
-	 * specified type. </p>
-	 * 
-	 * This method searches for the entity in the specified context.
-	 * Furthermore, entity attributes values can be search in different
-	 * contexts.
-	 * 
-	 * @param cls
-	 *            Type of the returned instance
-	 * @param primaryKey
-	 *            Primary key
-	 * @param entityContext
-	 *            URI of the Context which the entity should be looked for in
-	 * @param attributeContexts
-	 *            URIs of Contexts where attributes values should be looked for
-	 * @return Entity or null if there is none with the specified primary key
-	 * @throws OntoDriverException
-	 *             If called on a closed connection, if the entity cannot be
-	 *             cast to the specified type, if any of the contexts is not
-	 *             valid or an ontology access error occurs
-	 * @see #find(Class, Object)
-	 * @see #find(Class, Object, URI)
-	 */
-	public <T> T find(Class<T> cls, Object primaryKey, URI entityContext,
-			Map<String, URI> attributeContexts) throws OntoDriverException;
+	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID repository)
+			throws OntoDriverException;
 
 	/**
 	 * Retrieves the current auto-commit status of this {@code Connection}.
@@ -185,65 +112,45 @@ public interface Connection extends Transactional {
 	public boolean getAutoCommit() throws OntoDriverException;
 
 	/**
-	 * Retrieves context with the specified URI.
+	 * Retrieves repository with the specified id.
 	 * 
-	 * @param contextUri
-	 *            URI of the context
-	 * @return Context or null if there is none with such URI
+	 * @param repositoryId
+	 *            Repository id
+	 * @return Repsitory or null if there is none with such id
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
 	 */
-	public Context getContext(URI contextUri) throws OntoDriverException;
+	public Repository getRepository(Integer repositoryId) throws OntoDriverException;
 
 	/**
-	 * Retrieves the current context of this {@code Connection}. </p>
+	 * Retrieves a list of all available repositories. </p>
 	 * 
-	 * The current context is used when no saving context is specified for e. g.
-	 * {@code persist}. </p>
+	 * The repositories are sorted in descending order by their priority, i. e.
+	 * as they were passed in initialization.
 	 * 
-	 * By default the context with highest priority is used as current context.
-	 * This can be changed by calling {@link #setConnectionContext(URI)}.
-	 * 
-	 * @return {@code Context} of this connection
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or if an ontology access
-	 *             error occurs
-	 * @see #setConnectionContext(URI)
-	 */
-	public Context getCurrentContext() throws OntoDriverException;
-
-	/**
-	 * Retrieves a list of all available contexts. </p>
-	 * 
-	 * A context in this scenario can be a named graph, an ontology or an
-	 * ontology module. </p>
-	 * 
-	 * The contexts are sorted in descending order by their priority.
-	 * 
-	 * @return List of available contexts
+	 * @return List of available repositories
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
 	 */
-	public List<Context> getContexts() throws OntoDriverException;
+	public List<Repository> getRepositories() throws OntoDriverException;
 
 	/**
-	 * Retrieves saving context for the specified entity. </p>
+	 * Retrieves saving repository for the specified entity. </p>
 	 * 
-	 * If {@code entity} was loaded from an ontology, its loading context is
-	 * also its saving context. If {@code entity} is to be persisted, the
-	 * default saving context is returned.
+	 * If {@code entity} was loaded from an ontology, its loading repository is
+	 * also its saving repository. If the entity was not loaded by this
+	 * connection, {@code null} is returned.
 	 * 
 	 * @param entity
-	 *            The entity to look context up for
-	 * @return Context
+	 *            The entity
+	 * @return RepositoryID or {@code null}
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
-	 * @see #setConnectionContext(String)
 	 */
-	public Context getSaveContextFor(Object entity) throws OntoDriverException;
+	public RepositoryID getSaveRepositoryFor(Object entity) throws OntoDriverException;
 
 	/**
 	 * Loads from ontology and sets value of field {@code fieldName}. </p>
@@ -283,73 +190,28 @@ public interface Connection extends Transactional {
 	 *             If {@code entity} is not registered within this connection
 	 * @throws
 	 */
-	public <T> void merge(Object primaryKey, T entity, Field mergedField) throws OntoDriverException;
+	public <T> void merge(Object primaryKey, T entity, Field mergedField)
+			throws OntoDriverException;
 
 	/**
-	 * Persists the specified entity into a context. </p>
+	 * Persists the specified entity into the specified repository. </p>
 	 * 
-	 * The context can be:
-	 * <ul>
-	 * <li>set for the entity via the {@link #setSaveContextFor(Object, URI)}</li>
-	 * <li>set for the whole connection via {@link #setConnectionContext(URI)}</li>
-	 * <li>or initially it is context with the highest priority.</li>
-	 * </ul>
-	 * 
-	 * In this order.
+	 * The entity is saved into the first context declared in {@code repository}
+	 * with all its attribute values.
 	 * 
 	 * @param primaryKey
-	 *            Primary key of the new entity. Optional, if not set it will be
-	 *            generated
+	 *            Primary key of the new entity. Optional, if not set, it will
+	 *            be generated
 	 * @param entity
 	 *            The entity to persist
+	 * @param repository
+	 *            Repository identifier
 	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
+	 *             If called on a closed connection, if the repository
+	 *             identifier is not valid or an ontology access error occurs
 	 */
-	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException;
-
-	/**
-	 * Persists the specified entity into the specified context. </p>
-	 * 
-	 * The entity is saved into this context with all its attribute values.
-	 * 
-	 * @param primaryKey
-	 *            Primary key of the new entity. Optional, if not set it will be
-	 *            generated
-	 * @param entity
-	 *            The entity to persist
-	 * @param context
-	 *            URI of the context the new entity will be saved to
-	 * @throws OntoDriverException
-	 *             If called on a closed connection, if the context is not valid
-	 *             or an ontology access error occurs
-	 */
-	public <T> void persist(Object primaryKey, T entity, URI context) throws OntoDriverException;
-
-	/**
-	 * Persists the specified entity. </p>
-	 * 
-	 * The entity is saved into the {@code context}, the attributes are saved
-	 * into respective contexts specified by the {@code attributeContexts}
-	 * argument. If context is not set for some attribute, it is saved into the
-	 * main context of the entity.
-	 * 
-	 * @param primaryKey
-	 *            Primary key of the new entity. Optional, if not set it will be
-	 *            generated
-	 * @param entity
-	 *            The entity to persist
-	 * @param entityContext
-	 *            URI of the context the entity will be saved to
-	 * @param attributeContexts
-	 *            Map of attribute names and context URIs which the attribute
-	 *            values will be saved to
-	 * @throws OntoDriverException
-	 *             If called on a closed connection, if any of the contexts is
-	 *             not valid or an ontology access error occurs
-	 */
-	public <T> void persist(Object primaryKey, T entity, URI entityContext,
-			Map<String, URI> attributeContexts) throws OntoDriverException;
+	public <T> void persist(Object primaryKey, T entity, RepositoryID repository)
+			throws OntoDriverException;
 
 	/**
 	 * Creates and returns a new prepared SPARQL statement. </p>
@@ -365,7 +227,7 @@ public interface Connection extends Transactional {
 
 	/**
 	 * Registers the specified {@code entity} as belonging to the specified
-	 * {@code context} within this connection. </p>
+	 * {@code repository} within this connection. </p>
 	 * 
 	 * No check whether this relationship is correct is done. </p>
 	 * 
@@ -374,15 +236,16 @@ public interface Connection extends Transactional {
 	 * 
 	 * @param entity
 	 *            The entity to register
-	 * @param context
-	 *            The context
+	 * @param repository
+	 *            Repository identifier
 	 * @throws OntoDriverException
-	 *             If called on a closed connection or if {@code context} is not
-	 *             valid
+	 *             If called on a closed connection or if {@code repository} is
+	 *             not valid
 	 * @throws NullPointerException
-	 *             If {@code entity} or {@code context} is null
+	 *             If {@code entity} or {@code repository} is null
 	 */
-	public <T> void registerWithContext(T entity, URI context) throws OntoDriverException;
+	public <T> void registerWithRepository(T entity, RepositoryID repository)
+			throws OntoDriverException;
 
 	/**
 	 * Removes the specified {@code entity}. </p>
@@ -403,30 +266,6 @@ public interface Connection extends Transactional {
 	public <T> void remove(Object primaryKey, T entity) throws OntoDriverException;
 
 	/**
-	 * Removes the specified {@code entity} from the specified {@code context}.
-	 * </p>
-	 * 
-	 * If the entity is not persistent in the specified context an exception is
-	 * thrown. </p>
-	 * 
-	 * If the {@code context} is {@code null}, this method behaves exactly as
-	 * {@link #remove(Object)}.
-	 * 
-	 * @param primaryKey
-	 *            Primary key of the entity to be removed
-	 * @param entity
-	 *            The entity to remove
-	 * @param context
-	 *            URI of the context the entity will be removed from
-	 * @throws OntoDriverException
-	 *             If called on a closed connection, if the context is not valid
-	 *             or if an ontology access error occurs
-	 * @throws EntityNotRegisteredException
-	 *             If {@code entity} is not registered within this connection
-	 */
-	public <T> void remove(Object primaryKey, T entity, URI context) throws OntoDriverException;
-
-	/**
 	 * Sets auto commit mode on this connection. </p>
 	 * 
 	 * Setting auto commit twice to the same value has no effect. </p>
@@ -443,32 +282,20 @@ public interface Connection extends Transactional {
 	public void setAutoCommit(boolean autoCommit) throws OntoDriverException;
 
 	/**
-	 * Sets default saving context for this connection. </p>
-	 * 
-	 * This context is used for newly persisted entities without saving context.
-	 * 
-	 * @param context
-	 *            URI of the context to use as default for persist
-	 * @throws OntoDriverException
-	 *             If the context is not valid, called on a closed connection or
-	 *             an ontology access error occurs
-	 */
-	public void setConnectionContext(URI context) throws OntoDriverException;
-
-	/**
-	 * Sets saving context for the specified entity. </p>
+	 * Sets saving repository for the specified entity. </p>
 	 * 
 	 * This method is expected to be called mainly for new entities that are yet
-	 * to be persisted. However, setting different saving context for an
+	 * to be persisted. However, setting different saving repository for an
 	 * existing entity is also possible.
 	 * 
 	 * @param entity
-	 *            The entity to set context for
-	 * @param context
-	 *            The context URI
+	 *            The entity to set repository for
+	 * @param repository
+	 *            Repository identifier
 	 * @throws OntoDriverException
-	 *             If called on a closed connection, the context is not valid or
-	 *             an ontology access error occurs
+	 *             If called on a closed connection, the repository is not valid
+	 *             or an ontology access error occurs
 	 */
-	public void setSaveContextFor(Object entity, URI context) throws OntoDriverException;
+	public void setSaveRepositoryFor(Object entity, RepositoryID repository)
+			throws OntoDriverException;
 }
