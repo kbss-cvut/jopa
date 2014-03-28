@@ -1,7 +1,6 @@
 package cz.cvut.kbss.ontodriver;
 
-import java.net.URI;
-
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -19,7 +18,7 @@ public class JopaStatement implements Statement {
 
 	private boolean useTransactionalOntology;
 	private String query;
-	private URI context;
+	private RepositoryID repository;
 
 	public JopaStatement(StorageManager manager) {
 		if (manager == null) {
@@ -53,31 +52,32 @@ public class JopaStatement implements Statement {
 		return query;
 	}
 
-	public URI getContext() {
-		return context;
+	public RepositoryID getRepository() {
+		return repository;
 	}
 
 	@Override
-	public ResultSet executeQuery(String sparql, URI contextUri) throws OntoDriverException {
-		initQuery(sparql, contextUri);
+	public ResultSet executeQuery(String sparql, RepositoryID repository)
+			throws OntoDriverException {
+		initQuery(sparql, repository);
 		return manager.executeStatement(this);
 	}
 
 	@Override
-	public int executeUpdate(String sparql, URI contextUri) throws OntoDriverException {
-		initQuery(sparql, contextUri);
+	public int executeUpdate(String sparql, RepositoryID repository) throws OntoDriverException {
+		initQuery(sparql, repository);
 		manager.executeStatement(this);
 		// Return 0 for now, we don't known how many statements have been
 		// affected
 		return 0;
 	}
 
-	private void initQuery(String sparql, URI context) {
-		if (sparql == null || context == null) {
+	private void initQuery(String sparql, RepositoryID repository) {
+		if (sparql == null || repository == null) {
 			throw new NullPointerException();
 		}
 		this.query = sparql;
-		this.context = context;
+		this.repository = repository;
 	}
 
 }

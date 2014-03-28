@@ -5,16 +5,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +23,7 @@ import cz.cvut.kbss.jopa.adapters.IndirectList;
 import cz.cvut.kbss.jopa.adapters.IndirectMap;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
@@ -38,7 +36,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	// This identity map stores visited objects during the clone building
 	// process. We use this to prevent cloning already cloned objects.
 	private final Map<Object, Object> visitedObjects;
-	private final Map<URI, Map<Object, Object>> visitedEntities;
+	private final RepositoryMap visitedEntities;
 
 	private final Builders builders;
 
@@ -47,41 +45,42 @@ public class CloneBuilderImpl implements CloneBuilder {
 	public CloneBuilderImpl() {
 		this.uow = null;
 		this.visitedObjects = new IdentityHashMap<Object, Object>();
-		this.visitedEntities = new HashMap<URI, Map<Object, Object>>();
+		this.visitedEntities = new RepositoryMap(16);
 		this.builders = new Builders();
 	}
 
 	public CloneBuilderImpl(UnitOfWorkImpl uow) {
 		this.uow = uow;
 		this.visitedObjects = new IdentityHashMap<Object, Object>();
-		this.visitedEntities = new HashMap<URI, Map<Object, Object>>();
+		this.visitedEntities = new RepositoryMap(uow.getRepositories().size());
 		this.builders = new Builders();
 	}
 
 	@Override
-	public Object buildClone(final Object original, final URI contextUri) {
-		if (original == null || contextUri == null) {
+	public Object buildClone(Object original, RepositoryID repository) {
+		if (original == null || repository == null) {
 			throw new NullPointerException();
 		}
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Cloning object " + original);
 		}
-		return buildCloneImpl(null, null, original, contextUri);
+		return buildCloneImpl(null, null, original, repository);
 	}
 
 	@Override
-	public Object buildClone(Object cloneOwner, Field clonedField, Object original, URI contextUri) {
-		if (cloneOwner == null || original == null || contextUri == null) {
+	public Object buildClone(Object cloneOwner, Field clonedField, Object original,
+			RepositoryID repository) {
+		if (cloneOwner == null || original == null || repository == null) {
 			throw new NullPointerException();
 		}
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Cloning object " + original + " with owner " + cloneOwner);
 		}
-		return buildCloneImpl(cloneOwner, clonedField, original, contextUri);
+		return buildCloneImpl(cloneOwner, clonedField, original, repository);
 	}
 
 	private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original,
-			URI contextUri) {
+			RepositoryID repository) {
 
 		if (visitedObjects.containsKey(original)) {
 			return visitedObjects.get(original);
@@ -93,20 +92,20 @@ public class CloneBuilderImpl implements CloneBuilder {
 		final boolean managed = isTypeManaged(cls);
 		if (managed) {
 			final IRI pk = getIdentifier(original);
-			final Object visitedClone = getVisitedEntity(contextUri, pk);
+			final Object visitedClone = getVisitedEntity(repository, pk);
 			if (visitedClone != null) {
 				return visitedClone;
 			}
 		}
 		final AbstractInstanceBuilder builder = getInstanceBuilder(original);
-		Object clone = builder.buildClone(cloneOwner, clonedField, original, contextUri);
+		Object clone = builder.buildClone(cloneOwner, clonedField, original, repository);
 		visitedObjects.put(original, clone);
 		if (!builder.populatesAttributes() && !isPrimitiveOrString(original.getClass())) {
-			populateAttributes(original, clone, contextUri);
+			populateAttributes(original, clone, repository);
 		}
 		if (managed) {
 			final IRI pk = getIdentifier(clone);
-			putVisitedEntity(contextUri, pk, clone);
+			putVisitedEntity(repository, pk, clone);
 		}
 		return clone;
 	}
@@ -120,7 +119,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 	 * @param clone
 	 *            Object
 	 */
-	private void populateAttributes(final Object original, Object clone, final URI contextUri) {
+	private void populateAttributes(final Object original, Object clone,
+			final RepositoryID repository) {
 		Class<?> theClass = original.getClass();
 		List<Field> fields = new ArrayList<Field>();
 		fields.addAll(Arrays.asList(theClass.getDeclaredFields()));
@@ -148,10 +148,10 @@ public class CloneBuilderImpl implements CloneBuilder {
 				} else if (origVal instanceof Collection || origVal instanceof Map) {
 					// Collection or a Map
 					final Object clonedCollection = getInstanceBuilder(origVal).buildClone(clone,
-							f, origVal, contextUri);
+							f, origVal, repository);
 					f.set(clone, clonedCollection);
 				} else if (f.getType().isArray()) {
-					Object[] arr = cloneArray(origVal, contextUri);
+					Object[] arr = cloneArray(origVal, repository);
 					f.set(clone, arr);
 				} else {
 					// Else we have a relationship and we need to clone its
@@ -168,11 +168,12 @@ public class CloneBuilderImpl implements CloneBuilder {
 					Object toAssign = null;
 					if (isTypeManaged(origClass)) {
 						final IRI pk = getIdentifier(origVal);
-						final Map<Object, Object> m = visitedEntities.get(contextUri);
-						toAssign = (m != null && m.containsKey(pk)) ? m.get(pk) : uow
-								.registerExistingObject(origVal, contextUri);
+						toAssign = getVisitedEntity(repository, pk);
+						if (toAssign == null) {
+							toAssign = uow.registerExistingObject(origVal, repository);
+						}
 					} else {
-						toAssign = buildClone(origVal, contextUri);
+						toAssign = buildClone(origVal, repository);
 					}
 					f.set(clone, toAssign);
 				}
@@ -195,7 +196,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	 *            of the ontology context the original belongs to
 	 * @return Deep copy of the specified array.
 	 */
-	Object[] cloneArray(final Object array, URI contextUri) {
+	Object[] cloneArray(final Object array, RepositoryID repository) {
 		if (array == null) {
 			return null;
 		}
@@ -221,7 +222,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 		} else {
 			for (int i = 0; i < clonedArr.length; i++) {
 				clonedArr[i] = originalArr[i] == null ? null : buildClone(originalArr[i],
-						contextUri);
+						repository);
 			}
 		}
 		return clonedArr;
@@ -239,28 +240,6 @@ public class CloneBuilderImpl implements CloneBuilder {
 	public static boolean isPrimitiveOrString(final Class<?> cls) {
 		return cls.isPrimitive() || String.class.equals(cls) || cls.isEnum()
 				|| WRAPPER_TYPES.contains(cls);
-	}
-
-	@Override
-	public List<?> buildClones(Map<?, URI> originals) {
-		if (originals == null) {
-			return null;
-		}
-		List<Object> result = new ArrayList<Object>();
-		for (Entry<?, URI> obj : originals.entrySet()) {
-			result.add(buildClone(obj.getKey(), obj.getValue()));
-		}
-		return result;
-	}
-
-	@Override
-	public ObjectChangeSet createObjectChangeSet(Object original, Object clone,
-			UnitOfWorkChangeSet changeSet) {
-		if (original == null) {
-			return null;
-		}
-		ObjectChangeSet chs = new ObjectChangeSetImpl(original, clone, false, changeSet);
-		return chs;
 	}
 
 	@Override
@@ -298,25 +277,15 @@ public class CloneBuilderImpl implements CloneBuilder {
 		return original;
 	}
 
-	private Object getVisitedEntity(URI ctx, Object primaryKey) {
-		assert ctx != null;
+	private Object getVisitedEntity(RepositoryID repository, Object primaryKey) {
+		assert repository != null;
 		assert primaryKey != null;
-		if (!visitedEntities.containsKey(ctx)) {
-			return null;
-		}
-		return visitedEntities.get(ctx).get(primaryKey);
+		return visitedEntities.get(repository, primaryKey);
 	}
 
-	private void putVisitedEntity(URI ctx, Object primaryKey, Object entity) {
-		assert ctx != null;
-		assert primaryKey != null;
-		assert entity != null;
-		Map<Object, Object> ctxMap = visitedEntities.get(ctx);
-		if (ctxMap == null) {
-			ctxMap = new HashMap<Object, Object>();
-			visitedEntities.put(ctx, ctxMap);
-		}
-		ctxMap.put(primaryKey, entity);
+	private void putVisitedEntity(RepositoryID repository, Object primaryKey, Object entity) {
+		assert repository != null;
+		visitedEntities.add(repository, primaryKey, entity);
 	}
 
 	private IRI getIdentifier(Object entity) {

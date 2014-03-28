@@ -1,7 +1,6 @@
 package cz.cvut.kbss.ontodriver.impl;
 
-import java.net.URI;
-
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 
@@ -34,7 +33,8 @@ class DefaultPersistenceProvider implements PersistenceProviderFacade {
 	 * @return {@code null}
 	 */
 	@Override
-	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey, URI contextUri) {
+	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey,
+			RepositoryID repository) {
 		return null;
 	}
 

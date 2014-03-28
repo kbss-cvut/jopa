@@ -18,7 +18,8 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 public class ChangeManagerImpl implements ChangeManager {
 
 	private static final Logger LOG = Logger.getLogger(ChangeManagerImpl.class.getName());
-	private Map<Object, Object> visitedObjects;
+
+	private final Map<Object, Object> visitedObjects;
 
 	private static enum Changed {
 		TRUE, FALSE, UNDETERMINED
@@ -193,13 +194,12 @@ public class ChangeManagerImpl implements ChangeManager {
 		return false;
 	}
 
-	public ObjectChangeSet calculateChanges(ObjectChangeSet changeSet)
-			throws IllegalAccessException, IllegalArgumentException,
-			OWLInferredAttributeModifiedException {
+	public boolean calculateChanges(ObjectChangeSet changeSet) throws IllegalAccessException,
+			IllegalArgumentException, OWLInferredAttributeModifiedException {
 		if (changeSet == null) {
-			return null;
+			return false;
 		}
-		return this.calculateChangesInternal(changeSet);
+		return calculateChangesInternal(changeSet);
 	}
 
 	/**
@@ -210,13 +210,11 @@ public class ChangeManagerImpl implements ChangeManager {
 	 * @param changeSet
 	 *            The change set where change records will be put in. It also
 	 *            contains reference to the clone and original object.
-	 * @return Change set containing change records or null if there were no
-	 *         changes.
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 * @throws OWLInferredAttributeModifiedException
 	 */
-	protected ObjectChangeSet calculateChangesInternal(ObjectChangeSet changeSet)
+	protected boolean calculateChangesInternal(ObjectChangeSet changeSet)
 			throws IllegalArgumentException, IllegalAccessException,
 			OWLInferredAttributeModifiedException {
 		if (LOG.isLoggable(Level.FINER)) {
@@ -280,11 +278,6 @@ public class ChangeManagerImpl implements ChangeManager {
 			}
 			changeSet.addChangeRecord(r);
 		}
-		if (!changes) {
-			return null;
-		} else {
-			return changeSet;
-		}
+		return changes;
 	}
-
 }

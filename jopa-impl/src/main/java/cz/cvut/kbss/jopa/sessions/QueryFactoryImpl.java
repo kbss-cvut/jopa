@@ -1,8 +1,8 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.net.URI;
 import java.util.List;
 
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.QueryImpl;
@@ -22,56 +22,56 @@ class QueryFactoryImpl implements QueryFactory {
 	}
 
 	@Override
-	public Query<List<String>> createNativeQuery(String sparql, URI contextUri) {
+	public Query<List<String>> createNativeQuery(String sparql, RepositoryID repository) {
 		if (sparql == null) {
 			throw new NullPointerException("Query not specified!");
 		}
-		if (contextUri == null) {
-			throw new NullPointerException("Context URI not specified.");
+		if (repository == null) {
+			throw new NullPointerException("Repository not specified.");
 		}
-		final Query<List<String>> q = new QueryImpl(sparql, contextUri, true, connection);
+		final Query<List<String>> q = new QueryImpl(sparql, repository, true, connection);
 		((QueryImpl) q).setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
 		return q;
-
 	}
 
 	@Override
-	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass, URI contextUri) {
+	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass,
+			RepositoryID repository) {
 		if (sparql == null || resultClass == null) {
 			throw new NullPointerException("Query or resultClass not specified!");
 		}
-		if (contextUri == null) {
-			throw new NullPointerException("Context URI not specified.");
+		if (repository == null) {
+			throw new NullPointerException("Repository not specified.");
 		}
-		final TypedQueryImpl<T> tq = new TypedQueryImpl<T>(sparql, resultClass, contextUri, true,
+		final TypedQueryImpl<T> tq = new TypedQueryImpl<T>(sparql, resultClass, repository, true,
 				uow, connection);
 		return tq;
 	}
 
 	@Override
-	public Query createQuery(String query, URI contextUri) {
+	public Query createQuery(String query, RepositoryID repository) {
 		if (query == null) {
 			throw new NullPointerException("Query not specified!");
 		}
-		if (contextUri == null) {
-			throw new NullPointerException("Context URI not specified.");
+		if (repository == null) {
+			throw new NullPointerException("Repository not specified.");
 		}
 		// We specify the query as SPARQL since currently we don't support any
 		// more abstract syntax
-		final QueryImpl q = new QueryImpl(query, contextUri, false, connection);
+		final QueryImpl q = new QueryImpl(query, repository, false, connection);
 		q.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
 		return q;
 	}
 
 	@Override
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, URI contextUri) {
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, RepositoryID repository) {
 		if (query == null || resultClass == null) {
 			throw new NullPointerException("Query or resultClass not specified!");
 		}
-		if (contextUri == null) {
-			throw new NullPointerException("Context URI not specified.");
+		if (repository == null) {
+			throw new NullPointerException("Repository not specified.");
 		}
-		final TypedQueryImpl<T> tq = new TypedQueryImpl<T>(query, resultClass, contextUri, false,
+		final TypedQueryImpl<T> tq = new TypedQueryImpl<T>(query, resultClass, repository, false,
 				uow, connection);
 		return tq;
 	}

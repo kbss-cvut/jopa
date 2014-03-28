@@ -2,8 +2,6 @@ package cz.cvut.kbss.jopa.sessions;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.RepositoryID;
 
@@ -52,30 +50,6 @@ public interface CloneBuilder {
 	 */
 	public Object buildClone(Object cloneOwner, Field clonedField, Object original,
 			RepositoryID repository);
-
-	/**
-	 * Builds clones of all given objects.
-	 * 
-	 * @param originals
-	 *            Map of entities mapped to ontology context they belong to
-	 * @return List
-	 */
-	public List<?> buildClones(Map<?, URI> originals);
-
-	/**
-	 * Creates ObjectChangeSet for the given object.
-	 * 
-	 * @param original
-	 *            The original object.
-	 * @param clone
-	 *            The clone of the original object containing the changed
-	 *            values.
-	 * @param changeSet
-	 *            UnitOfWorkChangeSet (The owner of created changeSet)
-	 * @return ObjectChangeSet
-	 */
-	public ObjectChangeSet createObjectChangeSet(Object original, Object clone,
-			UnitOfWorkChangeSet changeSet);
 
 	/**
 	 * Resets the clone builder. Especially resets the visited objects cache to

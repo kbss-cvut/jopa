@@ -3,7 +3,6 @@ package cz.cvut.kbss.jopa.sessions;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.util.ArrayList;
@@ -11,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 /**
@@ -32,7 +32,8 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 	 * @param javaClass
 	 * @return New object of the given class.
 	 */
-	Object buildClone(Object cloneOwner, Field field, Object original, URI contextUri) {
+	@Override
+	Object buildClone(Object cloneOwner, Field field, Object original, RepositoryID repository) {
 		if (original == null) {
 			return null;
 		}

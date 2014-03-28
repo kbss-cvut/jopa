@@ -51,7 +51,7 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 	}
 
 	private OwlapiStorageConnector createConnectorInternal(Context ctx) throws OntoDriverException {
-		final OntologyStorageProperties p = contextsToProperties.get(ctx);
+		final OntologyStorageProperties p = reposToProperties.get(ctx);
 		final OwlapiStorageType type = resolveStorageType(p);
 		OwlapiStorageConnector connector = null;
 		switch (type) {

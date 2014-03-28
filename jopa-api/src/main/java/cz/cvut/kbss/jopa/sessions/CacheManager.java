@@ -16,8 +16,9 @@ public interface CacheManager extends Cache {
 	/**
 	 * Adds the specified object into the shared session cache. </p>
 	 * 
-	 * This method gets the primary key of the object in parameter, so it does
-	 * not need to extract it itself.
+	 * If the cache already contains object with the specified primary key (and
+	 * it is in the same repository context), it is replaced with the one passed
+	 * as argument.
 	 * 
 	 * @param repository
 	 *            Identifier of the context to which the specified entity

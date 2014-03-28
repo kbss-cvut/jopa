@@ -23,7 +23,7 @@ public final class Repository {
 		if (physicalUri == null) {
 			throw new NullPointerException();
 		}
-		this.id = ID_COUNTER.incrementAndGet();
+		this.id = ID_COUNTER.getAndIncrement();
 		this.physicalUri = physicalUri;
 		this.contexts = new HashSet<>();
 	}
@@ -100,5 +100,13 @@ public final class Repository {
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder out = new StringBuilder("Repository: id = ").append(id)
+				.append(", physicalUri = ").append(physicalUri).append(", contexts = ")
+				.append(contexts);
+		return out.toString();
 	}
 }

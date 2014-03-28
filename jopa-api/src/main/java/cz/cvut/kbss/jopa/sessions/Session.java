@@ -1,5 +1,10 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.util.List;
+
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
+
 public interface Session {
 
 	/**
@@ -20,6 +25,17 @@ public interface Session {
 	 * 
 	 * @param object
 	 *            Object
+	 * @param repository
+	 *            Repository identifier
 	 */
-	public void removeObjectFromCache(Object object);
+	public void removeObjectFromCache(Object object, RepositoryID repository);
+
+	/**
+	 * Gets repositories available to this session. </p>
+	 * 
+	 * The repositories are ordered by their priority.
+	 * 
+	 * @return Unmodifiable list of repositories
+	 */
+	public List<Repository> getRepositories();
 }

@@ -67,7 +67,6 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 			if (this.wrapper.transactionUOW != null) {
 				this.wrapper.getEntityManager().removeCurrentPersistenceContext();
 				this.wrapper.transactionUOW.release();
-				this.wrapper.transactionUOW.getParent().release();
 				throw new RollbackException(ex);
 			}
 		} finally {
@@ -96,7 +95,6 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 		}
 		if (wrapper.getTransactionUOW() != null) {
 			this.wrapper.transactionUOW.release();
-			this.wrapper.transactionUOW.getParent().release();
 		}
 		this.active = false;
 		this.rollbackOnly = false;

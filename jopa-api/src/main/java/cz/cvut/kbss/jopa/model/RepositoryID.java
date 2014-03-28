@@ -22,8 +22,34 @@ public final class RepositoryID {
 		if (repository == null) {
 			throw new NullPointerException();
 		}
+		if (repository.getId() < 0) {
+			throw new IllegalArgumentException("Repository id cannot be less than 0.");
+		}
 		this.repository = repository.getId();
 		this.contexts = new HashSet<>(repository.getContexts().size());
+	}
+
+	/**
+	 * Copy constructor. </p>
+	 * 
+	 * A shallow copy of the contexts is made by this constructor, so that if
+	 * contexts are removed or added to this instance it does not affect the
+	 * original.
+	 * 
+	 * @param other
+	 *            The instance to copy
+	 */
+	public RepositoryID(RepositoryID other) {
+		if (other == null) {
+			throw new NullPointerException();
+		}
+		this.repository = other.repository;
+		this.contexts = new HashSet<>(other.contexts);
+	}
+
+	private RepositoryID(RepositoryIDBuilder builder) {
+		this(builder.repo);
+		contexts.addAll(builder.contexts);
 	}
 
 	/**
@@ -93,5 +119,54 @@ public final class RepositoryID {
 		} else if (!repository.equals(other.repository))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder out = new StringBuilder("RepositoryID: repository = ")
+				.append(repository).append(", contexts = ").append(contexts);
+		return out.toString();
+	}
+
+	public static RepositoryIDBuilder repository(Repository repository) {
+		return new RepositoryIDBuilder().repository(repository);
+	}
+
+	public static RepositoryIDBuilder context(URI contextUri) {
+		return new RepositoryIDBuilder().context(contextUri);
+	}
+
+	public static RepositoryIDBuilder contexts(Set<URI> contexts) {
+		return new RepositoryIDBuilder().contexts(contexts);
+	}
+
+	/**
+	 * Builder for the RepositoryID class.
+	 * 
+	 * @author ledvima1
+	 * 
+	 */
+	public static final class RepositoryIDBuilder {
+		private Repository repo;
+		private Set<URI> contexts = new HashSet<>();
+
+		public RepositoryIDBuilder repository(Repository repository) {
+			this.repo = repository;
+			return this;
+		}
+
+		public RepositoryIDBuilder context(URI contextUri) {
+			contexts.add(contextUri);
+			return this;
+		}
+
+		public RepositoryIDBuilder contexts(Set<URI> contextUris) {
+			contexts.addAll(contextUris);
+			return this;
+		}
+
+		public RepositoryID build() {
+			return new RepositoryID(this);
+		}
 	}
 }

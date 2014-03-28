@@ -15,7 +15,6 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +22,7 @@ import java.util.List;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.ResultSet;
@@ -32,7 +32,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 public class QueryImpl implements Query<List<String>> {
 
 	private final String query;
-	private final URI contextUri;
+	private final RepositoryID repository;
 	private final boolean sparql;
 	private final Connection connection;
 
@@ -40,14 +40,14 @@ public class QueryImpl implements Query<List<String>> {
 	private boolean useBackupOntology;
 
 	// sparql=false -> abstract syntax
-	public QueryImpl(final String s, final URI contextUri, final boolean sparql,
+	public QueryImpl(final String s, final RepositoryID repository, final boolean sparql,
 			final Connection connection) {
-		if (s == null || contextUri == null || connection == null) {
+		if (s == null || repository == null || connection == null) {
 			throw new NullPointerException();
 		}
 		this.useBackupOntology = false;
 		this.query = s;
-		this.contextUri = contextUri;
+		this.repository = repository;
 		this.sparql = sparql;
 		this.connection = connection;
 		this.maxResults = Integer.MAX_VALUE;
@@ -116,7 +116,7 @@ public class QueryImpl implements Query<List<String>> {
 		} else {
 			stmt.setUseTransactionalOntology();
 		}
-		final ResultSet rs = stmt.executeQuery(query, contextUri);
+		final ResultSet rs = stmt.executeQuery(query, repository);
 		try {
 			final int cols = rs.getColumnCount();
 			int cnt = 0;

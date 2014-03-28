@@ -15,8 +15,14 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,6 +52,8 @@ import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
@@ -55,7 +63,6 @@ import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
-import cz.cvut.kbss.ontodriver.Context;
 
 public class EntityManagerImpl extends AbstractEntityManager {
 
@@ -100,26 +107,20 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		NEW, MANAGED, DETACHED, REMOVED;
 	}
 
-	/**
-	 * This method takes an OWLClass instance and saves it to the persistence
-	 * context.
-	 * 
-	 * @throws OWLPersistenceException
-	 *             whenever the entity is already persisted.
-	 */
-	public void persist(final Object entity) {
+	@Override
+	public void persist(final Object entity, final RepositoryID repository) {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.config("Persisting " + entity);
 		}
 		ensureOpen();
-		if (entity == null) {
+		if (entity == null || repository == null) {
 			throw new NullPointerException("Null passed to persist.");
 		}
 
-		switch (getState(entity)) {
+		switch (getState(entity, repository)) {
 		case NEW:
 			try {
-				getCurrentPersistenceContext().registerNewObject(entity);
+				getCurrentPersistenceContext().registerNewObject(entity, repository);
 			} catch (Throwable e) {
 				if (getTransaction().isActive()) {
 					getTransaction().setRollbackOnly();
@@ -142,10 +143,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 						if (at.isCollection()) {
 							for (final Object ox2 : (Collection<?>) ox) {
-								persist(ox2);
+								persist(ox2, repository);
 							}
 						} else {
-							persist(ox);
+							persist(ox, repository);
 						}
 					} catch (Exception e) {
 						if (getTransaction().isActive()) {
@@ -167,79 +168,11 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public void persist(final Object entity, final URI contextUri) {
-		if (LOG.isLoggable(Level.FINER)) {
-			LOG.config("Persisting " + entity);
-		}
-		ensureOpen();
-		if (entity == null || contextUri == null) {
-			throw new NullPointerException("Null passed to persist.");
-		}
-
-		switch (getState(entity, contextUri)) {
-		case NEW:
-			try {
-				getCurrentPersistenceContext().registerNewObject(entity, contextUri);
-			} catch (Throwable e) {
-				if (getTransaction().isActive()) {
-					getTransaction().setRollbackOnly();
-				}
-				throw e;
-			}
-		case MANAGED:
-			new OneLevelCascadeExplorer() {
-				@Override
-				protected void exploreCascaded(Attribute<?, ?> at, Object o) {
-					try {
-						Object ox = at.getJavaField().get(o);
-						if (LOG.isLoggable(Level.FINEST)) {
-							LOG.finest("object=" + o + ", attribute=" + at.getName() + ", value="
-									+ ox);
-						}
-						if (ox == null) {
-							return;
-						}
-
-						if (at.isCollection()) {
-							for (final Object ox2 : (Collection<?>) ox) {
-								persist(ox2, contextUri);
-							}
-						} else {
-							persist(ox, contextUri);
-						}
-					} catch (Exception e) {
-						if (getTransaction().isActive()) {
-							getTransaction().setRollbackOnly();
-						}
-						throw new OWLPersistenceException(
-								"A problem occured when persisting attribute " + at.getName()
-										+ " of with value " + o + " of object " + entity, e);
-					}
-				}
-			}.start(this, entity, CascadeType.PERSIST);
-			break;
-		case DETACHED:
-			throw new OWLEntityExistsException("Entity " + entity + " already exists.");
-		case REMOVED:
-			getCurrentPersistenceContext().revertObject(entity);
-			break;
-		}
-	}
-
-	@Override
-	public <T> T merge(final T entity) {
-		if (entity == null) {
+	public <T> T merge(final T entity, RepositoryID repository) {
+		if (entity == null || repository == null) {
 			throw new NullPointerException();
 		}
-		return mergeInternal(entity, null);
-	}
-
-	@Override
-	public <T> T merge(final T entity, final URI contextUri) {
-		if (entity == null || contextUri == null) {
-			throw new NullPointerException();
-		}
-		return mergeInternal(entity, contextUri);
+		return mergeInternal(entity, repository);
 	}
 
 	/**
@@ -254,7 +187,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 *            merged into the first ontology context in which it is found
 	 * @return Managed instance of the merged entity
 	 */
-	private <T> T mergeInternal(final T entity, final URI contextUri) {
+	private <T> T mergeInternal(final T entity, final RepositoryID repository) {
 		assert entity != null;
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.config("Merging " + entity);
@@ -263,38 +196,29 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 		Class<T> clz = (Class<T>) entity.getClass();
 
-		switch (getState(entity, contextUri)) {
+		switch (getState(entity, repository)) {
 		case NEW:
-			if (contextUri == null) {
-				getCurrentPersistenceContext().registerNewObject(entity);
-			} else {
-				getCurrentPersistenceContext().registerNewObject(entity, contextUri);
-			}
+			getCurrentPersistenceContext().registerNewObject(entity, repository);
 			// Intentional case fall-through
 		case MANAGED:
 			new OneLevelCascadeExplorer() {
 				@Override
 				protected void exploreCascaded(Attribute<?, ?> at, Object o)
 						throws IllegalAccessException {
-                    mergeX(at, o, contextUri);
+					mergeX(at, o, repository);
 				}
 			}.start(this, entity, CascadeType.MERGE);
 			return entity;
 		case DETACHED:
 			final T merged;
-
-			if (contextUri == null) {
-				merged = getCurrentPersistenceContext().mergeDetached(entity);
-			} else {
-				merged = getCurrentPersistenceContext().mergeDetached(entity, contextUri);
-			}
+			merged = getCurrentPersistenceContext().mergeDetached(entity, repository);
 
 			new OneLevelCascadeExplorer() {
 				@Override
 				protected void exploreCascaded(Attribute<?, ?> at, Object o)
 						throws IllegalAccessException {
-                    mergeX(at, o, contextUri);
-                }
+					mergeX(at, o, repository);
+				}
 
 				@Override
 				protected void exploreNonCascaded(Attribute<?, ?> at, Object o)
@@ -310,22 +234,23 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-    private void mergeX(Attribute<?, ?> at, Object o, URI context) throws IllegalAccessException {
-        Object attVal = at.getJavaField().get(o);
-        if (at.isCollection()) {
-            Collection c = (Collection) attVal;
-            Set set = new HashSet(c);
-            c.clear();
-            for (final Object ox2 : set) {
-                c.add(mergeInternal(ox2, context));
-            }
-        } else {
-            if ( attVal != null ) {
-                attVal = mergeInternal(attVal, context);
-            }
-        }
-        at.getJavaField().set(o, attVal);
-    }
+	private void mergeX(Attribute<?, ?> at, Object o, RepositoryID repository)
+			throws IllegalAccessException {
+		Object attVal = at.getJavaField().get(o);
+		if (at.isCollection()) {
+			Collection c = (Collection) attVal;
+			Set set = new HashSet(c);
+			c.clear();
+			for (final Object ox2 : set) {
+				c.add(mergeInternal(ox2, repository));
+			}
+		} else {
+			if (attVal != null) {
+				attVal = mergeInternal(attVal, repository);
+			}
+		}
+		at.getJavaField().set(o, attVal);
+	}
 
 	public void remove(Object object) {
 		ensureOpen();
@@ -341,44 +266,28 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			getCurrentPersistenceContext().removeObject(object);
 		case REMOVED:
 			new SimpleOneLevelCascadeExplorer() {
-                @Override
-                protected void runCascadedForEach(Object ox2) {
-                    remove(ox2);
-                }
+				@Override
+				protected void runCascadedForEach(Object ox2) {
+					remove(ox2);
+				}
 			}.start(this, object, CascadeType.REMOVE);
 			break;
 		}
 	}
 
-	public <T> T find(Class<T> t, Object primaryKey) {
-		if (t == null || primaryKey == null) {
-			throw new NullPointerException("Null passed to find. t = " + t + ", primaryKey = "
-					+ primaryKey);
-		}
-		ensureOpen();
-		if (LOG.isLoggable(Level.FINER)) {
-			LOG.config("Finding " + t + " with key " + primaryKey);
-		}
-		final IRI uri = IRI.create(primaryKey.toString());
-
-		T ob = getCurrentPersistenceContext().readObject(t, uri);
-
-		return ob;
-	}
-
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, URI contextUri) {
-		if (cls == null || primaryKey == null || contextUri == null) {
+	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID repository) {
+		if (cls == null || primaryKey == null || repository == null) {
 			throw new NullPointerException("Null passed to find. cls = " + cls + ", primaryKey = "
-					+ primaryKey + ", contextUri = " + contextUri);
+					+ primaryKey + ", repository = " + repository);
 		}
 		ensureOpen();
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.config("Finding " + cls + " with key " + primaryKey + " in context " + contextUri);
+			LOG.config("Finding " + cls + " with key " + primaryKey + " in context " + repository);
 		}
 		final IRI uri = IRI.create(primaryKey.toString());
 
-		T ob = getCurrentPersistenceContext().readObject(cls, uri, contextUri);
+		T ob = getCurrentPersistenceContext().readObject(cls, uri, repository);
 
 		return ob;
 	}
@@ -406,10 +315,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		case MANAGED:
 			this.getCurrentPersistenceContext().revertObject(object);
 			new SimpleOneLevelCascadeExplorer() {
-                @Override
-                protected void runCascadedForEach(Object ox2) {
-                    refresh(ox2);
-                }
+				@Override
+				protected void runCascadedForEach(Object ox2) {
+					refresh(ox2);
+				}
 			}.start(this, object, CascadeType.REFRESH);
 		}
 	}
@@ -427,20 +336,20 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		case MANAGED:
 			getCurrentPersistenceContext().unregisterObject(entity);
 			new SimpleOneLevelCascadeExplorer() {
-                @Override
-                protected void runCascadedForEach(Object ox2) {
-                    detach(ox2);
-                }
+				@Override
+				protected void runCascadedForEach(Object ox2) {
+					detach(ox2);
+				}
 			}.start(this, entity, CascadeType.DETACH);
 			break;
 		case REMOVED:
 			getCurrentPersistenceContext().unregisterObject(entity);
-            new SimpleOneLevelCascadeExplorer() {
-                @Override
-                protected void runCascadedForEach(Object ox2) {
-                    detach(ox2);
-                }
-            };
+			new SimpleOneLevelCascadeExplorer() {
+				@Override
+				protected void runCascadedForEach(Object ox2) {
+					detach(ox2);
+				}
+			};
 			break;
 		case NEW:
 		case DETACHED:
@@ -451,28 +360,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	public boolean contains(Object entity) {
 		ensureOpen();
 		return getCurrentPersistenceContext().contains(entity);
-	}
-
-	@Override
-	public List<Context> getAvailableContexts() {
-		return getCurrentPersistenceContext().getContexts();
-	}
-
-	/**
-	 * Checks whether ontology context is consistent.
-	 * 
-	 * TODO THis method is not part of the public API, yet
-	 * 
-	 * @param contextUri
-	 *            URI of the context
-	 * @return {@code true} if the context is consistent, {@code false}
-	 *         otherwise
-	 */
-	public boolean isContextConsistent(URI contextUri) {
-		if (contextUri == null) {
-			throw new NullPointerException();
-		}
-		return getCurrentPersistenceContext().isContextConsistent(contextUri);
 	}
 
 	public void close() {
@@ -502,43 +389,38 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		return false;
 	}
 
-	public Query<?> createQuery(String qlString) {
-		return getCurrentPersistenceContext().createQuery(qlString, getDefaultContextUri());
+	@Override
+	public Query createQuery(String qlString, RepositoryID repository) {
+		return getCurrentPersistenceContext().createQuery(qlString, repository);
 	}
 
 	@Override
-	public Query createQuery(String qlString, URI contextUri) {
-		return getCurrentPersistenceContext().createQuery(qlString, contextUri);
-	}
-
-	public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
-		return getCurrentPersistenceContext().createQuery(qlString, resultClass,
-				getDefaultContextUri());
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, RepositoryID repository) {
+		return getCurrentPersistenceContext().createQuery(query, resultClass, repository);
 	}
 
 	@Override
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, URI contextUri) {
-		return getCurrentPersistenceContext().createQuery(query, resultClass, contextUri);
-	}
-
-	public Query<List<String>> createNativeQuery(String sparql) {
-		return getCurrentPersistenceContext().createNativeQuery(sparql, getDefaultContextUri());
-	}
-
-	@Override
-	public Query<List<String>> createNativeQuery(String sqlString, URI contextUri) {
-		return getCurrentPersistenceContext().createNativeQuery(sqlString, contextUri);
-	}
-
-	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass) {
-		return getCurrentPersistenceContext().createNativeQuery(sparql, resultClass,
-				getDefaultContextUri());
+	public Query<List<String>> createNativeQuery(String sqlString, RepositoryID repository) {
+		return getCurrentPersistenceContext().createNativeQuery(sqlString, repository);
 	}
 
 	@Override
 	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass,
-			URI contextUri) {
-		return getCurrentPersistenceContext().createNativeQuery(sqlString, resultClass, contextUri);
+			RepositoryID repository) {
+		return getCurrentPersistenceContext().createNativeQuery(sqlString, resultClass, repository);
+	}
+
+	@Override
+	public boolean checkConsistency(RepositoryID repository) {
+		if (repository == null) {
+			return false;
+		}
+		return getCurrentPersistenceContext().checkConsistency(repository);
+	}
+
+	@Override
+	public List<Repository> getRepositories() {
+		return getCurrentPersistenceContext().getRepositories();
 	}
 
 	@Override
@@ -704,8 +586,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		return getCurrentPersistenceContext().getState(entity);
 	}
 
-	private State getState(Object entity, URI contextUri) {
-		return getCurrentPersistenceContext().getState(entity, contextUri);
+	private State getState(Object entity, RepositoryID repository) {
+		return getCurrentPersistenceContext().getState(entity, repository);
 	}
 
 	@Override
@@ -715,24 +597,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	// class ICEvaluator {
-	// public boolean isSatisfied(IntegrityConstraint check) {
-	//
-	// OWL2Ontology<OWLObject> ont = new OWLAPIv3OWL2Ontology(m, workingOnt, r);
-	// OWLAPIv3QueryFactory fact = new OWLAPIv3QueryFactory(m, workingOnt);
-	//
-	// ICQueryGenerator v = new ICQueryGenerator(fact, ont);
-	// check.accept(v);
-	//
-	// return OWL2QueryEngine.exec(v.getQuery()).isEmpty();
-	// }
-	//
-	// }
-
 	public UnitOfWorkImpl getCurrentPersistenceContext() {
 		if (this.persistenceContext == null) {
-			this.persistenceContext = (UnitOfWorkImpl) this.serverSession.acquireClientSession()
-					.acquireUnitOfWork();
+			this.persistenceContext = (UnitOfWorkImpl) this.serverSession.acquireUnitOfWork();
 			persistenceContext.setEntityManager(this);
 		}
 		return this.persistenceContext;
@@ -771,11 +638,5 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 */
 	private void setTransactionWrapper() {
 		this.transaction = new EntityTransactionWrapper(this);
-	}
-
-	private URI getDefaultContextUri() {
-		final Context ctx = getAvailableContexts().get(0);
-		assert ctx != null;
-		return ctx.getUri();
 	}
 }

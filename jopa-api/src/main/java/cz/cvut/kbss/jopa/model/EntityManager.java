@@ -262,7 +262,7 @@ public interface EntityManager {
 	 *             if query string is not valid
 	 */
 	@NonJPA
-	public Query createQuery(String qlString, Repository repository);
+	public Query createQuery(String qlString, RepositoryID repository);
 
 	// TODO JPA 2.0 TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery)
 
@@ -279,7 +279,7 @@ public interface EntityManager {
 	 * @return the new query instance
 	 */
 	@NonJPA
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, Repository repository);
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, RepositoryID repository);
 
 	//
 	// /**

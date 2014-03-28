@@ -47,7 +47,7 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage connector.");
 		}
-		final OntologyStorageProperties props = contextsToProperties.get(ctx);
+		final OntologyStorageProperties props = reposToProperties.get(ctx);
 		final JenaStorageType storageType = resolveStorageType(props);
 		JenaStorageConnector c = null;
 		switch (storageType) {

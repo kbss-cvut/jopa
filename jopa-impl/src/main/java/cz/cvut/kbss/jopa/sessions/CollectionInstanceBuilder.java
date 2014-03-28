@@ -18,6 +18,7 @@ import java.util.Set;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
@@ -53,7 +54,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 * @return A deep clone of the specified collection
 	 */
 	@Override
-	Object buildClone(Object cloneOwner, Field field, Object collection, URI contextUri)
+	Object buildClone(Object cloneOwner, Field field, Object collection, RepositoryID repository)
 			throws OWLPersistenceException {
 		assert (collection instanceof Collection);
 		Collection<?> container = (Collection<?>) collection;
@@ -62,7 +63,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 					.getReferencedCollection();
 		}
 		Collection<?> clone = null;
-		clone = cloneUsingDefaultConstructor(cloneOwner, field, container, contextUri);
+		clone = cloneUsingDefaultConstructor(cloneOwner, field, container, repository);
 		if (clone == null) {
 			if (Collections.EMPTY_LIST == container) {
 				return Collections.EMPTY_LIST;
@@ -74,7 +75,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 			Object element = container.iterator().next();
 			Object[] params = new Object[1];
 			if (!CloneBuilderImpl.isPrimitiveOrString(element.getClass())) {
-				element = builder.buildClone(element, contextUri);
+				element = builder.buildClone(element, repository);
 				if (element instanceof Collection || element instanceof Map) {
 					element = builder.createIndirectCollection(element, cloneOwner, field);
 				}
@@ -86,7 +87,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 				c = getFirstDeclaredConstructorFor(singletonSetClass);
 			} else if (arrayAsListClass.isInstance(container)) {
 				c = getFirstDeclaredConstructorFor(arrayAsListClass);
-				params[0] = builder.cloneArray(container.toArray(), contextUri);
+				params[0] = builder.cloneArray(container.toArray(), repository);
 			} else {
 				throw new OWLPersistenceException("Encountered unsupported type of collection: "
 						+ container.getClass());
@@ -125,12 +126,12 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 * @return
 	 */
 	private Collection<?> cloneUsingDefaultConstructor(Object cloneOwner, Field field,
-			Collection<?> container, URI contextUri) {
+			Collection<?> container, RepositoryID repository) {
 		Class<?> javaClass = container.getClass();
 		Collection<?> result = createNewInstance(javaClass, container.size());
 		if (result != null) {
 			// Makes shallow copy
-			cloneCollectionContent(cloneOwner, field, container, result, contextUri);
+			cloneCollectionContent(cloneOwner, field, container, result, repository);
 		}
 		return result;
 	}
@@ -178,7 +179,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 *            The collection to clone.
 	 */
 	private void cloneCollectionContent(Object cloneOwner, Field field, Collection<?> source,
-			Collection<?> target, URI contextUri) {
+			Collection<?> target, RepositoryID repository) {
 		if (source.isEmpty()) {
 			return;
 		}
@@ -190,9 +191,9 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 			}
 			Object clone = null;
 			if (builder.isTypeManaged(obj.getClass())) {
-				clone = uow.registerExistingObject(obj, contextUri);
+				clone = uow.registerExistingObject(obj, repository);
 			} else {
-				clone = builder.buildClone(cloneOwner, field, obj, contextUri);
+				clone = builder.buildClone(cloneOwner, field, obj, repository);
 			}
 			tg.add(clone);
 		}

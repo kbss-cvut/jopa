@@ -21,20 +21,18 @@ public interface ChangeManager {
 
 	/**
 	 * Calculates the changes that happened to the clone object. If there are no
-	 * changes, null is returned. The returned change set is the one that was
-	 * passed to this method as argument, but it contains change records with
-	 * the discovered changes.
+	 * changes, null is returned. The changes are written into the change set
+	 * passed in as argument.
 	 * 
 	 * @param changeSet
 	 *            Contains references to the original and clone objects. Into
-	 *            this change set the changes should be propagated.
-	 * @return Change set containing the changes done to the clone. Or null, if
-	 *         there were no changes.
+	 *            this change set the changes should be propagated
+	 * @return {@code true} if there were any changes, {@code false} otherwise
 	 * @throws IllegalAccessException
-	 * @throws OWLInferredAttributeModifiedException 
-	 * @throws IllegalArgumentException 
+	 * @throws OWLInferredAttributeModifiedException
+	 * @throws IllegalArgumentException
 	 */
-	public ObjectChangeSet calculateChanges(ObjectChangeSet changeSet)
-			throws IllegalAccessException, IllegalArgumentException, OWLInferredAttributeModifiedException;
+	public boolean calculateChanges(ObjectChangeSet changeSet) throws IllegalAccessException,
+			IllegalArgumentException, OWLInferredAttributeModifiedException;
 
 }

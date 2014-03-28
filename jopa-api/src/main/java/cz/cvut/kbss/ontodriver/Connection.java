@@ -137,22 +137,6 @@ public interface Connection extends Transactional {
 	public List<Repository> getRepositories() throws OntoDriverException;
 
 	/**
-	 * Retrieves saving repository for the specified entity. </p>
-	 * 
-	 * If {@code entity} was loaded from an ontology, its loading repository is
-	 * also its saving repository. If the entity was not loaded by this
-	 * connection, {@code null} is returned.
-	 * 
-	 * @param entity
-	 *            The entity
-	 * @return RepositoryID or {@code null}
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 */
-	public RepositoryID getSaveRepositoryFor(Object entity) throws OntoDriverException;
-
-	/**
 	 * Loads from ontology and sets value of field {@code fieldName}. </p>
 	 * 
 	 * This method is intended to be used for lazy loaded field values.
@@ -161,14 +145,15 @@ public interface Connection extends Transactional {
 	 *            Entity to set the field value on
 	 * @param field
 	 *            The field to load
+	 * @param repository
+	 *            Identifier of a repository from which the field value will be
+	 *            loaded
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or if an ontology access
 	 *             error occurs
-	 * @throws EntityNotRegisteredException
-	 *             If {@code entity} is not registered within this connection
 	 */
-	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException,
-			EntityNotRegisteredException;
+	public <T> void loadFieldValue(T entity, Field field, RepositoryID repository)
+			throws OntoDriverException, EntityNotRegisteredException;
 
 	/**
 	 * Merges value of the specified field on the specified entity into the
@@ -181,16 +166,17 @@ public interface Connection extends Transactional {
 	 *            Primary key of the merged entity
 	 * @param entity
 	 *            The entity to merge
-	 * @param The
-	 *            field to merge
+	 * @param mergedField
+	 *            The field to merge
+	 * @param repository
+	 *            Identifier of a repository into which the field value will be
+	 *            merged
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
-	 * @throws EntityNotRegisteredException
-	 *             If {@code entity} is not registered within this connection
 	 * @throws
 	 */
-	public <T> void merge(Object primaryKey, T entity, Field mergedField)
+	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID repository)
 			throws OntoDriverException;
 
 	/**
@@ -226,28 +212,6 @@ public interface Connection extends Transactional {
 	public PreparedStatement prepareStatement(String sparql) throws OntoDriverException;
 
 	/**
-	 * Registers the specified {@code entity} as belonging to the specified
-	 * {@code repository} within this connection. </p>
-	 * 
-	 * No check whether this relationship is correct is done. </p>
-	 * 
-	 * This method can be used e. g. for registering entities returned from the
-	 * second level cache so that the ontology does not have to be queried.
-	 * 
-	 * @param entity
-	 *            The entity to register
-	 * @param repository
-	 *            Repository identifier
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or if {@code repository} is
-	 *             not valid
-	 * @throws NullPointerException
-	 *             If {@code entity} or {@code repository} is null
-	 */
-	public <T> void registerWithRepository(T entity, RepositoryID repository)
-			throws OntoDriverException;
-
-	/**
 	 * Removes the specified {@code entity}. </p>
 	 * 
 	 * If the entity is not loaded within this connection an exception is
@@ -257,13 +221,15 @@ public interface Connection extends Transactional {
 	 *            Primary key of the entity to be removed
 	 * @param entity
 	 *            The entity to remove
+	 * @param repository
+	 *            Identifier of a repository from which the entity will be
+	 *            removed
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or if an ontology access
 	 *             error occurs
-	 * @throws EntityNotRegisteredException
-	 *             If {@code entity} is not registered within this connection
 	 */
-	public <T> void remove(Object primaryKey, T entity) throws OntoDriverException;
+	public <T> void remove(Object primaryKey, T entity, RepositoryID repository)
+			throws OntoDriverException;
 
 	/**
 	 * Sets auto commit mode on this connection. </p>
@@ -280,22 +246,4 @@ public interface Connection extends Transactional {
 	 *             occurs
 	 */
 	public void setAutoCommit(boolean autoCommit) throws OntoDriverException;
-
-	/**
-	 * Sets saving repository for the specified entity. </p>
-	 * 
-	 * This method is expected to be called mainly for new entities that are yet
-	 * to be persisted. However, setting different saving repository for an
-	 * existing entity is also possible.
-	 * 
-	 * @param entity
-	 *            The entity to set repository for
-	 * @param repository
-	 *            Repository identifier
-	 * @throws OntoDriverException
-	 *             If called on a closed connection, the repository is not valid
-	 *             or an ontology access error occurs
-	 */
-	public void setSaveRepositoryFor(Object entity, RepositoryID repository)
-			throws OntoDriverException;
 }

@@ -23,6 +23,7 @@ import java.util.List;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.Connection;
@@ -33,7 +34,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 public class TypedQueryImpl<T> implements TypedQuery<T> {
 
 	private final String query;
-	private final URI contextUri;
+	private final RepositoryID repository;
 	private final boolean sparql;
 	private final Class<T> classT;
 	private final UnitOfWork uow;
@@ -43,14 +44,14 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 	private int maxResults;
 
 	// sparql=false -> abstract syntax
-	public TypedQueryImpl(final String query, final Class<T> classT, final URI contextUri,
+	public TypedQueryImpl(final String query, final Class<T> classT, final RepositoryID repository,
 			final boolean sparql, final UnitOfWork uow, final Connection connection) {
-		if (query == null || contextUri == null || classT == null || uow == null
+		if (query == null || repository == null || classT == null || uow == null
 				|| connection == null) {
 			throw new NullPointerException();
 		}
 		this.query = query;
-		this.contextUri = contextUri;
+		this.repository = repository;
 		this.sparql = sparql;
 		this.classT = classT;
 		this.uow = uow;
@@ -120,7 +121,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 		} else {
 			stmt.setUseTransactionalOntology();
 		}
-		final ResultSet rs = stmt.executeQuery(query, contextUri);
+		final ResultSet rs = stmt.executeQuery(query, repository);
 		try {
 			final List<T> res = new ArrayList<T>();
 			// TODO register this as observer on the result set so that
@@ -130,7 +131,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 				rs.next();
 				final URI uri = URI.create(rs.getString(0));
 
-				final T entity = uow.readObject(classT, uri);
+				final T entity = uow.readObject(classT, uri, repository);
 				if (entity == null) {
 					throw new OWLPersistenceException(
 							"Fatal error, unable to load entity for primary key already found by query "

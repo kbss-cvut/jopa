@@ -1,10 +1,10 @@
 package cz.cvut.kbss.ontodriver;
 
 import java.lang.reflect.Field;
-import java.net.URI;
 import java.util.List;
-import java.util.Map;
 
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -65,91 +65,74 @@ public abstract class StorageManager implements Transactional {
 	public abstract ResultSet executeStatement(JopaStatement statement) throws OntoDriverException;
 
 	/**
-	 * Resolves whether the specified context contains entity with the specified
-	 * primary key. </p>
+	 * Resolves whether the specified repository contains entity with the
+	 * specified primary key. </p>
 	 * 
-	 * This method also searches imports declared by the specified context.
+	 * This method also searches imports declared by the specified repository.
 	 * 
 	 * @param primaryKey
 	 *            Primary key
-	 * @param entityContext
-	 *            Context to search in
-	 * @return {@code true} if the {@code entityContext} contains entity with
+	 * @param repository
+	 *            Repository to search in
+	 * @return {@code true} if the {@code repository} contains entity with
 	 *         {@code primaryKey}, {@code false} otherwise
 	 * @throws OntoDriverException
-	 *             If {@code entityContext} is not valid or if an ontology
-	 *             access error occurs
+	 *             If {@code repository} is not valid or if an ontology access
+	 *             error occurs
 	 * @throws NullPointerException
-	 *             If {@code primaryKey} or {@code entityContext} is
-	 *             {@code null}
+	 *             If {@code primaryKey} or {@code repository} is {@code null}
 	 */
-	public abstract boolean contains(Object primaryKey, Context entityContext)
+	public abstract boolean contains(Object primaryKey, RepositoryID repository)
 			throws OntoDriverException;
 
 	/**
-	 * Checks whether the specified ontology context is consistent.
+	 * Checks whether the specified ontology repository is consistent.
 	 * 
-	 * @param context
-	 *            The context to check
-	 * @return {@code true} if the context is consistent, {@code false}
+	 * @param repository
+	 *            The repository to check
+	 * @return {@code true} if the repository is consistent, {@code false}
 	 *         otherwise
 	 * @throws OntoDriverException
 	 *             If {@code entityContext} is not valid or if an ontology
 	 *             access error occurs
 	 * @throws NullPointerException
-	 *             If {@code context} is {@code null}
+	 *             If {@code repository} is {@code null}
 	 */
-	public abstract boolean isConsistent(Context context) throws OntoDriverException;
+	public abstract boolean isConsistent(RepositoryID repository) throws OntoDriverException;
 
 	/**
 	 * Finds entity with the specified primary key and returns it as the
 	 * specified entity type. </p>
 	 * 
-	 * The {@code entityContext} represents context where the individual should
-	 * be located, {@code attributeContexts} will be searched for the attribute
-	 * values. If the {@code entityContext} is not set, the default context is
-	 * searched. If {@code attributeContexts} are not set, the same context as
-	 * the {@code entityContext} is searched.
+	 * The repository identifier may specify multiple contexts which will be
+	 * searched.
 	 * 
 	 * @param cls
 	 *            Return type
 	 * @param primaryKey
 	 *            Primary key
-	 * @param entityContext
-	 *            Context where to look for the entity
-	 * @param attributeContexts
-	 *            Pairs of attribute names and contexts where the appropriate
-	 *            value should be looked for. If not specified, use empty map,
-	 *            not {@code null}
-	 * @return The found entity or null
+	 * @param repository
+	 *            Repository identifier
+	 * @return The found entity or {@code null}
 	 * @throws OntoDriverException
-	 *             If any of the contexts is not valid, if the {@code cls} is
-	 *             not an entity class or if an ontology access error occurs
+	 *             If repository is not valid, if the {@code cls} is not an
+	 *             entity class or if an ontology access error occurs
 	 * @throws NullPointerException
-	 *             If {@code cls}, or {@code primaryKey} or attributeContexts is
-	 *             {@code null}
+	 *             If {@code cls}, or {@code primaryKey} or {@code repository}
+	 *             is {@code null}
 	 */
-	public abstract <T> T find(Class<T> cls, Object primaryKey, Context entityContext,
-			Map<String, Context> attributeContexts) throws OntoDriverException;
+	public abstract <T> T find(Class<T> cls, Object primaryKey, RepositoryID repository)
+			throws OntoDriverException;
 
 	/**
-	 * Returns a list of all available contexts this {@code StorageManager} is
+	 * Returns a list of all available repository this {@code StorageManager} is
 	 * managing. </p>
 	 * 
-	 * The returned list can never be empty since there always has to be at
-	 * least the default context of the loaded ontology.
+	 * The returned list can never be empty.
 	 * 
 	 * @return List of contexts
 	 */
-	public abstract List<Context> getAvailableContexts();
-
-	/**
-	 * Returns a map of available contexts mapped by their URIs. </p>
-	 * 
-	 * @return Map of contexts mapped by URIs
-	 * @see #getAvailableContexts()
-	 */
-	public abstract Map<URI, Context> getContextsByUris();
+	public abstract List<Repository> getRepositories();
 
 	/**
 	 * Loads from ontology and sets value of field {@code fieldName}. </p>
@@ -160,30 +143,29 @@ public abstract class StorageManager implements Transactional {
 	 *            The entity to set field value on
 	 * @param field
 	 *            The field to load
-	 * @param context
-	 *            Context from which the field value should be loaded
+	 * @param repository
+	 *            Identifier of repository from which the field value should be
+	 *            loaded
 	 * @throws OntoDriverException
-	 *             If called on a closed storage manager, if the context is not
-	 *             valid or if an ontology access error occurs
+	 *             If called on a closed storage manager, if the repository is
+	 *             not valid or if an ontology access error occurs
 	 * @throws NullPointerException
-	 *             If {@code entity}, {@code fieldName} or {@code context} is
-	 *             null
+	 *             If {@code entity}, {@code fieldName} or {@code repository} is
+	 *             {@code null}
 	 */
-	public abstract <T> void loadFieldValue(T entity, Field field, Context context)
+	public abstract <T> void loadFieldValue(T entity, Field field, RepositoryID repository)
 			throws OntoDriverException;
 
 	/**
 	 * Merges the state of the specified entity field into the appropriate
 	 * ontology. </p>
 	 * 
-	 * The {@code entityContext} represents the context into which the entity
-	 * should be merged. If the context does not contain such individual, an
-	 * exception is thrown. If the {@code entityContext} is not set, the entity
-	 * is merged into the default context (which has the highest priority). </p>
+	 * If the specified repository does not contain corresponding individual an
+	 * exception is thrown. </p>
 	 * 
-	 * Attribute values are persisted into the context as specified by the
-	 * {@code attributeContexts} parameter. Attribute values without context are
-	 * persisted into the same context as the entity.
+	 * The repository identifier should specify exactly one context. If there
+	 * are multiple the storage module will use the first returned by the
+	 * collection's iterator.
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the merged entity
@@ -191,66 +173,53 @@ public abstract class StorageManager implements Transactional {
 	 *            The merged entity
 	 * @param mergedField
 	 *            The field to merge
-	 * @param entityContext
-	 *            Context of the entity
-	 * @param attributeContexts
-	 *            Attribute values' contexts. If not specified, use an empty
-	 *            map, not {@code null}
+	 * @param repository
+	 *            Repository identifier
 	 * @throws OntoDriverException
-	 *             If the entity is not persistent yet, if any of the contexts
-	 *             is not valid or if an ontology access error occurs
+	 *             If the entity is not persistent yet, if repository is not
+	 *             valid or if an ontology access error occurs
 	 * @throws NullPointerException
-	 *             If {@code primaryKey}, {@code entity} or
-	 *             {@code attributeContexts} is {@code null}
+	 *             If {@code primaryKey}, {@code entity} or {@code repository}
+	 *             is {@code null}
 	 */
 	public abstract <T> void merge(Object primaryKey, T entity, Field mergedField,
-			Context entityContext, Map<String, Context> attributeContexts)
-			throws OntoDriverException;
+			RepositoryID repository) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>
 	 * 
-	 * The {@code entity} is persisted into context specified by the
-	 * {@code entityContext} parameter. </p>
-	 * 
-	 * The {@code entity}'s attribute values are persisted to their respective
-	 * contexts as specified by the {@code attributeContexts} map. If context
-	 * for an attribute is not specified, it is saved into the same context as
-	 * the {@code entity}.
+	 * The {@code entity} is persisted along with its attributes into context
+	 * specified by the {@code repository} parameter. </p>
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the persisted entity. Optional, if not set it
 	 *            will be generated
 	 * @param entity
 	 *            The entity to persist
-	 * @param entityContext
-	 *            Context into which the entity will be persisted
-	 * @param attributeContexts
-	 *            Contexts for attribute values. If not specified, use an empty
-	 *            map, not {@code null}
+	 * @param repository
+	 *            Target repository identifier
 	 * @throws OntoDriverException
 	 *             If the primary key is not set, if an entity with the
 	 *             specified primary key already exists in the specified
-	 *             context, if any of the contexts is not valid or if an
-	 *             ontology access error occurs
+	 *             context, if repository is not valid or if an ontology access
+	 *             error occurs
 	 * @throws NullPointerException
-	 *             If {@code entity}, {@code entityContext} or
-	 *             {@code attributeContexts} is {@code null}
+	 *             If {@code entity} or {@code repository} is {@code null}
 	 */
-	public abstract <T> void persist(Object primaryKey, T entity, Context entityContext,
-			Map<String, Context> attributeContexts) throws OntoDriverException;
+	public abstract <T> void persist(Object primaryKey, T entity, RepositoryID repository)
+			throws OntoDriverException;
 
 	/**
-	 * Removes entity with the specified primary key from the specified context.
-	 * </p>
+	 * Removes entity with the specified primary key from the specified
+	 * repository. </p>
 	 * 
-	 * If the context does not contain any individual with the specified primary
-	 * key an exception is thrown.
+	 * If the repository does not contain any individual with the specified
+	 * primary key an exception is thrown.
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the entity to remove
-	 * @param entityContext
-	 *            Context from which the entity should be removed
+	 * @param repository
+	 *            Repository from which the entity should be removed
 	 * @throws OntoDriverException
 	 *             If {@code entityContext} is not valid, if
 	 *             {@code entityContext} does not contain any individual with
@@ -259,7 +228,7 @@ public abstract class StorageManager implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code entityContext} is null
 	 */
-	public abstract void remove(Object primaryKey, Context entityContext)
+	public abstract void remove(Object primaryKey, RepositoryID repository)
 			throws OntoDriverException;
 
 	/**

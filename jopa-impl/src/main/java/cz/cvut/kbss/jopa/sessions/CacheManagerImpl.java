@@ -127,16 +127,12 @@ public class CacheManagerImpl implements CacheManager {
 	 * @param entity
 	 *            The entity to cache
 	 */
-	protected final void putObjectIntoCache(Object primaryKey, Object entity,
-			RepositoryID repository) {
+	private void putObjectIntoCache(Object primaryKey, Object entity, RepositoryID repository) {
 		assert entity != null;
 		assert primaryKey != null;
 		assert repository != null;
 		assert !repository.getContexts().isEmpty();
 		final Class<?> cls = entity.getClass();
-		if (contains(repository, cls, primaryKey)) {
-			return;
-		}
 		final URI contextUri = repository.getContexts().iterator().next();
 		final Map<URI, Map<Class<?>, Map<Object, Object>>> repo = objCache.get(repository
 				.getRepository());
@@ -183,8 +179,7 @@ public class CacheManagerImpl implements CacheManager {
 	@Override
 	public <T> T get(RepositoryID repository, Class<T> cls, Object primaryKey) {
 		if (repository == null || cls == null || primaryKey == null) {
-			throw new NullPointerException("Null passed to CacheManager.get: repository = "
-					+ repository + ", cls = " + cls + ", primaryKey = " + primaryKey);
+			return null;
 		}
 		final Object entity = getMapForClass(repository, cls).get(primaryKey);
 		if (entity != null) {
@@ -231,9 +226,11 @@ public class CacheManagerImpl implements CacheManager {
 		for (Map<URI, Map<Class<?>, Map<Object, Object>>> repo : objCache) {
 			for (Map<Class<?>, Map<Object, Object>> ctx : repo.values()) {
 				if (!ctx.containsKey(cls)) {
-					return false;
+					continue;
 				}
-				return ctx.get(cls).containsKey(primaryKey);
+				if (ctx.get(cls).containsKey(primaryKey)) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -242,8 +239,7 @@ public class CacheManagerImpl implements CacheManager {
 	@Override
 	public boolean contains(RepositoryID repository, Class<?> cls, Object primaryKey) {
 		if (repository == null || cls == null || primaryKey == null) {
-			throw new NullPointerException("Null passed to CacheManager.contains: repository = "
-					+ repository + ", cls = " + cls + ", primaryKey = " + primaryKey);
+			return false;
 		}
 		return getMapForClass(repository, cls).containsKey(primaryKey);
 	}
@@ -286,8 +282,10 @@ public class CacheManagerImpl implements CacheManager {
 		if (repository == null) {
 			throw new NullPointerException();
 		}
-		objCache.get(repository.getRepository()).clear();
-		ttls.get(repository.getRepository()).clear();
+		for (URI ctx : repository.getContexts()) {
+			objCache.get(repository.getRepository()).get(ctx).clear();
+			ttls.get(repository.getRepository()).remove(ctx);
+		}
 	}
 
 	/**
@@ -295,17 +293,6 @@ public class CacheManagerImpl implements CacheManager {
 	 */
 	public void evictAll() {
 		releaseCache();
-	}
-
-	/**
-	 * Check if the cache is empty.
-	 * 
-	 * This method is not part of the public API, but can be useful.
-	 * 
-	 * @return True if the cache is empty
-	 */
-	public boolean isEmpty() {
-		return objCache.isEmpty();
 	}
 
 	/**

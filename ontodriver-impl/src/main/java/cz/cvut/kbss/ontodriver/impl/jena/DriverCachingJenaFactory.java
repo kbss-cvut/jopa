@@ -84,7 +84,7 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 	}
 
 	private void createCentralConnector(Context ctx) throws OntoDriverException {
-		final OntologyStorageProperties props = contextsToProperties.get(ctx);
+		final OntologyStorageProperties props = reposToProperties.get(ctx);
 		final JenaStorageType storageType = DriverJenaFactory.resolveStorageType(props);
 		JenaStorageConnector c = null;
 		switch (storageType) {

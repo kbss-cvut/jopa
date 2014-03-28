@@ -3,7 +3,6 @@ package cz.cvut.kbss.jopa.sessions;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.util.Collection;
@@ -14,6 +13,7 @@ import java.util.Map.Entry;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 
 class MapInstanceBuilder extends AbstractInstanceBuilder {
 
@@ -26,17 +26,17 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 	}
 
 	@Override
-	Object buildClone(Object cloneOwner, Field field, Object original, URI contextUri) {
+	Object buildClone(Object cloneOwner, Field field, Object original, RepositoryID repository) {
 		Map<?, ?> orig = (Map<?, ?>) original;
 		if (original instanceof IndirectCollection) {
 			orig = ((IndirectCollection<Map<?, ?>>) original).getReferencedCollection();
 		}
 		final Class<?> origCls = orig.getClass();
 		Map<?, ?> clone = null;
-		clone = cloneUsingDefaultConstructor(cloneOwner, field, origCls, orig, contextUri);
+		clone = cloneUsingDefaultConstructor(cloneOwner, field, origCls, orig, repository);
 		if (clone == null) {
 			if (singletonMapClass.isInstance(orig)) {
-				clone = buildSingletonClone(cloneOwner, field, orig, contextUri);
+				clone = buildSingletonClone(cloneOwner, field, orig, repository);
 			} else {
 				throw new IllegalArgumentException("Unsupported map type " + origCls);
 			}
@@ -47,10 +47,10 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 	}
 
 	private Map<?, ?> cloneUsingDefaultConstructor(Object cloneOwner, Field field,
-			Class<?> origCls, Map<?, ?> original, URI contextUri) {
+			Class<?> origCls, Map<?, ?> original, RepositoryID repository) {
 		Map<?, ?> result = createNewInstance(origCls, original.size());
 		if (result != null) {
-			cloneMapContent(cloneOwner, field, original, result, contextUri);
+			cloneMapContent(cloneOwner, field, original, result, repository);
 		}
 		return result;
 	}
@@ -88,16 +88,16 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 	}
 
 	private Map<?, ?> buildSingletonClone(Object cloneOwner, Field field, Map<?, ?> orig,
-			URI contextUri) {
+			RepositoryID repository) {
 		final Constructor<?> c = getFirstDeclaredConstructorFor(singletonMapClass);
 		if (!c.isAccessible()) {
 			c.setAccessible(true);
 		}
 		Entry<?, ?> e = orig.entrySet().iterator().next();
 		Object key = CloneBuilderImpl.isPrimitiveOrString(e.getKey().getClass()) ? e.getKey()
-				: cloneObject(cloneOwner, field, e.getKey(), contextUri);
+				: cloneObject(cloneOwner, field, e.getKey(), repository);
 		Object value = CloneBuilderImpl.isPrimitiveOrString(e.getValue().getClass()) ? e.getValue()
-				: cloneObject(cloneOwner, field, e.getValue(), contextUri);
+				: cloneObject(cloneOwner, field, e.getValue(), repository);
 		if (value instanceof Collection || value instanceof Map) {
 			value = builder.createIndirectCollection(value, cloneOwner, field);
 		}
@@ -116,7 +116,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 	}
 
 	private void cloneMapContent(Object cloneOwner, Field field, Map<?, ?> source,
-			Map<?, ?> target, URI contextUri) {
+			Map<?, ?> target, RepositoryID repository) {
 		if (source.isEmpty()) {
 			return;
 		}
@@ -133,24 +133,24 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 					break;
 				}
 				key = e.getKey();
-				value = cloneObject(cloneOwner, field, e.getValue(), contextUri);
+				value = cloneObject(cloneOwner, field, e.getValue(), repository);
 			} else {
-				key = cloneObject(cloneOwner, field, e.getKey(), contextUri);
+				key = cloneObject(cloneOwner, field, e.getKey(), repository);
 				value = valuePrimitive ? e.getValue() : cloneObject(cloneOwner, field,
-						e.getValue(), contextUri);
+						e.getValue(), repository);
 			}
 			m.put(key, value);
 		}
 	}
 
-	private Object cloneObject(Object owner, Field field, Object obj, URI contextUri) {
+	private Object cloneObject(Object owner, Field field, Object obj, RepositoryID repository) {
 		Object clone;
 		if (obj == null) {
 			clone = null;
 		} else if (builder.isTypeManaged(obj.getClass())) {
-			clone = uow.registerExistingObject(obj, contextUri);
+			clone = uow.registerExistingObject(obj, repository);
 		} else {
-			clone = builder.buildClone(owner, field, obj, contextUri);
+			clone = builder.buildClone(owner, field, obj, repository);
 		}
 		return clone;
 	}

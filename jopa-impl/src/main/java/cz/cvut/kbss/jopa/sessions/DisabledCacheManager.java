@@ -1,137 +1,78 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.net.URI;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
-import cz.cvut.kbss.jopa.sessions.CacheManager;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 
 public class DisabledCacheManager implements CacheManager {
 
-	protected AbstractSession session;
-
-	public DisabledCacheManager(AbstractSession session) {
-		this.session = session;
-	}
-
-	public void addObjectIntoCache(Object object) {
-		// Nothing to do
-	}
-
-	public void add(Object iri, Object object) {
-		// Nothing to do
-	}
-
-	public void addAll(Map<?, ?> objects) {
-		// Nothing to do
-	}
-
-	public boolean containsObject(Object object) {
-		return false;
-	}
-
-	public Map<Object, Object> getLiveObjectCache() {
-		return Collections.emptyMap();
-	}
-
-	public boolean containsObjectByIRI(Object iri) {
-		return false;
-	}
-
-	public Object getObject(Object domainObject) {
-		return null;
-	}
-
-	public <T> T get(Class<T> cls, Object iri) {
-		return null;
-	}
-
 	@Override
-	public <T> T get(URI contextUri, Class<T> cls, Object primaryKey) {
-		return null;
-	}
-
-	public Object getIRIOfObject(Object object) {
-		return null;
-	}
-
-	public Object getObjectByValue(Object individual) {
-		return null;
-	}
-
-	public void releaseCache() {
-		// Nothing to do
-	}
-
-	public void clearInferredObjects() {
-		// Nothing to do
-	}
-
-	public void removeObjectFromCache(Object object) {
-		// Nothing to do
-	}
-
-	public void removeObjectFromCacheByIRI(Object iri) {
-		// Nothing to do
-	}
-
 	public boolean contains(Class<?> cls, Object primaryKey) {
 		return false;
 	}
 
 	@Override
-	public boolean contains(URI contextUri, Class<?> cls, Object primaryKey) {
+	public boolean contains(RepositoryID repository, Class<?> cls, Object primaryKey) {
 		return false;
 	}
 
 	@Override
-	public void evict(URI contextUri, Class<?> cls, Object primaryKey) {
-		// Nothing to do
+	public void evict(RepositoryID repository, Class<?> cls, Object primaryKey) {
+		// Do nothing
 	}
 
-	public void evict(Class<?> cls, Object primaryKey) {
-		// Nothing to do
-
-	}
-
+	@Override
 	public void evict(Class<?> cls) {
-		// Nothing to do
-
+		// Do nothing
 	}
 
+	@Override
+	public void evict(RepositoryID repository) {
+		// Do nothing
+	}
+
+	@Override
 	public void evictAll() {
-		// Nothing to do
-
+		// Do nothing
 	}
 
+	@Override
+	public void add(RepositoryID repository, Object primaryKey, Object entity) {
+		// Do nothing
+	}
+
+	@Override
+	public <T> T get(RepositoryID repository, Class<T> cls, Object primaryKey) {
+		return null;
+	}
+
+	@Override
+	public void clearInferredObjects() {
+		// Do nothing
+	}
+
+	@Override
 	public boolean acquireReadLock() {
 		return true;
 	}
 
+	@Override
 	public void releaseReadLock() {
-		// Nothing to do
+		// Do nothing
 	}
 
+	@Override
 	public boolean acquireWriteLock() {
 		return true;
 	}
 
+	@Override
 	public void releaseWriteLock() {
-		// Nothing to do
+		// Do nothing
 	}
 
+	@Override
 	public void setInferredClasses(Set<Class<?>> inferredClasses) {
-		// Nothing to do
-	}
-
-	@Override
-	public void evict(URI contextUri) {
-		// Nothing to do
-	}
-
-	@Override
-	public void add(URI contextUri, Object primaryKey, Object entity) {
-		// Nothing to do
+		// Do nothing
 	}
 }

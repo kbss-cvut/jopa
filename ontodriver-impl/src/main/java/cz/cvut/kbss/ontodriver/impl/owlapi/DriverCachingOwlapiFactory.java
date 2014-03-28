@@ -81,7 +81,7 @@ public class DriverCachingOwlapiFactory extends DriverAbstractFactory {
 	}
 
 	private void createCentralConnector(Context ctx) throws OntoDriverException {
-		final OntologyStorageProperties p = contextsToProperties.get(ctx);
+		final OntologyStorageProperties p = reposToProperties.get(ctx);
 		final OwlapiStorageType type = DriverOwlapiFactory.resolveStorageType(p);
 		OwlapiStorageConnector connector = null;
 		switch (type) {

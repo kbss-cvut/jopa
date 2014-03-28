@@ -13,6 +13,7 @@ import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
@@ -103,19 +104,8 @@ public class ServerSession extends AbstractSession {
 			this.liveObjectCache = new CacheManagerImpl(this, storageProperties.size(), properties);
 			liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
 		} else {
-			this.liveObjectCache = new DisabledCacheManager(this);
+			this.liveObjectCache = new DisabledCacheManager();
 		}
-	}
-
-	/**
-	 * Acquire a ClientSession to provide client access to the underlying
-	 * resource.
-	 * 
-	 * @return ClientSession
-	 */
-	public ClientSession acquireClientSession() {
-		ClientSession s = new ClientSession(this);
-		return s;
 	}
 
 	protected Connection acquireConnection() {
@@ -124,7 +114,7 @@ public class ServerSession extends AbstractSession {
 
 	@Override
 	public UnitOfWork acquireUnitOfWork() {
-		return acquireClientSession().acquireUnitOfWork();
+		return new UnitOfWorkImpl(this);
 	}
 
 	public CacheManager getLiveObjectCache() {
@@ -180,7 +170,8 @@ public class ServerSession extends AbstractSession {
 		}
 	}
 
-	public void removeObjectFromCache(Object object) {
+	@Override
+	public void removeObjectFromCache(Object object, RepositoryID repository) {
 		// do nothing
 	}
 
@@ -218,11 +209,8 @@ public class ServerSession extends AbstractSession {
 		uowsToEntities.get(uow).add(entity);
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
-	List<Repository> getRepositories() {
+	@Override
+	public List<Repository> getRepositories() {
 		// The list itself is unmodifiable
 		return repositories;
 	}

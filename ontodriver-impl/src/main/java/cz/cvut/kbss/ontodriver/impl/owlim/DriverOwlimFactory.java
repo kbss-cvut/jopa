@@ -87,7 +87,7 @@ public class DriverOwlimFactory extends DriverAbstractFactory {
 	}
 
 	private void createCentralConnector(Context ctx) throws OntoDriverException {
-		final OntologyStorageProperties p = contextsToProperties.get(ctx);
+		final OntologyStorageProperties p = reposToProperties.get(ctx);
 		if (!(p instanceof OwlimOntologyStorageProperties)) {
 			throw new OntoDriverException(
 					"The storage properties is not suitable for OWLIM based connectors.");

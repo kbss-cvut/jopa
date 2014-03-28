@@ -1,15 +1,12 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 
 public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 
@@ -34,44 +31,23 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 	// to change
 	private transient Map<String, ChangeRecord> attributesToChange;
 
-	// The UOWchangeSet this ObjectChangeSet belongs to
-	private transient UnitOfWorkChangeSet uowChangeSet;
-
 	// Does this change set represent a new object
 	private boolean isNew;
 
 	// URI of the ontology context the object belongs to
-	private URI entityContext;
+	private RepositoryID repository;
 
 	protected ObjectChangeSetImpl() {
 	}
 
-	/**
-	 * 
-	 * @param changedObject
-	 * @param objectClass
-	 * @param isNew
-	 *            boolean The isNew parameter marks whether the change set
-	 *            represents a new object
-	 * @param uowChangeSet
-	 */
-	public ObjectChangeSetImpl(Object changedObject, Object cloneObject, boolean isNew,
-			UnitOfWorkChangeSet uowChangeSet) {
-		super();
+	public ObjectChangeSetImpl(Object changedObject, Object cloneObject, RepositoryID repository) {
 		this.changedObject = changedObject;
 		this.cloneObject = cloneObject;
 		this.objectClass = cloneObject.getClass();
-		this.isNew = isNew;
-		this.uowChangeSet = uowChangeSet;
-	}
-
-	public ObjectChangeSetImpl(Object changedObject, Object cloneObject, boolean isNew,
-			UnitOfWorkChangeSet uowChangeSet, URI contextUri) {
-		this(changedObject, cloneObject, isNew, uowChangeSet);
-		if (contextUri == null) {
+		if (repository == null) {
 			throw new NullPointerException();
 		}
-		this.entityContext = contextUri;
+		this.repository = repository;
 	}
 
 	/**
@@ -142,23 +118,8 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 		this.changes = changes;
 	}
 
-	/**
-	 * Get the owner of this changeSet
-	 * 
-	 * @return UnitOfWorkChangeSet
-	 */
-	public UnitOfWorkChangeSet getUowChangeSet() {
-		return this.uowChangeSet;
-	}
-
-	/**
-	 * Set the owner of this change set.
-	 * 
-	 * @param uowChangeSet
-	 *            UnitOfWorkChangeSet
-	 */
-	public void setUowChangeSet(UnitOfWorkChangeSet uowChangeSet) {
-		this.uowChangeSet = uowChangeSet;
+	public void setNew(boolean isNew) {
+		this.isNew = isNew;
 	}
 
 	/**
@@ -167,14 +128,14 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 	 * @return boolean
 	 */
 	public boolean isNew() {
-		return this.isNew;
+		return isNew;
 	}
 
 	/**
-	 * Retrieves context the referenced entity belongs to
+	 * Retrieves the repository the referenced entity belongs to
 	 */
 	@Override
-	public URI getEntityContext() {
-		return entityContext;
+	public RepositoryID getEntityRepository() {
+		return repository;
 	}
 }

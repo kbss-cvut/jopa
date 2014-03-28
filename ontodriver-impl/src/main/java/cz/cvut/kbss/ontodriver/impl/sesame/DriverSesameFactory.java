@@ -70,7 +70,7 @@ public class DriverSesameFactory extends DriverAbstractFactory {
 
 	private SesameStorageConnector createConnectorImpl(Context ctx, boolean autoCommit)
 			throws OntoDriverException {
-		final OntologyStorageProperties props = contextsToProperties.get(ctx);
+		final OntologyStorageProperties props = reposToProperties.get(ctx);
 		assert props != null;
 		SesameStorageConnectorImpl central = null;
 		synchronized (this) {

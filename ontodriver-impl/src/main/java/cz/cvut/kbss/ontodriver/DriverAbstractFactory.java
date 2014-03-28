@@ -7,14 +7,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public abstract class DriverAbstractFactory implements DriverFactory {
 
 	protected static final Logger LOG = Logger.getLogger(DriverAbstractFactory.class.getName());
 
-	protected final List<Context> contexts;
-	protected final Map<Context, OntologyStorageProperties> contextsToProperties;
+	protected final List<Repository> repositories;
+	protected final Map<RepositoryID, OntologyStorageProperties> reposToProperties;
 
 	private final Map<StorageConnector, StorageConnector> openedConnectors;
 	private final Map<StorageModule, StorageModule> openedModules;
@@ -22,20 +24,20 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 
 	private boolean open;
 
-	protected DriverAbstractFactory(List<Context> contexts,
-			Map<Context, OntologyStorageProperties> ctxsToProperties, Map<String, String> properties)
-			throws OntoDriverException {
-		if (contexts == null || contexts.isEmpty()) {
+	protected DriverAbstractFactory(List<Repository> repositories,
+			Map<RepositoryID, OntologyStorageProperties> reposToProperties,
+			Map<String, String> properties) throws OntoDriverException {
+		if (repositories == null || repositories.isEmpty()) {
 			throw new OntoDriverException("There has to be at least one storage context specified.");
 		}
-		if (ctxsToProperties == null) {
+		if (reposToProperties == null) {
 			throw new NullPointerException();
 		}
 		if (properties == null) {
 			properties = Collections.emptyMap();
 		}
-		this.contexts = contexts;
-		this.contextsToProperties = ctxsToProperties;
+		this.repositories = repositories;
+		this.reposToProperties = reposToProperties;
 		this.openedConnectors = new ConcurrentHashMap<StorageConnector, StorageConnector>();
 		this.openedModules = new ConcurrentHashMap<StorageModule, StorageModule>();
 		this.open = true;
@@ -43,8 +45,8 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	}
 
 	@Override
-	public List<Context> getContexts() {
-		return Collections.unmodifiableList(contexts);
+	public List<Repository> getRepositories() {
+		return Collections.unmodifiableList(repositories);
 	}
 
 	@Override
@@ -138,13 +140,13 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 * @throws NullPointerException
 	 *             If {@code ctx} is {@code null}
 	 */
-	protected void ensureState(Context ctx) throws OntoDriverException {
+	protected void ensureState(RepositoryID repository) throws OntoDriverException {
 		ensureOpen();
-		if (ctx == null) {
-			throw new NullPointerException("Context cannot be null.");
+		if (repository == null) {
+			throw new NullPointerException("Repository cannot be null.");
 		}
-		if (!contextsToProperties.containsKey(ctx)) {
-			throw new OntoDriverException("Context " + ctx + " not found.");
+		if (!reposToProperties.containsKey(repository)) {
+			throw new OntoDriverException("Repository " + repository + " not found.");
 		}
 	}
 
@@ -158,9 +160,9 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 *             If {@code metamodel} is null
 	 * @see #ensureState(Context)
 	 */
-	protected void ensureState(Context ctx, PersistenceProviderFacade persistenceProvider)
-			throws OntoDriverException {
-		ensureState(ctx);
+	protected void ensureState(RepositoryID repository,
+			PersistenceProviderFacade persistenceProvider) throws OntoDriverException {
+		ensureState(repository);
 		if (persistenceProvider == null) {
 			throw new NullPointerException("PersistenceProvider cannot be null.");
 		}

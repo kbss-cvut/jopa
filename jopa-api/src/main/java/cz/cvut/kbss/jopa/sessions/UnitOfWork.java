@@ -1,13 +1,9 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.RepositoryID;
-import cz.cvut.kbss.ontodriver.Context;
 
 public interface UnitOfWork extends Session {
 
@@ -38,13 +34,6 @@ public interface UnitOfWork extends Session {
 	 * @return
 	 */
 	public boolean contains(Object entity);
-
-	/**
-	 * Return parent session of the current Unit of Work.
-	 * 
-	 * @return Session
-	 */
-	public Session getParent();
 
 	/**
 	 * Is this Unit of Work active?
@@ -126,33 +115,6 @@ public interface UnitOfWork extends Session {
 	public <T> T readObject(Class<T> cls, Object primaryKey, RepositoryID repository);
 
 	/**
-	 * Register objects from the given collection in this {@code UnitOfWork}.
-	 * </p>
-	 * 
-	 * The difference between this method and the
-	 * {@link #registerAllObjects(Collection)} is that this method assumes that
-	 * the registered objects exist in the ontology. This version is preffered
-	 * and should be used, since it performs better.
-	 * 
-	 * @param objects
-	 *            Objects to register
-	 * @return Vector of clones of the specified objects
-	 */
-	public Vector<Object> registerAllExistingObjects(Collection<Object> objects);
-
-	/**
-	 * Register objects from the given collection in this Unit of Work. </p>
-	 * 
-	 * This creates working clones and puts the given objects into this Unit of
-	 * Work cache.
-	 * 
-	 * @param objects
-	 *            Collection<Object>
-	 * @return Vector<Object> Returns a Vector of clones of given objects.
-	 */
-	public Vector<Object> registerAllObjects(Collection<Object> objects);
-
-	/**
 	 * Register an existing object in this Unit of Work. The passed object comes
 	 * usually from the parent session cache. This method creates a working
 	 * clone of this object and puts the given object into this Unit of Work
@@ -166,19 +128,6 @@ public interface UnitOfWork extends Session {
 	 * @return Object Returns clone of the registered object
 	 */
 	public Object registerExistingObject(Object object, RepositoryID repository);
-
-	/**
-	 * Registers the specified new object in this Unit of Work. </p>
-	 * 
-	 * These objects are created during a transaction in this Unit of Work. New
-	 * objects are put into ServerSession shared cache after commit.
-	 * 
-	 * @param entity
-	 *            The entity to register
-	 * @throws NullPointerException
-	 *             If {@code entity} is {@code null}
-	 */
-	public void registerNewObject(Object entity);
 
 	/**
 	 * Registers the specified new object in this Unit of Work. </p>
@@ -210,31 +159,21 @@ public interface UnitOfWork extends Session {
 	public void removeObject(Object object);
 
 	/**
-	 * This method is the general method for registering objects into Unit of
-	 * Work cache. It calls either registerNewObject or registerExistingObject
-	 * according to state of the given object.
-	 * 
-	 * @param object
-	 *            Object
-	 * @return Object Returns clone of the registered object
-	 */
-	public Object registerObject(Object object);
-
-	/**
 	 * Release the current unit of work. Calling this method disregards any
 	 * changes made to clones.
 	 */
 	public void release();
 
 	/**
-	 * Reverts any changes to the given object.
+	 * Reverts any changes to the given object.</p>
+	 * 
+	 * This method modifies the specified object. The object has to be managed
+	 * by this persistence context.
 	 * 
 	 * @param object
-	 *            Object
-	 * @return Object The reverted object, it is actually the reverted object
-	 *         passed in argument.
+	 *            The object to revert
 	 */
-	public Object revertObject(Object object);
+	public <T> void revertObject(T object);
 
 	/**
 	 * This method returns true, if the UnitOfWork should be released after the
@@ -261,17 +200,6 @@ public interface UnitOfWork extends Session {
 	 * @return Set of {@code Class}
 	 */
 	public Set<Class<?>> getManagedTypes();
-
-	/**
-	 * Gets a list of available contexts. </p>
-	 * 
-	 * The contexts are ordered in the list by their priority (descending order)
-	 * and the returned {@code List} is not modifiable.
-	 * 
-	 * @return {@code List} of available contexts
-	 * @see Context
-	 */
-	public List<Context> getContexts();
 
 	/**
 	 * Sets the transactional ontology as the one used for SPARQL query
