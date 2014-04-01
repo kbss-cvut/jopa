@@ -1,21 +1,24 @@
 package cz.cvut.kbss.ontodriver.impl;
 
 import java.lang.reflect.Field;
-import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.impl.utils.ErrorUtils;
 
 public class StorageManagerImpl extends StorageManager {
 
@@ -24,37 +27,30 @@ public class StorageManagerImpl extends StorageManager {
 	/** Reference to the driver */
 	private final OntoDriverImpl driver;
 
-	/** Contexts sorted by priority */
-	private List<Context> contexts;
-	/** Contexts mapped by URIs */
-	private Map<URI, Context> uriToContext;
-	/** Storage modules mapped by their context */
-	private Map<Context, StorageModule> modules;
-	private Map<Context, StorageModule> modulesWithChanges;
+	/** Repositories */
+	private List<Repository> repositories;
+	/** Storage modules */
+	private List<StorageModule> modules;
+	private Map<Integer, StorageModule> modulesWithChanges;
 
 	/**
 	 * Constructor
 	 * 
 	 * @param metamodel
 	 *            Metamodel
-	 * @param contexts
+	 * @param repositories
 	 *            List of available contexts
 	 */
 	public StorageManagerImpl(PersistenceProviderFacade persistenceProvider,
-			List<Context> contexts, OntoDriverImpl driver) {
+			List<Repository> repositories, OntoDriverImpl driver) {
 		super(persistenceProvider);
-		if (contexts == null) {
-			throw new NullPointerException();
-		}
-		if (contexts.isEmpty()) {
+		this.repositories = Objects.requireNonNull(repositories,
+				ErrorUtils.constructNPXMessage("repositories"));
+		if (repositories.isEmpty()) {
 			throw new IllegalArgumentException("Contexts list cannot be empty.");
 		}
-		if (driver == null) {
-			throw new NullPointerException();
-		}
-		this.contexts = contexts;
-		this.modulesWithChanges = new HashMap<Context, StorageModule>();
-		this.driver = driver;
+		this.driver = Objects.requireNonNull(driver, ErrorUtils.constructNPXMessage("driver"));
+		this.modulesWithChanges = new HashMap<Integer, StorageModule>();
 		initModules();
 	}
 
@@ -63,11 +59,11 @@ public class StorageManagerImpl extends StorageManager {
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Closing the storage manager.");
 		}
-		for (StorageModule m : modules.values()) {
+		for (StorageModule m : modules) {
 			// Just close the module, any pending changes will be rolled back
 			// implicitly
 			if (m != null) {
-				driver.getFactory(m.getContext()).releaseStorageModule(m);
+				driver.getFactory(m.getRepository()).releaseStorageModule(m);
 			}
 		}
 		super.close();
@@ -88,143 +84,122 @@ public class StorageManagerImpl extends StorageManager {
 			LOG.finer("Executing statement.");
 		}
 		ensureState();
-		if (statement == null) {
-			LOG.severe("Null argument passed: statement");
-			throw new NullPointerException();
-		}
-		final Context c = uriToContext.get(statement.getContext());
-		if (c == null) {
-			throw new OntoDriverException("Unknown ontology context URI " + statement.getContext());
-		}
-		final StorageModule m = getModule(c);
+		Objects.requireNonNull(statement, ErrorUtils.constructNPXMessage("statement"));
+		checkForIdentifierValidity(statement.getRepository());
+		final StorageModule m = getModule(statement.getRepository());
 		return m.executeStatement(statement);
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, Context entityContext) throws OntoDriverException {
+	public boolean contains(Object primaryKey, RepositoryID repository) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Checking whether context " + entityContext
+			LOG.finer("Checking whether repository " + repository
 					+ " contains entity with primary key " + primaryKey);
 		}
 		ensureState();
-		if (primaryKey == null || entityContext == null) {
-			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", entityContext = "
-					+ entityContext);
-			throw new NullPointerException();
-		}
-		final StorageModule m = getModule(entityContext);
-		return m.contains(primaryKey);
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		checkForIdentifierValidity(repository);
+
+		final StorageModule m = getModule(repository);
+		return m.contains(primaryKey, repository);
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, Context entityContext,
-			Map<String, Context> attributeContexts) throws OntoDriverException {
+	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID repository)
+			throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Retrieving entity with primary key " + primaryKey + " from context "
-					+ entityContext);
+			LOG.finer("Retrieving entity with primary key " + primaryKey + " from repository "
+					+ repository);
 		}
 		ensureState();
-		if (cls == null || primaryKey == null || entityContext == null || attributeContexts == null) {
-			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey
-					+ ", entityContext = " + entityContext + ", attributeContexts = "
-					+ attributeContexts);
-			throw new NullPointerException();
-		}
-		// NOTE: We cannot handle attribute contexts yet
-		checkForContextValidity(entityContext);
-		final StorageModule module = getModule(entityContext);
-		final T entity = module.find(cls, primaryKey);
+		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		checkForIdentifierValidity(repository);
+
+		final StorageModule module = getModule(repository);
+		final T entity = module.find(cls, primaryKey, repository);
 		return entity;
 	}
 
 	@Override
-	public boolean isConsistent(Context context) throws OntoDriverException {
-		if (context == null) {
-			throw new NullPointerException();
-		}
-		final StorageModule m = getModule(context);
-		return m.isConsistent();
+	public boolean isConsistent(RepositoryID repository) throws OntoDriverException {
+		ensureState();
+		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		checkForIdentifierValidity(repository);
+
+		final StorageModule m = getModule(repository);
+		return m.isConsistent(repository);
 	}
 
 	@Override
-	public List<Context> getAvailableContexts() {
-		return Collections.unmodifiableList(contexts);
+	public List<Repository> getRepositories() {
+		return Collections.unmodifiableList(repositories);
 	}
 
 	@Override
-	public Map<URI, Context> getContextsByUris() {
-		return Collections.unmodifiableMap(uriToContext);
-	}
-
-	@Override
-	public <T> void loadFieldValue(T entity, Field field, Context context)
+	public <T> void loadFieldValue(T entity, Field field, RepositoryID repository)
 			throws OntoDriverException {
-		if (entity == null || field == null || context == null) {
-			LOG.severe("Null argument passed: entity = " + entity + ", field = " + field
-					+ ", context = " + context);
-			throw new NullPointerException();
-		}
-		final StorageModule m = getModule(context);
-		m.loadFieldValue(entity, field);
+		ensureState();
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
+		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		checkForIdentifierValidity(repository);
+
+		final StorageModule m = getModule(repository);
+		m.loadFieldValue(entity, field, repository);
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity, Field mergedField, Context entityContext,
-			Map<String, Context> attributeContexts) throws OntoDriverException {
+	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID repository)
+			throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Merging entity with primary key " + primaryKey + " into context "
-					+ entityContext);
+			LOG.finer("Merging entity with primary key " + primaryKey + " into repository "
+					+ repository);
 		}
 		ensureState();
-		if (primaryKey == null || entity == null || entityContext == null
-				|| attributeContexts == null) {
-			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", entity = " + entity
-					+ ", entityContext = " + entityContext + ", attributeContexts = "
-					+ attributeContexts);
-			throw new NullPointerException();
-		}
-		// NOTE: We cannot handle attribute contexts yet
-		checkForContextValidity(entityContext);
-		final StorageModule module = getModule(entityContext);
-		module.merge(primaryKey, entity, mergedField);
-		modulesWithChanges.put(entityContext, module);
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(mergedField, ErrorUtils.constructNPXMessage("mergedField"));
+		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		checkForIdentifierValidity(repository);
+
+		final StorageModule module = getModule(repository);
+		module.merge(primaryKey, entity, mergedField, repository);
+		modulesWithChanges.put(repository.getRepository(), module);
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, Context entityContext,
-			Map<String, Context> attributeContexts) throws OntoDriverException {
+	public <T> void persist(Object primaryKey, T entity, RepositoryID repository)
+			throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Persisting entity into context " + entityContext);
+			LOG.finer("Persisting entity into repository " + repository);
 		}
 		ensureState();
-		if (entity == null || entityContext == null || attributeContexts == null) {
-			LOG.severe("Null argument passed: entity = " + entity + ", entityContext = "
-					+ entityContext + ", attributeContexts = " + attributeContexts);
-			throw new NullPointerException();
-		}
-		// NOTE: We cannot handle attribute contexts yet
-		checkForContextValidity(entityContext);
-		final StorageModule module = getModule(entityContext);
-		module.persist(primaryKey, entity);
-		modulesWithChanges.put(entityContext, module);
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		checkForIdentifierValidity(repository);
+
+		final StorageModule module = getModule(repository);
+		module.persist(primaryKey, entity, repository);
+		modulesWithChanges.put(repository.getRepository(), module);
 	}
 
 	@Override
-	public void remove(Object primaryKey, Context entityContext) throws OntoDriverException {
+	public void remove(Object primaryKey, RepositoryID repository) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Removing entity with primary key " + primaryKey + " from context "
-					+ entityContext);
+			LOG.finer("Removing entity with primary key " + primaryKey + " from repository "
+					+ repository);
 		}
 		ensureState();
-		if (primaryKey == null || entityContext == null) {
-			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", entityContext = "
-					+ entityContext);
-			throw new NullPointerException();
-		}
-		checkForContextValidity(entityContext);
-		StorageModule module = getModule(entityContext);
-		module.remove(primaryKey);
-		modulesWithChanges.put(entityContext, module);
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		checkForIdentifierValidity(repository);
+
+		StorageModule module = getModule(repository);
+		module.remove(primaryKey, repository);
+		modulesWithChanges.put(repository.getRepository(), module);
 	}
 
 	@Override
@@ -249,29 +224,31 @@ public class StorageManagerImpl extends StorageManager {
 		}
 	}
 
-	private void checkForContextValidity(Context ctx) throws OntoDriverException {
-		assert ctx != null;
-		if (!modules.containsKey(ctx)) {
-			throw new OntoDriverException("The context " + ctx
-					+ " is not valid within this storage manager.");
+	private void checkForIdentifierValidity(RepositoryID identifier) throws OntoDriverException {
+		assert identifier != null;
+		if (identifier.getRepository() < 0 || identifier.getRepository() >= repositories.size()) {
+			throw new IllegalArgumentException("Unknown repository identifier " + identifier
+					+ ". No such repository is managed by this StorageManager.");
 		}
 	}
 
 	private void initModules() {
-		this.uriToContext = new HashMap<URI, Context>(contexts.size());
-		this.modules = new HashMap<Context, StorageModule>(contexts.size());
-		for (Context ctx : contexts) {
-			uriToContext.put(ctx.getUri(), ctx);
-			// Modules will be lazily loaded
-			modules.put(ctx, null);
+		this.modules = new ArrayList<>(repositories.size());
+		final int len = repositories.size();
+		for (int i = 0; i < len; i++) {
+			modules.set(i, null);
 		}
 	}
 
-	private StorageModule getModule(Context context) throws OntoDriverException {
-		StorageModule m = modules.get(context);
+	private StorageModule getModule(RepositoryID identifier) throws OntoDriverException {
+		assert identifier != null;
+		assert (identifier.getRepository() >= 0 && identifier.getRepository() < repositories.size());
+
+		StorageModule m = modules.get(identifier.getRepository());
 		if (m == null) {
-			m = driver.getFactory(context).createStorageModule(context, persistenceProvider, false);
-			modules.put(context, m);
+			final Repository r = repositories.get(identifier.getRepository());
+			m = driver.getFactory(r).createStorageModule(identifier, persistenceProvider, false);
+			modules.set(r.getId(), m);
 		}
 		return m;
 	}

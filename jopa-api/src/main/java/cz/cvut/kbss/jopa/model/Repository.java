@@ -77,6 +77,23 @@ public final class Repository {
 		return contexts.contains(contextUri);
 	}
 
+	/**
+	 * Creates new repository identifier based on this repository.
+	 * 
+	 * @param includeContexts
+	 *            Whether to add all this repository's contexts to the
+	 *            identifier. By default, the identifier is created without any
+	 *            contexts
+	 * @return New repository identifier
+	 */
+	public RepositoryID createRepositoryID(boolean includeContexts) {
+		final RepositoryID rid = new RepositoryID(this);
+		if (includeContexts) {
+			rid.addContexts(contexts);
+		}
+		return rid;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

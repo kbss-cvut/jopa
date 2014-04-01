@@ -8,11 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.OntoDriver;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
@@ -25,7 +26,7 @@ import cz.cvut.kbss.ontodriver.impl.jena.DriverJenaFactory;
 import cz.cvut.kbss.ontodriver.impl.owlapi.DriverOwlapiFactory;
 import cz.cvut.kbss.ontodriver.impl.owlim.DriverOwlimFactory;
 import cz.cvut.kbss.ontodriver.impl.sesame.DriverSesameFactory;
-import cz.cvut.kbss.ontodriver.impl.utils.OntologyProfileChecker;
+import cz.cvut.kbss.ontodriver.impl.utils.ErrorUtils;
 
 public class OntoDriverImpl implements OntoDriver {
 
@@ -37,8 +38,9 @@ public class OntoDriverImpl implements OntoDriver {
 
 	protected final Map<String, String> properties;
 	protected final Map<OntologyConnectorType, DriverFactory> factories;
+	private final Map<Integer, OntologyConnectorType> factoryTypes;
 	/** Reference for easier access */
-	protected final List<Context> contexts;
+	protected final List<Repository> repositories;
 	private boolean open;
 
 	protected OntoDriverImpl() {
@@ -46,37 +48,41 @@ public class OntoDriverImpl implements OntoDriver {
 		this.factoryClasses = new HashMap<OntologyConnectorType, Constructor<? extends DriverFactory>>();
 		this.properties = Collections.emptyMap();
 		this.factories = new HashMap<OntologyConnectorType, DriverFactory>();
-		this.contexts = new ArrayList<Context>();
+		this.repositories = new ArrayList<>();
+		this.factoryTypes = new HashMap<>();
 		this.open = true;
 	}
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties) {
-		if (storageProperties == null || storageProperties.isEmpty()) {
-			throw new IllegalArgumentException(
-					"Storage properties cannot be neither null nor empty.");
+		Objects.requireNonNull(storageProperties,
+				ErrorUtils.constructNPXMessage("storageProperties"));
+		if (storageProperties.isEmpty()) {
+			throw new IllegalArgumentException("Storage properties cannot be empty.");
 		}
 		this.factoryClasses = new HashMap<OntologyConnectorType, Constructor<? extends DriverFactory>>();
-		this.contexts = new ArrayList<Context>(storageProperties.size());
+		this.repositories = new ArrayList<>(storageProperties.size());
 		this.properties = Collections.emptyMap();
-		final Map<Context, OntologyStorageProperties> contextToProps = resolveContexts(storageProperties);
-		this.factories = initFactories(contextToProps);
+		this.factoryTypes = new HashMap<>(storageProperties.size());
+		this.factories = initFactories();
 		this.open = true;
 	}
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties,
 			Map<String, String> properties) {
-		if (storageProperties == null || storageProperties.isEmpty()) {
-			throw new IllegalArgumentException(
-					"Storage properties cannot be neither null nor empty.");
+		Objects.requireNonNull(storageProperties,
+				ErrorUtils.constructNPXMessage("storageProperties"));
+		if (storageProperties.isEmpty()) {
+			throw new IllegalArgumentException("Storage properties cannot be empty.");
 		}
 		if (properties == null) {
 			properties = Collections.emptyMap();
 		}
 		this.factoryClasses = new HashMap<OntologyConnectorType, Constructor<? extends DriverFactory>>();
 		this.properties = properties;
-		this.contexts = new ArrayList<Context>(storageProperties.size());
-		final Map<Context, OntologyStorageProperties> contextToProps = resolveContexts(storageProperties);
-		this.factories = initFactories(contextToProps);
+		this.factoryTypes = new HashMap<>(storageProperties.size());
+		this.repositories = new ArrayList<>(storageProperties.size());
+		resolveContexts(storageProperties);
+		this.factories = initFactories();
 		this.open = true;
 	}
 
@@ -84,17 +90,17 @@ public class OntoDriverImpl implements OntoDriver {
 	public StorageManager acquireStorageManager() throws OntoDriverException {
 		ensureOpen();
 		final StorageManager m = new StorageManagerImpl(new DefaultPersistenceProvider(null),
-				contexts, this);
+				repositories, this);
 		return m;
 	}
 
 	@Override
 	public StorageManager acquireStorageManager(Metamodel metamodel) throws OntoDriverException {
-		if (metamodel == null) {
-			throw new NullPointerException("Metamodel cannot be null.");
-		}
+		ensureOpen();
+		Objects.requireNonNull(metamodel, ErrorUtils.constructNPXMessage("metamodel"));
+
 		final StorageManager m = new StorageManagerImpl(new DefaultPersistenceProvider(metamodel),
-				contexts, this);
+				repositories, this);
 		return m;
 	}
 
@@ -102,36 +108,38 @@ public class OntoDriverImpl implements OntoDriver {
 	public StorageManager acquireStorageManager(PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException {
 		ensureOpen();
-		if (persistenceProvider == null) {
-			throw new NullPointerException("PersistenceProviderFacade cannot be null.");
-		}
+		Objects.requireNonNull(persistenceProvider,
+				ErrorUtils.constructNPXMessage("persistenceProvider"));
+
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating storage manager.");
 		}
-		final StorageManager m = new StorageManagerImpl(persistenceProvider, contexts, this);
+		final StorageManager m = new StorageManagerImpl(persistenceProvider, repositories, this);
 		return m;
 	}
 
 	/**
-	 * Retrieves {@code DriverFactory} appropriate for the specified
-	 * {@code context}. </p>
+	 * Retrieves {@code DriverFactory} appropriate for the specified repository.
+	 * </p>
 	 * 
-	 * The factory type is determined by the {@code OntologyConnectorType} of
-	 * the {@code context}.
+	 * The factory type is determined by the OntologyConnectorType of the
+	 * repository.
 	 * 
-	 * @param context
-	 *            Context
-	 * @return Factory for the context or null if there is none registered for
-	 *         its connector type
+	 * @param repository
+	 *            Ontology repository
+	 * @return Factory for the repository or null if there is none registered
+	 *         for its connector type
 	 * @throws NullPointerException
-	 *             If {@code context} is null
+	 *             If {@code repository} is {@code null}
 	 */
-	public DriverFactory getFactory(Context context) {
+	public DriverFactory getFactory(Repository repository) {
 		ensureOpen();
-		if (context == null) {
-			throw new NullPointerException("Context cannot be null.");
+		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		final Integer repoId = repository.getId();
+		if (repoId < 0 || repoId >= repositories.size()) {
+			throw new IllegalArgumentException("Unknown repository " + repository);
 		}
-		return factories.get(context.getConnectorType());
+		return factories.get(factoryTypes.get(repoId));
 	}
 
 	@Override
@@ -163,15 +171,14 @@ public class OntoDriverImpl implements OntoDriver {
 	 * @return map of connector types and factories for them
 	 * @see #registerFactoryClass(OntologyConnectorType, Class)
 	 */
-	private Map<OntologyConnectorType, DriverFactory> initFactories(
-			Map<Context, OntologyStorageProperties> ctxsToPros) {
+	private Map<OntologyConnectorType, DriverFactory> initFactories() {
 		registerFactoryClasses();
 		final Map<OntologyConnectorType, DriverFactory> facts = new HashMap<OntologyConnectorType, DriverFactory>();
 		for (Entry<OntologyConnectorType, Constructor<? extends DriverFactory>> e : factoryClasses
 				.entrySet()) {
 			final Constructor<? extends DriverFactory> c = e.getValue();
 			try {
-				final DriverFactory f = c.newInstance(contexts, ctxsToPros, properties);
+				final DriverFactory f = c.newInstance(repositories, properties);
 				facts.put(e.getKey(), f);
 			} catch (InstantiationException ex) {
 				LOG.severe("Unable to initialize factory. + " + e.toString());
@@ -193,17 +200,15 @@ public class OntoDriverImpl implements OntoDriver {
 	 *            List of storage properties
 	 * @return Map with storage properties mapped by the resolved contexts
 	 */
-	private Map<Context, OntologyStorageProperties> resolveContexts(
-			List<OntologyStorageProperties> storageProperties) {
+	private void resolveContexts(List<OntologyStorageProperties> storageProperties) {
 		assert storageProperties != null;
-		final Map<Context, OntologyStorageProperties> contextsToProperties = new HashMap<Context, OntologyStorageProperties>();
 		for (OntologyStorageProperties p : storageProperties) {
-			final Context ctx = new Context(p.getOntologyURI(), p.getConnectorType());
-			contexts.add(ctx);
-			contextsToProperties.put(ctx, p);
+			final Repository r = new Repository(p.getPhysicalURI());
+			repositories.add(r);
+			factoryTypes.put(r.getId(), p.getConnectorType());
 		}
-		OntologyProfileChecker.checkProfiles(contextsToProperties);
-		return contextsToProperties;
+		// TODO
+		// OntologyProfileChecker.checkProfiles(contextsToProperties);
 	}
 
 	private void ensureOpen() throws IllegalStateException {
@@ -249,7 +254,7 @@ public class OntoDriverImpl implements OntoDriver {
 					}
 					// This cast is safe thanks to the check above
 					final Constructor<? extends DriverFactory> ctor = (Constructor<? extends DriverFactory>) factoryClass
-							.getConstructor(List.class, Map.class, Map.class);
+							.getConstructor(List.class, Map.class);
 					factoryClasses.put(t, ctor);
 				} catch (ClassNotFoundException e) {
 					throw new OntoDriverInitializationException("Class " + factoryClassName
@@ -261,11 +266,12 @@ public class OntoDriverImpl implements OntoDriver {
 					throw new OntoDriverInitializationException(e);
 				}
 			} else {
-				// If the factory class is not specified, use the default one
+				// If the factory class is not specified, u, Map.classse the
+				// default one
 				final Class<? extends DriverFactory> cls = DEFAULT_FACTORY_CLASSES.get(t);
 				try {
 					final Constructor<? extends DriverFactory> ctor = cls.getConstructor(
-							List.class, Map.class, Map.class);
+							List.class, Map.class);
 					factoryClasses.put(t, ctor);
 				} catch (NoSuchMethodException e) {
 					// Shouldn't happen

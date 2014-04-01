@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.DataSource;
@@ -28,9 +29,9 @@ public class SimpleDataSource implements DataSource {
 	private boolean open;
 
 	public SimpleDataSource(List<OntologyStorageProperties> storageProperties) {
-		if (storageProperties == null || storageProperties.isEmpty()) {
-			throw new IllegalArgumentException(
-					"StorageProperties cannot be neither null nor empty.");
+		Objects.requireNonNull(storageProperties, "Argument 'storageProperties' cannot be null.");
+		if (storageProperties.isEmpty()) {
+			throw new IllegalArgumentException("StorageProperties can be neither null nor empty.");
 		}
 		this.properties = Collections.emptyMap();
 		this.driver = new OntoDriverImpl(storageProperties, properties);

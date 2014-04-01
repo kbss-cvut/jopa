@@ -3,8 +3,11 @@ package cz.cvut.kbss.ontodriver;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -32,12 +35,14 @@ public abstract class StorageModule implements Transactional {
 
 	/**
 	 * Counters that increment with each inserted entity so that newly generated
-	 * primary keys are unique
+	 * primary keys are unique. </p>
+	 * 
+	 * Keys in this map are internal identifiers of repositories.
 	 */
-	protected static final Map<Context, AtomicInteger> primaryKeyCounters = new HashMap<Context, AtomicInteger>();
+	protected static final Map<Integer, AtomicInteger> primaryKeyCounters = new HashMap<Integer, AtomicInteger>();
 
-	/** Context information */
-	protected final Context context;
+	/** Repository managed by this module */
+	protected final Repository repository;
 	/** Backward reference to the factory */
 	protected final DriverFactory factory;
 	/** Metamodel of the entity model */
@@ -46,20 +51,14 @@ public abstract class StorageModule implements Transactional {
 	protected boolean open;
 	protected TransactionState transaction;
 
-	public StorageModule(Context context, PersistenceProviderFacade persistenceProvider,
+	public StorageModule(Repository repository, PersistenceProviderFacade persistenceProvider,
 			DriverFactory factory) throws OntoDriverException {
-		if (context == null) {
-			throw new NullPointerException("Context cannot be null.");
-		}
-		if (persistenceProvider == null) {
-			throw new NullPointerException("PersistenceProvider cannot be null.");
-		}
-		if (factory == null) {
-			throw new NullPointerException("Factory cannot be null.");
-		}
-		this.context = context;
-		this.persistenceProvider = persistenceProvider;
-		this.factory = factory;
+		this.repository = Objects.requireNonNull(repository,
+				"Argument 'repository' cannot be null.");
+		this.persistenceProvider = Objects.requireNonNull(persistenceProvider,
+				"Argument 'persistenceProvider' cannot be null.");
+		this.factory = Objects.requireNonNull(factory, "Argument 'factory' cannot be null.");
+
 		initialize();
 		this.open = true;
 		this.transaction = TransactionState.NO;
@@ -72,12 +71,12 @@ public abstract class StorageModule implements Transactional {
 	}
 
 	/**
-	 * Retrieves context of this storage module.
+	 * Retrieves repository represented by this module.
 	 * 
-	 * @return Context
+	 * @return repository
 	 */
-	public Context getContext() {
-		return context;
+	public Repository getRepository() {
+		return repository;
 	}
 
 	/**
@@ -110,57 +109,75 @@ public abstract class StorageModule implements Transactional {
 	 * 
 	 * @param primaryKey
 	 *            Primary key
+	 * @param contexts
+	 *            Repository identifier. It is here merely to specify contexts
+	 *            which should be searched
 	 * @return {@code true} if this module contains entity with the specified
 	 *         primary key, {@code false} otherwise
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
 	 * @throws NullPointerException
-	 *             If {@code primaryKey} is {@code null}
+	 *             If {@code primaryKey} or {@code contexts} is {@code null}
 	 */
-	public abstract boolean contains(Object primaryKey) throws OntoDriverException;
+	public abstract boolean contains(Object primaryKey, RepositoryID contexts)
+			throws OntoDriverException;
 
 	/**
 	 * Retrieves entity with the specified primary key. </p>
 	 * 
+	 * Multiple contexts can be specified to be searched.
 	 * 
 	 * @param cls
 	 *            Type of the returned entity
 	 * @param primaryKey
 	 *            Primary key
+	 * @param contexts
+	 *            Repository identifier. It is here merely to specify contexts
+	 *            which should be searched
 	 * @return Found entity or null
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
 	 * @throws NullPointerException
-	 *             If {@code cls} or {@code primaryKey} is {@code null}
+	 *             If {@code cls}, {@code primaryKey} or {@code contexts} is
+	 *             {@code null}
 	 */
-	public abstract <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException;
+	public abstract <T> T find(Class<T> cls, Object primaryKey, RepositoryID contexts)
+			throws OntoDriverException;
 
 	/**
-	 * Checks whether the underlying ontology context is consistent.
+	 * Checks whether the underlying ontology contexts are consistent.
 	 * 
-	 * @return {@code true} if the context is consistent, {@code false}
+	 * @param contexts
+	 *            Contexts to validate
+	 * @return {@code true} if the contexts are consistent, {@code false}
 	 *         otherwise
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
+	 * @throws NullPointerException
+	 *             if {@code contexts} is {@code null}
 	 */
-	public abstract boolean isConsistent() throws OntoDriverException;
+	public abstract boolean isConsistent(RepositoryID contexts) throws OntoDriverException;
 
 	/**
-	 * Loads from the ontology and sets value of field {@code fieldName}. </p>
-	 * 
-	 * This method is intended to be used for lazy loaded field values.
+	 * Loads from the ontology and sets value of field {@code fieldName} on the
+	 * specified entity. </p>
 	 * 
 	 * @param entity
 	 *            The entity to set field value on
 	 * @param field
 	 *            The field to load
+	 * @param contexts
+	 *            Repository identifier specifying contexts to search
 	 * @throws OntoDriverException
+	 * 
 	 *             If called on a closed storage module, if the field name does
 	 *             not exist or if an ontology access error occurs
 	 * @throws NullPointerException
-	 *             If {@code entity} or {@code fieldName} is null
+	 *             If {@code entity}, {@code fieldName} or {@code contexts} is
+	 *             null
 	 */
-	public abstract <T> void loadFieldValue(T entity, Field field) throws OntoDriverException;
+	public abstract <T> void loadFieldValue(T entity, Field field, RepositoryID contexts)
+			throws OntoDriverException;
 
 	/**
 	 * Merges changes on the specified entity field into this module. </p>
@@ -171,14 +188,19 @@ public abstract class StorageModule implements Transactional {
 	 *            The entity to merge
 	 * @param mergedField
 	 *            The field to merge
+	 * @param context
+	 *            Repository identifier specifying into which context the value
+	 *            will be merged. If the identifier contains multiple contexts,
+	 *            the first one returned by iterator is used
 	 * @throws OntoDriverException
 	 *             If the entity does not exist in this module or if an ontology
 	 *             access error occurs
 	 * @throws NullPointerException
-	 *             If {@code primaryKey} or {@code entity} is null
+	 *             If {@code primaryKey}, {@code entity} or {@code context} is
+	 *             {@code null}
 	 */
-	public abstract <T> void merge(Object primaryKey, T entity, Field mergedField)
-			throws OntoDriverException;
+	public abstract <T> void merge(Object primaryKey, T entity, Field mergedField,
+			RepositoryID context) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity into this module. </p>
@@ -188,13 +210,18 @@ public abstract class StorageModule implements Transactional {
 	 *            generated
 	 * @param entity
 	 *            The entity to persist
+	 * @param context
+	 *            Repository identifier specifying into which context the entity
+	 *            will be persisted. If the identifier contains multiple
+	 *            contexts, the first one returned by iterator is used
 	 * @throws OntoDriverException
 	 *             If an entity with the specified primary key already exists in
 	 *             this module or if an ontology access error occurs
 	 * @throws NullPointerException
-	 *             If {@code entity} is null
+	 *             If {@code entity} or {@code context} is null
 	 */
-	public abstract <T> void persist(Object primaryKey, T entity) throws OntoDriverException;
+	public abstract <T> void persist(Object primaryKey, T entity, RepositoryID context)
+			throws OntoDriverException;
 
 	/**
 	 * Removes entity with the specified primary key from this module. </p>
@@ -204,12 +231,16 @@ public abstract class StorageModule implements Transactional {
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the entity to remove
+	 * @param context
+	 *            Repository identifier specifying from which context the entity
+	 *            will be removed. If the identifier contains multiple contexts,
+	 *            the first one returned by iterator is used
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
 	 * @throws NullPointerException
-	 *             If {@code primaryKey} is null
+	 *             If {@code primaryKey} or {@code context} is null
 	 */
-	public abstract void remove(Object primaryKey) throws OntoDriverException;
+	public abstract void remove(Object primaryKey, RepositoryID context) throws OntoDriverException;
 
 	/**
 	 * Executes the specified statement. </p>
@@ -270,14 +301,14 @@ public abstract class StorageModule implements Transactional {
 	 * @return Primary key counter
 	 */
 	public int getNewPrimaryKey() {
-		return StorageModule.getNewPrimaryKey(context);
+		return StorageModule.getNewPrimaryKey(repository);
 	}
 
 	/**
 	 * Increments the primary key counter for this module's context.
 	 */
 	public void incrementPrimaryKeyCounter() {
-		StorageModule.incrementPrimaryKeyCounter(context);
+		StorageModule.incrementPrimaryKeyCounter(repository);
 	}
 
 	/**
@@ -287,9 +318,9 @@ public abstract class StorageModule implements Transactional {
 	 *            The context from which key should be retrieved
 	 * @return primary key number
 	 */
-	protected static int getNewPrimaryKey(Context ctx) {
-		assert primaryKeyCounters.containsKey(ctx);
-		return primaryKeyCounters.get(ctx).incrementAndGet();
+	protected static int getNewPrimaryKey(Repository repo) {
+		assert primaryKeyCounters.containsKey(repo.getId());
+		return primaryKeyCounters.get(repo.getId()).incrementAndGet();
 	}
 
 	/**
@@ -298,8 +329,8 @@ public abstract class StorageModule implements Transactional {
 	 * @param ctx
 	 *            Context
 	 */
-	protected static void incrementPrimaryKeyCounter(Context ctx) {
-		assert primaryKeyCounters.containsKey(ctx);
-		primaryKeyCounters.get(ctx).incrementAndGet();
+	protected static void incrementPrimaryKeyCounter(Repository repo) {
+		assert primaryKeyCounters.containsKey(repo.getId());
+		primaryKeyCounters.get(repo.getId()).incrementAndGet();
 	}
 }

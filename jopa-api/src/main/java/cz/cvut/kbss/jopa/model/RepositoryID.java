@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.model;
 
 import java.net.URI;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -19,12 +20,11 @@ public final class RepositoryID {
 	private final Set<URI> contexts;
 
 	public RepositoryID(Repository repository) {
-		if (repository == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
 		if (repository.getId() < 0) {
 			throw new IllegalArgumentException("Repository id cannot be less than 0.");
 		}
+
 		this.repository = repository.getId();
 		this.contexts = new HashSet<>(repository.getContexts().size());
 	}
@@ -40,9 +40,8 @@ public final class RepositoryID {
 	 *            The instance to copy
 	 */
 	public RepositoryID(RepositoryID other) {
-		if (other == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(other, "Argument 'repository' cannot be null.");
+
 		this.repository = other.repository;
 		this.contexts = new HashSet<>(other.contexts);
 	}
@@ -77,9 +76,8 @@ public final class RepositoryID {
 	 *            context URI
 	 */
 	public void addContext(URI contextUri) {
-		if (contextUri == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(contextUri, "Argument 'contextUri' cannot be null.");
+
 		contexts.add(contextUri);
 	}
 
@@ -90,9 +88,8 @@ public final class RepositoryID {
 	 *            set of context URIs
 	 */
 	public void addContexts(Set<URI> contextUris) {
-		if (contextUris == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(contextUris, "Argument 'contextUris' cannot be null.");
+
 		contexts.addAll(contextUris);
 	}
 

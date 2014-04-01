@@ -120,6 +120,8 @@ public interface Connection extends Transactional {
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
+	 * @throws NullPointerException
+	 *             If the argument is {@code null}
 	 */
 	public Repository getRepository(Integer repositoryId) throws OntoDriverException;
 
@@ -138,8 +140,6 @@ public interface Connection extends Transactional {
 
 	/**
 	 * Loads from ontology and sets value of field {@code fieldName}. </p>
-	 * 
-	 * This method is intended to be used for lazy loaded field values.
 	 * 
 	 * @param entity
 	 *            Entity to set the field value on
@@ -174,7 +174,12 @@ public interface Connection extends Transactional {
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
-	 * @throws
+	 * @throws NullPointerException
+	 *             If any of the arguments is {@code null}
+	 * @throws IllegalArgumentException
+	 *             If the specified entity is not persistent in the specified
+	 *             repository or if it has no field corresponding to
+	 *             {@code mergedField}
 	 */
 	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID repository)
 			throws OntoDriverException;
@@ -212,15 +217,10 @@ public interface Connection extends Transactional {
 	public PreparedStatement prepareStatement(String sparql) throws OntoDriverException;
 
 	/**
-	 * Removes the specified {@code entity}. </p>
-	 * 
-	 * If the entity is not loaded within this connection an exception is
-	 * thrown.
+	 * Removes entity with the specified primary key. </p>
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the entity to be removed
-	 * @param entity
-	 *            The entity to remove
 	 * @param repository
 	 *            Identifier of a repository from which the entity will be
 	 *            removed
@@ -228,8 +228,7 @@ public interface Connection extends Transactional {
 	 *             If called on a closed connection or if an ontology access
 	 *             error occurs
 	 */
-	public <T> void remove(Object primaryKey, T entity, RepositoryID repository)
-			throws OntoDriverException;
+	public <T> void remove(Object primaryKey, RepositoryID repository) throws OntoDriverException;
 
 	/**
 	 * Sets auto commit mode on this connection. </p>

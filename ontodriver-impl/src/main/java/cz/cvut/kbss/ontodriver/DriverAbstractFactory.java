@@ -1,8 +1,11 @@
 package cz.cvut.kbss.ontodriver;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,13 +13,14 @@ import java.util.logging.Logger;
 import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.impl.utils.ErrorUtils;
 
 public abstract class DriverAbstractFactory implements DriverFactory {
 
 	protected static final Logger LOG = Logger.getLogger(DriverAbstractFactory.class.getName());
 
 	protected final List<Repository> repositories;
-	protected final Map<RepositoryID, OntologyStorageProperties> reposToProperties;
+	protected final Set<RepositoryID> repoIds;
 
 	private final Map<StorageConnector, StorageConnector> openedConnectors;
 	private final Map<StorageModule, StorageModule> openedModules;
@@ -24,20 +28,21 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 
 	private boolean open;
 
-	protected DriverAbstractFactory(List<Repository> repositories,
-			Map<RepositoryID, OntologyStorageProperties> reposToProperties,
-			Map<String, String> properties) throws OntoDriverException {
-		if (repositories == null || repositories.isEmpty()) {
-			throw new OntoDriverException("There has to be at least one storage context specified.");
-		}
-		if (reposToProperties == null) {
-			throw new NullPointerException();
+	protected DriverAbstractFactory(List<Repository> repositories, Map<String, String> properties) {
+		Objects.requireNonNull(repositories, ErrorUtils.constructNPXMessage("repositories"));
+		if (repositories.isEmpty()) {
+			throw new IllegalArgumentException(
+					"There has to be at least one storage context specified.");
 		}
 		if (properties == null) {
 			properties = Collections.emptyMap();
 		}
+
 		this.repositories = repositories;
-		this.reposToProperties = reposToProperties;
+		this.repoIds = new HashSet<>(repositories.size());
+		for (Repository r : repositories) {
+			repoIds.add(r.createRepositoryID(false));
+		}
 		this.openedConnectors = new ConcurrentHashMap<StorageConnector, StorageConnector>();
 		this.openedModules = new ConcurrentHashMap<StorageModule, StorageModule>();
 		this.open = true;
@@ -145,7 +150,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		if (repository == null) {
 			throw new NullPointerException("Repository cannot be null.");
 		}
-		if (!reposToProperties.containsKey(repository)) {
+		if (!repoIds.contains(repository)) {
 			throw new OntoDriverException("Repository " + repository + " not found.");
 		}
 	}

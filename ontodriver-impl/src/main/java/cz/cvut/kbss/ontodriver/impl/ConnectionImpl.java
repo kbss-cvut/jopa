@@ -1,23 +1,20 @@
 package cz.cvut.kbss.ontodriver.impl;
 
 import java.lang.reflect.Field;
-import java.net.URI;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageManager;
-import cz.cvut.kbss.ontodriver.exceptions.EntityNotRegisteredException;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -26,27 +23,23 @@ public class ConnectionImpl implements Connection {
 	private static final Logger LOG = Logger.getLogger(ConnectionImpl.class.getName());
 
 	private final StorageManager storageManager;
-
-	private Context defaultContext;
-	private Map<URI, Context> contexts;
-	private Map<Object, Context> entityToContext;
+	private final Map<Integer, Repository> repositories;
 
 	private boolean open;
 	private boolean hasChanges;
 	private boolean autoCommit;
 
 	public ConnectionImpl(StorageManager storageManager) throws OntoDriverException {
-		super();
-		if (storageManager == null) {
-			throw new NullPointerException();
+		this.storageManager = Objects.requireNonNull(storageManager,
+				"Argument 'storageManager' cannot be null.");
+
+		this.repositories = new HashMap<>();
+		for (Repository r : storageManager.getRepositories()) {
+			repositories.put(r.getId(), r);
 		}
-		this.contexts = new HashMap<URI, Context>();
-		// This has to be based on identities
-		this.entityToContext = new IdentityHashMap<Object, Context>();
-		this.storageManager = storageManager;
 		this.open = true;
+		this.hasChanges = false;
 		this.autoCommit = true;
-		initContexts();
 	}
 
 	@Override
@@ -79,98 +72,24 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public boolean contains(Object primaryKey) throws OntoDriverException {
+	public boolean contains(Object primaryKey, RepositoryID repository) throws OntoDriverException {
 		ensureOpen(false);
 		if (primaryKey == null) {
 			LOG.severe("Null argument passed: primaryKey = " + primaryKey);
 			throw new NullPointerException();
 		}
-		return storageManager.contains(primaryKey, defaultContext);
+		return storageManager.contains(primaryKey, repository);
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, URI context) throws OntoDriverException {
-		ensureOpen(false);
-		if (primaryKey == null || context == null) {
-			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", context = "
-					+ context);
-			throw new NullPointerException();
-		}
-		final Context ctx = contexts.get(context);
-		if (ctx == null) {
-			throw new OntoDriverException("Context with URI " + context.toString()
-					+ " not found within this connection.");
-		}
-		return storageManager.contains(primaryKey, ctx);
-	}
-
-	@Override
-	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException {
+	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID repository)
+			throws OntoDriverException {
 		ensureOpen(true);
-		if (cls == null || primaryKey == null) {
-			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey);
-			throw new NullPointerException();
-		}
-		T result = storageManager.find(cls, primaryKey, defaultContext,
-				Collections.<String, Context> emptyMap());
-		if (result != null) {
-			registerInternal(result, defaultContext);
-			return result;
-		}
-		for (Context ctx : storageManager.getAvailableContexts()) {
-			// We can use identity here
-			if (ctx == defaultContext) {
-				continue;
-			}
-			result = storageManager.find(cls, primaryKey, ctx,
-					Collections.<String, Context> emptyMap());
-			if (result != null) {
-				registerInternal(result, ctx);
-				return result;
-			}
-		}
-		return null;
-	}
+		Objects.requireNonNull(cls, "Argument 'cls' cannot be null.");
+		Objects.requireNonNull(primaryKey, "Argument 'primaryKey' cannot be null.");
+		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
 
-	public <T> T find(Class<T> cls, Object primaryKey, URI context) throws OntoDriverException {
-		ensureOpen(true);
-		if (cls == null || primaryKey == null || context == null) {
-			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey
-					+ ", context = " + context);
-			throw new NullPointerException();
-		}
-		final Context ctx = contexts.get(context);
-		if (ctx == null) {
-			throw new OntoDriverException("Context with URI " + context.toString()
-					+ " not found within this connection.");
-		}
-		return findInternal(cls, primaryKey, ctx, Collections.<String, Context> emptyMap());
-	}
-
-	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, URI entityContext,
-			Map<String, URI> attributeContexts) throws OntoDriverException {
-		ensureOpen(true);
-		if (cls == null || primaryKey == null || entityContext == null || attributeContexts == null) {
-			LOG.severe("Null argument passed: cls = " + cls + ", primaryKey = " + primaryKey
-					+ ", context = " + entityContext + ", attributeContexts = " + attributeContexts);
-			throw new NullPointerException();
-		}
-		final Context ctx = contexts.get(entityContext);
-		if (ctx == null) {
-			throw new OntoDriverException("Context with URI " + entityContext.toString()
-					+ " not found within this connection.");
-		}
-		Map<String, Context> attContexts = resolveAttributeContexts(attributeContexts);
-		return findInternal(cls, primaryKey, ctx, attContexts);
-	}
-
-	private <T> T findInternal(Class<T> cls, Object primaryKey, Context entityContext,
-			Map<String, Context> attContexts) throws OntoDriverException {
-		final T result = storageManager.find(cls, primaryKey, entityContext, attContexts);
-		if (result != null) {
-			registerInternal(result, entityContext);
-		}
+		final T result = storageManager.find(cls, primaryKey, repository);
 		return result;
 	}
 
@@ -181,48 +100,11 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public Context getContext(URI contextUri) throws OntoDriverException {
+	public boolean isConsistent(RepositoryID repository) throws OntoDriverException {
 		ensureOpen(false);
-		if (contextUri == null) {
-			throw new NullPointerException();
-		}
-		return contexts.get(contextUri);
-	}
+		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
 
-	@Override
-	public Context getCurrentContext() throws OntoDriverException {
-		return defaultContext;
-	}
-
-	@Override
-	public List<Context> getContexts() throws OntoDriverException {
-		ensureOpen(false);
-		return storageManager.getAvailableContexts();
-	}
-
-	@Override
-	public Context getSaveContextFor(Object entity) throws OntoDriverException {
-		ensureOpen(false);
-		if (entity == null) {
-			throw new NullPointerException();
-		}
-		Context ctx = entityToContext.get(entity);
-		if (ctx == null) {
-			ctx = defaultContext;
-		}
-		return ctx;
-	}
-
-	@Override
-	public boolean isConsistent(URI context) throws OntoDriverException {
-		if (context == null) {
-			throw new NullPointerException();
-		}
-		final Context ctx = contexts.get(context);
-		if (ctx == null) {
-			throw new OntoDriverException("Unknown context URI " + context);
-		}
-		return storageManager.isConsistent(ctx);
+		return storageManager.isConsistent(repository);
 	}
 
 	@Override
@@ -231,35 +113,26 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
-		if (entity == null || field == null) {
-			LOG.severe("Null argument passed: entity = " + entity + ", field = " + field);
-			throw new NullPointerException();
-		}
-		final Context ctx = entityToContext.get(entity);
-		if (ctx == null) {
-			throw new EntityNotRegisteredException("Entity " + entity
-					+ " is not registered within this connection.");
-		}
-		storageManager.loadFieldValue(entity, field, ctx);
+	public <T> void loadFieldValue(T entity, Field field, RepositoryID repository)
+			throws OntoDriverException {
+		ensureOpen(true);
+		Objects.requireNonNull(entity, "Argument 'entity' cannot be null.");
+		Objects.requireNonNull(field, "Argument 'field' cannot be null.");
+		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
+
+		storageManager.loadFieldValue(entity, field, repository);
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity, Field mergedField)
+	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID repository)
 			throws OntoDriverException {
 		ensureOpen(true);
-		if (primaryKey == null || entity == null) {
-			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", primaryKey = "
-					+ primaryKey);
-			throw new NullPointerException();
-		}
-		final Context ctx = entityToContext.get(entity);
-		if (ctx == null) {
-			throw new EntityNotRegisteredException("Entity " + entity
-					+ " is not registered within this connection.");
-		}
-		storageManager.merge(primaryKey, entity, mergedField, ctx,
-				Collections.<String, Context> emptyMap());
+		Objects.requireNonNull(primaryKey, "Argument 'primaryKey' cannot be null.");
+		Objects.requireNonNull(entity, "Argument 'entity' cannot be null.");
+		Objects.requireNonNull(mergedField, "Argument 'mergedField' cannot be null.");
+		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
+
+		storageManager.merge(primaryKey, entity, mergedField, repository);
 		this.hasChanges = true;
 		if (autoCommit) {
 			commit();
@@ -267,63 +140,15 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException {
+	public <T> void persist(Object primaryKey, T entity, RepositoryID repository)
+			throws OntoDriverException {
 		ensureOpen(true);
-		if (entity == null) {
-			LOG.severe("Null argument passed: entity = " + entity);
-			throw new NullPointerException();
-		}
-		Context ctx = null;
-		ctx = entityToContext.get(entity);
-		if (ctx != null) {
-			persistInternal(primaryKey, entity, ctx, Collections.<String, Context> emptyMap());
-			return;
-		}
-		ctx = defaultContext;
-		persistInternal(primaryKey, entity, ctx, Collections.<String, Context> emptyMap());
-	}
+		// Primary key can be null
+		Objects.requireNonNull(entity, "Argument 'entity' cannot be null.");
+		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
 
-	@Override
-	public <T> void persist(Object primaryKey, T entity, URI context) throws OntoDriverException {
-		ensureOpen(true);
-		if (entity == null || context == null) {
-			LOG.severe("Null argument passed: entity = " + entity + ", context = " + context);
-			throw new NullPointerException();
-		}
-		final Context ctx = contexts.get(context);
-		if (ctx == null) {
-			throw new OntoDriverException("Context with URI " + context.toString()
-					+ " not found within this connection.");
-		}
-		persistInternal(primaryKey, entity, ctx, Collections.<String, Context> emptyMap());
-	}
-
-	@Override
-	public <T> void persist(Object primaryKey, T entity, URI context,
-			Map<String, URI> attributeContexts) throws OntoDriverException {
-		ensureOpen(true);
-		if (entity == null || context == null || attributeContexts == null) {
-			LOG.severe("Null argument passed: entity = " + entity + ", entityContext = " + context
-					+ ", attributeContexts = " + attributeContexts);
-			throw new NullPointerException();
-		}
-		final Context ctx = contexts.get(context);
-		if (ctx == null) {
-			throw new OntoDriverException("Context with URI " + context.toString()
-					+ " not found within this connection.");
-		}
-		final Map<String, Context> attrContexts = resolveAttributeContexts(attributeContexts);
-		persistInternal(primaryKey, entity, ctx, attrContexts);
-	}
-
-	private <T> void persistInternal(Object primaryKey, T entity, Context context,
-			Map<String, Context> attributeContexts) throws OntoDriverException {
-		assert entity != null;
-		assert context != null;
-		assert attributeContexts != null;
-		storageManager.persist(primaryKey, entity, context, attributeContexts);
+		storageManager.persist(primaryKey, entity, repository);
 		this.hasChanges = true;
-		registerInternal(entity, context);
 		if (autoCommit) {
 			commit();
 		}
@@ -336,59 +161,13 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void registerWithContext(T entity, URI context) throws OntoDriverException {
-		ensureOpen(false);
-		if (entity == null || context == null) {
-			throw new NullPointerException();
-		}
-		final Context ctx = contexts.get(context);
-		if (ctx == null) {
-			throw new OntoDriverException("Context with URI " + context.toString()
-					+ " not found within this connection.");
-		}
-		registerInternal(entity, ctx);
-	}
-
-	@Override
-	public <T> void remove(Object primaryKey, T entity) throws OntoDriverException {
+	public <T> void remove(Object primaryKey, RepositoryID repository) throws OntoDriverException {
 		ensureOpen(true);
-		if (primaryKey == null) {
-			LOG.severe("Null argument passed: primaryKey = " + primaryKey);
-			throw new NullPointerException();
-		}
-		Context ctx = entityToContext.get(entity);
-		if (ctx == null) {
-			throw new EntityNotRegisteredException("Entity  " + entity
-					+ " not registered within this connection.");
-		}
-		removeInternal(primaryKey, entity, ctx);
-	}
+		Objects.requireNonNull(primaryKey, "Argument 'primaryKey' cannot be null.");
+		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
 
-	@Override
-	public <T> void remove(Object primaryKey, T entity, URI context) throws OntoDriverException {
-		ensureOpen(true);
-		if (primaryKey == null || context == null) {
-			LOG.severe("Null argument passed: primaryKey = " + primaryKey + ", context = "
-					+ context);
-			throw new NullPointerException();
-		}
-		Context ctx = contexts.get(context);
-		if (ctx == null) {
-			throw new OntoDriverException("Context with URI " + context.toString()
-					+ " not found within this connection.");
-		}
-		if (ctx != entityToContext.get(entity)) {
-			throw new OntoDriverException(
-					"The context of the entity and the context specified by URI are not the same!");
-		}
-		removeInternal(primaryKey, entity, ctx);
-	}
-
-	private void removeInternal(Object primaryKey, Object entity, Context ctx)
-			throws OntoDriverException {
-		storageManager.remove(primaryKey, ctx);
+		storageManager.remove(primaryKey, repository);
 		this.hasChanges = true;
-		entityToContext.remove(entity);
 		if (autoCommit) {
 			commit();
 		}
@@ -414,40 +193,16 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public void setConnectionContext(URI context) throws OntoDriverException {
+	public Repository getRepository(Integer repositoryId) throws OntoDriverException {
 		ensureOpen(false);
-		if (context == null) {
-			throw new NullPointerException();
-		}
-		Context ctx = contexts.get(context);
-		if (ctx == null) {
-			throw new OntoDriverException("Context with URI " + context.toString()
-					+ " not found within this connection.");
-		}
-		this.defaultContext = ctx;
+		Objects.requireNonNull(repositoryId, "Argument 'repositoryId' cannot be null.");
+
+		return repositories.get(repositoryId);
 	}
 
 	@Override
-	public void setSaveContextFor(Object entity, URI context) throws OntoDriverException {
-		ensureOpen(false);
-		if (entity == null || context == null) {
-			throw new NullPointerException();
-		}
-		final Context ctx = contexts.get(context);
-		if (ctx == null) {
-			throw new OntoDriverException("Context with URI " + context.toString()
-					+ " not found within this connection.");
-		}
-		registerInternal(entity, ctx);
-	}
-
-	private void initContexts() throws OntoDriverException {
-		final List<Context> ctxs = getContexts();
-		for (Context ctx : ctxs) {
-			contexts.put(ctx.getUri(), ctx);
-		}
-		// Set the default context
-		this.defaultContext = ctxs.get(0);
+	public List<Repository> getRepositories() throws OntoDriverException {
+		return storageManager.getRepositories();
 	}
 
 	/**
@@ -455,9 +210,7 @@ public class ConnectionImpl implements Connection {
 	 * or {@code rollback});
 	 */
 	private void afterTransactionFinished() {
-		entityToContext.clear();
 		this.hasChanges = false;
-
 	}
 
 	/**
@@ -476,45 +229,5 @@ public class ConnectionImpl implements Connection {
 		if (!open) {
 			throw new OntoDriverException("The connection is closed.");
 		}
-	}
-
-	/**
-	 * Registers the specified {@code entity} with its context within this
-	 * {@code Connection}.
-	 * 
-	 * @param entity
-	 *            The entity
-	 * @param ctx
-	 *            Context
-	 */
-	private void registerInternal(Object entity, Context ctx) {
-		// Possible to add some more code if necessary
-		assert entity != null;
-		assert ctx != null;
-		entityToContext.put(entity, ctx);
-	}
-
-	/**
-	 * Resolves attribute contexts based on the map of attribute names and URIs
-	 * of contexts.
-	 * 
-	 * @param ctxs
-	 *            Map of attribute name -> context URI
-	 * @return Map of attribute name -> Context
-	 * @throws OntoDriverException
-	 *             If any of the contexts is not valid
-	 */
-	private Map<String, Context> resolveAttributeContexts(Map<String, URI> ctxs)
-			throws OntoDriverException {
-		assert ctxs != null;
-		final Map<String, Context> result = new HashMap<String, Context>(ctxs.size());
-		for (Entry<String, URI> e : ctxs.entrySet()) {
-			final Context ctx = contexts.get(e.getValue());
-			if (ctx == null) {
-				throw new OntoDriverException("Context with URI " + e.getValue()
-						+ " not found within this connection.");
-			}
-		}
-		return result;
 	}
 }
