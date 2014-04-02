@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import cz.cvut.kbss.ontodriver.JopaStatement;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageModule;
@@ -21,33 +23,33 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 
 	private static final String JDBC_SCHEME = "jdbc";
 
-	public DriverJenaFactory(List<Context> contexts,
-			Map<Context, OntologyStorageProperties> ctxsToProperties, Map<String, String> properties)
-			throws OntoDriverException {
-		super(contexts, ctxsToProperties, properties);
+	public DriverJenaFactory(List<Repository> repositories,
+			Map<RepositoryID, OntologyStorageProperties> repositoryProperties,
+			Map<String, String> properties) throws OntoDriverException {
+		super(repositories, repositoryProperties, properties);
 	}
 
 	@Override
-	public StorageModule createStorageModule(Context ctx,
+	public StorageModule createStorageModule(RepositoryID repository,
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(ctx, persistenceProvider);
+		ensureState(repository, persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage module.");
 		}
-		final StorageModule m = new OwlapiBasedJenaModule(ctx, persistenceProvider, this);
+		final StorageModule m = new OwlapiBasedJenaModule(repository, persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public JenaStorageConnector createStorageConnector(Context ctx, boolean autoCommit)
+	public JenaStorageConnector createStorageConnector(RepositoryID repository, boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(ctx);
+		ensureState(repository);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage connector.");
 		}
-		final OntologyStorageProperties props = reposToProperties.get(ctx);
+		final OntologyStorageProperties props = storageProperties.get(repository);
 		final JenaStorageType storageType = resolveStorageType(props);
 		JenaStorageConnector c = null;
 		switch (storageType) {

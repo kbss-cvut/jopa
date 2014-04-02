@@ -1,11 +1,9 @@
 package cz.cvut.kbss.ontodriver;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,29 +18,29 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	protected static final Logger LOG = Logger.getLogger(DriverAbstractFactory.class.getName());
 
 	protected final List<Repository> repositories;
-	protected final Set<RepositoryID> repoIds;
 
 	private final Map<StorageConnector, StorageConnector> openedConnectors;
 	private final Map<StorageModule, StorageModule> openedModules;
+	protected final Map<RepositoryID, OntologyStorageProperties> storageProperties;
 	protected final Map<String, String> properties;
 
 	private boolean open;
 
-	protected DriverAbstractFactory(List<Repository> repositories, Map<String, String> properties) {
+	protected DriverAbstractFactory(List<Repository> repositories,
+			Map<RepositoryID, OntologyStorageProperties> storageProperties,
+			Map<String, String> properties) {
 		Objects.requireNonNull(repositories, ErrorUtils.constructNPXMessage("repositories"));
-		if (repositories.isEmpty()) {
-			throw new IllegalArgumentException(
-					"There has to be at least one storage context specified.");
+		Objects.requireNonNull(storageProperties,
+				ErrorUtils.constructNPXMessage("storageProperties"));
+		if (repositories.isEmpty() || storageProperties.isEmpty()) {
+			throw new IllegalArgumentException("There has to be at least one repository specified.");
 		}
 		if (properties == null) {
 			properties = Collections.emptyMap();
 		}
 
 		this.repositories = repositories;
-		this.repoIds = new HashSet<>(repositories.size());
-		for (Repository r : repositories) {
-			repoIds.add(r.createRepositoryID(false));
-		}
+		this.storageProperties = storageProperties;
 		this.openedConnectors = new ConcurrentHashMap<StorageConnector, StorageConnector>();
 		this.openedModules = new ConcurrentHashMap<StorageModule, StorageModule>();
 		this.open = true;
@@ -150,7 +148,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		if (repository == null) {
 			throw new NullPointerException("Repository cannot be null.");
 		}
-		if (!repoIds.contains(repository)) {
+		if (!storageProperties.containsKey(repository)) {
 			throw new OntoDriverException("Repository " + repository + " not found.");
 		}
 	}

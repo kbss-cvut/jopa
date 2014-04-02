@@ -2,7 +2,8 @@ package cz.cvut.kbss.ontodriver.impl.jena;
 
 import java.lang.reflect.Field;
 
-import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -12,9 +13,9 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class JenaStorageModule extends StorageModule {
 
-	public JenaStorageModule(Context context, PersistenceProviderFacade persistenceProvider,
+	public JenaStorageModule(Repository repository, PersistenceProviderFacade persistenceProvider,
 			DriverFactory factory) throws OntoDriverException {
-		super(context, persistenceProvider, factory);
+		super(repository, persistenceProvider, factory);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -31,44 +32,53 @@ public class JenaStorageModule extends StorageModule {
 	}
 
 	@Override
-	protected void initialize() {
+	protected void initialize() throws OntoDriverException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public boolean contains(Object primaryKey) throws OntoDriverException {
+	public boolean contains(Object primaryKey, RepositoryID contexts) throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException {
+	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID contexts)
+			throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
+	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException {
 		// TODO Auto-generated method stub
-
+		return false;
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity, Field mergedField)
+	public <T> void loadFieldValue(T entity, Field field, RepositoryID contexts)
 			throws OntoDriverException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException {
+	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID context)
+			throws OntoDriverException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void remove(Object primaryKey) throws OntoDriverException {
+	public <T> void persist(Object primaryKey, T entity, RepositoryID context)
+			throws OntoDriverException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void remove(Object primaryKey, RepositoryID context) throws OntoDriverException {
 		// TODO Auto-generated method stub
 
 	}
@@ -85,9 +95,4 @@ public class JenaStorageModule extends StorageModule {
 
 	}
 
-	@Override
-	public boolean isConsistent() throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return false;
-	}
 }

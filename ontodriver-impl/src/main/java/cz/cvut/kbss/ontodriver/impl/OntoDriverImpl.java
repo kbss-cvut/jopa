@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.OntoDriver;
@@ -39,19 +40,10 @@ public class OntoDriverImpl implements OntoDriver {
 	protected final Map<String, String> properties;
 	protected final Map<OntologyConnectorType, DriverFactory> factories;
 	private final Map<Integer, OntologyConnectorType> factoryTypes;
+	private final Map<RepositoryID, OntologyStorageProperties> storageProperties;
 	/** Reference for easier access */
 	protected final List<Repository> repositories;
 	private boolean open;
-
-	protected OntoDriverImpl() {
-		super();
-		this.factoryClasses = new HashMap<OntologyConnectorType, Constructor<? extends DriverFactory>>();
-		this.properties = Collections.emptyMap();
-		this.factories = new HashMap<OntologyConnectorType, DriverFactory>();
-		this.repositories = new ArrayList<>();
-		this.factoryTypes = new HashMap<>();
-		this.open = true;
-	}
 
 	public OntoDriverImpl(List<OntologyStorageProperties> storageProperties) {
 		Objects.requireNonNull(storageProperties,
@@ -62,6 +54,7 @@ public class OntoDriverImpl implements OntoDriver {
 		this.factoryClasses = new HashMap<OntologyConnectorType, Constructor<? extends DriverFactory>>();
 		this.repositories = new ArrayList<>(storageProperties.size());
 		this.properties = Collections.emptyMap();
+		this.storageProperties = new HashMap<>(storageProperties.size());
 		this.factoryTypes = new HashMap<>(storageProperties.size());
 		this.factories = initFactories();
 		this.open = true;
@@ -81,6 +74,7 @@ public class OntoDriverImpl implements OntoDriver {
 		this.properties = properties;
 		this.factoryTypes = new HashMap<>(storageProperties.size());
 		this.repositories = new ArrayList<>(storageProperties.size());
+		this.storageProperties = new HashMap<>(storageProperties.size());
 		resolveContexts(storageProperties);
 		this.factories = initFactories();
 		this.open = true;
@@ -166,8 +160,6 @@ public class OntoDriverImpl implements OntoDriver {
 	/**
 	 * Creates factory instances based on the registered classes. </p>
 	 * 
-	 * @param props
-	 *            Storage properties containing data about ontology storages
 	 * @return map of connector types and factories for them
 	 * @see #registerFactoryClass(OntologyConnectorType, Class)
 	 */
@@ -178,7 +170,7 @@ public class OntoDriverImpl implements OntoDriver {
 				.entrySet()) {
 			final Constructor<? extends DriverFactory> c = e.getValue();
 			try {
-				final DriverFactory f = c.newInstance(repositories, properties);
+				final DriverFactory f = c.newInstance(repositories, storageProperties, properties);
 				facts.put(e.getKey(), f);
 			} catch (InstantiationException ex) {
 				LOG.severe("Unable to initialize factory. + " + e.toString());
@@ -196,16 +188,17 @@ public class OntoDriverImpl implements OntoDriver {
 	/**
 	 * Resolves contexts from the specified storage properties list. </p>
 	 * 
-	 * @param storageProperties
+	 * @param storageProps
 	 *            List of storage properties
 	 * @return Map with storage properties mapped by the resolved contexts
 	 */
-	private void resolveContexts(List<OntologyStorageProperties> storageProperties) {
-		assert storageProperties != null;
-		for (OntologyStorageProperties p : storageProperties) {
+	private void resolveContexts(List<OntologyStorageProperties> storageProps) {
+		assert storageProps != null;
+		for (OntologyStorageProperties p : storageProps) {
 			final Repository r = new Repository(p.getPhysicalURI());
 			repositories.add(r);
 			factoryTypes.put(r.getId(), p.getConnectorType());
+			storageProperties.put(r.createRepositoryID(false), p);
 		}
 		// TODO
 		// OntologyProfileChecker.checkProfiles(contextsToProperties);
@@ -254,7 +247,7 @@ public class OntoDriverImpl implements OntoDriver {
 					}
 					// This cast is safe thanks to the check above
 					final Constructor<? extends DriverFactory> ctor = (Constructor<? extends DriverFactory>) factoryClass
-							.getConstructor(List.class, Map.class);
+							.getConstructor(List.class, Map.class, Map.class);
 					factoryClasses.put(t, ctor);
 				} catch (ClassNotFoundException e) {
 					throw new OntoDriverInitializationException("Class " + factoryClassName
@@ -271,7 +264,7 @@ public class OntoDriverImpl implements OntoDriver {
 				final Class<? extends DriverFactory> cls = DEFAULT_FACTORY_CLASSES.get(t);
 				try {
 					final Constructor<? extends DriverFactory> ctor = cls.getConstructor(
-							List.class, Map.class);
+							List.class, Map.class, Map.class);
 					factoryClasses.put(t, ctor);
 				} catch (NoSuchMethodException e) {
 					// Shouldn't happen

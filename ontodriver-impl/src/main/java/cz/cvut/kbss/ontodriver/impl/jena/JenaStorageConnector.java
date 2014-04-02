@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +30,7 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OntologyMutable;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiConnectorDataHolder;
+import cz.cvut.kbss.ontodriver.impl.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.impl.utils.OntoDriverConstants;
 
 abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
@@ -52,9 +54,10 @@ abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 	public JenaStorageConnector(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		super();
-		if (storageProperties == null || properties == null) {
-			throw new NullPointerException("Neither StorageProperties nor properties can be null.");
-		}
+		Objects.requireNonNull(storageProperties,
+				ErrorUtils.constructNPXMessage("storageProperties"));
+		Objects.requireNonNull(properties, ErrorUtils.constructNPXMessage("properties"));
+
 		this.ontologyUri = storageProperties.getOntologyURI();
 		this.physicalUri = storageProperties.getPhysicalURI();
 		this.reasonerFactoryClass = properties
@@ -108,14 +111,13 @@ abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {
 
 	@Override
 	public void applyOntologyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
-		if (changes == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(changes, ErrorUtils.constructNPXMessage("changes"));
 		if (changes.isEmpty()) {
 			return;
 		}
 		assert ontologyManager != null;
 		assert workingOntology != null;
+
 		try {
 			for (OWLOntologyChange change : changes) {
 				if (change.getOntology().getOntologyID().equals(workingOntology.getOntologyID())) {

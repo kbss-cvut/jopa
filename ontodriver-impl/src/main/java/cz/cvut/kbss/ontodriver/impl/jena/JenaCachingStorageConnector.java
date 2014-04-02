@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl.jena;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -17,6 +18,7 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiConnectorDataHolder;
+import cz.cvut.kbss.ontodriver.impl.utils.ErrorUtils;
 
 public class JenaCachingStorageConnector implements OwlapiBasedJenaConnector {
 
@@ -31,9 +33,7 @@ public class JenaCachingStorageConnector implements OwlapiBasedJenaConnector {
 	private boolean open;
 
 	public JenaCachingStorageConnector(OwlapiBasedJenaConnector connector) {
-		if (connector == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(connector, ErrorUtils.constructNPXMessage("connector"));
 		this.connector = connector;
 	}
 
