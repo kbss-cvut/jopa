@@ -154,7 +154,7 @@ public class OntoDriverImplTest {
 		final List<Repository> reps = (List<Repository>) r.get(driver);
 		assertEquals(1, reps.size());
 		final Repository re = reps.get(0);
-		final DriverFactory f = driver.getFactory(re);
+		final DriverFactory f = driver.getFactory(re.createRepositoryID(false));
 		assertNotNull(f);
 		assertSame(DriverFactoryStub.instance, f);
 	}
@@ -162,7 +162,7 @@ public class OntoDriverImplTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testGetFactoryUnknown() throws Exception {
 		final Repository r = new Repository(URI.create("http://unknown"));
-		final DriverFactory f = driver.getFactory(r);
+		final DriverFactory f = driver.getFactory(r.createRepositoryID(false));
 		// This shouldn't be reached
 		assert f == null;
 	}

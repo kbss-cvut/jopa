@@ -1258,7 +1258,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		assert entity != null;
 		assert repository != null;
 		try {
-			storageConnection.remove(primaryKey, entity, repository);
+			storageConnection.remove(primaryKey, repository);
 		} catch (MetamodelNotSetException e) {
 			throw new OWLPersistenceException(e);
 		} catch (OntoDriverException e) {

@@ -130,10 +130,10 @@ public class OntoDriverImpl implements OntoDriver {
 	 *             If the repository id is unknown or there is no factory for
 	 *             its type
 	 */
-	public DriverFactory getFactory(Repository repository) {
+	public DriverFactory getFactory(RepositoryID repository) {
 		ensureOpen();
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
-		final Integer repoId = repository.getId();
+		final Integer repoId = repository.getRepository();
 		if (repoId < 0) {
 			throw new IllegalArgumentException("Unknown repository " + repository);
 		}

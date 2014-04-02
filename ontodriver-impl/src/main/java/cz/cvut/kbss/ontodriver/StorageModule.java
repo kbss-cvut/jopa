@@ -84,6 +84,15 @@ public abstract class StorageModule implements Transactional {
 	}
 
 	/**
+	 * Gets repository identifier.
+	 * 
+	 * @return Repository identifier
+	 */
+	public RepositoryID getRepositoryID() {
+		return repositoryId;
+	}
+
+	/**
 	 * Gets metamodel associated with this storage module.
 	 * 
 	 * @return Metamodel

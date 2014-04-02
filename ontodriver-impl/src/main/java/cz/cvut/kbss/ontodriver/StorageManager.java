@@ -234,13 +234,12 @@ public abstract class StorageManager implements Transactional {
 	/**
 	 * Ensures that this storage manager is in valid status.
 	 * 
-	 * @throws OntoDriverException
+	 * @throws IllegalStateException
 	 * @throws MetamodelNotSetException
 	 */
 	protected void ensureState() throws OntoDriverException, MetamodelNotSetException {
 		if (!open) {
-			throw new OntoDriverException(
-					new IllegalStateException("The StorageManager is closed."));
+			throw new IllegalStateException("The StorageManager is closed.");
 		}
 		if (persistenceProvider == null || persistenceProvider.getMetamodel() == null) {
 			throw new MetamodelNotSetException();

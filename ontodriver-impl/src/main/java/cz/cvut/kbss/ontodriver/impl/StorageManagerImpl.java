@@ -1,7 +1,6 @@
 package cz.cvut.kbss.ontodriver.impl;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,8 +29,8 @@ public class StorageManagerImpl extends StorageManager {
 	/** Repositories */
 	private List<Repository> repositories;
 	/** Storage modules */
-	private List<StorageModule> modules;
-	private Map<Integer, StorageModule> modulesWithChanges;
+	private final Map<RepositoryID, StorageModule> modules;
+	private final Map<RepositoryID, StorageModule> modulesWithChanges;
 
 	/**
 	 * Constructor
@@ -50,8 +49,8 @@ public class StorageManagerImpl extends StorageManager {
 			throw new IllegalArgumentException("Contexts list cannot be empty.");
 		}
 		this.driver = Objects.requireNonNull(driver, ErrorUtils.constructNPXMessage("driver"));
-		this.modulesWithChanges = new HashMap<Integer, StorageModule>();
-		initModules();
+		this.modulesWithChanges = new HashMap<>(repositories.size());
+		this.modules = new HashMap<>(repositories.size());
 	}
 
 	@Override
@@ -59,11 +58,11 @@ public class StorageManagerImpl extends StorageManager {
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("Closing the storage manager.");
 		}
-		for (StorageModule m : modules) {
+		for (StorageModule m : modules.values()) {
 			// Just close the module, any pending changes will be rolled back
 			// implicitly
 			if (m != null) {
-				driver.getFactory(m.getRepository()).releaseStorageModule(m);
+				driver.getFactory(m.getRepositoryID()).releaseStorageModule(m);
 			}
 		}
 		super.close();
@@ -85,7 +84,6 @@ public class StorageManagerImpl extends StorageManager {
 		}
 		ensureState();
 		Objects.requireNonNull(statement, ErrorUtils.constructNPXMessage("statement"));
-		checkForIdentifierValidity(statement.getRepository());
 		final StorageModule m = getModule(statement.getRepository());
 		return m.executeStatement(statement);
 	}
@@ -99,7 +97,6 @@ public class StorageManagerImpl extends StorageManager {
 		ensureState();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
-		checkForIdentifierValidity(repository);
 
 		final StorageModule m = getModule(repository);
 		return m.contains(primaryKey, repository);
@@ -116,7 +113,6 @@ public class StorageManagerImpl extends StorageManager {
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
-		checkForIdentifierValidity(repository);
 
 		final StorageModule module = getModule(repository);
 		final T entity = module.find(cls, primaryKey, repository);
@@ -127,7 +123,6 @@ public class StorageManagerImpl extends StorageManager {
 	public boolean isConsistent(RepositoryID repository) throws OntoDriverException {
 		ensureState();
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
-		checkForIdentifierValidity(repository);
 
 		final StorageModule m = getModule(repository);
 		return m.isConsistent(repository);
@@ -145,7 +140,6 @@ public class StorageManagerImpl extends StorageManager {
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
-		checkForIdentifierValidity(repository);
 
 		final StorageModule m = getModule(repository);
 		m.loadFieldValue(entity, field, repository);
@@ -163,11 +157,10 @@ public class StorageManagerImpl extends StorageManager {
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(mergedField, ErrorUtils.constructNPXMessage("mergedField"));
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
-		checkForIdentifierValidity(repository);
 
 		final StorageModule module = getModule(repository);
 		module.merge(primaryKey, entity, mergedField, repository);
-		modulesWithChanges.put(repository.getRepository(), module);
+		moduleChanged(module);
 	}
 
 	@Override
@@ -179,11 +172,10 @@ public class StorageManagerImpl extends StorageManager {
 		ensureState();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
-		checkForIdentifierValidity(repository);
 
 		final StorageModule module = getModule(repository);
 		module.persist(primaryKey, entity, repository);
-		modulesWithChanges.put(repository.getRepository(), module);
+		moduleChanged(module);
 	}
 
 	@Override
@@ -195,11 +187,10 @@ public class StorageManagerImpl extends StorageManager {
 		ensureState();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
-		checkForIdentifierValidity(repository);
 
 		StorageModule module = getModule(repository);
 		module.remove(primaryKey, repository);
-		modulesWithChanges.put(repository.getRepository(), module);
+		moduleChanged(module);
 	}
 
 	@Override
@@ -224,31 +215,19 @@ public class StorageManagerImpl extends StorageManager {
 		}
 	}
 
-	private void checkForIdentifierValidity(RepositoryID identifier) throws OntoDriverException {
-		assert identifier != null;
-		if (identifier.getRepository() < 0) {
-			throw new IllegalArgumentException("Unknown repository identifier " + identifier
-					+ ". No such repository is managed by this StorageManager.");
-		}
-	}
-
-	private void initModules() {
-		this.modules = new ArrayList<>(repositories.size());
-		final int len = repositories.size();
-		for (int i = 0; i < len; i++) {
-			modules.add(null);
-		}
+	private void moduleChanged(StorageModule m) {
+		assert m != null;
+		modulesWithChanges.put(m.getRepositoryID(), m);
 	}
 
 	private StorageModule getModule(RepositoryID identifier) throws OntoDriverException {
 		assert identifier != null;
-		assert (identifier.getRepository() >= 0 && identifier.getRepository() < repositories.size());
 
-		StorageModule m = modules.get(identifier.getRepository());
+		StorageModule m = modules.get(identifier);
 		if (m == null) {
-			final Repository r = repositories.get(identifier.getRepository());
-			m = driver.getFactory(r).createStorageModule(identifier, persistenceProvider, false);
-			modules.set(r.getId(), m);
+			m = driver.getFactory(identifier).createStorageModule(identifier, persistenceProvider,
+					false);
+			modules.put(identifier, m);
 		}
 		return m;
 	}

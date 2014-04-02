@@ -5,253 +5,246 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
-import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import cz.cvut.kbss.ontodriver.Context;
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.ontodriver.DriverFactory;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageManager;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.StorageModule;
+import cz.cvut.kbss.ontodriver.impl.OntoDriverImpl;
 import cz.cvut.kbss.ontodriver.impl.StorageManagerImpl;
-import cz.cvut.kbss.ontodriver.utils.DriverFactoryStub;
 import cz.cvut.kbss.ontodriver.utils.OWLClassA;
-import cz.cvut.kbss.ontodriver.utils.OWLClassB;
-import cz.cvut.kbss.ontodriver.utils.OntoDriverMock;
-import cz.cvut.kbss.ontodriver.utils.PersistenceProviderMock;
-import cz.cvut.kbss.ontodriver.utils.StorageModuleMock;
 
 public class StorageManagerTest {
 
-	private static final Logger LOG = Logger.getLogger(StorageManagerTest.class.getName());
+	private static List<Repository> repositories;
 
-	private static OntoDriverMock driver;
-	private static DriverFactoryStub factory;
+	@Mock
+	private PersistenceProviderFacade facadeMock;
+	@Mock
+	private Metamodel metamodelMock;
 
-	private static StorageManager manager;
+	@Mock
+	private OntoDriverImpl driverMock;
+
+	@Mock
+	private DriverFactory factoryMoc;
+
+	@Mock
+	private StorageModule moduleMock;
+
+	private StorageManager manager;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		driver = new OntoDriverMock();
-		factory = driver.getFactoryMock();
-		manager = new StorageManagerImpl(new PersistenceProviderMock(), factory.getContexts(),
-				driver);
+		repositories = new ArrayList<>(4);
+		for (int i = 0; i < 4; i++) {
+			repositories.add(new Repository(URI.create("http://testing-repository.org/v/" + i)));
+		}
 	}
 
-	@After
-	public void tearDown() throws Exception {
-		manager = new StorageManagerImpl(new PersistenceProviderMock(), factory.getContexts(),
-				driver);
-		factory.reset();
+	@Before
+	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
+		when(driverMock.getFactory(any(RepositoryID.class))).thenReturn(factoryMoc);
+		when(factoryMoc.createStorageModule(any(RepositoryID.class), eq(facadeMock), anyBoolean()))
+				.thenReturn(moduleMock);
+		when(moduleMock.contains(any(), any(RepositoryID.class))).thenReturn(Boolean.FALSE);
+		when(facadeMock.getMetamodel()).thenReturn(metamodelMock);
+
+		this.manager = new StorageManagerImpl(facadeMock, repositories, driverMock);
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testStorageManagerImplNull() {
+		final StorageManager res = new StorageManagerImpl(null, repositories, null);
+		// This shouldn't be reached
+		assert res == null;
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testStorageManagerImplEmptyRepositories() {
+		final StorageManager res = new StorageManagerImpl(facadeMock,
+				Collections.<Repository> emptyList(), driverMock);
+		// This shouldn't be reached
+		assert res == null;
 	}
 
 	@Test
 	public void testClose() throws Exception {
-		LOG.config("Test: close the manager.");
-		final List<Context> ctxs = factory.getContexts();
-		final URI u = URI.create("http://testUri");
-		// Make sure all modules are open
-		for (Context c : ctxs) {
-			manager.contains(u, c);
-		}
+		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final URI pk = URI.create("http://blabla");
+		// Just to trigger module creation
+		manager.contains(pk, rid);
+
+		assertTrue(manager.isOpen());
 		manager.close();
 		assertFalse(manager.isOpen());
-		for (StorageModuleMock m : DriverFactoryStub.getDefaultModules().values()) {
-			assertFalse(m.isOpen());
-		}
+		verify(factoryMoc).releaseStorageModule(moduleMock);
+	}
+
+	@Test
+	public void testContains() throws Exception {
+		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final URI pk = URI.create("http://do-you-contain-me");
+		when(moduleMock.contains(pk, rid)).thenReturn(Boolean.TRUE);
+
+		final boolean res = manager.contains(pk, rid);
+		assertTrue(res);
+		verify(factoryMoc).createStorageModule(eq(rid), eq(facadeMock), anyBoolean());
+		verify(moduleMock).contains(pk, rid);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testContainsOnClosed() throws Exception {
+		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final URI pk = URI.create("http://do-you-contain-me");
+		when(moduleMock.contains(pk, rid)).thenReturn(Boolean.TRUE);
+
+		manager.close();
+		manager.contains(pk, rid);
 	}
 
 	@Test
 	public void testFind() throws Exception {
-		LOG.config("Test: find.");
-		final StorageModuleMock e = DriverFactoryStub.getDefaultModules().get(
-				factory.getContexts().get(0));
-		final Context ctx = e.getContext();
-		final Object pk = e.getUris().get(0);
-		final Object entity = e.getEntities().get(pk);
+		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final URI pk = URI.create("http://do-you-contain-me");
+		final OWLClassA a = new OWLClassA();
+		when(moduleMock.find(OWLClassA.class, pk, rid)).thenReturn(a);
 
-		final Object res = manager.find(entity.getClass(), pk, ctx,
-				Collections.<String, Context> emptyMap());
+		final OWLClassA res = manager.find(OWLClassA.class, pk, rid);
 		assertNotNull(res);
-		assertEquals(entity, res);
+		verify(factoryMoc).createStorageModule(eq(rid), eq(facadeMock), anyBoolean());
+		verify(moduleMock).find(OWLClassA.class, pk, rid);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test(expected = NullPointerException.class)
 	public void testFindNull() throws Exception {
-		LOG.config("Test: find entity, null primary key passed.");
-		@SuppressWarnings("unused")
-		final Object res = manager.find(OWLClassA.class, null, factory.getContexts().get(0),
-				Collections.<String, Context> emptyMap());
-		fail("This line should not have been reached.");
+		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		when(moduleMock.find(any(Class.class), any(), any(RepositoryID.class))).thenThrow(
+				UnsupportedOperationException.class);
+		try {
+			final OWLClassA res = manager.find(OWLClassA.class, null, rid);
+			// This shouldn't be reached
+			assert res == null;
+		} finally {
+			verify(moduleMock, never()).find(any(Class.class), any(), any(RepositoryID.class));
+		}
 	}
 
-	@Test(expected = OntoDriverException.class)
-	public void testFindUnknownContext() throws Exception {
-		LOG.config("Test: find entity. Unknown context.");
-		final StorageModuleMock e = DriverFactoryStub.getDefaultModules().get(
-				factory.getContexts().get(0));
-		final Object pk = e.getUris().get(0);
-		final Object entity = e.getEntities().get(pk);
-		final Context unknown = new Context(URI.create("http://unknown.context"),
-				OntologyConnectorType.JENA);
+	@Test
+	public void testFindUnknown() throws Exception {
+		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final URI pk = URI.create("http://do-you-contain-me");
+		when(moduleMock.find(OWLClassA.class, pk, rid)).thenReturn(null);
 
-		manager.find(entity.getClass(), pk, unknown, Collections.<String, Context> emptyMap());
-		fail("This line should not have been reached.");
+		final OWLClassA res = manager.find(OWLClassA.class, pk, rid);
+		assertNull(res);
+		verify(factoryMoc).createStorageModule(eq(rid), eq(facadeMock), anyBoolean());
+		verify(moduleMock).find(OWLClassA.class, pk, rid);
 	}
 
 	@Test
 	public void testIsConsistent() throws Exception {
-		LOG.config("Test: consistency check.");
-		final boolean res = manager.isConsistent(factory.getContexts().get(0));
+		final RepositoryID rid = repositories.get(1).createRepositoryID(false);
+		when(moduleMock.isConsistent(rid)).thenReturn(Boolean.TRUE);
+
+		final boolean res = manager.isConsistent(rid);
 		assertTrue(res);
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testIsConsistentNull() throws Exception {
-		LOG.config("Test: consistency check. Null passed as URI.");
-		@SuppressWarnings("unused")
-		final boolean res = manager.isConsistent(null);
-		fail("This line should not have been reached.");
+		verify(moduleMock).isConsistent(rid);
 	}
 
 	@Test
-	public void testGetAvailableContexts() {
-		LOG.config("Test: get contexts.");
-		final List<Context> contexts = factory.getContexts();
-		final List<Context> res = manager.getAvailableContexts();
-		assertNotNull(res);
-		assertEquals(contexts.size(), res.size());
-		assertTrue(res.containsAll(contexts));
+	public void testGetRepositories() {
+		final List<Repository> res = manager.getRepositories();
+		assertEquals(repositories, res);
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void testGetRepositoriesModify() {
+		final List<Repository> res = manager.getRepositories();
+		assertFalse(res.isEmpty());
+		res.remove(0);
 	}
 
 	@Test
-	public void testGetContextsByUris() {
-		LOG.config("Test: get contexts by URIs.");
-		final Map<URI, Context> res = manager.getContextsByUris();
-		assertNotNull(res);
-		final List<Context> ctxs = factory.getContexts();
-		assertEquals(ctxs.size(), res.size());
-		for (Context ctx : ctxs) {
-			assertTrue(res.containsKey(ctx.getUri()));
-			assertEquals(ctx, res.get(ctx.getUri()));
-		}
+	public void testLoadFieldValue() throws Exception {
+		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final OWLClassA a = new OWLClassA();
+		final Field f = OWLClassA.getStrAttField();
+
+		manager.loadFieldValue(a, f, rid);
+		verify(moduleMock).loadFieldValue(a, f, rid);
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testLoadFieldValueNull() throws Exception {
-		LOG.config("Test: load field value. Null entity.");
-		manager.loadFieldValue(null, OWLClassA.class.getDeclaredFields()[0], factory.getContexts()
-				.get(0));
-		fail("This line should not have been reached.");
+		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final Field f = OWLClassA.getStrAttField();
+
+		try {
+			manager.loadFieldValue(null, f, rid);
+		} finally {
+			verify(moduleMock, never()).loadFieldValue(any(), eq(f), eq(rid));
+		}
 	}
 
 	@Test
 	public void testMerge() throws Exception {
-		LOG.config("Test: merge entity.");
-		final StorageModuleMock e = DriverFactoryStub.getDefaultModules().get(
-				factory.getContexts().get(1));
-		final Context ctx = e.getContext();
-		final OWLClassB merged = new OWLClassB();
-		merged.setUri(URI.create("http://mergedB"));
-		merged.setStringAttribute("mergedBStringAttribute");
-		final Field f = OWLClassB.getStrAttField();
-		// Simulate merging by passing new entity
-		manager.merge(merged.getUri(), merged, f, ctx, Collections.<String, Context> emptyMap());
-		final OWLClassB res = (OWLClassB) e.getEntities().get(merged.getUri());
-		assertNotNull(res);
+		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final URI pk = URI.create("http://do-you-contain-me");
+		final OWLClassA a = new OWLClassA();
+		final Field f = OWLClassA.getStrAttField();
+		final Field changesField = StorageManagerImpl.class.getDeclaredField("modulesWithChanges");
+		changesField.setAccessible(true);
+		@SuppressWarnings("unchecked")
+		final Map<RepositoryID, StorageModule> changes = (Map<RepositoryID, StorageModule>) changesField
+				.get(manager);
+		assertTrue(changes.isEmpty());
+
+		manager.merge(pk, a, f, rid);
+		verify(moduleMock).merge(pk, a, f, rid);
+		assertFalse(changes.isEmpty());
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testMergeNull() throws Exception {
-		LOG.config("Test: merge. Null passed.");
-		final Field f = OWLClassB.getStrAttField();
-		manager.merge(null, null, f, factory.getContexts().get(0),
-				Collections.<String, Context> emptyMap());
-		fail("This line should not have been reached.");
+		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final URI pk = URI.create("http://do-you-contain-me");
+		final Field f = OWLClassA.getStrAttField();
+		final Field changesField = StorageManagerImpl.class.getDeclaredField("modulesWithChanges");
+		changesField.setAccessible(true);
+		@SuppressWarnings("unchecked")
+		final Map<RepositoryID, StorageModule> changes = (Map<RepositoryID, StorageModule>) changesField
+				.get(manager);
+		assertTrue(changes.isEmpty());
+		try {
+			manager.merge(pk, null, f, rid);
+		} finally {
+			assertTrue(changes.isEmpty());
+			verify(moduleMock, never()).merge(eq(pk), any(), eq(f), eq(rid));
+		}
 	}
-
-	@Test
-	public void testPersist() throws Exception {
-		LOG.config("Test: persist.");
-		final StorageModuleMock e = DriverFactoryStub.getDefaultModules().get(
-				factory.getContexts().get(1));
-		final Context ctx = e.getContext();
-		final OWLClassB toPersist = new OWLClassB();
-		toPersist.setUri(URI.create("http://toPersistB"));
-		toPersist.setStringAttribute("toPersistStringAttribute");
-		assertFalse(manager.contains(toPersist.getUri(), ctx));
-		manager.persist(toPersist.getUri(), toPersist, ctx,
-				Collections.<String, Context> emptyMap());
-		assertTrue(manager.contains(toPersist.getUri(), ctx));
-		final Object res = e.getEntities().get(toPersist.getUri());
-		assertNotNull(res);
-	}
-
-	@Test(expected = OntoDriverException.class)
-	public void testPersistUnknownContext() throws Exception {
-		LOG.config("Test: persist. Unknown context.");
-		final OWLClassB toPersist = new OWLClassB();
-		toPersist.setUri(URI.create("http://toPersistB"));
-		toPersist.setStringAttribute("toPersistStringAttribute");
-		final Context unknown = new Context(URI.create("http://unknownContext"),
-				OntologyConnectorType.OWLAPI);
-		manager.persist(toPersist.getUri(), toPersist, unknown,
-				Collections.<String, Context> emptyMap());
-		fail("This line should not have been reached.");
-	}
-
-	@Test
-	public void testRemove() throws Exception {
-		LOG.config("Test: remove.");
-		final StorageModuleMock e = DriverFactoryStub.getDefaultModules().get(
-				factory.getContexts().get(0));
-		final Context ctx = e.getContext();
-		final Object pk = e.getUris().get(0);
-		assertTrue(manager.contains(pk, ctx));
-		manager.remove(pk, ctx);
-		assertFalse(manager.contains(pk, ctx));
-		final Object res = e.getEntities().get(pk);
-		assertNull(res);
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testStorageManagerImpl() {
-		LOG.config("Test: constructor. Null passed.");
-		final StorageManager m = new StorageManagerImpl(null, factory.getContexts(), null);
-		fail("This line should not have been reached.");
-		m.isOpen();
-	}
-
-	// TODO Should modules be reloaded on commit?
-	// @Test
-	// public void testCommit() {
-	// fail("Not yet implemented");
-	// }
-
-	@Test
-	public void testRollback() throws Exception {
-		LOG.config("Test: rollback.");
-		final StorageModuleMock e = DriverFactoryStub.getDefaultModules().get(
-				factory.getContexts().get(1));
-		final Context ctx = e.getContext();
-		final OWLClassB toPersist = new OWLClassB();
-		toPersist.setUri(URI.create("http://toPersistB"));
-		toPersist.setStringAttribute("toPersistStringAttribute");
-		assertFalse(manager.contains(toPersist.getUri(), ctx));
-		manager.persist(toPersist.getUri(), toPersist, ctx,
-				Collections.<String, Context> emptyMap());
-		assertTrue(manager.contains(toPersist.getUri(), ctx));
-		manager.rollback();
-		assertFalse(manager.contains(toPersist.getUri(), ctx));
-	}
-
 }

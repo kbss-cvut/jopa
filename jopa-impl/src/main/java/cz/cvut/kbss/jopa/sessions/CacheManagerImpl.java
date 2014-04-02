@@ -44,6 +44,8 @@ public class CacheManagerImpl implements CacheManager {
 
 	private Set<Class<?>> inferredClasses;
 
+	// TODO Rewrite this. There's no guarantee that the repository ids will be
+	// in a sequence one after another
 	private final List<Map<URI, Map<Class<?>, Map<Object, Object>>>> objCache;
 	// The sweeper will work on repository context level
 	private final List<Map<URI, Long>> ttls;
