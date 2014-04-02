@@ -6,9 +6,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import cz.cvut.kbss.ontodriver.JopaStatement;
-import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.DriverFactory;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.StorageModule;
@@ -23,10 +24,10 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 
 	private OwlapiConnectorDataHolder data;
 
-	public ModularizingOwlapiStorageModule(Context context,
+	public ModularizingOwlapiStorageModule(Repository repository,
 			PersistenceProviderFacade persistenceProvider, DriverFactory factory)
 			throws OntoDriverException {
-		super(context, persistenceProvider, factory);
+		super(repository, persistenceProvider, factory);
 	}
 
 	@Override
@@ -58,84 +59,66 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 
 	@Override
 	protected void initialize() throws OntoDriverException {
-		this.connector = (ModularizingStorageConnector) factory.createStorageConnector(context,
-				false);
-		if (!primaryKeyCounters.containsKey(context)) {
-			primaryKeyCounters.put(context, new AtomicInteger(connector.getClassAssertionsCount()));
+		this.connector = (ModularizingStorageConnector) factory.createStorageConnector(
+				repositoryId, false);
+		if (!primaryKeyCounters.containsKey(repository.getId())) {
+			primaryKeyCounters.put(repository.getId(),
+					new AtomicInteger(connector.getClassAssertionsCount()));
 		}
-		this.data = connector.extractOntologyModule(getMetamodel(), context);
+		this.data = connector.extractOntologyModule(getMetamodel());
 		this.internal = new OwlapiModuleInternal(data, this);
 	}
 
 	@Override
-	public boolean contains(Object primaryKey) throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		if (primaryKey == null) {
-			throw new NullPointerException("Null passed to contains: primaryKey = " + primaryKey);
-		}
-		return internal.containsEntity(primaryKey);
+	public boolean contains(Object primaryKey, RepositoryID contexts) throws OntoDriverException {
+		preContains(primaryKey, contexts);
+
+		return internal.containsEntity(primaryKey, contexts);
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		if (cls == null || primaryKey == null) {
-			throw new NullPointerException("Null passed to find: cls = " + cls + ", primaryKey = "
-					+ primaryKey);
-		}
-		return internal.findEntity(cls, primaryKey);
-	}
-
-	@Override
-	public boolean isConsistent() throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		return internal.isConsistent();
-	}
-
-	@Override
-	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		if (entity == null || field == null) {
-			throw new NullPointerException("Null passed to loadFieldValues: entity = " + entity
-					+ ", fieldName = " + field);
-		}
-		internal.loadFieldValue(entity, field);
-	}
-
-	@Override
-	public <T> void merge(Object primaryKey, T entity, Field mergedField)
+	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID contexts)
 			throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		if (primaryKey == null || entity == null || mergedField == null) {
-			throw new NullPointerException("Null passed to merge: primaryKey = " + primaryKey
-					+ ", entity = " + entity + ", mergedField = " + mergedField);
-		}
-		internal.mergeEntity(primaryKey, entity, mergedField);
+		preFind(cls, primaryKey, contexts);
+
+		return internal.findEntity(cls, primaryKey, contexts);
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		if (entity == null) {
-			throw new NullPointerException("Null passed to persist: entity = " + entity);
-		}
-		internal.persistEntity(primaryKey, entity);
+	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException {
+		preIsConsistent(contexts);
+
+		return internal.isConsistent(contexts);
 	}
 
 	@Override
-	public void remove(Object primaryKey) throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		if (primaryKey == null) {
-			throw new NullPointerException("Null passed to remove: primaryKey = " + primaryKey);
-		}
-		internal.removeEntity(primaryKey);
+	public <T> void loadFieldValue(T entity, Field field, RepositoryID context)
+			throws OntoDriverException {
+		preLoadFieldValue(entity, field, context);
+
+		internal.loadFieldValue(entity, field, context);
+	}
+
+	@Override
+	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID context)
+			throws OntoDriverException {
+		preMerge(primaryKey, entity, mergedField, context);
+
+		internal.mergeEntity(primaryKey, entity, mergedField, context);
+	}
+
+	@Override
+	public <T> void persist(Object primaryKey, T entity, RepositoryID context)
+			throws OntoDriverException {
+		prePersist(entity, context);
+		internal.persistEntity(primaryKey, entity, context);
+	}
+
+	@Override
+	public void remove(Object primaryKey, RepositoryID context) throws OntoDriverException {
+		preRemove(primaryKey, context);
+
+		internal.removeEntity(primaryKey, context);
 	}
 
 	@Override
@@ -160,7 +143,7 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 	@Override
 	public OwlapiConnectorDataHolder getOntologyData() {
 		try {
-			this.data = connector.extractOntologyModule(getMetamodel(), context);
+			this.data = connector.extractOntologyModule(getMetamodel());
 		} catch (OntoDriverException e) {
 			throw new OntoDriverInitializationException(e);
 		}
@@ -168,14 +151,8 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 	}
 
 	@Override
-	public int getNewPrimaryKey() {
-		return StorageModule.getNewPrimaryKey(context);
-	}
-
-	@Override
-	public void incrementPrimaryKeyCounter() {
-		StorageModule.incrementPrimaryKeyCounter(context);
-
+	public RepositoryID getRepositoryIdentifier() {
+		return repositoryId;
 	}
 
 	@Override

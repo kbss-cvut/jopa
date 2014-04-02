@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.impl.utils;
+package cz.cvut.kbss.jopa.utils;
 
 public final class ErrorUtils {
 

@@ -1,6 +1,5 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
-import java.net.URI;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -41,9 +40,7 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 	@Override
 	protected void initConnection(OntologyStorageProperties storageProperties)
 			throws OntoDriverException {
-		final URI logicalUri = storageProperties.getOntologyURI();
-		final URI physicalUri = storageProperties.getPhysicalURI();
-		final IRI ontologyIri = IRI.create(logicalUri);
+		final IRI ontologyIri = IRI.create(ontologyUri);
 		// this.databaseIri = IRI.create(physicalUri);
 
 		this.hibernateProperties = new Properties();
@@ -55,7 +52,7 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 		this.ontologyManager = OWLDBManager.createOWLOntologyManager(OWLDataFactoryImpl
 				.getInstance());
 
-		OwlapiUtils.setOntologyManagerIriMapper(ontologyManager, logicalUri, physicalUri);
+		OwlapiUtils.setOntologyManagerIriMapper(ontologyManager, ontologyUri, physicalUri);
 
 		this.dataFactory = this.ontologyManager.getOWLDataFactory();
 
@@ -64,7 +61,7 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 					ontologyIri, hibernateProperties);
 		} catch (OWLOntologyCreationException e) {
 			if (LOG.isLoggable(Level.CONFIG)) {
-				LOG.config("Ontology " + logicalUri
+				LOG.config("Ontology " + ontologyUri
 						+ " does not exist in the database. Creating...");
 			}
 			createOntology(ontologyIri);
@@ -119,6 +116,7 @@ class OwlapiOwldbStorageConnector extends OwlapiStorageConnector {
 		// } catch (OWLOntologyCreationException e) {
 		// throw new OntoDriverException(e);
 		// }
+		// TODO This does nothing?
 	}
 
 	@Override

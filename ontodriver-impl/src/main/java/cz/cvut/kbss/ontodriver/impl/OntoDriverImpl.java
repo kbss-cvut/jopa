@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.OntoDriver;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
@@ -27,7 +28,6 @@ import cz.cvut.kbss.ontodriver.impl.jena.DriverJenaFactory;
 import cz.cvut.kbss.ontodriver.impl.owlapi.DriverOwlapiFactory;
 import cz.cvut.kbss.ontodriver.impl.owlim.DriverOwlimFactory;
 import cz.cvut.kbss.ontodriver.impl.sesame.DriverSesameFactory;
-import cz.cvut.kbss.ontodriver.impl.utils.ErrorUtils;
 
 public class OntoDriverImpl implements OntoDriver {
 
@@ -196,6 +196,9 @@ public class OntoDriverImpl implements OntoDriver {
 		assert storageProps != null;
 		for (OntologyStorageProperties p : storageProps) {
 			final Repository r = new Repository(p.getPhysicalURI());
+			if (p.getOntologyURI() != null) {
+				r.addContext(p.getOntologyURI());
+			}
 			repositories.add(r);
 			factoryTypes.put(r.getId(), p.getConnectorType());
 			storageProperties.put(r.createRepositoryID(false), p);

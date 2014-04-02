@@ -57,8 +57,8 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating caching Jena storage module.");
 		}
-		final StorageModule m = new OwlapiBasedCachingJenaModule(repository, persistenceProvider,
-				this);
+		final StorageModule m = new OwlapiBasedCachingJenaModule(getRepository(repository),
+				persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}

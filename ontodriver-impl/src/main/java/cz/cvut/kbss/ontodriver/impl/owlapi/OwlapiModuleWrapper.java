@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -51,9 +51,9 @@ interface OwlapiModuleWrapper {
 	public Metamodel getMetamodel();
 
 	/**
-	 * Returns ontology context which is represented by this module.
+	 * Gets identifier of repository managed by this storage module.
 	 * 
-	 * @return {@code Context}
+	 * @return Repository identifier
 	 */
-	public Context getContext();
+	public RepositoryID getRepositoryIdentifier();
 }

@@ -37,7 +37,8 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage module.");
 		}
-		final StorageModule m = new OwlapiBasedJenaModule(repository, persistenceProvider, this);
+		final StorageModule m = new OwlapiBasedJenaModule(getRepository(repository),
+				persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}

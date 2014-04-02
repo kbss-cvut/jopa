@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -8,6 +9,7 @@ import java.util.logging.Logger;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.StorageConnector;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -65,9 +67,7 @@ public class CachingOwlapiStorageConnector implements StorageConnector, OwlapiCo
 
 	@Override
 	public void applyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
-		if (changes == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(changes, ErrorUtils.constructNPXMessage("changes"));
 		if (changes.isEmpty()) {
 			return;
 		}

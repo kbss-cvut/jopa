@@ -44,23 +44,15 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 
 	private boolean open;
 
-	/**
-	 * Constructor for inheritance. </p>
-	 * 
-	 * Sets only ontology URI.
-	 */
-	protected OwlapiStorageConnector(URI ontologyUri, URI physicalUri) {
-		if (ontologyUri == null || physicalUri == null) {
-			throw new NullPointerException();
-		}
-		this.ontologyUri = ontologyUri;
-		this.physicalUri = physicalUri;
-	}
-
 	public OwlapiStorageConnector(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		this.ontologyUri = storageProperties.getOntologyURI();
 		this.physicalUri = storageProperties.getPhysicalURI();
+		if (ontologyUri == null) {
+			throw new OntoDriverException("Logical URI has to be specified for OWLAPI ontologies.");
+		}
+		// PhysicalURI cannot be null, see OntologyStorageProperties class
+		assert physicalUri != null;
 		this.language = properties.get(OntoDriverProperties.ONTOLOGY_LANGUAGE);
 		final String reasonerFactoryClass = properties
 				.get(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS);

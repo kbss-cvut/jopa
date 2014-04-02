@@ -6,7 +6,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -17,12 +18,13 @@ import cz.cvut.kbss.ontodriver.impl.jena.OwlapiBasedJenaConnector;
 
 public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 
-	private OwlapiBasedJenaConnector connector;
-	private ModuleInternal<OWLOntologyChange, OwlapiStatement> moduleInternal;
+	protected OwlapiBasedJenaConnector connector;
+	protected ModuleInternal<OWLOntologyChange, OwlapiStatement> moduleInternal;
 
-	public OwlapiBasedJenaModule(Context context, PersistenceProviderFacade persistenceProvider,
-			DriverFactory factory) throws OntoDriverException {
-		super(context, persistenceProvider, factory);
+	public OwlapiBasedJenaModule(Repository repository,
+			PersistenceProviderFacade persistenceProvider, DriverFactory factory)
+			throws OntoDriverException {
+		super(repository, persistenceProvider, factory);
 	}
 
 	@Override
@@ -52,84 +54,67 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 
 	@Override
 	protected void initialize() throws OntoDriverException {
-		this.connector = (OwlapiBasedJenaConnector) factory.createStorageConnector(context, false);
+		this.connector = (OwlapiBasedJenaConnector) factory.createStorageConnector(repositoryId,
+				false);
 		final OwlapiConnectorDataHolder holder = getOntologyData();
-		if (!primaryKeyCounters.containsKey(context)) {
-			primaryKeyCounters.put(context,
+		if (!primaryKeyCounters.containsKey(repository.getId())) {
+			primaryKeyCounters.put(repository.getId(),
 					new AtomicInteger(connector.getClassAssertionAxiomsCount()));
 		}
 		this.moduleInternal = new OwlapiModuleInternal(holder, this);
 	}
 
 	@Override
-	public boolean contains(Object primaryKey) throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		if (primaryKey == null) {
-			throw new NullPointerException("Null passed to contains: primaryKey = " + primaryKey);
-		}
-		return moduleInternal.containsEntity(primaryKey);
+	public boolean contains(Object primaryKey, RepositoryID contexts) throws OntoDriverException {
+		preContains(primaryKey, contexts);
+
+		return moduleInternal.containsEntity(primaryKey, contexts);
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		if (cls == null || primaryKey == null) {
-			throw new NullPointerException("Null passed to find: cls = " + cls + ", primaryKey = "
-					+ primaryKey);
-		}
-		return moduleInternal.findEntity(cls, primaryKey);
-	}
-
-	@Override
-	public boolean isConsistent() throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		return moduleInternal.isConsistent();
-	}
-
-	@Override
-	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		if (entity == null || field == null) {
-			throw new NullPointerException("Null passed to loadFieldValues: entity = " + entity
-					+ ", fieldName = " + field);
-		}
-		moduleInternal.loadFieldValue(entity, field);
-	}
-
-	@Override
-	public <T> void merge(Object primaryKey, T entity, Field mergedField)
+	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID contexts)
 			throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		if (primaryKey == null || entity == null || mergedField == null) {
-			throw new NullPointerException("Null passed to merge: primaryKey = " + primaryKey
-					+ ", entity = " + entity + ", mergedField = " + mergedField);
-		}
-		moduleInternal.mergeEntity(primaryKey, entity, mergedField);
+		preFind(cls, primaryKey, contexts);
+
+		return moduleInternal.findEntity(cls, primaryKey, contexts);
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		if (entity == null) {
-			throw new NullPointerException("Null passed to persist: entity = " + entity);
-		}
-		moduleInternal.persistEntity(primaryKey, entity);
+	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException {
+		preIsConsistent(contexts);
+
+		return moduleInternal.isConsistent(contexts);
 	}
 
 	@Override
-	public void remove(Object primaryKey) throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
-		if (primaryKey == null) {
-			throw new NullPointerException("Null passed to remove: primaryKey = " + primaryKey);
-		}
-		moduleInternal.removeEntity(primaryKey);
+	public <T> void loadFieldValue(T entity, Field field, RepositoryID context)
+			throws OntoDriverException {
+		preLoadFieldValue(entity, field, context);
+
+		moduleInternal.loadFieldValue(entity, field, context);
+	}
+
+	@Override
+	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID context)
+			throws OntoDriverException {
+		preMerge(primaryKey, entity, mergedField, context);
+
+		moduleInternal.mergeEntity(primaryKey, entity, mergedField, context);
+	}
+
+	@Override
+	public <T> void persist(Object primaryKey, T entity, RepositoryID context)
+			throws OntoDriverException {
+		prePersist(entity, context);
+
+		moduleInternal.persistEntity(primaryKey, entity, context);
+	}
+
+	@Override
+	public void remove(Object primaryKey, RepositoryID context) throws OntoDriverException {
+		preRemove(primaryKey, context);
+
+		moduleInternal.removeEntity(primaryKey, context);
 	}
 
 	@Override

@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -43,6 +44,8 @@ public abstract class StorageModule implements Transactional {
 
 	/** Repository managed by this module */
 	protected final Repository repository;
+	/** Cached repository identifier */
+	protected final RepositoryID repositoryId;
 	/** Backward reference to the factory */
 	protected final DriverFactory factory;
 	/** Metamodel of the entity model */
@@ -58,6 +61,7 @@ public abstract class StorageModule implements Transactional {
 		this.persistenceProvider = Objects.requireNonNull(persistenceProvider,
 				"Argument 'persistenceProvider' cannot be null.");
 		this.factory = Objects.requireNonNull(factory, "Argument 'factory' cannot be null.");
+		this.repositoryId = repository.createRepositoryID(false);
 
 		initialize();
 		this.open = true;
@@ -86,6 +90,22 @@ public abstract class StorageModule implements Transactional {
 	 */
 	public Metamodel getMetamodel() {
 		return persistenceProvider.getMetamodel();
+	}
+
+	/**
+	 * Gets new primary key counter and increments the internal counter.
+	 * 
+	 * @return Primary key counter
+	 */
+	public int getNewPrimaryKey() {
+		return StorageModule.getNewPrimaryKey(repository);
+	}
+
+	/**
+	 * Increments the primary key counter for this module's context.
+	 */
+	public void incrementPrimaryKeyCounter() {
+		StorageModule.incrementPrimaryKeyCounter(repository);
 	}
 
 	@Override
@@ -270,6 +290,116 @@ public abstract class StorageModule implements Transactional {
 	protected abstract void startTransactionIfNotActive() throws OntoDriverException;
 
 	/**
+	 * Preliminary steps before running {@link #contains(Object, RepositoryID)}
+	 * </p>
+	 * 
+	 * Checks for module state, validates arguments and starts a transaction if
+	 * necessary.
+	 */
+	protected void preContains(Object primaryKey, RepositoryID contexts) throws OntoDriverException {
+		ensureOpen();
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(contexts, ErrorUtils.constructNPXMessage("contexts"));
+		ensureCorrectRepositoryId(contexts);
+		startTransactionIfNotActive();
+	}
+
+	/**
+	 * Preliminary steps before running
+	 * {@link #find(Class, Object, RepositoryID)} </p>
+	 * 
+	 * Checks for module state, validates arguments and starts a transaction if
+	 * necessary.
+	 */
+	protected void preFind(Class<?> cls, Object primaryKey, RepositoryID contexts)
+			throws OntoDriverException {
+		ensureOpen();
+		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(contexts, ErrorUtils.constructNPXMessage("contexts"));
+		ensureCorrectRepositoryId(contexts);
+		startTransactionIfNotActive();
+	}
+
+	/**
+	 * Preliminary steps before running {@link #isConsistent(RepositoryID)} </p>
+	 * 
+	 * Checks for module state, validates arguments and starts a transaction if
+	 * necessary.
+	 */
+	protected void preIsConsistent(RepositoryID contexts) throws OntoDriverException {
+		ensureOpen();
+		Objects.requireNonNull(contexts, ErrorUtils.constructNPXMessage("contexts"));
+		ensureCorrectRepositoryId(contexts);
+		startTransactionIfNotActive();
+	}
+
+	/**
+	 * Preliminary steps before running
+	 * {@link #loadFieldValue(Object, Field, RepositoryID)} </p>
+	 * 
+	 * Checks for module state, validates arguments and starts a transaction if
+	 * necessary.
+	 */
+	protected <T> void preLoadFieldValue(T entity, Field field, RepositoryID context)
+			throws OntoDriverException {
+		ensureOpen();
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
+		Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
+		ensureCorrectRepositoryId(context);
+		startTransactionIfNotActive();
+	}
+
+	/**
+	 * Preliminary steps before running
+	 * {@link #merge(Object, Object, Field, RepositoryID)} </p>
+	 * 
+	 * Checks for module state, validates arguments and starts a transaction if
+	 * necessary.
+	 */
+	protected <T> void preMerge(Object primaryKey, T entity, Field mergedField, RepositoryID context)
+			throws OntoDriverException {
+		ensureOpen();
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(mergedField, ErrorUtils.constructNPXMessage("mergedField"));
+		Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
+		ensureCorrectRepositoryId(context);
+		startTransactionIfNotActive();
+	}
+
+	/**
+	 * Preliminary steps before running
+	 * {@link #persist(Object, Object, RepositoryID)} </p>
+	 * 
+	 * Checks for module state, validates arguments and starts a transaction if
+	 * necessary.
+	 */
+	protected <T> void prePersist(T entity, RepositoryID context) throws OntoDriverException {
+		ensureOpen();
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
+		ensureCorrectRepositoryId(context);
+		startTransactionIfNotActive();
+	}
+
+	/**
+	 * Preliminary steps before running {@link #remove(Object, RepositoryID)}
+	 * </p>
+	 * 
+	 * Checks for module state, validates arguments and starts a transaction if
+	 * necessary.
+	 */
+	protected void preRemove(Object primaryKey, RepositoryID context) throws OntoDriverException {
+		ensureOpen();
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
+		ensureCorrectRepositoryId(context);
+		startTransactionIfNotActive();
+	}
+
+	/**
 	 * Ensures that this module is in valid state.
 	 * 
 	 * @throws OntoDriverException
@@ -296,19 +426,21 @@ public abstract class StorageModule implements Transactional {
 	}
 
 	/**
-	 * Gets new primary key counter and increments the internal counter.
+	 * Ensures that the specified identifier represents the same repository as
+	 * is managed by this storage module.
 	 * 
-	 * @return Primary key counter
+	 * @param repo
+	 *            Repository identifier
+	 * @throws IllegalArgumentException
+	 *             If the validation fails
 	 */
-	public int getNewPrimaryKey() {
-		return StorageModule.getNewPrimaryKey(repository);
-	}
-
-	/**
-	 * Increments the primary key counter for this module's context.
-	 */
-	public void incrementPrimaryKeyCounter() {
-		StorageModule.incrementPrimaryKeyCounter(repository);
+	protected void ensureCorrectRepositoryId(RepositoryID repo) {
+		assert repo != null;
+		if (!repository.getId().equals(repo.getRepository())) {
+			throw new IllegalArgumentException("The specified repository identifier " + repo
+					+ " does not match the repository " + repository
+					+ ", managed by this storage module.");
+		}
 	}
 
 	/**

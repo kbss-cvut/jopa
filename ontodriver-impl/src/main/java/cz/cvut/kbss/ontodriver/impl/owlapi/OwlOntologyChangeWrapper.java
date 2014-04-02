@@ -1,10 +1,14 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
+import java.util.Objects;
+
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyChangeVisitor;
 import org.semanticweb.owlapi.model.OWLOntologyChangeVisitorEx;
+
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 /**
  * Wraps standard OWLAPI ontology change and adds possibility to set ontology
@@ -20,14 +24,9 @@ class OwlOntologyChangeWrapper extends OWLOntologyChange implements OntologyMuta
 
 	public OwlOntologyChangeWrapper(OWLOntology ontology, OWLOntologyChange change) {
 		super(ontology);
-		if (ontology == null) {
-			throw new NullPointerException("Null passed as ontology to OWLOntologyWrapper.");
-		}
-		if (change == null) {
-			throw new NullPointerException("Null passed as change to OWLOntologyWrapper.");
-		}
-		this.change = change;
-		this.ontology = ontology;
+		this.ontology = Objects
+				.requireNonNull(ontology, ErrorUtils.constructNPXMessage("ontology"));
+		this.change = Objects.requireNonNull(change, ErrorUtils.constructNPXMessage("change"));
 	}
 
 	@Override

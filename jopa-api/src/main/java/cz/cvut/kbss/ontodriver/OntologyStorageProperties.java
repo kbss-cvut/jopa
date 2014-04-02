@@ -1,6 +1,9 @@
 package cz.cvut.kbss.ontodriver;
 
 import java.net.URI;
+import java.util.Objects;
+
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 /**
  * Holds properties of an ontology storage. </p>
@@ -12,7 +15,15 @@ import java.net.URI;
  */
 public class OntologyStorageProperties {
 
-	/** URI of the ontology */
+	/**
+	 * URI of the ontology. </p>
+	 * 
+	 * Logical URI is not required, since for example for Sesame storages there
+	 * is not logical URI, there is just the physical URI of the repository and
+	 * multiple contexts in it. </p>
+	 * 
+	 * However, OWLAPI based storages require logical URI.
+	 */
 	private final URI ontologyUri;
 	/** URI of the physical storage, e. g. OWLDB database, OWLIM storage, file */
 	private final URI physicalUri;
@@ -33,24 +44,16 @@ public class OntologyStorageProperties {
 	 * @param connectorType
 	 *            Type of the connector
 	 * @throws NullPointerException
-	 *             If {@code ontologyUri}, {@code physicalUri} or
-	 *             {@code connectorType} is null
+	 *             If {@code physicalUri} or {@code connectorType} is null
 	 */
 	public OntologyStorageProperties(URI ontologyUri, URI physicalUri,
 			OntologyConnectorType connectorType) {
 		super();
-		if (ontologyUri == null) {
-			throw new NullPointerException("OntologyURI cannot be null.");
-		}
-		if (physicalUri == null) {
-			throw new NullPointerException("PhysicalURI cannot be null.");
-		}
-		if (connectorType == null) {
-			throw new NullPointerException("ConnectorType cannot be null.");
-		}
+		this.physicalUri = Objects.requireNonNull(physicalUri,
+				ErrorUtils.constructNPXMessage("physicalUri"));
+		this.connectorType = Objects.requireNonNull(connectorType,
+				ErrorUtils.constructNPXMessage("connectorType"));
 		this.ontologyUri = ontologyUri;
-		this.physicalUri = physicalUri;
-		this.connectorType = connectorType;
 		this.username = null;
 		this.password = null;
 	}
@@ -69,24 +72,18 @@ public class OntologyStorageProperties {
 	 * @param password
 	 *            Password for the storage. Optional
 	 * @throws NullPointerException
-	 *             If {@code ontologyUri} or {@code physicalUri} is null
+	 *             If {@code physicalUri} or {@code connectorType} is
+	 *             {@code null}
 	 * @see #OntologyStorageProperties(URI, URI)
 	 */
 	public OntologyStorageProperties(URI ontologyUri, URI physicalUri,
 			OntologyConnectorType connectorType, String username, String password) {
 		super();
-		if (ontologyUri == null) {
-			throw new NullPointerException("OntologyURI cannot be null.");
-		}
-		if (physicalUri == null) {
-			throw new NullPointerException("PhysicalURI cannot be null.");
-		}
-		if (connectorType == null) {
-			throw new NullPointerException("ConnectorType cannot be null.");
-		}
+		this.physicalUri = Objects.requireNonNull(physicalUri,
+				ErrorUtils.constructNPXMessage("physicalUri"));
+		this.connectorType = Objects.requireNonNull(connectorType,
+				ErrorUtils.constructNPXMessage("connectorType"));
 		this.ontologyUri = ontologyUri;
-		this.physicalUri = physicalUri;
-		this.connectorType = connectorType;
 		this.username = username;
 		this.password = password;
 	}

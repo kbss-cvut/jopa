@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
@@ -31,7 +32,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.StorageConnector;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -68,10 +69,8 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 
 	public ModularizingStorageConnector(OwlapiStorageConnector connector)
 			throws OntoDriverException {
-		if (connector == null) {
-			throw new NullPointerException();
-		}
-		this.connector = connector;
+		this.connector = Objects.requireNonNull(connector,
+				ErrorUtils.constructNPXMessage("connector"));
 		this.open = true;
 	}
 
@@ -118,9 +117,7 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 	 */
 	@Override
 	public void applyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
-		if (changes == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(changes, ErrorUtils.constructNPXMessage("changes"));
 		if (changes.isEmpty()) {
 			return;
 		}
@@ -157,24 +154,23 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 	 * 
 	 * @param metamodel
 	 *            {@code Metamodel}
-	 * @param ctx
-	 *            Ontology context
+	 * @param repository
+	 *            Instance representing the repository
 	 * @return Data holder with the extracted ontology
 	 * @throws OntoDriverException
 	 *             If the extraction fails
 	 * @throws NullPointerException
 	 *             If {@code metamodel} or {@code context} is {@code null}
 	 */
-	public OwlapiConnectorDataHolder extractOntologyModule(Metamodel metamodel, Context ctx)
+	public OwlapiConnectorDataHolder extractOntologyModule(Metamodel metamodel)
 			throws OntoDriverException {
-		if (metamodel == null || ctx == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(metamodel, ErrorUtils.constructNPXMessage("metamodel"));
+
 		Set<OWLEntity> signature = null;
 		READ.lock();
 		try {
 			signature = getSignatureForExtraction(metamodel);
-			return extractModuleInternal(signature, ctx);
+			return extractModuleInternal(signature);
 		} finally {
 			READ.unlock();
 		}
@@ -189,13 +185,11 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 	 * 
 	 * @param signature
 	 *            Signature to use
-	 * @param ctx
-	 *            Context
 	 * @return {@code OwlapiConnectorDataHolder}
 	 * @throws OntoDriverException
 	 *             If the module extraction fails
 	 */
-	private OwlapiConnectorDataHolder extractModuleInternal(Set<OWLEntity> signature, Context ctx)
+	private OwlapiConnectorDataHolder extractModuleInternal(Set<OWLEntity> signature)
 			throws OntoDriverException {
 		// Extract a syntactic locality-based module
 		try {
@@ -207,7 +201,8 @@ public class ModularizingStorageConnector implements StorageConnector, OwlapiCon
 			}
 			final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
 			final OWLDataFactory d = m.getOWLDataFactory();
-			final OWLOntology o = m.createOntology(mod, IRI.create(ctx.getUri()));
+			final URI logicalUri = connector.ontologyUri;
+			final OWLOntology o = m.createOntology(mod, IRI.create(logicalUri));
 			OWLReasoner r = connector.getReasonerFactory().createReasoner(o);
 			final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder.ontologyManager(m)
 					.workingOntology(o).dataFactory(d).reasoner(r).language(connector.language)

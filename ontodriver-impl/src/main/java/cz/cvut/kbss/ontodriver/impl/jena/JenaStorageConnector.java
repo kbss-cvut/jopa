@@ -25,12 +25,12 @@ import org.semanticweb.owlapi.util.OWLOntologyMerger;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OntologyMutable;
 import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiConnectorDataHolder;
-import cz.cvut.kbss.ontodriver.impl.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.impl.utils.OntoDriverConstants;
 
 abstract class JenaStorageConnector implements OwlapiBasedJenaConnector {

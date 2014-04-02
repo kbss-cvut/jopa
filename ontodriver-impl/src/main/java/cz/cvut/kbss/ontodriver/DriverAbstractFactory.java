@@ -10,8 +10,8 @@ import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.impl.utils.ErrorUtils;
 
 public abstract class DriverAbstractFactory implements DriverFactory {
 
@@ -193,5 +193,22 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	protected void registerConnector(StorageConnector connector) {
 		assert connector != null;
 		openedConnectors.put(connector, connector);
+	}
+
+	/**
+	 * Gets repository for the specified identifier. </p>
+	 * 
+	 * This method assumes that the validity of the identifier has been already
+	 * verified.
+	 * 
+	 * @param identifier
+	 *            Repository identifier
+	 * @return Repository
+	 */
+	protected Repository getRepository(RepositoryID identifier) {
+		assert identifier != null;
+		assert (identifier.getRepository() > 0 && identifier.getRepository() < repositories.size());
+
+		return repositories.get(identifier.getRepository());
 	}
 }

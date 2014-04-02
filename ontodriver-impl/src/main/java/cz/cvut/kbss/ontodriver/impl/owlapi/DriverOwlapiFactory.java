@@ -8,14 +8,13 @@ import java.util.logging.Level;
 
 import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.RepositoryID;
-import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.impl.utils.ErrorUtils;
 import de.fraunhofer.iitb.owldb.OWLDBManager;
 
 public class DriverOwlapiFactory extends DriverAbstractFactory {
@@ -37,7 +36,8 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLAPI storage module.");
 		}
-		final StorageModule m = new OwlapiStorageModule(repository, persistenceProvider, this);
+		final StorageModule m = new OwlapiStorageModule(getRepository(repository),
+				persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}

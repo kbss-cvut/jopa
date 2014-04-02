@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.impl.owlapi;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.hibernate.dialect.HSQLDialect;
@@ -16,6 +17,7 @@ import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.OwldbOntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.JDBCDriverNotSpecifiedException;
@@ -99,9 +101,10 @@ public final class OwlapiUtils {
 	 */
 	public static void initHibernateProperties(Properties target,
 			OntologyStorageProperties storageProperties) {
-		if (target == null || storageProperties == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(target, ErrorUtils.constructNPXMessage("target"));
+		Objects.requireNonNull(storageProperties,
+				ErrorUtils.constructNPXMessage("storageProperties"));
+
 		target.setProperty(HIBERNATE_JDBC_URL_PROPERTY, storageProperties.getPhysicalURI()
 				.toString());
 		if (storageProperties.getUsername() != null) {
