@@ -5,10 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import cz.cvut.kbss.ontodriver.JopaStatement;
-import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
+import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageModule;
@@ -16,36 +17,36 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class DriverSesameFactory extends DriverAbstractFactory {
 
-	private final Map<Context, SesameStorageConnectorImpl> centralConnectors;
+	private final Map<RepositoryID, SesameStorageConnectorImpl> centralConnectors;
 
-	public DriverSesameFactory(List<Context> contexts,
-			Map<Context, OntologyStorageProperties> ctxsToProperties, Map<String, String> properties)
-			throws OntoDriverException {
-		super(contexts, ctxsToProperties, properties);
-		this.centralConnectors = new HashMap<>(contexts.size());
+	public DriverSesameFactory(List<Repository> repositories,
+			Map<RepositoryID, OntologyStorageProperties> repositoryProperties,
+			Map<String, String> properties) throws OntoDriverException {
+		super(repositories, repositoryProperties, properties);
+		this.centralConnectors = new HashMap<>(repositories.size());
 	}
 
 	@Override
-	public StorageModule createStorageModule(Context ctx,
+	public StorageModule createStorageModule(RepositoryID repository,
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(ctx, persistenceProvider);
+		ensureState(repository, persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Sesame storage module.");
 		}
-		final StorageModule m = new SesameStorageModule(ctx, persistenceProvider, this);
+		final StorageModule m = new SesameStorageModule(repository, persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public SesameStorageConnector createStorageConnector(Context ctx, boolean autoCommit)
+	public SesameStorageConnector createStorageConnector(RepositoryID repository, boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(ctx);
+		ensureState(repository);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Sesame storage connector.");
 		}
-		return createConnectorImpl(ctx, autoCommit);
+		return createConnectorImpl(repository, autoCommit);
 	}
 
 	@Override
@@ -68,20 +69,20 @@ public class DriverSesameFactory extends DriverAbstractFactory {
 		}
 	}
 
-	private SesameStorageConnector createConnectorImpl(Context ctx, boolean autoCommit)
+	private SesameStorageConnector createConnectorImpl(RepositoryID repository, boolean autoCommit)
 			throws OntoDriverException {
-		final OntologyStorageProperties props = reposToProperties.get(ctx);
+		final OntologyStorageProperties props = storageProperties.get(repository);
 		assert props != null;
 		SesameStorageConnectorImpl central = null;
 		synchronized (this) {
-			if (!centralConnectors.containsKey(ctx)) {
+			if (!centralConnectors.containsKey(repository)) {
 				if (LOG.isLoggable(Level.FINER)) {
-					LOG.finer("Creating central connector for context " + ctx);
+					LOG.finer("Creating central connector for repository " + repository);
 				}
 				central = new SesameStorageConnectorImpl(props, properties);
-				centralConnectors.put(ctx, central);
+				centralConnectors.put(repository, central);
 			} else {
-				central = centralConnectors.get(ctx);
+				central = centralConnectors.get(repository);
 			}
 		}
 		final SesameStorageConnectorProxy c = new SesameStorageConnectorProxy(central);

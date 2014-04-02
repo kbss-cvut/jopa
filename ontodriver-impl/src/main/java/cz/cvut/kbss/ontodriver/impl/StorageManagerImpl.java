@@ -226,7 +226,7 @@ public class StorageManagerImpl extends StorageManager {
 
 	private void checkForIdentifierValidity(RepositoryID identifier) throws OntoDriverException {
 		assert identifier != null;
-		if (identifier.getRepository() < 0 || identifier.getRepository() >= repositories.size()) {
+		if (identifier.getRepository() < 0) {
 			throw new IllegalArgumentException("Unknown repository identifier " + identifier
 					+ ". No such repository is managed by this StorageManager.");
 		}
@@ -236,7 +236,7 @@ public class StorageManagerImpl extends StorageManager {
 		this.modules = new ArrayList<>(repositories.size());
 		final int len = repositories.size();
 		for (int i = 0; i < len; i++) {
-			modules.set(i, null);
+			modules.add(null);
 		}
 	}
 

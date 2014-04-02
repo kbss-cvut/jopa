@@ -56,6 +56,7 @@ public class OntoDriverImpl implements OntoDriver {
 		this.properties = Collections.emptyMap();
 		this.storageProperties = new HashMap<>(storageProperties.size());
 		this.factoryTypes = new HashMap<>(storageProperties.size());
+		resolveContexts(storageProperties);
 		this.factories = initFactories();
 		this.open = true;
 	}
@@ -125,15 +126,25 @@ public class OntoDriverImpl implements OntoDriver {
 	 *         for its connector type
 	 * @throws NullPointerException
 	 *             If {@code repository} is {@code null}
+	 * @throws IllegalArgumentException
+	 *             If the repository id is unknown or there is no factory for
+	 *             its type
 	 */
 	public DriverFactory getFactory(Repository repository) {
 		ensureOpen();
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
 		final Integer repoId = repository.getId();
-		if (repoId < 0 || repoId >= repositories.size()) {
+		if (repoId < 0) {
 			throw new IllegalArgumentException("Unknown repository " + repository);
 		}
-		return factories.get(factoryTypes.get(repoId));
+		final OntologyConnectorType fT = factoryTypes.get(repoId);
+		if (fT == null) {
+			throw new IllegalArgumentException("No factory found for repository " + repoId);
+		}
+		if (!factories.containsKey(fT)) {
+			throw new IllegalArgumentException("No factory found for type " + fT);
+		}
+		return factories.get(fT);
 	}
 
 	@Override
@@ -173,13 +184,13 @@ public class OntoDriverImpl implements OntoDriver {
 				final DriverFactory f = c.newInstance(repositories, storageProperties, properties);
 				facts.put(e.getKey(), f);
 			} catch (InstantiationException ex) {
-				LOG.severe("Unable to initialize factory. + " + e.toString());
+				LOG.severe("Unable to initialize factory. " + e.toString());
 			} catch (IllegalAccessException ex) {
-				LOG.severe("Unable to initialize factory. + " + e.toString());
+				LOG.severe("Unable to initialize factory. " + e.toString());
 			} catch (IllegalArgumentException ex) {
-				LOG.severe("Unable to initialize factory. + " + e.toString());
+				LOG.severe("Unable to initialize factory. " + e.toString());
 			} catch (InvocationTargetException ex) {
-				LOG.severe("Unable to initialize factory. + " + e.toString());
+				LOG.severe("Unable to initialize factory. " + e.toString());
 			}
 		}
 		return facts;

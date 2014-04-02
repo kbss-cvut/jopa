@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
@@ -17,6 +18,7 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exceptions.RepositoryNotFoundException;
 
 public class ConnectionImpl implements Connection {
 
@@ -59,7 +61,7 @@ public class ConnectionImpl implements Connection {
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Committing changes.");
 		}
-		ensureOpen(true);
+		ensureOpen();
 		if (!hasChanges) {
 			return;
 		}
@@ -73,18 +75,17 @@ public class ConnectionImpl implements Connection {
 
 	@Override
 	public boolean contains(Object primaryKey, RepositoryID repository) throws OntoDriverException {
-		ensureOpen(false);
-		if (primaryKey == null) {
-			LOG.severe("Null argument passed: primaryKey = " + primaryKey);
-			throw new NullPointerException();
-		}
+		ensureOpen();
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+
 		return storageManager.contains(primaryKey, repository);
 	}
 
 	@Override
 	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID repository)
 			throws OntoDriverException {
-		ensureOpen(true);
+		ensureOpen();
 		Objects.requireNonNull(cls, "Argument 'cls' cannot be null.");
 		Objects.requireNonNull(primaryKey, "Argument 'primaryKey' cannot be null.");
 		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
@@ -95,13 +96,13 @@ public class ConnectionImpl implements Connection {
 
 	@Override
 	public boolean getAutoCommit() throws OntoDriverException {
-		ensureOpen(false);
+		ensureOpen();
 		return autoCommit;
 	}
 
 	@Override
 	public boolean isConsistent(RepositoryID repository) throws OntoDriverException {
-		ensureOpen(false);
+		ensureOpen();
 		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
 
 		return storageManager.isConsistent(repository);
@@ -115,7 +116,7 @@ public class ConnectionImpl implements Connection {
 	@Override
 	public <T> void loadFieldValue(T entity, Field field, RepositoryID repository)
 			throws OntoDriverException {
-		ensureOpen(true);
+		ensureOpen();
 		Objects.requireNonNull(entity, "Argument 'entity' cannot be null.");
 		Objects.requireNonNull(field, "Argument 'field' cannot be null.");
 		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
@@ -126,7 +127,7 @@ public class ConnectionImpl implements Connection {
 	@Override
 	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID repository)
 			throws OntoDriverException {
-		ensureOpen(true);
+		ensureOpen();
 		Objects.requireNonNull(primaryKey, "Argument 'primaryKey' cannot be null.");
 		Objects.requireNonNull(entity, "Argument 'entity' cannot be null.");
 		Objects.requireNonNull(mergedField, "Argument 'mergedField' cannot be null.");
@@ -142,7 +143,7 @@ public class ConnectionImpl implements Connection {
 	@Override
 	public <T> void persist(Object primaryKey, T entity, RepositoryID repository)
 			throws OntoDriverException {
-		ensureOpen(true);
+		ensureOpen();
 		// Primary key can be null
 		Objects.requireNonNull(entity, "Argument 'entity' cannot be null.");
 		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
@@ -162,7 +163,7 @@ public class ConnectionImpl implements Connection {
 
 	@Override
 	public <T> void remove(Object primaryKey, RepositoryID repository) throws OntoDriverException {
-		ensureOpen(true);
+		ensureOpen();
 		Objects.requireNonNull(primaryKey, "Argument 'primaryKey' cannot be null.");
 		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
 
@@ -178,7 +179,7 @@ public class ConnectionImpl implements Connection {
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Rolling back changes.");
 		}
-		ensureOpen(false);
+		ensureOpen();
 		if (!hasChanges) {
 			return;
 		}
@@ -188,15 +189,19 @@ public class ConnectionImpl implements Connection {
 
 	@Override
 	public void setAutoCommit(boolean autoCommit) throws OntoDriverException {
-		ensureOpen(false);
+		ensureOpen();
 		this.autoCommit = autoCommit;
 	}
 
 	@Override
 	public Repository getRepository(Integer repositoryId) throws OntoDriverException {
-		ensureOpen(false);
+		ensureOpen();
 		Objects.requireNonNull(repositoryId, "Argument 'repositoryId' cannot be null.");
 
+		if (!repositories.containsKey(repositoryId)) {
+			throw new RepositoryNotFoundException("Repository with identifier " + repositoryId
+					+ " not found.");
+		}
 		return repositories.get(repositoryId);
 	}
 
@@ -216,18 +221,13 @@ public class ConnectionImpl implements Connection {
 	/**
 	 * Ensures correct state of this {@code Connection}. </p>
 	 * 
-	 * This means checking if it is open and, if enabled, whether the metamodel
-	 * is set.
 	 * 
-	 * @param checkMetamodel
-	 *            True if the metamodel should be checked
-	 * @throws OntoDriverException
-	 * @throws MetamodelNotSetException
+	 * @throws IllegalStateException
+	 *             If the connection is closed
 	 */
-	private void ensureOpen(boolean checkMetamodel) throws OntoDriverException,
-			MetamodelNotSetException {
+	private void ensureOpen() {
 		if (!open) {
-			throw new OntoDriverException("The connection is closed.");
+			throw new IllegalStateException("The connection is closed.");
 		}
 	}
 }

@@ -3,438 +3,406 @@ package cz.cvut.kbss.ontodriver.unit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.Context;
-import cz.cvut.kbss.ontodriver.exceptions.EntityNotRegisteredException;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
+import cz.cvut.kbss.ontodriver.Statement;
+import cz.cvut.kbss.ontodriver.StorageManager;
+import cz.cvut.kbss.ontodriver.exceptions.RepositoryNotFoundException;
 import cz.cvut.kbss.ontodriver.impl.ConnectionImpl;
 import cz.cvut.kbss.ontodriver.utils.OWLClassA;
-import cz.cvut.kbss.ontodriver.utils.OWLClassB;
-import cz.cvut.kbss.ontodriver.utils.PersistenceProviderMock;
-import cz.cvut.kbss.ontodriver.utils.StorageManagerMock;
 
 public class ConnectionImplTest {
 
-	private static final Logger LOG = Logger.getLogger(ConnectionImplTest.class.getName());
+	private static List<Repository> repos;
+	private static Field hasChangesField;
 
-	private static PersistenceProviderMock pp;
+	private ConnectionImpl connection;
 
-	private static ConnectionImpl connection;
-	private static StorageManagerMock storageMngr;
-	private static Map<Context, Map<Object, Object>> knownEntities;
-	private static List<Context> knownContexts;
+	@Mock
+	private Metamodel metamodelMock;
+
+	@Mock
+	private PersistenceProviderFacade providerMock;
+
+	@Mock
+	private StorageManager storageMngrMock;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		pp = new PersistenceProviderMock();
+		repos = new ArrayList<>(4);
+		for (int i = 0; i < 4; i++) {
+			repos.add(new Repository(URI.create("http://krizik.felk.cvut.cz/jopa/connectiontest"
+					+ i)));
+		}
+		hasChangesField = ConnectionImpl.class.getDeclaredField("hasChanges");
+		hasChangesField.setAccessible(true);
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		storageMngr = new StorageManagerMock(pp);
-		connection = new ConnectionImpl(storageMngr);
-		knownEntities = storageMngr.getEntities();
-		knownContexts = storageMngr.getAvailableContexts();
+		MockitoAnnotations.initMocks(this);
+		when(providerMock.getMetamodel()).thenReturn(metamodelMock);
+		when(storageMngrMock.getRepositories()).thenReturn(repos);
+
+		this.connection = new ConnectionImpl(storageMngrMock);
+		assertTrue(connection.isOpen());
+	}
+
+	@Test
+	public void testConnectionImpl() throws Exception {
+		final StorageManager mngrMock = mock(StorageManager.class);
+		final Connection c = new ConnectionImpl(mngrMock);
+		assertNotNull(c);
+		assertTrue(c.isOpen());
+		verify(mngrMock).getRepositories();
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testConnectionImplNull() throws Exception {
-		LOG.config("Test: connection constructor. Null passed.");
 		final Connection c = new ConnectionImpl(null);
-		fail("This line should not have been reached.");
-		c.isOpen();
+		// This won't be reached, it's here just to suppress the unused
+		// warning
+		assert c == null;
 	}
 
 	@Test
 	public void testClose() throws Exception {
-		LOG.config("Test: close connection.");
 		connection.close();
+
 		assertFalse(connection.isOpen());
-		try {
-			connection.close();
-		} catch (Exception e) {
-			fail("Exception caught. Test failed.");
-		}
+		verify(storageMngrMock).close();
+	}
+
+	@Test
+	public void testCloseTwice() throws Exception {
+		connection.close();
+		connection.close();
+
+		assertFalse(connection.isOpen());
+		// Exactly once
+		verify(storageMngrMock).close();
 	}
 
 	@Test
 	public void testCommit() throws Exception {
-		LOG.config("Test: commit connection.");
-		final OWLClassB b = new OWLClassB();
-		b.setUri(URI.create("http://connectionTestB"));
-		b.setStringAttribute("string");
-		// Make a change so there's something to commit
-		connection.setAutoCommit(false);
-		connection.persist(b.getUri(), b);
+		// Make sure there are changes
+		hasChangesField.set(connection, Boolean.TRUE);
 		connection.commit();
-		assertTrue(storageMngr.isCommitted());
-		assertFalse(storageMngr.isRolledBack());
+
+		verify(storageMngrMock).commit();
+		assertFalse(hasChangesField.getBoolean(connection));
 	}
 
 	@Test
-	public void testContainsByPK() throws Exception {
-		LOG.config("Test: contains by primary key.");
-		final Map<Object, Object> someContext = knownEntities.get(knownContexts.get(0));
-		final Object pk = someContext.keySet().iterator().next();
-		assertTrue(connection.contains(pk));
+	public void testCommitNoChanges() throws Exception {
+		connection.commit();
+
+		verify(storageMngrMock, never()).commit();
 	}
 
-	@Test(expected = NullPointerException.class)
-	public void testContainsByPKNull() throws Exception {
-		LOG.config("Test: contains by primary key. Null passed.");
-		connection.contains(null);
-		fail("This line should not have been reached.");
-	}
-
-	@Test
-	public void testContainsInContext() throws Exception {
-		LOG.config("Test: contains by context and primary key.");
-		URI context = StorageManagerMock.CONTEXT_ONE_URI;
-		final Map<Object, Object> someContext = knownEntities.get(storageMngr.getContextsByUris()
-				.get(context));
-		final Object pk = someContext.keySet().iterator().next();
-		assertTrue(connection.contains(pk, context));
-	}
-
-	@Test
-	public void testContainsInContextUnknownPK() throws Exception {
-		LOG.config("Test: contains by context and primary key. Unknown primary key.");
-		URI context = StorageManagerMock.CONTEXT_ONE_URI;
-		assertFalse(connection.contains(URI.create("http://unknown"), context));
-	}
-
-	@Test(expected = OntoDriverException.class)
-	public void testContainsInContextUnknownContext() throws Exception {
-		LOG.config("Test: contains by context and primary key. Unknown context.");
-		final URI pk = URI.create("http://unknown");
-		connection.contains(pk, pk);
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testContainsInContextNull() throws Exception {
-		LOG.config("Test: contains by context and primary key. Null passed.");
-		connection.contains(null, null);
-	}
-
-	@Test
-	public void testFind() throws Exception {
-		LOG.config("Test: find by primary key.");
-		final Map<Object, Object> someContext = knownEntities.get(knownContexts.get(0));
-		final Object pk = someContext.keySet().iterator().next();
-		final Object entity = someContext.get(pk);
-		final Object res = connection.find(entity.getClass(), pk);
-		assertNotNull(res);
-		assertEquals(entity, res);
-	}
-
-	@Test
-	public void testFindInContext() throws Exception {
-		LOG.config("Test: find in context.");
-		final URI context = StorageManagerMock.CONTEXT_THREE_URI;
-		final Map<Object, Object> someContext = knownEntities.get(storageMngr.getContextsByUris()
-				.get(context));
-		final Object pk = someContext.keySet().iterator().next();
-		final Object entity = someContext.get(pk);
-		final Object res = connection.find(entity.getClass(), pk, context);
-		assertNotNull(res);
-		assertEquals(entity, res);
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testFindInContextNull() throws Exception {
-		LOG.config("Test: find in context. Null passed as primary key.");
-		final URI context = StorageManagerMock.CONTEXT_TWO_URI;
-		@SuppressWarnings("unused")
-		final Object res = connection.find(OWLClassA.class, null, context);
-	}
-
-	@Test
-	public void testIsConsistent() throws Exception {
-		LOG.config("Test: consistency check.");
-		final URI context = StorageManagerMock.CONTEXT_THREE_URI;
-		final boolean res = connection.isConsistent(context);
-		assertTrue(res);
-	}
-
-	@Test(expected = OntoDriverException.class)
-	public void testIsConsistentUnknown() throws Exception {
-		LOG.config("Test: consistency check. Unknown context.");
-		final URI unknown = URI.create("http://www.unknown.org");
-		@SuppressWarnings("unused")
-		final boolean res = connection.isConsistent(unknown);
-		fail("This line should not have been reached.");
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testInConsistentNull() throws Exception {
-		LOG.config("Test: consistency check. Null passed as URI.");
-		@SuppressWarnings("unused")
-		final boolean res = connection.isConsistent(null);
-		fail("This line should not have been reached.");
-	}
-
-	@Test
-	public void testGetContext() throws Exception {
-		LOG.config("Test: get context by URI.");
-		final Context ctx = knownContexts.get(0);
-		final Context res = connection.getContext(ctx.getUri());
-		assertNotNull(res);
-		assertEquals(ctx, res);
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testGetContextByNull() throws Exception {
-		LOG.config("Test: get context by URI. Null passed.");
-		@SuppressWarnings("unused")
-		final Context res = connection.getContext(null);
-		fail("This line should not have been reached.");
-	}
-
-	@Test
-	public void testGetCurrentContext() throws Exception {
-		LOG.config("Test: get current connection context.");
-		final Context ctx = connection.getCurrentContext();
-		assertNotNull(ctx);
-		assertTrue(knownContexts.contains(ctx));
-	}
-
-	@Test
-	public void testGetContexts() throws Exception {
-		LOG.config("Test: get all contexts.");
-		final List<Context> res = connection.getContexts();
-		assertNotNull(res);
-		assertEquals(knownContexts.size(), res.size());
-		assertTrue(res.containsAll(knownContexts));
-	}
-
-	@Test
-	public void testGetSaveContextForExisting() throws Exception {
-		LOG.config("Test: get save context for entity.");
-		final URI context = StorageManagerMock.CONTEXT_THREE_URI;
-		final Map<Object, Object> someContext = knownEntities.get(storageMngr.getContextsByUris()
-				.get(context));
-		final Object pk = someContext.keySet().iterator().next();
-		// Find the entity so that it is registered in the connection
-		final Object entity = connection.find(Object.class, pk, context);
-		final Context res = connection.getSaveContextFor(entity);
-		assertNotNull(res);
-		assertEquals(storageMngr.getContextsByUris().get(context), res);
-	}
-
-	@Test
-	public void testGetSaveContextForNew() throws Exception {
-		LOG.config("Test: get save context for a new entity.");
-		final OWLClassB b = new OWLClassB();
-		b.setUri(URI.create("http://newB"));
-		// Default is the first one
-		final Context defaultContext = storageMngr.getAvailableContexts().get(0);
-		final Context res = connection.getSaveContextFor(b);
-		assertNotNull(res);
-		assertEquals(defaultContext, res);
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testGetSaveContextForNull() throws Exception {
-		LOG.config("Test: get save context for entity. Null passed.");
-		@SuppressWarnings("unused")
-		final Context res = connection.getSaveContextFor(null);
-		fail("This line should not have been reached.");
-	}
-
-	@Test
-	public void testIsOpen() throws Exception {
-		LOG.config("Test: is open.");
-		assertTrue(connection.isOpen());
+	@Test(expected = IllegalStateException.class)
+	public void testCommitClosed() throws Exception {
 		connection.close();
-		assertFalse(connection.isOpen());
-	}
-
-	@Test
-	public void testMerge() throws Exception {
-		LOG.config("Test: merge entity.");
-		final Map<Object, Object> someContext = knownEntities.get(knownContexts.get(0));
-		OWLClassA a = null;
-		for (Object e : someContext.values()) {
-			if (e instanceof OWLClassA) {
-				a = (OWLClassA) e;
-				break;
-			}
+		try {
+			connection.commit();
+		} finally {
+			verify(storageMngrMock, never()).commit();
 		}
-		assertNotNull(a);
-		final OWLClassA res = connection.find(OWLClassA.class, a.getUri());
-		assertNotNull(res);
-		someContext.remove(res.getUri());
-		res.setStringAttribute("ModifiedString");
-		final Field strField = OWLClassA.getStrAttField();
-		connection.merge(res.getUri(), res, strField);
-		assertTrue(someContext.containsKey(res.getUri()));
-		assertEquals(res, someContext.get(res.getUri()));
-	}
-
-	@Test(expected = EntityNotRegisteredException.class)
-	public void testMergeNotPersistent() throws Exception {
-		LOG.config("Test: merge unknown entity.");
-		final OWLClassB b = new OWLClassB();
-		b.setUri(URI.create("http://connectionTestB"));
-		b.setStringAttribute("string");
-		final Field strField = OWLClassB.getStrAttField();
-		connection.merge(b.getUri(), b, strField);
-	}
-
-	@Test
-	public void testPersist() throws Exception {
-		LOG.config("Test: persist entity into current context.");
-		final OWLClassB b = new OWLClassB();
-		b.setUri(URI.create("http://connectionTestB"));
-		b.setStringAttribute("string");
-		final Context ctx = knownContexts.get(0);
-		connection.persist(b.getUri(), b);
-		assertTrue(knownEntities.get(ctx).containsKey(b.getUri()));
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testPersistNull() throws Exception {
-		LOG.config("Test: persist null.");
-		connection.persist(null, null);
-		fail("This line should not have been reached.");
-	}
-
-	@Test
-	public void testPersistObjectToContext() throws Exception {
-		LOG.config("Test: persist entity into context.");
-		final OWLClassB b = new OWLClassB();
-		b.setUri(URI.create("http://connectionTestB"));
-		b.setStringAttribute("string");
-		final Context ctx = knownContexts.get(0);
-		connection.persist(b.getUri(), b, ctx.getUri());
-		assertTrue(knownEntities.get(ctx).containsKey(b.getUri()));
-	}
-
-	@Test(expected = OntoDriverException.class)
-	public void testPersistObjectToUnknownContext() throws Exception {
-		LOG.config("Test: persist entity into unknown context.");
-		final OWLClassB b = new OWLClassB();
-		b.setUri(URI.create("http://connectionTestB"));
-		b.setStringAttribute("string");
-		final URI unknownCtx = URI.create("http://unknown-context");
-		connection.persist(b.getUri(), b, unknownCtx);
-		fail("This line should not have been reached.");
-	}
-
-	@Test
-	public void testRegisterWithContext() throws Exception {
-		LOG.config("Test: register entity with context.");
-		final Context ctx = knownContexts.get(0);
-		final Map<Object, Object> someContext = knownEntities.get(ctx);
-		final Object pk = someContext.keySet().iterator().next();
-		final Object entity = someContext.get(pk);
-		connection.registerWithContext(entity, ctx.getUri());
-		final Context res = connection.getSaveContextFor(entity);
-		assertNotNull(res);
-		assertEquals(ctx, res);
-	}
-
-	@Test
-	public void testRemove() throws Exception {
-		LOG.config("Test: remove entity.");
-		final Map<Object, Object> someContext = knownEntities.get(knownContexts.get(0));
-		final Object pk = someContext.keySet().iterator().next();
-		final Object entity = someContext.get(pk);
-		final Object res = connection.find(entity.getClass(), pk);
-		connection.remove(pk, res);
-		assertFalse(someContext.containsKey(pk));
-	}
-
-	@Test
-	public void testRemoveFromContext() throws Exception {
-		LOG.config("Test: remove entity from context.");
-		final Context ctx = knownContexts.get(0);
-		final Map<Object, Object> someContext = knownEntities.get(ctx);
-		final Object pk = someContext.keySet().iterator().next();
-		final Object entity = someContext.get(pk);
-		final Object res = connection.find(entity.getClass(), pk);
-		connection.remove(pk, res, ctx.getUri());
-		assertFalse(someContext.containsKey(pk));
-	}
-
-	@Test(expected = OntoDriverException.class)
-	public void testRemoveFromDifferentContext() throws Exception {
-		LOG.config("Test: remove entity from incorrect context.");
-		final Context ctx = knownContexts.get(0);
-		final Context other = knownContexts.get(1);
-		final Map<Object, Object> someContext = knownEntities.get(ctx);
-		final Object pk = someContext.keySet().iterator().next();
-		final Object entity = someContext.get(pk);
-		final Object res = connection.find(entity.getClass(), pk);
-		connection.remove(pk, res, other.getUri());
-		fail("This line should not have been reached.");
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testRemoveNull() throws Exception {
-		LOG.config("Test: remove entity. Null passed.");
-		connection.remove(null, new OWLClassA());
-		fail("This line should not have been reached.");
-	}
-
-	@Test
-	public void testRollback() throws Exception {
-		LOG.config("Test: rollback.");
-		final OWLClassB b = new OWLClassB();
-		b.setUri(URI.create("http://connectionTestB"));
-		b.setStringAttribute("string");
-		// Make a change so there's something to commit
-		connection.setAutoCommit(false);
-		connection.persist(b.getUri(), b);
-		connection.rollback();
-		assertTrue(storageMngr.isRolledBack());
 	}
 
 	@Test
 	public void testSetAutoCommit() throws Exception {
-		LOG.config("Test: set auto commit.");
+		connection.setAutoCommit(true);
+		assertTrue(connection.getAutoCommit());
+
 		connection.setAutoCommit(false);
 		assertFalse(connection.getAutoCommit());
 	}
 
-	@Test
-	public void testSetConnectionContext() throws Exception {
-		LOG.config("Test: set connection context.");
-		final Context ctx = knownContexts.get(knownContexts.size() - 1);
-		assertFalse(ctx.equals(connection.getCurrentContext()));
-		connection.setConnectionContext(ctx.getUri());
-		assertEquals(ctx, connection.getCurrentContext());
+	@Test(expected = IllegalStateException.class)
+	public void testSetAutoCommitOnClosed() throws Exception {
+		connection.close();
+		connection.setAutoCommit(true);
 	}
 
 	@Test
-	public void testSetSaveContextFor() throws Exception {
-		LOG.config("Test: set save context for entity.");
-		final OWLClassB b = new OWLClassB();
-		b.setUri(URI.create("http://connectionTestB"));
-		b.setStringAttribute("string");
-		final URI ctx = StorageManagerMock.CONTEXT_THREE_URI;
-		connection.setSaveContextFor(b, ctx);
-		final Context c = connection.getSaveContextFor(b);
-		assertEquals(ctx, c.getUri());
+	public void testRollback() throws Exception {
+		// Make sure there are changes
+		hasChangesField.set(connection, Boolean.TRUE);
+		connection.rollback();
+
+		verify(storageMngrMock).rollback();
+		assertFalse(hasChangesField.getBoolean(connection));
+	}
+
+	@Test
+	public void testRollbackNoChanges() throws Exception {
+		connection.commit();
+
+		verify(storageMngrMock, never()).rollback();
+	}
+
+	@Test
+	public void testContains() throws Exception {
+		final RepositoryID id = repos.get(2).createRepositoryID(false);
+		final URI pk = URI.create("http://pk");
+		when(storageMngrMock.contains(pk, id)).thenReturn(true);
+
+		final boolean res = connection.contains(pk, id);
+		assertTrue(res);
+		verify(storageMngrMock).contains(pk, id);
 	}
 
 	@Test(expected = NullPointerException.class)
-	public void testSetSaveContextForNull() throws Exception {
-		LOG.config("Test: set save context for entity. Null passed as entity.");
-		connection.setSaveContextFor(null, StorageManagerMock.CONTEXT_ONE_URI);
-		fail("This line should not have been reached.");
+	public void testContainsNull() throws Exception {
+		final URI pk = URI.create("http://pk");
+
+		final boolean res = connection.contains(pk, null);
+		// Shouldn't be called
+		assertFalse(res);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testFind() throws Exception {
+		final RepositoryID id = repos.get(2).createRepositoryID(false);
+		final URI pk = URI.create("http://pk");
+		final OWLClassA a = new OWLClassA();
+		when(storageMngrMock.find(any(Class.class), any(Object.class), any(RepositoryID.class)))
+				.thenReturn(null);
+		when(storageMngrMock.find(OWLClassA.class, pk, id)).thenReturn(a);
+
+		final OWLClassA res = connection.find(OWLClassA.class, pk, id);
+		assertNotNull(res);
+		assertSame(a, res);
+		verify(storageMngrMock).find(OWLClassA.class, pk, id);
+
+		final URI pkTwo = URI.create("http://pkTwo");
+		final OWLClassA resTwo = connection.find(OWLClassA.class, pkTwo, id);
+		assertNull(resTwo);
+		verify(storageMngrMock).find(OWLClassA.class, pkTwo, id);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test(expected = NullPointerException.class)
+	public void testFindNull() throws Exception {
+		try {
+			final OWLClassA res = connection.find(OWLClassA.class, null, null);
+			assertNull(res);
+		} finally {
+			verify(storageMngrMock, never()).find(any(Class.class), any(Object.class),
+					any(RepositoryID.class));
+		}
+	}
+
+	@Test
+	public void testIsConsistent() throws Exception {
+		when(storageMngrMock.isConsistent(any(RepositoryID.class))).thenReturn(Boolean.TRUE);
+		final RepositoryID id = repos.get(1).createRepositoryID(false);
+
+		final boolean res = connection.isConsistent(id);
+		assertTrue(res);
+		verify(storageMngrMock).isConsistent(id);
+	}
+
+	@Test
+	public void testLoadFieldValue() throws Exception {
+		doAnswer(new Answer<Object>() {
+
+			@Override
+			public Object answer(InvocationOnMock invocation) throws Throwable {
+				for (Object o : invocation.getArguments()) {
+					// Just check that the arguments were passed to storage
+					// manager correctly
+					if (o == null) {
+						throw new NullPointerException();
+					}
+				}
+				return null;
+			}
+		}).when(storageMngrMock).loadFieldValue(any(), any(Field.class), any(RepositoryID.class));
+		final OWLClassA a = new OWLClassA();
+		final Field f = OWLClassA.getStrAttField();
+		final RepositoryID id = repos.get(1).createRepositoryID(false);
+
+		connection.loadFieldValue(a, f, id);
+		verify(storageMngrMock).loadFieldValue(a, f, id);
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testLoadFieldValueNull() throws Exception {
+		final Field f = OWLClassA.getStrAttField();
+		final RepositoryID id = repos.get(1).createRepositoryID(false);
+
+		try {
+			connection.loadFieldValue(null, f, id);
+		} finally {
+			verify(storageMngrMock, never()).loadFieldValue(any(), any(Field.class),
+					any(RepositoryID.class));
+		}
+	}
+
+	@Test
+	public void testMerge() throws Exception {
+		final OWLClassA a = new OWLClassA();
+		final URI pk = URI.create("http://pk");
+		final Field f = OWLClassA.getStrAttField();
+		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		connection.setAutoCommit(false);
+
+		connection.merge(pk, a, f, id);
+		assertTrue(hasChangesField.getBoolean(connection));
+		verify(storageMngrMock).merge(pk, a, f, id);
+		verify(storageMngrMock, never()).commit();
+	}
+
+	@Test
+	public void testMergeAutoCommit() throws Exception {
+		final OWLClassA a = new OWLClassA();
+		final URI pk = URI.create("http://pk");
+		final Field f = OWLClassA.getStrAttField();
+		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		connection.setAutoCommit(true);
+
+		connection.merge(pk, a, f, id);
+		// The changes were committed, so there should be none now
+		assertFalse(hasChangesField.getBoolean(connection));
+		verify(storageMngrMock).merge(pk, a, f, id);
+		verify(storageMngrMock).commit();
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testMergeNull() throws Exception {
+		final URI pk = URI.create("http://pk");
+		final Field f = OWLClassA.getStrAttField();
+		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		try {
+			connection.merge(pk, null, f, id);
+		} finally {
+			assertFalse(hasChangesField.getBoolean(connection));
+			verify(storageMngrMock, never()).merge(any(), any(), any(Field.class),
+					any(RepositoryID.class));
+			verify(storageMngrMock, never()).commit();
+		}
+	}
+
+	@Test
+	public void testPersist() throws Exception {
+		final OWLClassA a = new OWLClassA();
+		final URI pk = URI.create("http://pk");
+		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		connection.setAutoCommit(false);
+
+		connection.persist(pk, a, id);
+		assertTrue(hasChangesField.getBoolean(connection));
+		verify(storageMngrMock).persist(pk, a, id);
+		verify(storageMngrMock, never()).commit();
+	}
+
+	@Test
+	public void testPersistAutoCommit() throws Exception {
+		final OWLClassA a = new OWLClassA();
+		final URI pk = URI.create("http://pk");
+		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		connection.setAutoCommit(true);
+
+		connection.persist(pk, a, id);
+		assertFalse(hasChangesField.getBoolean(connection));
+		verify(storageMngrMock).persist(pk, a, id);
+		verify(storageMngrMock).commit();
+	}
+
+	@Test
+	public void testRemove() throws Exception {
+		final URI pk = URI.create("http://pk");
+		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		connection.setAutoCommit(false);
+
+		connection.remove(pk, id);
+		assertTrue(hasChangesField.getBoolean(connection));
+		verify(storageMngrMock).remove(pk, id);
+		verify(storageMngrMock, never()).commit();
+	}
+
+	@Test
+	public void testRemoveAutoCommit() throws Exception {
+		final URI pk = URI.create("http://pk");
+		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		connection.setAutoCommit(true);
+
+		connection.remove(pk, id);
+		assertFalse(hasChangesField.getBoolean(connection));
+		verify(storageMngrMock).remove(pk, id);
+		verify(storageMngrMock).commit();
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testRemoveNull() throws Exception {
+		final RepositoryID id = repos.get(0).createRepositoryID(false);
+		try {
+			connection.remove(null, id);
+		} finally {
+			verify(storageMngrMock, never()).remove(any(), any(RepositoryID.class));
+		}
+	}
+
+	@Test
+	public void createStatement() throws Exception {
+		final Statement stmt = connection.createStatement();
+		assertNotNull(stmt);
+	}
+
+	@Test
+	public void testGetRepositories() throws Exception {
+		final List<Repository> res = connection.getRepositories();
+		assertEquals(repos, res);
+	}
+
+	@Test
+	public void testGetRepository() throws Exception {
+		final Repository r = repos.get(3);
+		final Repository res = connection.getRepository(r.getId());
+		assertNotNull(res);
+		assertEquals(r, res);
+	}
+
+	@Test(expected = RepositoryNotFoundException.class)
+	public void testGetRepositoryTooSmall() throws Exception {
+		final Integer val = -1;
+		final Repository res = connection.getRepository(val);
+		assert res == null;
+	}
+
+	@Test(expected = RepositoryNotFoundException.class)
+	public void testGetRepositoryTooBig() throws Exception {
+		final Integer val = Integer.MAX_VALUE;
+		final Repository res = connection.getRepository(val);
+		assert res == null;
 	}
 }

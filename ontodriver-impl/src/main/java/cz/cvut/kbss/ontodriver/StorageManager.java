@@ -2,9 +2,11 @@ package cz.cvut.kbss.ontodriver;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Objects;
 
 import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -25,10 +27,8 @@ public abstract class StorageManager implements Transactional {
 	protected boolean open;
 
 	public StorageManager(PersistenceProviderFacade persistenceProvider) {
-		if (persistenceProvider == null) {
-			throw new NullPointerException("Persistence provider cannot be null.");
-		}
-		this.persistenceProvider = persistenceProvider;
+		this.persistenceProvider = Objects.requireNonNull(persistenceProvider,
+				ErrorUtils.constructNPXMessage("persistenceProvider"));
 		this.open = true;
 	}
 

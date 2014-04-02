@@ -23,7 +23,7 @@ import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.StorageManagerImpl;
-import cz.cvut.kbss.ontodriver.utils.DriverFactoryMock;
+import cz.cvut.kbss.ontodriver.utils.DriverFactoryStub;
 import cz.cvut.kbss.ontodriver.utils.OWLClassA;
 import cz.cvut.kbss.ontodriver.utils.OWLClassB;
 import cz.cvut.kbss.ontodriver.utils.OntoDriverMock;
@@ -35,7 +35,7 @@ public class StorageManagerTest {
 	private static final Logger LOG = Logger.getLogger(StorageManagerTest.class.getName());
 
 	private static OntoDriverMock driver;
-	private static DriverFactoryMock factory;
+	private static DriverFactoryStub factory;
 
 	private static StorageManager manager;
 
@@ -65,7 +65,7 @@ public class StorageManagerTest {
 		}
 		manager.close();
 		assertFalse(manager.isOpen());
-		for (StorageModuleMock m : DriverFactoryMock.getDefaultModules().values()) {
+		for (StorageModuleMock m : DriverFactoryStub.getDefaultModules().values()) {
 			assertFalse(m.isOpen());
 		}
 	}
@@ -73,7 +73,7 @@ public class StorageManagerTest {
 	@Test
 	public void testFind() throws Exception {
 		LOG.config("Test: find.");
-		final StorageModuleMock e = DriverFactoryMock.getDefaultModules().get(
+		final StorageModuleMock e = DriverFactoryStub.getDefaultModules().get(
 				factory.getContexts().get(0));
 		final Context ctx = e.getContext();
 		final Object pk = e.getUris().get(0);
@@ -97,7 +97,7 @@ public class StorageManagerTest {
 	@Test(expected = OntoDriverException.class)
 	public void testFindUnknownContext() throws Exception {
 		LOG.config("Test: find entity. Unknown context.");
-		final StorageModuleMock e = DriverFactoryMock.getDefaultModules().get(
+		final StorageModuleMock e = DriverFactoryStub.getDefaultModules().get(
 				factory.getContexts().get(0));
 		final Object pk = e.getUris().get(0);
 		final Object entity = e.getEntities().get(pk);
@@ -157,7 +157,7 @@ public class StorageManagerTest {
 	@Test
 	public void testMerge() throws Exception {
 		LOG.config("Test: merge entity.");
-		final StorageModuleMock e = DriverFactoryMock.getDefaultModules().get(
+		final StorageModuleMock e = DriverFactoryStub.getDefaultModules().get(
 				factory.getContexts().get(1));
 		final Context ctx = e.getContext();
 		final OWLClassB merged = new OWLClassB();
@@ -182,7 +182,7 @@ public class StorageManagerTest {
 	@Test
 	public void testPersist() throws Exception {
 		LOG.config("Test: persist.");
-		final StorageModuleMock e = DriverFactoryMock.getDefaultModules().get(
+		final StorageModuleMock e = DriverFactoryStub.getDefaultModules().get(
 				factory.getContexts().get(1));
 		final Context ctx = e.getContext();
 		final OWLClassB toPersist = new OWLClassB();
@@ -212,7 +212,7 @@ public class StorageManagerTest {
 	@Test
 	public void testRemove() throws Exception {
 		LOG.config("Test: remove.");
-		final StorageModuleMock e = DriverFactoryMock.getDefaultModules().get(
+		final StorageModuleMock e = DriverFactoryStub.getDefaultModules().get(
 				factory.getContexts().get(0));
 		final Context ctx = e.getContext();
 		final Object pk = e.getUris().get(0);
@@ -240,7 +240,7 @@ public class StorageManagerTest {
 	@Test
 	public void testRollback() throws Exception {
 		LOG.config("Test: rollback.");
-		final StorageModuleMock e = DriverFactoryMock.getDefaultModules().get(
+		final StorageModuleMock e = DriverFactoryStub.getDefaultModules().get(
 				factory.getContexts().get(1));
 		final Context ctx = e.getContext();
 		final OWLClassB toPersist = new OWLClassB();

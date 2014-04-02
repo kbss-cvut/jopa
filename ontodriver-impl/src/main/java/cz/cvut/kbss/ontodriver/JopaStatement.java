@@ -1,6 +1,9 @@
 package cz.cvut.kbss.ontodriver;
 
+import java.util.Objects;
+
 import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -21,11 +24,8 @@ public class JopaStatement implements Statement {
 	private RepositoryID repository;
 
 	public JopaStatement(StorageManager manager) {
-		if (manager == null) {
-			throw new NullPointerException();
-		}
+		this.manager = Objects.requireNonNull(manager, ErrorUtils.constructNPXMessage("manager"));
 		this.useTransactionalOntology = true;
-		this.manager = manager;
 	}
 
 	@Override

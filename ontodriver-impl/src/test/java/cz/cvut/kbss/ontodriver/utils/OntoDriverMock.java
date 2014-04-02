@@ -10,12 +10,12 @@ import cz.cvut.kbss.ontodriver.impl.OntoDriverImpl;
 
 public class OntoDriverMock extends OntoDriverImpl {
 
-	private DriverFactoryMock factoryMock;
+	private DriverFactoryStub factoryMock;
 
 	public OntoDriverMock() {
 		super();
-		this.factoryMock = new DriverFactoryMock();
-		DriverFactoryMock.init(factoryMock);
+		this.factoryMock = new DriverFactoryStub();
+		DriverFactoryStub.init(factoryMock);
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class OntoDriverMock extends OntoDriverImpl {
 		return null;
 	}
 
-	public DriverFactoryMock getFactoryMock() {
+	public DriverFactoryStub getFactoryMock() {
 		return factoryMock;
 	}
 }
