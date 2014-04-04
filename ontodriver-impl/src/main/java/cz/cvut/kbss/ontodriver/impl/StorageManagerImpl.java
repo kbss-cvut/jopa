@@ -84,6 +84,9 @@ public class StorageManagerImpl extends StorageManager {
 		}
 		ensureState();
 		Objects.requireNonNull(statement, ErrorUtils.constructNPXMessage("statement"));
+		Objects.requireNonNull(statement.getRepository(),
+				ErrorUtils.constructNPXMessage("statement.getRepository"));
+
 		final StorageModule m = getModule(statement.getRepository());
 		return m.executeStatement(statement);
 	}
@@ -213,6 +216,7 @@ public class StorageManagerImpl extends StorageManager {
 		for (StorageModule module : modulesWithChanges.values()) {
 			module.rollback();
 		}
+		modulesWithChanges.clear();
 	}
 
 	private void moduleChanged(StorageModule m) {
