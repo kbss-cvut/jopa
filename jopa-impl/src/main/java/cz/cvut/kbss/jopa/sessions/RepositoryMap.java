@@ -1,23 +1,24 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.RepositoryID;
 
 final class RepositoryMap {
 
-	private final List<Map<URI, Map<Object, Object>>> map;
+	private final Map<Integer, Map<URI, Map<Object, Object>>> map;
 	private Map<Object, RepositoryID> entityToRepository;
 
-	public RepositoryMap(int size) {
-		this.map = new ArrayList<>(size);
-		for (int i = 0; i < size; i++) {
-			map.add(new HashMap<URI, Map<Object, Object>>());
+	public RepositoryMap(List<Repository> repos) {
+		final int size = repos.size();
+		this.map = new HashMap<>(size);
+		for (Repository r : repos) {
+			map.put(r.getId(), new HashMap<URI, Map<Object, Object>>());
 		}
 	}
 
@@ -28,7 +29,6 @@ final class RepositoryMap {
 	void add(RepositoryID repository, Object key, Object value) {
 		assert repository != null;
 		assert !repository.getContexts().isEmpty();
-		assert repository.getRepository() < map.size();
 		assert key != null;
 		// Null values are permitted
 
@@ -87,7 +87,7 @@ final class RepositoryMap {
 	}
 
 	void clear() {
-		for (Map<URI, Map<Object, Object>> m : map) {
+		for (Map<URI, Map<Object, Object>> m : map.values()) {
 			m.clear();
 		}
 		if (entityToRepository != null) {
@@ -97,6 +97,9 @@ final class RepositoryMap {
 
 	private Map<Object, Object> getMap(RepositoryID repository) {
 		final Map<URI, Map<Object, Object>> m = map.get(repository.getRepository());
+		if (m == null) {
+			throw new IllegalArgumentException("Unknown repository " + repository);
+		}
 		final URI ctx = repository.getContexts().iterator().next();
 		Map<Object, Object> entities;
 		if (!m.containsKey(ctx)) {

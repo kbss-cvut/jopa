@@ -42,17 +42,10 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	private final UnitOfWorkImpl uow;
 
-	public CloneBuilderImpl() {
-		this.uow = null;
-		this.visitedObjects = new IdentityHashMap<Object, Object>();
-		this.visitedEntities = new RepositoryMap(16);
-		this.builders = new Builders();
-	}
-
 	public CloneBuilderImpl(UnitOfWorkImpl uow) {
 		this.uow = uow;
 		this.visitedObjects = new IdentityHashMap<Object, Object>();
-		this.visitedEntities = new RepositoryMap(uow.getRepositories().size());
+		this.visitedEntities = new RepositoryMap(uow.getRepositories());
 		this.builders = new Builders();
 	}
 

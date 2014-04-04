@@ -101,7 +101,7 @@ public class ServerSession extends AbstractSession {
 		}
 		String cache = properties.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
 		if (cache == null || cache.equals("on")) {
-			this.liveObjectCache = new CacheManagerImpl(this, storageProperties.size(), properties);
+			this.liveObjectCache = new CacheManagerImpl(this, properties);
 			liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
 		} else {
 			this.liveObjectCache = new DisabledCacheManager();

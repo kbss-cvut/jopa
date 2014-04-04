@@ -89,7 +89,7 @@ public class CacheManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		this.mngr = new CacheManagerImpl(session, 2, Collections.<String, String> emptyMap());
+		this.mngr = new CacheManagerImpl(session, Collections.<String, String> emptyMap());
 	}
 
 	@Test(expected = OWLPersistenceException.class)
@@ -98,7 +98,7 @@ public class CacheManagerTest {
 		final Map<String, String> m = new HashMap<>();
 		m.put(OWLAPIPersistenceProperties.CACHE_TTL, "1s");
 		m.put(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE, "2");
-		final CacheManager man = new CacheManagerImpl(session, 2, m);
+		final CacheManager man = new CacheManagerImpl(session, m);
 		assertNull(man);
 	}
 
@@ -364,7 +364,7 @@ public class CacheManagerTest {
 		final Map<String, String> props = new HashMap<String, String>();
 		props.put(OWLAPIPersistenceProperties.CACHE_TTL, "1");
 		props.put(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE, "2");
-		this.mngr = new CacheManagerImpl(session, 2, props);
+		this.mngr = new CacheManagerImpl(session, props);
 	}
 
 	private void addAllToCache(Map<URI, OWLClassB> entities) {
@@ -390,7 +390,7 @@ public class CacheManagerTest {
 		}
 
 		@Override
-		protected List<Repository> getRepositories() {
+		public List<Repository> getRepositories() {
 			return repositories;
 		}
 	}

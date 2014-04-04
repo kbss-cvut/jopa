@@ -53,7 +53,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
 	private boolean isActive;
 	private boolean inCommit;
-	private int repositoryCount;
 
 	private UnitOfWorkChangeSet uowChangeSet;
 
@@ -75,8 +74,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		this.parent = parent;
 		this.cloneMapping = createMap();
 		this.cloneToOriginals = createMap();
-		this.repositoryCount = parent.getRepositories().size();
-		this.repositoryMap = new RepositoryMap(repositoryCount);
+		this.repositoryMap = new RepositoryMap(parent.getRepositories());
 		this.cloneBuilder = new CloneBuilderImpl(this);
 		this.cacheManager = parent.getLiveObjectCache();
 		this.storageConnection = acquireConnection();
@@ -1178,7 +1176,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private void registerWithContext(RepositoryID repository, Object entity) {
 		assert repository != null;
 		assert entity != null;
-		assert repository.getRepository() < repositoryCount;
 
 		repositoryMap.add(repository, entity, null);
 		repositoryMap.addEntityToRepository(entity, repository);
@@ -1187,7 +1184,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private boolean isInRepository(RepositoryID repository, Object entity) {
 		assert repository != null;
 		assert entity != null;
-		assert repository.getRepository() < repositoryCount;
 
 		if (repository.getContexts().isEmpty()) {
 			return false;
