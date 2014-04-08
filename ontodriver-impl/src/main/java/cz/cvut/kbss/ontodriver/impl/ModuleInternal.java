@@ -93,8 +93,6 @@ public interface ModuleInternal<X, Y> {
 	/**
 	 * Merges state of the specified entity field into this module. </p>
 	 * 
-	 * @param primaryKey
-	 *            Primary key
 	 * @param entity
 	 *            The entity to merge
 	 * @param mergedField
@@ -108,7 +106,7 @@ public interface ModuleInternal<X, Y> {
 	 *             If the entity is not persistent or if an error occurs during
 	 *             merge
 	 */
-	public <T> void mergeEntity(Object primaryKey, T entity, Field mergedField, RepositoryID context)
+	public <T> void mergeEntity(T entity, Field mergedField, RepositoryID context)
 			throws OntoDriverException;
 
 	/**

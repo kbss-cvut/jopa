@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -32,10 +33,6 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * 
  */
 class PluralObjectPropertyStrategy extends AttributeStrategy {
-
-	public PluralObjectPropertyStrategy(SesameModuleInternal internal) {
-		super(internal);
-	}
 
 	protected PluralObjectPropertyStrategy(SesameModuleInternal internal, SubjectModels models) {
 		super(internal, models);
@@ -74,24 +71,25 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 	}
 
 	@Override
-	<T> void save(T entity, URI uri, Attribute<?, ?> att, URI attUri, Object value)
+	<T> void save(URI primaryKey, Attribute<?, ?> att, Object value, URI context, boolean removeOld)
 			throws OntoDriverException {
 		assert (att instanceof PluralAttribute<?, ?, ?>);
 		final PluralAttribute<?, ?, ?> pa = (PluralAttribute<?, ?, ?>) att;
+		final URI attUri = getAddressAsSesameUri(att.getIRI());
 		switch (pa.getCollectionType()) {
 		case SET:
 			final Set<?> set = Set.class.cast(value);
-			saveSet(uri, attUri, set);
+			saveSet(primaryKey, attUri, set, context, removeOld);
 			break;
 		case LIST:
 			final ListAttribute<?, ?> la = (ListAttribute<?, ?>) pa;
 			final List<?> lst = List.class.cast(value);
 			switch (la.getSequenceType()) {
 			case referenced:
-				saveReferencedList(uri, attUri, la, lst);
+				saveReferencedList(primaryKey, attUri, la, lst, context, removeOld);
 				break;
 			case simple:
-				saveSimpleList(uri, attUri, la, lst);
+				saveSimpleList(primaryKey, attUri, la, lst, context, removeOld);
 				break;
 			}
 			break;
@@ -220,8 +218,11 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		return lst;
 	}
 
-	private void saveSet(URI uri, URI propertyUri, Set<?> values) throws OntoDriverException {
-		removeOldObjectPropertyValues(uri, propertyUri);
+	private void saveSet(URI primaryKey, URI propertyUri, Set<?> values, URI context,
+			boolean removeOld) throws OntoDriverException {
+		if (removeOld) {
+			removeOldObjectPropertyValues(primaryKey, propertyUri, context);
+		}
 		if (values == null || values.isEmpty()) {
 			return;
 		}
@@ -229,17 +230,20 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		for (Object val : values) {
 			final URI id = getIdentifier(val);
 			assert id != null;
-			final Statement stmt = valueFactory.createStatement(id, propertyUri, uri);
+			final Statement stmt = valueFactory.createStatement(id, propertyUri, primaryKey);
 			stmts.add(stmt);
 		}
-		addIndividualsForReferencedEntities(values);
-		addStatements(stmts);
+		addIndividualsForReferencedEntities(values, context);
+		addStatements(stmts, context);
 	}
 
-	private void saveSimpleList(URI uri, URI hasSequence, ListAttribute<?, ?> la, List<?> values)
-			throws OntoDriverException {
-		removeOldList(uri, hasSequence, getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI()),
-				la.isInferred());
+	private void saveSimpleList(URI primaryKey, URI hasSequence, ListAttribute<?, ?> la,
+			List<?> values, URI context, boolean removeOld) throws OntoDriverException {
+		if (removeOld) {
+			removeOldList(primaryKey, hasSequence,
+					getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI()), la.isInferred(),
+					context);
+		}
 		if (values == null || values.isEmpty()) {
 			return;
 		}
@@ -249,19 +253,21 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		assert it.hasNext();
 		Object val = it.next();
 		URI seq = getIdentifier(val);
-		toSave.add(valueFactory.createStatement(uri, hasSequence, seq));
+		toSave.add(valueFactory.createStatement(primaryKey, hasSequence, seq));
 		while (it.hasNext()) {
 			URI next = getIdentifier(it.next());
 			toSave.add(valueFactory.createStatement(seq, hasNext, next));
 			seq = next;
 		}
-		addIndividualsForReferencedEntities(values);
-		addStatements(toSave);
+		addIndividualsForReferencedEntities(values, context);
+		addStatements(toSave, context);
 	}
 
-	private void removeOldList(URI uri, URI hasSequence, URI hasNext, boolean includeInferred) {
+	private void removeOldList(URI primaryKey, URI hasSequence, URI hasNext,
+			boolean includeInferred, URI context) {
 		final List<Statement> toRemove = new LinkedList<>();
-		final Value val = getPropertyValue(uri, hasSequence, includeInferred);
+		final Set<URI> ctxs = Collections.singleton(context);
+		final Value val = getPropertyValue(primaryKey, hasSequence, includeInferred, ctxs);
 		if (val == null) {
 			return;
 		}
@@ -270,9 +276,9 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 					+ " has to be an URI.");
 		}
 		URI seq = (URI) val;
-		toRemove.add(valueFactory.createStatement(uri, hasSequence, seq));
+		toRemove.add(valueFactory.createStatement(primaryKey, hasSequence, seq));
 		while (seq != null) {
-			final Value next = getPropertyValue(seq, hasNext, includeInferred);
+			final Value next = getPropertyValue(seq, hasNext, includeInferred, ctxs);
 			if (next == null) {
 				break;
 			}
@@ -284,25 +290,29 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 			toRemove.add(valueFactory.createStatement(seq, hasNext, next));
 			seq = (URI) next;
 		}
-		removeStatements(toRemove);
+		removeStatements(toRemove, context);
 	}
 
-	private void saveReferencedList(URI uri, URI hasSequence, ListAttribute<?, ?> la, List<?> values)
-			throws OntoDriverException {
+	private void saveReferencedList(URI primaryKey, URI hasSequence, ListAttribute<?, ?> la,
+			List<?> values, URI context, boolean removeOld) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINE)) {
-			LOG.fine("Setting referenced list " + uri + ", sequence=" + values);
+			LOG.fine("Setting referenced list " + primaryKey + ", sequence=" + values);
 		}
-		removeOldList(uri, hasSequence, getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI()),
-				la.isInferred());
+		if (removeOld) {
+			removeOldList(primaryKey, hasSequence,
+					getAddressAsSesameUri(la.getOWLObjectPropertyHasNextIRI()), la.isInferred(),
+					context);
+		}
 		final int size = values == null ? 3 : (values.size() * 2 + 3);
 		final List<Statement> toSave = new ArrayList<>(size);
-		final String localName = uri.getLocalName(); // ~ IRI.getFragment()
+		final String localName = primaryKey.getLocalName(); // ~
+															// IRI.getFragment()
 		final URI listUri = generatePrimaryKey(localName + "-SEQ");
 		toSave.add(valueFactory.createStatement(listUri, RDF.TYPE,
 				getAddressAsSesameUri(la.getOWLListClass())));
-		toSave.add(valueFactory.createStatement(uri, hasSequence, listUri));
+		toSave.add(valueFactory.createStatement(primaryKey, hasSequence, listUri));
 		if (values == null || values.isEmpty()) {
-			addStatements(toSave);
+			addStatements(toSave, context);
 			return;
 		}
 
@@ -322,7 +332,7 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 			toSave.add(valueFactory.createStatement(next2, hasContents, getIdentifier(val)));
 			next = next2;
 		}
-		addIndividualsForReferencedEntities(values);
-		addStatements(toSave);
+		addIndividualsForReferencedEntities(values, context);
+		addStatements(toSave, context);
 	}
 }

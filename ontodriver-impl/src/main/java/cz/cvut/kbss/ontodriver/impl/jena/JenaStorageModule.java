@@ -64,7 +64,7 @@ public class JenaStorageModule extends StorageModule {
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID context)
+	public <T> void merge(T entity, Field mergedField, RepositoryID context)
 			throws OntoDriverException {
 		// TODO Auto-generated method stub
 

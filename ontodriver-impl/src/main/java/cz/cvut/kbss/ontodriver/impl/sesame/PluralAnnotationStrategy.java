@@ -13,10 +13,6 @@ import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
  */
 class PluralAnnotationStrategy extends PluralDataPropertyStrategy {
 
-	protected PluralAnnotationStrategy(SesameModuleInternal internal) {
-		super(internal);
-	}
-
 	protected PluralAnnotationStrategy(SesameModuleInternal internal, SubjectModels models) {
 		super(internal, models);
 	}
@@ -25,10 +21,5 @@ class PluralAnnotationStrategy extends PluralDataPropertyStrategy {
 	<T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad) {
 		throw new NotYetImplementedException(
 				"Collection annotation properties are not implemented yet.");
-	}
-
-	@Override
-	<T> void save(T entity, URI uri, Attribute<?, ?> att, URI attUri, Object value) {
-		super.save(entity, uri, att, attUri, value);
 	}
 }

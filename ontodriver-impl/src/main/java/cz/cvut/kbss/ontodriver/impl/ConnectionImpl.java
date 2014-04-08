@@ -125,15 +125,14 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID repository)
+	public <T> void merge(T entity, Field mergedField, RepositoryID repository)
 			throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(primaryKey, "Argument 'primaryKey' cannot be null.");
 		Objects.requireNonNull(entity, "Argument 'entity' cannot be null.");
 		Objects.requireNonNull(mergedField, "Argument 'mergedField' cannot be null.");
 		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
 
-		storageManager.merge(primaryKey, entity, mergedField, repository);
+		storageManager.merge(entity, mergedField, repository);
 		this.hasChanges = true;
 		if (autoCommit) {
 			commit();

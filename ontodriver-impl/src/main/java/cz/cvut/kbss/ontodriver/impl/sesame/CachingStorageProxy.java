@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.impl.sesame;
 import info.aduna.iteration.Iterations;
 
 import java.util.Collection;
+import java.util.Set;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -17,6 +18,8 @@ import org.openrdf.repository.RepositoryException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 class CachingStorageProxy extends TransparentStorageProxy {
+	
+	// TODO The caching connector will have to be reworked. Each context will need its own model
 
 	private Model explicitModel;
 	private Model model;
@@ -70,9 +73,11 @@ class CachingStorageProxy extends TransparentStorageProxy {
 	}
 
 	@Override
-	public boolean contains(URI uri) {
+	public boolean contains(URI uri, Set<URI> contexts) {
 		ensureOpen();
-		return explicitModel.contains(uri, null, null) || explicitModel.contains(null, null, uri);
+		final URI[] ctxs = varargs(contexts);
+		return explicitModel.contains(uri, null, null, ctxs)
+				|| explicitModel.contains(null, null, uri, ctxs);
 	}
 
 	@Override

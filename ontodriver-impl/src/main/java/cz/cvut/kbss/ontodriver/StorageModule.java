@@ -111,6 +111,43 @@ public abstract class StorageModule implements Transactional {
 	}
 
 	/**
+	 * Tries to get entity from the persistence provider's second level cache.
+	 * </p>
+	 * 
+	 * RepositoryID of this module is used.
+	 * 
+	 * @param cls
+	 *            Entity class
+	 * @param primaryKey
+	 *            Entity primary key
+	 * @return Matching entity or {@code null}
+	 */
+	public <T> T getEntityFromProviderCache(Class<T> cls, Object primaryKey) {
+		return getEntityFromProviderCache(cls, primaryKey, repositoryId);
+	}
+
+	/**
+	 * Tries to get entity from the persistence provider's second level cache.
+	 * </p>
+	 * 
+	 * The specified repository ID is used to determine contexts to search.
+	 * 
+	 * @param cls
+	 *            Entity class
+	 * @param primaryKey
+	 *            Entity primary key
+	 * @param repoId
+	 *            Repository identifier
+	 * @return Matching entity or {@code null}
+	 */
+	public <T> T getEntityFromProviderCache(Class<T> cls, Object primaryKey, RepositoryID repoId) {
+		assert cls != null;
+		assert primaryKey != null;
+
+		return persistenceProvider.getEntityFromLiveObjectCache(cls, primaryKey, repoId);
+	}
+
+	/**
 	 * Increments the primary key counter for this module's context.
 	 */
 	public void incrementPrimaryKeyCounter() {
@@ -211,8 +248,6 @@ public abstract class StorageModule implements Transactional {
 	/**
 	 * Merges changes on the specified entity field into this module. </p>
 	 * 
-	 * @param primaryKey
-	 *            Primary key of the entity
 	 * @param entity
 	 *            The entity to merge
 	 * @param mergedField
@@ -228,8 +263,8 @@ public abstract class StorageModule implements Transactional {
 	 *             If {@code primaryKey}, {@code entity} or {@code context} is
 	 *             {@code null}
 	 */
-	public abstract <T> void merge(Object primaryKey, T entity, Field mergedField,
-			RepositoryID context) throws OntoDriverException;
+	public abstract <T> void merge(T entity, Field mergedField, RepositoryID context)
+			throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity into this module. </p>
@@ -367,10 +402,9 @@ public abstract class StorageModule implements Transactional {
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected <T> void preMerge(Object primaryKey, T entity, Field mergedField, RepositoryID context)
+	protected <T> void preMerge(T entity, Field mergedField, RepositoryID context)
 			throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(mergedField, ErrorUtils.constructNPXMessage("mergedField"));
 		Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));

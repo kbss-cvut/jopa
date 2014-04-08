@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -60,9 +61,9 @@ class PropertiesHandler {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-	<T> void load(T entity, URI uri, PropertiesSpecification<?, ?> att, EntityType<T> entityType)
-			throws IllegalAccessException, IllegalArgumentException {
-		final Model statements = storage.filter(uri, null, null, att.isInferred());
+	<T> void load(T entity, URI uri, PropertiesSpecification<?, ?> att, EntityType<T> entityType,
+			Set<URI> contexts) throws IllegalAccessException, IllegalArgumentException {
+		final Model statements = storage.filter(uri, null, null, att.isInferred(), contexts);
 		loadImpl(entity, att, entityType, statements);
 	}
 
@@ -102,17 +103,28 @@ class PropertiesHandler {
 	 *            Properties specification
 	 * @param entityType
 	 *            Entity type as resolved from the metamodel
+	 * @param context
+	 *            URI of the context into which the properties will be saved.
+	 *            Can be {@code null}, in which case the properties will be
+	 *            saved into the default Sesame context
+	 * @param removeOld
+	 *            Whether to remove old property values. E. g. for newly
+	 *            persisted entities this will obviously be false
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-	<T> void save(T entity, URI uri, PropertiesSpecification<?, ?> att, EntityType<T> entityType)
-			throws IllegalArgumentException, IllegalAccessException {
+	<T> void save(T entity, URI uri, PropertiesSpecification<?, ?> att, EntityType<T> entityType,
+			URI context, boolean removeOld) throws IllegalArgumentException, IllegalAccessException {
 		Object value = att.getJavaField().get(entity);
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("Saving other properties of " + entity + " with value = " + value);
 		}
-
-		Map<URI, ObjectType> propertyTypes = removeOldProperties(uri, entityType);
+		final Map<URI, ObjectType> propertyTypes;
+		if (removeOld) {
+			propertyTypes = removeOldProperties(uri, entityType, context);
+		} else {
+			propertyTypes = Collections.emptyMap();
+		}
 		if (value == null) {
 			return;
 		}
@@ -152,7 +164,7 @@ class PropertiesHandler {
 				}
 			}
 		}
-		internal.addStatements(toAdd);
+		internal.addStatements(toAdd, context);
 	}
 
 	private <T> void loadImpl(T entity, PropertiesSpecification<?, ?> att, EntityType<T> et,
@@ -196,12 +208,13 @@ class PropertiesHandler {
 	 * @param et
 	 *            Entity type of entity representing the subject
 	 */
-	private Map<URI, ObjectType> removeOldProperties(URI subject, EntityType<?> et) {
-		final Model props = storage.filter(subject, null, null, false);
+	private Map<URI, ObjectType> removeOldProperties(URI subject, EntityType<?> et, URI context) {
+		final Model props = storage.filter(subject, null, null, false,
+				Collections.singleton(context));
 		final Set<Statement> toRemove = new HashSet<>(props.size());
 		final Map<URI, ObjectType> map = new HashMap<>(props.size());
 		for (Statement stmt : props) {
-			// TODO Add more predicates which shouldn't be removed?
+			// TODO Add more predicates that shouldn't be removed?
 			if (!SesameUtils.isEntityAttribute(stmt.getPredicate(), et)
 					&& !RDF.TYPE.equals(stmt.getPredicate())) {
 				toRemove.add(stmt);
@@ -212,7 +225,7 @@ class PropertiesHandler {
 				}
 			}
 		}
-		internal.removeStatements(toRemove);
+		internal.removeStatements(toRemove, context);
 		return map;
 	}
 

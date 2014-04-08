@@ -149,20 +149,19 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID repository)
+	public <T> void merge(T entity, Field mergedField, RepositoryID repository)
 			throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Merging entity with primary key " + primaryKey + " into repository "
+			LOG.finer("Merging entity " + entity + ", field " + mergedField + " into repository "
 					+ repository);
 		}
 		ensureState();
-		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(mergedField, ErrorUtils.constructNPXMessage("mergedField"));
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
 
 		final StorageModule module = getModule(repository);
-		module.merge(primaryKey, entity, mergedField, repository);
+		module.merge(entity, mergedField, repository);
 		moduleChanged(module);
 	}
 

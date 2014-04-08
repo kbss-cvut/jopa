@@ -95,11 +95,11 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID context)
+	public <T> void merge(T entity, Field mergedField, RepositoryID context)
 			throws OntoDriverException {
-		preMerge(primaryKey, entity, mergedField, context);
+		preMerge(entity, mergedField, context);
 
-		moduleInternal.mergeEntity(primaryKey, entity, mergedField, context);
+		moduleInternal.mergeEntity(entity, mergedField, context);
 	}
 
 	@Override

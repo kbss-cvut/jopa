@@ -156,14 +156,13 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public <T> void mergeEntity(Object primaryKey, T entity, Field mergedField, RepositoryID context)
+	public <T> void mergeEntity(T entity, Field mergedField, RepositoryID context)
 			throws OntoDriverException {
 		checkStatus();
-		assert primaryKey != null : "argument primaryKey is null";
 		assert entity != null : "argument entity is null";
 		assert context.getContexts().size() == 1;
 
-		final IRI id = getPrimaryKeyAsIri(primaryKey);
+		final IRI id = getIdentifier(entity);
 		if (!isInOntologySignature(id, true)) {
 			throw new OntoDriverException(new IllegalArgumentException("The entity " + entity
 					+ " is not persistent within this context."));
@@ -176,8 +175,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 				mergedField.setAccessible(true);
 			}
 			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Saving value of field " + mergedField + " for entity with id = "
-						+ primaryKey);
+				LOG.finest("Saving value of field " + mergedField + " for entity with id = " + id);
 			}
 			final TypesSpecification<?, ?> ts = type.getTypes();
 			final PropertiesSpecification<?, ?> ps = type.getProperties();
@@ -873,8 +871,9 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			final OWLNamedIndividual individual) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINEST))
 			LOG.finest("Getting " + individual + " of " + cls);
-		Object ob = storageModule.getPersistenceProvider().getEntityFromLiveObjectCache(cls,
-				individual.getIRI(), storageModule.getRepositoryIdentifier());
+		// TODO This won't work if the primary key is not an IRI but for example
+		// an URI
+		Object ob = storageModule.getEntityFromCache(cls, individual.getIRI());
 		if (ob != null) {
 			if (cls.equals(ob.getClass())) {
 				if (LOG.isLoggable(Level.FINE))

@@ -21,10 +21,6 @@ import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
  */
 class PluralDataPropertyStrategy extends AttributeStrategy {
 
-	public PluralDataPropertyStrategy(SesameModuleInternal internal) {
-		super(internal);
-	}
-
 	protected PluralDataPropertyStrategy(SesameModuleInternal internal, SubjectModels models) {
 		super(internal, models);
 	}
@@ -35,12 +31,13 @@ class PluralDataPropertyStrategy extends AttributeStrategy {
 	}
 
 	@Override
-	<T> void save(T entity, URI uri, Attribute<?, ?> att, URI attUri, Object value) {
+	<T> void save(URI primaryKey, Attribute<?, ?> att, Object value, URI context, boolean removeOld) {
 		assert att instanceof PluralAttribute<?, ?, ?>;
 		final PluralAttribute<?, ?, ?> pa = (PluralAttribute<?, ?, ?>) att;
+		final URI attUri = getAddressAsSesameUri(pa.getIRI());
 		switch (pa.getCollectionType()) {
 		case SET:
-			saveDataPropertyValues(uri, attUri, value);
+			saveDataPropertyValues(primaryKey, attUri, value, context, removeOld);
 			break;
 		case LIST:
 		case MAP:
@@ -49,15 +46,18 @@ class PluralDataPropertyStrategy extends AttributeStrategy {
 		}
 	}
 
-	private void saveDataPropertyValues(URI uri, URI propertyUri, Object value) {
-		removeOldDataPropertyValues(uri, propertyUri);
+	private void saveDataPropertyValues(URI primaryKey, URI propertyUri, Object value, URI context,
+			boolean removeOld) {
+		if (removeOld) {
+			removeOldDataPropertyValues(primaryKey, propertyUri, context);
+		}
 		final Set<?> set = Set.class.cast(value);
 		final List<Statement> stmts = new ArrayList<>(set.size());
 		for (Object ob : set) {
-			Statement stmt = valueFactory.createStatement(uri, propertyUri,
+			Statement stmt = valueFactory.createStatement(primaryKey, propertyUri,
 					SesameUtils.createDataPropertyLiteral(ob, lang, valueFactory));
 			stmts.add(stmt);
 		}
-		addStatements(stmts);
+		addStatements(stmts, context);
 	}
 }

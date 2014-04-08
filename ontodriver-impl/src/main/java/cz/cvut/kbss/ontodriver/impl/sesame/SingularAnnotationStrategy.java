@@ -18,10 +18,6 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
  */
 class SingularAnnotationStrategy extends SingularDataPropertyStrategy {
 
-	public SingularAnnotationStrategy(SesameModuleInternal internal) {
-		super(internal);
-	}
-
 	protected SingularAnnotationStrategy(SesameModuleInternal internal, SubjectModels models) {
 		super(internal, models);
 	}

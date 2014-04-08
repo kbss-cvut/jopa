@@ -2,17 +2,20 @@ package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 interface OwlapiModuleWrapper {
 
 	/**
-	 * Returns facade to the persistence provider.
+	 * Tries to get entity from the second level cache.
 	 * 
-	 * @return Persistence provider facade
+	 * @param cls
+	 *            Entity class
+	 * @param primaryKey
+	 *            Primary key
+	 * @return Matching entity or {@code null}
 	 */
-	public PersistenceProviderFacade getPersistenceProvider();
+	public <T> T getEntityFromCache(Class<T> cls, Object primaryKey);
 
 	/**
 	 * Returns cloned ontology structures that can be manipulated without

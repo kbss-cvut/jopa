@@ -2,12 +2,14 @@ package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -99,11 +101,11 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	}
 
 	@Override
-	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID context)
+	public <T> void merge(T entity, Field mergedField, RepositoryID context)
 			throws OntoDriverException {
-		preMerge(primaryKey, entity, mergedField, context);
+		preMerge(entity, mergedField, context);
 
-		internal.mergeEntity(primaryKey, entity, mergedField, context);
+		internal.mergeEntity(entity, mergedField, context);
 	}
 
 	@Override
@@ -130,8 +132,11 @@ public class CachingOwlapiStorageModule extends StorageModule implements OwlapiM
 	}
 
 	@Override
-	public PersistenceProviderFacade getPersistenceProvider() {
-		return persistenceProvider;
+	public <T> T getEntityFromCache(Class<T> cls, Object primaryKey) {
+		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+
+		return getEntityFromProviderCache(cls, primaryKey);
 	}
 
 	@Override

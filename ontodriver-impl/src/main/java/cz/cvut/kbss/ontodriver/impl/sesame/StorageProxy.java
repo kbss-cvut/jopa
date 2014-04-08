@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import java.util.Collection;
+import java.util.Set;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -34,33 +35,43 @@ interface StorageProxy extends Closeable {
 	 *            Object
 	 * @param includeInferred
 	 *            Whether inferred statements should be included
+	 * @param contexts
+	 *            Contexts to which the search shall be restricted. If the set
+	 *            is empty, the search is performed on the whole repository
 	 * @return A model containing the resulting statements
 	 */
-	public Model filter(Resource subject, URI predicate, Value object, boolean includeInferred);
+	public Model filter(Resource subject, URI predicate, Value object, boolean includeInferred,
+			Set<URI> contexts);
 
 	/**
 	 * Adds statements to the storage.
 	 * 
 	 * @param statements
 	 *            Statements to add
+	 * @param context
+	 *            Context into which the statements will be added
 	 */
-	public void addStatements(Collection<Statement> statements);
+	public void addStatements(Collection<Statement> statements, URI context);
 
 	/**
 	 * Adds statement to the storage.
 	 * 
 	 * @param statement
 	 *            The statement to add
+	 * @param context
+	 *            Context into which the statement will be added
 	 */
-	public void addStatement(Statement statement);
+	public void addStatement(Statement statement, URI context);
 
 	/**
 	 * Removes statements from the storage.
 	 * 
 	 * @param statements
 	 *            Statements to remove
+	 * @param context
+	 *            Context from which the statements will be removed
 	 */
-	public void removeStatements(Collection<Statement> statements);
+	public void removeStatements(Collection<Statement> statements, URI context);
 
 	/**
 	 * Whether the storage contains an individual with the specified URI. </p>
@@ -70,9 +81,11 @@ interface StorageProxy extends Closeable {
 	 * 
 	 * @param uri
 	 *            Individual URI
+	 * @param contexts
+	 *            Set of context URIs to search
 	 * @return true if contains, false otherwise
 	 */
-	public boolean contains(URI uri);
+	public boolean contains(URI uri, Set<URI> contexts);
 
 	/**
 	 * Whether the data in the storage assert that the specified subject is an

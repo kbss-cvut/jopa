@@ -34,7 +34,8 @@ public class DriverSesameFactory extends DriverAbstractFactory {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Sesame storage module.");
 		}
-		final StorageModule m = new SesameStorageModule(repository, persistenceProvider, this);
+		final StorageModule m = new SesameStorageModule(getRepository(repository),
+				persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}

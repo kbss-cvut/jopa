@@ -167,8 +167,6 @@ public abstract class StorageManager implements Transactional {
 	 * are multiple the storage module will use the first returned by the
 	 * collection's iterator.
 	 * 
-	 * @param primaryKey
-	 *            Primary key of the merged entity
 	 * @param entity
 	 *            The merged entity
 	 * @param mergedField
@@ -182,8 +180,8 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code primaryKey}, {@code entity} or {@code repository}
 	 *             is {@code null}
 	 */
-	public abstract <T> void merge(Object primaryKey, T entity, Field mergedField,
-			RepositoryID repository) throws OntoDriverException;
+	public abstract <T> void merge(T entity, Field mergedField, RepositoryID repository)
+			throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>

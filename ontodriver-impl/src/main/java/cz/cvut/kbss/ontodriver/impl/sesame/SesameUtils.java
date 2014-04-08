@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Date;
 
 import org.openrdf.model.Literal;
@@ -87,14 +88,14 @@ abstract class SesameUtils {
 		assert value != null;
 
 		if (value instanceof Integer) {
-            return vf.createLiteral((Integer) value);
-        } else if (value instanceof String) {
-            return vf.createLiteral((String) value, language);
-        } else if (value instanceof Byte) {
-            return vf.createLiteral((Byte) value);
-        } else if (value instanceof Short) {
-            return vf.createLiteral((Short) value);
-        } else if (value instanceof Boolean) {
+			return vf.createLiteral((Integer) value);
+		} else if (value instanceof String) {
+			return vf.createLiteral((String) value, language);
+		} else if (value instanceof Byte) {
+			return vf.createLiteral((Byte) value);
+		} else if (value instanceof Short) {
+			return vf.createLiteral((Short) value);
+		} else if (value instanceof Boolean) {
 			return vf.createLiteral((Boolean) value);
 		} else if (value instanceof Double) {
 			return vf.createLiteral((Double) value);
@@ -163,5 +164,19 @@ abstract class SesameUtils {
 		} catch (IllegalAccessException | IllegalArgumentException e) {
 			throw new OntoDriverException("Exception caught when setting identifier.", e);
 		}
+	}
+
+	/**
+	 * Returns the specified collection as an array so that it can be used as
+	 * varargs.
+	 * 
+	 * @param col
+	 *            The collection to transform
+	 * @return Array representing the collection
+	 */
+	static URI[] varargs(Collection<URI> col) {
+		assert col != null;
+
+		return col.toArray(new URI[col.size()]);
 	}
 }

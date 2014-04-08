@@ -1,6 +1,8 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,6 +15,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -38,11 +41,6 @@ abstract class AttributeStrategy {
 	protected StorageProxy storage;
 	protected SubjectModels models;
 
-	protected AttributeStrategy(SesameModuleInternal internal) {
-		this.internal = internal;
-		init();
-	}
-
 	protected AttributeStrategy(SesameModuleInternal internal, SubjectModels models) {
 		this.internal = internal;
 		this.models = models;
@@ -67,6 +65,8 @@ abstract class AttributeStrategy {
 	 * @param alwaysLoad
 	 *            Whether to load the attribute value even if it is specified as
 	 *            lazy
+	 * @param contexts
+	 *            Contexts which to search
 	 */
 	abstract <T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad)
 			throws IllegalAccessException, IllegalArgumentException, OntoDriverException;
@@ -76,7 +76,7 @@ abstract class AttributeStrategy {
 	 * 
 	 * @param entity
 	 *            Entity
-	 * @param uri
+	 * @param primaryKey
 	 *            Entity primary key
 	 * @param att
 	 *            The attribute whose value to save
@@ -85,20 +85,20 @@ abstract class AttributeStrategy {
 	 * @param value
 	 *            The value to save
 	 */
-	abstract <T> void save(T entity, URI uri, Attribute<?, ?> att, URI attUri, Object value)
-			throws OntoDriverException;
+	abstract <T> void save(URI primaryKey, Attribute<?, ?> att, Object value, URI context,
+			boolean removeOld) throws OntoDriverException;
 
-	protected void addIndividualsForReferencedEntities(Collection<?> refs)
+	protected void addIndividualsForReferencedEntities(Collection<?> refs, URI context)
 			throws OntoDriverException {
 		internal.addIndividualsForReferencedEntities(refs);
 	}
 
-	protected void addStatement(Statement stmt) {
-		internal.addStatement(stmt);
+	protected void addStatement(Statement stmt, URI context) {
+		internal.addStatement(stmt, context);
 	}
 
-	protected void addStatements(Collection<Statement> stmts) {
-		internal.addStatements(stmts);
+	protected void addStatements(Collection<Statement> stmts, URI context) {
+		internal.addStatements(stmts, context);
 	}
 
 	protected URI generatePrimaryKey(String typeName) {
@@ -121,9 +121,10 @@ abstract class AttributeStrategy {
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("Getting " + subjectUri + " of " + cls);
 		}
+		final RepositoryID rid = internal.module.getRepository().createRepositoryID(false);
+		rid.addContexts(models.getContexts());
 		final IRI pk = IRI.create(subjectUri.toString());
-		final Object ob = internal.module.getPersistenceProvider().getEntityFromLiveObjectCache(
-				cls, pk, internal.module.getContext().getUri());
+		final Object ob = internal.module.getEntityFromProviderCache(cls, pk, rid);
 		if (ob != null && cls.isAssignableFrom(ob.getClass())) {
 			// We can load the instance from cache
 			return cls.cast(ob);
@@ -132,7 +133,7 @@ abstract class AttributeStrategy {
 			return cls.cast(getEnum(cls.asSubclass(Enum.class), subjectUri));
 		} else {
 			// Otherwise load the entity
-			return internal.loadEntity(cls, subjectUri);
+			return internal.loadEntity(cls, subjectUri, rid);
 		}
 	}
 
@@ -157,7 +158,8 @@ abstract class AttributeStrategy {
 			final Model m = includeInferred ? models.getInferredModel() : models.getAssertedModel();
 			return m.filter(subject, predicate, value);
 		}
-		return storage.filter(subject, predicate, value, includeInferred);
+		return storage.filter(subject, predicate, value, includeInferred,
+				models.getSesameContexts());
 	}
 
 	/**
@@ -177,7 +179,8 @@ abstract class AttributeStrategy {
 		if (canUseSubjectModel) {
 			res = filter(subjectUri, propertyUri, null, includeInferred);
 		} else {
-			res = storage.filter(subjectUri, propertyUri, null, includeInferred);
+			res = storage.filter(subjectUri, propertyUri, null, includeInferred,
+					models.getSesameContexts());
 		}
 		URI objectUri = null;
 		for (Statement stmt : res) {
@@ -192,7 +195,14 @@ abstract class AttributeStrategy {
 	}
 
 	protected Value getPropertyValue(URI subjectUri, URI propertyUri, boolean includeInferred) {
-		Collection<Statement> res = storage.filter(subjectUri, propertyUri, null, includeInferred);
+		return getPropertyValue(subjectUri, propertyUri, includeInferred,
+				models.getSesameContexts());
+	}
+
+	protected Value getPropertyValue(URI subjectUri, URI propertyUri, boolean includeInferred,
+			Set<URI> contexts) {
+		Collection<Statement> res = storage.filter(subjectUri, propertyUri, null, includeInferred,
+				contexts);
 		if (res.isEmpty()) {
 			return null;
 		}
@@ -207,26 +217,28 @@ abstract class AttributeStrategy {
 		return internal.isUri(value);
 	}
 
-	protected void removeOldDataPropertyValues(URI subject, URI property) {
+	protected void removeOldDataPropertyValues(URI subject, URI property, URI context) {
 		// TODO should we use only explicit model?
-		final Model m = storage.filter(subject, property, null, false);
+		final Model m = storage.filter(subject, property, null, false,
+				Collections.singleton(context));
 		// Create new model to prevent ConcurrentModificationException (we would
 		// be removing statements backed by the model from which we are removing
-		// tem)
-		internal.removeStatements(new LinkedHashModel(m));
+		// them)
+		internal.removeStatements(new LinkedHashModel(m), context);
 	}
 
-	protected void removeOldObjectPropertyValues(URI subject, URI property) {
+	protected void removeOldObjectPropertyValues(URI subject, URI property, URI context) {
 		// TODO should we use only explicit model?
-		final Model m = storage.filter(subject, property, null, false);
+		final Model m = storage.filter(subject, property, null, false,
+				Collections.singleton(context));
 		// Create new model to prevent ConcurrentModificationException (we would
 		// be removing statements backed by the model from which we are removing
-		// tem)
-		internal.removeStatements(new LinkedHashModel(m));
+		// them)
+		internal.removeStatements(new LinkedHashModel(m), context);
 	}
 
-	protected void removeStatements(Collection<Statement> stmts) {
-		internal.removeStatements(stmts);
+	protected void removeStatements(Collection<Statement> stmts, URI context) {
+		internal.removeStatements(stmts, context);
 	}
 
 	protected <T> EntityType<T> getEntityType(Class<T> cls) {

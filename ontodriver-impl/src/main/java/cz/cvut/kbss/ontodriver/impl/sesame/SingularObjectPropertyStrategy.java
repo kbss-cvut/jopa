@@ -20,10 +20,6 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  */
 class SingularObjectPropertyStrategy extends AttributeStrategy {
 
-	public SingularObjectPropertyStrategy(SesameModuleInternal internal) {
-		super(internal);
-	}
-
 	protected SingularObjectPropertyStrategy(SesameModuleInternal internal, SubjectModels models) {
 		super(internal, models);
 	}
@@ -42,9 +38,10 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 	}
 
 	@Override
-	<T> void save(T entity, URI uri, Attribute<?, ?> att, URI attUri, Object value)
+	<T> void save(URI primaryKey, Attribute<?, ?> att, Object value, URI context, boolean removeOld)
 			throws OntoDriverException {
-		saveObjectProperty(uri, attUri, value);
+		final URI attUri = getAddressAsSesameUri(att.getIRI());
+		saveObjectProperty(primaryKey, attUri, value, context, removeOld);
 	}
 
 	/**
@@ -78,18 +75,20 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 		}
 	}
 
-	private void saveObjectProperty(URI subject, URI property, Object value)
-			throws OntoDriverException {
-		removeOldObjectPropertyValues(subject, property);
+	private void saveObjectProperty(URI subject, URI property, Object value, URI context,
+			boolean removeOld) throws OntoDriverException {
+		if (removeOld) {
+			removeOldObjectPropertyValues(subject, property, context);
+		}
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("setObjectProperty '" + property + "' of " + subject + " to " + value);
 		}
 		if (value != null) {
-			addIndividualsForReferencedEntities(Collections.singletonList(value));
+			addIndividualsForReferencedEntities(Collections.singletonList(value), context);
 			final URI uri = getIdentifier(value);
 			assert uri != null;
 			final Statement stmt = valueFactory.createStatement(subject, property, uri);
-			addStatement(stmt);
+			addStatement(stmt, context);
 		}
 	}
 }

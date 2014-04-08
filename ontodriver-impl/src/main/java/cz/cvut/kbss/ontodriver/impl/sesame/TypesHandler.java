@@ -31,9 +31,9 @@ class TypesHandler {
 		this.storage = internal.getStorage();
 	}
 
-	<T> void load(T entity, URI entityUri, TypesSpecification<?, ?> types, EntityType<T> et)
-			throws IllegalArgumentException, IllegalAccessException {
-		final Model m = storage.filter(entityUri, RDF.TYPE, null, types.isInferred());
+	<T> void load(T entity, URI entityUri, TypesSpecification<?, ?> types, EntityType<T> et,
+			Set<URI> contexts) throws IllegalArgumentException, IllegalAccessException {
+		final Model m = storage.filter(entityUri, RDF.TYPE, null, types.isInferred(), contexts);
 		loadImpl(entity, types, et, m);
 	}
 
@@ -41,7 +41,8 @@ class TypesHandler {
 			SubjectModels statements) throws IllegalArgumentException, IllegalAccessException {
 		final Model m = types.isInferred() ? statements.getInferredModel() : statements
 				.getAssertedModel();
-		final Model res = m.filter(null, RDF.TYPE, null);
+		final Model res = m.filter(null, RDF.TYPE, null,
+				SesameUtils.varargs(statements.getSesameContexts()));
 		loadImpl(entity, types, entityType, res);
 	}
 
@@ -60,11 +61,18 @@ class TypesHandler {
 	 *            TypesSpecification
 	 * @param entityType
 	 *            Entity type as resolved from the metamodel
+	 * @param context
+	 *            URI of context into which the types information will be saved
+	 * @param deleteOld
+	 *            Whether to remove old types information. E. g. for newly
+	 *            persisted entities this will be false because there is
+	 *            obviously no type information to remove yet
 	 * @throws OntoDriverException
 	 *             If the types are inferred
 	 */
-	<T> void save(T entity, URI uri, TypesSpecification<?, ?> types, EntityType<T> entityType)
-			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
+	<T> void save(T entity, URI uri, TypesSpecification<?, ?> types, EntityType<T> entityType,
+			URI context, boolean deleteOld) throws OntoDriverException, IllegalArgumentException,
+			IllegalAccessException {
 		if (types.isInferred()) {
 			throw new OntoDriverException("Inferred fields cannot be set externally.");
 		}
@@ -82,20 +90,24 @@ class TypesHandler {
 		for (Object type : set) {
 			toAdd.add(factory.createStatement(uri, RDF.TYPE, factory.createURI(type.toString())));
 		}
-		final Set<Statement> currentTypes = storage.filter(uri, RDF.TYPE, null, false);
-		final Set<Statement> toRemove = new HashSet<>(currentTypes.size());
-		for (Statement stmt : currentTypes) {
-			final Value val = stmt.getObject();
-			assert internal.isUri(val);
-			if (val.equals(typeUri)) {
-				continue;
+		// Delete the old types
+		if (deleteOld) {
+			final Set<Statement> currentTypes = storage.filter(uri, RDF.TYPE, null, false,
+					Collections.singleton(context));
+			final Set<Statement> toRemove = new HashSet<>(currentTypes.size());
+			for (Statement stmt : currentTypes) {
+				final Value val = stmt.getObject();
+				assert internal.isUri(val);
+				if (val.equals(typeUri)) {
+					continue;
+				}
+				if (!toAdd.remove(stmt)) {
+					toRemove.add(stmt);
+				}
 			}
-			if (!toAdd.remove(stmt)) {
-				toRemove.add(stmt);
-			}
+			internal.removeStatements(toRemove, context);
 		}
-		internal.removeStatements(toRemove);
-		internal.addStatements(toAdd);
+		internal.addStatements(toAdd, context);
 	}
 
 	private <T> void loadImpl(T entity, TypesSpecification<?, ?> types, EntityType<T> et,

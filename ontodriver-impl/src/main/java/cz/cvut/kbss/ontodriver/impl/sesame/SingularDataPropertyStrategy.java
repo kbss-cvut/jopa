@@ -18,10 +18,6 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
  */
 public class SingularDataPropertyStrategy extends AttributeStrategy {
 
-	public SingularDataPropertyStrategy(SesameModuleInternal internal) {
-		super(internal);
-	}
-
 	protected SingularDataPropertyStrategy(SesameModuleInternal internal, SubjectModels models) {
 		super(internal, models);
 	}
@@ -33,8 +29,9 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 	}
 
 	@Override
-	<T> void save(T entity, URI uri, Attribute<?, ?> att, URI attUri, Object value) {
-		saveDataProperty(uri, attUri, value);
+	<T> void save(URI primaryKey, Attribute<?, ?> att, Object value, URI context, boolean removeOld) {
+		final URI attUri = getAddressAsSesameUri(att.getIRI());
+		saveDataProperty(primaryKey, attUri, value, context, removeOld);
 	}
 
 	/**
@@ -92,13 +89,16 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 	 * @param value
 	 *            Property value
 	 */
-	private void saveDataProperty(URI subject, URI property, Object value) {
-		removeOldDataPropertyValues(subject, property);
+	private void saveDataProperty(URI subject, URI property, Object value, URI context,
+			boolean removeOld) {
+		if (removeOld) {
+			removeOldDataPropertyValues(subject, property, context);
+		}
 		if (value == null) {
 			return;
 		}
 		Literal lit = SesameUtils.createDataPropertyLiteral(value, lang, valueFactory);
 		final Statement stmt = valueFactory.createStatement(subject, property, lit);
-		addStatement(stmt);
+		addStatement(stmt, context);
 	}
 }

@@ -162,8 +162,6 @@ public interface Connection extends Transactional {
 	 * This method is meant only for merging state of existing entities, trying
 	 * to {@code merge} a new entity will result in an exception.
 	 * 
-	 * @param primaryKey
-	 *            Primary key of the merged entity
 	 * @param entity
 	 *            The entity to merge
 	 * @param mergedField
@@ -181,7 +179,7 @@ public interface Connection extends Transactional {
 	 *             repository or if it has no field corresponding to
 	 *             {@code mergedField}
 	 */
-	public <T> void merge(Object primaryKey, T entity, Field mergedField, RepositoryID repository)
+	public <T> void merge(T entity, Field mergedField, RepositoryID repository)
 			throws OntoDriverException;
 
 	/**

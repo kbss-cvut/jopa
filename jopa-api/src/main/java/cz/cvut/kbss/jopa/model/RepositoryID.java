@@ -93,6 +93,21 @@ public final class RepositoryID {
 		contexts.addAll(contextUris);
 	}
 
+	/**
+	 * Gets the first context in this repository identifier. </p>
+	 * 
+	 * I. e. it is either the first context URI returned by the set's iterator
+	 * or {@code null} if there are no contexts set.
+	 * 
+	 * @return Context URI or {@code null}
+	 */
+	public URI getFirstContext() {
+		if (contexts.isEmpty()) {
+			return null;
+		}
+		return contexts.iterator().next();
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

@@ -4,7 +4,8 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -18,9 +19,10 @@ public class SesameStorageModule extends StorageModule {
 	private SesameStorageConnector connector;
 	private ModuleInternal<SesameChange, SesameStatement> internal;
 
-	public SesameStorageModule(Context context, PersistenceProviderFacade persistenceProvider,
-			DriverFactory factory) throws OntoDriverException {
-		super(context, persistenceProvider, factory);
+	public SesameStorageModule(Repository repository,
+			PersistenceProviderFacade persistenceProvider, DriverFactory factory)
+			throws OntoDriverException {
+		super(repository, persistenceProvider, factory);
 	}
 
 	@Override
@@ -53,83 +55,72 @@ public class SesameStorageModule extends StorageModule {
 
 	@Override
 	protected void initialize() throws OntoDriverException {
-		this.connector = (SesameStorageConnector) factory.createStorageConnector(context, false);
+		this.connector = (SesameStorageConnector) factory.createStorageConnector(repositoryId,
+				false);
 		this.internal = createModuleInternal();
-		if (!primaryKeyCounters.containsKey(context)) {
-			primaryKeyCounters.put(context, new AtomicInteger((int) connector.getSubjectCount()));
+		if (!primaryKeyCounters.containsKey(repository)) {
+			primaryKeyCounters.put(repository.getId(),
+					new AtomicInteger((int) connector.getSubjectCount()));
 		}
 	}
 
 	@Override
-	public boolean contains(Object primaryKey) throws OntoDriverException {
-		beforeExecution();
-		if (primaryKey == null) {
-			throw new NullPointerException("PrimaryKey is null!");
-		}
-		return internal.containsEntity(primaryKey);
+	public boolean contains(Object primaryKey, RepositoryID contexts) throws OntoDriverException {
+		preContains(primaryKey, contexts);
+
+		return internal.containsEntity(primaryKey, contexts);
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey) throws OntoDriverException {
-		beforeExecution();
-		if (cls == null || primaryKey == null) {
-			throw new NullPointerException("Null passed to find: cls = " + cls + ", primaryKey = "
-					+ primaryKey);
-		}
-		return internal.findEntity(cls, primaryKey);
-	}
-
-	@Override
-	public boolean isConsistent() throws OntoDriverException {
-		beforeExecution();
-		return internal.isConsistent();
-	}
-
-	@Override
-	public <T> void loadFieldValue(T entity, Field field) throws OntoDriverException {
-		beforeExecution();
-		if (entity == null || field == null) {
-			throw new NullPointerException("Null passed to loadFieldValue: entity = " + entity
-					+ ", field = " + field);
-		}
-		internal.loadFieldValue(entity, field);
-	}
-
-	@Override
-	public <T> void merge(Object primaryKey, T entity, Field mergedField)
+	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID contexts)
 			throws OntoDriverException {
-		beforeExecution();
-		if (primaryKey == null || entity == null || mergedField == null) {
-			throw new NullPointerException("Null passed to merge: primaryKey = " + primaryKey
-					+ ", entity = " + entity + ", mergedField = " + mergedField);
-		}
-		internal.mergeEntity(primaryKey, entity, mergedField);
+		preFind(cls, primaryKey, contexts);
+
+		return internal.findEntity(cls, primaryKey, contexts);
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity) throws OntoDriverException {
-		beforeExecution();
-		if (entity == null) {
-			throw new NullPointerException("Null passed to persist: entity = " + entity);
-		}
-		internal.persistEntity(primaryKey, entity);
+	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException {
+		preIsConsistent(contexts);
+
+		return internal.isConsistent(contexts);
 	}
 
 	@Override
-	public void remove(Object primaryKey) throws OntoDriverException {
-		beforeExecution();
-		if (primaryKey == null) {
-			throw new NullPointerException("Null passed to remove.");
-		}
-		internal.removeEntity(primaryKey);
+	public <T> void loadFieldValue(T entity, Field field, RepositoryID context)
+			throws OntoDriverException {
+		preLoadFieldValue(entity, field, context);
+
+		internal.loadFieldValue(entity, field, context);
+	}
+
+	@Override
+	public <T> void merge(T entity, Field mergedField, RepositoryID context)
+			throws OntoDriverException {
+		preMerge(entity, mergedField, context);
+
+		internal.mergeEntity(entity, mergedField, context);
+	}
+
+	@Override
+	public <T> void persist(Object primaryKey, T entity, RepositoryID context)
+			throws OntoDriverException {
+		prePersist(entity, context);
+
+		internal.persistEntity(primaryKey, entity, context);
+	}
+
+	@Override
+	public void remove(Object primaryKey, RepositoryID context) throws OntoDriverException {
+		preRemove(primaryKey, context);
+
+		internal.removeEntity(primaryKey, context);
 	}
 
 	@Override
 	public ResultSet executeStatement(JopaStatement statement) throws OntoDriverException {
-		beforeExecution();
-		if (statement == null) {
-			throw new NullPointerException("Null passed to executeStatement.");
-		}
+		ensureOpen();
+		startTransactionIfNotActive();
 		final SesameStatement stmt = (SesameStatement) factory.createStatement(statement);
 		return internal.executeStatement(stmt);
 	}
@@ -145,20 +136,6 @@ public class SesameStorageModule extends StorageModule {
 
 	SesameOntologyDataHolder getOntologyData() throws OntoDriverException {
 		return connector.getOntologyData();
-	}
-
-	PersistenceProviderFacade getPersistenceProvider() {
-		return persistenceProvider;
-	}
-
-	/**
-	 * Performs maintenance tasks needed before execution of most methods.
-	 * 
-	 * @throws OntoDriverException
-	 */
-	private void beforeExecution() throws OntoDriverException {
-		ensureOpen();
-		startTransactionIfNotActive();
 	}
 
 	/**
