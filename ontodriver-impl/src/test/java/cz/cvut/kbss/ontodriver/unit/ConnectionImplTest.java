@@ -27,7 +27,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -170,7 +170,7 @@ public class ConnectionImplTest {
 
 	@Test
 	public void testContains() throws Exception {
-		final RepositoryID id = repos.get(2).createRepositoryID(false);
+		final EntityDescriptor id = repos.get(2).createRepositoryID(false);
 		final URI pk = URI.create("http://pk");
 		when(storageMngrMock.contains(pk, id)).thenReturn(true);
 
@@ -191,10 +191,10 @@ public class ConnectionImplTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testFind() throws Exception {
-		final RepositoryID id = repos.get(2).createRepositoryID(false);
+		final EntityDescriptor id = repos.get(2).createRepositoryID(false);
 		final URI pk = URI.create("http://pk");
 		final OWLClassA a = new OWLClassA();
-		when(storageMngrMock.find(any(Class.class), any(Object.class), any(RepositoryID.class)))
+		when(storageMngrMock.find(any(Class.class), any(Object.class), any(EntityDescriptor.class)))
 				.thenReturn(null);
 		when(storageMngrMock.find(OWLClassA.class, pk, id)).thenReturn(a);
 
@@ -217,14 +217,14 @@ public class ConnectionImplTest {
 			assertNull(res);
 		} finally {
 			verify(storageMngrMock, never()).find(any(Class.class), any(Object.class),
-					any(RepositoryID.class));
+					any(EntityDescriptor.class));
 		}
 	}
 
 	@Test
 	public void testIsConsistent() throws Exception {
-		when(storageMngrMock.isConsistent(any(RepositoryID.class))).thenReturn(Boolean.TRUE);
-		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		when(storageMngrMock.isConsistent(any(EntityDescriptor.class))).thenReturn(Boolean.TRUE);
+		final EntityDescriptor id = repos.get(1).createRepositoryID(false);
 
 		final boolean res = connection.isConsistent(id);
 		assertTrue(res);
@@ -246,10 +246,10 @@ public class ConnectionImplTest {
 				}
 				return null;
 			}
-		}).when(storageMngrMock).loadFieldValue(any(), any(Field.class), any(RepositoryID.class));
+		}).when(storageMngrMock).loadFieldValue(any(), any(Field.class), any(EntityDescriptor.class));
 		final OWLClassA a = new OWLClassA();
 		final Field f = OWLClassA.getStrAttField();
-		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		final EntityDescriptor id = repos.get(1).createRepositoryID(false);
 
 		connection.loadFieldValue(a, f, id);
 		verify(storageMngrMock).loadFieldValue(a, f, id);
@@ -258,13 +258,13 @@ public class ConnectionImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testLoadFieldValueNull() throws Exception {
 		final Field f = OWLClassA.getStrAttField();
-		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		final EntityDescriptor id = repos.get(1).createRepositoryID(false);
 
 		try {
 			connection.loadFieldValue(null, f, id);
 		} finally {
 			verify(storageMngrMock, never()).loadFieldValue(any(), any(Field.class),
-					any(RepositoryID.class));
+					any(EntityDescriptor.class));
 		}
 	}
 
@@ -273,7 +273,7 @@ public class ConnectionImplTest {
 		final OWLClassA a = new OWLClassA();
 		final URI pk = URI.create("http://pk");
 		final Field f = OWLClassA.getStrAttField();
-		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		final EntityDescriptor id = repos.get(1).createRepositoryID(false);
 		connection.setAutoCommit(false);
 
 		connection.merge(pk, a, f, id);
@@ -287,7 +287,7 @@ public class ConnectionImplTest {
 		final OWLClassA a = new OWLClassA();
 		final URI pk = URI.create("http://pk");
 		final Field f = OWLClassA.getStrAttField();
-		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		final EntityDescriptor id = repos.get(1).createRepositoryID(false);
 		connection.setAutoCommit(true);
 
 		connection.merge(pk, a, f, id);
@@ -301,13 +301,13 @@ public class ConnectionImplTest {
 	public void testMergeNull() throws Exception {
 		final URI pk = URI.create("http://pk");
 		final Field f = OWLClassA.getStrAttField();
-		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		final EntityDescriptor id = repos.get(1).createRepositoryID(false);
 		try {
 			connection.merge(pk, null, f, id);
 		} finally {
 			assertFalse(hasChangesField.getBoolean(connection));
 			verify(storageMngrMock, never()).merge(any(), any(), any(Field.class),
-					any(RepositoryID.class));
+					any(EntityDescriptor.class));
 			verify(storageMngrMock, never()).commit();
 		}
 	}
@@ -316,7 +316,7 @@ public class ConnectionImplTest {
 	public void testPersist() throws Exception {
 		final OWLClassA a = new OWLClassA();
 		final URI pk = URI.create("http://pk");
-		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		final EntityDescriptor id = repos.get(1).createRepositoryID(false);
 		connection.setAutoCommit(false);
 
 		connection.persist(pk, a, id);
@@ -329,7 +329,7 @@ public class ConnectionImplTest {
 	public void testPersistAutoCommit() throws Exception {
 		final OWLClassA a = new OWLClassA();
 		final URI pk = URI.create("http://pk");
-		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		final EntityDescriptor id = repos.get(1).createRepositoryID(false);
 		connection.setAutoCommit(true);
 
 		connection.persist(pk, a, id);
@@ -341,7 +341,7 @@ public class ConnectionImplTest {
 	@Test
 	public void testRemove() throws Exception {
 		final URI pk = URI.create("http://pk");
-		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		final EntityDescriptor id = repos.get(1).createRepositoryID(false);
 		connection.setAutoCommit(false);
 
 		connection.remove(pk, id);
@@ -353,7 +353,7 @@ public class ConnectionImplTest {
 	@Test
 	public void testRemoveAutoCommit() throws Exception {
 		final URI pk = URI.create("http://pk");
-		final RepositoryID id = repos.get(1).createRepositoryID(false);
+		final EntityDescriptor id = repos.get(1).createRepositoryID(false);
 		connection.setAutoCommit(true);
 
 		connection.remove(pk, id);
@@ -364,11 +364,11 @@ public class ConnectionImplTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testRemoveNull() throws Exception {
-		final RepositoryID id = repos.get(0).createRepositoryID(false);
+		final EntityDescriptor id = repos.get(0).createRepositoryID(false);
 		try {
 			connection.remove(null, id);
 		} finally {
-			verify(storageMngrMock, never()).remove(any(), any(RepositoryID.class));
+			verify(storageMngrMock, never()).remove(any(), any(EntityDescriptor.class));
 		}
 	}
 

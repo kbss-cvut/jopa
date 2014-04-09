@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.accessors;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
@@ -26,7 +26,7 @@ class PersistenceProviderProxy implements PersistenceProviderFacade {
 
 	@Override
 	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey,
-			RepositoryID repository) {
+			EntityDescriptor repository) {
 		if (cls == null || primaryKey == null) {
 			throw new NullPointerException();
 		}

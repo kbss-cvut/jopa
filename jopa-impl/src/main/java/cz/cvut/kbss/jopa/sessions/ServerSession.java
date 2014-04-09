@@ -13,7 +13,7 @@ import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
@@ -171,7 +171,7 @@ public class ServerSession extends AbstractSession {
 	}
 
 	@Override
-	public void removeObjectFromCache(Object object, RepositoryID repository) {
+	public void removeObjectFromCache(Object object, EntityDescriptor repository) {
 		// do nothing
 	}
 

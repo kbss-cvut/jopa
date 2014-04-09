@@ -1,7 +1,5 @@
 package cz.cvut.kbss.ontodriver;
 
-import java.net.URI;
-
 import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 

@@ -22,7 +22,7 @@ import java.util.List;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.ResultSet;
@@ -32,7 +32,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 public class QueryImpl implements Query<List<String>> {
 
 	private final String query;
-	private final RepositoryID repository;
+	private final EntityDescriptor repository;
 	private final boolean sparql;
 	private final Connection connection;
 
@@ -40,7 +40,7 @@ public class QueryImpl implements Query<List<String>> {
 	private boolean useBackupOntology;
 
 	// sparql=false -> abstract syntax
-	public QueryImpl(final String s, final RepositoryID repository, final boolean sparql,
+	public QueryImpl(final String s, final EntityDescriptor repository, final boolean sparql,
 			final Connection connection) {
 		if (s == null || repository == null || connection == null) {
 			throw new NullPointerException();

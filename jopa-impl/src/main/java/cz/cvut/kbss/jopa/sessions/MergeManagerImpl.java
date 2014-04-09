@@ -6,7 +6,7 @@ import java.util.Map;
 import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 public class MergeManagerImpl implements MergeManager {
@@ -24,7 +24,7 @@ public class MergeManagerImpl implements MergeManager {
 	protected void deleteObjectFromCache(ObjectChangeSet changeSet) {
 		Object original = changeSet.getChangedObject();
 		if (original != null) {
-			uow.removeObjectFromCache(original, changeSet.getEntityRepository());
+			uow.removeObjectFromCache(original, changeSet.getEntityOrigin());
 		}
 	}
 
@@ -96,7 +96,7 @@ public class MergeManagerImpl implements MergeManager {
 		// Put the original object into the shared session cache
 		Object newObject = changeSet.getChangedObject();
 		final IRI primaryKey = EntityPropertiesUtils.getPrimaryKey(newObject, uow.getMetamodel());
-		final RepositoryID repository = changeSet.getEntityRepository();
+		final EntityDescriptor repository = changeSet.getEntityOrigin();
 		assert repository != null;
 		uow.putObjectIntoCache(primaryKey, newObject, repository);
 	}

@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.impl;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 
@@ -34,7 +34,7 @@ class DefaultPersistenceProvider implements PersistenceProviderFacade {
 	 */
 	@Override
 	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey,
-			RepositoryID repository) {
+			EntityDescriptor repository) {
 		return null;
 	}
 

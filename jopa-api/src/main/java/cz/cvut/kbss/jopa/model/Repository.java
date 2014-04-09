@@ -2,8 +2,11 @@ package cz.cvut.kbss.jopa.model;
 
 import java.net.URI;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 /**
  * Represents an ontology repository.
@@ -20,11 +23,9 @@ public final class Repository {
 	private final Set<URI> contexts;
 
 	public Repository(URI physicalUri) {
-		if (physicalUri == null) {
-			throw new NullPointerException();
-		}
+		this.physicalUri = Objects.requireNonNull(physicalUri,
+				ErrorUtils.constructNPXMessage("physicalUri"));
 		this.id = ID_COUNTER.getAndIncrement();
-		this.physicalUri = physicalUri;
 		this.contexts = new HashSet<>();
 	}
 
@@ -78,20 +79,14 @@ public final class Repository {
 	}
 
 	/**
-	 * Creates new repository identifier based on this repository.
+	 * Creates new repository identifier for this repository. </p>
 	 * 
-	 * @param includeContexts
-	 *            Whether to add all this repository's contexts to the
-	 *            identifier. By default, the identifier is created without any
-	 *            contexts
+	 * No contexts are added to the identifier.
+	 * 
 	 * @return New repository identifier
 	 */
-	public RepositoryID createRepositoryID(boolean includeContexts) {
-		final RepositoryID rid = new RepositoryID(this);
-		if (includeContexts) {
-			rid.addContexts(contexts);
-		}
-		return rid;
+	public RepositoryID createIdentifier() {
+		return new RepositoryID(this);
 	}
 
 	@Override

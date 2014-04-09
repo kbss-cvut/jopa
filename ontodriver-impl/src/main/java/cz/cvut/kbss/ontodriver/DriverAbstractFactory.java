@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -21,13 +21,13 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 
 	private final Map<StorageConnector, StorageConnector> openedConnectors;
 	private final Map<StorageModule, StorageModule> openedModules;
-	protected final Map<RepositoryID, OntologyStorageProperties> storageProperties;
+	protected final Map<EntityDescriptor, OntologyStorageProperties> storageProperties;
 	protected final Map<String, String> properties;
 
 	private boolean open;
 
 	protected DriverAbstractFactory(List<Repository> repositories,
-			Map<RepositoryID, OntologyStorageProperties> storageProperties,
+			Map<EntityDescriptor, OntologyStorageProperties> storageProperties,
 			Map<String, String> properties) {
 		Objects.requireNonNull(repositories, ErrorUtils.constructNPXMessage("repositories"));
 		Objects.requireNonNull(storageProperties,
@@ -143,7 +143,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 * @throws NullPointerException
 	 *             If {@code ctx} is {@code null}
 	 */
-	protected void ensureState(RepositoryID repository) throws OntoDriverException {
+	protected void ensureState(EntityDescriptor repository) throws OntoDriverException {
 		ensureOpen();
 		if (repository == null) {
 			throw new NullPointerException("Repository cannot be null.");
@@ -163,7 +163,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 *             If {@code metamodel} is null
 	 * @see #ensureState(Context)
 	 */
-	protected void ensureState(RepositoryID repository,
+	protected void ensureState(EntityDescriptor repository,
 			PersistenceProviderFacade persistenceProvider) throws OntoDriverException {
 		ensureState(repository);
 		if (persistenceProvider == null) {
@@ -205,7 +205,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 *            Repository identifier
 	 * @return Repository
 	 */
-	protected Repository getRepository(RepositoryID identifier) {
+	protected Repository getRepository(EntityDescriptor identifier) {
 		assert identifier != null;
 		assert (identifier.getRepository() > 0 && identifier.getRepository() < repositories.size());
 

@@ -4,7 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 
 abstract class AbstractInstanceBuilder {
 
@@ -52,7 +52,7 @@ abstract class AbstractInstanceBuilder {
 	 * @return
 	 */
 	abstract Object buildClone(Object cloneOwner, Field field, Object original,
-			RepositoryID repository);
+			EntityDescriptor repository);
 
 	/**
 	 * Merges changes from clone to the original.

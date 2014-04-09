@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -74,7 +74,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, RepositoryID repository) throws OntoDriverException {
+	public boolean contains(Object primaryKey, EntityDescriptor repository) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
@@ -83,7 +83,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID repository)
+	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor repository)
 			throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(cls, "Argument 'cls' cannot be null.");
@@ -101,7 +101,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public boolean isConsistent(RepositoryID repository) throws OntoDriverException {
+	public boolean isConsistent(EntityDescriptor repository) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
 
@@ -114,7 +114,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, RepositoryID repository)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor repository)
 			throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(entity, "Argument 'entity' cannot be null.");
@@ -125,7 +125,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void merge(T entity, Field mergedField, RepositoryID repository)
+	public <T> void merge(T entity, Field mergedField, EntityDescriptor repository)
 			throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(entity, "Argument 'entity' cannot be null.");
@@ -140,7 +140,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, RepositoryID repository)
+	public <T> void persist(Object primaryKey, T entity, EntityDescriptor repository)
 			throws OntoDriverException {
 		ensureOpen();
 		// Primary key can be null
@@ -161,7 +161,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void remove(Object primaryKey, RepositoryID repository) throws OntoDriverException {
+	public <T> void remove(Object primaryKey, EntityDescriptor repository) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(primaryKey, "Argument 'primaryKey' cannot be null.");
 		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");

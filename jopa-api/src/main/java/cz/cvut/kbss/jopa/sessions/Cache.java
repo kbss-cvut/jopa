@@ -35,15 +35,15 @@ public interface Cache {
 	 * Checks whether the cache contains data for the given entity (in the given
 	 * context only).
 	 * 
-	 * @param repository
-	 *            repository identifier
+	 * @param entityOrigin
+	 *            Entity origin identifier
 	 * @param cls
 	 *            Entity class
 	 * @param primaryKey
 	 *            Primary key
 	 * @return {@code boolean} indicating whether the entity is in the cache
 	 */
-	public boolean contains(RepositoryID repository, Class<?> cls, Object primaryKey);
+	public boolean contains(EntityOrigin entityOrigin, Class<?> cls, Object primaryKey);
 
 	/**
 	 * Removes the data for the given entity from the cache.

@@ -3,7 +3,7 @@ package cz.cvut.kbss.ontodriver;
 import java.util.List;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public interface DriverFactory extends Closeable {
@@ -35,7 +35,7 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory or if an ontology access error
 	 *             occurs
 	 */
-	public StorageModule createStorageModule(RepositoryID repository,
+	public StorageModule createStorageModule(EntityDescriptor repository,
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException;
 
@@ -70,7 +70,7 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory or if an ontology access error
 	 *             occurs
 	 */
-	public StorageConnector createStorageConnector(RepositoryID repository, boolean autoCommit)
+	public StorageConnector createStorageConnector(EntityDescriptor repository, boolean autoCommit)
 			throws OntoDriverException;
 
 	/**

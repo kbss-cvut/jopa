@@ -3,7 +3,7 @@ package cz.cvut.kbss.ontodriver.impl;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -39,7 +39,7 @@ public interface ModuleInternal<X, Y> {
 	 * @throws OntoDriverException
 	 *             If {@code primaryKey} is not a valid URI
 	 */
-	public boolean containsEntity(Object primaryKey, RepositoryID contexts)
+	public boolean containsEntity(Object primaryKey, EntityDescriptor contexts)
 			throws OntoDriverException;
 
 	/**
@@ -58,7 +58,7 @@ public interface ModuleInternal<X, Y> {
 	 * @throws OntoDriverException
 	 *             If an error occurs during load
 	 */
-	public <T> T findEntity(Class<T> cls, Object primaryKey, RepositoryID contexts)
+	public <T> T findEntity(Class<T> cls, Object primaryKey, EntityDescriptor contexts)
 			throws OntoDriverException;
 
 	/**
@@ -71,7 +71,7 @@ public interface ModuleInternal<X, Y> {
 	 * @throws OntoDriverException
 	 *             If an error occurs during consistency check
 	 */
-	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException;
+	public boolean isConsistent(EntityDescriptor contexts) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>
@@ -87,7 +87,7 @@ public interface ModuleInternal<X, Y> {
 	 * @throws OntoDriverException
 	 *             If an error occurs during persist
 	 */
-	public <T> void persistEntity(Object primaryKey, T entity, RepositoryID repository)
+	public <T> void persistEntity(Object primaryKey, T entity, EntityDescriptor repository)
 			throws OntoDriverException;
 
 	/**
@@ -106,7 +106,7 @@ public interface ModuleInternal<X, Y> {
 	 *             If the entity is not persistent or if an error occurs during
 	 *             merge
 	 */
-	public <T> void mergeEntity(T entity, Field mergedField, RepositoryID context)
+	public <T> void mergeEntity(T entity, Field mergedField, EntityDescriptor context)
 			throws OntoDriverException;
 
 	/**
@@ -122,7 +122,7 @@ public interface ModuleInternal<X, Y> {
 	 *             If no entity with {@code primaryKey} exists or if an error
 	 *             occurs during removal
 	 */
-	public void removeEntity(Object primaryKey, RepositoryID context) throws OntoDriverException;
+	public void removeEntity(Object primaryKey, EntityDescriptor context) throws OntoDriverException;
 
 	/**
 	 * Loads value of field {@code fieldName} to the entity. </p>
@@ -139,7 +139,7 @@ public interface ModuleInternal<X, Y> {
 	 *             If the entity has no field with name {@code fieldName} or if
 	 *             an error occurs during load
 	 */
-	public <T> void loadFieldValue(T entity, Field field, RepositoryID contexts)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor contexts)
 			throws OntoDriverException;
 
 	/**

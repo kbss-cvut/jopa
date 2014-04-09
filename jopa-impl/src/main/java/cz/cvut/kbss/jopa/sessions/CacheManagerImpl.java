@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
@@ -107,7 +107,7 @@ public class CacheManagerImpl implements CacheManager {
 	}
 
 	@Override
-	public void add(RepositoryID repository, Object primaryKey, Object entity) {
+	public void add(EntityDescriptor repository, Object primaryKey, Object entity) {
 		if (primaryKey == null || entity == null || repository == null) {
 			throw new NullPointerException("Null passed to add: primaryKey = " + primaryKey
 					+ ", entity = " + entity + ", repository = " + repository);
@@ -144,7 +144,7 @@ public class CacheManagerImpl implements CacheManager {
 	}
 
 	@Override
-	public <T> T get(RepositoryID repository, Class<T> cls, Object primaryKey) {
+	public <T> T get(EntityDescriptor repository, Class<T> cls, Object primaryKey) {
 		if (repository == null || cls == null || primaryKey == null) {
 			return null;
 		}
@@ -188,7 +188,7 @@ public class CacheManagerImpl implements CacheManager {
 		}
 		boolean res = false;
 		for (Repository r : repositories) {
-			final RepositoryID rid = r.createRepositoryID(true);
+			final EntityDescriptor rid = r.createRepositoryID(true);
 			res = repoCaches.get(r.getId()).contains(rid, cls, primaryKey);
 			if (res) {
 				return res;
@@ -198,7 +198,7 @@ public class CacheManagerImpl implements CacheManager {
 	}
 
 	@Override
-	public boolean contains(RepositoryID repository, Class<?> cls, Object primaryKey) {
+	public boolean contains(EntityDescriptor repository, Class<?> cls, Object primaryKey) {
 		if (repository == null || cls == null || primaryKey == null) {
 			return false;
 		}
@@ -216,7 +216,7 @@ public class CacheManagerImpl implements CacheManager {
 	}
 
 	@Override
-	public void evict(RepositoryID repository, Class<?> cls, Object primaryKey) {
+	public void evict(EntityDescriptor repository, Class<?> cls, Object primaryKey) {
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
@@ -226,7 +226,7 @@ public class CacheManagerImpl implements CacheManager {
 	}
 
 	@Override
-	public void evict(RepositoryID repository) {
+	public void evict(EntityDescriptor repository) {
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
 
 		getRepositoryCache(repository).evict(repository);
@@ -239,7 +239,7 @@ public class CacheManagerImpl implements CacheManager {
 		releaseCache();
 	}
 
-	private CacheImpl getRepositoryCache(RepositoryID repository) {
+	private CacheImpl getRepositoryCache(EntityDescriptor repository) {
 		return repoCaches.get(repository.getRepository());
 	}
 
@@ -282,12 +282,12 @@ public class CacheManagerImpl implements CacheManager {
 				CacheManagerImpl.this.sweepRunning = true;
 				final long currentTime = System.currentTimeMillis();
 				final long timeToLive = CacheManagerImpl.this.timeToLive;
-				final List<RepositoryID> toEvict = new LinkedList<>();
+				final List<EntityDescriptor> toEvict = new LinkedList<>();
 				// Mark the objects for eviction (can't evict them now, it would
 				// cause ConcurrentModificationException)
 				for (Repository r : repositories) {
 					final CacheImpl c = repoCaches.get(r.getId());
-					final RepositoryID rid = r.createRepositoryID(false);
+					final EntityDescriptor rid = r.createRepositoryID(false);
 					for (Entry<URI, Long> e : c.ttls.entrySet()) {
 						final long lm = e.getValue().longValue();
 						if (lm + timeToLive < currentTime) {
@@ -299,7 +299,7 @@ public class CacheManagerImpl implements CacheManager {
 					}
 				}
 				// Evict them
-				for (RepositoryID r : toEvict) {
+				for (EntityDescriptor r : toEvict) {
 					CacheManagerImpl.this.evict(r);
 				}
 			} finally {
@@ -318,7 +318,7 @@ public class CacheManagerImpl implements CacheManager {
 			ttls = new HashMap<>();
 		}
 
-		private void put(RepositoryID context, Object primaryKey, Object entity) {
+		private void put(EntityDescriptor context, Object primaryKey, Object entity) {
 			assert !context.getContexts().isEmpty();
 			assert primaryKey != null;
 			assert entity != null;
@@ -344,7 +344,7 @@ public class CacheManagerImpl implements CacheManager {
 			updateTimeToLive(ctx);
 		}
 
-		private <T> T get(RepositoryID context, Class<T> cls, Object primaryKey) {
+		private <T> T get(EntityDescriptor context, Class<T> cls, Object primaryKey) {
 			assert !context.getContexts().isEmpty();
 			assert cls != null;
 			assert primaryKey != null;
@@ -359,7 +359,7 @@ public class CacheManagerImpl implements CacheManager {
 			return null;
 		}
 
-		private boolean contains(RepositoryID context, Class<?> cls, Object primaryKey) {
+		private boolean contains(EntityDescriptor context, Class<?> cls, Object primaryKey) {
 			assert !context.getContexts().isEmpty();
 			assert cls != null;
 			assert primaryKey != null;
@@ -379,7 +379,7 @@ public class CacheManagerImpl implements CacheManager {
 			ttls.put(context, System.currentTimeMillis());
 		}
 
-		private void evict(RepositoryID context, Class<?> cls, Object primaryKey) {
+		private void evict(EntityDescriptor context, Class<?> cls, Object primaryKey) {
 			assert !context.getContexts().isEmpty();
 			assert cls != null;
 			assert primaryKey != null;
@@ -403,7 +403,7 @@ public class CacheManagerImpl implements CacheManager {
 			}
 		}
 
-		private void evict(RepositoryID contexts) {
+		private void evict(EntityDescriptor contexts) {
 			for (URI ctx : contexts.getContexts()) {
 				repoCache.remove(ctx);
 				ttls.remove(ctx);

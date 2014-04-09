@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -29,10 +29,10 @@ import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStatement;
  */
 public class DriverCachingJenaFactory extends DriverAbstractFactory {
 
-	private final Map<RepositoryID, OwlapiBasedJenaConnector> centralConnectors;
+	private final Map<EntityDescriptor, OwlapiBasedJenaConnector> centralConnectors;
 
 	public DriverCachingJenaFactory(List<Repository> repositories,
-			Map<RepositoryID, OntologyStorageProperties> repositoryProperties,
+			Map<EntityDescriptor, OntologyStorageProperties> repositoryProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		super(repositories, repositoryProperties, properties);
 		this.centralConnectors = new HashMap<>(repositories.size());
@@ -50,7 +50,7 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public StorageModule createStorageModule(RepositoryID repository,
+	public StorageModule createStorageModule(EntityDescriptor repository,
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(repository, persistenceProvider);
@@ -64,7 +64,7 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public JenaCachingStorageConnector createStorageConnector(RepositoryID repository,
+	public JenaCachingStorageConnector createStorageConnector(EntityDescriptor repository,
 			boolean autoCommit) throws OntoDriverException {
 		ensureState(repository);
 		if (LOG.isLoggable(Level.FINER)) {
@@ -73,7 +73,7 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 		return createConnectorInternal(repository);
 	}
 
-	private synchronized JenaCachingStorageConnector createConnectorInternal(RepositoryID repository)
+	private synchronized JenaCachingStorageConnector createConnectorInternal(EntityDescriptor repository)
 			throws OntoDriverException {
 		assert repository != null;
 		if (!centralConnectors.containsKey(repository)) {
@@ -85,7 +85,7 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 		return conn;
 	}
 
-	private void createCentralConnector(RepositoryID repository) throws OntoDriverException {
+	private void createCentralConnector(EntityDescriptor repository) throws OntoDriverException {
 		final OntologyStorageProperties props = storageProperties.get(repository);
 		final JenaStorageType storageType = DriverJenaFactory.resolveStorageType(props);
 		JenaStorageConnector c = null;

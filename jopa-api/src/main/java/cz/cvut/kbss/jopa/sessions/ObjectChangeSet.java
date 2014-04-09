@@ -3,8 +3,6 @@ package cz.cvut.kbss.jopa.sessions;
 import java.util.List;
 import java.util.Map;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
-
 public interface ObjectChangeSet {
 
 	public void addChangeRecord(ChangeRecord record);
@@ -25,5 +23,5 @@ public interface ObjectChangeSet {
 
 	public Object getChangedObject();
 
-	public RepositoryID getEntityRepository();
+	public EntityOrigin getEntityOrigin();
 }

@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.CacheManagerImpl;
@@ -48,19 +48,19 @@ public class CacheManagerTest {
 	private static OWLClassF testF;
 	private static Map<URI, OWLClassB> listOfBs;
 
-	private static RepositoryID repoOneCtxOne;
-	private static RepositoryID repoTwoCtxOne;
-	private static RepositoryID repoTwoCtxTwo;
+	private static EntityDescriptor repoOneCtxOne;
+	private static EntityDescriptor repoTwoCtxOne;
+	private static EntityDescriptor repoTwoCtxTwo;
 
 	private CacheManager mngr;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		initRepositories();
-		repoOneCtxOne = RepositoryID.repository(repositories.get(0))
+		repoOneCtxOne = EntityDescriptor.repository(repositories.get(0))
 				.contexts(repositories.get(0).getContexts()).build();
-		repoTwoCtxOne = RepositoryID.repository(repositories.get(1)).context(CONTEXT_URI).build();
-		repoTwoCtxTwo = RepositoryID.repository(repositories.get(1)).context(CONTEXT_TWO).build();
+		repoTwoCtxOne = EntityDescriptor.repository(repositories.get(1)).context(CONTEXT_URI).build();
+		repoTwoCtxTwo = EntityDescriptor.repository(repositories.get(1)).context(CONTEXT_TWO).build();
 		session = new SessionStub();
 		final URI pk = URI.create("http://testEntity");
 		testA = new OWLClassA();
@@ -275,7 +275,7 @@ public class CacheManagerTest {
 	@Test(expected = NullPointerException.class)
 	public void testEvictByContextNull() {
 		LOG.config("Test: evict by context. Null passed as context URI.");
-		mngr.evict((RepositoryID) null);
+		mngr.evict((EntityDescriptor) null);
 	}
 
 	@Test

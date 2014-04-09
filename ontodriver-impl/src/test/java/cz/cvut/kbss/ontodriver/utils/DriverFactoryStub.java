@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -25,7 +25,7 @@ public class DriverFactoryStub implements DriverFactory {
 	}
 
 	public DriverFactoryStub(List<Repository> repositories,
-			Map<RepositoryID, OntologyStorageProperties> repoProperties,
+			Map<EntityDescriptor, OntologyStorageProperties> repoProperties,
 			Map<String, String> properties) {
 		super();
 		// This is not best practice, but we need to access the instance
@@ -58,7 +58,7 @@ public class DriverFactoryStub implements DriverFactory {
 	}
 
 	@Override
-	public StorageModule createStorageModule(RepositoryID repository,
+	public StorageModule createStorageModule(EntityDescriptor repository,
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
 		// TODO Auto-generated method stub
@@ -71,7 +71,7 @@ public class DriverFactoryStub implements DriverFactory {
 	}
 
 	@Override
-	public StorageConnector createStorageConnector(RepositoryID repository, boolean autoCommit)
+	public StorageConnector createStorageConnector(EntityDescriptor repository, boolean autoCommit)
 			throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return null;

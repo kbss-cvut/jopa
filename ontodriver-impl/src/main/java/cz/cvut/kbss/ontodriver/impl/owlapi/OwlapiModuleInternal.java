@@ -40,7 +40,7 @@ import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -98,7 +98,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public boolean containsEntity(Object primaryKey, RepositoryID contexts)
+	public boolean containsEntity(Object primaryKey, EntityDescriptor contexts)
 			throws OntoDriverException {
 		assert primaryKey != null : "Null passed to containsEntity!";
 		assert contexts.getContexts().size() == 1;
@@ -108,7 +108,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public <T> T findEntity(Class<T> cls, Object primaryKey, RepositoryID contexts)
+	public <T> T findEntity(Class<T> cls, Object primaryKey, EntityDescriptor contexts)
 			throws OntoDriverException {
 		assert cls != null : "argument cls is null";
 		assert primaryKey != null : "argument primaryKey is null";
@@ -123,14 +123,14 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public boolean isConsistent(RepositoryID repository) throws OntoDriverException {
+	public boolean isConsistent(EntityDescriptor repository) throws OntoDriverException {
 		assert repository.getContexts().size() == 1;
 
 		return reasoner.isConsistent();
 	}
 
 	@Override
-	public <T> void persistEntity(Object primaryKey, T entity, RepositoryID context)
+	public <T> void persistEntity(Object primaryKey, T entity, EntityDescriptor context)
 			throws OntoDriverException {
 		checkStatus();
 		assert entity != null : "argument entity is null";
@@ -156,7 +156,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public <T> void mergeEntity(T entity, Field mergedField, RepositoryID context)
+	public <T> void mergeEntity(T entity, Field mergedField, EntityDescriptor context)
 			throws OntoDriverException {
 		checkStatus();
 		assert entity != null : "argument entity is null";
@@ -202,7 +202,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public void removeEntity(Object primaryKey, RepositoryID context) throws OntoDriverException {
+	public void removeEntity(Object primaryKey, EntityDescriptor context) throws OntoDriverException {
 		checkStatus();
 		assert primaryKey != null : "argument primaryKey is null";
 		assert context.getContexts().size() == 1;
@@ -216,7 +216,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, RepositoryID context)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor context)
 			throws OntoDriverException {
 		assert entity != null : "argument entity is null";
 		assert field != null : "argument field is null";

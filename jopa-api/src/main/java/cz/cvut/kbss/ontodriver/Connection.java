@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.exceptions.EntityNotRegisteredException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -53,7 +54,7 @@ public interface Connection extends Transactional {
 	 * @param primaryKey
 	 *            Primary key
 	 * @param repository
-	 *            Repository identifier
+	 *            Repository identifier. May specify multiple contexts to search
 	 * @return {@code true} if the specified repository contains entity with the
 	 *         given id, {@code false} otherwise
 	 * @throws NullPointerException
@@ -83,22 +84,22 @@ public interface Connection extends Transactional {
 	 * Finds entity with the specified primary key and returns it as the
 	 * specified type. </p>
 	 * 
-	 * This method searches the specified {@code repository} and if no entity is
-	 * found, {@code null} is immediately returned and no further search is
-	 * conducted.
+	 * The descriptor specifies in which contexts the entity and its field
+	 * should be searched for. If a field's context is not specified, the value
+	 * is searched for in the same context as the entity.
 	 * 
 	 * @param cls
 	 *            The of the returned instance
 	 * @param primaryKey
 	 *            Primary key
-	 * @param repository
-	 *            Repository identifier
+	 * @param descriptor
+	 *            Entity descriptor
 	 * @return Entity or null if there is none with the specified primary key
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, if the entity cannot be
 	 *             cast to the specified type or an ontology access error occurs
 	 */
-	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID repository)
+	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -145,14 +146,14 @@ public interface Connection extends Transactional {
 	 *            Entity to set the field value on
 	 * @param field
 	 *            The field to load
-	 * @param repository
+	 * @param descriptor
 	 *            Identifier of a repository from which the field value will be
 	 *            loaded
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or if an ontology access
 	 *             error occurs
 	 */
-	public <T> void loadFieldValue(T entity, Field field, RepositoryID repository)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
 			throws OntoDriverException, EntityNotRegisteredException;
 
 	/**
@@ -166,9 +167,8 @@ public interface Connection extends Transactional {
 	 *            The entity to merge
 	 * @param mergedField
 	 *            The field to merge
-	 * @param repository
-	 *            Identifier of a repository into which the field value will be
-	 *            merged
+	 * @param descriptor
+	 *            Specifies context into which the field value will be merged
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
@@ -179,27 +179,28 @@ public interface Connection extends Transactional {
 	 *             repository or if it has no field corresponding to
 	 *             {@code mergedField}
 	 */
-	public <T> void merge(T entity, Field mergedField, RepositoryID repository)
+	public <T> void merge(T entity, Field mergedField, EntityDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity into the specified repository. </p>
 	 * 
-	 * The entity is saved into the first context declared in {@code repository}
-	 * with all its attribute values.
+	 * The entity and its fields will be saved into contexts specified by the
+	 * descriptor. If a field's context is not specified, it is persisted into
+	 * the same context as the entity.
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the new entity. Optional, if not set, it will
 	 *            be generated
 	 * @param entity
 	 *            The entity to persist
-	 * @param repository
-	 *            Repository identifier
+	 * @param descriptor
+	 *            Entity descriptor
 	 * @throws OntoDriverException
 	 *             If called on a closed connection, if the repository
 	 *             identifier is not valid or an ontology access error occurs
 	 */
-	public <T> void persist(Object primaryKey, T entity, RepositoryID repository)
+	public <T> void persist(Object primaryKey, T entity, EntityDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -219,14 +220,15 @@ public interface Connection extends Transactional {
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the entity to be removed
-	 * @param repository
-	 *            Identifier of a repository from which the entity will be
-	 *            removed
+	 * @param descriptor
+	 *            Identifier of a repository and contexts from which the entity
+	 *            and its fields will be removed
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or if an ontology access
 	 *             error occurs
 	 */
-	public <T> void remove(Object primaryKey, RepositoryID repository) throws OntoDriverException;
+	public <T> void remove(Object primaryKey, EntityDescriptor descriptor)
+			throws OntoDriverException;
 
 	/**
 	 * Sets auto commit mode on this connection. </p>

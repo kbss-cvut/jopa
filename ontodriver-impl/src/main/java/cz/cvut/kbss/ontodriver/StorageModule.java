@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -45,7 +45,7 @@ public abstract class StorageModule implements Transactional {
 	/** Repository managed by this module */
 	protected final Repository repository;
 	/** Cached repository identifier */
-	protected final RepositoryID repositoryId;
+	protected final EntityDescriptor repositoryId;
 	/** Backward reference to the factory */
 	protected final DriverFactory factory;
 	/** Metamodel of the entity model */
@@ -88,7 +88,7 @@ public abstract class StorageModule implements Transactional {
 	 * 
 	 * @return Repository identifier
 	 */
-	public RepositoryID getRepositoryID() {
+	public EntityDescriptor getRepositoryID() {
 		return repositoryId;
 	}
 
@@ -140,7 +140,7 @@ public abstract class StorageModule implements Transactional {
 	 *            Repository identifier
 	 * @return Matching entity or {@code null}
 	 */
-	public <T> T getEntityFromProviderCache(Class<T> cls, Object primaryKey, RepositoryID repoId) {
+	public <T> T getEntityFromProviderCache(Class<T> cls, Object primaryKey, EntityDescriptor repoId) {
 		assert cls != null;
 		assert primaryKey != null;
 
@@ -185,7 +185,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code contexts} is {@code null}
 	 */
-	public abstract boolean contains(Object primaryKey, RepositoryID contexts)
+	public abstract boolean contains(Object primaryKey, EntityDescriptor contexts)
 			throws OntoDriverException;
 
 	/**
@@ -207,7 +207,7 @@ public abstract class StorageModule implements Transactional {
 	 *             If {@code cls}, {@code primaryKey} or {@code contexts} is
 	 *             {@code null}
 	 */
-	public abstract <T> T find(Class<T> cls, Object primaryKey, RepositoryID contexts)
+	public abstract <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor contexts)
 			throws OntoDriverException;
 
 	/**
@@ -222,7 +222,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             if {@code contexts} is {@code null}
 	 */
-	public abstract boolean isConsistent(RepositoryID contexts) throws OntoDriverException;
+	public abstract boolean isConsistent(EntityDescriptor contexts) throws OntoDriverException;
 
 	/**
 	 * Loads from the ontology and sets value of field {@code fieldName} on the
@@ -242,7 +242,7 @@ public abstract class StorageModule implements Transactional {
 	 *             If {@code entity}, {@code fieldName} or {@code contexts} is
 	 *             null
 	 */
-	public abstract <T> void loadFieldValue(T entity, Field field, RepositoryID contexts)
+	public abstract <T> void loadFieldValue(T entity, Field field, EntityDescriptor contexts)
 			throws OntoDriverException;
 
 	/**
@@ -263,7 +263,7 @@ public abstract class StorageModule implements Transactional {
 	 *             If {@code primaryKey}, {@code entity} or {@code context} is
 	 *             {@code null}
 	 */
-	public abstract <T> void merge(T entity, Field mergedField, RepositoryID context)
+	public abstract <T> void merge(T entity, Field mergedField, EntityDescriptor context)
 			throws OntoDriverException;
 
 	/**
@@ -284,7 +284,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code context} is null
 	 */
-	public abstract <T> void persist(Object primaryKey, T entity, RepositoryID context)
+	public abstract <T> void persist(Object primaryKey, T entity, EntityDescriptor context)
 			throws OntoDriverException;
 
 	/**
@@ -304,7 +304,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code context} is null
 	 */
-	public abstract void remove(Object primaryKey, RepositoryID context) throws OntoDriverException;
+	public abstract void remove(Object primaryKey, EntityDescriptor context) throws OntoDriverException;
 
 	/**
 	 * Executes the specified statement. </p>
@@ -334,13 +334,13 @@ public abstract class StorageModule implements Transactional {
 	protected abstract void startTransactionIfNotActive() throws OntoDriverException;
 
 	/**
-	 * Preliminary steps before running {@link #contains(Object, RepositoryID)}
+	 * Preliminary steps before running {@link #contains(Object, EntityDescriptor)}
 	 * </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected void preContains(Object primaryKey, RepositoryID contexts) throws OntoDriverException {
+	protected void preContains(Object primaryKey, EntityDescriptor contexts) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(contexts, ErrorUtils.constructNPXMessage("contexts"));
@@ -350,12 +350,12 @@ public abstract class StorageModule implements Transactional {
 
 	/**
 	 * Preliminary steps before running
-	 * {@link #find(Class, Object, RepositoryID)} </p>
+	 * {@link #find(Class, Object, EntityDescriptor)} </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected void preFind(Class<?> cls, Object primaryKey, RepositoryID contexts)
+	protected void preFind(Class<?> cls, Object primaryKey, EntityDescriptor contexts)
 			throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
@@ -366,12 +366,12 @@ public abstract class StorageModule implements Transactional {
 	}
 
 	/**
-	 * Preliminary steps before running {@link #isConsistent(RepositoryID)} </p>
+	 * Preliminary steps before running {@link #isConsistent(EntityDescriptor)} </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected void preIsConsistent(RepositoryID contexts) throws OntoDriverException {
+	protected void preIsConsistent(EntityDescriptor contexts) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(contexts, ErrorUtils.constructNPXMessage("contexts"));
 		ensureCorrectRepositoryId(contexts);
@@ -380,12 +380,12 @@ public abstract class StorageModule implements Transactional {
 
 	/**
 	 * Preliminary steps before running
-	 * {@link #loadFieldValue(Object, Field, RepositoryID)} </p>
+	 * {@link #loadFieldValue(Object, Field, EntityDescriptor)} </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected <T> void preLoadFieldValue(T entity, Field field, RepositoryID context)
+	protected <T> void preLoadFieldValue(T entity, Field field, EntityDescriptor context)
 			throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
@@ -397,12 +397,12 @@ public abstract class StorageModule implements Transactional {
 
 	/**
 	 * Preliminary steps before running
-	 * {@link #merge(Object, Object, Field, RepositoryID)} </p>
+	 * {@link #merge(Object, Object, Field, EntityDescriptor)} </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected <T> void preMerge(T entity, Field mergedField, RepositoryID context)
+	protected <T> void preMerge(T entity, Field mergedField, EntityDescriptor context)
 			throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
@@ -414,12 +414,12 @@ public abstract class StorageModule implements Transactional {
 
 	/**
 	 * Preliminary steps before running
-	 * {@link #persist(Object, Object, RepositoryID)} </p>
+	 * {@link #persist(Object, Object, EntityDescriptor)} </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected <T> void prePersist(T entity, RepositoryID context) throws OntoDriverException {
+	protected <T> void prePersist(T entity, EntityDescriptor context) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
@@ -428,13 +428,13 @@ public abstract class StorageModule implements Transactional {
 	}
 
 	/**
-	 * Preliminary steps before running {@link #remove(Object, RepositoryID)}
+	 * Preliminary steps before running {@link #remove(Object, EntityDescriptor)}
 	 * </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected void preRemove(Object primaryKey, RepositoryID context) throws OntoDriverException {
+	protected void preRemove(Object primaryKey, EntityDescriptor context) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
@@ -477,7 +477,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws IllegalArgumentException
 	 *             If the validation fails
 	 */
-	protected void ensureCorrectRepositoryId(RepositoryID repo) {
+	protected void ensureCorrectRepositoryId(EntityDescriptor repo) {
 		assert repo != null;
 		if (!repository.getId().equals(repo.getRepository())) {
 			throw new IllegalArgumentException("The specified repository identifier " + repo

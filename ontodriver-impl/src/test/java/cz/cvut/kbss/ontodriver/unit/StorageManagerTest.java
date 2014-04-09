@@ -30,7 +30,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -73,10 +73,10 @@ public class StorageManagerTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		when(driverMock.getFactory(any(RepositoryID.class))).thenReturn(factoryMock);
-		when(factoryMock.createStorageModule(any(RepositoryID.class), eq(facadeMock), anyBoolean()))
+		when(driverMock.getFactory(any(EntityDescriptor.class))).thenReturn(factoryMock);
+		when(factoryMock.createStorageModule(any(EntityDescriptor.class), eq(facadeMock), anyBoolean()))
 				.thenReturn(moduleMock);
-		when(moduleMock.contains(any(), any(RepositoryID.class))).thenReturn(Boolean.FALSE);
+		when(moduleMock.contains(any(), any(EntityDescriptor.class))).thenReturn(Boolean.FALSE);
 		when(facadeMock.getMetamodel()).thenReturn(metamodelMock);
 
 		this.manager = new StorageManagerImpl(facadeMock, repositories, driverMock);
@@ -99,7 +99,7 @@ public class StorageManagerTest {
 
 	@Test
 	public void testClose() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://blabla");
 		// Just to trigger module creation
 		manager.contains(pk, rid);
@@ -112,7 +112,7 @@ public class StorageManagerTest {
 
 	@Test
 	public void testContains() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://do-you-contain-me");
 		when(moduleMock.contains(pk, rid)).thenReturn(Boolean.TRUE);
 
@@ -124,7 +124,7 @@ public class StorageManagerTest {
 
 	@Test(expected = IllegalStateException.class)
 	public void testContainsOnClosed() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://do-you-contain-me");
 		when(moduleMock.contains(pk, rid)).thenReturn(Boolean.TRUE);
 
@@ -134,7 +134,7 @@ public class StorageManagerTest {
 
 	@Test
 	public void testFind() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://do-you-contain-me");
 		final OWLClassA a = new OWLClassA();
 		when(moduleMock.find(OWLClassA.class, pk, rid)).thenReturn(a);
@@ -148,7 +148,7 @@ public class StorageManagerTest {
 	@Test
 	public void testFindTwice() throws Exception {
 		// Calls find twice and verifies that the module is created only once
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://do-you-contain-me");
 		final OWLClassA a = new OWLClassA();
 		when(moduleMock.find(OWLClassA.class, pk, rid)).thenReturn(a);
@@ -165,21 +165,21 @@ public class StorageManagerTest {
 	@SuppressWarnings("unchecked")
 	@Test(expected = NullPointerException.class)
 	public void testFindNull() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
-		when(moduleMock.find(any(Class.class), any(), any(RepositoryID.class))).thenThrow(
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
+		when(moduleMock.find(any(Class.class), any(), any(EntityDescriptor.class))).thenThrow(
 				UnsupportedOperationException.class);
 		try {
 			final OWLClassA res = manager.find(OWLClassA.class, null, rid);
 			// This shouldn't be reached
 			assert res == null;
 		} finally {
-			verify(moduleMock, never()).find(any(Class.class), any(), any(RepositoryID.class));
+			verify(moduleMock, never()).find(any(Class.class), any(), any(EntityDescriptor.class));
 		}
 	}
 
 	@Test
 	public void testFindUnknown() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://do-you-contain-me");
 		when(moduleMock.find(OWLClassA.class, pk, rid)).thenReturn(null);
 
@@ -191,7 +191,7 @@ public class StorageManagerTest {
 
 	@Test
 	public void testIsConsistent() throws Exception {
-		final RepositoryID rid = repositories.get(1).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(1).createRepositoryID(false);
 		when(moduleMock.isConsistent(rid)).thenReturn(Boolean.TRUE);
 
 		final boolean res = manager.isConsistent(rid);
@@ -214,7 +214,7 @@ public class StorageManagerTest {
 
 	@Test
 	public void testLoadFieldValue() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final OWLClassA a = new OWLClassA();
 		final Field f = OWLClassA.getStrAttField();
 
@@ -224,7 +224,7 @@ public class StorageManagerTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testLoadFieldValueNull() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final Field f = OWLClassA.getStrAttField();
 
 		try {
@@ -236,14 +236,14 @@ public class StorageManagerTest {
 
 	@Test
 	public void testMerge() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://do-you-contain-me");
 		final OWLClassA a = new OWLClassA();
 		final Field f = OWLClassA.getStrAttField();
 		final Field changesField = StorageManagerImpl.class.getDeclaredField("modulesWithChanges");
 		changesField.setAccessible(true);
 		@SuppressWarnings("unchecked")
-		final Map<RepositoryID, StorageModule> changes = (Map<RepositoryID, StorageModule>) changesField
+		final Map<EntityDescriptor, StorageModule> changes = (Map<EntityDescriptor, StorageModule>) changesField
 				.get(manager);
 		assertTrue(changes.isEmpty());
 
@@ -254,13 +254,13 @@ public class StorageManagerTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testMergeNull() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://do-you-contain-me");
 		final Field f = OWLClassA.getStrAttField();
 		final Field changesField = StorageManagerImpl.class.getDeclaredField("modulesWithChanges");
 		changesField.setAccessible(true);
 		@SuppressWarnings("unchecked")
-		final Map<RepositoryID, StorageModule> changes = (Map<RepositoryID, StorageModule>) changesField
+		final Map<EntityDescriptor, StorageModule> changes = (Map<EntityDescriptor, StorageModule>) changesField
 				.get(manager);
 		assertTrue(changes.isEmpty());
 		try {
@@ -273,13 +273,13 @@ public class StorageManagerTest {
 
 	@Test
 	public void testPersist() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://do-you-contain-me");
 		final OWLClassA a = new OWLClassA();
 		final Field changesField = StorageManagerImpl.class.getDeclaredField("modulesWithChanges");
 		changesField.setAccessible(true);
 		@SuppressWarnings("unchecked")
-		final Map<RepositoryID, StorageModule> changes = (Map<RepositoryID, StorageModule>) changesField
+		final Map<EntityDescriptor, StorageModule> changes = (Map<EntityDescriptor, StorageModule>) changesField
 				.get(manager);
 		assertTrue(changes.isEmpty());
 
@@ -291,12 +291,12 @@ public class StorageManagerTest {
 
 	@Test
 	public void testPersistNullPk() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final OWLClassA a = new OWLClassA();
 		final Field changesField = StorageManagerImpl.class.getDeclaredField("modulesWithChanges");
 		changesField.setAccessible(true);
 		@SuppressWarnings("unchecked")
-		final Map<RepositoryID, StorageModule> changes = (Map<RepositoryID, StorageModule>) changesField
+		final Map<EntityDescriptor, StorageModule> changes = (Map<EntityDescriptor, StorageModule>) changesField
 				.get(manager);
 		assertTrue(changes.isEmpty());
 
@@ -308,13 +308,13 @@ public class StorageManagerTest {
 
 	@Test(expected = IllegalStateException.class)
 	public void testPersistOnClosed() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://do-you-contain-me");
 		final OWLClassA a = new OWLClassA();
 		final Field changesField = StorageManagerImpl.class.getDeclaredField("modulesWithChanges");
 		changesField.setAccessible(true);
 		@SuppressWarnings("unchecked")
-		final Map<RepositoryID, StorageModule> changes = (Map<RepositoryID, StorageModule>) changesField
+		final Map<EntityDescriptor, StorageModule> changes = (Map<EntityDescriptor, StorageModule>) changesField
 				.get(manager);
 		assertTrue(changes.isEmpty());
 
@@ -323,20 +323,20 @@ public class StorageManagerTest {
 			manager.persist(pk, a, rid);
 		} finally {
 			assertTrue(changes.isEmpty());
-			verify(factoryMock, never()).createStorageModule(any(RepositoryID.class),
+			verify(factoryMock, never()).createStorageModule(any(EntityDescriptor.class),
 					eq(facadeMock), anyBoolean());
-			verify(moduleMock, never()).persist(any(), any(), any(RepositoryID.class));
+			verify(moduleMock, never()).persist(any(), any(), any(EntityDescriptor.class));
 		}
 	}
 
 	@Test
 	public void testRemove() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://do-you-contain-me");
 		final Field changesField = StorageManagerImpl.class.getDeclaredField("modulesWithChanges");
 		changesField.setAccessible(true);
 		@SuppressWarnings("unchecked")
-		final Map<RepositoryID, StorageModule> changes = (Map<RepositoryID, StorageModule>) changesField
+		final Map<EntityDescriptor, StorageModule> changes = (Map<EntityDescriptor, StorageModule>) changesField
 				.get(manager);
 		assertTrue(changes.isEmpty());
 
@@ -348,11 +348,11 @@ public class StorageManagerTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testRemoveNullPk() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final Field changesField = StorageManagerImpl.class.getDeclaredField("modulesWithChanges");
 		changesField.setAccessible(true);
 		@SuppressWarnings("unchecked")
-		final Map<RepositoryID, StorageModule> changes = (Map<RepositoryID, StorageModule>) changesField
+		final Map<EntityDescriptor, StorageModule> changes = (Map<EntityDescriptor, StorageModule>) changesField
 				.get(manager);
 		assertTrue(changes.isEmpty());
 
@@ -360,7 +360,7 @@ public class StorageManagerTest {
 			manager.remove(null, rid);
 		} finally {
 			assertTrue(changes.isEmpty());
-			verify(moduleMock, never()).remove(any(), any(RepositoryID.class));
+			verify(moduleMock, never()).remove(any(), any(EntityDescriptor.class));
 		}
 	}
 
@@ -369,7 +369,7 @@ public class StorageManagerTest {
 		final Field changesField = StorageManagerImpl.class.getDeclaredField("modulesWithChanges");
 		changesField.setAccessible(true);
 		@SuppressWarnings("unchecked")
-		final Map<RepositoryID, StorageModule> changes = (Map<RepositoryID, StorageModule>) changesField
+		final Map<EntityDescriptor, StorageModule> changes = (Map<EntityDescriptor, StorageModule>) changesField
 				.get(manager);
 		assertTrue(changes.isEmpty());
 
@@ -380,12 +380,12 @@ public class StorageManagerTest {
 
 	@Test
 	public void testCommit() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://do-you-contain-me");
 		final Field changesField = StorageManagerImpl.class.getDeclaredField("modulesWithChanges");
 		changesField.setAccessible(true);
 		@SuppressWarnings("unchecked")
-		final Map<RepositoryID, StorageModule> changes = (Map<RepositoryID, StorageModule>) changesField
+		final Map<EntityDescriptor, StorageModule> changes = (Map<EntityDescriptor, StorageModule>) changesField
 				.get(manager);
 		assertTrue(changes.isEmpty());
 
@@ -398,12 +398,12 @@ public class StorageManagerTest {
 
 	@Test
 	public void testRollback() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final URI pk = URI.create("http://do-you-contain-me");
 		final Field changesField = StorageManagerImpl.class.getDeclaredField("modulesWithChanges");
 		changesField.setAccessible(true);
 		@SuppressWarnings("unchecked")
-		final Map<RepositoryID, StorageModule> changes = (Map<RepositoryID, StorageModule>) changesField
+		final Map<EntityDescriptor, StorageModule> changes = (Map<EntityDescriptor, StorageModule>) changesField
 				.get(manager);
 		assertTrue(changes.isEmpty());
 
@@ -417,7 +417,7 @@ public class StorageManagerTest {
 
 	@Test
 	public void testExecuteStatement() throws Exception {
-		final RepositoryID rid = repositories.get(0).createRepositoryID(false);
+		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final JopaStatement stmtMock = mock(JopaStatement.class);
 		final ResultSet rsMock = mock(ResultSet.class);
 		when(stmtMock.getRepository()).thenReturn(rid);

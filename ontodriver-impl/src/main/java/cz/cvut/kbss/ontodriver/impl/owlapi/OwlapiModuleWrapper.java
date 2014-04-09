@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -58,5 +58,5 @@ interface OwlapiModuleWrapper {
 	 * 
 	 * @return Repository identifier
 	 */
-	public RepositoryID getRepositoryIdentifier();
+	public EntityDescriptor getRepositoryIdentifier();
 }

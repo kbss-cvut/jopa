@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.sessions;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.RepositoryID;
 
 public interface UnitOfWork extends Session {
@@ -78,31 +79,31 @@ public interface UnitOfWork extends Session {
 	 * Merges the state of the given entity into the current persistence
 	 * context. </p>
 	 * 
-	 * The {@code repository} argument specified the ontology context into which
-	 * the detached entity belongs and should be merged.
+	 * The {@code descriptor} argument specified the ontology contexts into
+	 * which the detached entity and its fields belong and should be merged.
 	 * 
 	 * @param entity
 	 *            entity instance
-	 * @param repository
+	 * @param descriptor
 	 *            Repository identifier
 	 * @return the managed instance that the state was merged to
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code repository} is {@code null}
 	 */
-	public <T> T mergeDetached(T entity, RepositoryID repository);
+	public <T> T mergeDetached(T entity, EntityDescriptor descriptor);
 
 	/**
 	 * Retrieves object with the specified primary key. </p>
 	 * 
-	 * The object is looked for in context specified by the repository
-	 * identifier. The result is then cast to the specified type.
+	 * The object as well as its fields are looked for in contexts specified by
+	 * the descriptor. The result is then cast to the specified type.
 	 * 
 	 * @param cls
 	 *            The type of the returned object
 	 * @param primaryKey
 	 *            Primary key
-	 * @param repository
-	 *            repository identifier
+	 * @param descriptor
+	 *            Entity descriptor
 	 * @return The retrieved object or {@code null} if there is no object with
 	 *         the specified primary key in the specified repository
 	 * @throws NullPointerException
@@ -112,7 +113,7 @@ public interface UnitOfWork extends Session {
 	 *             If {@code repository} is not valid or if an error during
 	 *             object loading occurs
 	 */
-	public <T> T readObject(Class<T> cls, Object primaryKey, RepositoryID repository);
+	public <T> T readObject(Class<T> cls, Object primaryKey, EntityDescriptor descriptor);
 
 	/**
 	 * Register an existing object in this Unit of Work. The passed object comes
@@ -122,22 +123,22 @@ public interface UnitOfWork extends Session {
 	 * 
 	 * @param object
 	 *            Object
-	 * @param repository
+	 * @param descriptor
 	 *            Identifier of the repository to which the object being
 	 *            registered belongs
 	 * @return Object Returns clone of the registered object
 	 */
-	public Object registerExistingObject(Object object, RepositoryID repository);
+	public Object registerExistingObject(Object object, EntityDescriptor descriptor);
 
 	/**
 	 * Registers the specified new object in this Unit of Work. </p>
 	 * 
-	 * The object will be persisted in the context specified by
-	 * {@code repository} URI.
+	 * The object will be persisted into the context specified by
+	 * {@code descriptor}.
 	 * 
 	 * @param object
 	 *            The object to register
-	 * @param repository
+	 * @param descriptor
 	 *            Identifier of the repository into which the object should be
 	 *            persisted
 	 * @throws NullPointerException
@@ -146,7 +147,7 @@ public interface UnitOfWork extends Session {
 	 *             If {@code context} is not a valid context URI or if an error
 	 *             during registration occurs
 	 */
-	public void registerNewObject(Object object, RepositoryID repository);
+	public void registerNewObject(Object object, EntityDescriptor descriptor);
 
 	/**
 	 * Remove the given object. Calling this method causes the entity to be

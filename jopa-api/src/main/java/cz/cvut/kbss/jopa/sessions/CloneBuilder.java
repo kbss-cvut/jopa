@@ -3,8 +3,6 @@ package cz.cvut.kbss.jopa.sessions;
 import java.lang.reflect.Field;
 import java.net.URI;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
-
 /**
  * Objects of this interface are responsible for building clones for UnitOfWork
  * transactions.
@@ -19,13 +17,13 @@ public interface CloneBuilder {
 	 * 
 	 * @param original
 	 *            Object
-	 * @param repository
-	 *            Repository identifier
+	 * @param entityOrigin
+	 *            Entity origin
 	 * @return Object The clone
 	 * @throws NullPointerException
 	 *             If {@code original} or {@code repository} is {@code null}
 	 */
-	public Object buildClone(Object original, RepositoryID repository);
+	public Object buildClone(Object original, EntityOrigin entityOrigin);
 
 	/**
 	 * Builds clone of the given object. </p>
@@ -41,15 +39,15 @@ public interface CloneBuilder {
 	 *            The field whose value is being cloned
 	 * @param original
 	 *            The original to clone
-	 * @param repository
-	 *            Repository identifier
+	 * @param entityOrigin
+	 *            Entity origin
 	 * @return The clone
 	 * @throws NullPointerException
 	 *             If {@code cloneOwner}, {@code original} or {@code contextUri}
 	 *             is {@code null}
 	 */
 	public Object buildClone(Object cloneOwner, Field clonedField, Object original,
-			RepositoryID repository);
+			EntityOrigin entityOrigin);
 
 	/**
 	 * Resets the clone builder. Especially resets the visited objects cache to

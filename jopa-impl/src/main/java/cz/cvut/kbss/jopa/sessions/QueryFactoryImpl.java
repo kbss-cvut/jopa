@@ -2,7 +2,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import java.util.List;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.QueryImpl;
@@ -22,7 +22,7 @@ class QueryFactoryImpl implements QueryFactory {
 	}
 
 	@Override
-	public Query<List<String>> createNativeQuery(String sparql, RepositoryID repository) {
+	public Query<List<String>> createNativeQuery(String sparql, EntityDescriptor repository) {
 		if (sparql == null) {
 			throw new NullPointerException("Query not specified!");
 		}
@@ -36,7 +36,7 @@ class QueryFactoryImpl implements QueryFactory {
 
 	@Override
 	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass,
-			RepositoryID repository) {
+			EntityDescriptor repository) {
 		if (sparql == null || resultClass == null) {
 			throw new NullPointerException("Query or resultClass not specified!");
 		}
@@ -49,7 +49,7 @@ class QueryFactoryImpl implements QueryFactory {
 	}
 
 	@Override
-	public Query createQuery(String query, RepositoryID repository) {
+	public Query createQuery(String query, EntityDescriptor repository) {
 		if (query == null) {
 			throw new NullPointerException("Query not specified!");
 		}
@@ -64,7 +64,7 @@ class QueryFactoryImpl implements QueryFactory {
 	}
 
 	@Override
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, RepositoryID repository) {
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, EntityDescriptor repository) {
 		if (query == null || resultClass == null) {
 			throw new NullPointerException("Query or resultClass not specified!");
 		}

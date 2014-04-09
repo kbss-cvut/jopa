@@ -3,7 +3,6 @@ package cz.cvut.kbss.jopa.sessions;
 import java.util.List;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
 
 public interface Session {
 
@@ -25,10 +24,10 @@ public interface Session {
 	 * 
 	 * @param object
 	 *            Object
-	 * @param repository
-	 *            Repository identifier
+	 * @param entityOrigin
+	 *            Entity origin identifier
 	 */
-	public void removeObjectFromCache(Object object, RepositoryID repository);
+	public void removeObjectFromCache(Object object, EntityOrigin entityOrigin);
 
 	/**
 	 * Gets repositories available to this session. </p>

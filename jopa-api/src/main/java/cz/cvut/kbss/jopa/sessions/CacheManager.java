@@ -2,8 +2,6 @@ package cz.cvut.kbss.jopa.sessions;
 
 import java.util.Set;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
-
 /**
  * This interface defines basic methods for accessing the shared live object
  * cache.
@@ -20,25 +18,25 @@ public interface CacheManager extends Cache {
 	 * it is in the same repository context), it is replaced with the one passed
 	 * as argument.
 	 * 
-	 * @param repository
-	 *            Identifier of the context to which the specified entity
-	 *            belongs
+	 * @param entityOrigin
+	 *            Identifier of the repository and context to which the
+	 *            specified entity belogns
 	 * @param primaryKey
 	 *            Primary key of the specified object
 	 * @param entity
 	 *            The object to be added into the cache
 	 */
-	public void add(RepositoryID repository, Object primaryKey, Object entity);
+	public void add(EntityOrigin entityOrigin, Object primaryKey, Object entity);
 
 	/**
 	 * Gets entity with the specified primary key from the cache. </p>
 	 * 
-	 * The entity is searched for in the context specified by {@code repository}
-	 * . Thus all three conditions - class, primary key and repository
-	 * identifier must match to return a result.
+	 * The entity is searched for in the context specified by
+	 * {@code entityOrigin} . Thus all three conditions - class, primary key and
+	 * origin must match to return a result.
 	 * 
-	 * @param repository
-	 *            Repository identifier
+	 * @param entityOrigin
+	 *            Entity origin
 	 * @param cls
 	 *            Class of the entity
 	 * @param primaryKey
@@ -46,7 +44,7 @@ public interface CacheManager extends Cache {
 	 * 
 	 * @return Entity with the specified primary key or {@code null}
 	 */
-	public <T> T get(RepositoryID repository, Class<T> cls, Object primaryKey);
+	public <T> T get(EntityOrigin entityOrigin, Class<T> cls, Object primaryKey);
 
 	/**
 	 * Remove objects with inferred attributes from the cache, since there are

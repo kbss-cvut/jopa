@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -29,8 +29,8 @@ public class StorageManagerImpl extends StorageManager {
 	/** Repositories */
 	private List<Repository> repositories;
 	/** Storage modules */
-	private final Map<RepositoryID, StorageModule> modules;
-	private final Map<RepositoryID, StorageModule> modulesWithChanges;
+	private final Map<EntityDescriptor, StorageModule> modules;
+	private final Map<EntityDescriptor, StorageModule> modulesWithChanges;
 
 	/**
 	 * Constructor
@@ -92,7 +92,7 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, RepositoryID repository) throws OntoDriverException {
+	public boolean contains(Object primaryKey, EntityDescriptor repository) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Checking whether repository " + repository
 					+ " contains entity with primary key " + primaryKey);
@@ -106,7 +106,7 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID repository)
+	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor repository)
 			throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Retrieving entity with primary key " + primaryKey + " from repository "
@@ -123,7 +123,7 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public boolean isConsistent(RepositoryID repository) throws OntoDriverException {
+	public boolean isConsistent(EntityDescriptor repository) throws OntoDriverException {
 		ensureState();
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
 
@@ -137,7 +137,7 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, RepositoryID repository)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor repository)
 			throws OntoDriverException {
 		ensureState();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
@@ -149,7 +149,7 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public <T> void merge(T entity, Field mergedField, RepositoryID repository)
+	public <T> void merge(T entity, Field mergedField, EntityDescriptor repository)
 			throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Merging entity " + entity + ", field " + mergedField + " into repository "
@@ -166,7 +166,7 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, RepositoryID repository)
+	public <T> void persist(Object primaryKey, T entity, EntityDescriptor repository)
 			throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Persisting entity into repository " + repository);
@@ -181,7 +181,7 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public void remove(Object primaryKey, RepositoryID repository) throws OntoDriverException {
+	public void remove(Object primaryKey, EntityDescriptor repository) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Removing entity with primary key " + primaryKey + " from repository "
 					+ repository);
@@ -223,7 +223,7 @@ public class StorageManagerImpl extends StorageManager {
 		modulesWithChanges.put(m.getRepositoryID(), m);
 	}
 
-	private StorageModule getModule(RepositoryID identifier) throws OntoDriverException {
+	private StorageModule getModule(EntityDescriptor identifier) throws OntoDriverException {
 		assert identifier != null;
 
 		StorageModule m = modules.get(identifier);

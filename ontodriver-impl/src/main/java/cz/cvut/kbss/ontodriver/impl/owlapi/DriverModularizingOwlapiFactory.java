@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -25,18 +25,18 @@ import de.fraunhofer.iitb.owldb.OWLDBManager;
  */
 public class DriverModularizingOwlapiFactory extends DriverAbstractFactory {
 
-	private final Map<RepositoryID, OwlapiStorageConnector> centralConnectors;
+	private final Map<EntityDescriptor, OwlapiStorageConnector> centralConnectors;
 	private boolean owldb = false;
 
 	public DriverModularizingOwlapiFactory(List<Repository> repositories,
-			Map<RepositoryID, OntologyStorageProperties> repositoryProperties,
+			Map<EntityDescriptor, OntologyStorageProperties> repositoryProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		super(repositories, repositoryProperties, properties);
 		this.centralConnectors = new HashMap<>(repositories.size());
 	}
 
 	@Override
-	public ModularizingOwlapiStorageModule createStorageModule(RepositoryID repository,
+	public ModularizingOwlapiStorageModule createStorageModule(EntityDescriptor repository,
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(repository, persistenceProvider);
@@ -50,7 +50,7 @@ public class DriverModularizingOwlapiFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public ModularizingStorageConnector createStorageConnector(RepositoryID repository,
+	public ModularizingStorageConnector createStorageConnector(EntityDescriptor repository,
 			boolean autoCommit) throws OntoDriverException {
 		ensureState(repository);
 		if (LOG.isLoggable(Level.FINER)) {
@@ -70,7 +70,7 @@ public class DriverModularizingOwlapiFactory extends DriverAbstractFactory {
 	 * @return
 	 * @throws OntoDriverException
 	 */
-	private synchronized ModularizingStorageConnector createConnectorInternal(RepositoryID repo,
+	private synchronized ModularizingStorageConnector createConnectorInternal(EntityDescriptor repo,
 			boolean autoCommit) throws OntoDriverException {
 		assert repo != null;
 		if (!centralConnectors.containsKey(repo)) {
@@ -82,7 +82,7 @@ public class DriverModularizingOwlapiFactory extends DriverAbstractFactory {
 		return conn;
 	}
 
-	private void createCentralConnector(RepositoryID repo) throws OntoDriverException {
+	private void createCentralConnector(EntityDescriptor repo) throws OntoDriverException {
 		final OntologyStorageProperties p = storageProperties.get(repo);
 		final OwlapiStorageType type = DriverOwlapiFactory.resolveStorageType(p);
 		OwlapiStorageConnector connector = null;

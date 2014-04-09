@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -72,14 +72,14 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, RepositoryID contexts) throws OntoDriverException {
+	public boolean contains(Object primaryKey, EntityDescriptor contexts) throws OntoDriverException {
 		preContains(primaryKey, contexts);
 
 		return internal.containsEntity(primaryKey, contexts);
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID contexts)
+	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor contexts)
 			throws OntoDriverException {
 		preFind(cls, primaryKey, contexts);
 
@@ -87,14 +87,14 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 	}
 
 	@Override
-	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException {
+	public boolean isConsistent(EntityDescriptor contexts) throws OntoDriverException {
 		preIsConsistent(contexts);
 
 		return internal.isConsistent(contexts);
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, RepositoryID context)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor context)
 			throws OntoDriverException {
 		preLoadFieldValue(entity, field, context);
 
@@ -102,7 +102,7 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 	}
 
 	@Override
-	public <T> void merge(T entity, Field mergedField, RepositoryID context)
+	public <T> void merge(T entity, Field mergedField, EntityDescriptor context)
 			throws OntoDriverException {
 		preMerge(entity, mergedField, context);
 
@@ -110,14 +110,14 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, RepositoryID context)
+	public <T> void persist(Object primaryKey, T entity, EntityDescriptor context)
 			throws OntoDriverException {
 		prePersist(entity, context);
 		internal.persistEntity(primaryKey, entity, context);
 	}
 
 	@Override
-	public void remove(Object primaryKey, RepositoryID context) throws OntoDriverException {
+	public void remove(Object primaryKey, EntityDescriptor context) throws OntoDriverException {
 		preRemove(primaryKey, context);
 
 		internal.removeEntity(primaryKey, context);
@@ -148,7 +148,7 @@ public class ModularizingOwlapiStorageModule extends StorageModule implements Ow
 	}
 
 	@Override
-	public RepositoryID getRepositoryIdentifier() {
+	public EntityDescriptor getRepositoryIdentifier() {
 		return repositoryId;
 	}
 

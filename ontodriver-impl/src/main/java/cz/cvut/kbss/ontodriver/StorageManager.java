@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -82,7 +82,7 @@ public abstract class StorageManager implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code repository} is {@code null}
 	 */
-	public abstract boolean contains(Object primaryKey, RepositoryID repository)
+	public abstract boolean contains(Object primaryKey, EntityDescriptor repository)
 			throws OntoDriverException;
 
 	/**
@@ -98,7 +98,7 @@ public abstract class StorageManager implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code repository} is {@code null}
 	 */
-	public abstract boolean isConsistent(RepositoryID repository) throws OntoDriverException;
+	public abstract boolean isConsistent(EntityDescriptor repository) throws OntoDriverException;
 
 	/**
 	 * Finds entity with the specified primary key and returns it as the
@@ -121,7 +121,7 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code cls}, or {@code primaryKey} or {@code repository}
 	 *             is {@code null}
 	 */
-	public abstract <T> T find(Class<T> cls, Object primaryKey, RepositoryID repository)
+	public abstract <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor repository)
 			throws OntoDriverException;
 
 	/**
@@ -153,7 +153,7 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code entity}, {@code fieldName} or {@code repository} is
 	 *             {@code null}
 	 */
-	public abstract <T> void loadFieldValue(T entity, Field field, RepositoryID repository)
+	public abstract <T> void loadFieldValue(T entity, Field field, EntityDescriptor repository)
 			throws OntoDriverException;
 
 	/**
@@ -180,7 +180,7 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code primaryKey}, {@code entity} or {@code repository}
 	 *             is {@code null}
 	 */
-	public abstract <T> void merge(T entity, Field mergedField, RepositoryID repository)
+	public abstract <T> void merge(T entity, Field mergedField, EntityDescriptor repository)
 			throws OntoDriverException;
 
 	/**
@@ -204,7 +204,7 @@ public abstract class StorageManager implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code repository} is {@code null}
 	 */
-	public abstract <T> void persist(Object primaryKey, T entity, RepositoryID repository)
+	public abstract <T> void persist(Object primaryKey, T entity, EntityDescriptor repository)
 			throws OntoDriverException;
 
 	/**
@@ -226,7 +226,7 @@ public abstract class StorageManager implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code entityContext} is null
 	 */
-	public abstract void remove(Object primaryKey, RepositoryID repository)
+	public abstract void remove(Object primaryKey, EntityDescriptor repository)
 			throws OntoDriverException;
 
 	/**

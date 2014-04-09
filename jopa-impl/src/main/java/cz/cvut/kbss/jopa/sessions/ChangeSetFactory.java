@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 
 class ChangeSetFactory {
 
@@ -29,7 +29,7 @@ class ChangeSetFactory {
 	 * @return New object change set
 	 */
 	static ObjectChangeSet createObjectChangeSet(Object original, Object clone,
-			RepositoryID repository) {
+			EntityDescriptor repository) {
 		assert original != null;
 		assert repository != null;
 

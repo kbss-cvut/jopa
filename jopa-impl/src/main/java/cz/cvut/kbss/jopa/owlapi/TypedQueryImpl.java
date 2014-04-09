@@ -23,7 +23,7 @@ import java.util.List;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.ontodriver.Connection;
@@ -34,7 +34,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 public class TypedQueryImpl<T> implements TypedQuery<T> {
 
 	private final String query;
-	private final RepositoryID repository;
+	private final EntityDescriptor repository;
 	private final boolean sparql;
 	private final Class<T> classT;
 	private final UnitOfWork uow;
@@ -44,7 +44,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 	private int maxResults;
 
 	// sparql=false -> abstract syntax
-	public TypedQueryImpl(final String query, final Class<T> classT, final RepositoryID repository,
+	public TypedQueryImpl(final String query, final Class<T> classT, final EntityDescriptor repository,
 			final boolean sparql, final UnitOfWork uow, final Connection connection) {
 		if (query == null || repository == null || classT == null || uow == null
 				|| connection == null) {

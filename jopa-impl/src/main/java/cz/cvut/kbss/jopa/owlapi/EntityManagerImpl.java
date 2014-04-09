@@ -53,7 +53,7 @@ import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
@@ -108,7 +108,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public void persist(final Object entity, final RepositoryID repository) {
+	public void persist(final Object entity, final EntityDescriptor repository) {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.config("Persisting " + entity);
 		}
@@ -168,7 +168,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public <T> T merge(final T entity, RepositoryID repository) {
+	public <T> T merge(final T entity, EntityDescriptor repository) {
 		if (entity == null || repository == null) {
 			throw new NullPointerException();
 		}
@@ -187,7 +187,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 *            merged into the first ontology context in which it is found
 	 * @return Managed instance of the merged entity
 	 */
-	private <T> T mergeInternal(final T entity, final RepositoryID repository) {
+	private <T> T mergeInternal(final T entity, final EntityDescriptor repository) {
 		assert entity != null;
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.config("Merging " + entity);
@@ -234,7 +234,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	private void mergeX(Attribute<?, ?> at, Object o, RepositoryID repository)
+	private void mergeX(Attribute<?, ?> at, Object o, EntityDescriptor repository)
 			throws IllegalAccessException {
 		Object attVal = at.getJavaField().get(o);
 		if (at.isCollection()) {
@@ -276,7 +276,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID repository) {
+	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor repository) {
 		if (cls == null || primaryKey == null || repository == null) {
 			throw new NullPointerException("Null passed to find. cls = " + cls + ", primaryKey = "
 					+ primaryKey + ", repository = " + repository);
@@ -390,28 +390,28 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public Query createQuery(String qlString, RepositoryID repository) {
+	public Query createQuery(String qlString, EntityDescriptor repository) {
 		return getCurrentPersistenceContext().createQuery(qlString, repository);
 	}
 
 	@Override
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, RepositoryID repository) {
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, EntityDescriptor repository) {
 		return getCurrentPersistenceContext().createQuery(query, resultClass, repository);
 	}
 
 	@Override
-	public Query<List<String>> createNativeQuery(String sqlString, RepositoryID repository) {
+	public Query<List<String>> createNativeQuery(String sqlString, EntityDescriptor repository) {
 		return getCurrentPersistenceContext().createNativeQuery(sqlString, repository);
 	}
 
 	@Override
 	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass,
-			RepositoryID repository) {
+			EntityDescriptor repository) {
 		return getCurrentPersistenceContext().createNativeQuery(sqlString, resultClass, repository);
 	}
 
 	@Override
-	public boolean checkConsistency(RepositoryID repository) {
+	public boolean checkConsistency(EntityDescriptor repository) {
 		if (repository == null) {
 			return false;
 		}
@@ -586,7 +586,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		return getCurrentPersistenceContext().getState(entity);
 	}
 
-	private State getState(Object entity, RepositoryID repository) {
+	private State getState(Object entity, EntityDescriptor repository) {
 		return getCurrentPersistenceContext().getState(entity, repository);
 	}
 

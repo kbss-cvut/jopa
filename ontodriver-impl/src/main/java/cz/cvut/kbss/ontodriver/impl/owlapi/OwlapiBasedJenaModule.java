@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -65,14 +65,14 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, RepositoryID contexts) throws OntoDriverException {
+	public boolean contains(Object primaryKey, EntityDescriptor contexts) throws OntoDriverException {
 		preContains(primaryKey, contexts);
 
 		return moduleInternal.containsEntity(primaryKey, contexts);
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, RepositoryID contexts)
+	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor contexts)
 			throws OntoDriverException {
 		preFind(cls, primaryKey, contexts);
 
@@ -80,14 +80,14 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	}
 
 	@Override
-	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException {
+	public boolean isConsistent(EntityDescriptor contexts) throws OntoDriverException {
 		preIsConsistent(contexts);
 
 		return moduleInternal.isConsistent(contexts);
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, RepositoryID context)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor context)
 			throws OntoDriverException {
 		preLoadFieldValue(entity, field, context);
 
@@ -95,7 +95,7 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	}
 
 	@Override
-	public <T> void merge(T entity, Field mergedField, RepositoryID context)
+	public <T> void merge(T entity, Field mergedField, EntityDescriptor context)
 			throws OntoDriverException {
 		preMerge(entity, mergedField, context);
 
@@ -103,7 +103,7 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, RepositoryID context)
+	public <T> void persist(Object primaryKey, T entity, EntityDescriptor context)
 			throws OntoDriverException {
 		prePersist(entity, context);
 
@@ -111,7 +111,7 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	}
 
 	@Override
-	public void remove(Object primaryKey, RepositoryID context) throws OntoDriverException {
+	public void remove(Object primaryKey, EntityDescriptor context) throws OntoDriverException {
 		preRemove(primaryKey, context);
 
 		moduleInternal.removeEntity(primaryKey, context);

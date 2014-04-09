@@ -34,13 +34,13 @@ public interface EntityManager {
 	/**
 	 * Make an instance managed and persistent. </p>
 	 * 
-	 * The {@code repository} represents repository and context into which the
-	 * entity should be persisted.
+	 * The {@code descriptor} represents repository and context into which the
+	 * entity and its fields should be persisted.
 	 * 
 	 * @param entity
 	 *            entity instance
-	 * @param repository
-	 *            repository identifier
+	 * @param descriptor
+	 *            Entity descriptor
 	 * @throws EntityExistsException
 	 *             if the entity already exists. (The EntityExistsException may
 	 *             be thrown when the persist operation is invoked, or the
@@ -49,23 +49,23 @@ public interface EntityManager {
 	 * @throws IllegalArgumentException
 	 *             if not an entity
 	 * @throws NullPointerException
-	 *             If {@code entity} or {@code contextUri} is {@code null}
+	 *             If {@code entity} or {@code descriptor} is {@code null}
 	 * @throws TransactionRequiredException
 	 *             if invoked on a container-managed entity manager of type
 	 *             PersistenceContextType.TRANSACTION and there is no
 	 *             transaction.
 	 * @see #getAvailableContexts()
 	 */
-	public void persist(final Object entity, final RepositoryID repository);
+	public void persist(final Object entity, final EntityDescriptor descriptor);
 
 	/**
 	 * Merge the state of the given entity into the current persistence context
-	 * and into the repository context specified by {@code repository}.
+	 * and into the repository specified by {@code descriptor}.
 	 * 
 	 * @param entity
 	 *            The entity to merge
-	 * @param repository
-	 *            Repository identifier
+	 * @param descriptor
+	 *            Entity descriptor
 	 * @return the instance that the state was merged to
 	 * @throws IllegalArgumentException
 	 *             if instance is not an entity or is a removed entity
@@ -74,7 +74,7 @@ public interface EntityManager {
 	 *             PersistenceContextType.TRANSACTION and there is no
 	 *             transaction.
 	 */
-	public <T> T merge(final T entity, RepositoryID repository);
+	public <T> T merge(final T entity, EntityDescriptor descriptor);
 
 	/**
 	 * Remove the entity instance.
@@ -103,7 +103,7 @@ public interface EntityManager {
 	 *            Entity class
 	 * @param primaryKey
 	 *            Primary key
-	 * @param repository
+	 * @param descriptor
 	 *            Repository identifier
 	 * @return the found entity instance or {@code null} if the entity does not
 	 *         exist in the given ontology context
@@ -117,7 +117,7 @@ public interface EntityManager {
 	 * @see #getAvailableContexts()
 	 */
 	public <T> T find(final Class<T> entityClass, final Object primaryKey,
-			final RepositoryID repository);
+			final EntityDescriptor descriptor);
 
 	// TODO JPA 2.0 find with properties
 
@@ -236,7 +236,7 @@ public interface EntityManager {
 	public boolean contains(Object entity);
 
 	/**
-	 * Checks consistency of contexts specified by the repository identifier.
+	 * Checks consistency of the specified repository.
 	 * 
 	 * @param repository
 	 *            Repository identifier
