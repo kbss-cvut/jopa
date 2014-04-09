@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -18,9 +19,10 @@ import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
@@ -30,6 +32,7 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -42,6 +45,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private Map<Object, Object> newObjectsCloneToOriginal;
 	private Map<Object, Object> newObjectsOriginalToClone;
 	private Map<Object, Object> newObjectsKeyToClone;
+	private Map<Integer, Repository> repos;
 	private final RepositoryMap repositoryMap;
 
 	private boolean hasChanges;
@@ -84,6 +88,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		this.inCommit = false;
 		this.useTransactionalOntology = true;
 		this.isActive = true;
+		this.repos = new HashMap<>(parent.getRepositories().size());
+		for (Repository r : getRepositories()) {
+			repos.put(r.getId(), r);
+		}
 	}
 
 	/**
@@ -101,40 +109,37 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	@Override
-	public <T> T readObject(Class<T> cls, Object primaryKey, EntityDescriptor repository) {
-		if (cls == null || primaryKey == null || repository == null) {
-			throw new NullPointerException("Null passed to readObject. cls = " + cls
-					+ ", primaryKey = " + primaryKey + ", repository = " + repository);
-		}
-		return readObjectInternal(cls, primaryKey, repository);
+	public <T> T readObject(Class<T> cls, Object primaryKey, EntityDescriptor descriptor) {
+		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+
+		return readObjectInternal(cls, primaryKey, descriptor);
 	}
 
-	private <T> T readObjectInternal(Class<T> cls, Object primaryKey, EntityDescriptor repository) {
+	private <T> T readObjectInternal(Class<T> cls, Object primaryKey, EntityDescriptor descriptor) {
 		assert cls != null;
 		assert primaryKey != null;
-		assert repository != null;
+		assert descriptor != null;
 		// First try to find the object among new uncommitted objects
 		Object result = getNewObjectsKeyToClone().get(primaryKey);
-		if (result != null && (isInRepository(repository, result))) {
+		if (result != null && (isInRepository(descriptor, result))) {
 			// The result can be returned, since it is already registered in
 			// this UOW
 			return cls.cast(result);
 		}
-		// Make a copy of the repository identifier because it may be modified
-		// by the subsequent operations
-		repository = new EntityDescriptor(repository);
 		// Search the cache
-		result = getObjectFromCache(repository, cls, primaryKey);
+		result = getObjectFromCache(descriptor, cls, primaryKey);
 		if (result == null) {
 			// The object is not in the session cache, so search the ontology
-			result = storageFind(cls, primaryKey, repository);
+			result = storageFind(cls, primaryKey, descriptor);
 		}
 		if (result == null) {
 			return null;
 		}
-		Object clone = registerExistingObject(result, repository);
+		Object clone = registerExistingObject(result, descriptor);
 		checkForCollections(clone);
-		registerWithContext(repository, clone);
+		registerWithContext(descriptor, clone);
 		return cls.cast(clone);
 	}
 
@@ -375,22 +380,21 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * 
 	 * @param entity
 	 *            Object
-	 * @param repository
-	 *            Repository identifier
+	 * @param descriptor
+	 *            Entity descriptor
 	 * @return The state of the specified entity
 	 */
-	public State getState(Object entity, EntityDescriptor repository) {
-		if (entity == null || repository == null) {
-			throw new NullPointerException();
-		}
+	public State getState(Object entity, EntityDescriptor descriptor) {
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 		if (getDeletedObjects().containsKey(entity)) {
 			return State.REMOVED;
 		} else if (getNewObjectsCloneToOriginal().containsKey(entity)
-				&& isInRepository(repository, entity)) {
+				&& isInRepository(descriptor, entity)) {
 			return State.NEW;
-		} else if (cloneMapping.containsKey(entity) && isInRepository(repository, entity)) {
+		} else if (cloneMapping.containsKey(entity) && isInRepository(descriptor, entity)) {
 			return State.MANAGED;
-		} else if (storageContains(getIdentifier(entity), repository)) {
+		} else if (storageContains(getIdentifier(entity), descriptor)) {
 			// TODO Think of a different strategy here, we don't want to have to
 			// ask the storage if it contains a detached object
 			return State.DETACHED;
@@ -562,19 +566,20 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		return (cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity));
 	}
 
-	private boolean doesEntityExist(Object entity, Object primaryKey, EntityDescriptor repository) {
+	private boolean doesEntityExist(Object entity, Object primaryKey, EntityDescriptor descriptor) {
 		assert entity != null;
-		assert repository != null;
+		assert descriptor != null;
 		if (cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity)
-				&& isInRepository(repository, entity)) {
+				&& isInRepository(descriptor, entity)) {
 			return true;
 		}
 		if (primaryKey != null) {
-			getLiveObjectCache().acquireReadLock();
+			cacheManager.acquireReadLock();
 			try {
-				return getLiveObjectCache().contains(repository, entity.getClass(), primaryKey);
+				return cacheManager.contains(descriptor.getEntityOrigin(), entity.getClass(),
+						primaryKey);
 			} finally {
-				getLiveObjectCache().releaseReadLock();
+				cacheManager.releaseReadLock();
 			}
 		}
 		return false;
@@ -652,40 +657,41 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		return mergeDetachedInternal(entity, repository);
 	}
 
-	private <T> T mergeDetachedInternal(T entity, EntityDescriptor repository) {
+	private <T> T mergeDetachedInternal(T entity, EntityDescriptor descriptor) {
 		assert entity != null;
 		final IRI iri = getIdentifier(entity);
-		if (!storageContains(iri, repository)) {
-			throw new OWLPersistenceException("Entity " + entity + " not found in repository "
-					+ repository);
-		}
 		// This cast is OK, we just clone the entity instance
-		final T clone = (T) registerExistingObject(entity, repository);
+		final T clone = (T) registerExistingObject(entity, descriptor);
 
-		// Propagate the entity's state into storage
-		final EntityType<?> et = getMetamodel().entity(entity.getClass());
-		for (Attribute<?, ?> att : et.getAttributes()) {
-			storageMerge(iri, clone, att.getJavaField(), repository);
-			setIndirectCollectionIfPresent(clone, att.getJavaField());
-		}
-		final TypesSpecification<?, ?> ts = et.getTypes();
-		if (ts != null) {
-			storageMerge(iri, clone, ts.getJavaField(), repository);
-			setIndirectCollectionIfPresent(clone, ts.getJavaField());
-		}
-		final PropertiesSpecification<?, ?> ps = et.getProperties();
-		if (ps != null) {
-			storageMerge(iri, clone, ps.getJavaField(), repository);
-			setIndirectCollectionIfPresent(clone, ps.getJavaField());
+		try {
+			// Propagate the entity's state into storage
+			final EntityType<?> et = getMetamodel().entity(entity.getClass());
+			for (Attribute<?, ?> att : et.getAttributes()) {
+				storageMerge(iri, clone, att.getJavaField(), descriptor);
+				setIndirectCollectionIfPresent(clone, att.getJavaField());
+			}
+			final TypesSpecification<?, ?> ts = et.getTypes();
+			if (ts != null) {
+				storageMerge(iri, clone, ts.getJavaField(), descriptor);
+				setIndirectCollectionIfPresent(clone, ts.getJavaField());
+			}
+			final PropertiesSpecification<?, ?> ps = et.getProperties();
+			if (ps != null) {
+				storageMerge(iri, clone, ps.getJavaField(), descriptor);
+				setIndirectCollectionIfPresent(clone, ps.getJavaField());
+			}
+		} catch (OWLEntityExistsException e) {
+			unregisterObject(clone);
+			throw e;
 		}
 
 		cacheManager.acquireReadLock();
 		try {
-			if (cacheManager.contains(repository, clone.getClass(), iri)) {
+			if (cacheManager.contains(descriptor.getEntityOrigin(), clone.getClass(), iri)) {
 				cacheManager.releaseReadLock();
 				cacheManager.acquireWriteLock();
 				try {
-					cacheManager.evict(repository, entity.getClass(), iri);
+					cacheManager.evict(descriptor.getEntityOrigin(), entity.getClass(), iri);
 					cacheManager.acquireReadLock();
 				} finally {
 					cacheManager.releaseWriteLock();
@@ -701,24 +707,24 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	/**
 	 * {@inheritDoc}
 	 */
-	void registerEntityWithContext(Object entity, UnitOfWorkImpl uow) {
-		parent.registerEntityWithContext(entity, uow);
+	void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
+		parent.registerEntityWithPersistenceContext(entity, uow);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public Object registerExistingObject(Object object, EntityDescriptor repository) {
+	public Object registerExistingObject(Object object, EntityDescriptor descriptor) {
 		if (object == null) {
 			return null;
 		}
 		if (cloneToOriginals.containsValue(object)) {
 			return getCloneForOriginal(object);
 		}
-		Object clone = this.cloneBuilder.buildClone(object, repository);
+		Object clone = this.cloneBuilder.buildClone(object, descriptor);
 		cloneMapping.put(clone, clone);
 		cloneToOriginals.put(clone, object);
-		registerEntityWithContext(clone, this);
+		registerEntityWithPersistenceContext(clone, this);
 		return clone;
 	}
 
@@ -742,7 +748,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	@Override
-	public void revertObject(Object object) {
+	public <T> void revertObject(T object) {
 		final EntityDescriptor repo = getRepositoryID(object);
 		if (repo == null) {
 			throw new IllegalArgumentException("Unable to find entity " + object
@@ -764,19 +770,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 	}
 
-	public void removeObjectFromCache(Object object, EntityDescriptor repository) {
-		if (object == null || repository == null) {
-			return;
-		}
-		final IRI primaryKey = getIdentifier(object);
-		if (primaryKey == null) {
-			return;
-		}
-		cacheManager.acquireWriteLock();
-		cacheManager.evict(repository, object.getClass(), primaryKey);
-		cacheManager.releaseWriteLock();
-	}
-
 	@Override
 	public void registerNewObject(Object entity, EntityDescriptor repository) {
 		if (entity == null || repository == null) {
@@ -794,7 +787,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * @param context
 	 *            URI of context. Optional
 	 */
-	private void registerNewObjectInternal(Object entity, EntityDescriptor repository) {
+	private void registerNewObjectInternal(Object entity, EntityDescriptor descriptor) {
 		assert entity != null;
 		IRI id = getIdentifier(entity);
 		if (id == null) {
@@ -806,12 +799,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 						+ " is null and it is not specified as \'generated\' ");
 			}
 		}
-		if ((doesEntityExist(entity, id, repository) || storageContains(id, repository))
-				&& !entity.getClass().isEnum()) {
+		if (doesEntityExist(entity, id, descriptor) && !entity.getClass().isEnum()) {
 			throw new OWLEntityExistsException("An entity with URI " + id
-					+ " is already persisted in repository " + repository);
+					+ " is already persisted in repository " + descriptor);
 		}
-		storagePersist(id, entity, repository);
+		storagePersist(id, entity, descriptor);
 		if (id == null) {
 			// If the ID was null, extract it from the entity
 			// It is present now
@@ -822,7 +814,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		Object original = null;
 		cloneMapping.put(clone, clone);
 		getNewObjectsCloneToOriginal().put(clone, original);
-		registerEntityWithContext(clone, this);
+		registerEntityWithPersistenceContext(clone, this);
 		getNewObjectsKeyToClone().put(id, clone);
 		checkForCollections(clone);
 		this.hasNew = true;
@@ -999,7 +991,20 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	@Override
-	public boolean checkConsistency(EntityDescriptor repository) {
+	public void removeObjectFromCache(Object toRemove, EntityOrigin entityOrigin) {
+		Objects.requireNonNull(toRemove, ErrorUtils.constructNPXMessage("toRemove"));
+		Objects.requireNonNull(entityOrigin, ErrorUtils.constructNPXMessage("entityOrigin"));
+		final Object primaryKey = getIdentifier(toRemove);
+		cacheManager.acquireWriteLock();
+		try {
+			cacheManager.evict(entityOrigin, toRemove.getClass(), primaryKey);
+		} finally {
+			cacheManager.releaseWriteLock();
+		}
+	}
+
+	@Override
+	public boolean checkConsistency(RepositoryID repository) {
 		if (repository == null) {
 			throw new NullPointerException();
 		}
@@ -1031,23 +1036,23 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	@Override
-	public Query<List<String>> createNativeQuery(String sparql, EntityDescriptor repository) {
+	public Query<List<String>> createNativeQuery(String sparql, RepositoryID repository) {
 		return queryFactory.createNativeQuery(sparql, repository);
 	}
 
 	@Override
 	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass,
-			EntityDescriptor repository) {
+			RepositoryID repository) {
 		return queryFactory.createNativeQuery(sparql, resultClass, repository);
 	}
 
 	@Override
-	public Query createQuery(String query, EntityDescriptor repository) {
+	public Query createQuery(String query, RepositoryID repository) {
 		return queryFactory.createQuery(query, repository);
 	}
 
 	@Override
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, EntityDescriptor repository) {
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, RepositoryID repository) {
 		return queryFactory.createQuery(query, resultClass, repository);
 	}
 
@@ -1147,19 +1152,19 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * @param primaryKey
 	 * @return Cached object or null
 	 */
-	private <T> T getObjectFromCache(EntityDescriptor repository, Class<T> cls, Object primaryKey) {
+	private <T> T getObjectFromCache(EntityDescriptor descriptor, Class<T> cls, Object primaryKey) {
 		assert cls != null;
 		assert primaryKey != null;
 		cacheManager.acquireReadLock();
 		try {
-			final T entity = cacheManager.get(repository, cls, primaryKey);
+			final T entity = cacheManager.get(descriptor.getEntityOrigin(), cls, primaryKey);
 			return entity;
 		} finally {
 			cacheManager.releaseReadLock();
 		}
 	}
 
-	void putObjectIntoCache(Object primaryKey, Object entity, EntityDescriptor repository) {
+	void putObjectIntoCache(Object primaryKey, Object entity, EntityOrigin repository) {
 		cacheManager.acquireWriteLock();
 		try {
 			cacheManager.add(repository, primaryKey, entity);
@@ -1181,40 +1186,39 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		repositoryMap.addEntityToRepository(entity, repository);
 	}
 
-	private boolean isInRepository(EntityDescriptor repository, Object entity) {
-		assert repository != null;
+	private boolean isInRepository(EntityDescriptor descriptor, Object entity) {
+		assert descriptor != null;
 		assert entity != null;
 
-		if (repository.getContexts().isEmpty()) {
-			return false;
-		}
-		return repositoryMap.contains(repository, entity);
+		return repositoryMap.contains(descriptor, entity);
 	}
 
 	private EntityDescriptor getRepositoryID(Object entity) {
 		assert entity != null;
 
-		return repositoryMap.getRepositoryID(entity);
+		return repositoryMap.getEntityDescriptor(entity);
 	}
 
-	private boolean storageContains(Object primaryKey, EntityDescriptor repository) {
-		if (primaryKey == null || repository == null) {
+	private boolean storageContains(Object primaryKey, EntityDescriptor descriptor) {
+		if (primaryKey == null || descriptor == null) {
 			return false;
 		}
 		try {
-			return storageConnection.contains(primaryKey, repository);
+			final RepositoryID rid = new RepositoryID(repos.get(descriptor.getRepository()))
+					.addContext(descriptor.getEntityContext());
+			return storageConnection.contains(primaryKey, rid);
 		} catch (OntoDriverException e) {
 			throw new OWLPersistenceException(e);
 		}
 	}
 
-	private <T> T storageFind(Class<T> cls, Object primaryKey, EntityDescriptor repository) {
+	private <T> T storageFind(Class<T> cls, Object primaryKey, EntityDescriptor descriptor) {
 		assert cls != null;
 		assert primaryKey != null;
 		try {
-			final T result = storageConnection.find(cls, primaryKey, repository);
+			final T result = storageConnection.find(cls, primaryKey, descriptor);
 			if (result != null) {
-				putObjectIntoCache(primaryKey, result, repository);
+				putObjectIntoCache(primaryKey, result, descriptor.getEntityOrigin());
 			}
 			return result;
 		} catch (MetamodelNotSetException e) {
@@ -1224,7 +1228,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 	}
 
-	private <T> void storageMerge(Object primaryKey, T entity, Field field, EntityDescriptor repository) {
+	private <T> void storageMerge(Object primaryKey, T entity, Field field,
+			EntityDescriptor repository) {
 		assert primaryKey != null;
 		assert entity != null;
 		assert repository != null;
@@ -1237,11 +1242,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 	}
 
-	private <T> void storagePersist(Object primaryKey, T entity, EntityDescriptor repository) {
+	private <T> void storagePersist(Object primaryKey, T entity, EntityDescriptor descriptor) {
 		assert entity != null;
-		assert repository != null;
+		assert descriptor != null;
 		try {
-			storageConnection.persist(primaryKey, entity, repository);
+			storageConnection.persist(primaryKey, entity, descriptor);
 		} catch (MetamodelNotSetException e) {
 			throw new OWLPersistenceException(e);
 		} catch (OntoDriverException e) {

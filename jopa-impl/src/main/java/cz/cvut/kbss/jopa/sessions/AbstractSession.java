@@ -92,5 +92,5 @@ public abstract class AbstractSession implements Session {
 	 * @param uow
 	 *            Persistence context of the specified entity
 	 */
-	abstract void registerEntityWithContext(Object entity, UnitOfWorkImpl uow);
+	abstract void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow);
 }

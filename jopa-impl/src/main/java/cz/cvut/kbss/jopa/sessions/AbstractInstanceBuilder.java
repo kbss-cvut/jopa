@@ -47,12 +47,12 @@ abstract class AbstractInstanceBuilder {
 	 *            Field which will contain the clone
 	 * @param original
 	 *            The original object
-	 * @param repository
-	 *            Repository identifier
+	 * @param descriptor
+	 *            Entity origin
 	 * @return
 	 */
 	abstract Object buildClone(Object cloneOwner, Field field, Object original,
-			EntityDescriptor repository);
+			EntityDescriptor descriptor);
 
 	/**
 	 * Merges changes from clone to the original.

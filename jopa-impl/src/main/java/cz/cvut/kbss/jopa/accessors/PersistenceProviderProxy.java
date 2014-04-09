@@ -1,9 +1,12 @@
 package cz.cvut.kbss.jopa.accessors;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import java.util.Objects;
+
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
+import cz.cvut.kbss.jopa.sessions.EntityOrigin;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 
 class PersistenceProviderProxy implements PersistenceProviderFacade {
@@ -12,11 +15,10 @@ class PersistenceProviderProxy implements PersistenceProviderFacade {
 	private final ServerSession serverSession;
 
 	public PersistenceProviderProxy(Metamodel metamodel, ServerSession serverSession) {
-		if (metamodel == null || serverSession == null) {
-			throw new NullPointerException();
-		}
-		this.metamodel = metamodel;
-		this.serverSession = serverSession;
+		this.metamodel = Objects.requireNonNull(metamodel,
+				ErrorUtils.constructNPXMessage("metamodel"));
+		this.serverSession = Objects.requireNonNull(serverSession,
+				ErrorUtils.constructNPXMessage("serverSession"));
 	}
 
 	@Override
@@ -26,15 +28,16 @@ class PersistenceProviderProxy implements PersistenceProviderFacade {
 
 	@Override
 	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey,
-			EntityDescriptor repository) {
-		if (cls == null || primaryKey == null) {
-			throw new NullPointerException();
-		}
+			EntityOrigin entityOrigin) {
+		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(entityOrigin, ErrorUtils.constructNPXMessage("entityOrigin"));
+
 		T entity = null;
 		CacheManager cache = serverSession.getLiveObjectCache();
 		cache.acquireReadLock();
 		try {
-			entity = cache.get(repository, cls, primaryKey);
+			entity = cache.get(entityOrigin, cls, primaryKey);
 		} finally {
 			cache.releaseReadLock();
 		}

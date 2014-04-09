@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 
@@ -34,20 +35,14 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 	// Does this change set represent a new object
 	private boolean isNew;
 
-	// URI of the ontology context the object belongs to
-	private EntityDescriptor repository;
+	// Entity origin
+	private final EntityOrigin origin;
 
-	protected ObjectChangeSetImpl() {
-	}
-
-	public ObjectChangeSetImpl(Object changedObject, Object cloneObject, EntityDescriptor repository) {
+	public ObjectChangeSetImpl(Object changedObject, Object cloneObject, EntityOrigin origin) {
 		this.changedObject = changedObject;
 		this.cloneObject = cloneObject;
 		this.objectClass = cloneObject.getClass();
-		if (repository == null) {
-			throw new NullPointerException();
-		}
-		this.repository = repository;
+		this.origin = Objects.requireNonNull(origin, ErrorUtils.constructNPXMessage("origin"));
 	}
 
 	/**
@@ -135,7 +130,7 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 	 * Retrieves the repository the referenced entity belongs to
 	 */
 	@Override
-	public EntityDescriptor getEntityOrigin() {
-		return repository;
+	public EntityOrigin getEntityOrigin() {
+		return origin;
 	}
 }

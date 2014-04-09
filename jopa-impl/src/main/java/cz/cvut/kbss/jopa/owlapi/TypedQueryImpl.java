@@ -19,13 +19,16 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
@@ -34,7 +37,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 public class TypedQueryImpl<T> implements TypedQuery<T> {
 
 	private final String query;
-	private final EntityDescriptor repository;
+	private final RepositoryID repository;
 	private final boolean sparql;
 	private final Class<T> classT;
 	private final UnitOfWork uow;
@@ -44,18 +47,16 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 	private int maxResults;
 
 	// sparql=false -> abstract syntax
-	public TypedQueryImpl(final String query, final Class<T> classT, final EntityDescriptor repository,
+	public TypedQueryImpl(final String query, final Class<T> classT, final RepositoryID repository,
 			final boolean sparql, final UnitOfWork uow, final Connection connection) {
-		if (query == null || repository == null || classT == null || uow == null
-				|| connection == null) {
-			throw new NullPointerException();
-		}
-		this.query = query;
-		this.repository = repository;
+		this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
+		this.repository = Objects.requireNonNull(repository,
+				ErrorUtils.constructNPXMessage("repository"));
 		this.sparql = sparql;
-		this.classT = classT;
-		this.uow = uow;
-		this.connection = connection;
+		this.classT = Objects.requireNonNull(classT, ErrorUtils.constructNPXMessage("classT"));
+		this.uow = Objects.requireNonNull(uow, ErrorUtils.constructNPXMessage("uow"));
+		this.connection = Objects.requireNonNull(connection,
+				ErrorUtils.constructNPXMessage("connection"));
 		this.useBackupOntology = uow.useBackupOntologyForQueryProcessing();
 		this.maxResults = Integer.MAX_VALUE;
 	}
@@ -127,11 +128,17 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 			// TODO register this as observer on the result set so that
 			// additional results can be loaded asynchronously
 			int cnt = 0;
+			final URI ctx = repository.getContexts().isEmpty() ? null : repository.getContexts()
+					.iterator().next();
 			while (rs.hasNext() && cnt < maxResults) {
 				rs.next();
 				final URI uri = URI.create(rs.getString(0));
+				// TODO Setting the context like this won't work for queries
+				// over multiple contexts
+				final EntityDescriptor descriptor = new EntityDescriptor(repository.getRepository())
+						.setEntityContext(ctx);
 
-				final T entity = uow.readObject(classT, uri, repository);
+				final T entity = uow.readObject(classT, uri, descriptor);
 				if (entity == null) {
 					throw new OWLPersistenceException(
 							"Fatal error, unable to load entity for primary key already found by query "

@@ -6,13 +6,13 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.Repository;
 
 final class RepositoryMap {
 
 	private final Map<Integer, Map<URI, Map<Object, Object>>> map;
-	private Map<Object, EntityDescriptor> entityToRepository;
+	private Map<Object, EntityDescriptor> entityDescriptors;
 
 	public RepositoryMap(List<Repository> repos) {
 		final int size = repos.size();
@@ -22,85 +22,81 @@ final class RepositoryMap {
 		}
 	}
 
-	void initEntityToRepository() {
-		this.entityToRepository = new IdentityHashMap<>();
+	void initDescriptors() {
+		this.entityDescriptors = new IdentityHashMap<>();
 	}
 
-	void add(EntityDescriptor repository, Object key, Object value) {
-		assert repository != null;
-		assert !repository.getContexts().isEmpty();
+	void add(EntityDescriptor descriptor, Object key, Object value) {
+		assert descriptor != null;
 		assert key != null;
 		// Null values are permitted
 
-		final Map<Object, Object> entities = getMap(repository);
+		final Map<Object, Object> entities = getMap(descriptor);
 		entities.put(key, value);
 	}
 
-	void remove(EntityDescriptor repository, Object key) {
-		assert repository != null;
-		assert !repository.getContexts().isEmpty();
-		assert repository.getRepository() < map.size();
+	void remove(EntityDescriptor descriptor, Object key) {
+		assert descriptor != null;
+		assert descriptor.getRepository() < map.size();
 		assert key != null;
 
-		final Map<Object, Object> entities = getMap(repository);
+		final Map<Object, Object> entities = getMap(descriptor);
 		entities.remove(key);
 	}
 
-	void addEntityToRepository(Object entity, EntityDescriptor repository) {
-		assert entityToRepository != null;
-		entityToRepository.put(entity, repository);
+	void addEntityToRepository(Object entity, EntityDescriptor descriptor) {
+		assert entityDescriptors != null;
+		entityDescriptors.put(entity, descriptor);
 	}
 
 	void removeEntityToRepository(Object entity) {
-		assert entityToRepository != null;
-		entityToRepository.remove(entity);
+		assert entityDescriptors != null;
+		entityDescriptors.remove(entity);
 	}
 
-	boolean contains(EntityDescriptor repository, Object key) {
-		assert repository != null;
-		assert !repository.getContexts().isEmpty();
-		assert repository.getRepository() < map.size();
+	boolean contains(EntityDescriptor descriptor, Object key) {
+		assert descriptor != null;
+		assert descriptor.getRepository() < map.size();
 		assert key != null;
 
-		final Map<Object, Object> entities = getMap(repository);
+		final Map<Object, Object> entities = getMap(descriptor);
 		return entities.containsKey(key);
 	}
 
-	Object get(EntityDescriptor repository, Object key) {
-		assert repository != null;
-		assert !repository.getContexts().isEmpty();
-		assert repository.getRepository() < map.size();
+	Object get(EntityDescriptor descriptor, Object key) {
+		assert descriptor != null;
+		assert descriptor.getRepository() < map.size();
 		assert key != null;
 
-		final Map<Object, Object> entities = getMap(repository);
+		final Map<Object, Object> entities = getMap(descriptor);
 		if (!entities.containsKey(key)) {
 			return null;
 		}
 		return entities.get(key);
 	}
 
-	EntityDescriptor getRepositoryID(Object entity) {
-		assert entityToRepository != null;
+	EntityDescriptor getEntityDescriptor(Object entity) {
+		assert entityDescriptors != null;
 		assert entity != null;
 
-		return entityToRepository.get(entity);
+		return entityDescriptors.get(entity);
 	}
 
 	void clear() {
 		for (Map<URI, Map<Object, Object>> m : map.values()) {
 			m.clear();
 		}
-		if (entityToRepository != null) {
-			initEntityToRepository();
+		if (entityDescriptors != null) {
+			initDescriptors();
 		}
 	}
 
-	private Map<Object, Object> getMap(EntityDescriptor repository) {
-		final Map<URI, Map<Object, Object>> m = map.get(repository.getRepository());
+	private Map<Object, Object> getMap(EntityDescriptor descriptor) {
+		final Map<URI, Map<Object, Object>> m = map.get(descriptor.getRepository());
 		if (m == null) {
-			throw new IllegalArgumentException("Unknown repository " + repository);
+			throw new IllegalArgumentException("Unknown repository " + descriptor);
 		}
-		final URI ctx = repository.getContexts().iterator().next();
+		final URI ctx = descriptor.getEntityContext();
 		Map<Object, Object> entities;
 		if (!m.containsKey(ctx)) {
 			entities = new HashMap<>();

@@ -48,14 +48,14 @@ public interface Cache {
 	/**
 	 * Removes the data for the given entity from the cache.
 	 * 
-	 * @param repository
-	 *            Repository identifier
+	 * @param entityOrigin
+	 *            Entity origin
 	 * @param cls
 	 *            Entity class
 	 * @param primaryKey
 	 *            Primary key
 	 */
-	public void evict(RepositoryID repository, Class<?> cls, Object primaryKey);
+	public void evict(EntityOrigin entityOrigin, Class<?> cls, Object primaryKey);
 
 	/**
 	 * Removes the data for entities of the specified class (and its subclasses)

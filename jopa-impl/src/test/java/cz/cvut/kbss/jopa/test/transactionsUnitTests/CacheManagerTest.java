@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -20,13 +21,16 @@ import java.util.logging.Logger;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.CacheManagerImpl;
+import cz.cvut.kbss.jopa.sessions.EntityOrigin;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
@@ -41,27 +45,27 @@ public class CacheManagerTest {
 	private static List<Repository> repositories;
 	private static final URI CONTEXT_URI = URI.create("http://jopa-unit-tests");
 	private static final URI CONTEXT_TWO = URI.create("http://jopa-unit-testsTwo");
-	private static ServerSession session;
 	private static OWLClassA testA;
 	private static OWLClassB testB;
 	private static OWLClassE testE;
 	private static OWLClassF testF;
 	private static Map<URI, OWLClassB> listOfBs;
 
-	private static EntityDescriptor repoOneCtxOne;
-	private static EntityDescriptor repoTwoCtxOne;
-	private static EntityDescriptor repoTwoCtxTwo;
+	private static EntityOrigin repoOneCtxOne;
+	private static EntityOrigin repoTwoCtxOne;
+	private static EntityOrigin repoTwoCtxTwo;
+
+	@Mock
+	private ServerSession session;
 
 	private CacheManager mngr;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		initRepositories();
-		repoOneCtxOne = EntityDescriptor.repository(repositories.get(0))
-				.contexts(repositories.get(0).getContexts()).build();
-		repoTwoCtxOne = EntityDescriptor.repository(repositories.get(1)).context(CONTEXT_URI).build();
-		repoTwoCtxTwo = EntityDescriptor.repository(repositories.get(1)).context(CONTEXT_TWO).build();
-		session = new SessionStub();
+		repoOneCtxOne = new EntityOrigin(repositories.get(0), CONTEXT_URI);
+		repoTwoCtxOne = new EntityOrigin(repositories.get(1), CONTEXT_URI);
+		repoTwoCtxTwo = new EntityOrigin(repositories.get(1), CONTEXT_TWO);
 		final URI pk = URI.create("http://testEntity");
 		testA = new OWLClassA();
 		testA.setUri(pk);
@@ -89,6 +93,8 @@ public class CacheManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
+		when(session.getRepositories()).thenReturn(repositories);
 		this.mngr = new CacheManagerImpl(session, Collections.<String, String> emptyMap());
 	}
 
@@ -159,7 +165,7 @@ public class CacheManagerTest {
 
 	@Test
 	public void testContainsWithRepoId() {
-		LOG.config("Test: contains by repository id, class and primary key.");
+		LOG.config("Test: contains by entity origin, class and primary key.");
 		mngr.add(repoTwoCtxOne, testA.getUri(), testA);
 		assertTrue(mngr.contains(repoTwoCtxOne, testA.getClass(), testA.getUri()));
 		assertFalse(mngr.contains(repoTwoCtxTwo, testA.getClass(), testA.getUri()));
@@ -185,7 +191,7 @@ public class CacheManagerTest {
 
 	@Test
 	public void testGetObjectWithWrongContext() {
-		LOG.config("Test: get entity. With wrong context.");
+		LOG.config("Test: get entity. With wrong origin.");
 		mngr.add(repoTwoCtxOne, testA.getUri(), testA);
 		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
 		final OWLClassA res = mngr.get(repoTwoCtxTwo, testA.getClass(), testA.getUri());
@@ -202,7 +208,7 @@ public class CacheManagerTest {
 
 	@Test
 	public void testGetObjectWithContextNull() {
-		LOG.config("Test: get entity. Null passed as context URI.");
+		LOG.config("Test: get entity. Null passed as origin.");
 		mngr.add(repoTwoCtxOne, testA.getUri(), testA);
 		final OWLClassA res = mngr.get(null, testA.getClass(), testA.getUri());
 		assertNull(res);
@@ -267,15 +273,16 @@ public class CacheManagerTest {
 		LOG.config("Test: evict by context.");
 		mngr.add(repoTwoCtxOne, testA.getUri(), testA);
 		mngr.add(repoTwoCtxTwo, testB.getUri(), testB);
-		mngr.evict(repoTwoCtxOne);
+		final RepositoryID rid = repositories.get(1).createIdentifier().addContext(CONTEXT_URI);
+		mngr.evict(rid);
 		assertFalse(mngr.contains(testA.getClass(), testA.getUri()));
 		assertTrue(mngr.contains(testB.getClass(), testB.getUri()));
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testEvictByContextNull() {
-		LOG.config("Test: evict by context. Null passed as context URI.");
-		mngr.evict((EntityDescriptor) null);
+		LOG.config("Test: evict by context. Null passed as repository identifier.");
+		mngr.evict((RepositoryID) null);
 	}
 
 	@Test
@@ -292,7 +299,7 @@ public class CacheManagerTest {
 
 	@Test
 	public void testEvictByContextAndPrimaryKey() {
-		LOG.config("Test: evict by context, class and primary key.");
+		LOG.config("Test: evict by entity origin, class and primary key.");
 		mngr.add(repoTwoCtxTwo, testA.getUri(), testA);
 		final OWLClassA duplicate = new OWLClassA();
 		duplicate.setUri(testA.getUri());
@@ -308,13 +315,14 @@ public class CacheManagerTest {
 
 	@Test(expected = NullPointerException.class)
 	public void testEvictByContextAndPrimaryKeyNull() {
-		LOG.config("Test: evict by context, class and primary key. Null passed.");
+		LOG.config("Test: evict by entity origin, class and primary key. Null passed.");
 		mngr.add(repoOneCtxOne, testA.getUri(), testA);
 		mngr.evict(repoOneCtxOne, null, null);
 	}
 
 	@Test
 	public void testEvictWithSweeper() throws Exception {
+		LOG.config("Test: evict using sweeper.");
 		initSweepeableManager();
 		mngr.add(repoOneCtxOne, testA.getUri(), testA);
 		mngr.add(repoTwoCtxOne, testB.getUri(), testB);
@@ -328,6 +336,7 @@ public class CacheManagerTest {
 
 	@Test
 	public void testRefreshTTL() throws Exception {
+		LOG.config("Test: refresh TTL.");
 		initSweepeableManager();
 		mngr.add(repoTwoCtxOne, testA.getUri(), testA);
 		mngr.add(repoOneCtxOne, testB.getUri(), testB);
@@ -382,16 +391,5 @@ public class CacheManagerTest {
 		rTwo.addContext(CONTEXT_URI);
 		rTwo.addContext(CONTEXT_TWO);
 		repositories.add(rTwo);
-	}
-
-	private static class SessionStub extends ServerSession {
-
-		public SessionStub() {
-		}
-
-		@Override
-		public List<Repository> getRepositories() {
-			return repositories;
-		}
 	}
 }

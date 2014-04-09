@@ -13,7 +13,6 @@ import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
@@ -171,7 +170,7 @@ public class ServerSession extends AbstractSession {
 	}
 
 	@Override
-	public void removeObjectFromCache(Object object, EntityDescriptor repository) {
+	public void removeObjectFromCache(Object object, EntityOrigin repository) {
 		// do nothing
 	}
 
@@ -197,7 +196,7 @@ public class ServerSession extends AbstractSession {
 	 * @param uow
 	 *            Persistence context of the specified entity
 	 */
-	synchronized void registerEntityWithContext(Object entity, UnitOfWorkImpl uow) {
+	synchronized void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
 		if (entity == null || uow == null) {
 			throw new NullPointerException("Null passed to as argument. Entity: " + entity
 					+ ", unit of work: " + uow);

@@ -32,7 +32,13 @@ public final class EntityOrigin {
 		this.entityContext = descriptor.getEntityContext();
 	}
 
-	// We'll se if we need to add any getters
+	public Integer getRepositoryId() {
+		return repositoryId;
+	}
+
+	public URI getEntityContext() {
+		return entityContext;
+	}
 
 	@Override
 	public int hashCode() {

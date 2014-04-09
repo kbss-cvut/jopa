@@ -18,12 +18,14 @@ package cz.cvut.kbss.jopa.owlapi;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.query.Query;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
@@ -32,7 +34,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 public class QueryImpl implements Query<List<String>> {
 
 	private final String query;
-	private final EntityDescriptor repository;
+	private final RepositoryID repository;
 	private final boolean sparql;
 	private final Connection connection;
 
@@ -40,16 +42,15 @@ public class QueryImpl implements Query<List<String>> {
 	private boolean useBackupOntology;
 
 	// sparql=false -> abstract syntax
-	public QueryImpl(final String s, final EntityDescriptor repository, final boolean sparql,
+	public QueryImpl(final String query, final RepositoryID repository, final boolean sparql,
 			final Connection connection) {
-		if (s == null || repository == null || connection == null) {
-			throw new NullPointerException();
-		}
+		this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
+		this.repository = Objects.requireNonNull(repository,
+				ErrorUtils.constructNPXMessage("repository"));
+		this.connection = Objects.requireNonNull(connection,
+				ErrorUtils.constructNPXMessage("connection"));
 		this.useBackupOntology = false;
-		this.query = s;
-		this.repository = repository;
 		this.sparql = sparql;
-		this.connection = connection;
 		this.maxResults = Integer.MAX_VALUE;
 	}
 

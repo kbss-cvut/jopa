@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
@@ -37,6 +37,9 @@ import cz.cvut.kbss.jopa.utils.ErrorUtils;
 public class CacheManagerImpl implements CacheManager {
 
 	private static final Logger LOG = Logger.getLogger(CacheManagerImpl.class.getName());
+
+	// TODO Modify cache manager to handle locking internally on the repo cache
+	// level
 
 	private static final Long DEFAULT_TTL = 60000L;
 	// Initial delay is the sweep rate multiplied by this multiplier
@@ -107,15 +110,12 @@ public class CacheManagerImpl implements CacheManager {
 	}
 
 	@Override
-	public void add(EntityDescriptor repository, Object primaryKey, Object entity) {
-		if (primaryKey == null || entity == null || repository == null) {
-			throw new NullPointerException("Null passed to add: primaryKey = " + primaryKey
-					+ ", entity = " + entity + ", repository = " + repository);
-		}
-		if (repository.getContexts().isEmpty()) {
-			throw new IllegalArgumentException("The repository has to specify specify context.");
-		}
-		getRepositoryCache(repository).put(repository, primaryKey, entity);
+	public void add(EntityOrigin origin, Object primaryKey, Object entity) {
+		Objects.requireNonNull(origin, ErrorUtils.constructNPXMessage("origin"));
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+
+		getRepositoryCache(origin.getRepositoryId()).put(origin, primaryKey, entity);
 	}
 
 	/**
@@ -144,11 +144,11 @@ public class CacheManagerImpl implements CacheManager {
 	}
 
 	@Override
-	public <T> T get(EntityDescriptor repository, Class<T> cls, Object primaryKey) {
-		if (repository == null || cls == null || primaryKey == null) {
+	public <T> T get(EntityOrigin origin, Class<T> cls, Object primaryKey) {
+		if (origin == null || cls == null || primaryKey == null) {
 			return null;
 		}
-		return getRepositoryCache(repository).get(repository, cls, primaryKey);
+		return getRepositoryCache(origin.getRepositoryId()).get(origin, cls, primaryKey);
 	}
 
 	/**
@@ -188,8 +188,7 @@ public class CacheManagerImpl implements CacheManager {
 		}
 		boolean res = false;
 		for (Repository r : repositories) {
-			final EntityDescriptor rid = r.createRepositoryID(true);
-			res = repoCaches.get(r.getId()).contains(rid, cls, primaryKey);
+			res = repoCaches.get(r.getId()).contains(cls, primaryKey);
 			if (res) {
 				return res;
 			}
@@ -198,11 +197,11 @@ public class CacheManagerImpl implements CacheManager {
 	}
 
 	@Override
-	public boolean contains(EntityDescriptor repository, Class<?> cls, Object primaryKey) {
-		if (repository == null || cls == null || primaryKey == null) {
+	public boolean contains(EntityOrigin origin, Class<?> cls, Object primaryKey) {
+		if (origin == null || cls == null || primaryKey == null) {
 			return false;
 		}
-		return getRepositoryCache(repository).contains(repository, cls, primaryKey);
+		return getRepositoryCache(origin.getRepositoryId()).contains(origin, cls, primaryKey);
 	}
 
 	/**
@@ -216,20 +215,20 @@ public class CacheManagerImpl implements CacheManager {
 	}
 
 	@Override
-	public void evict(EntityDescriptor repository, Class<?> cls, Object primaryKey) {
-		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+	public void evict(EntityOrigin origin, Class<?> cls, Object primaryKey) {
+		Objects.requireNonNull(origin, ErrorUtils.constructNPXMessage("origin"));
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 
-		getRepositoryCache(repository).evict(repository, cls, primaryKey);
+		getRepositoryCache(origin.getRepositoryId()).evict(origin, cls, primaryKey);
 
 	}
 
 	@Override
-	public void evict(EntityDescriptor repository) {
+	public void evict(RepositoryID repository) {
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
 
-		getRepositoryCache(repository).evict(repository);
+		getRepositoryCache(repository.getRepository().getId()).evict(repository);
 	}
 
 	/**
@@ -239,8 +238,8 @@ public class CacheManagerImpl implements CacheManager {
 		releaseCache();
 	}
 
-	private CacheImpl getRepositoryCache(EntityDescriptor repository) {
-		return repoCaches.get(repository.getRepository());
+	private CacheImpl getRepositoryCache(Integer repository) {
+		return repoCaches.get(repository);
 	}
 
 	public boolean acquireReadLock() {
@@ -282,12 +281,12 @@ public class CacheManagerImpl implements CacheManager {
 				CacheManagerImpl.this.sweepRunning = true;
 				final long currentTime = System.currentTimeMillis();
 				final long timeToLive = CacheManagerImpl.this.timeToLive;
-				final List<EntityDescriptor> toEvict = new LinkedList<>();
+				final List<RepositoryID> toEvict = new LinkedList<>();
 				// Mark the objects for eviction (can't evict them now, it would
 				// cause ConcurrentModificationException)
 				for (Repository r : repositories) {
 					final CacheImpl c = repoCaches.get(r.getId());
-					final EntityDescriptor rid = r.createRepositoryID(false);
+					final RepositoryID rid = r.createIdentifier();
 					for (Entry<URI, Long> e : c.ttls.entrySet()) {
 						final long lm = e.getValue().longValue();
 						if (lm + timeToLive < currentTime) {
@@ -299,7 +298,7 @@ public class CacheManagerImpl implements CacheManager {
 					}
 				}
 				// Evict them
-				for (EntityDescriptor r : toEvict) {
+				for (RepositoryID r : toEvict) {
 					CacheManagerImpl.this.evict(r);
 				}
 			} finally {
@@ -310,6 +309,9 @@ public class CacheManagerImpl implements CacheManager {
 	}
 
 	private static final class CacheImpl {
+
+		private static final URI DEFAULT_CONTEXT = URI.create("http://defaultContext");
+
 		private Map<URI, Map<Class<?>, Map<Object, Object>>> repoCache;
 		private Map<URI, Long> ttls;
 
@@ -318,13 +320,13 @@ public class CacheManagerImpl implements CacheManager {
 			ttls = new HashMap<>();
 		}
 
-		private void put(EntityDescriptor context, Object primaryKey, Object entity) {
-			assert !context.getContexts().isEmpty();
+		private void put(EntityOrigin origin, Object primaryKey, Object entity) {
 			assert primaryKey != null;
 			assert entity != null;
 
-			final URI ctx = context.getContexts().iterator().next();
 			final Class<?> cls = entity.getClass();
+			final URI ctx = origin.getEntityContext() != null ? origin.getEntityContext()
+					: DEFAULT_CONTEXT;
 
 			Map<Class<?>, Map<Object, Object>> ctxMap;
 			if (!repoCache.containsKey(ctx)) {
@@ -344,33 +346,44 @@ public class CacheManagerImpl implements CacheManager {
 			updateTimeToLive(ctx);
 		}
 
-		private <T> T get(EntityDescriptor context, Class<T> cls, Object primaryKey) {
-			assert !context.getContexts().isEmpty();
+		private <T> T get(EntityOrigin origin, Class<T> cls, Object primaryKey) {
+			assert origin.getEntityContext() != null;
 			assert cls != null;
 			assert primaryKey != null;
 
-			for (URI ctx : context.getContexts()) {
-				final Map<Object, Object> m = getMapForClass(ctx, cls);
-				if (m.containsKey(primaryKey)) {
-					updateTimeToLive(ctx);
-					return cls.cast(m.get(primaryKey));
-				}
+			final URI ctx = origin.getEntityContext() != null ? origin.getEntityContext()
+					: DEFAULT_CONTEXT;
+			final Map<Object, Object> m = getMapForClass(ctx, cls);
+			if (m.containsKey(primaryKey)) {
+				updateTimeToLive(ctx);
+				return cls.cast(m.get(primaryKey));
 			}
 			return null;
 		}
 
-		private boolean contains(EntityDescriptor context, Class<?> cls, Object primaryKey) {
-			assert !context.getContexts().isEmpty();
+		private boolean contains(Class<?> cls, Object primaryKey) {
 			assert cls != null;
 			assert primaryKey != null;
-
-			for (URI ctx : context.getContexts()) {
-				final Map<Object, Object> m = getMapForClass(ctx, cls);
-				if (m.containsKey(primaryKey)) {
+			for (Map<Class<?>, Map<Object, Object>> m : repoCache.values()) {
+				if (!m.containsKey(cls)) {
+					continue;
+				}
+				final Map<Object, Object> clsMap = m.get(cls);
+				if (clsMap.containsKey(primaryKey)) {
 					return true;
 				}
 			}
 			return false;
+		}
+
+		private boolean contains(EntityOrigin origin, Class<?> cls, Object primaryKey) {
+			assert cls != null;
+			assert primaryKey != null;
+
+			final URI ctx = origin.getEntityContext() != null ? origin.getEntityContext()
+					: DEFAULT_CONTEXT;
+			final Map<Object, Object> m = getMapForClass(ctx, cls);
+			return m.containsKey(primaryKey);
 		}
 
 		private void updateTimeToLive(URI context) {
@@ -379,17 +392,15 @@ public class CacheManagerImpl implements CacheManager {
 			ttls.put(context, System.currentTimeMillis());
 		}
 
-		private void evict(EntityDescriptor context, Class<?> cls, Object primaryKey) {
-			assert !context.getContexts().isEmpty();
+		private void evict(EntityOrigin origin, Class<?> cls, Object primaryKey) {
 			assert cls != null;
 			assert primaryKey != null;
 
-			for (URI ctx : context.getContexts()) {
-				final Map<Object, Object> m = getMapForClass(ctx, cls);
-				if (m.containsKey(primaryKey)) {
-					m.remove(primaryKey);
-					break;
-				}
+			final URI ctx = origin.getEntityContext() != null ? origin.getEntityContext()
+					: DEFAULT_CONTEXT;
+			final Map<Object, Object> m = getMapForClass(ctx, cls);
+			if (m.containsKey(primaryKey)) {
+				m.remove(primaryKey);
 			}
 		}
 
@@ -403,7 +414,7 @@ public class CacheManagerImpl implements CacheManager {
 			}
 		}
 
-		private void evict(EntityDescriptor contexts) {
+		private void evict(RepositoryID contexts) {
 			for (URI ctx : contexts.getContexts()) {
 				repoCache.remove(ctx);
 				ttls.remove(ctx);

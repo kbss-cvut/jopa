@@ -24,15 +24,15 @@ class ChangeSetFactory {
 	 *            Original object
 	 * @param clone
 	 *            Clone
-	 * @param repository
-	 *            Repository to which the original belongs
+	 * @param descriptor
+	 *            Entity descriptor
 	 * @return New object change set
 	 */
 	static ObjectChangeSet createObjectChangeSet(Object original, Object clone,
-			EntityDescriptor repository) {
+			EntityDescriptor descriptor) {
 		assert original != null;
-		assert repository != null;
+		assert descriptor != null;
 
-		return new ObjectChangeSetImpl(original, clone, repository);
+		return new ObjectChangeSetImpl(original, clone, descriptor.getEntityOrigin());
 	}
 }

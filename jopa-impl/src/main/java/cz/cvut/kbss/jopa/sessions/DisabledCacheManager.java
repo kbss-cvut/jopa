@@ -2,7 +2,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import java.util.Set;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 
 public class DisabledCacheManager implements CacheManager {
 
@@ -12,12 +12,12 @@ public class DisabledCacheManager implements CacheManager {
 	}
 
 	@Override
-	public boolean contains(EntityDescriptor repository, Class<?> cls, Object primaryKey) {
+	public boolean contains(EntityOrigin origin, Class<?> cls, Object primaryKey) {
 		return false;
 	}
 
 	@Override
-	public void evict(EntityDescriptor repository, Class<?> cls, Object primaryKey) {
+	public void evict(EntityOrigin origin, Class<?> cls, Object primaryKey) {
 		// Do nothing
 	}
 
@@ -27,7 +27,7 @@ public class DisabledCacheManager implements CacheManager {
 	}
 
 	@Override
-	public void evict(EntityDescriptor repository) {
+	public void evict(RepositoryID repository) {
 		// Do nothing
 	}
 
@@ -37,12 +37,12 @@ public class DisabledCacheManager implements CacheManager {
 	}
 
 	@Override
-	public void add(EntityDescriptor repository, Object primaryKey, Object entity) {
+	public void add(EntityOrigin origin, Object primaryKey, Object entity) {
 		// Do nothing
 	}
 
 	@Override
-	public <T> T get(EntityDescriptor repository, Class<T> cls, Object primaryKey) {
+	public <T> T get(EntityOrigin origin, Class<T> cls, Object primaryKey) {
 		return null;
 	}
 

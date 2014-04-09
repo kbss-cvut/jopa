@@ -50,30 +50,30 @@ public class CloneBuilderImpl implements CloneBuilder {
 	}
 
 	@Override
-	public Object buildClone(Object original, EntityDescriptor repository) {
-		if (original == null || repository == null) {
+	public Object buildClone(Object original, EntityDescriptor descriptor) {
+		if (original == null || descriptor == null) {
 			throw new NullPointerException();
 		}
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Cloning object " + original);
 		}
-		return buildCloneImpl(null, null, original, repository);
+		return buildCloneImpl(null, null, original, descriptor);
 	}
 
 	@Override
 	public Object buildClone(Object cloneOwner, Field clonedField, Object original,
-			EntityDescriptor repository) {
-		if (cloneOwner == null || original == null || repository == null) {
+			EntityDescriptor descriptor) {
+		if (cloneOwner == null || original == null || descriptor == null) {
 			throw new NullPointerException();
 		}
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Cloning object " + original + " with owner " + cloneOwner);
 		}
-		return buildCloneImpl(cloneOwner, clonedField, original, repository);
+		return buildCloneImpl(cloneOwner, clonedField, original, descriptor);
 	}
 
 	private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original,
-			EntityDescriptor repository) {
+			EntityDescriptor descriptor) {
 
 		if (visitedObjects.containsKey(original)) {
 			return visitedObjects.get(original);
@@ -85,20 +85,20 @@ public class CloneBuilderImpl implements CloneBuilder {
 		final boolean managed = isTypeManaged(cls);
 		if (managed) {
 			final IRI pk = getIdentifier(original);
-			final Object visitedClone = getVisitedEntity(repository, pk);
+			final Object visitedClone = getVisitedEntity(descriptor, pk);
 			if (visitedClone != null) {
 				return visitedClone;
 			}
 		}
 		final AbstractInstanceBuilder builder = getInstanceBuilder(original);
-		Object clone = builder.buildClone(cloneOwner, clonedField, original, repository);
+		Object clone = builder.buildClone(cloneOwner, clonedField, original, descriptor);
 		visitedObjects.put(original, clone);
 		if (!builder.populatesAttributes() && !isPrimitiveOrString(original.getClass())) {
-			populateAttributes(original, clone, repository);
+			populateAttributes(original, clone, descriptor);
 		}
 		if (managed) {
 			final IRI pk = getIdentifier(clone);
-			putVisitedEntity(repository, pk, clone);
+			putVisitedEntity(descriptor, pk, clone);
 		}
 		return clone;
 	}

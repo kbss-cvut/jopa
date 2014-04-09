@@ -24,8 +24,8 @@ public final class RepositoryID {
 	 * 
 	 * @return
 	 */
-	public Integer getRepository() {
-		return repository.getId();
+	public Repository getRepository() {
+		return repository;
 	}
 
 	/**

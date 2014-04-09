@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,8 +53,9 @@ import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
@@ -63,6 +65,7 @@ import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 public class EntityManagerImpl extends AbstractEntityManager {
 
@@ -108,19 +111,19 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public void persist(final Object entity, final EntityDescriptor repository) {
+	public void persist(final Object entity, final EntityDescriptor descriptor) {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.config("Persisting " + entity);
 		}
 		ensureOpen();
-		if (entity == null || repository == null) {
+		if (entity == null || descriptor == null) {
 			throw new NullPointerException("Null passed to persist.");
 		}
 
-		switch (getState(entity, repository)) {
+		switch (getState(entity, descriptor)) {
 		case NEW:
 			try {
-				getCurrentPersistenceContext().registerNewObject(entity, repository);
+				getCurrentPersistenceContext().registerNewObject(entity, descriptor);
 			} catch (Throwable e) {
 				if (getTransaction().isActive()) {
 					getTransaction().setRollbackOnly();
@@ -143,10 +146,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 						if (at.isCollection()) {
 							for (final Object ox2 : (Collection<?>) ox) {
-								persist(ox2, repository);
+								persist(ox2, descriptor);
 							}
 						} else {
-							persist(ox, repository);
+							persist(ox, descriptor);
 						}
 					} catch (Exception e) {
 						if (getTransaction().isActive()) {
@@ -168,11 +171,11 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public <T> T merge(final T entity, EntityDescriptor repository) {
-		if (entity == null || repository == null) {
+	public <T> T merge(final T entity, EntityDescriptor descriptor) {
+		if (entity == null || descriptor == null) {
 			throw new NullPointerException();
 		}
-		return mergeInternal(entity, repository);
+		return mergeInternal(entity, descriptor);
 	}
 
 	/**
@@ -181,13 +184,12 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 * 
 	 * @param entity
 	 *            Entity instance
-	 * @param contextUri
-	 *            URI of ontology context into which the entity should be
-	 *            merged. Optional parameter, if not specified, the entity is
-	 *            merged into the first ontology context in which it is found
+	 * @param descriptor
+	 *            Contains information about contexts into which the entity and
+	 *            its field should be merged
 	 * @return Managed instance of the merged entity
 	 */
-	private <T> T mergeInternal(final T entity, final EntityDescriptor repository) {
+	private <T> T mergeInternal(final T entity, final EntityDescriptor descriptor) {
 		assert entity != null;
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.config("Merging " + entity);
@@ -196,28 +198,28 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 		Class<T> clz = (Class<T>) entity.getClass();
 
-		switch (getState(entity, repository)) {
+		switch (getState(entity, descriptor)) {
 		case NEW:
-			getCurrentPersistenceContext().registerNewObject(entity, repository);
+			getCurrentPersistenceContext().registerNewObject(entity, descriptor);
 			// Intentional case fall-through
 		case MANAGED:
 			new OneLevelCascadeExplorer() {
 				@Override
 				protected void exploreCascaded(Attribute<?, ?> at, Object o)
 						throws IllegalAccessException {
-					mergeX(at, o, repository);
+					mergeX(at, o, descriptor);
 				}
 			}.start(this, entity, CascadeType.MERGE);
 			return entity;
 		case DETACHED:
 			final T merged;
-			merged = getCurrentPersistenceContext().mergeDetached(entity, repository);
+			merged = getCurrentPersistenceContext().mergeDetached(entity, descriptor);
 
 			new OneLevelCascadeExplorer() {
 				@Override
 				protected void exploreCascaded(Attribute<?, ?> at, Object o)
 						throws IllegalAccessException {
-					mergeX(at, o, repository);
+					mergeX(at, o, descriptor);
 				}
 
 				@Override
@@ -234,7 +236,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	private void mergeX(Attribute<?, ?> at, Object o, EntityDescriptor repository)
+	private void mergeX(Attribute<?, ?> at, Object o, EntityDescriptor descriptor)
 			throws IllegalAccessException {
 		Object attVal = at.getJavaField().get(o);
 		if (at.isCollection()) {
@@ -242,11 +244,11 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			Set set = new HashSet(c);
 			c.clear();
 			for (final Object ox2 : set) {
-				c.add(mergeInternal(ox2, repository));
+				c.add(mergeInternal(ox2, descriptor));
 			}
 		} else {
 			if (attVal != null) {
-				attVal = mergeInternal(attVal, repository);
+				attVal = mergeInternal(attVal, descriptor);
 			}
 		}
 		at.getJavaField().set(o, attVal);
@@ -257,9 +259,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 		switch (getState(object)) {
 		case NEW:
-			// New objects are also registered, so they have to be removed
-			getCurrentPersistenceContext().removeObject(object);
-			break;
 		case DETACHED:
 			throw new IllegalArgumentException();
 		case MANAGED:
@@ -276,18 +275,18 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor repository) {
-		if (cls == null || primaryKey == null || repository == null) {
-			throw new NullPointerException("Null passed to find. cls = " + cls + ", primaryKey = "
-					+ primaryKey + ", repository = " + repository);
-		}
+	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor) {
+		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+
 		ensureOpen();
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.config("Finding " + cls + " with key " + primaryKey + " in context " + repository);
+			LOG.config("Finding " + cls + " with key " + primaryKey + " in context " + descriptor);
 		}
 		final IRI uri = IRI.create(primaryKey.toString());
 
-		T ob = getCurrentPersistenceContext().readObject(cls, uri, repository);
+		T ob = getCurrentPersistenceContext().readObject(cls, uri, descriptor);
 
 		return ob;
 	}
@@ -390,28 +389,28 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public Query createQuery(String qlString, EntityDescriptor repository) {
+	public Query createQuery(String qlString, RepositoryID repository) {
 		return getCurrentPersistenceContext().createQuery(qlString, repository);
 	}
 
 	@Override
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, EntityDescriptor repository) {
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, RepositoryID repository) {
 		return getCurrentPersistenceContext().createQuery(query, resultClass, repository);
 	}
 
 	@Override
-	public Query<List<String>> createNativeQuery(String sqlString, EntityDescriptor repository) {
+	public Query<List<String>> createNativeQuery(String sqlString, RepositoryID repository) {
 		return getCurrentPersistenceContext().createNativeQuery(sqlString, repository);
 	}
 
 	@Override
 	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass,
-			EntityDescriptor repository) {
+			RepositoryID repository) {
 		return getCurrentPersistenceContext().createNativeQuery(sqlString, resultClass, repository);
 	}
 
 	@Override
-	public boolean checkConsistency(EntityDescriptor repository) {
+	public boolean checkConsistency(RepositoryID repository) {
 		if (repository == null) {
 			return false;
 		}
