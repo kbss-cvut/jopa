@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -39,7 +40,7 @@ public interface ModuleInternal<X, Y> {
 	 * @throws OntoDriverException
 	 *             If {@code primaryKey} is not a valid URI
 	 */
-	public boolean containsEntity(Object primaryKey, EntityDescriptor contexts)
+	public boolean containsEntity(Object primaryKey, RepositoryID contexts)
 			throws OntoDriverException;
 
 	/**
@@ -52,13 +53,13 @@ public interface ModuleInternal<X, Y> {
 	 *            Entity class to which the returned object should be cast
 	 * @param primaryKey
 	 *            Primary key
-	 * @param contexts
+	 * @param descriptor
 	 *            Specifies contexts to search
 	 * @return The object with specified primary key or null if none is found
 	 * @throws OntoDriverException
 	 *             If an error occurs during load
 	 */
-	public <T> T findEntity(Class<T> cls, Object primaryKey, EntityDescriptor contexts)
+	public <T> T findEntity(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -71,7 +72,7 @@ public interface ModuleInternal<X, Y> {
 	 * @throws OntoDriverException
 	 *             If an error occurs during consistency check
 	 */
-	public boolean isConsistent(EntityDescriptor contexts) throws OntoDriverException;
+	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>
@@ -81,13 +82,12 @@ public interface ModuleInternal<X, Y> {
 	 *            specified it will be generated and set on the entity
 	 * @param entity
 	 *            The entity to persist
-	 * @param repository
-	 *            Specifies context into which the entity will be saved. If
-	 *            multiple are set, the first one returned by iterator is used
+	 * @param descriptor
+	 *            Specifies context into which the entity will be saved
 	 * @throws OntoDriverException
 	 *             If an error occurs during persist
 	 */
-	public <T> void persistEntity(Object primaryKey, T entity, EntityDescriptor repository)
+	public <T> void persistEntity(Object primaryKey, T entity, EntityDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -97,16 +97,13 @@ public interface ModuleInternal<X, Y> {
 	 *            The entity to merge
 	 * @param mergedField
 	 *            The field to merge
-	 * @param context
-	 *            Specifies target context. If multiple are specified, the
-	 *            module will try to find previous value and merge the new one
-	 *            into the same context. If there is no old value, the new value
-	 *            is saved into the first context returned by iterator
+	 * @param descriptor
+	 *            Specifies target context
 	 * @throws OntoDriverException
 	 *             If the entity is not persistent or if an error occurs during
 	 *             merge
 	 */
-	public <T> void mergeEntity(T entity, Field mergedField, EntityDescriptor context)
+	public <T> void mergeEntity(T entity, Field mergedField, EntityDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -114,15 +111,15 @@ public interface ModuleInternal<X, Y> {
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the entity to remove
-	 * @param context
+	 * @param descriptor
 	 *            The context from which the entity and its attributes will be
-	 *            removed. Can specify multiple contexts, in which case all
-	 *            occurrences are removed
+	 *            removed
 	 * @throws OntoDriverException
 	 *             If no entity with {@code primaryKey} exists or if an error
 	 *             occurs during removal
 	 */
-	public void removeEntity(Object primaryKey, EntityDescriptor context) throws OntoDriverException;
+	public void removeEntity(Object primaryKey, EntityDescriptor descriptor)
+			throws OntoDriverException;
 
 	/**
 	 * Loads value of field {@code fieldName} to the entity. </p>
@@ -133,13 +130,13 @@ public interface ModuleInternal<X, Y> {
 	 *            The entity
 	 * @param field
 	 *            The field to load
-	 * @param contexts
+	 * @param descriptor
 	 *            Specify contexts in which the field value will be searched for
 	 * @throws OntoDriverException
 	 *             If the entity has no field with name {@code fieldName} or if
 	 *             an error occurs during load
 	 */
-	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor contexts)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**

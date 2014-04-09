@@ -4,8 +4,9 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Objects;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -82,7 +83,7 @@ public abstract class StorageManager implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code repository} is {@code null}
 	 */
-	public abstract boolean contains(Object primaryKey, EntityDescriptor repository)
+	public abstract boolean contains(Object primaryKey, RepositoryID repository)
 			throws OntoDriverException;
 
 	/**
@@ -98,30 +99,31 @@ public abstract class StorageManager implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code repository} is {@code null}
 	 */
-	public abstract boolean isConsistent(EntityDescriptor repository) throws OntoDriverException;
+	public abstract boolean isConsistent(RepositoryID repository) throws OntoDriverException;
 
 	/**
 	 * Finds entity with the specified primary key and returns it as the
 	 * specified entity type. </p>
 	 * 
-	 * The repository identifier may specify multiple contexts which will be
-	 * searched.
+	 * The descriptor specifies in which contexts the entity and its fields
+	 * should be looked for.
 	 * 
 	 * @param cls
 	 *            Return type
 	 * @param primaryKey
 	 *            Primary key
-	 * @param repository
-	 *            Repository identifier
+	 * @param descriptor
+	 *            Entity descriptor
 	 * @return The found entity or {@code null}
 	 * @throws OntoDriverException
-	 *             If repository is not valid, if the {@code cls} is not an
-	 *             entity class or if an ontology access error occurs
+	 *             If descriptor is not valid (e. g. unknown contexts), if the
+	 *             {@code cls} is not an entity class or if an ontology access
+	 *             error occurs
 	 * @throws NullPointerException
-	 *             If {@code cls}, or {@code primaryKey} or {@code repository}
+	 *             If {@code cls}, or {@code primaryKey} or {@code descriptor}
 	 *             is {@code null}
 	 */
-	public abstract <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor repository)
+	public abstract <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -143,17 +145,16 @@ public abstract class StorageManager implements Transactional {
 	 *            The entity to set field value on
 	 * @param field
 	 *            The field to load
-	 * @param repository
-	 *            Identifier of repository from which the field value should be
-	 *            loaded
+	 * @param descriptor
+	 *            Entity descriptor. Specifies field loading context
 	 * @throws OntoDriverException
 	 *             If called on a closed storage manager, if the repository is
 	 *             not valid or if an ontology access error occurs
 	 * @throws NullPointerException
-	 *             If {@code entity}, {@code fieldName} or {@code repository} is
+	 *             If {@code entity}, {@code fieldName} or {@code descriptor} is
 	 *             {@code null}
 	 */
-	public abstract <T> void loadFieldValue(T entity, Field field, EntityDescriptor repository)
+	public abstract <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -163,16 +164,15 @@ public abstract class StorageManager implements Transactional {
 	 * If the specified repository does not contain corresponding individual an
 	 * exception is thrown. </p>
 	 * 
-	 * The repository identifier should specify exactly one context. If there
-	 * are multiple the storage module will use the first returned by the
-	 * collection's iterator.
+	 * The descriptor specifies contexts to which the field value will be
+	 * merged.
 	 * 
 	 * @param entity
 	 *            The merged entity
 	 * @param mergedField
 	 *            The field to merge
-	 * @param repository
-	 *            Repository identifier
+	 * @param descriptor
+	 *            Entity descriptor
 	 * @throws OntoDriverException
 	 *             If the entity is not persistent yet, if repository is not
 	 *             valid or if an ontology access error occurs
@@ -180,22 +180,22 @@ public abstract class StorageManager implements Transactional {
 	 *             If {@code primaryKey}, {@code entity} or {@code repository}
 	 *             is {@code null}
 	 */
-	public abstract <T> void merge(T entity, Field mergedField, EntityDescriptor repository)
+	public abstract <T> void merge(T entity, Field mergedField, EntityDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>
 	 * 
-	 * The {@code entity} is persisted along with its attributes into context
-	 * specified by the {@code repository} parameter. </p>
+	 * The {@code entity} and its attributes are persisted into their respective
+	 * contexts as specified by the descriptor.
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the persisted entity. Optional, if not set it
 	 *            will be generated
 	 * @param entity
 	 *            The entity to persist
-	 * @param repository
-	 *            Target repository identifier
+	 * @param descriptor
+	 *            Entity descriptor
 	 * @throws OntoDriverException
 	 *             If the primary key is not set, if an entity with the
 	 *             specified primary key already exists in the specified
@@ -204,7 +204,7 @@ public abstract class StorageManager implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code repository} is {@code null}
 	 */
-	public abstract <T> void persist(Object primaryKey, T entity, EntityDescriptor repository)
+	public abstract <T> void persist(Object primaryKey, T entity, EntityDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -216,8 +216,8 @@ public abstract class StorageManager implements Transactional {
 	 * 
 	 * @param primaryKey
 	 *            Primary key of the entity to remove
-	 * @param repository
-	 *            Repository from which the entity should be removed
+	 * @param descriptor
+	 *            Entity descriptor
 	 * @throws OntoDriverException
 	 *             If {@code entityContext} is not valid, if
 	 *             {@code entityContext} does not contain any individual with
@@ -226,7 +226,7 @@ public abstract class StorageManager implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code entityContext} is null
 	 */
-	public abstract void remove(Object primaryKey, EntityDescriptor repository)
+	public abstract void remove(Object primaryKey, EntityDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**

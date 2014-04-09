@@ -12,28 +12,28 @@ import cz.cvut.kbss.jopa.utils.ErrorUtils;
  * Describes storage properties of an entity. </p>
  * 
  * I. e. repository and context in which the individual is stored and optionally
- * context of each attribute (in the same repository).
+ * context of each attribute (in the same repository). </p>
+ * 
+ * If context of a field is not specified in this descriptor, the same context
+ * as the entity's is assumed and used.
  * 
  * @author ledvima1
  * 
  */
 public final class EntityDescriptor {
 
-	private final Integer repository;
-	private final URI repositoryUri;
+	private final Repository repository;
 	private URI entityContext;
 	private Map<String, URI> fieldContexts;
 
 	private EntityOrigin origin;
 
 	public EntityDescriptor(Repository repository) {
-		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
+		this.repository = Objects.requireNonNull(repository,
+				"Argument 'repository' cannot be null.");
 		if (repository.getId() < 0) {
 			throw new IllegalArgumentException("Repository id cannot be less than 0.");
 		}
-
-		this.repository = repository.getId();
-		this.repositoryUri = repository.getPhysicalUri();
 		this.fieldContexts = new HashMap<>();
 	}
 
@@ -51,7 +51,6 @@ public final class EntityDescriptor {
 		Objects.requireNonNull(other, "Argument 'repository' cannot be null.");
 
 		this.repository = other.repository;
-		this.repositoryUri = other.repositoryUri;
 		this.entityContext = other.entityContext;
 		this.fieldContexts = new HashMap<>(other.fieldContexts);
 	}
@@ -61,8 +60,12 @@ public final class EntityDescriptor {
 	 * 
 	 * @return
 	 */
-	public Integer getRepository() {
+	public Repository getRepository() {
 		return repository;
+	}
+
+	public Integer getRepositoryId() {
+		return repository.getId();
 	}
 
 	/**
@@ -71,7 +74,7 @@ public final class EntityDescriptor {
 	 * @return URI
 	 */
 	public URI getRepositoryUri() {
-		return repositoryUri;
+		return repository.getPhysicalUri();
 	}
 
 	/**
@@ -160,8 +163,8 @@ public final class EntityDescriptor {
 	@Override
 	public String toString() {
 		final StringBuilder out = new StringBuilder("EntityDescriptor: repository = ")
-				.append(repositoryUri).append(", entityContexts = ").append(entityContext)
-				.append(", fieldContext = ").append(fieldContexts);
+				.append(repository.getPhysicalUri()).append(", entityContexts = ")
+				.append(entityContext).append(", fieldContext = ").append(fieldContexts);
 		return out.toString();
 	}
 

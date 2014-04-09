@@ -8,8 +8,9 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -74,7 +75,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, EntityDescriptor repository) throws OntoDriverException {
+	public boolean contains(Object primaryKey, RepositoryID repository) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
@@ -83,14 +84,14 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor repository)
+	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(cls, "Argument 'cls' cannot be null.");
-		Objects.requireNonNull(primaryKey, "Argument 'primaryKey' cannot be null.");
-		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
+		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		final T result = storageManager.find(cls, primaryKey, repository);
+		final T result = storageManager.find(cls, primaryKey, descriptor);
 		return result;
 	}
 
@@ -101,9 +102,9 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public boolean isConsistent(EntityDescriptor repository) throws OntoDriverException {
+	public boolean isConsistent(RepositoryID repository) throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
+		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
 
 		return storageManager.isConsistent(repository);
 	}
@@ -114,25 +115,25 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor repository)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(entity, "Argument 'entity' cannot be null.");
-		Objects.requireNonNull(field, "Argument 'field' cannot be null.");
-		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		storageManager.loadFieldValue(entity, field, repository);
+		storageManager.loadFieldValue(entity, field, descriptor);
 	}
 
 	@Override
-	public <T> void merge(T entity, Field mergedField, EntityDescriptor repository)
+	public <T> void merge(T entity, Field mergedField, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(entity, "Argument 'entity' cannot be null.");
-		Objects.requireNonNull(mergedField, "Argument 'mergedField' cannot be null.");
-		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(mergedField, ErrorUtils.constructNPXMessage("mergedField"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		storageManager.merge(entity, mergedField, repository);
+		storageManager.merge(entity, mergedField, descriptor);
 		this.hasChanges = true;
 		if (autoCommit) {
 			commit();
@@ -140,14 +141,14 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, EntityDescriptor repository)
+	public <T> void persist(Object primaryKey, T entity, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		ensureOpen();
 		// Primary key can be null
-		Objects.requireNonNull(entity, "Argument 'entity' cannot be null.");
-		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		storageManager.persist(primaryKey, entity, repository);
+		storageManager.persist(primaryKey, entity, descriptor);
 		this.hasChanges = true;
 		if (autoCommit) {
 			commit();
@@ -161,12 +162,13 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void remove(Object primaryKey, EntityDescriptor repository) throws OntoDriverException {
+	public <T> void remove(Object primaryKey, EntityDescriptor descriptor)
+			throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(primaryKey, "Argument 'primaryKey' cannot be null.");
-		Objects.requireNonNull(repository, "Argument 'repository' cannot be null.");
+		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		storageManager.remove(primaryKey, repository);
+		storageManager.remove(primaryKey, descriptor);
 		this.hasChanges = true;
 		if (autoCommit) {
 			commit();
@@ -195,7 +197,7 @@ public class ConnectionImpl implements Connection {
 	@Override
 	public Repository getRepository(Integer repositoryId) throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(repositoryId, "Argument 'repositoryId' cannot be null.");
+		Objects.requireNonNull(repositoryId, ErrorUtils.constructNPXMessage("repositoryId"));
 
 		if (!repositories.containsKey(repositoryId)) {
 			throw new RepositoryNotFoundException("Repository with identifier " + repositoryId

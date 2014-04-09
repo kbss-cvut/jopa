@@ -7,8 +7,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -56,8 +57,7 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 
 	@Override
 	protected void initialize() throws OntoDriverException {
-		this.connector = (OwlapiStorageConnector) factory.createStorageConnector(repositoryId,
-				false);
+		this.connector = (OwlapiStorageConnector) factory.createStorageConnector(repository, false);
 		if (!primaryKeyCounters.containsKey(repository.getId())) {
 			primaryKeyCounters.put(repository.getId(),
 					new AtomicInteger(connector.getClassAssertionsCount()));
@@ -66,53 +66,53 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, EntityDescriptor contexts) throws OntoDriverException {
+	public boolean contains(Object primaryKey, RepositoryID contexts) throws OntoDriverException {
 		preContains(primaryKey, contexts);
 		return internal.containsEntity(primaryKey, contexts);
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor contexts)
+	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
 			throws OntoDriverException {
-		preFind(cls, primaryKey, contexts);
+		preFind(cls, primaryKey, descriptor);
 
-		return internal.findEntity(cls, primaryKey, contexts);
+		return internal.findEntity(cls, primaryKey, descriptor);
 	}
 
 	@Override
-	public boolean isConsistent(EntityDescriptor contexts) throws OntoDriverException {
+	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException {
 		preIsConsistent(contexts);
 
 		return internal.isConsistent(contexts);
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor context)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
 			throws OntoDriverException {
-		preLoadFieldValue(entity, field, context);
-		internal.loadFieldValue(entity, field, context);
+		preLoadFieldValue(entity, field, descriptor);
+		internal.loadFieldValue(entity, field, descriptor);
 	}
 
 	@Override
-	public <T> void merge(T entity, Field mergedField, EntityDescriptor context)
+	public <T> void merge(T entity, Field mergedField, EntityDescriptor descriptor)
 			throws OntoDriverException {
-		preMerge(entity, mergedField, context);
+		preMerge(entity, mergedField, descriptor);
 
-		internal.mergeEntity(entity, mergedField, context);
+		internal.mergeEntity(entity, mergedField, descriptor);
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, EntityDescriptor context)
+	public <T> void persist(Object primaryKey, T entity, EntityDescriptor descriptor)
 			throws OntoDriverException {
-		prePersist(entity, context);
-		internal.persistEntity(primaryKey, entity, context);
+		prePersist(entity, descriptor);
+		internal.persistEntity(primaryKey, entity, descriptor);
 	}
 
 	@Override
-	public void remove(Object primaryKey, EntityDescriptor context) throws OntoDriverException {
-		preRemove(primaryKey, context);
+	public void remove(Object primaryKey, EntityDescriptor descriptor) throws OntoDriverException {
+		preRemove(primaryKey, descriptor);
 
-		internal.removeEntity(primaryKey, context);
+		internal.removeEntity(primaryKey, descriptor);
 	}
 
 	@Override
@@ -154,11 +154,6 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 	}
 
 	@Override
-	public EntityDescriptor getRepositoryIdentifier() {
-		return repositoryId;
-	}
-
-	@Override
 	protected void startTransactionIfNotActive() throws OntoDriverException {
 		if (transaction == TransactionState.ACTIVE) {
 			return;
@@ -172,7 +167,12 @@ public class OwlapiStorageModule extends StorageModule implements OwlapiModuleWr
 	public <T> T getEntityFromCache(Class<T> cls, Object primaryKey) {
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+		final EntityDescriptor descriptor = new EntityDescriptor(repository);
+		// OWLAPI repositories have their logical URI as the only context
+		if (!repository.getContexts().isEmpty()) {
+			descriptor.setEntityContext(repository.getContexts().iterator().next());
+		}
 
-		return getEntityFromCache(cls, primaryKey);
+		return getEntityFromProviderCache(cls, primaryKey, descriptor);
 	}
 }

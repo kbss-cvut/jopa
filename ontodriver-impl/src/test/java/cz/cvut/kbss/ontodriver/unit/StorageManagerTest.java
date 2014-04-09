@@ -420,7 +420,7 @@ public class StorageManagerTest {
 		final EntityDescriptor rid = repositories.get(0).createRepositoryID(false);
 		final JopaStatement stmtMock = mock(JopaStatement.class);
 		final ResultSet rsMock = mock(ResultSet.class);
-		when(stmtMock.getRepository()).thenReturn(rid);
+		when(stmtMock.getRepositoryId()).thenReturn(rid);
 		when(moduleMock.executeStatement(stmtMock)).thenReturn(rsMock);
 
 		final ResultSet rs = manager.executeStatement(stmtMock);
@@ -433,7 +433,7 @@ public class StorageManagerTest {
 	public void testExecuteStatementNullRepoId() throws Exception {
 		final JopaStatement stmtMock = mock(JopaStatement.class);
 		final ResultSet rsMock = mock(ResultSet.class);
-		when(stmtMock.getRepository()).thenReturn(null);
+		when(stmtMock.getRepositoryId()).thenReturn(null);
 		when(moduleMock.executeStatement(stmtMock)).thenReturn(rsMock);
 		try {
 			final ResultSet rs = manager.executeStatement(stmtMock);

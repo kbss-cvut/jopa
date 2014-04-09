@@ -6,8 +6,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -54,7 +55,7 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 
 	@Override
 	protected void initialize() throws OntoDriverException {
-		this.connector = (OwlapiBasedJenaConnector) factory.createStorageConnector(repositoryId,
+		this.connector = (OwlapiBasedJenaConnector) factory.createStorageConnector(repository,
 				false);
 		final OwlapiConnectorDataHolder holder = getOntologyData();
 		if (!primaryKeyCounters.containsKey(repository.getId())) {
@@ -65,56 +66,56 @@ public class OwlapiBasedJenaModule extends OwlapiStorageModule {
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, EntityDescriptor contexts) throws OntoDriverException {
+	public boolean contains(Object primaryKey, RepositoryID contexts) throws OntoDriverException {
 		preContains(primaryKey, contexts);
 
 		return moduleInternal.containsEntity(primaryKey, contexts);
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor contexts)
+	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
 			throws OntoDriverException {
-		preFind(cls, primaryKey, contexts);
+		preFind(cls, primaryKey, descriptor);
 
-		return moduleInternal.findEntity(cls, primaryKey, contexts);
+		return moduleInternal.findEntity(cls, primaryKey, descriptor);
 	}
 
 	@Override
-	public boolean isConsistent(EntityDescriptor contexts) throws OntoDriverException {
+	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException {
 		preIsConsistent(contexts);
 
 		return moduleInternal.isConsistent(contexts);
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor context)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
 			throws OntoDriverException {
-		preLoadFieldValue(entity, field, context);
+		preLoadFieldValue(entity, field, descriptor);
 
-		moduleInternal.loadFieldValue(entity, field, context);
+		moduleInternal.loadFieldValue(entity, field, descriptor);
 	}
 
 	@Override
-	public <T> void merge(T entity, Field mergedField, EntityDescriptor context)
+	public <T> void merge(T entity, Field mergedField, EntityDescriptor descriptor)
 			throws OntoDriverException {
-		preMerge(entity, mergedField, context);
+		preMerge(entity, mergedField, descriptor);
 
-		moduleInternal.mergeEntity(entity, mergedField, context);
+		moduleInternal.mergeEntity(entity, mergedField, descriptor);
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, EntityDescriptor context)
+	public <T> void persist(Object primaryKey, T entity, EntityDescriptor descriptor)
 			throws OntoDriverException {
-		prePersist(entity, context);
+		prePersist(entity, descriptor);
 
-		moduleInternal.persistEntity(primaryKey, entity, context);
+		moduleInternal.persistEntity(primaryKey, entity, descriptor);
 	}
 
 	@Override
-	public void remove(Object primaryKey, EntityDescriptor context) throws OntoDriverException {
-		preRemove(primaryKey, context);
+	public void remove(Object primaryKey, EntityDescriptor descriptor) throws OntoDriverException {
+		preRemove(primaryKey, descriptor);
 
-		moduleInternal.removeEntity(primaryKey, context);
+		moduleInternal.removeEntity(primaryKey, descriptor);
 	}
 
 	@Override

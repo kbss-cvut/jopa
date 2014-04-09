@@ -45,7 +45,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private Map<Object, Object> newObjectsCloneToOriginal;
 	private Map<Object, Object> newObjectsOriginalToClone;
 	private Map<Object, Object> newObjectsKeyToClone;
-	private Map<Integer, Repository> repos;
 	private final RepositoryMap repositoryMap;
 
 	private boolean hasChanges;
@@ -88,10 +87,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		this.inCommit = false;
 		this.useTransactionalOntology = true;
 		this.isActive = true;
-		this.repos = new HashMap<>(parent.getRepositories().size());
-		for (Repository r : getRepositories()) {
-			repos.put(r.getId(), r);
-		}
 	}
 
 	/**
@@ -1204,7 +1199,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			return false;
 		}
 		try {
-			final RepositoryID rid = new RepositoryID(repos.get(descriptor.getRepository()))
+			final RepositoryID rid = new RepositoryID(descriptor.getRepository())
 					.addContext(descriptor.getEntityContext());
 			return storageConnection.contains(primaryKey, rid);
 		} catch (OntoDriverException e) {

@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver;
 
 import java.util.Objects;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -21,7 +21,7 @@ public class JopaStatement implements Statement {
 
 	private boolean useTransactionalOntology;
 	private String query;
-	private EntityDescriptor repository;
+	private RepositoryID repository;
 
 	public JopaStatement(StorageManager manager) {
 		this.manager = Objects.requireNonNull(manager, ErrorUtils.constructNPXMessage("manager"));
@@ -52,19 +52,19 @@ public class JopaStatement implements Statement {
 		return query;
 	}
 
-	public EntityDescriptor getRepository() {
+	public RepositoryID getRepositoryId() {
 		return repository;
 	}
 
 	@Override
-	public ResultSet executeQuery(String sparql, EntityDescriptor repository)
+	public ResultSet executeQuery(String sparql, RepositoryID repository)
 			throws OntoDriverException {
 		initQuery(sparql, repository);
 		return manager.executeStatement(this);
 	}
 
 	@Override
-	public int executeUpdate(String sparql, EntityDescriptor repository) throws OntoDriverException {
+	public int executeUpdate(String sparql, RepositoryID repository) throws OntoDriverException {
 		initQuery(sparql, repository);
 		manager.executeStatement(this);
 		// Return 0 for now, we don't known how many statements have been
@@ -72,7 +72,7 @@ public class JopaStatement implements Statement {
 		return 0;
 	}
 
-	private void initQuery(String sparql, EntityDescriptor repository) {
+	private void initQuery(String sparql, RepositoryID repository) {
 		if (sparql == null || repository == null) {
 			throw new NullPointerException();
 		}

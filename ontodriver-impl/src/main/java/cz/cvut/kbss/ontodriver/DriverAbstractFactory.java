@@ -9,7 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -21,13 +20,13 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 
 	private final Map<StorageConnector, StorageConnector> openedConnectors;
 	private final Map<StorageModule, StorageModule> openedModules;
-	protected final Map<EntityDescriptor, OntologyStorageProperties> storageProperties;
+	protected final Map<Repository, OntologyStorageProperties> storageProperties;
 	protected final Map<String, String> properties;
 
 	private boolean open;
 
 	protected DriverAbstractFactory(List<Repository> repositories,
-			Map<EntityDescriptor, OntologyStorageProperties> storageProperties,
+			Map<Repository, OntologyStorageProperties> storageProperties,
 			Map<String, String> properties) {
 		Objects.requireNonNull(repositories, ErrorUtils.constructNPXMessage("repositories"));
 		Objects.requireNonNull(storageProperties,
@@ -132,22 +131,21 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 * This means:
 	 * <ul>
 	 * <li>That this factory is open</li>
-	 * <li>That {@code ctx} is not null</li>
-	 * <li>That {@code ctx} exists in this factory</li>
+	 * <li>That {@code repository} is not null</li>
+	 * <li>That {@code repository} exists in this factory</li>
 	 * </ul>
 	 * 
-	 * @param ctx
+	 * @param repository
 	 *            The context to check
 	 * @throws OntoDriverException
 	 *             If the factory is closed or if the context is not valid
 	 * @throws NullPointerException
 	 *             If {@code ctx} is {@code null}
 	 */
-	protected void ensureState(EntityDescriptor repository) throws OntoDriverException {
+	protected void ensureState(Repository repository) throws OntoDriverException {
 		ensureOpen();
-		if (repository == null) {
-			throw new NullPointerException("Repository cannot be null.");
-		}
+		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+
 		if (!storageProperties.containsKey(repository)) {
 			throw new OntoDriverException("Repository " + repository + " not found.");
 		}
@@ -156,19 +154,19 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	/**
 	 * Ensures that this factory is in valid state. </p>
 	 * 
-	 * @param ctx
+	 * @param repository
+	 *            Repository identifier
 	 * @param persistenceProvider
 	 * @throws OntoDriverException
 	 * @throws NullPointerException
 	 *             If {@code metamodel} is null
 	 * @see #ensureState(Context)
 	 */
-	protected void ensureState(EntityDescriptor repository,
-			PersistenceProviderFacade persistenceProvider) throws OntoDriverException {
+	protected void ensureState(Repository repository, PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException {
 		ensureState(repository);
-		if (persistenceProvider == null) {
-			throw new NullPointerException("PersistenceProvider cannot be null.");
-		}
+		Objects.requireNonNull(persistenceProvider,
+				ErrorUtils.constructNPXMessage("persistenceProvider"));
 	}
 
 	/**
@@ -193,22 +191,5 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	protected void registerConnector(StorageConnector connector) {
 		assert connector != null;
 		openedConnectors.put(connector, connector);
-	}
-
-	/**
-	 * Gets repository for the specified identifier. </p>
-	 * 
-	 * This method assumes that the validity of the identifier has been already
-	 * verified.
-	 * 
-	 * @param identifier
-	 *            Repository identifier
-	 * @return Repository
-	 */
-	protected Repository getRepository(EntityDescriptor identifier) {
-		assert identifier != null;
-		assert (identifier.getRepository() > 0 && identifier.getRepository() < repositories.size());
-
-		return repositories.get(identifier.getRepository());
 	}
 }

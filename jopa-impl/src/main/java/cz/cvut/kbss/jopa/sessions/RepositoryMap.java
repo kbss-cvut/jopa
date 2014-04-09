@@ -37,7 +37,6 @@ final class RepositoryMap {
 
 	void remove(EntityDescriptor descriptor, Object key) {
 		assert descriptor != null;
-		assert descriptor.getRepository() < map.size();
 		assert key != null;
 
 		final Map<Object, Object> entities = getMap(descriptor);
@@ -56,7 +55,6 @@ final class RepositoryMap {
 
 	boolean contains(EntityDescriptor descriptor, Object key) {
 		assert descriptor != null;
-		assert descriptor.getRepository() < map.size();
 		assert key != null;
 
 		final Map<Object, Object> entities = getMap(descriptor);
@@ -65,7 +63,6 @@ final class RepositoryMap {
 
 	Object get(EntityDescriptor descriptor, Object key) {
 		assert descriptor != null;
-		assert descriptor.getRepository() < map.size();
 		assert key != null;
 
 		final Map<Object, Object> entities = getMap(descriptor);
@@ -92,7 +89,7 @@ final class RepositoryMap {
 	}
 
 	private Map<Object, Object> getMap(EntityDescriptor descriptor) {
-		final Map<URI, Map<Object, Object>> m = map.get(descriptor.getRepository());
+		final Map<URI, Map<Object, Object>> m = map.get(descriptor.getRepositoryId());
 		if (m == null) {
 			throw new IllegalArgumentException("Unknown repository " + descriptor);
 		}

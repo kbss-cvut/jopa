@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.logging.Level;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -23,27 +22,26 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 	private boolean owldb = false;
 
 	public DriverOwlapiFactory(List<Repository> repositories,
-			Map<EntityDescriptor, OntologyStorageProperties> storageProperties,
+			Map<Repository, OntologyStorageProperties> storageProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		super(repositories, storageProperties, properties);
 	}
 
 	@Override
-	public StorageModule createStorageModule(EntityDescriptor repository,
+	public StorageModule createStorageModule(Repository repository,
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(repository, persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLAPI storage module.");
 		}
-		final StorageModule m = new OwlapiStorageModule(getRepository(repository),
-				persistenceProvider, this);
+		final StorageModule m = new OwlapiStorageModule(repository, persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public OwlapiStorageConnector createStorageConnector(EntityDescriptor repository, boolean autoCommit)
+	public OwlapiStorageConnector createStorageConnector(Repository repository, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(repository);
 		if (LOG.isLoggable(Level.FINER)) {
@@ -54,7 +52,7 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 		return c;
 	}
 
-	private OwlapiStorageConnector createConnectorInternal(EntityDescriptor repository)
+	private OwlapiStorageConnector createConnectorInternal(Repository repository)
 			throws OntoDriverException {
 		final OntologyStorageProperties p = storageProperties.get(repository);
 		final OwlapiStorageType type = resolveStorageType(p);

@@ -3,10 +3,11 @@ package cz.cvut.kbss.ontodriver.impl.jena;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -29,10 +30,10 @@ import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStatement;
  */
 public class DriverCachingJenaFactory extends DriverAbstractFactory {
 
-	private final Map<EntityDescriptor, OwlapiBasedJenaConnector> centralConnectors;
+	private final Map<Repository, OwlapiBasedJenaConnector> centralConnectors;
 
 	public DriverCachingJenaFactory(List<Repository> repositories,
-			Map<EntityDescriptor, OntologyStorageProperties> repositoryProperties,
+			Map<Repository, OntologyStorageProperties> repositoryProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		super(repositories, repositoryProperties, properties);
 		this.centralConnectors = new HashMap<>(repositories.size());
@@ -50,21 +51,21 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public StorageModule createStorageModule(EntityDescriptor repository,
+	public StorageModule createStorageModule(Repository repository,
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(repository, persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating caching Jena storage module.");
 		}
-		final StorageModule m = new OwlapiBasedCachingJenaModule(getRepository(repository),
-				persistenceProvider, this);
+		final StorageModule m = new OwlapiBasedCachingJenaModule(repository, persistenceProvider,
+				this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public JenaCachingStorageConnector createStorageConnector(EntityDescriptor repository,
+	public JenaCachingStorageConnector createStorageConnector(Repository repository,
 			boolean autoCommit) throws OntoDriverException {
 		ensureState(repository);
 		if (LOG.isLoggable(Level.FINER)) {
@@ -73,7 +74,7 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 		return createConnectorInternal(repository);
 	}
 
-	private synchronized JenaCachingStorageConnector createConnectorInternal(EntityDescriptor repository)
+	private synchronized JenaCachingStorageConnector createConnectorInternal(Repository repository)
 			throws OntoDriverException {
 		assert repository != null;
 		if (!centralConnectors.containsKey(repository)) {
@@ -85,7 +86,7 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 		return conn;
 	}
 
-	private void createCentralConnector(EntityDescriptor repository) throws OntoDriverException {
+	private void createCentralConnector(Repository repository) throws OntoDriverException {
 		final OntologyStorageProperties props = storageProperties.get(repository);
 		final JenaStorageType storageType = DriverJenaFactory.resolveStorageType(props);
 		JenaStorageConnector c = null;
@@ -104,9 +105,7 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 
 	@Override
 	public DriverStatement createStatement(JopaStatement statement) throws OntoDriverException {
-		if (statement == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(statement, ErrorUtils.constructNPXMessage("statement"));
 		return new OwlapiStatement(statement);
 	}
 }

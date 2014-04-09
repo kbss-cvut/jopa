@@ -28,7 +28,7 @@ public final class EntityOrigin {
 	public EntityOrigin(EntityDescriptor descriptor) {
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		this.repositoryId = descriptor.getRepository();
+		this.repositoryId = descriptor.getRepository().getId();
 		this.entityContext = descriptor.getEntityContext();
 	}
 

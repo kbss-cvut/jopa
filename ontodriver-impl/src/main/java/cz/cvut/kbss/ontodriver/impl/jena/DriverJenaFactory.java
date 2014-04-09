@@ -4,11 +4,11 @@ import java.io.File;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.ontodriver.Context;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -24,27 +24,26 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 	private static final String JDBC_SCHEME = "jdbc";
 
 	public DriverJenaFactory(List<Repository> repositories,
-			Map<EntityDescriptor, OntologyStorageProperties> repositoryProperties,
+			Map<Repository, OntologyStorageProperties> repositoryProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		super(repositories, repositoryProperties, properties);
 	}
 
 	@Override
-	public StorageModule createStorageModule(EntityDescriptor repository,
+	public StorageModule createStorageModule(Repository repository,
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(repository, persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage module.");
 		}
-		final StorageModule m = new OwlapiBasedJenaModule(getRepository(repository),
-				persistenceProvider, this);
+		final StorageModule m = new OwlapiBasedJenaModule(repository, persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public JenaStorageConnector createStorageConnector(EntityDescriptor repository, boolean autoCommit)
+	public JenaStorageConnector createStorageConnector(Repository repository, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(repository);
 		if (LOG.isLoggable(Level.FINER)) {
@@ -88,9 +87,7 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 	 * @return {@code JenaStorageType}
 	 */
 	public static JenaStorageType resolveStorageType(OntologyStorageProperties properties) {
-		if (properties == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(properties, ErrorUtils.constructNPXMessage("properties"));
 		final URI uri = properties.getPhysicalURI();
 		if (uri.getScheme().equals(JDBC_SCHEME)) {
 			return JenaStorageType.SDB;
@@ -114,9 +111,7 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 
 	@Override
 	public DriverStatement createStatement(JopaStatement statement) throws OntoDriverException {
-		if (statement == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(statement, ErrorUtils.constructNPXMessage("statement"));
 		return new OwlapiStatement(statement);
 	}
 }

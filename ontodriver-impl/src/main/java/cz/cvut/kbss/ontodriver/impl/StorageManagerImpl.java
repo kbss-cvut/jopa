@@ -9,8 +9,9 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.Repository;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -29,8 +30,8 @@ public class StorageManagerImpl extends StorageManager {
 	/** Repositories */
 	private List<Repository> repositories;
 	/** Storage modules */
-	private final Map<EntityDescriptor, StorageModule> modules;
-	private final Map<EntityDescriptor, StorageModule> modulesWithChanges;
+	private final Map<Repository, StorageModule> modules;
+	private final Map<Repository, StorageModule> modulesWithChanges;
 
 	/**
 	 * Constructor
@@ -62,7 +63,7 @@ public class StorageManagerImpl extends StorageManager {
 			// Just close the module, any pending changes will be rolled back
 			// implicitly
 			if (m != null) {
-				driver.getFactory(m.getRepositoryID()).releaseStorageModule(m);
+				driver.getFactory(m.getRepository()).releaseStorageModule(m);
 			}
 		}
 		super.close();
@@ -84,15 +85,15 @@ public class StorageManagerImpl extends StorageManager {
 		}
 		ensureState();
 		Objects.requireNonNull(statement, ErrorUtils.constructNPXMessage("statement"));
-		Objects.requireNonNull(statement.getRepository(),
+		Objects.requireNonNull(statement.getRepositoryId(),
 				ErrorUtils.constructNPXMessage("statement.getRepository"));
 
-		final StorageModule m = getModule(statement.getRepository());
+		final StorageModule m = getModule(statement.getRepositoryId().getRepository());
 		return m.executeStatement(statement);
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, EntityDescriptor repository) throws OntoDriverException {
+	public boolean contains(Object primaryKey, RepositoryID repository) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Checking whether repository " + repository
 					+ " contains entity with primary key " + primaryKey);
@@ -101,33 +102,33 @@ public class StorageManagerImpl extends StorageManager {
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
 
-		final StorageModule m = getModule(repository);
+		final StorageModule m = getModule(repository.getRepository());
 		return m.contains(primaryKey, repository);
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor repository)
+	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Retrieving entity with primary key " + primaryKey + " from repository "
-					+ repository);
+					+ descriptor);
 		}
 		ensureState();
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
-		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		final StorageModule module = getModule(repository);
-		final T entity = module.find(cls, primaryKey, repository);
+		final StorageModule module = getModule(descriptor.getRepository());
+		final T entity = module.find(cls, primaryKey, descriptor);
 		return entity;
 	}
 
 	@Override
-	public boolean isConsistent(EntityDescriptor repository) throws OntoDriverException {
+	public boolean isConsistent(RepositoryID repository) throws OntoDriverException {
 		ensureState();
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
 
-		final StorageModule m = getModule(repository);
+		final StorageModule m = getModule(repository.getRepository());
 		return m.isConsistent(repository);
 	}
 
@@ -137,61 +138,61 @@ public class StorageManagerImpl extends StorageManager {
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor repository)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		ensureState();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
-		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		final StorageModule m = getModule(repository);
-		m.loadFieldValue(entity, field, repository);
+		final StorageModule m = getModule(descriptor.getRepository());
+		m.loadFieldValue(entity, field, descriptor);
 	}
 
 	@Override
-	public <T> void merge(T entity, Field mergedField, EntityDescriptor repository)
+	public <T> void merge(T entity, Field mergedField, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Merging entity " + entity + ", field " + mergedField + " into repository "
-					+ repository);
+					+ descriptor);
 		}
 		ensureState();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(mergedField, ErrorUtils.constructNPXMessage("mergedField"));
-		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		final StorageModule module = getModule(repository);
-		module.merge(entity, mergedField, repository);
+		final StorageModule module = getModule(descriptor.getRepository());
+		module.merge(entity, mergedField, descriptor);
 		moduleChanged(module);
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, EntityDescriptor repository)
+	public <T> void persist(Object primaryKey, T entity, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.finer("Persisting entity into repository " + repository);
+			LOG.finer("Persisting entity into repository " + descriptor.getRepositoryUri());
 		}
 		ensureState();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		final StorageModule module = getModule(repository);
-		module.persist(primaryKey, entity, repository);
+		final StorageModule module = getModule(descriptor.getRepository());
+		module.persist(primaryKey, entity, descriptor);
 		moduleChanged(module);
 	}
 
 	@Override
-	public void remove(Object primaryKey, EntityDescriptor repository) throws OntoDriverException {
+	public void remove(Object primaryKey, EntityDescriptor descriptor) throws OntoDriverException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Removing entity with primary key " + primaryKey + " from repository "
-					+ repository);
+					+ descriptor.getRepositoryUri());
 		}
 		ensureState();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
-		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		StorageModule module = getModule(repository);
-		module.remove(primaryKey, repository);
+		StorageModule module = getModule(descriptor.getRepository());
+		module.remove(primaryKey, descriptor);
 		moduleChanged(module);
 	}
 
@@ -220,10 +221,10 @@ public class StorageManagerImpl extends StorageManager {
 
 	private void moduleChanged(StorageModule m) {
 		assert m != null;
-		modulesWithChanges.put(m.getRepositoryID(), m);
+		modulesWithChanges.put(m.getRepository(), m);
 	}
 
-	private StorageModule getModule(EntityDescriptor identifier) throws OntoDriverException {
+	private StorageModule getModule(Repository identifier) throws OntoDriverException {
 		assert identifier != null;
 
 		StorageModule m = modules.get(identifier);

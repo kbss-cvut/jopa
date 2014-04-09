@@ -13,7 +13,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverFactory;
@@ -40,7 +39,7 @@ public class OntoDriverImpl implements OntoDriver {
 	protected final Map<String, String> properties;
 	protected final Map<OntologyConnectorType, DriverFactory> factories;
 	private final Map<Integer, OntologyConnectorType> factoryTypes;
-	private final Map<EntityDescriptor, OntologyStorageProperties> storageProperties;
+	private final Map<Repository, OntologyStorageProperties> storageProperties;
 	/** Reference for easier access */
 	protected final List<Repository> repositories;
 	private boolean open;
@@ -130,10 +129,10 @@ public class OntoDriverImpl implements OntoDriver {
 	 *             If the repository id is unknown or there is no factory for
 	 *             its type
 	 */
-	public DriverFactory getFactory(EntityDescriptor repository) {
+	public DriverFactory getFactory(Repository repository) {
 		ensureOpen();
 		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
-		final Integer repoId = repository.getRepository();
+		final Integer repoId = repository.getId();
 		if (repoId < 0) {
 			throw new IllegalArgumentException("Unknown repository " + repository);
 		}
@@ -212,7 +211,7 @@ public class OntoDriverImpl implements OntoDriver {
 			}
 			repositories.add(r);
 			factoryTypes.put(r.getId(), p.getConnectorType());
-			storageProperties.put(r.createRepositoryID(false), p);
+			storageProperties.put(r, p);
 		}
 		// TODO
 		// OntologyProfileChecker.checkProfiles(contextsToProperties);
