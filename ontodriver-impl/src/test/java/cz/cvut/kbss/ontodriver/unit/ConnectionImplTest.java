@@ -36,6 +36,7 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.exceptions.RepositoryNotFoundException;
 import cz.cvut.kbss.ontodriver.impl.ConnectionImpl;
+import cz.cvut.kbss.ontodriver.impl.RepositoryImpl;
 import cz.cvut.kbss.ontodriver.utils.OWLClassA;
 
 public class ConnectionImplTest {
@@ -58,8 +59,8 @@ public class ConnectionImplTest {
 	public static void setUpBeforeClass() throws Exception {
 		repos = new ArrayList<>(4);
 		for (int i = 0; i < 4; i++) {
-			repos.add(new Repository(URI.create("http://krizik.felk.cvut.cz/jopa/connectiontest"
-					+ i)));
+			repos.add(new RepositoryImpl(URI
+					.create("http://krizik.felk.cvut.cz/jopa/connectiontest" + i)));
 		}
 		hasChangesField = ConnectionImpl.class.getDeclaredField("hasChanges");
 		hasChangesField.setAccessible(true);

@@ -18,8 +18,6 @@ import org.openrdf.repository.RepositoryException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 class CachingStorageProxy extends TransparentStorageProxy {
-	
-	// TODO The caching connector will have to be reworked. Each context will need its own model
 
 	private Model explicitModel;
 	private Model model;
@@ -42,40 +40,46 @@ class CachingStorageProxy extends TransparentStorageProxy {
 	}
 
 	@Override
-	public Model filter(Resource subject, URI predicate, Value object, boolean includeInferred) {
+	public Model filter(Resource subject, URI predicate, Value object, boolean includeInferred,
+			Set<URI> contexts) {
 		ensureOpen();
 		if (includeInferred) {
-			return model.filter(subject, predicate, object);
+			return model.filter(subject, predicate, object, SesameUtils.varargs(contexts));
 		} else {
-			return explicitModel.filter(subject, predicate, object);
+			return explicitModel.filter(subject, predicate, object, SesameUtils.varargs(contexts));
 		}
 	}
 
 	@Override
-	public void addStatements(Collection<Statement> statements) {
+	public void addStatements(Collection<Statement> statements, URI context) {
 		ensureOpen();
-		explicitModel.addAll(statements);
-		model.addAll(statements);
+		for (Statement stmt : statements) {
+			explicitModel.add(stmt.getSubject(), stmt.getPredicate(), stmt.getObject(), context);
+			model.add(stmt.getSubject(), stmt.getPredicate(), stmt.getObject(), context);
+		}
 	}
 
 	@Override
-	public void addStatement(Statement statement) {
+	public void addStatement(Statement statement, URI context) {
 		ensureOpen();
-		explicitModel.add(statement);
-		model.add(statement);
+		explicitModel.add(statement.getSubject(), statement.getPredicate(), statement.getObject(),
+				context);
+		model.add(statement.getSubject(), statement.getPredicate(), statement.getObject(), context);
 	}
 
 	@Override
-	public void removeStatements(Collection<Statement> statements) {
+	public void removeStatements(Collection<Statement> statements, URI context) {
 		ensureOpen();
-		explicitModel.removeAll(statements);
-		model.removeAll(statements);
+		for (Statement stmt : statements) {
+			explicitModel.remove(stmt.getSubject(), stmt.getPredicate(), stmt.getObject(), context);
+			model.remove(stmt.getSubject(), stmt.getPredicate(), stmt.getObject(), context);
+		}
 	}
 
 	@Override
 	public boolean contains(URI uri, Set<URI> contexts) {
 		ensureOpen();
-		final URI[] ctxs = varargs(contexts);
+		final URI[] ctxs = SesameUtils.varargs(contexts);
 		return explicitModel.contains(uri, null, null, ctxs)
 				|| explicitModel.contains(null, null, uri, ctxs);
 	}

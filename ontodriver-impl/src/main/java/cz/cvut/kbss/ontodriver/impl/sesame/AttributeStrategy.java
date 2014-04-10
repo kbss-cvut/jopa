@@ -14,8 +14,8 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 
-import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -85,8 +85,8 @@ abstract class AttributeStrategy {
 	 * @param value
 	 *            The value to save
 	 */
-	abstract <T> void save(URI primaryKey, Attribute<?, ?> att, Object value, URI context,
-			boolean removeOld) throws OntoDriverException;
+	abstract <T> void save(URI primaryKey, Attribute<?, ?> att, Object value, boolean removeOld)
+			throws OntoDriverException;
 
 	protected void addIndividualsForReferencedEntities(Collection<?> refs, URI context)
 			throws OntoDriverException {
@@ -113,7 +113,7 @@ abstract class AttributeStrategy {
 		return internal.getIdentifier(entity);
 	}
 
-	protected <T> T getJavaInstanceForSubject(Class<T> cls, URI subjectUri)
+	protected <T> T getJavaInstanceForSubject(Class<T> cls, URI subjectUri, URI context)
 			throws OntoDriverException {
 		assert cls != null;
 		assert subjectUri != null;
@@ -121,8 +121,8 @@ abstract class AttributeStrategy {
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("Getting " + subjectUri + " of " + cls);
 		}
-		final EntityDescriptor rid = internal.module.getRepository().createRepositoryID(false);
-		rid.addContexts(models.getContexts());
+		final EntityDescriptor rid = internal.module.getRepository().createDescriptor()
+				.setEntityContext(java.net.URI.create(context.stringValue()));
 		final IRI pk = IRI.create(subjectUri.toString());
 		final Object ob = internal.module.getEntityFromProviderCache(cls, pk, rid);
 		if (ob != null && cls.isAssignableFrom(ob.getClass())) {

@@ -37,6 +37,7 @@ import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassF;
+import cz.cvut.kbss.ontodriver.impl.RepositoryImpl;
 
 public class CacheManagerTest {
 
@@ -384,10 +385,10 @@ public class CacheManagerTest {
 
 	private static void initRepositories() {
 		repositories = new ArrayList<>(2);
-		final Repository rOne = new Repository(URI.create("http://localhost:8080/repoOne"));
+		final RepositoryImpl rOne = new RepositoryImpl(URI.create("http://localhost:8080/repoOne"));
 		rOne.addContext(CONTEXT_URI);
 		repositories.add(rOne);
-		final Repository rTwo = new Repository(URI.create("http://localhost:8080/repoTwo"));
+		final RepositoryImpl rTwo = new RepositoryImpl(URI.create("http://localhost:8080/repoTwo"));
 		rTwo.addContext(CONTEXT_URI);
 		rTwo.addContext(CONTEXT_TWO);
 		repositories.add(rTwo);

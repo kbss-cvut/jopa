@@ -442,10 +442,10 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 *             If an error occurs during load
 	 */
 	private <T> void loadEntityFromModel(T instance, URI uri, EntityType<T> entityType,
-			EntityDescriptor contexts) throws OntoDriverException {
+			EntityDescriptor descriptor) throws OntoDriverException {
 		try {
 			final SubjectModels sm = new SubjectModels(storage, uri, valueFactory,
-					contexts.getContexts());
+					descriptor.getContexts());
 			final TypesSpecification<?, ?> types = entityType.getTypes();
 			if (types != null && types.getFetchType() != FetchType.LAZY) {
 				typesHandler.load(instance, types, entityType, sm);

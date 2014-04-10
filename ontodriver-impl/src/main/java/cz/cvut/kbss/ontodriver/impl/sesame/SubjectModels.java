@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -7,31 +8,44 @@ import org.openrdf.model.Model;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 
-final class SubjectModels {
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 
-	// TODO Revisit the strategy of using this class in AttributeStrategies,
-	// since for saving the strategy might try to use instance of model but it
-	// will be null
+final class SubjectModels {
 
 	private final StorageProxy storage;
 	private final URI subject;
-	private final Set<java.net.URI> contexts;
-	private Set<URI> sesameContexts;
 	private final ValueFactory vf;
+	private final EntityDescriptor descriptor;
+
+	private Set<URI> sesameContexts;
 
 	private Model assertedModel;
 	private Model inferredModel;
 
-	public SubjectModels(StorageProxy storage, URI subject, ValueFactory valueFactory,
-			Set<java.net.URI> contexts) {
+	SubjectModels(StorageProxy storage, URI subject, ValueFactory valueFactory,
+			EntityDescriptor descriptor) {
 		this.storage = storage;
 		this.subject = subject;
-		this.contexts = contexts;
 		this.vf = valueFactory;
+		this.descriptor = descriptor;
 		init();
 	}
 
 	private void init() {
+		// If entity context or field context is null, it means search the whole
+		// repository
+		if (descriptor.getEntityContext() != null) {
+			this.sesameContexts = new HashSet<>(descriptor.getFieldContexts().size() + 1);
+			for (java.net.URI u : descriptor.getFieldContexts().values()) {
+				if (u == null) {
+					this.sesameContexts = Collections.emptySet();
+					break;
+				}
+				sesameContexts.add(vf.createURI(u.toString()));
+			}
+		} else {
+			this.sesameContexts = Collections.emptySet();
+		}
 		this.assertedModel = storage.filter(subject, null, null, false, sesameContexts);
 	}
 
@@ -46,21 +60,30 @@ final class SubjectModels {
 		return inferredModel;
 	}
 
-	Set<java.net.URI> getContexts() {
-		return contexts;
+	/**
+	 * Gets context to which value of the field with the specified name belongs.
+	 * </p>
+	 * 
+	 * If the descriptor does not explicitly specify field context, the one for
+	 * the entity is used (and therefore it may be also {@code null}).
+	 * 
+	 * @param fieldName
+	 *            Field name
+	 * @return Context URI or {@code null} if it is the default one
+	 */
+	URI getFieldContext(String fieldName) {
+		assert fieldName != null;
+		final java.net.URI u = descriptor.getFieldContext(fieldName);
+		return (u != null ? vf.createURI(u.toString()) : null);
 	}
 
-	Set<URI> getSesameContexts() {
-		if (sesameContexts == null) {
-			initSesameContexts();
-		}
-		return sesameContexts;
-	}
-
-	private void initSesameContexts() {
-		this.sesameContexts = new HashSet<>(contexts.size());
-		for (java.net.URI u : contexts) {
-			sesameContexts.add(vf.createURI(u.toString()));
-		}
+	/**
+	 * Gets context to which the entity represented by this descriptor belongs.
+	 * 
+	 * @return Context URI or {@code null} if it is the default one
+	 */
+	URI getEntityContext() {
+		return (descriptor.getEntityContext() != null ? vf.createURI(descriptor.getEntityContext()
+				.toString()) : null);
 	}
 }

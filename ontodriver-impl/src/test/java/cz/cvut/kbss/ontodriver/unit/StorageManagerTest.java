@@ -40,6 +40,7 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.impl.OntoDriverImpl;
+import cz.cvut.kbss.ontodriver.impl.RepositoryImpl;
 import cz.cvut.kbss.ontodriver.impl.StorageManagerImpl;
 import cz.cvut.kbss.ontodriver.utils.OWLClassA;
 
@@ -67,7 +68,8 @@ public class StorageManagerTest {
 	public static void setUpBeforeClass() throws Exception {
 		repositories = new ArrayList<>(4);
 		for (int i = 0; i < 4; i++) {
-			repositories.add(new Repository(URI.create("http://testing-repository.org/v/" + i)));
+			repositories
+					.add(new RepositoryImpl(URI.create("http://testing-repository.org/v/" + i)));
 		}
 	}
 

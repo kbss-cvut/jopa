@@ -33,6 +33,7 @@ import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageManager;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInitializationException;
 import cz.cvut.kbss.ontodriver.impl.OntoDriverImpl;
+import cz.cvut.kbss.ontodriver.impl.RepositoryImpl;
 import cz.cvut.kbss.ontodriver.utils.DriverFactoryStub;
 
 public class OntoDriverImplTest {
@@ -161,7 +162,7 @@ public class OntoDriverImplTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testGetFactoryUnknown() throws Exception {
-		final Repository r = new Repository(URI.create("http://unknown"));
+		final Repository r = new RepositoryImpl(URI.create("http://unknown"));
 		final DriverFactory f = driver.getFactory(r);
 		// This shouldn't be reached
 		assert f == null;

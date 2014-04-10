@@ -205,7 +205,7 @@ public class OntoDriverImpl implements OntoDriver {
 	private void resolveContexts(List<OntologyStorageProperties> storageProps) {
 		assert storageProps != null;
 		for (OntologyStorageProperties p : storageProps) {
-			final Repository r = new Repository(p.getPhysicalURI());
+			final RepositoryImpl r = new RepositoryImpl(p.getPhysicalURI());
 			if (p.getOntologyURI() != null) {
 				r.addContext(p.getOntologyURI());
 			}
