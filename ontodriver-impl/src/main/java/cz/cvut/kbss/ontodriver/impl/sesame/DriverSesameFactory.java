@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -17,31 +16,30 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class DriverSesameFactory extends DriverAbstractFactory {
 
-	private final Map<EntityDescriptor, SesameStorageConnectorImpl> centralConnectors;
+	private final Map<Repository, SesameStorageConnectorImpl> centralConnectors;
 
 	public DriverSesameFactory(List<Repository> repositories,
-			Map<EntityDescriptor, OntologyStorageProperties> repositoryProperties,
+			Map<Repository, OntologyStorageProperties> repositoryProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		super(repositories, repositoryProperties, properties);
 		this.centralConnectors = new HashMap<>(repositories.size());
 	}
 
 	@Override
-	public StorageModule createStorageModule(EntityDescriptor repository,
+	public StorageModule createStorageModule(Repository repository,
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(repository, persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Sesame storage module.");
 		}
-		final StorageModule m = new SesameStorageModule(getRepository(repository),
-				persistenceProvider, this);
+		final StorageModule m = new SesameStorageModule(repository, persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public SesameStorageConnector createStorageConnector(EntityDescriptor repository, boolean autoCommit)
+	public SesameStorageConnector createStorageConnector(Repository repository, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(repository);
 		if (LOG.isLoggable(Level.FINER)) {
@@ -70,7 +68,7 @@ public class DriverSesameFactory extends DriverAbstractFactory {
 		}
 	}
 
-	private SesameStorageConnector createConnectorImpl(EntityDescriptor repository, boolean autoCommit)
+	private SesameStorageConnector createConnectorImpl(Repository repository, boolean autoCommit)
 			throws OntoDriverException {
 		final OntologyStorageProperties props = storageProperties.get(repository);
 		assert props != null;

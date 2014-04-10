@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -32,13 +31,13 @@ import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStatement;
  */
 public class DriverOwlimFactory extends DriverAbstractFactory {
 
-	private final Map<EntityDescriptor, OwlapiBasedJenaConnector> centralConnectors;
+	private final Map<Repository, OwlapiBasedJenaConnector> centralConnectors;
 
 	public DriverOwlimFactory(List<Repository> repositories,
-			Map<EntityDescriptor, OntologyStorageProperties> repositoryProperties,
+			Map<Repository, OntologyStorageProperties> repositoryProperties,
 			Map<String, String> properties) throws OntoDriverException {
 		super(repositories, repositoryProperties, properties);
-		this.centralConnectors = new HashMap<EntityDescriptor, OwlapiBasedJenaConnector>();
+		this.centralConnectors = new HashMap<>();
 	}
 
 	@Override
@@ -53,21 +52,21 @@ public class DriverOwlimFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public StorageModule createStorageModule(EntityDescriptor repository,
+	public StorageModule createStorageModule(Repository repository,
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(repository, persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating caching Jena storage module.");
 		}
-		final StorageModule m = new OwlapiBasedCachingJenaModule(getRepository(repository),
-				persistenceProvider, this);
+		final StorageModule m = new OwlapiBasedCachingJenaModule(repository, persistenceProvider,
+				this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public StorageConnector createStorageConnector(EntityDescriptor repository, boolean autoCommit)
+	public StorageConnector createStorageConnector(Repository repository, boolean autoCommit)
 			throws OntoDriverException {
 		ensureState(repository);
 		if (LOG.isLoggable(Level.FINER)) {
@@ -76,7 +75,7 @@ public class DriverOwlimFactory extends DriverAbstractFactory {
 		return createConnectorInternal(repository);
 	}
 
-	private synchronized OwlapiBasedJenaConnector createConnectorInternal(EntityDescriptor repository)
+	private synchronized OwlapiBasedJenaConnector createConnectorInternal(Repository repository)
 			throws OntoDriverException {
 		assert repository != null;
 		if (!centralConnectors.containsKey(repository)) {
@@ -88,7 +87,7 @@ public class DriverOwlimFactory extends DriverAbstractFactory {
 		return conn;
 	}
 
-	private void createCentralConnector(EntityDescriptor repository) throws OntoDriverException {
+	private void createCentralConnector(Repository repository) throws OntoDriverException {
 		final OntologyStorageProperties p = storageProperties.get(repository);
 		if (!(p instanceof OwlimOntologyStorageProperties)) {
 			throw new OntoDriverException(

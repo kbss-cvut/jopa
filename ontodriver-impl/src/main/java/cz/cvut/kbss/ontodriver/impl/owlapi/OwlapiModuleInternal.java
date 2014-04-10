@@ -41,6 +41,7 @@ import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -98,21 +99,19 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public boolean containsEntity(Object primaryKey, EntityDescriptor contexts)
+	public boolean containsEntity(Object primaryKey, RepositoryID contexts)
 			throws OntoDriverException {
-		assert primaryKey != null : "Null passed to containsEntity!";
-		assert contexts.getContexts().size() == 1;
+		assert primaryKey != null : "argument contexts is null";
 
 		final IRI iri = getPrimaryKeyAsIri(primaryKey);
 		return isInOntologySignature(iri, true);
 	}
 
 	@Override
-	public <T> T findEntity(Class<T> cls, Object primaryKey, EntityDescriptor contexts)
+	public <T> T findEntity(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		assert cls != null : "argument cls is null";
 		assert primaryKey != null : "argument primaryKey is null";
-		assert contexts.getContexts().size() == 1;
 
 		final IRI iri = getPrimaryKeyAsIri(primaryKey);
 		if (!isInOntologySignature(iri, true)) {
@@ -123,18 +122,17 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public boolean isConsistent(EntityDescriptor repository) throws OntoDriverException {
-		assert repository.getContexts().size() == 1;
+	public boolean isConsistent(RepositoryID repository) throws OntoDriverException {
+		assert repository != null : "argument repository is null";
 
 		return reasoner.isConsistent();
 	}
 
 	@Override
-	public <T> void persistEntity(Object primaryKey, T entity, EntityDescriptor context)
+	public <T> void persistEntity(Object primaryKey, T entity, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		checkStatus();
 		assert entity != null : "argument entity is null";
-		assert context.getContexts().size() == 1;
 
 		final Class<?> cls = entity.getClass();
 		IRI id = getPrimaryKeyAsIri(primaryKey);
@@ -144,7 +142,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		} else {
 			if (isInOntologySignature(id, true)) {
 				throw new OWLEntityExistsException("Entity with primary key " + id
-						+ " already exists in context " + context);
+						+ " already exists in context " + descriptor);
 			}
 			storageModule.incrementPrimaryKeyCounter();
 		}
@@ -156,11 +154,10 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public <T> void mergeEntity(T entity, Field mergedField, EntityDescriptor context)
+	public <T> void mergeEntity(T entity, Field mergedField, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		checkStatus();
 		assert entity != null : "argument entity is null";
-		assert context.getContexts().size() == 1;
 
 		final IRI id = getIdentifier(entity);
 		if (!isInOntologySignature(id, true)) {
@@ -202,10 +199,10 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public void removeEntity(Object primaryKey, EntityDescriptor context) throws OntoDriverException {
+	public void removeEntity(Object primaryKey, EntityDescriptor descriptor)
+			throws OntoDriverException {
 		checkStatus();
 		assert primaryKey != null : "argument primaryKey is null";
-		assert context.getContexts().size() == 1;
 
 		OWLEntityRemover r = new OWLEntityRemover(ontologyManager,
 				Collections.singleton(workingOntology));
@@ -216,11 +213,10 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor context)
+	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		assert entity != null : "argument entity is null";
 		assert field != null : "argument field is null";
-		assert context.getContexts().size() == 1;
 
 		final Class<?> cls = entity.getClass();
 		final EntityType<?> et = getEntityType(cls);

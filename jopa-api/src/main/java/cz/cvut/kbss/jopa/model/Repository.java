@@ -89,6 +89,15 @@ public final class Repository {
 		return new RepositoryID(this);
 	}
 
+	/**
+	 * Creates new entity descriptor from this repository.
+	 * 
+	 * @return New entity descriptor
+	 */
+	public EntityDescriptor createDescriptor() {
+		return new EntityDescriptor(this);
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

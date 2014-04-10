@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -58,7 +58,7 @@ public class DriverFactoryStub implements DriverFactory {
 	}
 
 	@Override
-	public StorageModule createStorageModule(EntityDescriptor repository,
+	public StorageModule createStorageModule(Repository repository,
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
 		// TODO Auto-generated method stub
@@ -71,7 +71,7 @@ public class DriverFactoryStub implements DriverFactory {
 	}
 
 	@Override
-	public StorageConnector createStorageConnector(EntityDescriptor repository, boolean autoCommit)
+	public StorageConnector createStorageConnector(Repository repository, boolean autoCommit)
 			throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return null;
