@@ -18,14 +18,14 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
  */
 class SingularAnnotationStrategy extends SingularDataPropertyStrategy {
 
-	protected SingularAnnotationStrategy(SesameModuleInternal internal, SubjectModels models) {
+	protected SingularAnnotationStrategy(SesameModuleInternal internal, SubjectModels<?> models) {
 		super(internal, models);
 	}
 
 	@Override
-	<T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad)
-			throws IllegalArgumentException, IllegalAccessException {
-		loadAnnotationProperty(entity, uri, att);
+	<T> void load(Attribute<?, ?> att, boolean alwaysLoad) throws IllegalArgumentException,
+			IllegalAccessException {
+		loadAnnotationProperty(att);
 	}
 
 	/**
@@ -40,10 +40,12 @@ class SingularAnnotationStrategy extends SingularDataPropertyStrategy {
 	 * @throws IllegalAccessException
 	 * @throws IllegalArgumentException
 	 */
-	private <T> void loadAnnotationProperty(T instance, URI uri, Attribute<?, ?> property)
+	private <T> void loadAnnotationProperty(Attribute<?, ?> property)
 			throws IllegalArgumentException, IllegalAccessException {
 		final URI annotationProperty = getAddressAsSesameUri(property.getIRI());
-		final Model res = filter(uri, annotationProperty, null, property.isInferred());
+		final URI ctx = models.getFieldContext(property.getName());
+		final Model res = filter(models.primaryKey, annotationProperty, null,
+				property.isInferred(), ctx);
 		Object value = null;
 		URI datatype = null;
 		for (Statement stmt : res) {
@@ -69,7 +71,7 @@ class SingularAnnotationStrategy extends SingularDataPropertyStrategy {
 					+ ". The declared class is " + value.getClass());
 		}
 		if (value != null) {
-			property.getJavaField().set(instance, value);
+			property.getJavaField().set(models.entity, value);
 		}
 	}
 }

@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,8 +19,9 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -71,38 +73,39 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	@Override
-	public boolean containsEntity(Object primaryKey, EntityDescriptor contexts)
+	public boolean containsEntity(Object primaryKey, RepositoryID contexts)
 			throws OntoDriverException {
 		assert primaryKey != null : "argument primaryKey is null";
 		final URI uri = getAddressAsSesameUri(primaryKey);
-		return isInOntologySignature(uri, contexts);
+		return isInOntologySignature(uri, asSesameUris(contexts.getContexts()));
 	}
 
 	@Override
-	public <T> T findEntity(Class<T> cls, Object primaryKey, EntityDescriptor contexts)
+	public <T> T findEntity(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		assert cls != null : "argument cls is null";
 		assert primaryKey != null : "argument primaryKey is null";
 
 		final URI uri = getAddressAsSesameUri(primaryKey);
-		if (!isInOntologySignature(uri, contexts)) {
+		final URI ctx = getAddressAsSesameUri(descriptor.getEntityContext());
+		if (!isInOntologySignature(uri, Collections.singleton(ctx))) {
 			return null;
 		}
-		final T entity = loadEntity(cls, uri, contexts);
+		final T entity = loadEntity(cls, uri, descriptor);
 
 		assert entity != null;
 		return entity;
 	}
 
 	@Override
-	public boolean isConsistent(EntityDescriptor contexts) throws OntoDriverException {
+	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException {
 		assert contexts != null;
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public <T> void persistEntity(Object primaryKey, T entity, EntityDescriptor contexts)
+	public <T> void persistEntity(Object primaryKey, T entity, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		assert entity != null : "argument entity is null";
 
@@ -113,23 +116,25 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		} else {
 			module.incrementPrimaryKeyCounter();
 		}
-		if (isInOntologySignature(uri, contexts)) {
+		final URI ctx = getAddressAsSesameUri(descriptor.getEntityContext());
+		if (isInOntologySignature(uri, Collections.singleton(ctx))) {
 			throw new OWLEntityExistsException("Entity with primary key " + uri
-					+ " already exists in one of contexts " + contexts);
+					+ " already exists in one of contexts " + descriptor);
 		}
-		addInstanceToOntology(uri, entityType, contexts);
-		saveEntityAttributes(entity, uri, entityType, contexts);
+		addInstanceToOntology(uri, entityType, descriptor);
+		saveEntityAttributes(entity, uri, entityType, descriptor);
 
 		temporaryIndividuals.remove(uri);
 	}
 
 	@Override
-	public <T> void mergeEntity(T entity, Field mergedField, EntityDescriptor contexts)
+	public <T> void mergeEntity(T entity, Field mergedField, EntityDescriptor descriptor)
 			throws OntoDriverException {
 		assert entity != null : "argument entity is null";
 
 		final URI uri = getIdentifier(entity);
-		if (!isInOntologySignature(uri, contexts)) {
+		final URI entityContext = getAddressAsSesameUri(descriptor.getEntityContext());
+		if (!isInOntologySignature(uri, Collections.singleton(entityContext))) {
 			throw new OntoDriverException(new IllegalArgumentException("The entity " + entity
 					+ " is not persistent within this context."));
 		}
@@ -144,9 +149,9 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		final PropertiesSpecification<?, ?> ps = et.getProperties();
 		try {
 			// Get context URI
-			final URI ctx = getAddressAsSesameUri(contexts.getContexts().isEmpty() ? null
-					: contexts.getContexts().iterator().next());
-			
+			final SubjectModels<T> models = new SubjectModels<T>(storage, uri, entity,
+					valueFactory, descriptor);
+
 			if (ts != null && ts.getJavaField().equals(mergedField)) {
 				typesHandler.save(entity, uri, ts, et, ctx, true);
 			} else if (ps != null && ps.getJavaField().equals(mergedField)) {
@@ -161,7 +166,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	@Override
-	public void removeEntity(Object primaryKey, EntityDescriptor contexts) throws OntoDriverException {
+	public void removeEntity(Object primaryKey, EntityDescriptor contexts)
+			throws OntoDriverException {
 		assert primaryKey != null : "argument primaryKey is null";
 
 		final URI uri = getAddressAsSesameUri(primaryKey);
@@ -389,9 +395,9 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 * @param uri
 	 * @return
 	 */
-	private boolean isInOntologySignature(URI uri, EntityDescriptor contexts) {
+	private boolean isInOntologySignature(URI uri, Set<URI> contexts) {
 		assert uri != null : "argument uri is null";
-		final boolean inModel = storage.contains(uri, asSesameUris(contexts.getContexts()));
+		final boolean inModel = storage.contains(uri, contexts);
 		return (inModel && !temporaryIndividuals.contains(uri));
 	}
 
@@ -406,7 +412,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 * @throws OntoDriverException
 	 *             If an error occurs during load
 	 */
-	<T> T loadEntity(Class<T> cls, URI uri, EntityDescriptor contexts) throws OntoDriverException {
+	<T> T loadEntity(Class<T> cls, URI uri, EntityDescriptor descriptor) throws OntoDriverException {
 		assert cls != null;
 		assert uri != null;
 
@@ -425,7 +431,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			throw new OntoDriverException("Unable to instantiate class " + cls, e);
 		}
 		SesameUtils.setEntityIdentifier(type, instance, uri);
-		loadEntityFromModel(instance, uri, type, contexts);
+		loadEntityFromModel(instance, uri, type, descriptor);
 		return instance;
 	}
 
@@ -444,8 +450,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private <T> void loadEntityFromModel(T instance, URI uri, EntityType<T> entityType,
 			EntityDescriptor descriptor) throws OntoDriverException {
 		try {
-			final SubjectModels sm = new SubjectModels(storage, uri, valueFactory,
-					descriptor.getContexts());
+			final SubjectModels<T> sm = new LoadingSubjectModels<T>(storage, uri, instance,
+					valueFactory, descriptor);
 			final TypesSpecification<?, ?> types = entityType.getTypes();
 			if (types != null && types.getFetchType() != FetchType.LAZY) {
 				typesHandler.load(instance, types, entityType, sm);
@@ -456,7 +462,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 				propertiesHandler.load(instance, properties, entityType, sm);
 			}
 			for (Attribute<?, ?> att : entityType.getAttributes()) {
-				loadReference(instance, uri, att, sm, false);
+				loadReference(att, sm, false);
 			}
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new OntoDriverException("Exception caught when loading attributes of entity "
@@ -479,16 +485,16 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 *            lazily loaded
 	 * @throws OntoDriverException
 	 */
-	private <T> void loadReference(T entity, URI uri, Attribute<?, ?> attribute,
-			SubjectModels models, boolean alwaysLoad) throws OntoDriverException {
+	private <T> void loadReference(Attribute<?, ?> attribute, SubjectModels<T> models,
+			boolean alwaysLoad) throws OntoDriverException {
 		try {
 			final AttributeStrategy strategy = AttributeStrategyFactory.createStrategy(attribute,
 					this, models);
-			strategy.load(entity, uri, attribute, alwaysLoad);
+			strategy.load(attribute, alwaysLoad);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new OntoDriverException(e);
 		}
-		ICValidationUtils.validateIntegrityConstraints(entity, uri, attribute);
+		ICValidationUtils.validateIntegrityConstraints(models.entity, models.primaryKey, attribute);
 	}
 
 	/**
@@ -540,6 +546,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private <T> void saveEntityAttributes(T entity, URI primaryKey, EntityType<T> entityType,
 			EntityDescriptor context) throws OntoDriverException {
 		try {
+			// TODO Resolve types and properties context
 			final URI ctx = getAddressAsSesameUri(context.getFirstContext());
 			final TypesSpecification<?, ?> types = entityType.getTypes();
 			if (types != null) {

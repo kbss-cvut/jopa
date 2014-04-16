@@ -86,9 +86,10 @@ class PropertiesHandler {
 	 * @throws IllegalAccessException
 	 */
 	<T> void load(T entity, PropertiesSpecification<?, ?> att, EntityType<T> entityType,
-			SubjectModels models) throws IllegalArgumentException, IllegalAccessException {
-		final Model m = att.isInferred() ? models.getInferredModel() : models.getAssertedModel();
-		loadImpl(entity, att, entityType, m);
+			SubjectModels<T> models) throws IllegalArgumentException, IllegalAccessException {
+		final Model statements = models.filter(models.primaryKey, null, null, att.isInferred(),
+				models.getFieldContext(att.getJavaField().getName()));
+		loadImpl(entity, att, entityType, statements);
 	}
 
 	/**

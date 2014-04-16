@@ -1,63 +1,45 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
 
-final class SubjectModels {
+class SubjectModels<T> {
 
-	private final StorageProxy storage;
-	private final URI subject;
-	private final ValueFactory vf;
-	private final EntityDescriptor descriptor;
+	protected final StorageProxy storage;
+	protected final URI primaryKey;
+	protected final T entity;
+	protected final ValueFactory vf;
+	protected final EntityDescriptor descriptor;
 
-	private Set<URI> sesameContexts;
-
-	private Model assertedModel;
-	private Model inferredModel;
-
-	SubjectModels(StorageProxy storage, URI subject, ValueFactory valueFactory,
+	SubjectModels(StorageProxy storage, URI primaryKey, T entity, ValueFactory valueFactory,
 			EntityDescriptor descriptor) {
 		this.storage = storage;
-		this.subject = subject;
+		this.primaryKey = primaryKey;
+		this.entity = entity;
 		this.vf = valueFactory;
 		this.descriptor = descriptor;
 		init();
 	}
 
-	private void init() {
-		// If entity context or field context is null, it means search the whole
-		// repository
-		if (descriptor.getEntityContext() != null) {
-			this.sesameContexts = new HashSet<>(descriptor.getFieldContexts().size() + 1);
-			for (java.net.URI u : descriptor.getFieldContexts().values()) {
-				if (u == null) {
-					this.sesameContexts = Collections.emptySet();
-					break;
-				}
-				sesameContexts.add(vf.createURI(u.toString()));
-			}
-		} else {
-			this.sesameContexts = Collections.emptySet();
-		}
-		this.assertedModel = storage.filter(subject, null, null, false, sesameContexts);
+	protected void init() {
+		// Empty implementation
 	}
 
-	Model getAssertedModel() {
-		return assertedModel;
+	protected Model filter(Resource subject, URI predicate, Value object, boolean includeInferred,
+			Set<URI> contexts) {
+		return storage.filter(subject, predicate, object, includeInferred, contexts);
 	}
 
-	Model getInferredModel() {
-		if (inferredModel == null) {
-			this.inferredModel = storage.filter(subject, null, null, true, sesameContexts);
-		}
-		return inferredModel;
+	protected Model filter(Resource subject, URI predicate, Value object, boolean includeInferred,
+			URI context) {
+		return storage.filter(subject, predicate, object, includeInferred, context);
 	}
 
 	/**

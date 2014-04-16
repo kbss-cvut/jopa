@@ -20,28 +20,27 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  */
 class SingularObjectPropertyStrategy extends AttributeStrategy {
 
-	protected SingularObjectPropertyStrategy(SesameModuleInternal internal, SubjectModels models) {
+	protected SingularObjectPropertyStrategy(SesameModuleInternal internal, SubjectModels<?> models) {
 		super(internal, models);
 	}
 
 	@Override
-	<T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad)
-			throws IllegalArgumentException, IllegalAccessException, OntoDriverException {
+	<T> void load(Attribute<?, ?> att, boolean alwaysLoad) throws IllegalArgumentException,
+			IllegalAccessException, OntoDriverException {
 		if (!alwaysLoad && att.getFetchType() == FetchType.LAZY) {
 			return;
 		}
-		loadObjectProperty(entity, uri, att);
+		loadObjectProperty(att);
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("Fetched property '" + att.getIRI() + "' into field " + att.getJavaField()
-					+ "' of object " + uri);
+					+ "' of object " + models.primaryKey);
 		}
 	}
 
 	@Override
-	<T> void save(URI primaryKey, Attribute<?, ?> att, Object value, URI context, boolean removeOld)
-			throws OntoDriverException {
+	<T> void save(Attribute<?, ?> att, Object value, boolean removeOld) throws OntoDriverException {
 		final URI attUri = getAddressAsSesameUri(att.getIRI());
-		saveObjectProperty(primaryKey, attUri, value, context, removeOld);
+		saveObjectProperty(attUri, value, att, removeOld);
 	}
 
 	/**
@@ -58,10 +57,12 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 	 * @throws IllegalAccessException
 	 * @throws IllegalArgumentException
 	 */
-	private <T> void loadObjectProperty(T instance, URI uri, Attribute<?, ?> property)
-			throws OntoDriverException, IllegalArgumentException, IllegalAccessException {
+	private <T> void loadObjectProperty(Attribute<?, ?> property) throws OntoDriverException,
+			IllegalArgumentException, IllegalAccessException {
 		final URI propertyUri = getAddressAsSesameUri(property.getIRI());
-		URI objectUri = getObjectPropertyValue(uri, propertyUri, property.isInferred(), true);
+		final URI ctx = models.getFieldContext(property.getName());
+		URI objectUri = getObjectPropertyValue(models.primaryKey, propertyUri,
+				property.isInferred(), ctx);
 		if (objectUri == null) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.finer("Value of object property " + property.getIRI()
@@ -69,26 +70,28 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 			}
 			return;
 		}
-		final Object value = getJavaInstanceForSubject(property.getJavaType(), objectUri);
+		final Object value = getJavaInstanceForSubject(property.getJavaType(), objectUri, ctx);
 		if (value != null) {
-			property.getJavaField().set(instance, value);
+			property.getJavaField().set(models.entity, value);
 		}
 	}
 
-	private void saveObjectProperty(URI subject, URI property, Object value, URI context,
+	private void saveObjectProperty(URI property, Object value, Attribute<?, ?> att,
 			boolean removeOld) throws OntoDriverException {
+		final URI ctx = models.getFieldContext(att.getName());
 		if (removeOld) {
-			removeOldObjectPropertyValues(subject, property, context);
+			removeOldObjectPropertyValues(models.primaryKey, property, ctx);
 		}
 		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("setObjectProperty '" + property + "' of " + subject + " to " + value);
+			LOG.finest("setObjectProperty '" + property + "' of " + models.primaryKey + " to "
+					+ value);
 		}
 		if (value != null) {
-			addIndividualsForReferencedEntities(Collections.singletonList(value), context);
+			addIndividualsForReferencedEntities(Collections.singletonList(value), ctx);
 			final URI uri = getIdentifier(value);
 			assert uri != null;
-			final Statement stmt = valueFactory.createStatement(subject, property, uri);
-			addStatement(stmt, context);
+			final Statement stmt = valueFactory.createStatement(models.primaryKey, property, uri);
+			addStatement(stmt, ctx);
 		}
 	}
 }

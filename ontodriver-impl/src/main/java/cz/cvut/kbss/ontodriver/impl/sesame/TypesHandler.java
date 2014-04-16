@@ -32,17 +32,15 @@ class TypesHandler {
 	}
 
 	<T> void load(T entity, URI entityUri, TypesSpecification<?, ?> types, EntityType<T> et,
-			Set<URI> contexts) throws IllegalArgumentException, IllegalAccessException {
-		final Model m = storage.filter(entityUri, RDF.TYPE, null, types.isInferred(), contexts);
+			URI context) throws IllegalArgumentException, IllegalAccessException {
+		final Model m = storage.filter(entityUri, RDF.TYPE, null, types.isInferred(), context);
 		loadImpl(entity, types, et, m);
 	}
 
 	<T> void load(T entity, TypesSpecification<?, ?> types, EntityType<T> entityType,
-			SubjectModels statements) throws IllegalArgumentException, IllegalAccessException {
-		final Model m = types.isInferred() ? statements.getInferredModel() : statements
-				.getAssertedModel();
-		final Model res = m.filter(null, RDF.TYPE, null,
-				SesameUtils.varargs(statements.getSesameContexts()));
+			SubjectModels<T> statements) throws IllegalArgumentException, IllegalAccessException {
+		final Model res = statements.filter(null, RDF.TYPE, null, types.isInferred(),
+				statements.getFieldContext(types.getJavaField().getName()));
 		loadImpl(entity, types, entityType, res);
 	}
 

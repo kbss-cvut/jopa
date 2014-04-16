@@ -35,13 +35,33 @@ interface StorageProxy extends Closeable {
 	 *            Object
 	 * @param includeInferred
 	 *            Whether inferred statements should be included
-	 * @param contexts
-	 *            Contexts to which the search shall be restricted. If the set
-	 *            is empty, the search is performed on the whole repository
+	 * @param context
+	 *            Context to which the search shall be restricted. If it is
+	 *            {@code null}, the whole repository is searched
 	 * @return A model containing the resulting statements
 	 */
 	public Model filter(Resource subject, URI predicate, Value object, boolean includeInferred,
-			Set<URI> contexts);
+			URI context);
+
+	/**
+	 * Filter repository according to the subject, predicate and object.
+	 * 
+	 * @param subject
+	 *            Subject
+	 * @param predicate
+	 *            Property
+	 * @param object
+	 *            Object
+	 * @param includeInferred
+	 *            Whether inferred statements should be included
+	 * @param contexts
+	 *            Contexts to which the search shall be restricted. If the
+	 *            collection is empty, the search is performed on the whole
+	 *            repository
+	 * @return A model containing the resulting statements
+	 */
+	public Model filter(Resource subject, URI predicate, Value object, boolean includeInferred,
+			Collection<URI> contexts);
 
 	/**
 	 * Adds statements to the storage.

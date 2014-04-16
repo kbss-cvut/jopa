@@ -41,7 +41,18 @@ class CachingStorageProxy extends TransparentStorageProxy {
 
 	@Override
 	public Model filter(Resource subject, URI predicate, Value object, boolean includeInferred,
-			Set<URI> contexts) {
+			URI context) {
+		ensureOpen();
+		if (includeInferred) {
+			return model.filter(subject, predicate, object, context);
+		} else {
+			return explicitModel.filter(subject, predicate, object, context);
+		}
+	}
+
+	@Override
+	public Model filter(Resource subject, URI predicate, Value object, boolean includeInferred,
+			Collection<URI> contexts) {
 		ensureOpen();
 		if (includeInferred) {
 			return model.filter(subject, predicate, object, SesameUtils.varargs(contexts));

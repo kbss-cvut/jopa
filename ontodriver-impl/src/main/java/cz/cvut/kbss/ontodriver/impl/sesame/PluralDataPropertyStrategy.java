@@ -21,23 +21,24 @@ import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
  */
 class PluralDataPropertyStrategy extends AttributeStrategy {
 
-	protected PluralDataPropertyStrategy(SesameModuleInternal internal, SubjectModels models) {
+	protected PluralDataPropertyStrategy(SesameModuleInternal internal, SubjectModels<?> models) {
 		super(internal, models);
 	}
 
 	@Override
-	<T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad) {
+	<T> void load(Attribute<?, ?> att, boolean alwaysLoad) {
 		throw new NotYetImplementedException("Collection data properties are not implemented yet.");
 	}
 
 	@Override
-	<T> void save(URI primaryKey, Attribute<?, ?> att, Object value, URI context, boolean removeOld) {
+	<T> void save(Attribute<?, ?> att, Object value, boolean removeOld) {
 		assert att instanceof PluralAttribute<?, ?, ?>;
 		final PluralAttribute<?, ?, ?> pa = (PluralAttribute<?, ?, ?>) att;
 		final URI attUri = getAddressAsSesameUri(pa.getIRI());
+		final URI attCtx = models.getFieldContext(att.getName());
 		switch (pa.getCollectionType()) {
 		case SET:
-			saveDataPropertyValues(primaryKey, attUri, value, context, removeOld);
+			saveDataPropertyValues(models.primaryKey, attUri, value, attCtx, removeOld);
 			break;
 		case LIST:
 		case MAP:

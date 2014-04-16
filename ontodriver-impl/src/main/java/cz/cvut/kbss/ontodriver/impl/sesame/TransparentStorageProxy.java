@@ -68,7 +68,20 @@ class TransparentStorageProxy implements StorageProxy {
 
 	@Override
 	public Model filter(Resource subject, URI predicate, Value object, boolean includeInferred,
-			Set<URI> contexts) {
+			URI context) {
+		ensureOpen();
+		RepositoryResult<Statement> rr;
+		try {
+			rr = conn.getStatements(subject, predicate, object, includeInferred, context);
+			return Iterations.addAll(rr, new LinkedHashModel());
+		} catch (RepositoryException e) {
+			throw new SesameModuleException(e);
+		}
+	}
+
+	@Override
+	public Model filter(Resource subject, URI predicate, Value object, boolean includeInferred,
+			Collection<URI> contexts) {
 		ensureOpen();
 		RepositoryResult<Statement> rr;
 		try {

@@ -18,20 +18,20 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
  */
 public class SingularDataPropertyStrategy extends AttributeStrategy {
 
-	protected SingularDataPropertyStrategy(SesameModuleInternal internal, SubjectModels models) {
+	protected SingularDataPropertyStrategy(SesameModuleInternal internal, SubjectModels<?> models) {
 		super(internal, models);
 	}
 
 	@Override
-	<T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad)
-			throws IllegalAccessException, IllegalArgumentException {
-		loadDataProperty(entity, uri, att);
+	<T> void load(Attribute<?, ?> att, boolean alwaysLoad) throws IllegalAccessException,
+			IllegalArgumentException {
+		loadDataProperty(att);
 	}
 
 	@Override
-	<T> void save(URI primaryKey, Attribute<?, ?> att, Object value, URI context, boolean removeOld) {
+	<T> void save(Attribute<?, ?> att, Object value, boolean removeOld) {
 		final URI attUri = getAddressAsSesameUri(att.getIRI());
-		saveDataProperty(primaryKey, attUri, value, context, removeOld);
+		saveDataProperty(attUri, value, att, removeOld);
 	}
 
 	/**
@@ -46,10 +46,12 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 	 * @throws IllegalAccessException
 	 * @throws IllegalArgumentException
 	 */
-	private <T> void loadDataProperty(T instance, URI uri, Attribute<?, ?> property)
-			throws IllegalArgumentException, IllegalAccessException {
+	private <T> void loadDataProperty(Attribute<?, ?> property) throws IllegalArgumentException,
+			IllegalAccessException {
+		final URI subjectUri = models.primaryKey;
 		final URI propertyUri = getAddressAsSesameUri(property.getIRI());
-		final Model res = filter(uri, propertyUri, null, property.isInferred());
+		final URI ctx = models.getFieldContext(property.getName());
+		final Model res = filter(subjectUri, propertyUri, null, property.isInferred(), ctx);
 		Object value = null;
 		URI datatype = null;
 		for (Statement stmt : res) {
@@ -73,32 +75,32 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 					+ ". The declared class is " + value.getClass());
 		}
 		if (value != null) {
-			property.getJavaField().set(instance, value);
+			property.getJavaField().set(models.entity, value);
 		}
 	}
 
 	/**
 	 * Saves data property value for the specified subject. </p>
 	 * 
-	 * This method also removes any previous values of the property.
-	 * 
-	 * @param subject
-	 *            Subject URI
 	 * @param property
 	 *            Property URI
 	 * @param value
 	 *            Property value
+	 * @param att
+	 *            Attribute descriptor
+	 * @param removeOld
+	 *            Whether to remove any old values of the specified attribute
 	 */
-	private void saveDataProperty(URI subject, URI property, Object value, URI context,
-			boolean removeOld) {
+	private void saveDataProperty(URI property, Object value, Attribute<?, ?> att, boolean removeOld) {
+		final URI ctx = models.getFieldContext(att.getName());
 		if (removeOld) {
-			removeOldDataPropertyValues(subject, property, context);
+			removeOldDataPropertyValues(models.primaryKey, property, ctx);
 		}
 		if (value == null) {
 			return;
 		}
 		Literal lit = SesameUtils.createDataPropertyLiteral(value, lang, valueFactory);
-		final Statement stmt = valueFactory.createStatement(subject, property, lit);
-		addStatement(stmt, context);
+		final Statement stmt = valueFactory.createStatement(models.primaryKey, property, lit);
+		addStatement(stmt, ctx);
 	}
 }

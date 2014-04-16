@@ -1,7 +1,6 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,10 +37,9 @@ abstract class AttributeStrategy {
 	private final SesameModuleInternal internal;
 	protected String lang;
 	protected ValueFactory valueFactory;
-	protected StorageProxy storage;
-	protected SubjectModels models;
+	protected SubjectModels<?> models;
 
-	protected AttributeStrategy(SesameModuleInternal internal, SubjectModels models) {
+	protected AttributeStrategy(SesameModuleInternal internal, SubjectModels<?> models) {
 		this.internal = internal;
 		this.models = models;
 		init();
@@ -50,16 +48,11 @@ abstract class AttributeStrategy {
 	private void init() {
 		this.lang = internal.getLang();
 		this.valueFactory = internal.getValueFactory();
-		this.storage = internal.getStorage();
 	}
 
 	/**
 	 * Loads the specified attribute value for the specified entity.
 	 * 
-	 * @param entity
-	 *            The target entity
-	 * @param uri
-	 *            Entity primary key
 	 * @param att
 	 *            The attribute to load
 	 * @param alwaysLoad
@@ -68,16 +61,12 @@ abstract class AttributeStrategy {
 	 * @param contexts
 	 *            Contexts which to search
 	 */
-	abstract <T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad)
-			throws IllegalAccessException, IllegalArgumentException, OntoDriverException;
+	abstract <T> void load(Attribute<?, ?> att, boolean alwaysLoad) throws IllegalAccessException,
+			IllegalArgumentException, OntoDriverException;
 
 	/**
 	 * Save the attribute value.
 	 * 
-	 * @param entity
-	 *            Entity
-	 * @param primaryKey
-	 *            Entity primary key
 	 * @param att
 	 *            The attribute whose value to save
 	 * @param attUri
@@ -85,7 +74,7 @@ abstract class AttributeStrategy {
 	 * @param value
 	 *            The value to save
 	 */
-	abstract <T> void save(URI primaryKey, Attribute<?, ?> att, Object value, boolean removeOld)
+	abstract <T> void save(Attribute<?, ?> att, Object value, boolean removeOld)
 			throws OntoDriverException;
 
 	protected void addIndividualsForReferencedEntities(Collection<?> refs, URI context)
@@ -113,6 +102,10 @@ abstract class AttributeStrategy {
 		return internal.getIdentifier(entity);
 	}
 
+	// TODO This might be problematic, since we don't have a proper descriptor
+	// for the entity returned by this method.
+	// We'll be looking for its attributes in one context but they might not be
+	// only there
 	protected <T> T getJavaInstanceForSubject(Class<T> cls, URI subjectUri, URI context)
 			throws OntoDriverException {
 		assert cls != null;
@@ -140,8 +133,25 @@ abstract class AttributeStrategy {
 	/**
 	 * Filters the model. </p>
 	 * 
-	 * If the models with only subject's statements are available, they are
-	 * queried, otherwise the storage is queried.
+	 * @param subject
+	 *            Subject URI
+	 * @param predicate
+	 *            Predicate URI
+	 * @param value
+	 *            Value
+	 * @param includeInferred
+	 *            Whether to include inferred statements
+	 * @param contexts
+	 *            Contexts to search. Can be empty
+	 * @return Model with matching statements
+	 */
+	protected Model filter(Resource subject, URI predicate, Value value, boolean includeInferred,
+			Set<URI> contexts) {
+		return models.filter(subject, predicate, value, includeInferred, contexts);
+	}
+
+	/**
+	 * Filters the model. </p>
 	 * 
 	 * @param subject
 	 *            Subject URI
@@ -151,15 +161,13 @@ abstract class AttributeStrategy {
 	 *            Value
 	 * @param includeInferred
 	 *            Whether to include inferred statements
+	 * @param context
+	 *            Context URI. Can be {@code null}
 	 * @return Model with matching statements
 	 */
-	protected Model filter(Resource subject, URI predicate, Value value, boolean includeInferred) {
-		if (models != null) {
-			final Model m = includeInferred ? models.getInferredModel() : models.getAssertedModel();
-			return m.filter(subject, predicate, value);
-		}
-		return storage.filter(subject, predicate, value, includeInferred,
-				models.getSesameContexts());
+	protected Model filter(Resource subject, URI predicate, Value value, boolean includeInferred,
+			URI context) {
+		return models.filter(subject, predicate, value, includeInferred, context);
 	}
 
 	/**
@@ -174,14 +182,8 @@ abstract class AttributeStrategy {
 	 * @return URI of the discovered object or {@code null} if none is found
 	 */
 	protected URI getObjectPropertyValue(URI subjectUri, URI propertyUri, boolean includeInferred,
-			boolean canUseSubjectModel) {
-		Model res = null;
-		if (canUseSubjectModel) {
-			res = filter(subjectUri, propertyUri, null, includeInferred);
-		} else {
-			res = storage.filter(subjectUri, propertyUri, null, includeInferred,
-					models.getSesameContexts());
-		}
+			URI context) {
+		Model res = models.filter(subjectUri, propertyUri, null, includeInferred, context);
 		URI objectUri = null;
 		for (Statement stmt : res) {
 			final Value val = stmt.getObject();
@@ -194,20 +196,15 @@ abstract class AttributeStrategy {
 		return objectUri;
 	}
 
-	protected Value getPropertyValue(URI subjectUri, URI propertyUri, boolean includeInferred) {
-		return getPropertyValue(subjectUri, propertyUri, includeInferred,
-				models.getSesameContexts());
-	}
-
 	protected Value getPropertyValue(URI subjectUri, URI propertyUri, boolean includeInferred,
-			Set<URI> contexts) {
-		Collection<Statement> res = storage.filter(subjectUri, propertyUri, null, includeInferred,
-				contexts);
+			URI context) {
+		Collection<Statement> res = models.filter(subjectUri, propertyUri, null, includeInferred,
+				context);
 		if (res.isEmpty()) {
 			return null;
 		}
 		if (res.size() > 1) {
-			// TODO should we throw exception if we expected only single value
+			// TODO should we throw exception if we expected only single value?
 		}
 		final Value ob = res.iterator().next().getObject();
 		return ob;
@@ -218,9 +215,9 @@ abstract class AttributeStrategy {
 	}
 
 	protected void removeOldDataPropertyValues(URI subject, URI property, URI context) {
-		// TODO should we use only explicit model?
-		final Model m = storage.filter(subject, property, null, false,
-				Collections.singleton(context));
+		// We are using explicit model since inferred property values cannot be
+		// changed anyway
+		final Model m = models.filter(subject, property, null, false, context);
 		// Create new model to prevent ConcurrentModificationException (we would
 		// be removing statements backed by the model from which we are removing
 		// them)
@@ -228,9 +225,9 @@ abstract class AttributeStrategy {
 	}
 
 	protected void removeOldObjectPropertyValues(URI subject, URI property, URI context) {
-		// TODO should we use only explicit model?
-		final Model m = storage.filter(subject, property, null, false,
-				Collections.singleton(context));
+		// We are using explicit model since inferred property values cannot be
+		// changed anyway
+		final Model m = models.filter(subject, property, null, false, context);
 		// Create new model to prevent ConcurrentModificationException (we would
 		// be removing statements backed by the model from which we are removing
 		// them)

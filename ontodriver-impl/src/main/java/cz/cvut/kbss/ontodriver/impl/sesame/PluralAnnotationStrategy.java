@@ -1,7 +1,5 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
-import org.openrdf.model.URI;
-
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 
@@ -13,12 +11,12 @@ import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
  */
 class PluralAnnotationStrategy extends PluralDataPropertyStrategy {
 
-	protected PluralAnnotationStrategy(SesameModuleInternal internal, SubjectModels models) {
+	protected PluralAnnotationStrategy(SesameModuleInternal internal, SubjectModels<?> models) {
 		super(internal, models);
 	}
 
 	@Override
-	<T> void load(T entity, URI uri, Attribute<?, ?> att, boolean alwaysLoad) {
+	<T> void load(Attribute<?, ?> att, boolean alwaysLoad) {
 		throw new NotYetImplementedException(
 				"Collection annotation properties are not implemented yet.");
 	}
