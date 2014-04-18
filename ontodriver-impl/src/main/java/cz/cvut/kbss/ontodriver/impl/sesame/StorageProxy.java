@@ -84,6 +84,17 @@ interface StorageProxy extends Closeable {
 	public void addStatement(Statement statement, URI context);
 
 	/**
+	 * Removes the specified statement from the specified context.
+	 * 
+	 * @param statement
+	 *            The statement to remove
+	 * @param context
+	 *            Context from which the statement should be removed. Can be
+	 *            {@code null}
+	 */
+	public void removeStatement(Statement statement, URI context);
+
+	/**
 	 * Removes statements from the storage.
 	 * 
 	 * @param statements

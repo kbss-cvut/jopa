@@ -39,12 +39,12 @@ abstract class AttributeStrategyFactory {
 	 * @return Strategy instance
 	 */
 	static AttributeStrategy createStrategy(Attribute<?, ?> att, SesameModuleInternal internal,
-			SubjectModels models) {
+			SubjectModels<?> models) {
 		return createImpl(att, internal, models);
 	}
 
 	private static AttributeStrategy createImpl(Attribute<?, ?> att, SesameModuleInternal internal,
-			SubjectModels models) {
+			SubjectModels<?> models) {
 		AttributeStrategy s = null;
 		if (att.isCollection()) {
 			switch (att.getPersistentAttributeType()) {

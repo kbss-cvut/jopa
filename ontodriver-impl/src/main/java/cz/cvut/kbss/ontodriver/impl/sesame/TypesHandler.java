@@ -90,8 +90,7 @@ class TypesHandler {
 		}
 		// Delete the old types
 		if (deleteOld) {
-			final Set<Statement> currentTypes = storage.filter(uri, RDF.TYPE, null, false,
-					Collections.singleton(context));
+			final Set<Statement> currentTypes = storage.filter(uri, RDF.TYPE, null, false, context);
 			final Set<Statement> toRemove = new HashSet<>(currentTypes.size());
 			for (Statement stmt : currentTypes) {
 				final Value val = stmt.getObject();

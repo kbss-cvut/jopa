@@ -62,8 +62,8 @@ class PropertiesHandler {
 	 * @throws IllegalAccessException
 	 */
 	<T> void load(T entity, URI uri, PropertiesSpecification<?, ?> att, EntityType<T> entityType,
-			Set<URI> contexts) throws IllegalAccessException, IllegalArgumentException {
-		final Model statements = storage.filter(uri, null, null, att.isInferred(), contexts);
+			URI context) throws IllegalAccessException, IllegalArgumentException {
+		final Model statements = storage.filter(uri, null, null, att.isInferred(), context);
 		loadImpl(entity, att, entityType, statements);
 	}
 

@@ -114,6 +114,12 @@ class TransparentStorageProxy implements StorageProxy {
 	}
 
 	@Override
+	public void removeStatement(Statement statement, URI context) {
+		ensureOpen();
+		// no-op
+	}
+
+	@Override
 	public void removeStatements(Collection<Statement> statements, URI context) {
 		ensureOpen();
 		// no-op

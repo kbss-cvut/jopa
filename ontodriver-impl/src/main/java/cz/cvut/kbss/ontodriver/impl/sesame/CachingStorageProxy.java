@@ -79,6 +79,15 @@ class CachingStorageProxy extends TransparentStorageProxy {
 	}
 
 	@Override
+	public void removeStatement(Statement statement, URI context) {
+		ensureOpen();
+		explicitModel.remove(statement.getSubject(), statement.getPredicate(),
+				statement.getObject(), (Resource) context);
+		model.remove(statement.getSubject(), statement.getPredicate(), statement.getObject(),
+				(Resource) context);
+	}
+
+	@Override
 	public void removeStatements(Collection<Statement> statements, URI context) {
 		ensureOpen();
 		for (Statement stmt : statements) {

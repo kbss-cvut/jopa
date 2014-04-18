@@ -79,7 +79,7 @@ abstract class AttributeStrategy {
 
 	protected void addIndividualsForReferencedEntities(Collection<?> refs, URI context)
 			throws OntoDriverException {
-		internal.addIndividualsForReferencedEntities(refs);
+		internal.addIndividualsForReferencedEntities(refs, context);
 	}
 
 	protected void addStatement(Statement stmt, URI context) {
