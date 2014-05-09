@@ -33,6 +33,6 @@ class ChangeSetFactory {
 		assert original != null;
 		assert descriptor != null;
 
-		return new ObjectChangeSetImpl(original, clone, descriptor.getEntityOrigin());
+		return new ObjectChangeSetImpl(original, clone, descriptor.getEntityContext());
 	}
 }

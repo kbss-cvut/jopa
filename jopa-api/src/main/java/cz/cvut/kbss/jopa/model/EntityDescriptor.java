@@ -47,7 +47,10 @@ public final class EntityDescriptor {
 
 	/**
 	 * Gets context in which the entity (individual with this entity's URI) is
-	 * stored.
+	 * stored. </p>
+	 * 
+	 * Note that this can be {@code null}, which represents the default
+	 * repository context.
 	 * 
 	 * @return Context URI
 	 */

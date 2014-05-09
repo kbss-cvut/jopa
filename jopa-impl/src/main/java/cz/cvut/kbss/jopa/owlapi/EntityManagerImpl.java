@@ -15,6 +15,7 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,8 +55,6 @@ import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
@@ -111,14 +110,19 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
+	public void persist(final Object entity) {
+		final EntityDescriptor d = new EntityDescriptor();
+		persist(entity, d);
+	}
+
+	@Override
 	public void persist(final Object entity, final EntityDescriptor descriptor) {
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.config("Persisting " + entity);
+			LOG.finer("Persisting " + entity);
 		}
 		ensureOpen();
-		if (entity == null || descriptor == null) {
-			throw new NullPointerException("Null passed to persist.");
-		}
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
 		switch (getState(entity, descriptor)) {
 		case NEW:
@@ -171,10 +175,16 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public <T> T merge(final T entity, EntityDescriptor descriptor) {
-		if (entity == null || descriptor == null) {
-			throw new NullPointerException();
-		}
+	public <T> T merge(final T entity) {
+		final EntityDescriptor d = new EntityDescriptor();
+		return merge(entity, d);
+	}
+
+	@Override
+	public <T> T merge(final T entity, final EntityDescriptor descriptor) {
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+
 		return mergeInternal(entity, descriptor);
 	}
 
@@ -191,8 +201,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 */
 	private <T> T mergeInternal(final T entity, final EntityDescriptor descriptor) {
 		assert entity != null;
+		assert descriptor != null;
 		if (LOG.isLoggable(Level.FINER)) {
-			LOG.config("Merging " + entity);
+			LOG.finer("Merging " + entity);
 		}
 		ensureOpen();
 
@@ -275,6 +286,12 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
+	public <T> T find(Class<T> cls, Object primaryKey) {
+		final EntityDescriptor d = new EntityDescriptor();
+		return find(cls, primaryKey, d);
+	}
+
+	@Override
 	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor) {
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
@@ -303,22 +320,31 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		this.getCurrentPersistenceContext().writeUncommittedChanges();
 	}
 
-	public void refresh(Object object) {
-		ensureOpen();
+	@Override
+	public void refresh(final Object entity) {
+		final EntityDescriptor d = new EntityDescriptor();
+		refresh(entity, d);
+	}
 
-		switch (getState(object)) {
+	@Override
+	public void refresh(Object entity, EntityDescriptor descriptor) {
+		ensureOpen();
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+
+		switch (getState(entity, descriptor)) {
 		case NEW:
 		case DETACHED:
 		case REMOVED:
 			throw new IllegalArgumentException();
 		case MANAGED:
-			this.getCurrentPersistenceContext().revertObject(object);
+			this.getCurrentPersistenceContext().revertObject(entity);
 			new SimpleOneLevelCascadeExplorer() {
 				@Override
 				protected void runCascadedForEach(Object ox2) {
 					refresh(ox2);
 				}
-			}.start(this, object, CascadeType.REFRESH);
+			}.start(this, entity, CascadeType.REFRESH);
 		}
 	}
 
@@ -389,37 +415,36 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public Query createQuery(String qlString, RepositoryID repository) {
-		return getCurrentPersistenceContext().createQuery(qlString, repository);
+	public Query createQuery(String qlString) {
+		return getCurrentPersistenceContext().createQuery(qlString);
 	}
 
 	@Override
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, RepositoryID repository) {
-		return getCurrentPersistenceContext().createQuery(query, resultClass, repository);
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass) {
+		return getCurrentPersistenceContext().createQuery(query, resultClass);
 	}
 
 	@Override
-	public Query<List<String>> createNativeQuery(String sqlString, RepositoryID repository) {
-		return getCurrentPersistenceContext().createNativeQuery(sqlString, repository);
+	public Query<List<String>> createNativeQuery(String sqlString) {
+		return getCurrentPersistenceContext().createNativeQuery(sqlString);
 	}
 
 	@Override
-	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass,
-			RepositoryID repository) {
-		return getCurrentPersistenceContext().createNativeQuery(sqlString, resultClass, repository);
+	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass) {
+		return getCurrentPersistenceContext().createNativeQuery(sqlString, resultClass);
 	}
 
 	@Override
-	public boolean checkConsistency(RepositoryID repository) {
-		if (repository == null) {
+	public boolean checkConsistency(URI context) {
+		if (context == null) {
 			return false;
 		}
-		return getCurrentPersistenceContext().checkConsistency(repository);
+		return getCurrentPersistenceContext().checkConsistency(context);
 	}
 
 	@Override
-	public List<Repository> getRepositories() {
-		return getCurrentPersistenceContext().getRepositories();
+	public List<URI> getContexts() {
+		return getCurrentPersistenceContext().getContexts();
 	}
 
 	@Override

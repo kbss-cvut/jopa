@@ -15,15 +15,18 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.Connection;
@@ -34,7 +37,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 public class QueryImpl implements Query<List<String>> {
 
 	private final String query;
-	private final RepositoryID repository;
+	private final Set<URI> contexts;
 	private final boolean sparql;
 	private final Connection connection;
 
@@ -42,13 +45,11 @@ public class QueryImpl implements Query<List<String>> {
 	private boolean useBackupOntology;
 
 	// sparql=false -> abstract syntax
-	public QueryImpl(final String query, final RepositoryID repository, final boolean sparql,
-			final Connection connection) {
+	public QueryImpl(final String query, final boolean sparql, final Connection connection) {
 		this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
-		this.repository = Objects.requireNonNull(repository,
-				ErrorUtils.constructNPXMessage("repository"));
 		this.connection = Objects.requireNonNull(connection,
 				ErrorUtils.constructNPXMessage("connection"));
+		this.contexts = new HashSet<>();
 		this.useBackupOntology = false;
 		this.sparql = sparql;
 		this.maxResults = Integer.MAX_VALUE;
@@ -117,7 +118,9 @@ public class QueryImpl implements Query<List<String>> {
 		} else {
 			stmt.setUseTransactionalOntology();
 		}
-		final ResultSet rs = stmt.executeQuery(query, repository);
+		URI[] uris = new URI[contexts.size()];
+		uris = contexts.toArray(uris);
+		final ResultSet rs = stmt.executeQuery(query, uris);
 		try {
 			final int cols = rs.getColumnCount();
 			int cnt = 0;
@@ -138,5 +141,25 @@ public class QueryImpl implements Query<List<String>> {
 		} finally {
 			rs.close();
 		}
+	}
+
+	@Override
+	public Query<List<String>> addContext(URI context) {
+		Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
+		contexts.add(context);
+		return this;
+	}
+
+	@Override
+	public Query<List<String>> addContexts(Collection<URI> contexts) {
+		Objects.requireNonNull(contexts, ErrorUtils.constructNPXMessage("contexts"));
+		contexts.addAll(contexts);
+		return this;
+	}
+
+	@Override
+	public Query<List<String>> clearContexts() {
+		contexts.clear();
+		return this;
 	}
 }

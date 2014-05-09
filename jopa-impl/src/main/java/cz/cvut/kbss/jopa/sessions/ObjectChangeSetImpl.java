@@ -1,13 +1,11 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 
@@ -35,14 +33,13 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 	// Does this change set represent a new object
 	private boolean isNew;
 
-	// Entity origin
-	private final EntityOrigin origin;
+	private URI context;
 
-	public ObjectChangeSetImpl(Object changedObject, Object cloneObject, EntityOrigin origin) {
+	public ObjectChangeSetImpl(Object changedObject, Object cloneObject, URI context) {
 		this.changedObject = changedObject;
 		this.cloneObject = cloneObject;
 		this.objectClass = cloneObject.getClass();
-		this.origin = Objects.requireNonNull(origin, ErrorUtils.constructNPXMessage("origin"));
+		this.context = context;
 	}
 
 	/**
@@ -126,11 +123,8 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 		return isNew;
 	}
 
-	/**
-	 * Retrieves the repository the referenced entity belongs to
-	 */
 	@Override
-	public EntityOrigin getEntityOrigin() {
-		return origin;
+	public URI getEntityContext() {
+		return context;
 	}
 }

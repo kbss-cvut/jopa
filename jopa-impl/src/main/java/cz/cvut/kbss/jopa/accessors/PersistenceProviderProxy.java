@@ -1,10 +1,10 @@
 package cz.cvut.kbss.jopa.accessors;
 
+import java.net.URI;
 import java.util.Objects;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
-import cz.cvut.kbss.jopa.sessions.EntityOrigin;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -27,17 +27,15 @@ class PersistenceProviderProxy implements PersistenceProviderFacade {
 	}
 
 	@Override
-	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey,
-			EntityOrigin entityOrigin) {
+	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey, URI context) {
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
-		Objects.requireNonNull(entityOrigin, ErrorUtils.constructNPXMessage("entityOrigin"));
 
 		T entity = null;
 		CacheManager cache = serverSession.getLiveObjectCache();
 		cache.acquireReadLock();
 		try {
-			entity = cache.get(entityOrigin, cls, primaryKey);
+			entity = cache.get(cls, primaryKey, context);
 		} finally {
 			cache.releaseReadLock();
 		}

@@ -2,7 +2,6 @@ package cz.cvut.kbss.jopa.sessions;
 
 import java.util.List;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.QueryImpl;
@@ -22,57 +21,44 @@ class QueryFactoryImpl implements QueryFactory {
 	}
 
 	@Override
-	public Query<List<String>> createNativeQuery(String sparql, RepositoryID repository) {
+	public Query<List<String>> createNativeQuery(String sparql) {
 		if (sparql == null) {
 			throw new NullPointerException("Query not specified!");
 		}
-		if (repository == null) {
-			throw new NullPointerException("Repository not specified.");
-		}
-		final Query<List<String>> q = new QueryImpl(sparql, repository, true, connection);
-		((QueryImpl) q).setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
-		return q;
-	}
-
-	@Override
-	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass,
-			RepositoryID repository) {
-		if (sparql == null || resultClass == null) {
-			throw new NullPointerException("Query or resultClass not specified!");
-		}
-		if (repository == null) {
-			throw new NullPointerException("Repository not specified.");
-		}
-		final TypedQueryImpl<T> tq = new TypedQueryImpl<T>(sparql, resultClass, repository, true,
-				uow, connection);
-		return tq;
-	}
-
-	@Override
-	public Query createQuery(String query, RepositoryID repository) {
-		if (query == null) {
-			throw new NullPointerException("Query not specified!");
-		}
-		if (repository == null) {
-			throw new NullPointerException("Repository not specified.");
-		}
-		// We specify the query as SPARQL since currently we don't support any
-		// more abstract syntax
-		final QueryImpl q = new QueryImpl(query, repository, false, connection);
+		final QueryImpl q = new QueryImpl(sparql, true, connection);
 		q.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
 		return q;
 	}
 
 	@Override
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, RepositoryID repository) {
+	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass) {
+		if (sparql == null || resultClass == null) {
+			throw new NullPointerException("Query or resultClass not specified!");
+		}
+		final TypedQueryImpl<T> tq = new TypedQueryImpl<T>(sparql, resultClass, true, uow,
+				connection);
+		return tq;
+	}
+
+	@Override
+	public Query createQuery(String query) {
+		if (query == null) {
+			throw new NullPointerException("Query not specified!");
+		}
+		// We specify the query as SPARQL since currently we don't support any
+		// more abstract syntax
+		final QueryImpl q = new QueryImpl(query, false, connection);
+		q.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
+		return q;
+	}
+
+	@Override
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass) {
 		if (query == null || resultClass == null) {
 			throw new NullPointerException("Query or resultClass not specified!");
 		}
-		if (repository == null) {
-			throw new NullPointerException("Repository not specified.");
-		}
-		final TypedQueryImpl<T> tq = new TypedQueryImpl<T>(query, resultClass, repository, false,
-				uow, connection);
+		final TypedQueryImpl<T> tq = new TypedQueryImpl<T>(query, resultClass, false, uow,
+				connection);
 		return tq;
 	}
 

@@ -70,10 +70,10 @@ public interface Cache {
 	 * Removes the data for entities of the specified repository context from
 	 * the cache.
 	 * 
-	 * @param contextUri
+	 * @param context
 	 *            URI of {@code Context}
 	 */
-	public void evict(URI contextUri);
+	public void evict(URI context);
 
 	/**
 	 * Clears the cache.

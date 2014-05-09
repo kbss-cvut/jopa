@@ -1,49 +1,13 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.net.URI;
 import java.util.Set;
-
-import cz.cvut.kbss.jopa.model.RepositoryID;
 
 public class DisabledCacheManager implements CacheManager {
 
 	@Override
 	public boolean contains(Class<?> cls, Object primaryKey) {
 		return false;
-	}
-
-	@Override
-	public boolean contains(EntityOrigin origin, Class<?> cls, Object primaryKey) {
-		return false;
-	}
-
-	@Override
-	public void evict(EntityOrigin origin, Class<?> cls, Object primaryKey) {
-		// Do nothing
-	}
-
-	@Override
-	public void evict(Class<?> cls) {
-		// Do nothing
-	}
-
-	@Override
-	public void evict(RepositoryID repository) {
-		// Do nothing
-	}
-
-	@Override
-	public void evictAll() {
-		// Do nothing
-	}
-
-	@Override
-	public void add(EntityOrigin origin, Object primaryKey, Object entity) {
-		// Do nothing
-	}
-
-	@Override
-	public <T> T get(EntityOrigin origin, Class<T> cls, Object primaryKey) {
-		return null;
 	}
 
 	@Override
@@ -74,5 +38,40 @@ public class DisabledCacheManager implements CacheManager {
 	@Override
 	public void setInferredClasses(Set<Class<?>> inferredClasses) {
 		// Do nothing
+	}
+
+	@Override
+	public boolean contains(Class<?> cls, Object primaryKey, URI context) {
+		return false;
+	}
+
+	@Override
+	public void evict(Class<?> cls, Object primaryKey, URI context) {
+		// Do nothing
+	}
+
+	@Override
+	public void evict(Class<?> cls) {
+		// Do nothing
+	}
+
+	@Override
+	public void evict(URI contextUri) {
+		// Do nothing
+	}
+
+	@Override
+	public void evictAll() {
+		// Do nothing
+	}
+
+	@Override
+	public void add(Object primaryKey, Object entity, URI context) {
+		// Do nothing
+	}
+
+	@Override
+	public <T> T get(Class<T> cls, Object primaryKey, URI context) {
+		return null;
 	}
 }

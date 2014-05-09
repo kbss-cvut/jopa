@@ -6,13 +6,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -21,30 +18,22 @@ import java.util.logging.Logger;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.CacheManagerImpl;
-import cz.cvut.kbss.jopa.sessions.EntityOrigin;
-import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassF;
-import cz.cvut.kbss.ontodriver.impl.RepositoryImpl;
 
 public class CacheManagerTest {
 
 	private static final Logger LOG = Logger.getLogger(CacheManagerTest.class.getName());
 
-	private static List<Repository> repositories;
-	private static final URI CONTEXT_URI = URI.create("http://jopa-unit-tests");
+	private static final URI CONTEXT_ONE = URI.create("http://jopa-unit-tests");
 	private static final URI CONTEXT_TWO = URI.create("http://jopa-unit-testsTwo");
 	private static OWLClassA testA;
 	private static OWLClassB testB;
@@ -52,21 +41,10 @@ public class CacheManagerTest {
 	private static OWLClassF testF;
 	private static Map<URI, OWLClassB> listOfBs;
 
-	private static EntityOrigin repoOneCtxOne;
-	private static EntityOrigin repoTwoCtxOne;
-	private static EntityOrigin repoTwoCtxTwo;
-
-	@Mock
-	private ServerSession session;
-
 	private CacheManager mngr;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		initRepositories();
-		repoOneCtxOne = new EntityOrigin(repositories.get(0), CONTEXT_URI);
-		repoTwoCtxOne = new EntityOrigin(repositories.get(1), CONTEXT_URI);
-		repoTwoCtxTwo = new EntityOrigin(repositories.get(1), CONTEXT_TWO);
 		final URI pk = URI.create("http://testEntity");
 		testA = new OWLClassA();
 		testA.setUri(pk);
@@ -94,9 +72,7 @@ public class CacheManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		MockitoAnnotations.initMocks(this);
-		when(session.getRepositories()).thenReturn(repositories);
-		this.mngr = new CacheManagerImpl(session, Collections.<String, String> emptyMap());
+		this.mngr = new CacheManagerImpl(Collections.<String, String> emptyMap());
 	}
 
 	@Test(expected = OWLPersistenceException.class)
@@ -105,37 +81,49 @@ public class CacheManagerTest {
 		final Map<String, String> m = new HashMap<>();
 		m.put(OWLAPIPersistenceProperties.CACHE_TTL, "1s");
 		m.put(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE, "2");
-		final CacheManager man = new CacheManagerImpl(session, m);
+		final CacheManager man = new CacheManagerImpl(m);
 		assertNull(man);
 	}
 
 	@Test
 	public void testAdd() {
 		LOG.config("Test: add entity into cache.");
-		mngr.add(repoOneCtxOne, testA.getUri(), testA);
-		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
-		assertTrue(mngr.contains(repoOneCtxOne, testA.getClass(), testA.getUri()));
-		final Object res = mngr.get(repoOneCtxOne, testA.getClass(), testA.getUri());
+		mngr.add(testA.getUri(), testA, CONTEXT_TWO);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
+		final Object res = mngr.get(testA.getClass(), testA.getUri(), CONTEXT_TWO);
 		assertNotNull(res);
 		assertEquals(testA, res);
+	}
+
+	@Test
+	public void testAddToDefault() {
+		LOG.config("Test: add entity into the default context.");
+		mngr.add(testA.getUri(), testA, null);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
+		assertFalse(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
+		assertFalse(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
+		final Object res = mngr.get(testA.getClass(), testA.getUri(), null);
+		assertNotNull(res);
+		assertSame(testA, res);
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testAddNull() {
 		LOG.config("Test: add null into cache.");
-		mngr.add(repoOneCtxOne, URI.create("http://blahblahblah"), null);
+		mngr.add(URI.create("http://blahblahblah"), null, CONTEXT_TWO);
 	}
 
 	@Test
 	public void testAddWithDuplicateIRI() {
 		LOG.config("Test: add two entities with the same primary key into the same context.");
-		mngr.add(repoOneCtxOne, testA.getUri(), testA);
+		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
 		final OWLClassA duplicate = new OWLClassA();
 		final String newStr = testA.getStringAttribute() + "duplicated";
 		duplicate.setStringAttribute(newStr);
 		duplicate.setUri(testA.getUri());
-		mngr.add(repoOneCtxOne, duplicate.getUri(), duplicate);
-		final OWLClassA res = (OWLClassA) mngr.get(repoOneCtxOne, testA.getClass(), testA.getUri());
+		mngr.add(duplicate.getUri(), duplicate, CONTEXT_ONE);
+		final OWLClassA res = (OWLClassA) mngr.get(testA.getClass(), testA.getUri(), CONTEXT_ONE);
 		assertNotNull(res);
 		assertFalse(testA.getStringAttribute().equals(res.getStringAttribute()));
 		assertEquals(newStr, res.getStringAttribute());
@@ -144,32 +132,32 @@ public class CacheManagerTest {
 	@Test
 	public void testAddWithDuplicateIRIToDifferentContexts() {
 		LOG.config("Test: add two entities with the same primary key into different contexts.");
-		mngr.add(repoTwoCtxOne, testA.getUri(), testA);
+		mngr.add(testA.getUri(), testA, CONTEXT_TWO);
 		final OWLClassA duplicate = new OWLClassA();
 		duplicate.setUri(testA.getUri());
 		final String newStr = testA.getStringAttribute() + "duplicated";
 		duplicate.setStringAttribute(newStr);
-		mngr.add(repoTwoCtxTwo, duplicate.getUri(), duplicate);
-		assertTrue(mngr.contains(repoTwoCtxOne, testA.getClass(), testA.getUri()));
-		assertTrue(mngr.contains(repoTwoCtxTwo, duplicate.getClass(), duplicate.getUri()));
-		assertSame(testA, mngr.get(repoTwoCtxOne, testA.getClass(), testA.getUri()));
-		assertSame(duplicate, mngr.get(repoTwoCtxTwo, testA.getClass(), duplicate.getUri()));
+		mngr.add(duplicate.getUri(), duplicate, CONTEXT_ONE);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
+		assertTrue(mngr.contains(duplicate.getClass(), duplicate.getUri(), CONTEXT_ONE));
+		assertSame(testA, mngr.get(testA.getClass(), testA.getUri(), CONTEXT_TWO));
+		assertSame(duplicate, mngr.get(testA.getClass(), duplicate.getUri(), CONTEXT_ONE));
 	}
 
 	@Test
-	public void testContains() {
+	public void testContainsDefault() {
 		LOG.config("Test: contains by class and primary key.");
-		mngr.add(repoOneCtxOne, testA.getUri(), testA);
+		mngr.add(testA.getUri(), testA, null);
 		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
-		assertFalse(mngr.contains(testB.getClass(), testA.getUri()));
+		assertFalse(mngr.contains(testB.getClass(), testA.getUri(), CONTEXT_ONE));
 	}
 
 	@Test
-	public void testContainsWithRepoId() {
+	public void testContainsWithContext() {
 		LOG.config("Test: contains by entity origin, class and primary key.");
-		mngr.add(repoTwoCtxOne, testA.getUri(), testA);
-		assertTrue(mngr.contains(repoTwoCtxOne, testA.getClass(), testA.getUri()));
-		assertFalse(mngr.contains(repoTwoCtxTwo, testA.getClass(), testA.getUri()));
+		mngr.add(testA.getUri(), testA, CONTEXT_TWO);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
+		assertFalse(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
 	}
 
 	@Test
@@ -177,94 +165,86 @@ public class CacheManagerTest {
 		LOG.config("Test: contains, null passed in arguments.");
 		assertFalse(mngr.contains(null, testA.getUri()));
 		assertFalse(mngr.contains(testA.getClass(), null));
-		assertFalse(mngr.contains(null, testA.getClass(), testA.getUri()));
-		assertFalse(mngr.contains(repoOneCtxOne, null, testA.getUri()));
-		assertFalse(mngr.contains(repoTwoCtxOne, testA.getClass(), null));
+		assertFalse(mngr.contains(testA.getClass(), testA.getUri(), null));
+		assertFalse(mngr.contains(null, testA.getUri(), CONTEXT_TWO));
+		assertFalse(mngr.contains(testA.getClass(), null, CONTEXT_TWO));
 	}
 
 	@Test
 	public void testGetObject() {
 		LOG.config("Test: get entity.");
-		mngr.add(repoTwoCtxTwo, testA.getUri(), testA);
-		final Object res = mngr.get(repoTwoCtxTwo, testA.getClass(), testA.getUri());
+		mngr.add(testA.getUri(), testA, CONTEXT_TWO);
+		final Object res = mngr.get(testA.getClass(), testA.getUri(), CONTEXT_TWO);
 		assertEquals(testA, res);
 	}
 
 	@Test
 	public void testGetObjectWithWrongContext() {
 		LOG.config("Test: get entity. With wrong origin.");
-		mngr.add(repoTwoCtxOne, testA.getUri(), testA);
-		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
-		final OWLClassA res = mngr.get(repoTwoCtxTwo, testA.getClass(), testA.getUri());
+		mngr.add(testA.getUri(), testA, CONTEXT_TWO);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
+		final OWLClassA res = mngr.get(testA.getClass(), testA.getUri(), CONTEXT_ONE);
 		assertNull(res);
 	}
 
 	@Test
 	public void testGetObjectNull() {
 		LOG.config("Test: get entity. Null passed as primary key.");
-		mngr.add(repoOneCtxOne, testA.getUri(), testA);
-		final Object o = mngr.get(repoOneCtxOne, OWLClassA.class, null);
+		mngr.add(testA.getUri(), testA, CONTEXT_TWO);
+		final Object o = mngr.get(OWLClassA.class, null, CONTEXT_TWO);
 		assertNull(o);
-	}
-
-	@Test
-	public void testGetObjectWithContextNull() {
-		LOG.config("Test: get entity. Null passed as origin.");
-		mngr.add(repoTwoCtxOne, testA.getUri(), testA);
-		final OWLClassA res = mngr.get(null, testA.getClass(), testA.getUri());
-		assertNull(res);
 	}
 
 	@Test
 	public void testGetObjectUnknownClass() {
 		LOG.config("Test: get entity. Unknown class passed.");
-		mngr.add(repoOneCtxOne, testA.getUri(), testA);
-		mngr.add(repoOneCtxOne, testB.getUri(), testB);
-		final Object o = mngr.get(repoOneCtxOne, OWLClassD.class, testA.getUri());
+		mngr.add(testA.getUri(), testA, CONTEXT_TWO);
+		mngr.add(testB.getUri(), testB, CONTEXT_TWO);
+		final Object o = mngr.get(OWLClassD.class, testA.getUri(), CONTEXT_TWO);
 		assertNull(o);
 	}
 
 	@Test
 	public void testGetObjectUnknownPrimaryKey() {
 		LOG.config("Test: get entity. Unknown primary key.");
-		mngr.add(repoTwoCtxTwo, testA.getUri(), testA);
-		mngr.add(repoTwoCtxTwo, testB.getUri(), testB);
+		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
+		mngr.add(testB.getUri(), testB, CONTEXT_ONE);
 		final URI unknownId = URI.create("http://unknownId");
-		final Object o = mngr.get(repoTwoCtxTwo, OWLClassA.class, unknownId);
+		final Object o = mngr.get(OWLClassA.class, unknownId, CONTEXT_ONE);
 		assertNull(o);
 	}
 
 	@Test
 	public void testEvictAll() {
 		LOG.config("Test: evict all.");
-		mngr.add(repoOneCtxOne, testA.getUri(), testA);
+		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
 		addAllToCache(listOfBs);
 		mngr.evictAll();
-		assertFalse(mngr.contains(testA.getClass(), testA.getUri()));
+		assertFalse(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
 		for (OWLClassB b : listOfBs.values()) {
-			assertFalse(mngr.contains(b.getClass(), b.getUri()));
+			assertFalse(mngr.contains(b.getClass(), b.getUri(), CONTEXT_ONE));
 		}
 	}
 
 	@Test
 	public void testEvictByClass() {
 		LOG.config("Test: evict class.");
-		mngr.add(repoOneCtxOne, testA.getUri(), testA);
-		mngr.add(repoTwoCtxOne, testB.getUri(), testB);
+		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
+		mngr.add(testB.getUri(), testB, CONTEXT_TWO);
 		addAllToCache(listOfBs);
 		mngr.evict(OWLClassB.class);
-		assertTrue(mngr.contains(OWLClassA.class, testA.getUri()));
-		assertFalse(mngr.contains(OWLClassB.class, testB.getUri()));
+		assertTrue(mngr.contains(OWLClassA.class, testA.getUri(), CONTEXT_ONE));
+		assertFalse(mngr.contains(OWLClassB.class, testB.getUri(), CONTEXT_TWO));
 		for (OWLClassB b : listOfBs.values()) {
-			assertFalse(mngr.contains(b.getClass(), b.getUri()));
+			assertFalse(mngr.contains(b.getClass(), b.getUri(), CONTEXT_TWO));
 		}
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testEvictByClassNull() {
 		LOG.config("Test: evict class. Null passed as class.");
-		mngr.add(repoOneCtxOne, testA.getUri(), testA);
-		mngr.add(repoTwoCtxOne, testB.getUri(), testB);
+		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
+		mngr.add(testB.getUri(), testB, CONTEXT_TWO);
 		addAllToCache(listOfBs);
 		mngr.evict((Class<?>) null);
 	}
@@ -272,85 +252,86 @@ public class CacheManagerTest {
 	@Test
 	public void testEvictByContext() {
 		LOG.config("Test: evict by context.");
-		mngr.add(repoTwoCtxOne, testA.getUri(), testA);
-		mngr.add(repoTwoCtxTwo, testB.getUri(), testB);
-		final RepositoryID rid = repositories.get(1).createIdentifier().addContext(CONTEXT_URI);
-		mngr.evict(rid);
-		assertFalse(mngr.contains(testA.getClass(), testA.getUri()));
-		assertTrue(mngr.contains(testB.getClass(), testB.getUri()));
+		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
+		mngr.add(testB.getUri(), testB, CONTEXT_TWO);
+		mngr.evict(CONTEXT_ONE);
+		assertFalse(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
+		assertTrue(mngr.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
 	}
 
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void testEvictByContextNull() {
-		LOG.config("Test: evict by context. Null passed as repository identifier.");
-		mngr.evict((RepositoryID) null);
+		mngr.add(testA.getUri(), testA, null);
+		LOG.config("Test: evict by context. Null passed as context identifier.");
+		mngr.evict((URI) null);
+		assertNull(mngr.get(testA.getClass(), testA.getUri(), null));
 	}
 
 	@Test
 	public void testEvictInferredClass() {
 		LOG.config("Set inferred classes and evict them.");
-		mngr.add(repoTwoCtxOne, testA.getUri(), testA);
-		mngr.add(repoTwoCtxTwo, testB.getUri(), testB);
+		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
+		mngr.add(testB.getUri(), testB, CONTEXT_TWO);
 		final Set<Class<?>> inferred = Collections.<Class<?>> singleton(testA.getClass());
 		mngr.setInferredClasses(inferred);
 		mngr.clearInferredObjects();
-		assertFalse(mngr.contains(testA.getClass(), testA.getUri()));
-		assertTrue(mngr.contains(testB.getClass(), testB.getUri()));
+		assertFalse(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
+		assertTrue(mngr.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
 	}
 
 	@Test
 	public void testEvictByContextAndPrimaryKey() {
 		LOG.config("Test: evict by entity origin, class and primary key.");
-		mngr.add(repoTwoCtxTwo, testA.getUri(), testA);
+		mngr.add(testA.getUri(), testA, CONTEXT_TWO);
 		final OWLClassA duplicate = new OWLClassA();
 		duplicate.setUri(testA.getUri());
 		duplicate.setStringAttribute("Duplicate entity.");
-		mngr.add(repoTwoCtxOne, duplicate.getUri(), duplicate);
-		assertTrue(mngr.contains(repoTwoCtxTwo, testA.getClass(), testA.getUri()));
-		assertTrue(mngr.contains(repoTwoCtxOne, duplicate.getClass(), duplicate.getUri()));
+		mngr.add(duplicate.getUri(), duplicate, CONTEXT_ONE);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
+		assertTrue(mngr.contains(duplicate.getClass(), duplicate.getUri(), CONTEXT_ONE));
 
-		mngr.evict(repoTwoCtxOne, duplicate.getClass(), duplicate.getUri());
-		assertFalse(mngr.contains(repoTwoCtxOne, duplicate.getClass(), duplicate.getUri()));
-		assertTrue(mngr.contains(repoTwoCtxTwo, testA.getClass(), testA.getUri()));
+		mngr.evict(duplicate.getClass(), duplicate.getUri(), CONTEXT_ONE);
+		assertFalse(mngr.contains(duplicate.getClass(), duplicate.getUri(), CONTEXT_ONE));
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testEvictByContextAndPrimaryKeyNull() {
 		LOG.config("Test: evict by entity origin, class and primary key. Null passed.");
-		mngr.add(repoOneCtxOne, testA.getUri(), testA);
-		mngr.evict(repoOneCtxOne, null, null);
+		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
+		mngr.evict(null, null, CONTEXT_ONE);
 	}
 
 	@Test
 	public void testEvictWithSweeper() throws Exception {
 		LOG.config("Test: evict using sweeper.");
 		initSweepeableManager();
-		mngr.add(repoOneCtxOne, testA.getUri(), testA);
-		mngr.add(repoTwoCtxOne, testB.getUri(), testB);
-		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
-		assertTrue(mngr.contains(testB.getClass(), testB.getUri()));
+		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
+		mngr.add(testB.getUri(), testB, CONTEXT_TWO);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
+		assertTrue(mngr.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
 		// Give it enough time to sweep the cache
 		Thread.sleep(5000);
-		assertFalse(mngr.contains(testA.getClass(), testA.getUri()));
-		assertFalse(mngr.contains(testB.getClass(), testB.getUri()));
+		assertFalse(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
+		assertFalse(mngr.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
 	}
 
 	@Test
 	public void testRefreshTTL() throws Exception {
 		LOG.config("Test: refresh TTL.");
 		initSweepeableManager();
-		mngr.add(repoTwoCtxOne, testA.getUri(), testA);
-		mngr.add(repoOneCtxOne, testB.getUri(), testB);
-		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
-		assertTrue(mngr.contains(testB.getClass(), testB.getUri()));
+		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
+		mngr.add(testB.getUri(), testB, CONTEXT_TWO);
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
+		assertTrue(mngr.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
 		// The cycle ensures that testA is refreshed and stays in the cache
 		// while testB will be evicted because its TTL is exhausted
 		for (int i = 0; i < 5; i++) {
 			Thread.sleep(1000);
-			assertNotNull(mngr.get(repoTwoCtxOne, testA.getClass(), testA.getUri()));
+			assertNotNull(mngr.get(testA.getClass(), testA.getUri(), CONTEXT_ONE));
 		}
-		assertTrue(mngr.contains(testA.getClass(), testA.getUri()));
-		assertFalse(mngr.contains(testB.getClass(), testB.getUri()));
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
+		assertFalse(mngr.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
 	}
 
 	@Test
@@ -374,23 +355,12 @@ public class CacheManagerTest {
 		final Map<String, String> props = new HashMap<String, String>();
 		props.put(OWLAPIPersistenceProperties.CACHE_TTL, "1");
 		props.put(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE, "2");
-		this.mngr = new CacheManagerImpl(session, props);
+		this.mngr = new CacheManagerImpl(props);
 	}
 
 	private void addAllToCache(Map<URI, OWLClassB> entities) {
 		for (Entry<URI, OWLClassB> e : entities.entrySet()) {
-			mngr.add(repoOneCtxOne, e.getKey(), e.getValue());
+			mngr.add(e.getKey(), e.getValue(), CONTEXT_ONE);
 		}
-	}
-
-	private static void initRepositories() {
-		repositories = new ArrayList<>(2);
-		final RepositoryImpl rOne = new RepositoryImpl(URI.create("http://localhost:8080/repoOne"));
-		rOne.addContext(CONTEXT_URI);
-		repositories.add(rOne);
-		final RepositoryImpl rTwo = new RepositoryImpl(URI.create("http://localhost:8080/repoTwo"));
-		rTwo.addContext(CONTEXT_URI);
-		rTwo.addContext(CONTEXT_TWO);
-		repositories.add(rTwo);
 	}
 }
