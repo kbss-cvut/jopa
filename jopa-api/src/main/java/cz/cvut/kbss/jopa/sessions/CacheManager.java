@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.net.URI;
 import java.util.Set;
 
 /**
@@ -18,15 +19,14 @@ public interface CacheManager extends Cache {
 	 * it is in the same repository context), it is replaced with the one passed
 	 * as argument.
 	 * 
-	 * @param entityOrigin
-	 *            Identifier of the repository and context to which the
-	 *            specified entity belogns
 	 * @param primaryKey
 	 *            Primary key of the specified object
 	 * @param entity
 	 *            The object to be added into the cache
+	 * @param context
+	 *            Repository context URI
 	 */
-	public void add(EntityOrigin entityOrigin, Object primaryKey, Object entity);
+	public void add(Object primaryKey, Object entity, URI context);
 
 	/**
 	 * Gets entity with the specified primary key from the cache. </p>
@@ -44,7 +44,7 @@ public interface CacheManager extends Cache {
 	 * 
 	 * @return Entity with the specified primary key or {@code null}
 	 */
-	public <T> T get(EntityOrigin entityOrigin, Class<T> cls, Object primaryKey);
+	public <T> T get(Class<T> cls, Object primaryKey, URI context);
 
 	/**
 	 * Remove objects with inferred attributes from the cache, since there are

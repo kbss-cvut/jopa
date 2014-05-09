@@ -1,7 +1,8 @@
 package cz.cvut.kbss.ontodriver;
 
+import java.net.URI;
+
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.sessions.EntityOrigin;
 
 /**
  * Facade to the persistence provider.
@@ -29,12 +30,11 @@ public interface PersistenceProviderFacade {
 	 *            Type of the entity
 	 * @param primaryKey
 	 *            Primary key of the entity to retrieve
-	 * @param entityOrigin
-	 *            Entity origin identifier
+	 * @param context
+	 *            Context URI
 	 * @return Entity or null
 	 * @throws NullPointerException
 	 *             If {@code cls} or {@code primaryKey} is {@code null}
 	 */
-	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey,
-			EntityOrigin entityOrigin);
+	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey, URI context);
 }

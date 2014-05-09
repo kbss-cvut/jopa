@@ -1,11 +1,10 @@
 package cz.cvut.kbss.ontodriver;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.List;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.exceptions.EntityNotRegisteredException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -48,28 +47,10 @@ public interface Connection extends Transactional {
 	public Statement createStatement() throws OntoDriverException;
 
 	/**
-	 * Resolves whether entity with the specified primary key is present in the
-	 * specified repository. </p>
+	 * Checks whether the specified context is consistent. </p>
 	 * 
-	 * @param primaryKey
-	 *            Primary key
-	 * @param repository
-	 *            Repository identifier. May specify multiple contexts to search
-	 * @return {@code true} if the specified repository contains entity with the
-	 *         given id, {@code false} otherwise
-	 * @throws NullPointerException
-	 *             If {@code primaryKey} or {@code repository} is null
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 */
-	public boolean contains(Object primaryKey, RepositoryID repository) throws OntoDriverException;
-
-	/**
-	 * Checks whether the specified repository is consistent. </p>
-	 * 
-	 * @param repository
-	 *            Repository identifier
+	 * @param context
+	 *            Context URI
 	 * @return {@code true} if the contexts specified by {@code repository} are
 	 *         consistent, {@code false} otherwise
 	 * @throws OntoDriverException
@@ -78,7 +59,7 @@ public interface Connection extends Transactional {
 	 * @throws NullPointerException
 	 *             if {@code repository} is {@code null}
 	 */
-	public boolean isConsistent(RepositoryID repository) throws OntoDriverException;
+	public boolean isConsistent(URI context) throws OntoDriverException;
 
 	/**
 	 * Finds entity with the specified primary key and returns it as the
@@ -113,31 +94,14 @@ public interface Connection extends Transactional {
 	public boolean getAutoCommit() throws OntoDriverException;
 
 	/**
-	 * Retrieves repository with the specified id.
+	 * Retrieves a list of all available contexts. </p>
 	 * 
-	 * @param repositoryId
-	 *            Repository id
-	 * @return Repsitory or null if there is none with such id
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 * @throws NullPointerException
-	 *             If the argument is {@code null}
-	 */
-	public Repository getRepository(Integer repositoryId) throws OntoDriverException;
-
-	/**
-	 * Retrieves a list of all available repositories. </p>
-	 * 
-	 * The repositories are sorted in descending order by their priority, i. e.
-	 * as they were passed in initialization.
-	 * 
-	 * @return Unmodifiable list of available repositories
+	 * @return Unmodifiable list of available contexts
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
 	 */
-	public List<Repository> getRepositories() throws OntoDriverException;
+	public List<URI> getContexts() throws OntoDriverException;
 
 	/**
 	 * Loads from ontology and sets value of field {@code fieldName}. </p>

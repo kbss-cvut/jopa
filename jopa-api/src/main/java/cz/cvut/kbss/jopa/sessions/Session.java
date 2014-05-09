@@ -1,8 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.net.URI;
 import java.util.List;
-
-import cz.cvut.kbss.jopa.model.Repository;
 
 public interface Session {
 
@@ -24,17 +23,15 @@ public interface Session {
 	 * 
 	 * @param object
 	 *            Object
-	 * @param entityOrigin
-	 *            Entity origin identifier
+	 * @param context
+	 *            Entity context URI
 	 */
-	public void removeObjectFromCache(Object object, EntityOrigin entityOrigin);
+	public void removeObjectFromCache(Object object, URI context);
 
 	/**
-	 * Gets repositories available to this session. </p>
+	 * Gets repository contexts available to this session.
 	 * 
-	 * The repositories are ordered by their priority.
-	 * 
-	 * @return Unmodifiable list of repositories
+	 * @return Unmodifiable list of context URIs
 	 */
-	public List<Repository> getRepositories();
+	public List<URI> getContexts();
 }

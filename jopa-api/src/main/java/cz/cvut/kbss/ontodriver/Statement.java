@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import java.net.URI;
+
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -16,15 +17,14 @@ public interface Statement {
 	 * 
 	 * @param sparql
 	 *            The statement to execute
-	 * @param repository
-	 *            Specifies repository and contexts against which the query will
-	 *            be evaluated
+	 * @param contexts
+	 *            Specifies contexts against which to run the query. Since this
+	 *            parameter is optional, it is defined as varargs.
 	 * @return {@code ResultSet} containing results of the query
 	 * @throws OntoDriverException
 	 *             If an error occurs during query execution
 	 */
-	public ResultSet executeQuery(String sparql, RepositoryID repository)
-			throws OntoDriverException;
+	public ResultSet executeQuery(String sparql, URI... contexts) throws OntoDriverException;
 
 	/**
 	 * Execute the specified SPARQL update query. </p>
@@ -34,14 +34,14 @@ public interface Statement {
 	 * 
 	 * @param sparql
 	 *            The statement to execute
-	 * @param repository
-	 *            Identifier of repository (and thus contexts) against which the
-	 *            query should be evaluated
+	 * @param contexts
+	 *            Specifies contexts against which to run the query. Since this
+	 *            parameter is optional, it is defined as varargs.
 	 * @return Number of affected axioms
 	 * @throws OntoDriverException
 	 *             If an error occurs during query execution
 	 */
-	public int executeUpdate(String sparql, RepositoryID repository) throws OntoDriverException;
+	public int executeUpdate(String sparql, URI... contexts) throws OntoDriverException;
 
 	/**
 	 * Use the transactional ontology for query processing. </p>

@@ -15,6 +15,7 @@
 
 package cz.cvut.kbss.jopa.model;
 
+import java.net.URI;
 import java.util.List;
 
 import javax.persistence.EntityExistsException;
@@ -30,6 +31,30 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 public interface EntityManager {
+
+	/**
+	 * Make an instance managed and persistent. </p>
+	 * 
+	 * The entity is persisted into the default context.
+	 * 
+	 * @param entity
+	 *            entity instance
+	 * @throws EntityExistsException
+	 *             if the entity already exists. (The EntityExistsException may
+	 *             be thrown when the persist operation is invoked, or the
+	 *             EntityExistsException or another PersistenceException may be
+	 *             thrown at flush or commit time.)
+	 * @throws IllegalArgumentException
+	 *             if not an entity
+	 * @throws NullPointerException
+	 *             If {@code entity} is {@code null}
+	 * @throws TransactionRequiredException
+	 *             if invoked on a container-managed entity manager of type
+	 *             PersistenceContextType.TRANSACTION and there is no
+	 *             transaction.
+	 * @see #persist(Object, EntityDescriptor)
+	 */
+	public void persist(final Object entity);
 
 	/**
 	 * Make an instance managed and persistent. </p>
@@ -57,6 +82,24 @@ public interface EntityManager {
 	 * @see #getAvailableContexts()
 	 */
 	public void persist(final Object entity, final EntityDescriptor descriptor);
+
+	/**
+	 * Merge the state of the given entity into the current persistence context.
+	 * </p>
+	 * 
+	 * The entity is merged into the default repository context.
+	 * 
+	 * @param entity
+	 *            The entity to merge
+	 * @return the instance that the state was merged to
+	 * @throws IllegalArgumentException
+	 *             if instance is not an entity or is a removed entity
+	 * @throws TransactionRequiredException
+	 *             if invoked on a container-managed entity manager of type
+	 *             PersistenceContextType.TRANSACTION and there is no
+	 *             transaction.
+	 */
+	public <T> T merge(final T entity);
 
 	/**
 	 * Merge the state of the given entity into the current persistence context
@@ -88,6 +131,28 @@ public interface EntityManager {
 	 *             transaction.
 	 */
 	public void remove(final Object entity);
+
+	/**
+	 * Find by primary key. </p>
+	 * 
+	 * Search for an entity of the specified class and primary key. If the
+	 * entity instance is contained in the persistence context, it is returned
+	 * from there. </p>
+	 * 
+	 * @param entityClass
+	 *            Entity class
+	 * @param primaryKey
+	 *            Primary key
+	 * @return the found entity instance or {@code null} if the entity does not
+	 *         exist in the given ontology context
+	 * @throws IllegalArgumentException
+	 *             if the first argument does not denote an entity type or the
+	 *             second argument is not a valid type for that entity’s primary
+	 *             key
+	 * @throws NullPointerException
+	 *             If {@code entityClass}, {@code primaryKey} is {@code null}
+	 */
+	public <T> T find(final Class<T> entityClass, final Object primaryKey);
 
 	/**
 	 * Find by primary key. </p>
@@ -236,14 +301,14 @@ public interface EntityManager {
 	public boolean contains(Object entity);
 
 	/**
-	 * Checks consistency of the specified repository.
+	 * Checks consistency of the specified context.
 	 * 
-	 * @param repository
-	 *            Repository identifier
+	 * @param context
+	 *            Context URI
 	 * @return {@code true} if consistent, {@code false} otherwise
 	 */
 	@NonJPA
-	public boolean checkConsistency(RepositoryID repository);
+	public boolean checkConsistency(URI context);
 
 	// TODO JPA 2.0 public LockModeType getLockMode(Object entity)
 	// TODO JPA 2.0 setProperty
@@ -255,14 +320,12 @@ public interface EntityManager {
 	 * 
 	 * @param qlString
 	 *            a Java Persistence query string
-	 * @param repository
-	 *            Repository identifier
 	 * @return the new query instance
 	 * @throws IllegalArgumentException
 	 *             if query string is not valid
 	 */
 	@NonJPA
-	public Query createQuery(String qlString, RepositoryID repository);
+	public Query createQuery(String qlString);
 
 	// TODO JPA 2.0 TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery)
 
@@ -274,12 +337,10 @@ public interface EntityManager {
 	 *            query string
 	 * @param resultClass
 	 *            result type
-	 * @param repository
-	 *            repository identifier
 	 * @return the new query instance
 	 */
 	@NonJPA
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass, RepositoryID repository);
+	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass);
 
 	//
 	// /**
@@ -303,11 +364,9 @@ public interface EntityManager {
 	 * 
 	 * @param sqlString
 	 *            a native SPARQL query string
-	 * @param repository
-	 *            repository identifier
 	 * @return the new query instance
 	 */
-	public Query<List<String>> createNativeQuery(String sqlString, RepositoryID repository);
+	public Query<List<String>> createNativeQuery(String sqlString);
 
 	/**
 	 * Create an instance of Query for executing a native SPARQL-DL query
@@ -317,12 +376,9 @@ public interface EntityManager {
 	 *            a native SQL query string
 	 * @param resultClass
 	 *            the class of the resulting instance(s)
-	 * @param repository
-	 *            repository identifier
 	 * @return the new query instance
 	 */
-	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass,
-			RepositoryID repository);
+	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass);
 
 	// /**
 	// * Create an instance of Query for executing a native SQL query.
@@ -402,17 +458,13 @@ public interface EntityManager {
 	public String getLabel(final String iri);
 
 	/**
-	 * Returns a list of ontology repositories available to this entity manager.
+	 * Returns a list of repository contexts available to this entity manager.
 	 * </p>
 	 * 
-	 * These repositories represent ontology storages that are accessible
-	 * through this manager. They are ordered descending by their priority. The
-	 * list itself is not modifiable.
-	 * 
-	 * @return List of repository instances
+	 * @return List of repository context URIs
 	 */
 	@NonJPA
-	public List<Repository> getRepositories();
+	public List<URI> getContexts();
 
 	// TODO JPA 2.0 public CriteriaBuilder getCriteriaBuilder();
 	public Metamodel getMetamodel();

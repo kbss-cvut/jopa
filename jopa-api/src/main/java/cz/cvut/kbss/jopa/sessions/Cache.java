@@ -2,8 +2,6 @@ package cz.cvut.kbss.jopa.sessions;
 
 import java.net.URI;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
-
 /**
  * Interface used to interact with the second-level cache. If a cache is not in
  * use, the methods of this interface have no effect, except for contains, which
@@ -20,7 +18,7 @@ public interface Cache {
 	 * Checks whether the cache contains data for the given entity. </p>
 	 * 
 	 * This method searches all the available contexts and returns true on
-	 * finding the first occurence of matching entity.
+	 * finding the first occurrence of matching entity.
 	 * 
 	 * @param cls
 	 *            entity class
@@ -35,27 +33,27 @@ public interface Cache {
 	 * Checks whether the cache contains data for the given entity (in the given
 	 * context only).
 	 * 
-	 * @param entityOrigin
-	 *            Entity origin identifier
 	 * @param cls
 	 *            Entity class
 	 * @param primaryKey
 	 *            Primary key
+	 * @param context
+	 *            Context URI
 	 * @return {@code boolean} indicating whether the entity is in the cache
 	 */
-	public boolean contains(EntityOrigin entityOrigin, Class<?> cls, Object primaryKey);
+	public boolean contains(Class<?> cls, Object primaryKey, URI context);
 
 	/**
 	 * Removes the data for the given entity from the cache.
 	 * 
-	 * @param entityOrigin
-	 *            Entity origin
 	 * @param cls
 	 *            Entity class
 	 * @param primaryKey
 	 *            Primary key
+	 * @param context
+	 *            Cotnext URI
 	 */
-	public void evict(EntityOrigin entityOrigin, Class<?> cls, Object primaryKey);
+	public void evict(Class<?> cls, Object primaryKey, URI context);
 
 	/**
 	 * Removes the data for entities of the specified class (and its subclasses)
@@ -69,13 +67,13 @@ public interface Cache {
 	public void evict(Class<?> cls);
 
 	/**
-	 * Removes the data for entities of the specified repository contexts from
+	 * Removes the data for entities of the specified repository context from
 	 * the cache.
 	 * 
 	 * @param contextUri
 	 *            URI of {@code Context}
 	 */
-	public void evict(RepositoryID repository);
+	public void evict(URI contextUri);
 
 	/**
 	 * Clears the cache.

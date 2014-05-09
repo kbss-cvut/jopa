@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -23,5 +24,5 @@ public interface ObjectChangeSet {
 
 	public Object getChangedObject();
 
-	public EntityOrigin getEntityOrigin();
+	public URI getEntityContext();
 }

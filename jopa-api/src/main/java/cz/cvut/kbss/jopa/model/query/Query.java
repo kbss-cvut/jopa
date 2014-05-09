@@ -15,8 +15,11 @@
 
 package cz.cvut.kbss.jopa.model.query;
 
+import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 
+import javax.persistence.PersistenceException;
 import javax.transaction.TransactionRequiredException;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
@@ -59,6 +62,39 @@ public interface Query<ResultElement> {
 	ResultElement getSingleResult();
 
 	/**
+	 * Adds URI of context against which this query will be executed. </p>
+	 * 
+	 * If no context was specified, the query is run against the default
+	 * repository context.
+	 * 
+	 * @param context
+	 *            Context URI
+	 * @return This instance
+	 */
+	Query<ResultElement> addContext(URI context);
+
+	/**
+	 * Adds URIs of contexts against which this query will be executed. </p>
+	 * 
+	 * If no context was specified, the query is run against the default
+	 * repository context.
+	 * 
+	 * @param contexts
+	 *            Context URIs
+	 * @return This instance
+	 */
+	Query<ResultElement> addContexts(Collection<URI> contexts);
+
+	/**
+	 * Clears the previously set contexts.
+	 * 
+	 * @return This instance
+	 * @see #addContext(URI)
+	 * @see #addContexts(Collection)
+	 */
+	Query<ResultElement> clearContexts();
+
+	/**
 	 * Set the maximum number of results to retrieve.
 	 * 
 	 * @param maxResult
@@ -77,5 +113,4 @@ public interface Query<ResultElement> {
 	 * @return maximum number of results
 	 */
 	int getMaxResults();
-
 }

@@ -5,14 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import cz.cvut.kbss.jopa.sessions.EntityOrigin;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 /**
  * Describes storage properties of an entity. </p>
  * 
- * I. e. repository and context in which the individual is stored and optionally
- * context of each attribute (in the same repository). </p>
+ * I. e. context in which the individual is stored and optionally context of
+ * each attribute (in the same repository). </p>
  * 
  * If context of a field is not specified in this descriptor, the same context
  * as the entity's is assumed and used.
@@ -22,18 +21,10 @@ import cz.cvut.kbss.jopa.utils.ErrorUtils;
  */
 public final class EntityDescriptor {
 
-	private final Repository repository;
 	private URI entityContext;
 	private Map<String, URI> fieldContexts;
 
-	private EntityOrigin origin;
-
-	public EntityDescriptor(Repository repository) {
-		this.repository = Objects.requireNonNull(repository,
-				"Argument 'repository' cannot be null.");
-		if (repository.getId() < 0) {
-			throw new IllegalArgumentException("Repository id cannot be less than 0.");
-		}
+	public EntityDescriptor() {
 		this.fieldContexts = new HashMap<>();
 	}
 
@@ -48,33 +39,10 @@ public final class EntityDescriptor {
 	 *            The instance to copy
 	 */
 	public EntityDescriptor(EntityDescriptor other) {
-		Objects.requireNonNull(other, "Argument 'repository' cannot be null.");
+		Objects.requireNonNull(other, "Argument 'other' cannot be null.");
 
-		this.repository = other.repository;
 		this.entityContext = other.entityContext;
 		this.fieldContexts = new HashMap<>(other.fieldContexts);
-	}
-
-	/**
-	 * Gets repository identifier.
-	 * 
-	 * @return
-	 */
-	public Repository getRepository() {
-		return repository;
-	}
-
-	public Integer getRepositoryId() {
-		return repository.getId();
-	}
-
-	/**
-	 * Gets repository physical URI.
-	 * 
-	 * @return URI
-	 */
-	public URI getRepositoryUri() {
-		return repository.getPhysicalUri();
 	}
 
 	/**
@@ -148,23 +116,10 @@ public final class EntityDescriptor {
 		return this;
 	}
 
-	/**
-	 * Gets origin for an entity described by this descriptor.
-	 * 
-	 * @return EntityOrigin
-	 */
-	public EntityOrigin getEntityOrigin() {
-		if (origin == null) {
-			this.origin = new EntityOrigin(this);
-		}
-		return origin;
-	}
-
 	@Override
 	public String toString() {
-		final StringBuilder out = new StringBuilder("EntityDescriptor: repository = ")
-				.append(repository.getPhysicalUri()).append(", entityContexts = ")
-				.append(entityContext).append(", fieldContext = ").append(fieldContexts);
+		final StringBuilder out = new StringBuilder("EntityDescriptor: context = ")
+				.append(entityContext).append(", fieldContexts = ").append(fieldContexts);
 		return out.toString();
 	}
 
