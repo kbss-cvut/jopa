@@ -62,6 +62,25 @@ public interface Connection extends Transactional {
 	public boolean isConsistent(URI context) throws OntoDriverException;
 
 	/**
+	 * Checks whether the repository contains an individual with the specified
+	 * primary key. </p>
+	 * 
+	 * The {@code context} may be {@code code}, indicating that the whole
+	 * repository should be searched.
+	 * 
+	 * @param primaryKey
+	 *            Individual primary key
+	 * @param context
+	 *            Context URI
+	 * @return {@code true} if repository contains matching individual,
+	 *         {@code false} otherwise.
+	 * @throws OntoDriverException
+	 *             If called on a closed connection or an ontology access error
+	 *             occurs
+	 */
+	public boolean contains(Object primaryKey, URI context) throws OntoDriverException;
+
+	/**
 	 * Finds entity with the specified primary key and returns it as the
 	 * specified type. </p>
 	 * 

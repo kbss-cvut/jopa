@@ -323,14 +323,17 @@ public interface EntityManager {
 	public boolean contains(Object entity);
 
 	/**
-	 * Checks consistency of the specified context.
+	 * Checks consistency of the specified context. </p>
+	 * 
+	 * The context URI can be {@code null}, which indicates that consistency of
+	 * the whole repository should be verified.
 	 * 
 	 * @param context
-	 *            Context URI
+	 *            Context URI, can be {@code null}
 	 * @return {@code true} if consistent, {@code false} otherwise
 	 */
 	@NonJPA
-	public boolean checkConsistency(URI context);
+	public boolean isConsistent(URI context);
 
 	// TODO JPA 2.0 public LockModeType getLockMode(Object entity)
 	// TODO JPA 2.0 setProperty

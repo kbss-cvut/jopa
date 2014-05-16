@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -62,18 +63,19 @@ public interface UnitOfWork extends Session {
 	public boolean isObjectManaged(Object entity);
 
 	/**
-	 * Checks whether context specified by {@code context} is consistent.
+	 * Checks whether context specified by {@code context} is consistent. </p>
+	 * 
+	 * Can be {@code null}, indicating that consistency of the whole repository
+	 * should be checked.
 	 * 
 	 * @param context
 	 *            Context URI
 	 * @return {@code true} if the context is consistent, {@code false}
 	 *         otherwise
-	 * @throws NullPointerException
-	 *             If {@code context} is {@code null}
 	 * @throws OWLPersistenceException
 	 *             If an ontology access error occurs
 	 */
-	public boolean checkConsistency(URI context);
+	public boolean isConsistent(URI context);
 
 	/**
 	 * Merges the state of the given entity into the current persistence
@@ -192,6 +194,13 @@ public interface UnitOfWork extends Session {
 	 * 
 	 */
 	public void writeUncommittedChanges();
+
+	/**
+	 * Gets repository contexts available to this session.
+	 * 
+	 * @return Unmodifiable list of context URIs
+	 */
+	public List<URI> getContexts();
 
 	/**
 	 * Gets a set of all types managed by this persistence context. </p>

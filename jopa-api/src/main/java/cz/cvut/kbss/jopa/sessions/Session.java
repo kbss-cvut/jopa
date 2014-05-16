@@ -1,7 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.net.URI;
-import java.util.List;
 
 public interface Session {
 
@@ -27,11 +26,4 @@ public interface Session {
 	 *            Entity context URI
 	 */
 	public void removeObjectFromCache(Object object, URI context);
-
-	/**
-	 * Gets repository contexts available to this session.
-	 * 
-	 * @return Unmodifiable list of context URIs
-	 */
-	public List<URI> getContexts();
 }

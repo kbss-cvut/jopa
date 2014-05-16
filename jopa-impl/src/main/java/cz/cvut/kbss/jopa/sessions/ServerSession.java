@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,6 @@ import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
@@ -35,7 +35,6 @@ public class ServerSession extends AbstractSession {
 
 	private final Metamodel metamodel;
 	private final Set<Class<?>> managedClasses;
-	private List<Repository> repositories;
 
 	private CacheManager liveObjectCache;
 	private StorageAccessor storageAccessor;
@@ -91,16 +90,9 @@ public class ServerSession extends AbstractSession {
 		this.uowsToEntities = new WeakHashMap<UnitOfWorkImpl, Set<Object>>();
 		this.storageAccessor = new StorageAccessorImpl(metamodel, this, storageProperties,
 				properties);
-		final Connection c = storageAccessor.acquireConnection();
-		try {
-			this.repositories = c.getRepositories();
-			c.close();
-		} catch (OntoDriverException e) {
-			throw new OWLPersistenceException("Unable to initialize server session.", e);
-		}
 		String cache = properties.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
 		if (cache == null || cache.equals("on")) {
-			this.liveObjectCache = new CacheManagerImpl(this, properties);
+			this.liveObjectCache = new CacheManagerImpl(properties);
 			liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
 		} else {
 			this.liveObjectCache = new DisabledCacheManager();
@@ -170,7 +162,7 @@ public class ServerSession extends AbstractSession {
 	}
 
 	@Override
-	public void removeObjectFromCache(Object object, EntityOrigin repository) {
+	public void removeObjectFromCache(Object object, URI context) {
 		// do nothing
 	}
 
@@ -206,12 +198,6 @@ public class ServerSession extends AbstractSession {
 			uowsToEntities.put(uow, new HashSet<Object>());
 		}
 		uowsToEntities.get(uow).add(entity);
-	}
-
-	@Override
-	public List<Repository> getRepositories() {
-		// The list itself is unmodifiable
-		return repositories;
 	}
 
 	/**

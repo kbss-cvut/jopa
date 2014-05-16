@@ -52,7 +52,6 @@ import org.semanticweb.owlapi.model.RemoveOntologyAnnotation;
 import org.semanticweb.owlapi.model.SetOntologyID;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
-import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
@@ -106,7 +105,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	public enum State {
-		NEW, MANAGED, DETACHED, REMOVED;
+		MANAGED, NOT_MANAGED, REMOVED;
 	}
 
 	@Override
@@ -125,7 +124,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
 		switch (getState(entity, descriptor)) {
-		case NEW:
+		case NOT_MANAGED:
 			try {
 				getCurrentPersistenceContext().registerNewObject(entity, descriptor);
 			} catch (Throwable e) {
@@ -166,8 +165,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				}
 			}.start(this, entity, CascadeType.PERSIST);
 			break;
-		case DETACHED:
-			throw new OWLEntityExistsException("Entity " + entity + " already exists.");
 		case REMOVED:
 			getCurrentPersistenceContext().revertObject(entity);
 			break;
@@ -210,9 +207,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		Class<T> clz = (Class<T>) entity.getClass();
 
 		switch (getState(entity, descriptor)) {
-		case NEW:
-			getCurrentPersistenceContext().registerNewObject(entity, descriptor);
-			// Intentional case fall-through
 		case MANAGED:
 			new OneLevelCascadeExplorer() {
 				@Override
@@ -222,7 +216,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				}
 			}.start(this, entity, CascadeType.MERGE);
 			return entity;
-		case DETACHED:
+		case NOT_MANAGED:
 			final T merged;
 			merged = getCurrentPersistenceContext().mergeDetached(entity, descriptor);
 
@@ -269,9 +263,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		ensureOpen();
 
 		switch (getState(object)) {
-		case NEW:
-		case DETACHED:
-			throw new IllegalArgumentException();
 		case MANAGED:
 			getCurrentPersistenceContext().removeObject(object);
 		case REMOVED:
@@ -282,6 +273,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				}
 			}.start(this, object, CascadeType.REMOVE);
 			break;
+		case NOT_MANAGED:
+			throw new IllegalArgumentException("Entity " + object
+					+ " is not managed and cannot be removed.");
 		}
 	}
 
@@ -333,10 +327,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
 		switch (getState(entity, descriptor)) {
-		case NEW:
-		case DETACHED:
-		case REMOVED:
-			throw new IllegalArgumentException();
 		case MANAGED:
 			this.getCurrentPersistenceContext().revertObject(entity);
 			new SimpleOneLevelCascadeExplorer() {
@@ -345,6 +335,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 					refresh(ox2);
 				}
 			}.start(this, entity, CascadeType.REFRESH);
+		default:
+			throw new IllegalArgumentException("Entity " + entity
+					+ " is not managed and cannot be refreshed.");
 		}
 	}
 
@@ -376,8 +369,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				}
 			};
 			break;
-		case NEW:
-		case DETACHED:
+		default:
 			break;
 		}
 	}
@@ -435,11 +427,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public boolean checkConsistency(URI context) {
-		if (context == null) {
-			return false;
-		}
-		return getCurrentPersistenceContext().checkConsistency(context);
+	public boolean isConsistent(URI context) {
+		return getCurrentPersistenceContext().isConsistent(context);
 	}
 
 	@Override

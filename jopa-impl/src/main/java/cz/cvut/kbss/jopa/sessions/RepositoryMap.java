@@ -3,23 +3,19 @@ package cz.cvut.kbss.jopa.sessions;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.Repository;
 
 final class RepositoryMap {
 
-	private final Map<Integer, Map<URI, Map<Object, Object>>> map;
+	private static final URI DEFAULT_CONTEXT = URI.create("http://defaultContext");
+
+	private final Map<URI, Map<Object, Object>> map;
 	private Map<Object, EntityDescriptor> entityDescriptors;
 
-	public RepositoryMap(List<Repository> repos) {
-		final int size = repos.size();
-		this.map = new HashMap<>(size);
-		for (Repository r : repos) {
-			map.put(r.getId(), new HashMap<URI, Map<Object, Object>>());
-		}
+	RepositoryMap() {
+		this.map = new HashMap<>();
 	}
 
 	void initDescriptors() {
@@ -43,11 +39,17 @@ final class RepositoryMap {
 		entities.remove(key);
 	}
 
+	/**
+	 * Make sure to call {@link #initDescriptors()} before calling this.
+	 */
 	void addEntityToRepository(Object entity, EntityDescriptor descriptor) {
 		assert entityDescriptors != null;
 		entityDescriptors.put(entity, descriptor);
 	}
 
+	/**
+	 * Make sure to call {@link #initDescriptors()} before calling this.
+	 */
 	void removeEntityToRepository(Object entity) {
 		assert entityDescriptors != null;
 		entityDescriptors.remove(entity);
@@ -72,6 +74,9 @@ final class RepositoryMap {
 		return entities.get(key);
 	}
 
+	/**
+	 * Make sure to call {@link #initDescriptors()} before calling this.
+	 */
 	EntityDescriptor getEntityDescriptor(Object entity) {
 		assert entityDescriptors != null;
 		assert entity != null;
@@ -80,7 +85,7 @@ final class RepositoryMap {
 	}
 
 	void clear() {
-		for (Map<URI, Map<Object, Object>> m : map.values()) {
+		for (Map<Object, Object> m : map.values()) {
 			m.clear();
 		}
 		if (entityDescriptors != null) {
@@ -89,17 +94,14 @@ final class RepositoryMap {
 	}
 
 	private Map<Object, Object> getMap(EntityDescriptor descriptor) {
-		final Map<URI, Map<Object, Object>> m = map.get(descriptor.getRepositoryId());
-		if (m == null) {
-			throw new IllegalArgumentException("Unknown repository " + descriptor);
-		}
-		final URI ctx = descriptor.getEntityContext();
+		final URI ctx = descriptor.getEntityContext() != null ? descriptor.getEntityContext()
+				: DEFAULT_CONTEXT;
 		Map<Object, Object> entities;
-		if (!m.containsKey(ctx)) {
+		if (!map.containsKey(ctx)) {
 			entities = new HashMap<>();
-			m.put(ctx, entities);
+			map.put(ctx, entities);
 		} else {
-			entities = m.get(ctx);
+			entities = map.get(ctx);
 		}
 		return entities;
 	}

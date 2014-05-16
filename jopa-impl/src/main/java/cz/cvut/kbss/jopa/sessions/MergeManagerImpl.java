@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.net.URI;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -95,9 +96,8 @@ public class MergeManagerImpl implements MergeManager {
 		// Put the original object into the shared session cache
 		Object newObject = changeSet.getChangedObject();
 		final IRI primaryKey = EntityPropertiesUtils.getPrimaryKey(newObject, uow.getMetamodel());
-		final EntityOrigin origin = changeSet.getEntityOrigin();
-		assert origin != null;
-		uow.putObjectIntoCache(primaryKey, newObject, origin);
+		final URI context = changeSet.getEntityContext();
+		uow.putObjectIntoCache(primaryKey, newObject, context);
 	}
 
 }
