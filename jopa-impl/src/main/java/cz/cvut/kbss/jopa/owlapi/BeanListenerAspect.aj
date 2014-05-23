@@ -20,6 +20,7 @@ import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
@@ -61,7 +62,8 @@ public aspect BeanListenerAspect {
 			throw new OWLPersistenceException(e.getMessage());
 		}
 		if (CloneBuilderImpl.isFieldInferred(field)) {
-			throw new OWLPersistenceException("Modifying inferred attributes is forbidden.");
+			throw new OWLInferredAttributeModifiedException(
+					"Modifying inferred attributes is forbidden.");
 		}
 	}
 

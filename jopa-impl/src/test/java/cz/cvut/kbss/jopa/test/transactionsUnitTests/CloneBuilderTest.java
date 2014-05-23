@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.test.transactionsUnitTests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
@@ -10,6 +11,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -320,6 +322,21 @@ public class CloneBuilderTest {
 			assertEquals(or.getTypes().size(), cl.getTypes().size());
 			assertTrue(cl.getTypes() instanceof IndirectCollection);
 		}
+	}
+
+	@Test
+	public void testReset() throws Exception {
+		final Field visitedObjectsField = builder.getClass().getDeclaredField("visitedObjects");
+		visitedObjectsField.setAccessible(true);
+		@SuppressWarnings("unchecked")
+		final Map<Object, Object> visitedObjects = (Map<Object, Object>) visitedObjectsField
+				.get(builder);
+		assertTrue(visitedObjects.isEmpty());
+		final OWLClassA res = (OWLClassA) builder.buildClone(entityA, defaultDescriptor);
+		assertNotNull(res);
+		assertFalse(visitedObjects.isEmpty());
+		builder.reset();
+		assertTrue(visitedObjects.isEmpty());
 	}
 
 	private static Map<String, Set<String>> createProperties() {

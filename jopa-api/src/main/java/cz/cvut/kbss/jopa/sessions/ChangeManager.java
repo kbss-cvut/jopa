@@ -29,8 +29,9 @@ public interface ChangeManager {
 	 *            this change set the changes should be propagated
 	 * @return {@code true} if there were any changes, {@code false} otherwise
 	 * @throws IllegalAccessException
-	 * @throws OWLInferredAttributeModifiedException
 	 * @throws IllegalArgumentException
+	 * @throws NullPointerException
+	 *             If {@code changeSet} is {@code null}
 	 */
 	public boolean calculateChanges(ObjectChangeSet changeSet) throws IllegalAccessException,
 			IllegalArgumentException, OWLInferredAttributeModifiedException;

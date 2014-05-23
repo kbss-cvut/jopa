@@ -7,7 +7,7 @@ package cz.cvut.kbss.jopa.exceptions;
  * @author kidney
  * 
  */
-public class OWLInferredAttributeModifiedException extends Exception {
+public class OWLInferredAttributeModifiedException extends RuntimeException {
 
 	/**
 	 * 

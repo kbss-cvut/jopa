@@ -5,12 +5,18 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.junit.Before;
@@ -18,40 +24,97 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.ChangeManager;
 import cz.cvut.kbss.jopa.sessions.ChangeManagerImpl;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.CloneBuilder;
-import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.utils.ServerSessionStub;
+import cz.cvut.kbss.jopa.test.OWLClassF;
 
 public class ChangeManagerTest {
 
 	private static final URI DEFAULT_CONTEXT = URI.create("http://defaultContext");
-	private static ChangeManager manager;
-	private static CloneBuilder builder;
+
 	private static OWLClassA testA;
 	private static OWLClassD testD;
 	private static OWLClassC testC;
 	private static OWLClassA testAClone;
 	private static OWLClassD testDClone;
-	private static OWLClassC testCClone;
+	private static OWLClassF testF;
+	private OWLClassC testCClone;
+	private static OWLClassB testB;
+	private static OWLClassB testBClone;
 	private static Set<String> typesCollection;
 	private static TestEntity primitivesTest;
+	private static EntityDescriptor defaultDescriptor;
+
+	private ChangeManager manager;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		manager = new ChangeManagerImpl();
-		builder = new CloneBuilderImpl(new UnitOfWorkImpl(new ServerSessionStub()));
+		initAs();
+		initBs();
+		initC();
+		initDs();
+		typesCollection = new HashSet<String>();
+		for (int i = 0; i < 10; i++) {
+			typesCollection.add(Integer.toString(i));
+		}
+		testF = new OWLClassF();
+		testF.setUri(URI.create("http://testF"));
+		primitivesTest = new TestEntity();
+		primitivesTest.setId(0);
+		defaultDescriptor = new EntityDescriptor();
+		defaultDescriptor.setEntityContext(DEFAULT_CONTEXT);
+	}
+
+	private static void initAs() {
 		testA = new OWLClassA();
 		final URI uri = URI.create("http://testA");
 		testA.setUri(uri);
 		testA.setStringAttribute("TestStringAttribute");
+		testAClone = new OWLClassA();
+		testAClone.setUri(uri);
+	}
+
+	private static void initBs() {
+		testB = new OWLClassB();
+		testB.setUri(URI.create("http://testB"));
+		testB.setStringAttribute("someString");
+		final Map<String, Set<String>> props = new HashMap<>();
+		props.put("propertyOne", Collections.singleton("valueOne"));
+		props.put("propertyTwo", Collections.singleton("valueTwo"));
+		final Set<String> multiProp = new HashSet<>();
+		multiProp.add("valueThree");
+		multiProp.add("valueFour");
+		props.put("propertyThree", multiProp);
+		testB.setProperties(props);
+		testBClone = new OWLClassB();
+		testBClone.setUri(testB.getUri());
+		testBClone.setStringAttribute(testB.getStringAttribute());
+	}
+
+	private static void initC() {
+		testC = new OWLClassC();
+		final URI pkC = URI.create("http://testC");
+		testC.setUri(pkC);
+		List<OWLClassA> refList = new ArrayList<OWLClassA>(10);
+		for (int i = 0; i < 10; i++) {
+			OWLClassA a = new OWLClassA();
+			URI pkA = URI.create("http://testARef" + (i + 1));
+			a.setUri(pkA);
+			a.setStringAttribute("stringForA" + (i + 1));
+			refList.add(a);
+		}
+		testC.setReferencedList(refList);
+	}
+
+	private static void initDs() {
 		final URI uri2 = URI.create("http://referencedA");
 		final OWLClassA refA = new OWLClassA();
 		refA.setUri(uri2);
@@ -60,39 +123,35 @@ public class ChangeManagerTest {
 		final URI uri3 = URI.create("http://testD");
 		testD.setUri(uri3);
 		testD.setOwlClassA(refA);
-		testAClone = new OWLClassA();
-		testAClone.setUri(uri);
 		testDClone = new OWLClassD();
 		testDClone.setUri(uri3);
-		typesCollection = new HashSet<String>();
-		int i;
-		for (i = 0; i < 10; i++) {
-			typesCollection.add(Integer.toString(i));
-		}
-		testC = new OWLClassC();
-		final URI pkC = URI.create("http://testC");
-		testC.setUri(pkC);
-		List<OWLClassA> refList = new ArrayList<OWLClassA>(10);
-		for (i = 0; i < 10; i++) {
-			OWLClassA a = new OWLClassA();
-			URI pkA = URI.create("http://testARef" + (i + 1));
-			a.setUri(pkA);
-			a.setStringAttribute("stringForA" + (i + 1));
-			refList.add(a);
-		}
-		testC.setReferencedList(refList);
-		primitivesTest = new TestEntity();
-		primitivesTest.setId(0);
 	}
 
 	@Before
 	public void setup() {
-		builder.reset();
+		manager = new ChangeManagerImpl();
 		testAClone.setStringAttribute(null);
 		testAClone.setTypes(null);
 		testA.setTypes(null);
-		testCClone = null;
-		testCClone = (OWLClassC) builder.buildClone(testC, DEFAULT_CONTEXT);
+		final Map<String, Set<String>> cloneProps = new HashMap<>();
+		for (Entry<String, Set<String>> e : testB.getProperties().entrySet()) {
+			final Set<String> set = new HashSet<>();
+			for (String s : e.getValue()) {
+				set.add(s);
+			}
+			cloneProps.put(e.getKey(), set);
+		}
+		testBClone.setProperties(cloneProps);
+		testCClone = new OWLClassC();
+		testCClone.setUri(testC.getUri());
+		final List<OWLClassA> clonedList = new ArrayList<>(testC.getReferencedList().size());
+		for (OWLClassA a : testC.getReferencedList()) {
+			final OWLClassA newA = new OWLClassA();
+			newA.setUri(a.getUri());
+			newA.setStringAttribute(a.getStringAttribute());
+			clonedList.add(newA);
+		}
+		testCClone.setReferencedList(clonedList);
 	}
 
 	@Test
@@ -155,34 +214,60 @@ public class ChangeManagerTest {
 	}
 
 	@Test
-	public void testCalculateSimpleChanges() throws IllegalAccessException,
-			IllegalArgumentException, OWLInferredAttributeModifiedException {
-		ObjectChangeSet chSet = builder.createObjectChangeSet(testA, testAClone, null);
-		chSet = manager.calculateChanges(chSet);
-		assertNotNull(chSet);
-		assertFalse(0 == chSet.getChanges().size());
+	public void testHasChangeSetFromNull() {
+		final OWLClassA a = new OWLClassA();
+		a.setUri(testAClone.getUri());
+		// The original has string attribute null
+		testAClone.setStringAttribute("someString");
+		assertTrue(manager.hasChanges(a, testAClone));
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testCalculateChangesNull() throws Exception {
+		manager.calculateChanges(null);
+		fail("This line should not have been reached.");
+	}
+
+	@Test
+	public void testCalculateChangesNoChanges() throws Exception {
+		final OWLClassA a = new OWLClassA();
+		a.setUri(testA.getUri());
+		a.setStringAttribute(testA.getStringAttribute());
+		final ObjectChangeSet chSet = createChangeSet(testA, a);
+		final boolean res = manager.calculateChanges(chSet);
+		assertFalse(res);
+		assertTrue(chSet.getChanges().isEmpty());
+	}
+
+	@Test
+	public void testCalculateSimpleChanges() throws Exception {
+		ObjectChangeSet chSet = createChangeSet(testA, testAClone);
+		assertTrue(chSet.getChanges().isEmpty());
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
+		assertFalse(chSet.getChanges().isEmpty());
 		assertTrue(chSet.getAttributesToChange().containsKey("stringAttribute"));
 	}
 
 	@Test
-	public void testCalcuateChangesPrimitives() throws IllegalAccessException,
-			IllegalArgumentException, OWLInferredAttributeModifiedException {
+	public void testCalcuateChangesPrimitives() throws Exception {
 		final TestEntity primClone = new TestEntity();
 		primClone.setId(primitivesTest.getId() + 10);
-		ObjectChangeSet chSet = builder.createObjectChangeSet(primitivesTest, primClone, null);
-		chSet = manager.calculateChanges(chSet);
-		assertNotNull(chSet);
-		assertFalse(0 == chSet.getChanges().size());
+		ObjectChangeSet chSet = createChangeSet(primitivesTest, primClone);
+		assertTrue(chSet.getChanges().isEmpty());
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
+		assertFalse(chSet.getChanges().isEmpty());
 		assertTrue(chSet.getAttributesToChange().containsKey("id"));
 	}
 
 	@Test
-	public void testCalculateReferenceChanges() throws IllegalAccessException,
-			IllegalArgumentException, OWLInferredAttributeModifiedException {
+	public void testCalculateReferenceChanges() throws Exception {
 		testDClone.setOwlClassA(testAClone);
-		ObjectChangeSet chSet = builder.createObjectChangeSet(testD, testDClone, null);
-		chSet = manager.calculateChanges(chSet);
-		assertNotNull(chSet);
+		ObjectChangeSet chSet = createChangeSet(testD, testDClone);
+		assertTrue(chSet.getChanges().isEmpty());
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
 		List<ChangeRecord> records = chSet.getChanges();
 		assertEquals(1, records.size());
 		assertEquals(testAClone, records.get(0).getNewValue());
@@ -190,25 +275,24 @@ public class ChangeManagerTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testCalculateCollectionChanges() throws IllegalAccessException,
-			IllegalArgumentException, OWLInferredAttributeModifiedException {
+	public void testCalculateCollectionChanges() throws Exception {
 		testA.setTypes(typesCollection);
 		Set<String> newCollection = new HashSet<String>(typesCollection);
 		newCollection.remove("8");
 		newCollection.add("String");
 		testAClone.setTypes(newCollection);
 		testAClone.setStringAttribute(testA.getStringAttribute());
-		ObjectChangeSet chSet = builder.createObjectChangeSet(testA, testAClone, null);
-		chSet = manager.calculateChanges(chSet);
-		assertNotNull(chSet);
+		ObjectChangeSet chSet = createChangeSet(testA, testAClone);
+		assertTrue(chSet.getChanges().isEmpty());
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
 		List<ChangeRecord> records = chSet.getChanges();
 		assertEquals(1, records.size());
 		assertTrue(((Set<String>) records.get(0).getNewValue()).contains("String"));
 	}
 
 	@Test
-	public void testCalculateMultipleChanges() throws IllegalAccessException,
-			IllegalArgumentException, OWLInferredAttributeModifiedException {
+	public void testCalculateMultipleChanges() throws Exception {
 		testA.setTypes(typesCollection);
 		Set<String> newCollection = new HashSet<String>(typesCollection);
 		newCollection.remove("8");
@@ -217,9 +301,10 @@ public class ChangeManagerTest {
 		final URI newURI = URI.create("http://newACloneURI");
 		testAClone.setUri(newURI);
 		testAClone.setStringAttribute("AnotherStringAttribute");
-		ObjectChangeSet chSet = builder.createObjectChangeSet(testA, testAClone, null);
-		chSet = manager.calculateChanges(chSet);
-		assertNotNull(chSet);
+		ObjectChangeSet chSet = createChangeSet(testA, testAClone);
+		assertTrue(chSet.getChanges().isEmpty());
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
 		List<ChangeRecord> records = chSet.getChanges();
 		assertEquals(3, records.size());
 		assertTrue(chSet.getAttributesToChange().containsKey("stringAttribute"));
@@ -228,37 +313,54 @@ public class ChangeManagerTest {
 	}
 
 	@Test
-	public void testCalculateChangesSetNull() throws IllegalAccessException,
-			IllegalArgumentException, OWLInferredAttributeModifiedException {
-		ObjectChangeSet chSet = builder.createObjectChangeSet(testA, testAClone, null);
-		chSet = manager.calculateChanges(chSet);
+	public void testCalculateChangesSetNull() throws Exception {
+		ObjectChangeSet chSet = createChangeSet(testA, testAClone);
+		assertTrue(chSet.getChanges().isEmpty());
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
+		assertFalse(chSet.getChanges().isEmpty());
 		assertNotNull(chSet);
 		assertNull(chSet.getAttributesToChange().get("stringAttribute").getNewValue());
 	}
 
 	@Test
-	public void testCalculateChangesRemoveItemFromReferenceList() throws IllegalAccessException,
-			IllegalArgumentException, OWLInferredAttributeModifiedException {
+	public void testCalculateChangeSetFromNull() throws Exception {
+		final OWLClassA a = new OWLClassA();
+		a.setUri(testAClone.getUri());
+		// The original has string attribute null
+		testAClone.setStringAttribute("someString");
+		final ObjectChangeSet chSet = createChangeSet(a, testAClone);
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
+		assertEquals(1, chSet.getAttributesToChange().size());
+		assertEquals(1, chSet.getChanges().size());
+		final ChangeRecord rec = chSet.getChanges().get(0);
+		assertNotNull(rec.getNewValue());
+	}
+
+	@Test
+	public void testCalculateChangesRemoveItemFromReferenceList() throws Exception {
 		testCClone.getReferencedList().remove(4);
-		ObjectChangeSet chSet = builder.createObjectChangeSet(testC, testCClone, null);
-		chSet = manager.calculateChanges(chSet);
-		assertNotNull(chSet);
+		ObjectChangeSet chSet = createChangeSet(testC, testCClone);
+		assertTrue(chSet.getChanges().isEmpty());
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
 		assertTrue(chSet.getAttributesToChange().containsKey("referencedList"));
 		assertEquals(1, chSet.getChanges().size());
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testCalculateChangesAddItemtoReferenceList() throws IllegalAccessException,
-			IllegalArgumentException, OWLInferredAttributeModifiedException {
+	public void testCalculateChangesAddItemtoReferenceList() throws Exception {
 		OWLClassA add = new OWLClassA();
 		final URI pk = URI.create("http://addedA");
 		add.setUri(pk);
 		add.setStringAttribute("string");
 		testCClone.getReferencedList().add(add);
-		ObjectChangeSet chSet = builder.createObjectChangeSet(testC, testCClone, null);
-		chSet = manager.calculateChanges(chSet);
-		assertNotNull(chSet);
+		ObjectChangeSet chSet = createChangeSet(testC, testCClone);
+		assertTrue(chSet.getChanges().isEmpty());
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
 		assertEquals(1, chSet.getChanges().size());
 		final ChangeRecord r = chSet.getChanges().get(0);
 		List<OWLClassA> refs = (List<OWLClassA>) r.getNewValue();
@@ -267,22 +369,73 @@ public class ChangeManagerTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void testCalculateChangesChangeItemInReferenceList() throws IllegalAccessException,
-			IllegalArgumentException, OWLInferredAttributeModifiedException {
+	@Test
+	public void testCalculateChangesChangeItemInReferenceList() throws Exception {
 		OWLClassA newOne = new OWLClassA();
 		final URI pk = URI.create("http://newOne");
 		newOne.setUri(pk);
 		newOne.setStringAttribute("newOnesString");
 		testCClone.getReferencedList().remove(3);
 		testCClone.getReferencedList().add(newOne);
-		ObjectChangeSet chSet = builder.createObjectChangeSet(testC, testCClone, null);
-		chSet = manager.calculateChanges(chSet);
-		assertNotNull(chSet);
+		ObjectChangeSet chSet = createChangeSet(testC, testCClone);
+		assertTrue(chSet.getChanges().isEmpty());
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
 		assertTrue(chSet.getAttributesToChange().containsKey("referencedList"));
 		assertEquals(1, chSet.getChanges().size());
 		final ChangeRecord r = chSet.getChanges().get(0);
 		List<OWLClassA> refs = (List<OWLClassA>) r.getNewValue();
 		assertTrue(refs.contains(newOne));
+	}
+
+	@Test
+	public void testCalculateChangesMapAddKey() throws Exception {
+		testBClone.getProperties().put("newProperty", Collections.singleton("propVal"));
+		final ObjectChangeSet chSet = createChangeSet(testB, testBClone);
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
+		assertEquals(1, chSet.getChanges().size());
+		assertTrue(chSet.getAttributesToChange().containsKey("properties"));
+	}
+
+	@Test
+	public void testCalculateChangesMapChangeValue() throws Exception {
+		final String key = testB.getProperties().keySet().iterator().next();
+		testBClone.getProperties().put(key, Collections.singleton("propVal"));
+		final ObjectChangeSet chSet = createChangeSet(testB, testBClone);
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
+		assertEquals(1, chSet.getChanges().size());
+		assertTrue(chSet.getAttributesToChange().containsKey("properties"));
+	}
+
+	@Test
+	public void testCalculateChangesMapAddValue() throws Exception {
+		final String key = testB.getProperties().keySet().iterator().next();
+		testBClone.getProperties().get(key).add("addedValue");
+		final ObjectChangeSet chSet = createChangeSet(testB, testBClone);
+		final boolean res = manager.calculateChanges(chSet);
+		assertTrue(res);
+		assertEquals(1, chSet.getChanges().size());
+		assertTrue(chSet.getAttributesToChange().containsKey("properties"));
+	}
+
+	@Test(expected = OWLInferredAttributeModifiedException.class)
+	public void testCalculateChangesSetInferred() throws Exception {
+		final OWLClassF fClone = new OWLClassF();
+		fClone.setUri(testF.getUri());
+		// Use the field to set the value, because using setter would trigger
+		// the aspect
+		final Field inferredField = OWLClassF.getStrAttField();
+		inferredField.setAccessible(true);
+		inferredField.set(fClone, "inferredOne");
+		final ObjectChangeSet chSet = createChangeSet(testF, fClone);
+		manager.calculateChanges(chSet);
+		fail("This line should not have been reached.");
+	}
+
+	private ObjectChangeSet createChangeSet(Object orig, Object clone) {
+		return new ObjectChangeSetImpl(orig, clone, defaultDescriptor.getEntityContext());
 	}
 
 	private static final class TestEntity {

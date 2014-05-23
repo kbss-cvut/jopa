@@ -8,12 +8,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 public class ChangeManagerImpl implements ChangeManager {
 
@@ -196,9 +198,8 @@ public class ChangeManagerImpl implements ChangeManager {
 
 	public boolean calculateChanges(ObjectChangeSet changeSet) throws IllegalAccessException,
 			IllegalArgumentException, OWLInferredAttributeModifiedException {
-		if (changeSet == null) {
-			return false;
-		}
+		Objects.requireNonNull(changeSet, ErrorUtils.constructNPXMessage("changeSet"));
+
 		return calculateChangesInternal(changeSet);
 	}
 
@@ -273,6 +274,8 @@ public class ChangeManagerImpl implements ChangeManager {
 				}
 			}
 			if (changes && CloneBuilderImpl.isFieldInferred(f)) {
+				// This is a failsafe, since modification of inferred attributes
+				// should be caught by the setter aspect
 				throw new OWLInferredAttributeModifiedException(
 						"Modifying inferred attributes is forbidden.");
 			}
