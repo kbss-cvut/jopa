@@ -24,7 +24,7 @@ public class MergeManagerImpl implements MergeManager {
 	protected void deleteObjectFromCache(ObjectChangeSet changeSet) {
 		Object original = changeSet.getChangedObject();
 		if (original != null) {
-			uow.removeObjectFromCache(original, changeSet.getEntityOrigin());
+			uow.removeObjectFromCache(original, changeSet.getEntityContext());
 		}
 	}
 

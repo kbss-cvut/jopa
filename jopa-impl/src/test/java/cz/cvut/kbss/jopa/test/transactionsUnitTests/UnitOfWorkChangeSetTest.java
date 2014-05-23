@@ -1,48 +1,55 @@
 package cz.cvut.kbss.jopa.test.transactionsUnitTests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSetImpl;
 
 public class UnitOfWorkChangeSetTest {
 
-	private ObjectChangeSetImpl newChangeSet;
-	private ObjectChangeSetImpl changeSet;
+	@Mock
+	private ObjectChangeSet changeSet;
 	private String testObject;
 	private String testClone;
 
+	private UnitOfWorkChangeSet chs;
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Before
 	public void setUp() throws Exception {
 		this.testObject = "TEST";
 		this.testClone = "TEST";
-		this.newChangeSet = new ObjectChangeSetImpl(testObject, testClone,
-				true, null);
-		this.changeSet = new ObjectChangeSetImpl(testObject, testClone, false,
-				null);
+		MockitoAnnotations.initMocks(this);
+		when(changeSet.getChangedObject()).thenReturn(testObject);
+		when(changeSet.getCloneObject()).thenReturn(testClone);
+		when(changeSet.getObjectClass()).thenReturn((Class) testClone.getClass());
+		chs = new UnitOfWorkChangeSetImpl();
 	}
 
 	@Test
 	public void testAddObjectChangeSet() {
-		UnitOfWorkChangeSet chs = new UnitOfWorkChangeSetImpl();
 		chs.addObjectChangeSet(changeSet);
 		assertFalse(chs.getObjectChanges().isEmpty());
-		Map<?, ?> trans = (Map<?, ?>) chs.getObjectChanges().get(
-				changeSet.getObjectClass());
+		verify(changeSet, atLeastOnce()).getObjectClass();
+		Map<?, ?> trans = (Map<?, ?>) chs.getObjectChanges().get(changeSet.getObjectClass());
 		ObjectChangeSet res = (ObjectChangeSet) trans.get(changeSet);
-		assertEquals(changeSet, res);
-		assertEquals(chs, changeSet.getUowChangeSet());
-		// clean up
-		this.changeSet.setUowChangeSet(null);
+		assertSame(changeSet, res);
+		assertTrue(chs.hasChanges());
 	}
 
 	/**
@@ -51,55 +58,40 @@ public class UnitOfWorkChangeSetTest {
 	 */
 	@Test
 	public void testAddObjectChangeSetWithNew() {
-		UnitOfWorkChangeSet chs = new UnitOfWorkChangeSetImpl();
-		chs.addObjectChangeSet(newChangeSet);
+		when(changeSet.isNew()).thenReturn(Boolean.TRUE);
+		chs.addObjectChangeSet(changeSet);
 		assertFalse(chs.getNewObjectChangeSets().isEmpty());
-		Map<?, ?> trans = (Map<?, ?>) chs.getNewObjectChangeSets().get(
-				newChangeSet.getObjectClass());
-		ObjectChangeSet res = (ObjectChangeSet) trans.get(newChangeSet);
-		assertEquals(newChangeSet, res);
-		this.newChangeSet.setUowChangeSet(null);
-	}
-
-	@Test
-	public void testAddDeletedObjects() {
-		final String test = "TEST_2";
-		final String tsClone = "TEST_2";
-		Map<String, String> testMap = new HashMap<String, String>();
-		testMap.put(testClone, testObject);
-		testMap.put(tsClone, test);
-		UnitOfWorkChangeSet chs = new UnitOfWorkChangeSetImpl();
-		chs.addDeletedObjects(testMap);
-		final int expectedSize = 2;
-		assertEquals(expectedSize, chs.getDeletedObjects().size());
+		Map<?, ?> trans = (Map<?, ?>) chs.getNewObjectChangeSets().get(changeSet.getObjectClass());
+		ObjectChangeSet res = (ObjectChangeSet) trans.get(changeSet);
+		assertSame(changeSet, res);
+		assertTrue(chs.hasNew());
 	}
 
 	@Test
 	public void testAddDeletedObject() {
-		UnitOfWorkChangeSet chs = new UnitOfWorkChangeSetImpl();
-		chs.addDeletedObject(testObject, testClone);
+		chs.addDeletedObject(changeSet);
 		Set<?> resSet = chs.getDeletedObjects().keySet();
-		// we know there is only one change set for deleted object
-		for (Object o : resSet) {
-			Object result = ((ObjectChangeSet) o).getChangedObject();
-			assertEquals(testObject, result);
-		}
+		assertEquals(1, resSet.size());
+		ObjectChangeSet res = (ObjectChangeSet) resSet.iterator().next();
+		Object result = ((ObjectChangeSet) res).getChangedObject();
+		assertEquals(testObject, result);
+		assertTrue(chs.hasDeletedObjects());
+		assertTrue(chs.hasChanges());
 	}
 
 	@Test
 	public void testAddNewObjectChangeSet() {
-		UnitOfWorkChangeSet chs = new UnitOfWorkChangeSetImpl();
-		chs.addNewObjectChangeSet(newChangeSet);
+		when(changeSet.isNew()).thenReturn(Boolean.TRUE);
+		chs.addNewObjectChangeSet(changeSet);
 		assertTrue(chs.hasChanges());
-		Map<?, ?> trans = (Map<?, ?>) chs.getNewObjectChangeSets().get(
-				newChangeSet.getObjectClass());
-		ObjectChangeSet res = (ObjectChangeSet) trans.get(newChangeSet);
-		assertEquals(newChangeSet, res);
+		Map<?, ?> trans = (Map<?, ?>) chs.getNewObjectChangeSets().get(changeSet.getObjectClass());
+		ObjectChangeSet res = (ObjectChangeSet) trans.get(changeSet);
+		assertSame(changeSet, res);
+		assertTrue(chs.hasNew());
 	}
 
 	@Test
 	public void testRemoveObjectChangeSet() {
-		UnitOfWorkChangeSet chs = new UnitOfWorkChangeSetImpl();
 		chs.addObjectChangeSet(changeSet);
 		assertTrue(chs.hasChanges());
 		chs.removeObjectChangeSet(changeSet);

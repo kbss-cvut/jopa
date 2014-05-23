@@ -33,7 +33,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	private static final Set<Class<?>> WRAPPER_TYPES = getWrapperTypes();
 
-	// This identity map stores visited objects during the clone building
+	// The identity map stores objects visited during the clone building
 	// process. We use this to prevent cloning already cloned objects.
 	private final Map<Object, Object> visitedObjects;
 	private final RepositoryMap visitedEntities;
@@ -45,7 +45,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	public CloneBuilderImpl(UnitOfWorkImpl uow) {
 		this.uow = uow;
 		this.visitedObjects = new IdentityHashMap<Object, Object>();
-		this.visitedEntities = new RepositoryMap(uow.getRepositories());
+		this.visitedEntities = new RepositoryMap();
 		this.builders = new Builders();
 	}
 
@@ -270,15 +270,15 @@ public class CloneBuilderImpl implements CloneBuilder {
 		return original;
 	}
 
-	private Object getVisitedEntity(EntityDescriptor repository, Object primaryKey) {
-		assert repository != null;
+	private Object getVisitedEntity(EntityDescriptor descriptor, Object primaryKey) {
+		assert descriptor != null;
 		assert primaryKey != null;
-		return visitedEntities.get(repository, primaryKey);
+		return visitedEntities.get(descriptor, primaryKey);
 	}
 
-	private void putVisitedEntity(EntityDescriptor repository, Object primaryKey, Object entity) {
-		assert repository != null;
-		visitedEntities.add(repository, primaryKey, entity);
+	private void putVisitedEntity(EntityDescriptor descriptor, Object primaryKey, Object entity) {
+		assert descriptor != null;
+		visitedEntities.add(descriptor, primaryKey, entity);
 	}
 
 	private IRI getIdentifier(Object entity) {

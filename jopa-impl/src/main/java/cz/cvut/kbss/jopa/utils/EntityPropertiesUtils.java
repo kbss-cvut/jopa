@@ -52,7 +52,9 @@ public class EntityPropertiesUtils {
 		Object fieldValue;
 		try {
 			final EntityType<?> type = metamodel.entity(entity.getClass());
-			fieldValue = type.getIdentifier().getJavaField().get(entity);
+			final Field idField = type.getIdentifier().getJavaField();
+			idField.setAccessible(true);
+			fieldValue = idField.get(entity);
 		} catch (IllegalAccessException e) {
 			throw new OWLPersistenceException();
 		}
@@ -65,8 +67,7 @@ public class EntityPropertiesUtils {
 		} else if (fieldValue instanceof URI) {
 			return IRI.create((URI) fieldValue);
 		} else {
-			throw new OWLPersistenceException("Unknown identifier type: "
-					+ fieldValue.getClass());
+			throw new OWLPersistenceException("Unknown identifier type: " + fieldValue.getClass());
 		}
 	}
 

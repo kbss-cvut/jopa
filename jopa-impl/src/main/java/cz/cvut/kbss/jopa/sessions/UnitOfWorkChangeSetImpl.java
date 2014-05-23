@@ -7,9 +7,6 @@ import java.util.Map;
 
 public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSet {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 7834438138173201896L;
 	// Keeps all the change sets. This is here only for future serialization
 	// support
@@ -29,6 +26,7 @@ public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSe
 		this.allchangeSets = new IdentityHashMap<ObjectChangeSet, ObjectChangeSet>();
 	}
 
+	@Override
 	public void addObjectChangeSet(ObjectChangeSet objectChangeSet) {
 		if (objectChangeSet.isNew()) {
 			this.addNewObjectChangeSet(objectChangeSet);
@@ -50,6 +48,7 @@ public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSe
 		getDeletedObjects().put(deletedObject, deletedObject);
 	}
 
+	@Override
 	public void addNewObjectChangeSet(ObjectChangeSet newObject) {
 		newObject.setNew(true);
 		Map<ObjectChangeSet, ObjectChangeSet> changeSets = getNewObjectChangeSets().get(
@@ -64,14 +63,17 @@ public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSe
 		this.hasChanges = true;
 	}
 
+	@Override
 	public Map<Class<?>, Map<ObjectChangeSet, ObjectChangeSet>> getObjectChanges() {
 		return this.objectChanges;
 	}
 
+	@Override
 	public Map<ObjectChangeSet, ObjectChangeSet> getDeletedObjects() {
 		return this.deletedObjects;
 	}
 
+	@Override
 	public Map<Class<?>, Map<ObjectChangeSet, ObjectChangeSet>> getNewObjectChangeSets() {
 		return this.newObjectChanges;
 	}
@@ -80,6 +82,7 @@ public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSe
 		return this.allchangeSets;
 	}
 
+	@Override
 	public void removeObjectChangeSet(ObjectChangeSet changeSet) {
 		if (changeSet == null)
 			return;
@@ -96,14 +99,17 @@ public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSe
 		}
 	}
 
+	@Override
 	public boolean hasDeletedObjects() {
 		return !deletedObjects.isEmpty();
 	}
 
+	@Override
 	public boolean hasChanges() {
 		return (this.hasChanges || hasDeletedObjects());
 	}
 
+	@Override
 	public boolean hasNew() {
 		return !this.newObjectChanges.isEmpty();
 	}

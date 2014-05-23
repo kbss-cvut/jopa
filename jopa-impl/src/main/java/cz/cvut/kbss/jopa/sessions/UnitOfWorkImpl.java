@@ -885,7 +885,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	@Override
-	Metamodel getMetamodel() {
+	public Metamodel getMetamodel() {
 		return parent.getMetamodel();
 	}
 
