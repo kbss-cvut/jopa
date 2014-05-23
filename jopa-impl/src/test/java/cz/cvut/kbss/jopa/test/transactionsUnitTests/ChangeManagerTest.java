@@ -29,12 +29,12 @@ import cz.cvut.kbss.jopa.sessions.ChangeManager;
 import cz.cvut.kbss.jopa.sessions.ChangeManagerImpl;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassF;
+import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
 
 public class ChangeManagerTest {
 
@@ -435,7 +435,8 @@ public class ChangeManagerTest {
 	}
 
 	private ObjectChangeSet createChangeSet(Object orig, Object clone) {
-		return new ObjectChangeSetImpl(orig, clone, defaultDescriptor.getEntityContext());
+		return TestEnvironmentUtils.createObjectChangeSet(orig, clone,
+				defaultDescriptor.getEntityContext());
 	}
 
 	private static final class TestEntity {

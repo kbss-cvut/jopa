@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.test.OWLClassA;
@@ -16,7 +17,6 @@ import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
-import cz.cvut.kbss.ontodriver.Context;
 
 public final class QueryTestEnvironment {
 
@@ -60,15 +60,17 @@ public final class QueryTestEnvironment {
 	public static void generateTestData(EntityManager em) {
 		assert em != null;
 		final Map<Class<?>, List<?>> map = generate();
-		final List<Context> contexts = em.getAvailableContexts();
+		final List<URI> contexts = em.getContexts();
 		LOG.config("Persisting test data...");
 		em.getTransaction().begin();
 		try {
-			for (Context ctx : contexts) {
-				LOG.config("Persisting test data into context " + ctx.getUri());
+			for (URI ctx : contexts) {
+				LOG.config("Persisting test data into context " + ctx);
 				for (List<?> l : map.values()) {
 					for (Object o : l) {
-						em.persist(o, ctx.getUri());
+						final EntityDescriptor desc = new EntityDescriptor();
+						desc.setEntityContext(ctx);
+						em.persist(o, desc);
 					}
 				}
 			}

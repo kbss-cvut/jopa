@@ -1154,7 +1154,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 	}
 
-	void putObjectIntoCache(Object primaryKey, Object entity, URI context) {
+	public void putObjectIntoCache(Object primaryKey, Object entity, URI context) {
 		cacheManager.acquireWriteLock();
 		try {
 			cacheManager.add(primaryKey, entity, context);

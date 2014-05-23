@@ -18,7 +18,7 @@ public class MergeManagerImpl implements MergeManager {
 
 	public MergeManagerImpl(UnitOfWorkImpl session) {
 		this.uow = session;
-		this.builder = new CloneBuilderImpl((UnitOfWorkImpl) session);
+		this.builder = new CloneBuilderImpl(session);
 	}
 
 	protected void deleteObjectFromCache(ObjectChangeSet changeSet) {
