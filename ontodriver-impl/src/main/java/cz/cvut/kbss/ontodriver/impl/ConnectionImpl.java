@@ -69,7 +69,6 @@ public class ConnectionImpl implements Connection {
 	public boolean contains(Object primaryKey, URI context) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
-		Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
 
 		return storageModule.contains(primaryKey, context);
 	}

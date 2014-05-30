@@ -1,6 +1,5 @@
 package cz.cvut.kbss.ontodriver.unit;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -27,22 +26,20 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.StorageManager;
-import cz.cvut.kbss.ontodriver.exceptions.RepositoryNotFoundException;
+import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.impl.ConnectionImpl;
-import cz.cvut.kbss.ontodriver.impl.RepositoryImpl;
 import cz.cvut.kbss.ontodriver.utils.OWLClassA;
 
 public class ConnectionImplTest {
 
-	private static List<Repository> repos;
+	private static final URI CONTEXT = URI.create("http://defaultUri");
+
 	private static Field hasChangesField;
+	private static EntityDescriptor descriptor;
 
 	private ConnectionImpl connection;
 
@@ -53,36 +50,30 @@ public class ConnectionImplTest {
 	private PersistenceProviderFacade providerMock;
 
 	@Mock
-	private StorageManager storageMngrMock;
+	private StorageModule storageModuleMock;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		repos = new ArrayList<>(4);
-		for (int i = 0; i < 4; i++) {
-			repos.add(new RepositoryImpl(URI
-					.create("http://krizik.felk.cvut.cz/jopa/connectiontest" + i)));
-		}
 		hasChangesField = ConnectionImpl.class.getDeclaredField("hasChanges");
 		hasChangesField.setAccessible(true);
+		descriptor = new EntityDescriptor();
 	}
 
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		when(providerMock.getMetamodel()).thenReturn(metamodelMock);
-		when(storageMngrMock.getRepositories()).thenReturn(repos);
 
-		this.connection = new ConnectionImpl(storageMngrMock);
+		this.connection = new ConnectionImpl(storageModuleMock);
 		assertTrue(connection.isOpen());
 	}
 
 	@Test
 	public void testConnectionImpl() throws Exception {
-		final StorageManager mngrMock = mock(StorageManager.class);
+		final StorageModule mngrMock = mock(StorageModule.class);
 		final Connection c = new ConnectionImpl(mngrMock);
 		assertNotNull(c);
 		assertTrue(c.isOpen());
-		verify(mngrMock).getRepositories();
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -98,7 +89,7 @@ public class ConnectionImplTest {
 		connection.close();
 
 		assertFalse(connection.isOpen());
-		verify(storageMngrMock).close();
+		verify(storageModuleMock).close();
 	}
 
 	@Test
@@ -108,7 +99,7 @@ public class ConnectionImplTest {
 
 		assertFalse(connection.isOpen());
 		// Exactly once
-		verify(storageMngrMock).close();
+		verify(storageModuleMock).close();
 	}
 
 	@Test
@@ -117,7 +108,7 @@ public class ConnectionImplTest {
 		hasChangesField.set(connection, Boolean.TRUE);
 		connection.commit();
 
-		verify(storageMngrMock).commit();
+		verify(storageModuleMock).commit();
 		assertFalse(hasChangesField.getBoolean(connection));
 	}
 
@@ -125,7 +116,7 @@ public class ConnectionImplTest {
 	public void testCommitNoChanges() throws Exception {
 		connection.commit();
 
-		verify(storageMngrMock, never()).commit();
+		verify(storageModuleMock, never()).commit();
 	}
 
 	@Test(expected = IllegalStateException.class)
@@ -134,7 +125,7 @@ public class ConnectionImplTest {
 		try {
 			connection.commit();
 		} finally {
-			verify(storageMngrMock, never()).commit();
+			verify(storageModuleMock, never()).commit();
 		}
 	}
 
@@ -159,7 +150,7 @@ public class ConnectionImplTest {
 		hasChangesField.set(connection, Boolean.TRUE);
 		connection.rollback();
 
-		verify(storageMngrMock).rollback();
+		verify(storageModuleMock).rollback();
 		assertFalse(hasChangesField.getBoolean(connection));
 	}
 
@@ -167,25 +158,32 @@ public class ConnectionImplTest {
 	public void testRollbackNoChanges() throws Exception {
 		connection.commit();
 
-		verify(storageMngrMock, never()).rollback();
+		verify(storageModuleMock, never()).rollback();
 	}
 
 	@Test
 	public void testContains() throws Exception {
-		final RepositoryID id = repos.get(2).createIdentifier();
 		final URI pk = URI.create("http://pk");
-		when(storageMngrMock.contains(pk, id)).thenReturn(true);
+		when(storageModuleMock.contains(pk, CONTEXT)).thenReturn(true);
 
-		final boolean res = connection.contains(pk, id);
+		final boolean res = connection.contains(pk, CONTEXT);
 		assertTrue(res);
-		verify(storageMngrMock).contains(pk, id);
+		verify(storageModuleMock).contains(pk, CONTEXT);
+	}
+
+	@Test
+	public void testContainsNoContext() throws Exception {
+		final URI pk = URI.create("http://pk");
+		when(storageModuleMock.contains(pk, null)).thenReturn(true);
+
+		final boolean res = connection.contains(pk, null);
+		assertTrue(res);
+		verify(storageModuleMock).contains(pk, null);
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testContainsNull() throws Exception {
-		final URI pk = URI.create("http://pk");
-
-		final boolean res = connection.contains(pk, null);
+		final boolean res = connection.contains(null, null);
 		// Shouldn't be called
 		assertFalse(res);
 	}
@@ -193,22 +191,24 @@ public class ConnectionImplTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testFind() throws Exception {
-		final EntityDescriptor descriptor = repos.get(2).createDescriptor();
+		final EntityDescriptor descriptor = new EntityDescriptor();
+		descriptor.setEntityContext(CONTEXT);
 		final URI pk = URI.create("http://pk");
 		final OWLClassA a = new OWLClassA();
-		when(storageMngrMock.find(any(Class.class), any(Object.class), any(EntityDescriptor.class)))
-				.thenReturn(null);
-		when(storageMngrMock.find(OWLClassA.class, pk, descriptor)).thenReturn(a);
+		when(
+				storageModuleMock.find(any(Class.class), any(Object.class),
+						any(EntityDescriptor.class))).thenReturn(null);
+		when(storageModuleMock.find(OWLClassA.class, pk, descriptor)).thenReturn(a);
 
 		final OWLClassA res = connection.find(OWLClassA.class, pk, descriptor);
 		assertNotNull(res);
 		assertSame(a, res);
-		verify(storageMngrMock).find(OWLClassA.class, pk, descriptor);
+		verify(storageModuleMock).find(OWLClassA.class, pk, descriptor);
 
 		final URI pkTwo = URI.create("http://pkTwo");
 		final OWLClassA resTwo = connection.find(OWLClassA.class, pkTwo, descriptor);
 		assertNull(resTwo);
-		verify(storageMngrMock).find(OWLClassA.class, pkTwo, descriptor);
+		verify(storageModuleMock).find(OWLClassA.class, pkTwo, descriptor);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -218,19 +218,18 @@ public class ConnectionImplTest {
 			final OWLClassA res = connection.find(OWLClassA.class, null, null);
 			assertNull(res);
 		} finally {
-			verify(storageMngrMock, never()).find(any(Class.class), any(Object.class),
+			verify(storageModuleMock, never()).find(any(Class.class), any(Object.class),
 					any(EntityDescriptor.class));
 		}
 	}
 
 	@Test
 	public void testIsConsistent() throws Exception {
-		when(storageMngrMock.isConsistent(any(RepositoryID.class))).thenReturn(Boolean.TRUE);
-		final RepositoryID id = repos.get(1).createIdentifier();
+		when(storageModuleMock.isConsistent(any(URI.class))).thenReturn(Boolean.TRUE);
 
-		final boolean res = connection.isConsistent(id);
+		final boolean res = connection.isConsistent(CONTEXT);
 		assertTrue(res);
-		verify(storageMngrMock).isConsistent(id);
+		verify(storageModuleMock).isConsistent(CONTEXT);
 	}
 
 	@Test
@@ -248,25 +247,23 @@ public class ConnectionImplTest {
 				}
 				return null;
 			}
-		}).when(storageMngrMock).loadFieldValue(any(), any(Field.class),
+		}).when(storageModuleMock).loadFieldValue(any(), any(Field.class),
 				any(EntityDescriptor.class));
 		final OWLClassA a = new OWLClassA();
 		final Field f = OWLClassA.getStrAttField();
-		final EntityDescriptor id = repos.get(1).createDescriptor();
 
-		connection.loadFieldValue(a, f, id);
-		verify(storageMngrMock).loadFieldValue(a, f, id);
+		connection.loadFieldValue(a, f, descriptor);
+		verify(storageModuleMock).loadFieldValue(a, f, descriptor);
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testLoadFieldValueNull() throws Exception {
 		final Field f = OWLClassA.getStrAttField();
-		final EntityDescriptor id = repos.get(1).createDescriptor();
 
 		try {
-			connection.loadFieldValue(null, f, id);
+			connection.loadFieldValue(null, f, descriptor);
 		} finally {
-			verify(storageMngrMock, never()).loadFieldValue(any(), any(Field.class),
+			verify(storageModuleMock, never()).loadFieldValue(any(), any(Field.class),
 					any(EntityDescriptor.class));
 		}
 	}
@@ -275,40 +272,37 @@ public class ConnectionImplTest {
 	public void testMerge() throws Exception {
 		final OWLClassA a = new OWLClassA();
 		final Field f = OWLClassA.getStrAttField();
-		final EntityDescriptor id = repos.get(1).createDescriptor();
 		connection.setAutoCommit(false);
 
-		connection.merge(a, f, id);
+		connection.merge(a, f, descriptor);
 		assertTrue(hasChangesField.getBoolean(connection));
-		verify(storageMngrMock).merge(a, f, id);
-		verify(storageMngrMock, never()).commit();
+		verify(storageModuleMock).merge(a, f, descriptor);
+		verify(storageModuleMock, never()).commit();
 	}
 
 	@Test
 	public void testMergeAutoCommit() throws Exception {
 		final OWLClassA a = new OWLClassA();
 		final Field f = OWLClassA.getStrAttField();
-		final EntityDescriptor id = repos.get(1).createDescriptor();
 		connection.setAutoCommit(true);
 
-		connection.merge(a, f, id);
+		connection.merge(a, f, descriptor);
 		// The changes were committed, so there should be none now
 		assertFalse(hasChangesField.getBoolean(connection));
-		verify(storageMngrMock).merge(a, f, id);
-		verify(storageMngrMock).commit();
+		verify(storageModuleMock).merge(a, f, descriptor);
+		verify(storageModuleMock).commit();
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testMergeNull() throws Exception {
 		final Field f = OWLClassA.getStrAttField();
-		final EntityDescriptor id = repos.get(1).createDescriptor();
 		try {
-			connection.merge(null, f, id);
+			connection.merge(null, f, descriptor);
 		} finally {
 			assertFalse(hasChangesField.getBoolean(connection));
-			verify(storageMngrMock, never()).merge(any(), any(Field.class),
+			verify(storageModuleMock, never()).merge(any(), any(Field.class),
 					any(EntityDescriptor.class));
-			verify(storageMngrMock, never()).commit();
+			verify(storageModuleMock, never()).commit();
 		}
 	}
 
@@ -316,59 +310,55 @@ public class ConnectionImplTest {
 	public void testPersist() throws Exception {
 		final OWLClassA a = new OWLClassA();
 		final URI pk = URI.create("http://pk");
-		final EntityDescriptor id = repos.get(1).createDescriptor();
+		final EntityDescriptor descriptor = new EntityDescriptor();
 		connection.setAutoCommit(false);
 
-		connection.persist(pk, a, id);
+		connection.persist(pk, a, descriptor);
 		assertTrue(hasChangesField.getBoolean(connection));
-		verify(storageMngrMock).persist(pk, a, id);
-		verify(storageMngrMock, never()).commit();
+		verify(storageModuleMock).persist(pk, a, descriptor);
+		verify(storageModuleMock, never()).commit();
 	}
 
 	@Test
 	public void testPersistAutoCommit() throws Exception {
 		final OWLClassA a = new OWLClassA();
 		final URI pk = URI.create("http://pk");
-		final EntityDescriptor id = repos.get(1).createDescriptor();
 		connection.setAutoCommit(true);
 
-		connection.persist(pk, a, id);
+		connection.persist(pk, a, descriptor);
 		assertFalse(hasChangesField.getBoolean(connection));
-		verify(storageMngrMock).persist(pk, a, id);
-		verify(storageMngrMock).commit();
+		verify(storageModuleMock).persist(pk, a, descriptor);
+		verify(storageModuleMock).commit();
 	}
 
 	@Test
 	public void testRemove() throws Exception {
 		final URI pk = URI.create("http://pk");
-		final EntityDescriptor id = repos.get(1).createDescriptor();
 		connection.setAutoCommit(false);
 
-		connection.remove(pk, id);
+		connection.remove(pk, descriptor);
 		assertTrue(hasChangesField.getBoolean(connection));
-		verify(storageMngrMock).remove(pk, id);
-		verify(storageMngrMock, never()).commit();
+		verify(storageModuleMock).remove(pk, descriptor);
+		verify(storageModuleMock, never()).commit();
 	}
 
 	@Test
 	public void testRemoveAutoCommit() throws Exception {
 		final URI pk = URI.create("http://pk");
-		final EntityDescriptor id = repos.get(1).createDescriptor();
 		connection.setAutoCommit(true);
 
-		connection.remove(pk, id);
+		connection.remove(pk, descriptor);
 		assertFalse(hasChangesField.getBoolean(connection));
-		verify(storageMngrMock).remove(pk, id);
-		verify(storageMngrMock).commit();
+		verify(storageModuleMock).remove(pk, descriptor);
+		verify(storageModuleMock).commit();
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testRemoveNull() throws Exception {
-		final EntityDescriptor id = repos.get(0).createDescriptor();
 		try {
-			connection.remove(null, id);
+			connection.remove(null, descriptor);
 		} finally {
-			verify(storageMngrMock, never()).remove(any(), any(EntityDescriptor.class));
+			verify(storageModuleMock, never()).remove(any(), any(EntityDescriptor.class));
 		}
 	}
 
@@ -379,30 +369,11 @@ public class ConnectionImplTest {
 	}
 
 	@Test
-	public void testGetRepositories() throws Exception {
-		final List<Repository> res = connection.getRepositories();
-		assertEquals(repos, res);
-	}
-
-	@Test
-	public void testGetRepository() throws Exception {
-		final Repository r = repos.get(3);
-		final Repository res = connection.getRepository(r.getId());
-		assertNotNull(res);
-		assertEquals(r, res);
-	}
-
-	@Test(expected = RepositoryNotFoundException.class)
-	public void testGetRepositoryTooSmall() throws Exception {
-		final Integer val = -1;
-		final Repository res = connection.getRepository(val);
-		assert res == null;
-	}
-
-	@Test(expected = RepositoryNotFoundException.class)
-	public void testGetRepositoryTooBig() throws Exception {
-		final Integer val = Integer.MAX_VALUE;
-		final Repository res = connection.getRepository(val);
-		assert res == null;
+	public void testGetContexts() throws Exception {
+		final List<URI> ctxs = new ArrayList<>();
+		when(storageModuleMock.getContexts()).thenReturn(ctxs);
+		final List<URI> res = connection.getContexts();
+		assertSame(ctxs, res);
+		verify(storageModuleMock).getContexts();
 	}
 }

@@ -1,11 +1,7 @@
 package cz.cvut.kbss.ontodriver.utils;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -21,11 +17,13 @@ public class DriverFactoryStub implements DriverFactory {
 
 	private boolean open = true;
 
+	private StorageModule storageModule;
+	private StorageConnector storageConnector;
+
 	public DriverFactoryStub() {
 	}
 
-	public DriverFactoryStub(List<Repository> repositories,
-			Map<EntityDescriptor, OntologyStorageProperties> repoProperties,
+	public DriverFactoryStub(OntologyStorageProperties repoProperties,
 			Map<String, String> properties) {
 		super();
 		// This is not best practice, but we need to access the instance
@@ -53,16 +51,13 @@ public class DriverFactoryStub implements DriverFactory {
 	}
 
 	@Override
-	public List<Repository> getRepositories() {
-		return Collections.emptyList();
+	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider,
+			boolean autoCommit) throws OntoDriverException {
+		return storageModule;
 	}
 
-	@Override
-	public StorageModule createStorageModule(Repository repository,
-			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
-			throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return null;
+	public void setStorageModule(StorageModule module) {
+		this.storageModule = module;
 	}
 
 	@Override
@@ -71,9 +66,11 @@ public class DriverFactoryStub implements DriverFactory {
 	}
 
 	@Override
-	public StorageConnector createStorageConnector(Repository repository, boolean autoCommit)
-			throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return null;
+	public StorageConnector createStorageConnector(boolean autoCommit) throws OntoDriverException {
+		return storageConnector;
+	}
+
+	public void setStorageConnector(StorageConnector connector) {
+		this.storageConnector = connector;
 	}
 }

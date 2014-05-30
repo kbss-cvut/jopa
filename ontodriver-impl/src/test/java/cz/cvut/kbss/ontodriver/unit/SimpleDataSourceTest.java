@@ -10,10 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
@@ -29,13 +26,13 @@ import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
-import cz.cvut.kbss.ontodriver.StorageManager;
+import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.impl.SimpleDataSource;
 import cz.cvut.kbss.ontodriver.utils.DriverFactoryStub;
 
 public class SimpleDataSourceTest {
 
-	private static List<OntologyStorageProperties> props;
+	private static OntologyStorageProperties props;
 	private static Map<String, String> properties;
 
 	@Mock
@@ -45,16 +42,15 @@ public class SimpleDataSourceTest {
 	private PersistenceProviderFacade facadeMock;
 
 	@Mock
-	private StorageManager managerMock;
+	private StorageModule moduleMock;
 
 	private SimpleDataSource ds;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Override the default factories
-		props = new ArrayList<OntologyStorageProperties>();
-		props.add(new OntologyStorageProperties(URI.create("http://testOntology"), URI
-				.create("file:testResults/ontoDriverTests.owl"), OntologyConnectorType.OWLAPI));
+		props = new OntologyStorageProperties(URI.create("http://testOntology"),
+				URI.create("file:testResults/ontoDriverTests.owl"), OntologyConnectorType.OWLAPI);
 		properties = new HashMap<>();
 		properties.put(OntoDriverProperties.OWLAPI_DRIVER_FACTORY,
 				DriverFactoryStub.class.getName());
@@ -67,7 +63,7 @@ public class SimpleDataSourceTest {
 		final Field f = SimpleDataSource.class.getDeclaredField("driver");
 		f.setAccessible(true);
 		f.set(ds, driverMock);
-		when(driverMock.acquireStorageModule(facadeMock)).thenReturn(managerMock);
+		when(driverMock.acquireStorageModule(facadeMock)).thenReturn(moduleMock);
 	}
 
 	@Test
@@ -77,10 +73,9 @@ public class SimpleDataSourceTest {
 		assertTrue(res.isOpen());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = NullPointerException.class)
 	public void testSimpleDataSourceSingleArgEmpty() {
-		final DataSource res = new SimpleDataSource(
-				Collections.<OntologyStorageProperties> emptyList());
+		final DataSource res = new SimpleDataSource(null);
 		// This shouldn't be reached
 		assert res == null;
 	}
@@ -99,16 +94,8 @@ public class SimpleDataSourceTest {
 		assertTrue(res.isOpen());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testSimpleDataSourceTwoArgsEmptyStorages() throws Exception {
-		final DataSource res = new SimpleDataSource(
-				Collections.<OntologyStorageProperties> emptyList(), properties);
-		// This shouldn't be reached
-		assert res == null;
-	}
-
 	@Test(expected = NullPointerException.class)
-	public void testSimpleDataSourceTwoArgsNullStorages() {
+	public void testSimpleDataSourceTwoArgsNullStorages() throws Exception {
 		final DataSource res = new SimpleDataSource(null, properties);
 		// This shouldn't be reached
 		assert res == null;
