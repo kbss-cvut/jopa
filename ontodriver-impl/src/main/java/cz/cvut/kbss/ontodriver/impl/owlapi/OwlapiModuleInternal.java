@@ -41,7 +41,6 @@ import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -99,9 +98,8 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public boolean containsEntity(Object primaryKey, RepositoryID contexts)
-			throws OntoDriverException {
-		assert primaryKey != null : "argument contexts is null";
+	public boolean containsEntity(Object primaryKey, URI context) throws OntoDriverException {
+		assert primaryKey != null : "argument primaryKey is null";
 
 		final IRI iri = getPrimaryKeyAsIri(primaryKey);
 		return isInOntologySignature(iri, true);
@@ -112,6 +110,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			throws OntoDriverException {
 		assert cls != null : "argument cls is null";
 		assert primaryKey != null : "argument primaryKey is null";
+		assert descriptor != null : "argument descriptor is null";
 
 		final IRI iri = getPrimaryKeyAsIri(primaryKey);
 		if (!isInOntologySignature(iri, true)) {
@@ -122,9 +121,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public boolean isConsistent(RepositoryID repository) throws OntoDriverException {
-		assert repository != null : "argument repository is null";
-
+	public boolean isConsistent(URI context) throws OntoDriverException {
 		return reasoner.isConsistent();
 	}
 
