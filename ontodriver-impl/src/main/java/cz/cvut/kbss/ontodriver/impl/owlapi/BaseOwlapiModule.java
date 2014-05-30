@@ -92,6 +92,8 @@ public abstract class BaseOwlapiModule extends StorageModule implements OwlapiMo
 
 	@Override
 	public ResultSet executeStatement(JopaStatement statement) throws OntoDriverException {
+		Objects.requireNonNull(statement, ErrorUtils.constructNPXMessage("statement"));
+
 		ensureOpen();
 		startTransactionIfNotActive();
 		final OwlapiStatement stmt = (OwlapiStatement) factory.createStatement(statement);

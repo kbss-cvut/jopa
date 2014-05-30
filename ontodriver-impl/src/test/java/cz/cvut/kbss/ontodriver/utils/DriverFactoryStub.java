@@ -19,6 +19,7 @@ public class DriverFactoryStub implements DriverFactory {
 
 	private StorageModule storageModule;
 	private StorageConnector storageConnector;
+	private DriverStatement stmt;
 
 	public DriverFactoryStub() {
 	}
@@ -47,7 +48,11 @@ public class DriverFactoryStub implements DriverFactory {
 
 	@Override
 	public DriverStatement createStatement(JopaStatement statement) throws OntoDriverException {
-		return null;
+		return stmt;
+	}
+
+	public void setStatement(DriverStatement stmt) {
+		this.stmt = stmt;
 	}
 
 	@Override

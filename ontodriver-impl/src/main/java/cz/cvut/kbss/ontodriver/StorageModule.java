@@ -102,6 +102,7 @@ public abstract class StorageModule implements Transactional {
 			EntityDescriptor descriptor) {
 		assert cls != null;
 		assert primaryKey != null;
+		assert descriptor != null;
 
 		return persistenceProvider.getEntityFromLiveObjectCache(cls, primaryKey,
 				descriptor.getEntityContext());

@@ -143,7 +143,7 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 	 * @return OwlapiConnectorDataHolder
 	 * @see #cloneOntologyData()
 	 */
-	OwlapiConnectorDataHolder getOntologyData() {
+	public OwlapiConnectorDataHolder getOntologyData() {
 		ensureOpen();
 		final OwlapiConnectorDataHolder holder = OwlapiConnectorDataHolder
 				.workingOntology(workingOntology).ontologyManager(ontologyManager)
