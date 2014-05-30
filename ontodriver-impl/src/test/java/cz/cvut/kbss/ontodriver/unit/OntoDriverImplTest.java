@@ -89,7 +89,7 @@ public class OntoDriverImplTest {
 		properties.put(OntoDriverProperties.CONNECTION_AUTO_COMMIT, "false");
 		final OntoDriverImpl d = new OntoDriverImpl(props, properties);
 		assertNotNull(d);
-		assertNotNull(d.acquireStorageManager());
+		assertNotNull(d.acquireStorageModule());
 	}
 
 	@Test(expected = OntoDriverInitializationException.class)
@@ -120,14 +120,14 @@ public class OntoDriverImplTest {
 
 	@Test
 	public void testAcquireStorageManagerMetamodel() throws Exception {
-		final StorageManager sm = driver.acquireStorageManager(metamodelMock);
+		final StorageManager sm = driver.acquireStorageModule(metamodelMock);
 		assertNotNull(sm);
 		assertEquals(props.size(), sm.getRepositories().size());
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testAcquireStorageManagerMetamodelNull() throws Exception {
-		final StorageManager res = driver.acquireStorageManager((Metamodel) null);
+		final StorageManager res = driver.acquireStorageModule((Metamodel) null);
 		// This shouldn't be reached
 		assert res == null;
 	}
@@ -135,14 +135,14 @@ public class OntoDriverImplTest {
 	@Test
 	public void testAcquireStorageManagerPPFacade() throws Exception {
 		final PersistenceProviderFacade ppf = mock(PersistenceProviderFacade.class);
-		final StorageManager res = driver.acquireStorageManager(ppf);
+		final StorageManager res = driver.acquireStorageModule(ppf);
 		assertNotNull(res);
 		assertFalse(res.getRepositories().isEmpty());
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testAcquireStorageManagerPPFacadeNull() throws Exception {
-		final StorageManager res = driver.acquireStorageManager((PersistenceProviderFacade) null);
+		final StorageManager res = driver.acquireStorageModule((PersistenceProviderFacade) null);
 		// This shouldn't be reached
 		assert res == null;
 	}

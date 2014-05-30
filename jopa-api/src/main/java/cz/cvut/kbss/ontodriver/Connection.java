@@ -49,6 +49,9 @@ public interface Connection extends Transactional {
 	/**
 	 * Checks whether the specified context is consistent. </p>
 	 * 
+	 * The context URI may be null, meaning that consistency of the whole
+	 * repository should be checked.
+	 * 
 	 * @param context
 	 *            Context URI
 	 * @return {@code true} if the contexts specified by {@code repository} are
@@ -56,8 +59,6 @@ public interface Connection extends Transactional {
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or an ontology access error
 	 *             occurs
-	 * @throws NullPointerException
-	 *             if {@code repository} is {@code null}
 	 */
 	public boolean isConsistent(URI context) throws OntoDriverException;
 

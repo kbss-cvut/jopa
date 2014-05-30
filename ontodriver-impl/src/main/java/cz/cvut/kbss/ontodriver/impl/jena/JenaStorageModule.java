@@ -1,10 +1,11 @@
 package cz.cvut.kbss.ontodriver.impl.jena;
 
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -14,9 +15,9 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public class JenaStorageModule extends StorageModule {
 
-	public JenaStorageModule(Repository repository, PersistenceProviderFacade persistenceProvider,
-			DriverFactory factory) throws OntoDriverException {
-		super(repository, persistenceProvider, factory);
+	public JenaStorageModule(PersistenceProviderFacade persistenceProvider, DriverFactory factory)
+			throws OntoDriverException {
+		super(persistenceProvider, factory);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -39,7 +40,7 @@ public class JenaStorageModule extends StorageModule {
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, RepositoryID contexts) throws OntoDriverException {
+	public boolean contains(Object primaryKey, URI context) throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -52,7 +53,12 @@ public class JenaStorageModule extends StorageModule {
 	}
 
 	@Override
-	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException {
+	public List<URI> getContexts() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public boolean isConsistent(URI context) throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return false;
 	}

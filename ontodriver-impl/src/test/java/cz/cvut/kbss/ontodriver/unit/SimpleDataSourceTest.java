@@ -67,7 +67,7 @@ public class SimpleDataSourceTest {
 		final Field f = SimpleDataSource.class.getDeclaredField("driver");
 		f.setAccessible(true);
 		f.set(ds, driverMock);
-		when(driverMock.acquireStorageManager(facadeMock)).thenReturn(managerMock);
+		when(driverMock.acquireStorageModule(facadeMock)).thenReturn(managerMock);
 	}
 
 	@Test
@@ -127,7 +127,7 @@ public class SimpleDataSourceTest {
 		assertNotNull(res);
 		assertTrue(res.isOpen());
 		assertTrue(res.getAutoCommit());
-		verify(driverMock).acquireStorageManager(facadeMock);
+		verify(driverMock).acquireStorageModule(facadeMock);
 	}
 
 	@Test
@@ -151,7 +151,7 @@ public class SimpleDataSourceTest {
 			// This shouldn't be reached
 			assert res == null;
 		} finally {
-			verify(driverMock, never()).acquireStorageManager(any(PersistenceProviderFacade.class));
+			verify(driverMock, never()).acquireStorageModule(any(PersistenceProviderFacade.class));
 		}
 	}
 

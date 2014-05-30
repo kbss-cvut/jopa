@@ -27,7 +27,7 @@ public interface OntoDriver extends Closeable {
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
 	 */
-	public StorageManager acquireStorageManager() throws OntoDriverException;
+	public StorageModule acquireStorageModule() throws OntoDriverException;
 
 	/**
 	 * Acquires storage manager. </p>
@@ -44,7 +44,7 @@ public interface OntoDriver extends Closeable {
 	 * @throws NullPointerException
 	 *             If {@code metamodel} is {@code null}
 	 */
-	public StorageManager acquireStorageManager(Metamodel metamodel) throws OntoDriverException;
+	public StorageModule acquireStorageModule(Metamodel metamodel) throws OntoDriverException;
 
 	/**
 	 * Acquires storage manager. </p>
@@ -62,6 +62,6 @@ public interface OntoDriver extends Closeable {
 	 * @throws NullPointerException
 	 *             If {@code persistenceProvider} is {@code null}
 	 */
-	public StorageManager acquireStorageManager(PersistenceProviderFacade persistenceProvider)
+	public StorageModule acquireStorageModule(PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException;
 }

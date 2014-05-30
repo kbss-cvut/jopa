@@ -1,14 +1,12 @@
 package cz.cvut.kbss.ontodriver;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -16,39 +14,26 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 
 	protected static final Logger LOG = Logger.getLogger(DriverAbstractFactory.class.getName());
 
-	protected final List<Repository> repositories;
-
 	private final Map<StorageConnector, StorageConnector> openedConnectors;
 	private final Map<StorageModule, StorageModule> openedModules;
-	protected final Map<Repository, OntologyStorageProperties> storageProperties;
+	protected final OntologyStorageProperties storageProperties;
 	protected final Map<String, String> properties;
 
 	private boolean open;
 
-	protected DriverAbstractFactory(List<Repository> repositories,
-			Map<Repository, OntologyStorageProperties> storageProperties,
+	protected DriverAbstractFactory(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) {
-		Objects.requireNonNull(repositories, ErrorUtils.constructNPXMessage("repositories"));
 		Objects.requireNonNull(storageProperties,
 				ErrorUtils.constructNPXMessage("storageProperties"));
-		if (repositories.isEmpty() || storageProperties.isEmpty()) {
-			throw new IllegalArgumentException("There has to be at least one repository specified.");
-		}
 		if (properties == null) {
 			properties = Collections.emptyMap();
 		}
 
-		this.repositories = repositories;
 		this.storageProperties = storageProperties;
 		this.openedConnectors = new ConcurrentHashMap<StorageConnector, StorageConnector>();
 		this.openedModules = new ConcurrentHashMap<StorageModule, StorageModule>();
 		this.open = true;
 		this.properties = properties;
-	}
-
-	@Override
-	public List<Repository> getRepositories() {
-		return Collections.unmodifiableList(repositories);
 	}
 
 	@Override
@@ -116,57 +101,26 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	/**
 	 * Ensures that this factory is still open.
 	 * 
-	 * @throws OntoDriverException
+	 * @throws IllegalStateException
 	 *             If the factory is closed
 	 */
-	protected void ensureOpen() throws OntoDriverException {
+	protected void ensureOpen() {
 		if (!open) {
-			throw new OntoDriverException(new IllegalStateException("The factory is closed."));
+			new IllegalStateException("The factory is closed.");
 		}
 	}
 
 	/**
-	 * Ensures that this factory is in a valid state. </p>
+	 * Ensures that this factory is in correct state. </p>
 	 * 
-	 * This means:
-	 * <ul>
-	 * <li>That this factory is open</li>
-	 * <li>That {@code repository} is not null</li>
-	 * <li>That {@code repository} exists in this factory</li>
-	 * </ul>
+	 * I. e. it is open and the specified provider is not {@code null}.
 	 * 
-	 * @param repository
-	 *            The context to check
-	 * @throws OntoDriverException
-	 *             If the factory is closed or if the context is not valid
-	 * @throws NullPointerException
-	 *             If {@code ctx} is {@code null}
+	 * @param provider
+	 *            PersistenceProviderFacade
 	 */
-	protected void ensureState(Repository repository) throws OntoDriverException {
+	protected void ensureParametersAndState(PersistenceProviderFacade provider) {
 		ensureOpen();
-		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
-
-		if (!storageProperties.containsKey(repository)) {
-			throw new OntoDriverException("Repository " + repository + " not found.");
-		}
-	}
-
-	/**
-	 * Ensures that this factory is in valid state. </p>
-	 * 
-	 * @param repository
-	 *            Repository identifier
-	 * @param persistenceProvider
-	 * @throws OntoDriverException
-	 * @throws NullPointerException
-	 *             If {@code metamodel} is null
-	 * @see #ensureState(Context)
-	 */
-	protected void ensureState(Repository repository, PersistenceProviderFacade persistenceProvider)
-			throws OntoDriverException {
-		ensureState(repository);
-		Objects.requireNonNull(persistenceProvider,
-				ErrorUtils.constructNPXMessage("persistenceProvider"));
+		Objects.requireNonNull(provider, ErrorUtils.constructNPXMessage("provider"));
 	}
 
 	/**

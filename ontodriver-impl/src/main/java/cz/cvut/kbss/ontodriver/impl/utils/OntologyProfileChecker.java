@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,8 +24,6 @@ import org.semanticweb.owlapi.profiles.OWLProfile;
 import org.semanticweb.owlapi.profiles.OWLProfileReport;
 
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
-
-import cz.cvut.kbss.ontodriver.Context;
 import cz.cvut.kbss.ontodriver.ContextExpressiveness;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.impl.owlapi.DriverOwlapiFactory;
@@ -60,53 +57,46 @@ public final class OntologyProfileChecker {
 	 * The profile expressiveness is set directly on the {@code Context}
 	 * instances in the argument.
 	 * 
-	 * @param contextProperties
+	 * @param storageProperties
 	 *            Contexts with storage properties
 	 */
-	public static void checkProfiles(final Map<Context, OntologyStorageProperties> contextProperties) {
-		if (contextProperties == null) {
+	public static void checkProfiles(final OntologyStorageProperties storageProperties) {
+		if (storageProperties == null) {
 			throw new NullPointerException();
-		}
-		if (contextProperties.isEmpty()) {
-			return;
 		}
 		final OWLOntologyManager fileM = OWLManager.createOWLOntologyManager();
 		final OWLOntologyManager owldbM = OWLDBManager.createOWLOntologyManager(OWLDataFactoryImpl
 				.getInstance());
-		for (Entry<Context, OntologyStorageProperties> e : contextProperties.entrySet()) {
-			final OntologyStorageProperties storageProps = e.getValue();
-			switch (storageProps.getConnectorType()) {
-			case OWLAPI:
-				switch (DriverOwlapiFactory.resolveStorageType(storageProps)) {
-				case FILE:
-					resolveFileProfile(e.getKey(), storageProps, fileM);
-					break;
-				case OWLDB:
-					// TODO Resolving doesn't work for larger ontologies, OWLDB
-					// throws NPX
-					resolveOwldbProfile(e.getKey(), storageProps, owldbM);
-					OWLDBManager.getHibernateProvider().releaseSessionFactory(owldbM,
-							storageProps.getPhysicalURI().toString());
-					break;
-				}
+		switch (storageProperties.getConnectorType()) {
+		case OWLAPI:
+			switch (DriverOwlapiFactory.resolveStorageType(storageProperties)) {
+			case FILE:
+				resolveFileProfile(storageProperties, fileM);
 				break;
-			case JENA:
-				// TODO
-				break;
-			case OWLIM:
-				// TODO
-				break;
-			case SESAME:
-				// TODO
-				break;
-			default:
+			case OWLDB:
+				// TODO Resolving doesn't work for larger ontologies, OWLDB
+				// throws NPX
+				resolveOwldbProfile(storageProperties, owldbM);
+				OWLDBManager.getHibernateProvider().releaseSessionFactory(owldbM,
+						storageProperties.getPhysicalURI().toString());
 				break;
 			}
+			break;
+		case JENA:
+			// TODO
+			break;
+		case OWLIM:
+			// TODO
+			break;
+		case SESAME:
+			// TODO
+			break;
+		default:
+			break;
 		}
 	}
 
-	private static void resolveFileProfile(Context ctx, OntologyStorageProperties props,
-			OWLOntologyManager m) {
+	private static void resolveFileProfile(OntologyStorageProperties props, OWLOntologyManager m) {
 		OWLOntology o;
 		try {
 			o = m.loadOntologyFromOntologyDocument(IRI.create(props.getPhysicalURI()));
@@ -114,18 +104,16 @@ public final class OntologyProfileChecker {
 			if (e.getCause() instanceof FileNotFoundException) {
 				LOG.warning("Ontology in location " + props.getPhysicalURI()
 						+ " does not exist yet. Setting profile to OWL 2.");
-				ctx.setExpressiveness(ContextExpressiveness.OWL2FULL);
 			} else {
 				LOG.log(Level.SEVERE,
 						"Unable to load ontology from location " + props.getPhysicalURI(), e);
 			}
 			return;
 		}
-		resolveProfile(ctx, o);
+		resolveProfile(o);
 	}
 
-	private static void resolveOwldbProfile(Context ctx, OntologyStorageProperties props,
-			OWLOntologyManager m) {
+	private static void resolveOwldbProfile(OntologyStorageProperties props, OWLOntologyManager m) {
 		OWLOntology o;
 		try {
 			final Properties p = new Properties();
@@ -137,29 +125,25 @@ public final class OntologyProfileChecker {
 			LOG.log(Level.WARNING,
 					"Unable to load ontology from location " + props.getPhysicalURI()
 							+ ". The ontology may not exist yet, setting profile to OWL 2.", e);
-			ctx.setExpressiveness(ContextExpressiveness.OWL2FULL);
 			return;
 		} catch (HibernateException e) {
 			LOG.warning("Unable to load ontology from location " + props.getPhysicalURI()
 					+ ". The ontology may not exist yet, setting profile to OWL 2.");
 			LOG.config("Exception message: " + e.getMessage());
-			ctx.setExpressiveness(ContextExpressiveness.OWL2FULL);
 			return;
 		}
-		resolveProfile(ctx, o);
+		resolveProfile(o);
 		((OWLDBOntology) o).destroyConnection();
 	}
 
-	private static void resolveProfile(Context ctx, OWLOntology o) {
+	private static void resolveProfile(OWLOntology o) {
 		for (OWLProfile p : PROFILES) {
 			final OWLProfileReport r = p.checkOntology(o);
 			if (r.isInProfile()) {
-				ctx.setExpressiveness(PROFILE_NAMES.get(p.getClass()));
 				return;
 			}
 		}
-		LOG.warning("The ontology with URI " + ctx.getUri()
-				+ " does not correspond to any supported OWL profile.");
+		LOG.warning("The ontology with does not correspond to any supported OWL profile.");
 	}
 
 	private static List<OWLProfile> initProfiles() {

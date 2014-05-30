@@ -1,12 +1,10 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -21,49 +19,45 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 	private static final String JDBC_SCHEME = "jdbc";
 	private boolean owldb = false;
 
-	public DriverOwlapiFactory(List<Repository> repositories,
-			Map<Repository, OntologyStorageProperties> storageProperties,
+	public DriverOwlapiFactory(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) throws OntoDriverException {
-		super(repositories, storageProperties, properties);
+		super(storageProperties, properties);
 	}
 
 	@Override
-	public StorageModule createStorageModule(Repository repository,
-			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
-			throws OntoDriverException {
-		ensureState(repository, persistenceProvider);
+	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider,
+			boolean autoCommit) throws OntoDriverException {
+		ensureParametersAndState(persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLAPI storage module.");
 		}
-		final StorageModule m = new OwlapiStorageModule(repository, persistenceProvider, this);
+		final StorageModule m = new OwlapiStorageModule(persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public OwlapiStorageConnector createStorageConnector(Repository repository, boolean autoCommit)
+	public OwlapiStorageConnector createStorageConnector(boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(repository);
+		ensureOpen();
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLAPI storage connector.");
 		}
-		final OwlapiStorageConnector c = createConnectorInternal(repository);
+		final OwlapiStorageConnector c = createConnectorInternal();
 		registerConnector(c);
 		return c;
 	}
 
-	private OwlapiStorageConnector createConnectorInternal(Repository repository)
-			throws OntoDriverException {
-		final OntologyStorageProperties p = storageProperties.get(repository);
-		final OwlapiStorageType type = resolveStorageType(p);
+	private OwlapiStorageConnector createConnectorInternal() throws OntoDriverException {
+		final OwlapiStorageType type = resolveStorageType(storageProperties);
 		OwlapiStorageConnector connector = null;
 		switch (type) {
 		case OWLDB:
-			connector = new OwlapiOwldbStorageConnector(p, properties);
+			connector = new OwlapiOwldbStorageConnector(storageProperties, properties);
 			this.owldb = true;
 			break;
 		case FILE:
-			connector = new OwlapiFileStorageConnector(p, properties);
+			connector = new OwlapiFileStorageConnector(storageProperties, properties);
 			break;
 		default:
 			throw new UnsupportedOperationException("Unknown storage type " + type);

@@ -1,10 +1,11 @@
 package cz.cvut.kbss.ontodriver.impl;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.List;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.RepositoryID;
+import cz.cvut.kbss.ontodriver.AbstractStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -25,23 +26,25 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * @param <Y>
  *            SPARQL statement implementation
  */
-public interface ModuleInternal<X, Y> {
+public interface ModuleInternal<X, Y extends AbstractStatement> {
 
 	/**
 	 * Resolves whether this module contains entity with the specified primary
 	 * key. </p>
 	 * 
+	 * The context URI may be null, indicating that the whole repository should
+	 * be searched.
+	 * 
 	 * @param primaryKey
 	 *            Primary key
-	 * @param contexts
-	 *            Specifies contexts to search
+	 * @param context
+	 *            Specifies context to search
 	 * @return {@code true} if there is entity with the specified primary key in
 	 *         this internal, {@code false} otherwise
 	 * @throws OntoDriverException
 	 *             If {@code primaryKey} is not a valid URI
 	 */
-	public boolean containsEntity(Object primaryKey, RepositoryID contexts)
-			throws OntoDriverException;
+	public boolean containsEntity(Object primaryKey, URI context) throws OntoDriverException;
 
 	/**
 	 * Retrieves entity with the specified primary key from this module. </p>
@@ -63,16 +66,19 @@ public interface ModuleInternal<X, Y> {
 			throws OntoDriverException;
 
 	/**
-	 * Checks whether the underlying ontology contexts are consistent.
+	 * Checks whether the underlying ontology context is consistent. </p>
 	 * 
-	 * @param contexts
-	 *            Contexts to verify
+	 * The context URI may be null, indicating that the whole repository should
+	 * be checked.
+	 * 
+	 * @param context
+	 *            Context to verify
 	 * @return {@code true} if the contexts are consistent, {@code false}
 	 *         otherwise
 	 * @throws OntoDriverException
 	 *             If an error occurs during consistency check
 	 */
-	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException;
+	public boolean isConsistent(URI context) throws OntoDriverException;
 
 	/**
 	 * Persists the specified entity. </p>

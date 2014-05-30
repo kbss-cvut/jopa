@@ -1,45 +1,36 @@
 package cz.cvut.kbss.ontodriver.impl;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
+import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.StorageManager;
+import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.exceptions.RepositoryNotFoundException;
 
 public class ConnectionImpl implements Connection {
 
 	private static final Logger LOG = Logger.getLogger(ConnectionImpl.class.getName());
 
-	private final StorageManager storageManager;
-	private final Map<Integer, Repository> repositories;
+	private final StorageModule storageModule;
 
 	private boolean open;
 	private boolean hasChanges;
 	private boolean autoCommit;
 
-	public ConnectionImpl(StorageManager storageManager) throws OntoDriverException {
-		this.storageManager = Objects.requireNonNull(storageManager,
-				"Argument 'storageManager' cannot be null.");
+	public ConnectionImpl(StorageModule storageModule) throws OntoDriverException {
+		this.storageModule = Objects.requireNonNull(storageModule,
+				ErrorUtils.constructNPXMessage("storageModule"));
 
-		this.repositories = new HashMap<>();
-		for (Repository r : storageManager.getRepositories()) {
-			repositories.put(r.getId(), r);
-		}
 		this.open = true;
 		this.hasChanges = false;
 		this.autoCommit = true;
@@ -53,7 +44,7 @@ public class ConnectionImpl implements Connection {
 		if (!open) {
 			return;
 		}
-		storageManager.close();
+		storageModule.close();
 		this.open = false;
 	}
 
@@ -66,21 +57,21 @@ public class ConnectionImpl implements Connection {
 		if (!hasChanges) {
 			return;
 		}
-		storageManager.commit();
+		storageModule.commit();
 		afterTransactionFinished();
 	}
 
 	public Statement createStatement() throws OntoDriverException {
-		return new JopaStatement(storageManager);
+		return new JopaStatement(storageModule);
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, RepositoryID repository) throws OntoDriverException {
+	public boolean contains(Object primaryKey, URI context) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
-		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
+		Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
 
-		return storageManager.contains(primaryKey, repository);
+		return storageModule.contains(primaryKey, context);
 	}
 
 	@Override
@@ -91,7 +82,7 @@ public class ConnectionImpl implements Connection {
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		final T result = storageManager.find(cls, primaryKey, descriptor);
+		final T result = storageModule.find(cls, primaryKey, descriptor);
 		return result;
 	}
 
@@ -102,11 +93,10 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public boolean isConsistent(RepositoryID repository) throws OntoDriverException {
+	public boolean isConsistent(URI context) throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
 
-		return storageManager.isConsistent(repository);
+		return storageModule.isConsistent(context);
 	}
 
 	@Override
@@ -122,7 +112,7 @@ public class ConnectionImpl implements Connection {
 		Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		storageManager.loadFieldValue(entity, field, descriptor);
+		storageModule.loadFieldValue(entity, field, descriptor);
 	}
 
 	@Override
@@ -133,7 +123,7 @@ public class ConnectionImpl implements Connection {
 		Objects.requireNonNull(mergedField, ErrorUtils.constructNPXMessage("mergedField"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		storageManager.merge(entity, mergedField, descriptor);
+		storageModule.merge(entity, mergedField, descriptor);
 		this.hasChanges = true;
 		if (autoCommit) {
 			commit();
@@ -148,7 +138,7 @@ public class ConnectionImpl implements Connection {
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		storageManager.persist(primaryKey, entity, descriptor);
+		storageModule.persist(primaryKey, entity, descriptor);
 		this.hasChanges = true;
 		if (autoCommit) {
 			commit();
@@ -168,7 +158,7 @@ public class ConnectionImpl implements Connection {
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		storageManager.remove(primaryKey, descriptor);
+		storageModule.remove(primaryKey, descriptor);
 		this.hasChanges = true;
 		if (autoCommit) {
 			commit();
@@ -184,7 +174,7 @@ public class ConnectionImpl implements Connection {
 		if (!hasChanges) {
 			return;
 		}
-		storageManager.rollback();
+		storageModule.rollback();
 		afterTransactionFinished();
 	}
 
@@ -192,23 +182,6 @@ public class ConnectionImpl implements Connection {
 	public void setAutoCommit(boolean autoCommit) throws OntoDriverException {
 		ensureOpen();
 		this.autoCommit = autoCommit;
-	}
-
-	@Override
-	public Repository getRepository(Integer repositoryId) throws OntoDriverException {
-		ensureOpen();
-		Objects.requireNonNull(repositoryId, ErrorUtils.constructNPXMessage("repositoryId"));
-
-		if (!repositories.containsKey(repositoryId)) {
-			throw new RepositoryNotFoundException("Repository with identifier " + repositoryId
-					+ " not found.");
-		}
-		return repositories.get(repositoryId);
-	}
-
-	@Override
-	public List<Repository> getRepositories() throws OntoDriverException {
-		return storageManager.getRepositories();
 	}
 
 	/**
@@ -230,5 +203,11 @@ public class ConnectionImpl implements Connection {
 		if (!open) {
 			throw new IllegalStateException("The connection is closed.");
 		}
+	}
+
+	@Override
+	public List<URI> getContexts() throws OntoDriverException {
+		ensureOpen();
+		return storageModule.getContexts();
 	}
 }

@@ -68,7 +68,7 @@ public class DriverOwlimFactory extends DriverAbstractFactory {
 	@Override
 	public StorageConnector createStorageConnector(Repository repository, boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(repository);
+		ensureParametersAndState(repository);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLIM storage connector.");
 		}

@@ -2,12 +2,10 @@ package cz.cvut.kbss.ontodriver.impl.jena;
 
 import java.io.File;
 import java.net.URI;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
@@ -23,41 +21,38 @@ public class DriverJenaFactory extends DriverAbstractFactory {
 
 	private static final String JDBC_SCHEME = "jdbc";
 
-	public DriverJenaFactory(List<Repository> repositories,
-			Map<Repository, OntologyStorageProperties> repositoryProperties,
+	public DriverJenaFactory(OntologyStorageProperties repositoryProperties,
 			Map<String, String> properties) throws OntoDriverException {
-		super(repositories, repositoryProperties, properties);
+		super(repositoryProperties, properties);
 	}
 
 	@Override
-	public StorageModule createStorageModule(Repository repository,
-			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
-			throws OntoDriverException {
-		ensureState(repository, persistenceProvider);
+	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider,
+			boolean autoCommit) throws OntoDriverException {
+		ensureParametersAndState(persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage module.");
 		}
-		final StorageModule m = new OwlapiBasedJenaModule(repository, persistenceProvider, this);
+		final StorageModule m = new OwlapiBasedJenaModule(persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public JenaStorageConnector createStorageConnector(Repository repository, boolean autoCommit)
+	public JenaStorageConnector createStorageConnector(boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(repository);
+		ensureOpen();
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Jena storage connector.");
 		}
-		final OntologyStorageProperties props = storageProperties.get(repository);
-		final JenaStorageType storageType = resolveStorageType(props);
+		final JenaStorageType storageType = resolveStorageType(storageProperties);
 		JenaStorageConnector c = null;
 		switch (storageType) {
 		case FILE:
-			c = new JenaFileStorageConnector(props, properties);
+			c = new JenaFileStorageConnector(storageProperties, properties);
 			break;
 		case TDB:
-			c = new JenaTDBStorageConnector(props, properties);
+			c = new JenaTDBStorageConnector(storageProperties, properties);
 			break;
 		default:
 			throw new IllegalArgumentException("Unsupported storage type " + storageType);

@@ -1,12 +1,9 @@
 package cz.cvut.kbss.ontodriver.impl.jena;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
@@ -30,77 +27,72 @@ import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStatement;
  */
 public class DriverCachingJenaFactory extends DriverAbstractFactory {
 
-	private final Map<Repository, OwlapiBasedJenaConnector> centralConnectors;
+	private volatile OwlapiBasedJenaConnector centralConnector;
 
-	public DriverCachingJenaFactory(List<Repository> repositories,
-			Map<Repository, OntologyStorageProperties> repositoryProperties,
+	public DriverCachingJenaFactory(OntologyStorageProperties repositoryProperties,
 			Map<String, String> properties) throws OntoDriverException {
-		super(repositories, repositoryProperties, properties);
-		this.centralConnectors = new HashMap<>(repositories.size());
+		super(repositoryProperties, properties);
 	}
 
 	@Override
-	public void close() throws OntoDriverException {
+	public synchronized void close() throws OntoDriverException {
 		if (!isOpen()) {
 			return;
 		}
 		super.close();
-		for (OwlapiBasedJenaConnector c : centralConnectors.values()) {
-			c.close();
+		if (centralConnector != null) {
+			centralConnector.close();
 		}
 	}
 
 	@Override
-	public StorageModule createStorageModule(Repository repository,
-			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
-			throws OntoDriverException {
-		ensureState(repository, persistenceProvider);
+	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider,
+			boolean autoCommit) throws OntoDriverException {
+		ensureParametersAndState(persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating caching Jena storage module.");
 		}
-		final StorageModule m = new OwlapiBasedCachingJenaModule(repository, persistenceProvider,
-				this);
+		final StorageModule m = new OwlapiBasedCachingJenaModule(persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public JenaCachingStorageConnector createStorageConnector(Repository repository,
-			boolean autoCommit) throws OntoDriverException {
-		ensureState(repository);
+	public JenaCachingStorageConnector createStorageConnector(boolean autoCommit)
+			throws OntoDriverException {
+		ensureOpen();
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating caching Jena storage connector.");
 		}
-		return createConnectorInternal(repository);
+		return createConnectorInternal();
 	}
 
-	private synchronized JenaCachingStorageConnector createConnectorInternal(Repository repository)
+	private synchronized JenaCachingStorageConnector createConnectorInternal()
 			throws OntoDriverException {
-		assert repository != null;
-		if (!centralConnectors.containsKey(repository)) {
-			createCentralConnector(repository);
+		if (centralConnector == null) {
+			synchronized (this) {
+				if (centralConnector == null) {
+					createCentralConnector();
+				}
+			}
 		}
-		final JenaCachingStorageConnector conn = new JenaCachingStorageConnector(
-				centralConnectors.get(repository));
+		final JenaCachingStorageConnector conn = new JenaCachingStorageConnector(centralConnector);
 		registerConnector(conn);
 		return conn;
 	}
 
-	private void createCentralConnector(Repository repository) throws OntoDriverException {
-		final OntologyStorageProperties props = storageProperties.get(repository);
-		final JenaStorageType storageType = DriverJenaFactory.resolveStorageType(props);
-		JenaStorageConnector c = null;
+	private void createCentralConnector() throws OntoDriverException {
+		final JenaStorageType storageType = DriverJenaFactory.resolveStorageType(storageProperties);
 		switch (storageType) {
 		case FILE:
-			c = new JenaFileStorageConnector(props, properties);
+			this.centralConnector = new JenaFileStorageConnector(storageProperties, properties);
 			break;
 		case TDB:
-			c = new JenaTDBStorageConnector(props, properties);
+			this.centralConnector = new JenaTDBStorageConnector(storageProperties, properties);
 			break;
 		default:
 			throw new IllegalArgumentException("Unsupported storage type " + storageType);
 		}
-		centralConnectors.put(repository, c);
 	}
 
 	@Override

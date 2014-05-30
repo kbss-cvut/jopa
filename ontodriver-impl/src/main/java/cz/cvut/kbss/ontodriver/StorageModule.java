@@ -1,14 +1,12 @@
 package cz.cvut.kbss.ontodriver;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -39,12 +37,10 @@ public abstract class StorageModule implements Transactional {
 	 * Counters that increment with each inserted entity so that newly generated
 	 * primary keys are unique. </p>
 	 * 
-	 * Keys in this map are internal identifiers of repositories.
+	 * We are using identity map, because counters are
 	 */
-	protected static final Map<Integer, AtomicInteger> primaryKeyCounters = new HashMap<Integer, AtomicInteger>();
+	protected static AtomicInteger primaryKeyCounter = new AtomicInteger();
 
-	/** Repository managed by this module */
-	protected final Repository repository;
 	/** Backward reference to the factory */
 	protected final DriverFactory factory;
 	/** Metamodel of the entity model */
@@ -53,10 +49,8 @@ public abstract class StorageModule implements Transactional {
 	protected boolean open;
 	protected TransactionState transaction;
 
-	public StorageModule(Repository repository, PersistenceProviderFacade persistenceProvider,
-			DriverFactory factory) throws OntoDriverException {
-		this.repository = Objects.requireNonNull(repository,
-				"Argument 'repository' cannot be null.");
+	public StorageModule(PersistenceProviderFacade persistenceProvider, DriverFactory factory)
+			throws OntoDriverException {
 		this.persistenceProvider = Objects.requireNonNull(persistenceProvider,
 				"Argument 'persistenceProvider' cannot be null.");
 		this.factory = Objects.requireNonNull(factory, "Argument 'factory' cannot be null.");
@@ -70,15 +64,6 @@ public abstract class StorageModule implements Transactional {
 	public void close() throws OntoDriverException {
 		this.open = false;
 		this.transaction = TransactionState.NO;
-	}
-
-	/**
-	 * Retrieves repository represented by this module.
-	 * 
-	 * @return repository
-	 */
-	public Repository getRepository() {
-		return repository;
 	}
 
 	/**
@@ -96,7 +81,7 @@ public abstract class StorageModule implements Transactional {
 	 * @return Primary key counter
 	 */
 	public int getNewPrimaryKey() {
-		return StorageModule.getNewPrimaryKey(repository);
+		return getNewPrimaryKeyImpl();
 	}
 
 	/**
@@ -119,14 +104,14 @@ public abstract class StorageModule implements Transactional {
 		assert primaryKey != null;
 
 		return persistenceProvider.getEntityFromLiveObjectCache(cls, primaryKey,
-				descriptor.getEntityOrigin());
+				descriptor.getEntityContext());
 	}
 
 	/**
 	 * Increments the primary key counter for this module's context.
 	 */
 	public void incrementPrimaryKeyCounter() {
-		StorageModule.incrementPrimaryKeyCounter(repository);
+		incrementPrimaryKeyCounterImpl();
 	}
 
 	@Override
@@ -148,11 +133,13 @@ public abstract class StorageModule implements Transactional {
 	 * Resolves whether this module contains entity with the specified primary
 	 * key. </p>
 	 * 
+	 * The context URI parameter may be null, indicating that the whole
+	 * repository should be searched.
+	 * 
 	 * @param primaryKey
 	 *            Primary key
-	 * @param repository
-	 *            Repository identifier. Specifies contexts which should be
-	 *            searched
+	 * @param context
+	 *            Context which should be searched
 	 * @return {@code true} if this module contains entity with the specified
 	 *         primary key, {@code false} otherwise
 	 * @throws OntoDriverException
@@ -160,8 +147,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code repository} is {@code null}
 	 */
-	public abstract boolean contains(Object primaryKey, RepositoryID repository)
-			throws OntoDriverException;
+	public abstract boolean contains(Object primaryKey, URI context) throws OntoDriverException;
 
 	/**
 	 * Retrieves entity with the specified primary key. </p>
@@ -184,10 +170,21 @@ public abstract class StorageModule implements Transactional {
 			throws OntoDriverException;
 
 	/**
-	 * Checks whether the underlying ontology contexts are consistent.
+	 * Gets an unmodifiable list of contexts available to this storage module.
+	 * </p>
 	 * 
-	 * @param contexts
-	 *            Contexts to validate
+	 * @return Unmodifiable list of context URIs
+	 */
+	public abstract List<URI> getContexts();
+
+	/**
+	 * Checks whether the underlying ontology context is consistent. </p>
+	 * 
+	 * If the context URI is null, consistency of the whole repository is
+	 * checked.
+	 * 
+	 * @param context
+	 *            Context to validate
 	 * @return {@code true} if the contexts are consistent, {@code false}
 	 *         otherwise
 	 * @throws OntoDriverException
@@ -195,7 +192,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             if {@code contexts} is {@code null}
 	 */
-	public abstract boolean isConsistent(RepositoryID contexts) throws OntoDriverException;
+	public abstract boolean isConsistent(URI context) throws OntoDriverException;
 
 	/**
 	 * Loads from the ontology and sets value of field {@code fieldName} on the
@@ -305,18 +302,14 @@ public abstract class StorageModule implements Transactional {
 	protected abstract void startTransactionIfNotActive() throws OntoDriverException;
 
 	/**
-	 * Preliminary steps before running
-	 * {@link #contains(Object, EntityDescriptor)} </p>
+	 * Preliminary steps before running {@link #contains(Object, URI)} </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected void preContains(Object primaryKey, RepositoryID repository)
-			throws OntoDriverException {
+	protected void preContains(Object primaryKey, URI context) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
-		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
-		ensureCorrectRepositoryId(repository);
 		startTransactionIfNotActive();
 	}
 
@@ -333,21 +326,17 @@ public abstract class StorageModule implements Transactional {
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
-		ensureCorrectRepositoryId(descriptor);
 		startTransactionIfNotActive();
 	}
 
 	/**
-	 * Preliminary steps before running {@link #isConsistent(EntityDescriptor)}
-	 * </p>
+	 * Preliminary steps before running {@link #isConsistent(URI)} </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected void preIsConsistent(RepositoryID repository) throws OntoDriverException {
+	protected void preIsConsistent(URI context) throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(repository, ErrorUtils.constructNPXMessage("repository"));
-		ensureCorrectRepositoryId(repository);
 		startTransactionIfNotActive();
 	}
 
@@ -364,7 +353,6 @@ public abstract class StorageModule implements Transactional {
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
-		ensureCorrectRepositoryId(descriptor);
 		startTransactionIfNotActive();
 	}
 
@@ -381,7 +369,6 @@ public abstract class StorageModule implements Transactional {
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(mergedField, ErrorUtils.constructNPXMessage("mergedField"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
-		ensureCorrectRepositoryId(descriptor);
 		startTransactionIfNotActive();
 	}
 
@@ -396,7 +383,6 @@ public abstract class StorageModule implements Transactional {
 		ensureOpen();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
-		ensureCorrectRepositoryId(descriptor);
 		startTransactionIfNotActive();
 	}
 
@@ -412,61 +398,42 @@ public abstract class StorageModule implements Transactional {
 		ensureOpen();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
-		ensureCorrectRepositoryId(descriptor);
 		startTransactionIfNotActive();
 	}
 
 	/**
 	 * Ensures that this module is in valid state.
 	 * 
-	 * @throws OntoDriverException
+	 * @throws IllegalStateException
 	 *             If not in valid state
 	 */
-	protected void ensureOpen() throws OntoDriverException {
+	protected void ensureOpen() {
 		if (!open) {
-			throw new OntoDriverException(
-					new IllegalStateException("The storage module is closed."));
+			throw new IllegalStateException("The storage module is closed.");
 		}
 	}
 
 	/**
 	 * Ensures that an internal transaction is active.
 	 * 
-	 * @throws OntoDriverException
+	 * @throws IllegalStateException
 	 *             If transaction is not active
 	 */
-	protected void ensureTransactionActive() throws OntoDriverException {
+	protected void ensureTransactionActive() {
 		if (transaction != TransactionState.ACTIVE) {
-			throw new OntoDriverException(new IllegalStateException(
-					"No internal transaction is active!"));
+			throw new IllegalStateException("No internal transaction is active!");
 		}
 	}
 
 	/**
-	 * Ensures that the specified identifier represents the same repository as
-	 * is managed by this storage module.
+	 * Sets the initial value of the primary key counter.
 	 * 
-	 * @param descriptor
-	 *            Entity descriptor
-	 * @throws IllegalArgumentException
-	 *             If the validation fails
+	 * @param initValue
+	 *            The initial value, greater or equal to 0
 	 */
-	protected void ensureCorrectRepositoryId(EntityDescriptor descriptor) {
-		assert descriptor != null;
-		if (!repository.getId().equals(descriptor.getRepository())) {
-			throw new IllegalArgumentException("The specified descriptor " + descriptor
-					+ " does not match the repository " + repository
-					+ ", managed by this storage module.");
-		}
-	}
-
-	protected void ensureCorrectRepositoryId(RepositoryID repositoryId) {
-		assert repositoryId != null;
-		if (!repository.getId().equals(repositoryId.getRepository())) {
-			throw new IllegalArgumentException("The specified repository identifier "
-					+ repositoryId + " does not match the repository " + repository
-					+ ", managed by this storage module.");
-		}
+	protected static void setPrimaryKeyCounter(int initValue) {
+		assert initValue >= 0;
+		primaryKeyCounter = new AtomicInteger(initValue);
 	}
 
 	/**
@@ -476,9 +443,8 @@ public abstract class StorageModule implements Transactional {
 	 *            The context from which key should be retrieved
 	 * @return primary key number
 	 */
-	protected static int getNewPrimaryKey(Repository repo) {
-		assert primaryKeyCounters.containsKey(repo.getId());
-		return primaryKeyCounters.get(repo.getId()).incrementAndGet();
+	protected static int getNewPrimaryKeyImpl() {
+		return primaryKeyCounter.incrementAndGet();
 	}
 
 	/**
@@ -487,8 +453,7 @@ public abstract class StorageModule implements Transactional {
 	 * @param ctx
 	 *            Context
 	 */
-	protected static void incrementPrimaryKeyCounter(Repository repo) {
-		assert primaryKeyCounters.containsKey(repo.getId());
-		primaryKeyCounters.get(repo.getId()).incrementAndGet();
+	protected static void incrementPrimaryKeyCounterImpl() {
+		getNewPrimaryKeyImpl();
 	}
 }

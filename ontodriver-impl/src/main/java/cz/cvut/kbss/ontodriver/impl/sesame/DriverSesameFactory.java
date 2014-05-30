@@ -41,7 +41,7 @@ public class DriverSesameFactory extends DriverAbstractFactory {
 	@Override
 	public SesameStorageConnector createStorageConnector(Repository repository, boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(repository);
+		ensureParametersAndState(repository);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating Sesame storage connector.");
 		}

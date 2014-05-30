@@ -1,8 +1,8 @@
 package cz.cvut.kbss.ontodriver;
 
+import java.net.URI;
 import java.util.Objects;
 
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -17,14 +17,15 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  */
 public class JopaStatement implements Statement {
 
-	private final StorageManager manager;
+	private final StorageModule storageModule;
 
 	private boolean useTransactionalOntology;
 	private String query;
-	private RepositoryID repository;
+	private URI[] contexts;
 
-	public JopaStatement(StorageManager manager) {
-		this.manager = Objects.requireNonNull(manager, ErrorUtils.constructNPXMessage("manager"));
+	public JopaStatement(StorageModule storageModule) {
+		this.storageModule = Objects.requireNonNull(storageModule,
+				ErrorUtils.constructNPXMessage("storageModule"));
 		this.useTransactionalOntology = true;
 	}
 
@@ -52,32 +53,28 @@ public class JopaStatement implements Statement {
 		return query;
 	}
 
-	public RepositoryID getRepositoryId() {
-		return repository;
+	public URI[] getContexts() {
+		return contexts;
 	}
 
 	@Override
-	public ResultSet executeQuery(String sparql, RepositoryID repository)
-			throws OntoDriverException {
-		initQuery(sparql, repository);
-		return manager.executeStatement(this);
+	public ResultSet executeQuery(String sparql, URI... contexts) throws OntoDriverException {
+		initQuery(sparql, contexts);
+		return storageModule.executeStatement(this);
 	}
 
 	@Override
-	public int executeUpdate(String sparql, RepositoryID repository) throws OntoDriverException {
-		initQuery(sparql, repository);
-		manager.executeStatement(this);
+	public int executeUpdate(String sparql, URI... contexts) throws OntoDriverException {
+		initQuery(sparql, contexts);
+		storageModule.executeStatement(this);
 		// Return 0 for now, we don't known how many statements have been
 		// affected
 		return 0;
 	}
 
-	private void initQuery(String sparql, RepositoryID repository) {
-		if (sparql == null || repository == null) {
-			throw new NullPointerException();
-		}
+	private void initQuery(String sparql, URI... contexts) {
+		Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
 		this.query = sparql;
-		this.repository = repository;
+		this.contexts = contexts;
 	}
-
 }

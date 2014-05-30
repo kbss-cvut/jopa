@@ -1,12 +1,9 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -24,38 +21,36 @@ import de.fraunhofer.iitb.owldb.OWLDBManager;
  */
 public class DriverModularizingOwlapiFactory extends DriverAbstractFactory {
 
-	private final Map<Repository, OwlapiStorageConnector> centralConnectors;
+	private volatile OwlapiStorageConnector centralConnector;
 	private boolean owldb = false;
 
-	public DriverModularizingOwlapiFactory(List<Repository> repositories,
-			Map<Repository, OntologyStorageProperties> repositoryProperties,
+	public DriverModularizingOwlapiFactory(OntologyStorageProperties repositoryProperties,
 			Map<String, String> properties) throws OntoDriverException {
-		super(repositories, repositoryProperties, properties);
-		this.centralConnectors = new HashMap<>(repositories.size());
+		super(repositoryProperties, properties);
 	}
 
 	@Override
-	public ModularizingOwlapiStorageModule createStorageModule(Repository repository,
+	public ModularizingOwlapiStorageModule createStorageModule(
 			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
 			throws OntoDriverException {
-		ensureState(repository, persistenceProvider);
+		ensureParametersAndState(persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLAPI modularizing storage module.");
 		}
-		final ModularizingOwlapiStorageModule m = new ModularizingOwlapiStorageModule(repository,
+		final ModularizingOwlapiStorageModule m = new ModularizingOwlapiStorageModule(
 				persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public ModularizingStorageConnector createStorageConnector(Repository repository,
-			boolean autoCommit) throws OntoDriverException {
-		ensureState(repository);
+	public ModularizingStorageConnector createStorageConnector(boolean autoCommit)
+			throws OntoDriverException {
+		ensureOpen();
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLAPI modularizing storage connector.");
 		}
-		return createConnectorInternal(repository, autoCommit);
+		return createConnectorInternal(autoCommit);
 	}
 
 	/**
@@ -69,44 +64,43 @@ public class DriverModularizingOwlapiFactory extends DriverAbstractFactory {
 	 * @return
 	 * @throws OntoDriverException
 	 */
-	private synchronized ModularizingStorageConnector createConnectorInternal(Repository repo,
-			boolean autoCommit) throws OntoDriverException {
-		assert repo != null;
-		if (!centralConnectors.containsKey(repo)) {
-			createCentralConnector(repo);
+	private ModularizingStorageConnector createConnectorInternal(boolean autoCommit)
+			throws OntoDriverException {
+		if (centralConnector == null) {
+			synchronized (this) {
+				if (centralConnector == null) {
+					createCentralConnector();
+				}
+			}
 		}
-		final ModularizingStorageConnector conn = new ModularizingStorageConnector(
-				centralConnectors.get(repo));
+		final ModularizingStorageConnector conn = new ModularizingStorageConnector(centralConnector);
 		registerConnector(conn);
 		return conn;
 	}
 
-	private void createCentralConnector(Repository repo) throws OntoDriverException {
-		final OntologyStorageProperties p = storageProperties.get(repo);
-		final OwlapiStorageType type = DriverOwlapiFactory.resolveStorageType(p);
-		OwlapiStorageConnector connector = null;
+	private void createCentralConnector() throws OntoDriverException {
+		final OwlapiStorageType type = DriverOwlapiFactory.resolveStorageType(storageProperties);
 		switch (type) {
 		case OWLDB:
-			connector = new OwlapiOwldbStorageConnector(p, properties);
+			this.centralConnector = new OwlapiOwldbStorageConnector(storageProperties, properties);
 			this.owldb = true;
 			break;
 		case FILE:
-			connector = new OwlapiFileStorageConnector(p, properties);
+			this.centralConnector = new OwlapiFileStorageConnector(storageProperties, properties);
 			break;
 		default:
 			throw new UnsupportedOperationException("Unknown storage type " + type);
 		}
-		centralConnectors.put(repo, connector);
 	}
 
 	@Override
-	public void close() throws OntoDriverException {
+	public synchronized void close() throws OntoDriverException {
 		if (!isOpen()) {
 			return;
 		}
 		super.close();
-		for (OwlapiStorageConnector c : centralConnectors.values()) {
-			c.close();
+		if (centralConnector != null) {
+			centralConnector.close();
 		}
 		if (owldb) {
 			OWLDBManager.getHibernateProvider().close();

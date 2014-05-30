@@ -1,21 +1,8 @@
 package cz.cvut.kbss.ontodriver;
 
-import java.util.List;
-
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public interface DriverFactory extends Closeable {
-
-	/**
-	 * Retrieves a list of repositories available to this factory. </p>
-	 * 
-	 * The repositories in the list are sorted by their priority. The returned
-	 * list is unmodifiable
-	 * 
-	 * @return List of repositories
-	 */
-	public List<Repository> getRepositories();
 
 	/**
 	 * Creates and returns storage module. </p>
@@ -23,8 +10,6 @@ public interface DriverFactory extends Closeable {
 	 * Implementations may choose to pool storage modules or create lazy loaded
 	 * proxies.
 	 * 
-	 * @param repository
-	 *            Repository identifier
 	 * @param persistenceProvider
 	 *            Facade representing the persistence provider
 	 * @param autoCommit
@@ -34,9 +19,8 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory or if an ontology access error
 	 *             occurs
 	 */
-	public StorageModule createStorageModule(Repository repository,
-			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
-			throws OntoDriverException;
+	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider,
+			boolean autoCommit) throws OntoDriverException;
 
 	/**
 	 * Releases the specified storage module. </p>
@@ -60,8 +44,6 @@ public interface DriverFactory extends Closeable {
 	 * Implementations may choose to pool storage modules or create lazy loaded
 	 * proxies.
 	 * 
-	 * @param repository
-	 *            Repository identifier
 	 * @param autoCommit
 	 *            {@code true} if the connector is for an auto commit operation
 	 * @return StorageConnector
@@ -69,8 +51,7 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory or if an ontology access error
 	 *             occurs
 	 */
-	public StorageConnector createStorageConnector(Repository repository, boolean autoCommit)
-			throws OntoDriverException;
+	public StorageConnector createStorageConnector(boolean autoCommit) throws OntoDriverException;
 
 	/**
 	 * Releases the specified storage connector. </p>
