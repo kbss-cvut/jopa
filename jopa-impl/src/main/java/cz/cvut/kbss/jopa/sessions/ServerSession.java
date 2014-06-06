@@ -170,7 +170,7 @@ public class ServerSession extends AbstractSession {
 	}
 
 	@Override
-	Metamodel getMetamodel() {
+	protected Metamodel getMetamodel() {
 		return metamodel;
 	}
 
@@ -187,7 +187,7 @@ public class ServerSession extends AbstractSession {
 	 * @param uow
 	 *            Persistence context of the specified entity
 	 */
-	synchronized void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
+	protected synchronized void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
 		if (entity == null || uow == null) {
 			throw new NullPointerException("Null passed to as argument. Entity: " + entity
 					+ ", unit of work: " + uow);

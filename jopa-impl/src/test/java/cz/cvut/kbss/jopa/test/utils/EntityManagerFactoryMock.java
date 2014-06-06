@@ -1,6 +1,5 @@
 package cz.cvut.kbss.jopa.test.utils;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,8 +26,7 @@ public class EntityManagerFactoryMock extends EntityManagerFactoryImpl {
 		super(null);
 	}
 
-	public EntityManagerFactoryMock(
-			List<OntologyStorageProperties> storageProperties,
+	public EntityManagerFactoryMock(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) {
 		super(storageProperties, properties);
 	}

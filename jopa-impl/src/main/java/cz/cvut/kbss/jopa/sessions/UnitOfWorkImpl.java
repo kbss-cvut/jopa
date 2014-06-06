@@ -134,7 +134,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 		Object clone = registerExistingObject(result, descriptor);
 		checkForCollections(clone);
-		registerEntityWithOntlogyContext(descriptor, clone);
 		return cls.cast(clone);
 	}
 
@@ -723,7 +722,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		cloneMapping.put(clone, clone);
 		cloneToOriginals.put(clone, object);
 		registerEntityWithPersistenceContext(clone, this);
-		registerEntityWithOntlogyContext(descriptor, clone);
+		registerEntityWithOntologyContext(descriptor, clone);
 		return clone;
 	}
 
@@ -753,17 +752,21 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			throw new IllegalArgumentException("The specified enity " + object
 					+ " is not managed by this persistence context.");
 		}
-		final EntityDescriptor repo = getEntityDescriptor(object);
-		if (repo == null) {
+		final EntityDescriptor descriptor = getEntityDescriptor(object);
+		if (descriptor == null) {
 			throw new IllegalArgumentException("Unable to find entity " + object
 					+ " in this persistence context.");
 		}
-		final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(getOriginal(object),
-				object, repo);
+		// To revert the object's state, just swap original and clone for change
+		// calculation and merging so that the state of the original is merged
+		// into the state of the clone
+		final Object original = getOriginal(object);
+		final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(object, original,
+				descriptor);
 		try {
 			final boolean anyChanges = changeManager.calculateChanges(chSet);
 			if (anyChanges) {
-				mergeManager.mergeChangesOnObject(object, chSet);
+				mergeManager.mergeChangesOnObject(original, chSet);
 			}
 		} catch (IllegalAccessException e) {
 			throw new OWLPersistenceException(e);
@@ -819,7 +822,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		cloneMapping.put(clone, clone);
 		getNewObjectsCloneToOriginal().put(clone, original);
 		registerEntityWithPersistenceContext(clone, this);
-		registerEntityWithOntlogyContext(descriptor, entity);
+		registerEntityWithOntologyContext(descriptor, entity);
 		getNewObjectsKeyToClone().put(id, clone);
 		checkForCollections(clone);
 		this.hasNew = true;
@@ -1181,7 +1184,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		return EntityPropertiesUtils.getPrimaryKey(entity, getMetamodel());
 	}
 
-	private void registerEntityWithOntlogyContext(EntityDescriptor repository, Object entity) {
+	private void registerEntityWithOntologyContext(EntityDescriptor repository, Object entity) {
 		assert repository != null;
 		assert entity != null;
 
