@@ -646,7 +646,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			throw new NullPointerException("Null passed to mergeDetached: entity = " + entity
 					+ ", repository = " + descriptor);
 		}
-		if (storageContains(entity, descriptor)) {
+		final IRI pk = getIdentifier(entity);
+		if (!storageContains(pk, descriptor)) {
 			registerNewObject(entity, descriptor);
 			return entity;
 		} else {

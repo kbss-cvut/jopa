@@ -1,9 +1,7 @@
 package cz.cvut.kbss.jopa.test.owlapi.integration;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -23,7 +21,7 @@ public class TestUpdateOperations {
 
 	private static final Logger LOG = Logger.getLogger(TestUpdateOperations.class.getName());
 
-	private static final List<StorageConfig> storages = initStorages();
+	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
 	private static UpdateOperationsRunner runner;
@@ -47,26 +45,25 @@ public class TestUpdateOperations {
 		runner.initBeforeTest();
 	}
 
-    @Test
-    public void testMergeSet() throws Exception {
-        LOG.config("Test: merge set property.");
-        em = TestEnvironment.getPersistenceConnector("OwlapiMergeSet", storages, false,
-                properties);
-        runner.mergeList(em, context());
-    }
+	@Test
+	public void testMergeSet() throws Exception {
+		LOG.config("Test: merge set property.");
+		em = TestEnvironment.getPersistenceConnector("OwlapiMergeSet", storage, false, properties);
+		runner.mergeList(em, context());
+	}
 
 	@Test
 	public void testUpdateDataLeaveLazy() throws Exception {
 		LOG.config("Test: update data property. Leaves lazily loaded field empty and checks that after commit the field's value hasn't changed.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDataProperty", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDataProperty", storage, false,
 				properties);
 		runner.updateDataPropertyKeepLazyEmpty(em, context());
 	}
-	
+
 	@Test
 	public void testUpdateDataPropertySetNull() {
 		LOG.config("Test: update data property. Set it to null.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDataPropertyToNull", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDataPropertyToNull", storage,
 				true, properties);
 		runner.updateDataPropertySetNull(em, context());
 	}
@@ -74,7 +71,7 @@ public class TestUpdateOperations {
 	@Test
 	public void testUpdateReference() {
 		LOG.config("Test: update reference to entity.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateReference", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateReference", storage, true,
 				properties);
 		runner.updateReference(em, context());
 	}
@@ -82,7 +79,7 @@ public class TestUpdateOperations {
 	@Test
 	public void testMergeDetachedWithChanges() {
 		LOG.config("Test: merge detached entity with changes.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDetached", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDetached", storage, true,
 				properties);
 		runner.mergeDetachedWithChanges(em, context());
 	}
@@ -90,7 +87,7 @@ public class TestUpdateOperations {
 	@Test
 	public void testMergeDetachedCascade() {
 		LOG.config("Test: merge detached with cascade.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateCascade", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateCascade", storage, true,
 				properties);
 		runner.mergeDetachedCascade(em, context());
 	}
@@ -98,7 +95,7 @@ public class TestUpdateOperations {
 	@Test
 	public void testRemoveFromSimpleList() {
 		LOG.config("Test: remove entity from simple list. (But keep it in the ontology.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateRemoveFromSimpleList", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateRemoveFromSimpleList", storage,
 				true, properties);
 		runner.removeFromSimpleList(em, context());
 	}
@@ -106,7 +103,7 @@ public class TestUpdateOperations {
 	@Test
 	public void testAddToSimpleList() {
 		LOG.config("Test: add entity to simple list.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddToSimpleList", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddToSimpleList", storage, true,
 				properties);
 		runner.addToSimpleList(em, context());
 	}
@@ -114,7 +111,7 @@ public class TestUpdateOperations {
 	@Test
 	public void testClearSimpleList() {
 		LOG.config("Test: clear a simple list (but keep the entities in ontology).");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateClearSimpleList", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateClearSimpleList", storage, true,
 				properties);
 		runner.clearSimpleList(em, context());
 	}
@@ -122,7 +119,7 @@ public class TestUpdateOperations {
 	@Test
 	public void testReplaceSimpleList() {
 		LOG.config("Test: replace simple list with a new one.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateReplaceSimpleList", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateReplaceSimpleList", storage,
 				true, properties);
 		runner.replaceSimpleList(em, context());
 	}
@@ -131,14 +128,14 @@ public class TestUpdateOperations {
 	public void testRemoveFromReferencedList() {
 		LOG.config("Test: remove entity from referenced list. (But keep it in the ontology.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateRemoveFromReferencedList",
-				storages, true, properties);
+				storage, true, properties);
 		runner.removeFromReferencedList(em, context());
 	}
 
 	@Test
 	public void testAddToReferencedList() {
 		LOG.config("Test: add entity to Referenced list.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddToReferencedList", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddToReferencedList", storage,
 				true, properties);
 		runner.addToReferencedList(em, context());
 	}
@@ -146,7 +143,7 @@ public class TestUpdateOperations {
 	@Test
 	public void testClearReferencedList() {
 		LOG.config("Test: clear referenced list (but keep the entities in ontology).");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateClearReferencedList", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateClearReferencedList", storage,
 				true, properties);
 		runner.clearReferencedList(em, context());
 	}
@@ -154,7 +151,7 @@ public class TestUpdateOperations {
 	@Test
 	public void testReplaceReferencedList() {
 		LOG.config("Test: replace referenced list with a new one.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateReplaceReferencedList", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateReplaceReferencedList", storage,
 				true, properties);
 		runner.replaceReferencedList(em, context());
 	}
@@ -162,7 +159,7 @@ public class TestUpdateOperations {
 	@Test
 	public void testAddNewToProperties() {
 		LOG.config("Test: add a new property value to entity's properties.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddNewToProperties", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddNewToProperties", storage,
 				false, properties);
 		runner.addNewToProperties(em, context());
 	}
@@ -170,19 +167,18 @@ public class TestUpdateOperations {
 	@Test
 	public void testAddPropertyValue() {
 		LOG.config("Test: add another value to an existing property.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddPropertyValue", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddPropertyValue", storage,
 				false, properties);
 		runner.addPropertyValue(em, context());
 	}
 
 	private URI context() {
-		return em.getAvailableContexts().get(0).getUri();
+		// OWLAPI storages don't use contexts
+		return null;
 	}
 
-	private static List<StorageConfig> initStorages() {
-		final List<StorageConfig> lst = new ArrayList<>(1);
-		lst.add(new OwlapiStorageConfig());
-		return lst;
+	private static StorageConfig initStorage() {
+		return new OwlapiStorageConfig();
 	}
 
 	private static Map<String, String> initProperties() {
