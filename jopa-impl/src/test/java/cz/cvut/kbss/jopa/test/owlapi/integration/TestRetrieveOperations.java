@@ -1,9 +1,7 @@
 package cz.cvut.kbss.jopa.test.owlapi.integration;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -23,7 +21,7 @@ public class TestRetrieveOperations {
 
 	private static final Logger LOG = Logger.getLogger(TestRetrieveOperations.class.getName());
 
-	private static final List<StorageConfig> storages = initStorages();
+	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
 	private static RetrieveOperationsRunner runner;
@@ -50,7 +48,7 @@ public class TestRetrieveOperations {
 	@Test
 	public void testRetrieveLazy() throws Exception {
 		LOG.config("Test: retrieve entity with lazy loaded attribute.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveLazy", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveLazy", storage, false,
 				properties);
 		runner.retrieveLazily(em, context());
 	}
@@ -58,7 +56,7 @@ public class TestRetrieveOperations {
 	@Test
 	public void testRetrieveGenerated() throws Exception {
 		LOG.config("Test: persist and retrieve several entities with generated identifiers.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveGenerated", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveGenerated", storage, false,
 				properties);
 		runner.retrieveGenerated(em, context());
 	}
@@ -66,7 +64,7 @@ public class TestRetrieveOperations {
 	@Test
 	public void testRetrieveNotExisting() {
 		LOG.config("Test: retrieve entity which does not exist in the specified context.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveNotExisting", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveNotExisting", storage, false,
 				properties);
 		runner.retrieveNotExisting(em, context());
 	}
@@ -74,18 +72,24 @@ public class TestRetrieveOperations {
 	@Test
 	public void testRefresh() {
 		LOG.config("Test: refresh entity.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiRefresh", storages, false, properties);
+		em = TestEnvironment.getPersistenceConnector("OwlapiRefresh", storage, false, properties);
 		runner.refresh(em, context());
 	}
 
-	private URI context() {
-		return em.getAvailableContexts().get(0).getUri();
+	@Test(expected = IllegalArgumentException.class)
+	public void testRefreshNotManaged() {
+		LOG.config("Test: refresh entity which is not managed.");
+		em = TestEnvironment.getPersistenceConnector("OwlapiRefreshNotManaged", storage, false,
+				properties);
+		runner.refreshNotManaged(em, context());
 	}
 
-	private static List<StorageConfig> initStorages() {
-		final List<StorageConfig> lst = new ArrayList<>(1);
-		lst.add(new OwlapiStorageConfig());
-		return lst;
+	private URI context() {
+		return null;
+	}
+
+	private static StorageConfig initStorage() {
+		return new OwlapiStorageConfig();
 	}
 
 	private static Map<String, String> initProperties() {

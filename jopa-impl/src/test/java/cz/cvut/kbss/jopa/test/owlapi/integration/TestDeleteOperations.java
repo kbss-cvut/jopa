@@ -1,9 +1,7 @@
 package cz.cvut.kbss.jopa.test.owlapi.integration;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -23,7 +21,7 @@ public class TestDeleteOperations {
 
 	private static final Logger LOG = Logger.getLogger(TestDeleteOperations.class.getName());
 
-	private static final List<StorageConfig> storages = initStorages();
+	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
 	private static DeleteOperationsRunner runner;
@@ -50,7 +48,7 @@ public class TestDeleteOperations {
 	@Test
 	public void testRemoveReference() {
 		LOG.config("Test: remove entity referenced by another entity.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveReference", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveReference", storage, true,
 				properties);
 		runner.removeReference(em, context());
 	}
@@ -58,7 +56,7 @@ public class TestDeleteOperations {
 	@Test
 	public void testRemoveCascade() {
 		LOG.config("Test: remove cascade.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveCascade", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveCascade", storage, true,
 				properties);
 		runner.removeCascade(em, context());
 	}
@@ -66,7 +64,7 @@ public class TestDeleteOperations {
 	@Test(expected = IllegalArgumentException.class)
 	public void testRemoveDetached() {
 		LOG.config("Test: try removing detached entity.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveDetached", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveDetached", storage, true,
 				properties);
 		runner.removeDetached(em, context());
 	}
@@ -74,7 +72,7 @@ public class TestDeleteOperations {
 	@Test
 	public void testRemoveFromSimpleList() {
 		LOG.config("Test: remove entity from simple list.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveFromSimpleList", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveFromSimpleList", storage, true,
 				properties);
 		runner.removeFromSimpleList(em, context());
 	}
@@ -82,7 +80,7 @@ public class TestDeleteOperations {
 	@Test
 	public void testRemoveFromReferencedList() {
 		LOG.config("Test: remove entity from referenced list.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveFromReferencedList", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveFromReferencedList", storage,
 				true, properties);
 		runner.removeFromReferencedList(em, context());
 	}
@@ -90,19 +88,17 @@ public class TestDeleteOperations {
 	@Test
 	public void testRemoveListOwner() {
 		LOG.config("Test: remove owner of simple and referenced list.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveListOwner", storages, true,
+		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveListOwner", storage, true,
 				properties);
 		runner.removeListOwner(em, context());
 	}
 
 	private URI context() {
-		return em.getAvailableContexts().get(0).getUri();
+		return null;
 	}
 
-	private static List<StorageConfig> initStorages() {
-		final List<StorageConfig> lst = new ArrayList<>(1);
-		lst.add(new OwlapiStorageConfig());
-		return lst;
+	private static StorageConfig initStorage() {
+		return new OwlapiStorageConfig();
 	}
 
 	private static Map<String, String> initProperties() {

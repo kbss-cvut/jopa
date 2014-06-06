@@ -10,6 +10,7 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
@@ -20,6 +21,7 @@ import cz.cvut.kbss.jopa.test.OWLClassG;
 import cz.cvut.kbss.jopa.test.OWLClassH;
 import cz.cvut.kbss.jopa.test.OWLClassI;
 import cz.cvut.kbss.jopa.test.utils.Generators;
+import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
 
 public class DeleteOperationsRunner {
 
@@ -74,37 +76,40 @@ public class DeleteOperationsRunner {
 	}
 
 	public void removeReference(EntityManager em, URI ctx) {
+		final EntityDescriptor dDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
-		em.persist(entityD, ctx);
-		em.persist(entityA, ctx);
+		em.persist(entityD, dDescriptor);
+		em.persist(entityA, aDescriptor);
 		em.getTransaction().commit();
 
-		final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), ctx);
+		final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
 		assertNotNull(a);
 		em.getTransaction().begin();
 		em.remove(a);
 		em.getTransaction().commit();
 
-		final OWLClassD res = em.find(OWLClassD.class, entityD.getUri(), ctx);
+		final OWLClassD res = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
 		assertNotNull(res);
 		// TODO When a is removed, the reference to it should be removed from
 		// all entities in cache
 		// assertNull(res.getOwlClassA());
-		assertNull(em.find(OWLClassA.class, entityA.getUri(), ctx));
+		assertNull(em.find(OWLClassA.class, entityA.getUri(), aDescriptor));
 	}
 
 	public void removeCascade(EntityManager em, URI ctx) {
+		final EntityDescriptor gDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
-		em.persist(entityG, ctx);
+		em.persist(entityG, gDescriptor);
 		assertTrue(em.contains(entityG));
 		assertTrue(em.contains(entityH));
 		assertTrue(em.contains(entityA));
 		em.getTransaction().commit();
 
 		em.getTransaction().begin();
-		final OWLClassG g = em.find(OWLClassG.class, entityG.getUri(), ctx);
-		final OWLClassH h = em.find(OWLClassH.class, entityH.getUri(), ctx);
-		final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), ctx);
+		final OWLClassG g = em.find(OWLClassG.class, entityG.getUri(), gDescriptor);
+		final OWLClassH h = em.find(OWLClassH.class, entityH.getUri(), gDescriptor);
+		final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), gDescriptor);
 		assertTrue(em.contains(g));
 		assertTrue(em.contains(h));
 		assertTrue(em.contains(a));
@@ -115,20 +120,21 @@ public class DeleteOperationsRunner {
 		assertFalse(em.contains(a));
 		em.getTransaction().commit();
 
-		assertNull(em.find(OWLClassG.class, entityG.getUri(), ctx));
-		assertNull(em.find(OWLClassH.class, entityH.getUri(), ctx));
-		assertNull(em.find(OWLClassA.class, entityA.getUri(), ctx));
+		assertNull(em.find(OWLClassG.class, entityG.getUri(), gDescriptor));
+		assertNull(em.find(OWLClassH.class, entityH.getUri(), gDescriptor));
+		assertNull(em.find(OWLClassA.class, entityA.getUri(), gDescriptor));
 	}
 
 	public void removeDetached(EntityManager em, URI ctx) {
+		final EntityDescriptor eDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		assertNull(entityE.getUri());
-		em.persist(entityE, ctx);
+		em.persist(entityE, eDescriptor);
 		em.getTransaction().commit();
 		assertNotNull(entityE.getUri());
 
 		em.getTransaction().begin();
-		final OWLClassE e = em.find(OWLClassE.class, entityE.getUri(), ctx);
+		final OWLClassE e = em.find(OWLClassE.class, entityE.getUri(), eDescriptor);
 		assertNotNull(e);
 		assertTrue(em.contains(e));
 		em.detach(e);
@@ -138,17 +144,21 @@ public class DeleteOperationsRunner {
 	}
 
 	public void removeFromSimpleList(EntityManager em, URI ctx) {
-		entityC.setSimpleList(Generators.createSimpleList(5));
+		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final int size = 5;
+		entityC.setSimpleList(Generators.createSimpleList(size));
 		em.getTransaction().begin();
-		em.persist(entityC, ctx);
+		em.persist(entityC, cDescriptor);
 		for (OWLClassA a : entityC.getSimpleList()) {
-			em.persist(a, ctx);
+			em.persist(a, cDescriptor);
 		}
 		em.getTransaction().commit();
 
-		final OWLClassA a = em.find(OWLClassA.class, entityC.getSimpleList().get(2).getUri(), ctx);
+		final int randIndex = TestEnvironmentUtils.randomInt(size);
+		final OWLClassA a = em.find(OWLClassA.class, entityC.getSimpleList().get(randIndex)
+				.getUri(), cDescriptor);
 		assertNotNull(a);
-		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), ctx);
+		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
 		assertNotNull(c);
 		em.getTransaction().begin();
 		// We have to remove A from the simple list as well because otherwise we
@@ -157,9 +167,9 @@ public class DeleteOperationsRunner {
 		em.remove(a);
 		em.getTransaction().commit();
 
-		final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), ctx);
+		final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), cDescriptor);
 		assertNull(resA);
-		final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), ctx);
+		final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
 		boolean found = false;
 		for (OWLClassA aa : resC.getSimpleList()) {
 			if (aa.getUri().equals(a.getUri())) {
@@ -171,18 +181,21 @@ public class DeleteOperationsRunner {
 	}
 
 	public void removeFromReferencedList(EntityManager em, URI ctx) {
-		entityC.setReferencedList(Generators.createReferencedList(10));
+		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final int size = 10;
+		entityC.setReferencedList(Generators.createReferencedList(size));
 		em.getTransaction().begin();
-		em.persist(entityC, ctx);
+		em.persist(entityC, cDescriptor);
 		for (OWLClassA a : entityC.getReferencedList()) {
-			em.persist(a, ctx);
+			em.persist(a, cDescriptor);
 		}
 		em.getTransaction().commit();
 
-		final OWLClassA a = em.find(OWLClassA.class, entityC.getReferencedList().get(1).getUri(),
-				ctx);
+		final int randIndex = TestEnvironmentUtils.randomInt(size);
+		final OWLClassA a = em.find(OWLClassA.class, entityC.getReferencedList().get(randIndex)
+				.getUri(), cDescriptor);
 		assertNotNull(a);
-		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), ctx);
+		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
 		assertNotNull(c);
 		em.getTransaction().begin();
 		// We have to remove A from the referenced list as well because
@@ -191,9 +204,9 @@ public class DeleteOperationsRunner {
 		em.remove(a);
 		em.getTransaction().commit();
 
-		final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), ctx);
+		final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), cDescriptor);
 		assertNull(resA);
-		final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), ctx);
+		final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
 		boolean found = false;
 		for (OWLClassA aa : resC.getReferencedList()) {
 			if (aa.getUri().equals(a.getUri())) {
@@ -205,19 +218,20 @@ public class DeleteOperationsRunner {
 	}
 
 	public void removeListOwner(EntityManager em, URI ctx) {
+		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setSimpleList(Generators.createSimpleList());
 		entityC.setReferencedList(Generators.createReferencedList());
 		em.getTransaction().begin();
-		em.persist(entityC, ctx);
+		em.persist(entityC, cDescriptor);
 		for (OWLClassA a : entityC.getSimpleList()) {
-			em.persist(a, ctx);
+			em.persist(a, cDescriptor);
 		}
 		for (OWLClassA a : entityC.getReferencedList()) {
-			em.persist(a, ctx);
+			em.persist(a, cDescriptor);
 		}
 		em.getTransaction().commit();
 
-		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), ctx);
+		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
 		assertNotNull(c);
 		em.getTransaction().begin();
 		em.remove(c);
@@ -225,10 +239,10 @@ public class DeleteOperationsRunner {
 
 		em.getEntityManagerFactory().getCache().evictAll();
 		for (OWLClassA a : entityC.getSimpleList()) {
-			assertNotNull(em.find(OWLClassA.class, a.getUri(), ctx));
+			assertNotNull(em.find(OWLClassA.class, a.getUri(), cDescriptor));
 		}
 		for (OWLClassA a : entityC.getReferencedList()) {
-			assertNotNull(em.find(OWLClassA.class, a.getUri(), ctx));
+			assertNotNull(em.find(OWLClassA.class, a.getUri(), cDescriptor));
 		}
 	}
 }

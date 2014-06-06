@@ -253,9 +253,6 @@ public interface EntityManager {
 	 * Refresh the state of the instance from the data source, overwriting
 	 * changes made to the entity, if any. </p>
 	 * 
-	 * This version looks for the entity and its attributes in the default
-	 * repository context.
-	 * 
 	 * @param entity
 	 * @throws IllegalArgumentException
 	 *             if not an entity or entity is not managed
@@ -267,25 +264,6 @@ public interface EntityManager {
 	 *             if the entity no longer exists in the database
 	 */
 	public void refresh(final Object entity);
-
-	/**
-	 * Refresh the state of the instance from the data source, overwriting
-	 * changes made to the entity, if any. </p>
-	 * 
-	 * The descriptor specifies in which the entity and its attributes should be
-	 * looked for.
-	 * 
-	 * @param entity
-	 * @throws IllegalArgumentException
-	 *             if not an entity or entity is not managed
-	 * @throws TransactionRequiredException
-	 *             if invoked on a container-managed entity manager of type
-	 *             PersistenceContextType.TRANSACTION and there is no
-	 *             transaction.
-	 * @throws EntityNotFoundException
-	 *             if the entity no longer exists in the database
-	 */
-	public void refresh(final Object entity, EntityDescriptor descriptor);
 
 	// TODO JPA 2.0 refresh with lock mode
 	// TODO JPA 2.0 refresh with properties

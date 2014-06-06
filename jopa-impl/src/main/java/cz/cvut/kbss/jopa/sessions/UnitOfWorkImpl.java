@@ -747,6 +747,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
 	@Override
 	public <T> void revertObject(T object) {
+		Objects.requireNonNull(object, ErrorUtils.constructNPXMessage("object"));
+		if (!isObjectManaged(object) && !getDeletedObjects().containsKey(object)) {
+			throw new IllegalArgumentException("The specified enity " + object
+					+ " is not managed by this persistence context.");
+		}
 		final EntityDescriptor repo = getEntityDescriptor(object);
 		if (repo == null) {
 			throw new IllegalArgumentException("Unable to find entity " + object

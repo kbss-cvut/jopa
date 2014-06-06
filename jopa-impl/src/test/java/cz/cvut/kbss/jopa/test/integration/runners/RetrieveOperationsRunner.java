@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -12,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
@@ -69,11 +71,12 @@ public class RetrieveOperationsRunner {
 	}
 
 	public void retrieveLazily(EntityManager em, URI ctx) throws Exception {
+		final EntityDescriptor iDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
-		em.persist(entityI, ctx);
+		em.persist(entityI, iDescriptor);
 		em.getTransaction().commit();
 
-		final OWLClassI resI = em.find(OWLClassI.class, entityI.getUri(), ctx);
+		final OWLClassI resI = em.find(OWLClassI.class, entityI.getUri(), iDescriptor);
 		assertNotNull(resI);
 		final Field f = OWLClassI.class.getDeclaredField("owlClassA");
 		f.setAccessible(true);
@@ -87,13 +90,15 @@ public class RetrieveOperationsRunner {
 	}
 
 	public void retrieveGenerated(EntityManager em, URI ctx) {
+		final EntityDescriptor eDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
-		final List<OWLClassE> lst = new ArrayList<>(10);
-		for (int i = 0; i < 10; i++) {
+		final int size = 10;
+		final List<OWLClassE> lst = new ArrayList<>(size);
+		for (int i = 0; i < size; i++) {
 			final OWLClassE e = new OWLClassE();
 			e.setStringAttribute("blablabla" + i);
 			assertNull(e.getUri());
-			em.persist(e, ctx);
+			em.persist(e, eDescriptor);
 			assertNotNull(e.getUri());
 			lst.add(e);
 		}
@@ -101,31 +106,49 @@ public class RetrieveOperationsRunner {
 
 		em.clear();
 		for (OWLClassE e : lst) {
-			final OWLClassE res = em.find(OWLClassE.class, e.getUri(), ctx);
+			final OWLClassE res = em.find(OWLClassE.class, e.getUri(), eDescriptor);
 			assertNotNull(res);
 			assertEquals(e.getStringAttribute(), res.getStringAttribute());
 		}
 	}
 
 	public void retrieveNotExisting(EntityManager em, URI ctx) {
-		final OWLClassB res = em.find(OWLClassB.class, entityB.getUri(), ctx);
+		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final OWLClassB res = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
 		assertNull(res);
 	}
 
 	public void refresh(EntityManager em, URI ctx) {
+		final EntityDescriptor dDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
-		em.persist(entityD, ctx);
-		em.persist(entityA, ctx);
+		em.persist(entityD, dDescriptor);
+		em.persist(entityA, aDescriptor);
 		em.getTransaction().commit();
 
 		final OWLClassA newA = new OWLClassA();
 		newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
 		newA.setStringAttribute("newA");
-		final OWLClassD d = em.find(OWLClassD.class, entityD.getUri(), ctx);
-		final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), ctx);
+		final OWLClassD d = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
+		final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
 		assertEquals(d.getOwlClassA(), a);
 		d.setOwlClassA(newA);
 		em.refresh(d);
 		assertEquals(a.getUri(), d.getOwlClassA().getUri());
+	}
+
+	public void refreshNotManaged(EntityManager em, URI ctx) {
+		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		em.getTransaction().begin();
+		em.persist(entityA, aDescriptor);
+		em.getTransaction().commit();
+
+		final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
+		assertNotNull(a);
+		final OWLClassA newA = new OWLClassA();
+		newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
+		newA.setStringAttribute("newA");
+		em.refresh(newA);
+		fail("This line should not have been reached.");
 	}
 }

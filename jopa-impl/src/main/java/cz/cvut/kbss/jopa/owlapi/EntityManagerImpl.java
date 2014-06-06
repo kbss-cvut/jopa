@@ -320,32 +320,17 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public void refresh(final Object entity) {
-		final EntityDescriptor d = new EntityDescriptor();
-		refresh(entity, d);
-	}
-
-	@Override
-	public void refresh(Object entity, EntityDescriptor descriptor) {
+	public void refresh(Object entity) {
 		ensureOpen();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		switch (getState(entity, descriptor)) {
-		case MANAGED_NEW:
-			break;
-		case MANAGED:
-			this.getCurrentPersistenceContext().revertObject(entity);
-			new SimpleOneLevelCascadeExplorer() {
-				@Override
-				protected void runCascadedForEach(Object ox2) {
-					refresh(ox2);
-				}
-			}.start(this, entity, CascadeType.REFRESH);
-		default:
-			throw new IllegalArgumentException("Entity " + entity
-					+ " is not managed and cannot be refreshed.");
-		}
+		this.getCurrentPersistenceContext().revertObject(entity);
+		new SimpleOneLevelCascadeExplorer() {
+			@Override
+			protected void runCascadedForEach(Object ox2) {
+				refresh(ox2);
+			}
+		}.start(this, entity, CascadeType.REFRESH);
 	}
 
 	public void clear() {
