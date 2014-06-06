@@ -52,6 +52,7 @@ import org.semanticweb.owlapi.model.RemoveOntologyAnnotation;
 import org.semanticweb.owlapi.model.SetOntologyID;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
@@ -105,7 +106,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	public enum State {
-		MANAGED, NOT_MANAGED, REMOVED;
+		MANAGED, MANAGED_NEW, NOT_MANAGED, REMOVED;
 	}
 
 	@Override
@@ -165,6 +166,9 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				}
 			}.start(this, entity, CascadeType.PERSIST);
 			break;
+		case MANAGED_NEW:
+			throw new OWLEntityExistsException("Entity " + entity
+					+ " is already managed in this persistence context.");
 		case REMOVED:
 			getCurrentPersistenceContext().revertObject(entity);
 			break;
@@ -263,6 +267,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		ensureOpen();
 
 		switch (getState(object)) {
+		case MANAGED_NEW:
 		case MANAGED:
 			getCurrentPersistenceContext().removeObject(object);
 		case REMOVED:
@@ -327,6 +332,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
 		switch (getState(entity, descriptor)) {
+		case MANAGED_NEW:
+			break;
 		case MANAGED:
 			this.getCurrentPersistenceContext().revertObject(entity);
 			new SimpleOneLevelCascadeExplorer() {
@@ -351,6 +358,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		ensureOpen();
 
 		switch (getState(entity)) {
+		case MANAGED_NEW:
 		case MANAGED:
 			getCurrentPersistenceContext().unregisterObject(entity);
 			new SimpleOneLevelCascadeExplorer() {

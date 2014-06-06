@@ -126,4 +126,15 @@ public final class EntityDescriptor {
 		return out.toString();
 	}
 
+	/**
+	 * Creates new entity descriptor and sets entity context to the specified
+	 * URI.
+	 * 
+	 * @param entityContext
+	 *            Entity context URI, may be {@code null}
+	 * @return new entity descriptor
+	 */
+	public static EntityDescriptor createWithEntityContext(URI entityContext) {
+		return new EntityDescriptor().setEntityContext(entityContext);
+	}
 }

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
@@ -78,67 +79,80 @@ public class CreateOperationsRunner {
 		entityC.setReferencedList(null);
 	}
 
+	public void persistWithGenerated(EntityManager em) {
+		persistWithGenerated(em, null);
+	}
+
 	public void persistWithGenerated(EntityManager em, URI ctx) {
 		em.getTransaction().begin();
-		em.persist(entityA, ctx);
-		em.persist(entityE, ctx);
+		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor eDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		em.persist(entityA, aDescriptor);
+		em.persist(entityE, eDescriptor);
 		em.getTransaction().commit();
 
-		final OWLClassA resA1 = em.find(OWLClassA.class, entityA.getUri(), ctx);
+		final OWLClassA resA1 = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
 		assertNotNull(resA1);
 		assertEquals(entityA.getStringAttribute(), resA1.getStringAttribute());
 		assertEquals(entityA.getTypes().size(), resA1.getTypes().size());
 		assertTrue(entityA.getTypes().containsAll(resA1.getTypes()));
 
 		assertNotNull(entityE.getUri());
-		final OWLClassE resE = em.find(OWLClassE.class, entityE.getUri(), ctx);
+		final OWLClassE resE = em.find(OWLClassE.class, entityE.getUri(), eDescriptor);
 		assertNotNull(resE);
 		assertEquals(entityE.getStringAttribute(), resE.getStringAttribute());
 	}
 
 	public void persistCascade(EntityManager em, URI ctx) {
+		final EntityDescriptor gDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
-		em.persist(entityG, ctx);
+		em.persist(entityG, gDescriptor);
 		em.getTransaction().commit();
 
-		final OWLClassA resA2 = em.find(OWLClassA.class, entityA.getUri(), ctx);
+		final OWLClassA resA2 = em.find(OWLClassA.class, entityA.getUri(),
+				EntityDescriptor.createWithEntityContext(ctx));
 		assertNotNull(resA2);
-		final OWLClassH resH = em.find(OWLClassH.class, entityH.getUri(), ctx);
+		final OWLClassH resH = em.find(OWLClassH.class, entityH.getUri(),
+				EntityDescriptor.createWithEntityContext(ctx));
 		assertNotNull(resH);
 		assertEquals(resH.getOwlClassA(), resA2);
-		final OWLClassG resG = em.find(OWLClassG.class, entityG.getUri(), ctx);
+		final OWLClassG resG = em.find(OWLClassG.class, entityG.getUri(), gDescriptor);
 		assertNotNull(resG);
 		assertEquals(resG.getOwlClassH(), resH);
 		assertEquals(resG.getOwlClassH().getOwlClassA(), resA2);
 	}
 
 	public void persistTwice(EntityManager em, URI ctx) {
+		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
-		em.persist(entityB, ctx);
-		em.persist(entityB, ctx);
+		em.persist(entityB, bDescriptor);
+		em.persist(entityB, bDescriptor);
 		em.getTransaction().commit();
 		fail("This line should not have been reached.");
 	}
 
 	public void persistWithoutCascade(EntityManager em, URI ctx) {
+		final EntityDescriptor dDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
-		em.persist(entityD, ctx);
+		em.persist(entityD, dDescriptor);
 		em.getTransaction().commit();
 		fail("This line should not have been reached.");
 	}
 
 	public void persistSimpleList(EntityManager em, URI ctx) {
+		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setSimpleList(Generators.createSimpleList(5));
 		em.getTransaction().begin();
-		em.persist(entityC, ctx);
+		em.persist(entityC, cDescriptor);
 		for (OWLClassA a : entityC.getSimpleList()) {
-			em.persist(a, ctx);
+			em.persist(a, cDescriptor);
 		}
 		em.getTransaction().commit();
 
-		final OWLClassA a = em.find(OWLClassA.class, entityC.getSimpleList().get(1).getUri(), ctx);
+		final OWLClassA a = em.find(OWLClassA.class, entityC.getSimpleList().get(1).getUri(),
+				cDescriptor);
 		assertNotNull(a);
-		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), ctx);
+		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
 		assertNotNull(c);
 		assertNotNull(c.getSimpleList());
 		assertFalse(c.getSimpleList().isEmpty());
@@ -147,31 +161,33 @@ public class CreateOperationsRunner {
 	}
 
 	public void persistSimpleListNoCascade(EntityManager em, URI ctx) {
+		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setSimpleList(Generators.createSimpleList(10));
 		em.getTransaction().begin();
-		em.persist(entityC, ctx);
+		em.persist(entityC, cDescriptor);
 		em.getTransaction().commit();
 		fail("This line should not have been reached.");
 	}
 
 	public void persistReferencedList(EntityManager em, URI ctx) {
+		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setReferencedList(Generators.createReferencedList(5));
 		em.getTransaction().begin();
-		em.persist(entityC, ctx);
+		em.persist(entityC, cDescriptor);
 		for (OWLClassA a : entityC.getReferencedList()) {
-			em.persist(a, ctx);
+			em.persist(a, cDescriptor);
 		}
 		assertTrue(em.contains(entityC));
 		assertTrue(em.contains(entityC.getReferencedList().get(0)));
 		em.getTransaction().commit();
 
-		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), ctx);
+		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
 		assertNotNull(c);
 		assertNotNull(c.getReferencedList());
 		assertFalse(c.getReferencedList().isEmpty());
 		assertEquals(entityC.getReferencedList().size(), c.getReferencedList().size());
 		for (OWLClassA a : entityC.getReferencedList()) {
-			final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), ctx);
+			final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), cDescriptor);
 			assertNotNull(resA);
 			assertEquals(a.getStringAttribute(), resA.getStringAttribute());
 			assertTrue(c.getReferencedList().contains(resA));
@@ -179,45 +195,48 @@ public class CreateOperationsRunner {
 	}
 
 	public void persistReferencedListNoCascade(EntityManager em, URI ctx) {
+		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setReferencedList(Generators.createReferencedList(5));
 		em.getTransaction().begin();
-		em.persist(entityC, ctx);
+		em.persist(entityC, cDescriptor);
 		em.getTransaction().commit();
 		fail("This line should not have been reached.");
 	}
 
 	public void persistSimpleAndReferencedList(EntityManager em, URI ctx) {
+		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setReferencedList(Generators.createReferencedList(5));
 		entityC.setSimpleList(Generators.createSimpleList(5));
 		em.getTransaction().begin();
-		em.persist(entityC, ctx);
+		em.persist(entityC, cDescriptor);
 		for (OWLClassA a : entityC.getSimpleList()) {
-			em.persist(a, ctx);
+			em.persist(a, cDescriptor);
 		}
 		for (OWLClassA a : entityC.getReferencedList()) {
-			em.persist(a, ctx);
+			em.persist(a, cDescriptor);
 		}
 		em.getTransaction().commit();
 
-		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), ctx);
+		final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
 		assertNotNull(c);
 		assertNotNull(c.getSimpleList());
 		assertEquals(entityC.getSimpleList().size(), c.getSimpleList().size());
 		assertNotNull(c.getReferencedList());
 		assertEquals(entityC.getReferencedList().size(), c.getReferencedList().size());
 		for (OWLClassA a : entityC.getSimpleList()) {
-			final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), ctx);
+			final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), cDescriptor);
 			assertNotNull(resA);
 			assertTrue(c.getSimpleList().contains(resA));
 		}
 		for (OWLClassA a : entityC.getReferencedList()) {
-			final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), ctx);
+			final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), cDescriptor);
 			assertNotNull(resA);
 			assertTrue(c.getReferencedList().contains(resA));
 		}
 	}
 
 	public void persistProperties(EntityManager em, URI ctx) {
+		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		final Map<String, Set<String>> props = new HashMap<>(3);
 		props.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyOne", Collections
 				.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/Individial10"));
@@ -229,11 +248,11 @@ public class CreateOperationsRunner {
 		expected.putAll(props);
 		entityB.setProperties(props);
 		em.getTransaction().begin();
-		em.persist(entityB, ctx);
+		em.persist(entityB, bDescriptor);
 		em.getTransaction().commit();
 		em.clear();
 
-		final OWLClassB res = em.find(OWLClassB.class, entityB.getUri(), ctx);
+		final OWLClassB res = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
 		assertNotNull(res);
 		assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
 		assertNotNull(res.getProperties());
@@ -250,14 +269,15 @@ public class CreateOperationsRunner {
 	}
 
 	public void persistPropertiesEmpty(EntityManager em, URI ctx) {
+		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityB.setProperties(Collections.<String, Set<String>> emptyMap());
 		em.getTransaction().begin();
-		em.persist(entityB, ctx);
+		em.persist(entityB, bDescriptor);
 		assertTrue(em.contains(entityB));
 		em.getTransaction().commit();
 		em.clear();
 
-		final OWLClassB b = em.find(OWLClassB.class, entityB.getUri(), ctx);
+		final OWLClassB b = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
 		assertNotNull(b);
 		assertEquals(entityB.getUri(), b.getUri());
 		assertEquals(entityB.getStringAttribute(), b.getStringAttribute());

@@ -1,7 +1,6 @@
 package cz.cvut.kbss.jopa.accessors;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -35,13 +34,13 @@ public class StorageAccessorImpl implements StorageAccessor {
 	}
 
 	public StorageAccessorImpl(Metamodel metamodel, ServerSession serverSession,
-			List<OntologyStorageProperties> storageProperties) {
+			OntologyStorageProperties storageProperties) {
 		this(metamodel, serverSession);
 		initDataSource(storageProperties, Collections.<String, String> emptyMap());
 	}
 
 	public StorageAccessorImpl(Metamodel metamodel, ServerSession serverSession,
-			List<OntologyStorageProperties> storageProps, Map<String, String> properties) {
+			OntologyStorageProperties storageProps, Map<String, String> properties) {
 		this(metamodel, serverSession);
 		initDataSource(storageProps, properties);
 	}
@@ -57,7 +56,7 @@ public class StorageAccessorImpl implements StorageAccessor {
 		}
 	}
 
-	private void initDataSource(List<OntologyStorageProperties> storageProps,
+	private void initDataSource(OntologyStorageProperties storageProps,
 			Map<String, String> properties) {
 		this.dataSource = new SimpleDataSource(storageProps, properties);
 	}

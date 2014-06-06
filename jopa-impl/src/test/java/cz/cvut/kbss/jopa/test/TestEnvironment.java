@@ -104,7 +104,13 @@ public class TestEnvironment {
 
 	private static EntityManager getOwlapiPersistenceConnector(String name, boolean cache) {
 		return getPersistenceConnector(name,
-				Collections.<StorageConfig> singletonList(new OwlapiStorageConfig()), cache);
+				Collections.<StorageConfig> singletonList(new OwlapiStorageConfig()), cache).get(0);
+	}
+
+	public static EntityManager getPersistenceConnector(String name, StorageConfig storage,
+			boolean cache, Map<String, String> properties) {
+		return getPersistenceConnector(name, Collections.singletonList(storage), cache, properties)
+				.get(0);
 	}
 
 	/**
@@ -118,7 +124,7 @@ public class TestEnvironment {
 	 *            Whether second level cache should be enabled
 	 * @return Persistence context
 	 */
-	public static EntityManager getPersistenceConnector(String baseName,
+	public static List<EntityManager> getPersistenceConnector(String baseName,
 			List<StorageConfig> storages, boolean cache) {
 		return getPersistenceConnector(baseName, storages, cache,
 				Collections.<String, String> emptyMap());
@@ -137,23 +143,23 @@ public class TestEnvironment {
 	 *            Additional properties for the persistence provider
 	 * @return Persistence context
 	 */
-	public static EntityManager getPersistenceConnector(String baseName,
+	public static List<EntityManager> getPersistenceConnector(String baseName,
 			List<StorageConfig> storages, boolean cache, Map<String, String> props) {
 		final Map<String, String> params = initParams(cache);
 		// Can override default params
 		params.putAll(props);
-		final List<OntologyStorageProperties> storageProps = new ArrayList<OntologyStorageProperties>(
-				storages.size());
 		int i = 1;
+		final List<EntityManager> managers = new ArrayList<>(storages.size());
 		for (StorageConfig si : storages) {
 			si.setName(baseName);
 			si.setDirectory(dir);
 			final OntologyStorageProperties p = si.createStorageProperties(i++);
 			assert p != null;
-			storageProps.add(p);
+			final EntityManager em = Persistence.createEntityManagerFactory("context-name_" + i, p,
+					params).createEntityManager();
+			managers.add(em);
 		}
-		return Persistence.createEntityManagerFactory("context-name", storageProps, params)
-				.createEntityManager();
+		return managers;
 	}
 
 	private static Map<String, String> initParams(boolean cache) {
@@ -164,7 +170,8 @@ public class TestEnvironment {
 			params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "off");
 		}
 		/* Set location of the entities (package) */
-//		params.put(OWLAPIPersistenceProperties.ENTITY_LOCATION, "cz.cvut.kbss.jopa.test");
+		// params.put(OWLAPIPersistenceProperties.ENTITY_LOCATION,
+		// "cz.cvut.kbss.jopa.test");
 		params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
 				OWLAPIPersistenceProvider.class.getName());
 		params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);

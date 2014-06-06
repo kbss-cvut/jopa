@@ -75,7 +75,6 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		if (m == null) {
 			throw new OntoDriverException("Module " + module + " not managed in this factory.");
 		}
-		m.close();
 	}
 
 	/**

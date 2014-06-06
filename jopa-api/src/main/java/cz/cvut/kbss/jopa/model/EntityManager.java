@@ -79,7 +79,6 @@ public interface EntityManager {
 	 *             if invoked on a container-managed entity manager of type
 	 *             PersistenceContextType.TRANSACTION and there is no
 	 *             transaction.
-	 * @see #getAvailableContexts()
 	 */
 	public void persist(final Object entity, final EntityDescriptor descriptor);
 

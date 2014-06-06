@@ -17,7 +17,6 @@ package cz.cvut.kbss.jopa.owlapi;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,7 +42,7 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider, ProviderU
 	}
 
 	public EntityManagerFactoryImpl createEntityManagerFactory(String emName,
-			List<OntologyStorageProperties> storageProperties, Map<String, String> properties) {
+			OntologyStorageProperties storageProperties, Map<String, String> properties) {
 		final EntityManagerFactoryImpl emf = new EntityManagerFactoryImpl(storageProperties,
 				properties);
 		emfs.add(emf);

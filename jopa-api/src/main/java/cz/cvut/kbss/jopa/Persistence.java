@@ -18,7 +18,6 @@ package cz.cvut.kbss.jopa;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -34,8 +33,7 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 public class Persistence {
 
-	private static final Logger LOG = Logger.getLogger(Persistence.class
-			.getName());
+	private static final Logger LOG = Logger.getLogger(Persistence.class.getName());
 
 	private static final Map<String, Map<String, String>> mapProp = new HashMap<String, Map<String, String>>();
 
@@ -55,14 +53,12 @@ public class Persistence {
 	 * @return the factory that creates EntityManagers configured according to
 	 *         the specified persistence unit.
 	 */
-	public static EntityManagerFactory createEntityManagerFactory(
-			final String persistenceUnitName) {
+	public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName) {
 		return createEntityManagerFactory(persistenceUnitName,
 				Collections.<String, String> emptyMap());
 	}
 
-	public static EntityManagerFactory createEntityManagerFactory(
-			final String persistenceUnitName,
+	public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName,
 			final Map<String, String> parameters) {
 
 		// if (map.containsKey(persistenceUnitName)) {
@@ -70,14 +66,11 @@ public class Persistence {
 		// + persistenceUnitName + "' already configured.");
 		// }
 
-		return createEntityManagerFactory(persistenceUnitName,
-				Collections.<OntologyStorageProperties> emptyList(), parameters);
+		return createEntityManagerFactory(persistenceUnitName, null, parameters);
 	}
 
-	public static EntityManagerFactory createEntityManagerFactory(
-			final String persistenceUnitName,
-			final List<OntologyStorageProperties> storageProperties,
-			final Map<String, String> parameters) {
+	public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName,
+			final OntologyStorageProperties storageProperties, final Map<String, String> parameters) {
 		final Map<String, String> realParams = new HashMap<String, String>();
 
 		if (mapProp.containsKey(persistenceUnitName)) {
@@ -85,27 +78,24 @@ public class Persistence {
 		}
 		realParams.putAll(parameters);
 
-		final String className = realParams
-				.get(PersistenceProperties.JPA_PERSISTENCE_PROVIDER);
+		final String className = realParams.get(PersistenceProperties.JPA_PERSISTENCE_PROVIDER);
 
 		if (className == null) {
-			throw new IllegalArgumentException(
-					"Persistent unit provider unknown.");
+			throw new IllegalArgumentException("Persistent unit provider unknown.");
 		}
 
 		try {
-			final PersistenceProvider pp = ((Class<PersistenceProvider>) Class
-					.forName(className)).newInstance();
+			final PersistenceProvider pp = ((Class<PersistenceProvider>) Class.forName(className))
+					.newInstance();
 
 			// TODO get at runtime
 			map.add(pp);
 
-			return pp.createEntityManagerFactory(persistenceUnitName,
-					storageProperties, realParams);
+			return pp
+					.createEntityManagerFactory(persistenceUnitName, storageProperties, realParams);
 		} catch (Exception e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
-			throw new IllegalArgumentException(
-					"Problems with creating EntityManagerFactory.");
+			throw new IllegalArgumentException("Problems with creating EntityManagerFactory.");
 		}
 	}
 
@@ -132,8 +122,7 @@ class PersistenceUtilImpl implements PersistenceUtil {
 		for (final PersistenceProvider pp : PersistenceProviderResolverHolder
 				.getPersistenceProviderResolver().getPersistenceProviders()) {
 
-			switch (pp.getProviderUtil().isLoadedWithoutReference(entity,
-					attributeName)) {
+			switch (pp.getProviderUtil().isLoadedWithoutReference(entity, attributeName)) {
 			case LOADED:
 				return true;
 			case NOT_LOADED:
@@ -146,8 +135,7 @@ class PersistenceUtilImpl implements PersistenceUtil {
 		for (final PersistenceProvider pp : PersistenceProviderResolverHolder
 				.getPersistenceProviderResolver().getPersistenceProviders()) {
 
-			switch (pp.getProviderUtil().isLoadedWithReference(entity,
-					attributeName)) {
+			switch (pp.getProviderUtil().isLoadedWithReference(entity, attributeName)) {
 			case LOADED:
 				return true;
 			case NOT_LOADED:

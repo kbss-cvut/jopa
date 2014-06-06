@@ -2,7 +2,6 @@ package cz.cvut.kbss.jopa.sessions;
 
 import java.net.URI;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -48,7 +47,7 @@ public class ServerSession extends AbstractSession {
 		this.managedClasses = null;
 	}
 
-	public ServerSession(List<OntologyStorageProperties> storageProperties,
+	public ServerSession(OntologyStorageProperties storageProperties,
 			Map<String, String> properties, Metamodel metamodel) {
 		this.metamodel = metamodel;
 		this.managedClasses = processTypes(metamodel.getEntities());
@@ -81,7 +80,7 @@ public class ServerSession extends AbstractSession {
 	 * @param factory
 	 *            Factory for creating ontology accessors.
 	 */
-	private void initialize(List<OntologyStorageProperties> storageProperties,
+	private void initialize(OntologyStorageProperties storageProperties,
 			Map<String, String> properties, Metamodel metamodel) {
 		assert properties != null;
 		assert metamodel != null;

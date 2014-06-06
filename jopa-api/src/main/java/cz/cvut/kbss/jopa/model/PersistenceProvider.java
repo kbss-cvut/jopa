@@ -15,7 +15,6 @@
 
 package cz.cvut.kbss.jopa.model;
 
-import java.util.List;
 import java.util.Map;
 
 import cz.cvut.kbss.jopa.NonJPA;
@@ -41,8 +40,7 @@ public interface PersistenceProvider {
 	 * @return EntityManagerFactory for the persistence unit, or null if the
 	 *         provider is not the right provider.
 	 */
-	public EntityManagerFactory createEntityManagerFactory(String emName,
-			Map<String, String> map);
+	public EntityManagerFactory createEntityManagerFactory(String emName, Map<String, String> map);
 
 	/**
 	 * Called by {@code Persistence} class when an {@code EntityManagerFactory}
@@ -51,8 +49,8 @@ public interface PersistenceProvider {
 	 * @param emName
 	 *            the name of the persistence unit
 	 * @param storageProperties
-	 *            List of storage properties which specify information about
-	 *            storages the persistence should connect to
+	 *            Storage properties which specify information about the storage
+	 *            the persistence should connect to
 	 * @param properties
 	 *            a {@code Map} of properties for use by the persistence
 	 *            provider. These properties may be used to override the values
@@ -65,8 +63,7 @@ public interface PersistenceProvider {
 	 */
 	@NonJPA
 	public EntityManagerFactory createEntityManagerFactory(String emName,
-			List<OntologyStorageProperties> storageProperties,
-			Map<String, String> properties);
+			OntologyStorageProperties storageProperties, Map<String, String> properties);
 
 	// TODO JPA 2.0
 	// public EntityManagerFactory

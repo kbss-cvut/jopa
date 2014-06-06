@@ -17,7 +17,6 @@ package cz.cvut.kbss.jopa.owlapi;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,7 +36,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
 	private final Set<AbstractEntityManager> em;
 	private final Map<String, String> properties;
-	private final List<OntologyStorageProperties> storageProperties;
+	private final OntologyStorageProperties storageProperties;
 
 	private volatile ServerSession serverSession;
 
@@ -48,10 +47,10 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 				.newSetFromMap(new ConcurrentHashMap<AbstractEntityManager, Boolean>());
 		this.properties = properties != null ? properties : Collections.<String, String> emptyMap();
 		// TODO The storage properties should be read from persistence.xml
-		this.storageProperties = Collections.emptyList();
+		this.storageProperties = null;
 	}
 
-	public EntityManagerFactoryImpl(List<OntologyStorageProperties> storageProperties,
+	public EntityManagerFactoryImpl(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) {
 		if (storageProperties == null) {
 			throw new NullPointerException();

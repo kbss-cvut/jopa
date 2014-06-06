@@ -1,9 +1,7 @@
 package cz.cvut.kbss.jopa.test.owlapi.integration;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -25,7 +23,7 @@ public class TestCreateOperations {
 
 	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());
 
-	private static final List<StorageConfig> storages = initStorages();
+	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
 	private static CreateOperationsRunner runner;
@@ -52,7 +50,7 @@ public class TestCreateOperations {
 	@Test
 	public void testPersistWithGenerated() {
 		LOG.config("Test: persist into all contexts, also with generated id.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithGenerated", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithGenerated", storage, false,
 				properties);
 		runner.persistWithGenerated(em, context());
 	}
@@ -60,7 +58,7 @@ public class TestCreateOperations {
 	@Test
 	public void testPersistCascade() {
 		LOG.config("Test: persist with cascade over two relationships.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithCascade", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithCascade", storage, false,
 				properties);
 		runner.persistCascade(em, context());
 	}
@@ -68,7 +66,7 @@ public class TestCreateOperations {
 	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistTwiceInOne() {
 		LOG.config("Test: persist twice into one context.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistTwice", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistTwice", storage, false,
 				properties);
 		runner.persistTwice(em, context());
 	}
@@ -76,15 +74,15 @@ public class TestCreateOperations {
 	@Test(expected = RollbackException.class)
 	public void testPersistWithoutCascade() {
 		LOG.config("Test: try persisting relationship not marked as cascade.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithoutCascade", storages,
-				false, properties);
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithoutCascade", storage, false,
+				properties);
 		runner.persistWithoutCascade(em, context());
 	}
 
 	@Test
 	public void testPersistSimpleList() {
 		LOG.config("Test: persist entity with simple list.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleList", storages, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleList", storage, false,
 				properties);
 		runner.persistSimpleList(em, context());
 	}
@@ -92,7 +90,7 @@ public class TestCreateOperations {
 	@Test(expected = RollbackException.class)
 	public void testPersistSimpleListNoCascade() {
 		LOG.config("Test: persist entity with simple list, but don't persist the referenced entities.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleListNoCascade", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleListNoCascade", storage,
 				false, properties);
 		runner.persistSimpleListNoCascade(em, context());
 	}
@@ -100,8 +98,8 @@ public class TestCreateOperations {
 	@Test
 	public void testPersistReferencedList() {
 		LOG.config("Test: persist entity with referenced list.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistReferencedList", storages,
-				false, properties);
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistReferencedList", storage, false,
+				properties);
 		runner.persistReferencedList(em, context());
 	}
 
@@ -109,7 +107,7 @@ public class TestCreateOperations {
 	public void testPersistReferencedListNoCascade() {
 		LOG.config("Test: persist entity with referenced list. Don't persist the referenced entities.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistReferencedListNoCascade",
-				storages, false, properties);
+				storage, false, properties);
 		runner.persistReferencedListNoCascade(em, context());
 	}
 
@@ -117,34 +115,33 @@ public class TestCreateOperations {
 	public void testPersistSimpleAndReferencedList() {
 		LOG.config("Test: persist entity with both simple and referenced list.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleAndReferencedList",
-				storages, false, properties);
+				storage, false, properties);
 		runner.persistSimpleAndReferencedList(em, context());
 	}
 
 	@Test
 	public void testPersistProperties() {
 		LOG.config("Test: persist entity with properties.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithProperties", storages,
-				false, properties);
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithProperties", storage, false,
+				properties);
 		runner.persistProperties(em, context());
 	}
 
 	@Test
 	public void testPersistPropertiesEmpty() {
 		LOG.config("Test: persist entity with properties. The properties will be an empty map.");
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithPropertiesEmpty", storages,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithPropertiesEmpty", storage,
 				false, properties);
 		runner.persistPropertiesEmpty(em, context());
 	}
 
 	private URI context() {
-		return em.getAvailableContexts().get(0).getUri();
+		// OWLAPI doesn't use contexts
+		return null;
 	}
 
-	private static List<StorageConfig> initStorages() {
-		final List<StorageConfig> lst = new ArrayList<>(1);
-		lst.add(new OwlapiStorageConfig());
-		return lst;
+	private static StorageConfig initStorage() {
+		return new OwlapiStorageConfig();
 	}
 
 	private static Map<String, String> initProperties() {

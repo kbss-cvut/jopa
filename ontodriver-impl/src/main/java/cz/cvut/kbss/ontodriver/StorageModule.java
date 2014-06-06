@@ -62,6 +62,7 @@ public abstract class StorageModule implements Transactional {
 
 	@Override
 	public void close() throws OntoDriverException {
+		factory.releaseStorageModule(this);
 		this.open = false;
 		this.transaction = TransactionState.NO;
 	}

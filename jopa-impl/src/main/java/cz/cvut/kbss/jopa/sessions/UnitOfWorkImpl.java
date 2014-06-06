@@ -134,7 +134,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 		Object clone = registerExistingObject(result, descriptor);
 		checkForCollections(clone);
-		registerWithContext(descriptor, clone);
+		registerEntityWithOntlogyContext(descriptor, clone);
 		return cls.cast(clone);
 	}
 
@@ -157,9 +157,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 				if (original == null) {
 					throw new OWLPersistenceException("Cannot find an original for clone!");
 				}
-				EntityDescriptor repo = getEntityDescriptor(clone);
+				EntityDescriptor descriptor = getEntityDescriptor(clone);
 				changeSet.addDeletedObject(ChangeSetFactory.createObjectChangeSet(original, clone,
-						repo));
+						descriptor));
 			}
 		}
 		if (hasChanges()) {
@@ -176,9 +176,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 					if (original == null) {
 						continue; // It was a new object
 					}
-					EntityDescriptor repo = getEntityDescriptor(clone);
+					EntityDescriptor descriptor = getEntityDescriptor(clone);
 					ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(original, clone,
-							repo);
+							descriptor);
 					final boolean anyChanges = changeManager.calculateChanges(chSet);
 					if (anyChanges) {
 						changeSet.addObjectChangeSet(chSet);
@@ -360,8 +360,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 		if (getDeletedObjects().containsKey(entity)) {
 			return State.REMOVED;
-		} else if (cloneMapping.containsKey(entity)
-				&& !getNewObjectsCloneToOriginal().containsKey(entity)) {
+		} else if (getNewObjectsCloneToOriginal().containsKey(entity)) {
+			return State.MANAGED_NEW;
+		} else if (cloneMapping.containsKey(entity)) {
 			return State.MANAGED;
 		} else {
 			return State.NOT_MANAGED;
@@ -381,9 +382,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	public State getState(Object entity, EntityDescriptor descriptor) {
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+
 		if (getDeletedObjects().containsKey(entity)) {
 			return State.REMOVED;
 		} else if (cloneMapping.containsKey(entity) && isInRepository(descriptor, entity)) {
+			if (getNewObjectsCloneToOriginal().containsKey(entity)) {
+				return State.MANAGED_NEW;
+			}
 			return State.MANAGED;
 		} else {
 			return State.NOT_MANAGED;
@@ -717,6 +722,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		cloneMapping.put(clone, clone);
 		cloneToOriginals.put(clone, object);
 		registerEntityWithPersistenceContext(clone, this);
+		registerEntityWithOntlogyContext(descriptor, clone);
 		return clone;
 	}
 
@@ -763,12 +769,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	@Override
-	public void registerNewObject(Object entity, EntityDescriptor repository) {
-		if (entity == null || repository == null) {
+	public void registerNewObject(Object entity, EntityDescriptor descriptor) {
+		if (entity == null || descriptor == null) {
 			throw new NullPointerException("Null passed to registerNewObject: entity " + entity
-					+ ", repository = " + repository);
+					+ ", repository = " + descriptor);
 		}
-		registerNewObjectInternal(entity, repository);
+		registerNewObjectInternal(entity, descriptor);
 	}
 
 	/**
@@ -807,6 +813,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		cloneMapping.put(clone, clone);
 		getNewObjectsCloneToOriginal().put(clone, original);
 		registerEntityWithPersistenceContext(clone, this);
+		registerEntityWithOntlogyContext(descriptor, entity);
 		getNewObjectsKeyToClone().put(id, clone);
 		checkForCollections(clone);
 		this.hasNew = true;
@@ -1168,7 +1175,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		return EntityPropertiesUtils.getPrimaryKey(entity, getMetamodel());
 	}
 
-	private void registerWithContext(EntityDescriptor repository, Object entity) {
+	private void registerEntityWithOntlogyContext(EntityDescriptor repository, Object entity) {
 		assert repository != null;
 		assert entity != null;
 
