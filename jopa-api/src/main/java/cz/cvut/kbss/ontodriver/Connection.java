@@ -5,7 +5,6 @@ import java.net.URI;
 import java.util.List;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.ontodriver.exceptions.EntityNotRegisteredException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -138,7 +137,7 @@ public interface Connection extends Transactional {
 	 *             error occurs
 	 */
 	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
-			throws OntoDriverException, EntityNotRegisteredException;
+			throws OntoDriverException;
 
 	/**
 	 * Merges value of the specified field on the specified entity into the
