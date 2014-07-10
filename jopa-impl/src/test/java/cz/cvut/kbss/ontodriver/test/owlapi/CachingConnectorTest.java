@@ -7,41 +7,32 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassI;
-import cz.cvut.kbss.jopa.test.utils.JenaStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.Context;
-import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.jena.DriverCachingJenaFactory;
 import cz.cvut.kbss.ontodriver.impl.owlapi.DriverCachingOwlapiFactory;
+import cz.cvut.kbss.ontodriver.test.BaseSingleContextOntoDriverTest;
 import cz.cvut.kbss.ontodriver.test.TestEnv;
 
-public class CachingConnectorsTest {
-
-	private static final Logger LOG = Logger.getLogger(SingleFileContextTest.class.getName());
+public class CachingConnectorTest extends BaseSingleContextOntoDriverTest {
 
 	private static final Map<String, String> properties = initProperties();
-	private static final List<StorageConfig> storage = initStorages();
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
@@ -51,9 +42,6 @@ public class CachingConnectorsTest {
 	// Lazy reference to OWLClassA
 	private static OWLClassI entityI;
 
-	private static DataSource ds;
-	private static PersistenceProviderFacade facade;
-	private static Connection c;
 	private static Connection cTwo;
 
 	@BeforeClass
@@ -74,6 +62,7 @@ public class CachingConnectorsTest {
 		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
 		entityI.setOwlClassA(entityA);
 		facade = TestEnv.getProviderFacade();
+		storageConfig = new OwlapiStorageConfig();
 	}
 
 	@After
@@ -89,58 +78,50 @@ public class CachingConnectorsTest {
 	}
 
 	@Test
-	public void testPersistIntoAll() throws Exception {
+	public void testPersist() throws Exception {
 		LOG.config("Test: persist into both contexts some entities.");
 		acquireConnection("cachingPersistIntoAll");
 		c.setAutoCommit(false);
-		final List<Context> contexts = c.getContexts();
-		assertEquals(storage.size(), contexts.size());
-		final Context c0 = contexts.get(0);
-		final Context c1 = contexts.get(1);
-		c.persist(entityA.getUri(), entityA, c1.getUri());
-		c.persist(entityD.getUri(), entityD, c1.getUri());
-		c.persist(entityB.getUri(), entityB, c0.getUri());
-		c.persist(entityE.getUri(), entityE, c0.getUri());
+		persist(entityA.getUri(), entityA);
+		persist(entityD.getUri(), entityD);
+		persist(entityB.getUri(), entityB);
+		persist(entityE.getUri(), entityE);
 		assertNotNull(entityE.getUri());
 		c.commit();
 
-		assertNotNull(c.find(OWLClassA.class, entityA.getUri(), c1.getUri()));
-		assertNotNull(c.find(OWLClassD.class, entityD.getUri(), c1.getUri()));
-		assertTrue(c.contains(entityB.getUri(), c0.getUri()));
-		assertNotNull(c.find(OWLClassB.class, entityB.getUri(), c0.getUri()));
-		assertNotNull(c.find(OWLClassE.class, entityE.getUri(), c0.getUri()));
+		assertNotNull(find(OWLClassA.class, entityA.getUri()));
+		assertNotNull(find(OWLClassD.class, entityD.getUri()));
+		assertTrue(contains(entityB.getUri()));
+		assertNotNull(find(OWLClassB.class, entityB.getUri()));
+		assertNotNull(find(OWLClassE.class, entityE.getUri()));
 	}
 
-	@Test
+	@Test(expected = OWLEntityExistsException.class)
 	public void testConcurrentConnectionsPersist() throws Exception {
 		LOG.config("Test: open two connections and persist entities in both.");
 		acquireConnection("cachingConcurrentConnectionsPersist");
 		cTwo = ds.getConnection(facade);
 		c.setAutoCommit(false);
 		cTwo.setAutoCommit(false);
-		final Context c0 = c.getContexts().get(0);
-		final Context c1 = c.getContexts().get(1);
-		assertEquals(c0, cTwo.getContext(c0.getUri()));
-		assertEquals(c1, cTwo.getContext(c1.getUri()));
-		c.persist(entityA.getUri(), entityA, c0.getUri());
-		assertTrue(c.contains(entityA.getUri(), c0.getUri()));
-		assertFalse(cTwo.contains(entityA.getUri(), c0.getUri()));
-		cTwo.persist(entityB.getUri(), entityB, c0.getUri());
-		assertTrue(cTwo.contains(entityB.getUri(), c0.getUri()));
-		assertFalse(c.contains(entityB.getUri(), c0.getUri()));
-		c.persist(entityA.getUri(), entityA, c1.getUri());
-		c.persist(entityI.getUri(), entityI, c1.getUri());
+		persist(entityA.getUri(), entityA);
+		assertTrue(contains(entityA.getUri()));
+		assertFalse(cTwo.contains(entityA.getUri(), null));
+		cTwo.persist(entityB.getUri(), entityB, DEFAULT_DESCRIPTOR);
+		assertTrue(cTwo.contains(entityB.getUri(), null));
+		assertFalse(c.contains(entityB.getUri(), null));
+		persist(entityA.getUri(), entityA);
+		persist(entityI.getUri(), entityI);
 		c.commit();
 		cTwo.commit();
 
-		assertNotNull(c.find(OWLClassA.class, entityA.getUri(), c0.getUri()));
-		assertNotNull(cTwo.find(OWLClassA.class, entityA.getUri(), c0.getUri()));
-		assertNotNull(c.find(OWLClassB.class, entityB.getUri(), c0.getUri()));
-		assertNotNull(cTwo.find(OWLClassB.class, entityB.getUri(), c0.getUri()));
-		assertNotNull(c.find(OWLClassA.class, entityA.getUri(), c1.getUri()));
-		assertNotNull(cTwo.find(OWLClassA.class, entityA.getUri(), c1.getUri()));
-		assertNotNull(c.find(OWLClassI.class, entityI.getUri(), c1.getUri()));
-		assertNotNull(cTwo.find(OWLClassI.class, entityI.getUri(), c1.getUri()));
+		assertNotNull(find(OWLClassA.class, entityA.getUri()));
+		assertNotNull(cTwo.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR));
+		assertNotNull(find(OWLClassB.class, entityB.getUri()));
+		assertNotNull(cTwo.find(OWLClassB.class, entityB.getUri(), DEFAULT_DESCRIPTOR));
+		assertNotNull(find(OWLClassA.class, entityA.getUri()));
+		assertNotNull(cTwo.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR));
+		assertNotNull(find(OWLClassI.class, entityI.getUri()));
+		assertNotNull(cTwo.find(OWLClassI.class, entityI.getUri(), DEFAULT_DESCRIPTOR));
 	}
 
 	@Test
@@ -148,31 +129,30 @@ public class CachingConnectorsTest {
 		LOG.config("Test: modify an attribute in two concurrently open connections. Tests transaction isolation.");
 		acquireConnection("cachingConcurrentConnectionsModify");
 		c.setAutoCommit(false);
-		final Context ctx = c.getContexts().get(0);
-		c.persist(entityA.getUri(), entityA, ctx.getUri());
+		persist(entityA.getUri(), entityA);
 		c.commit();
 
 		cTwo = ds.getConnection(facade);
 		cTwo.setAutoCommit(false);
-		final OWLClassA cA = c.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
+		final OWLClassA cA = find(OWLClassA.class, entityA.getUri());
 		assertNotNull(cA);
-		final OWLClassA cTwoA = cTwo.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
+		final OWLClassA cTwoA = cTwo.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(cTwoA);
 		final String older = "olderString";
 		final String newer = "newerString";
 		cTwoA.setStringAttribute(older);
 		cA.setStringAttribute(newer);
 		final Field field = OWLClassA.getStrAttField();
-		cTwo.merge(cTwoA.getUri(), cTwoA, field);
-		c.merge(cA.getUri(), cA, field);
+		cTwo.merge(cTwoA, field, DEFAULT_DESCRIPTOR);
+		merge(cA, field);
 		cTwo.commit();
 		assertEquals(newer, cA.getStringAttribute());
 		c.commit();
 
-		final OWLClassA resC = c.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
+		final OWLClassA resC = find(OWLClassA.class, entityA.getUri());
 		assertNotNull(resC);
 		assertEquals(newer, resC.getStringAttribute());
-		final OWLClassA resCTwo = cTwo.find(OWLClassA.class, entityA.getUri(), ctx.getUri());
+		final OWLClassA resCTwo = cTwo.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(resCTwo);
 		assertEquals(newer, resCTwo.getStringAttribute());
 	}
@@ -184,29 +164,29 @@ public class CachingConnectorsTest {
 		c.setAutoCommit(false);
 		cTwo = ds.getConnection(facade);
 		cTwo.setAutoCommit(false);
-		final Context ctx = c.getContexts().get(c.getContexts().size() - 1);
 		final OWLClassE anotherE = new OWLClassE();
 		anotherE.setStringAttribute("another'sEStringAttribute");
-		c.persist(null, entityE, ctx.getUri());
+		persist(null, entityE);
 		assertNotNull(entityE.getUri());
-		cTwo.persist(null, anotherE, ctx.getUri());
+		cTwo.persist(null, anotherE, DEFAULT_DESCRIPTOR);
 		assertNotNull(anotherE.getUri());
 		assertFalse(entityE.getUri().equals(anotherE.getUri()));
 		c.commit();
 		cTwo.commit();
 
-		assertNotNull(c.find(OWLClassE.class, entityE.getUri(), ctx.getUri()));
-		assertNotNull(cTwo.find(OWLClassE.class, entityE.getUri(), ctx.getUri()));
-		final OWLClassE resC = c.find(OWLClassE.class, anotherE.getUri(), ctx.getUri());
+		assertNotNull(find(OWLClassE.class, entityE.getUri()));
+		assertNotNull(cTwo.find(OWLClassE.class, entityE.getUri(), DEFAULT_DESCRIPTOR));
+		final OWLClassE resC = find(OWLClassE.class, anotherE.getUri());
 		assertNotNull(resC);
 		assertEquals(anotherE.getStringAttribute(), resC.getStringAttribute());
-		final OWLClassE resCTwo = c.find(OWLClassE.class, anotherE.getUri(), ctx.getUri());
+		final OWLClassE resCTwo = find(OWLClassE.class, anotherE.getUri());
 		assertNotNull(resCTwo);
 		assertEquals(anotherE.getStringAttribute(), resCTwo.getStringAttribute());
 	}
 
-	private static void acquireConnection(String baseName) throws OntoDriverException {
-		ds = TestEnv.createDataSource(baseName, storage, properties);
+	@Override
+	protected void acquireConnection(String baseName) throws OntoDriverException {
+		ds = TestEnv.createDataSource(baseName, storageConfig, properties);
 		c = ds.getConnection(facade);
 	}
 
@@ -216,12 +196,5 @@ public class CachingConnectorsTest {
 				DriverCachingOwlapiFactory.class.getName());
 		m.put(OntoDriverProperties.JENA_DRIVER_FACTORY, DriverCachingJenaFactory.class.getName());
 		return m;
-	}
-
-	private static List<StorageConfig> initStorages() {
-		final List<StorageConfig> lst = new ArrayList<>(2);
-		lst.add(new OwlapiStorageConfig());
-		lst.add(new JenaStorageConfig());
-		return lst;
 	}
 }

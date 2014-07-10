@@ -29,6 +29,7 @@ import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.test.TestEnv;
+import cz.cvut.kbss.ontodriver.test.jena.JenaSingleFileContextTest;
 
 public class OwlimSingleContextTest {
 

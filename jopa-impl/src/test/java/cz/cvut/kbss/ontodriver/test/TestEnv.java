@@ -1,7 +1,6 @@
 package cz.cvut.kbss.ontodriver.test;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,14 +40,12 @@ public final class TestEnv {
 	 * @param baseName
 	 *            Base for the ontology IRI
 	 * @param storages
-	 *            Description of storages
+	 *            Description of the storage
 	 * @return {@code DataSource}
 	 * @see #createDataSource(String, List, Map)
 	 */
-	public static DataSource createDataSource(String baseName,
-			List<StorageConfig> storages) {
-		return createDataSource(baseName, storages,
-				new HashMap<String, String>());
+	public static DataSource createDataSource(String baseName, StorageConfig storage) {
+		return createDataSource(baseName, storage, new HashMap<String, String>());
 	}
 
 	/**
@@ -60,26 +57,20 @@ public final class TestEnv {
 	 * 
 	 * @param baseName
 	 *            , true Base for the ontology IRI
-	 * @param storages
-	 *            Description of storages
+	 * @param storage
+	 *            Description of the storage
 	 * @param properties
 	 *            Custom properties
 	 * @return {@code DataSource}
 	 */
-	public static DataSource createDataSource(String baseName,
-			List<StorageConfig> storages, Map<String, String> properties) {
-		int i = 1;
-		final List<OntologyStorageProperties> storageProperties = new ArrayList<>(
-				storages.size());
-		for (StorageConfig c : storages) {
-			c.setName(baseName);
-			c.setDirectory(dir);
-			storageProperties.add(c.createStorageProperties(i++));
-		}
+	public static DataSource createDataSource(String baseName, StorageConfig storage,
+			Map<String, String> properties) {
+		storage.setName(baseName);
+		storage.setDirectory(dir);
+		final OntologyStorageProperties storageProperties = storage.createStorageProperties(0);
 		properties.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
 				TestEnvironment.REASONER_FACTORY_CLASS);
-		final DataSource dataSource = new SimpleDataSource(storageProperties,
-				properties);
+		final DataSource dataSource = new SimpleDataSource(storageProperties, properties);
 		return dataSource;
 	}
 

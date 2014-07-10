@@ -10,34 +10,27 @@ import static org.junit.Assert.fail;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
-import java.util.List;
-import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassI;
 import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.StorageConfig;
-import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.Context;
-import cz.cvut.kbss.ontodriver.DataSource;
-import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
-import cz.cvut.kbss.ontodriver.exceptions.EntityNotRegisteredException;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.test.BaseSingleContextOntoDriverTest;
 import cz.cvut.kbss.ontodriver.test.TestEnv;
 
-public class SingleFileContextTest {
+public class SingleFileContextTest extends BaseSingleContextOntoDriverTest {
 
-	private static final Logger LOG = Logger.getLogger(SingleFileContextTest.class.getName());
-
-	private static final List<StorageConfig> storage = Collections
-			.<StorageConfig> singletonList(new OwlapiStorageConfig());
+	/**
+	 * We don't really care about descriptors in case of OWLAPI connectors.
+	 */
+	private static final EntityDescriptor DEFAULT_DESCRIPTOR = new EntityDescriptor();
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
@@ -46,10 +39,6 @@ public class SingleFileContextTest {
 	private static OWLClassE entityE;
 	// Lazy reference to OWLClassA
 	private static OWLClassI entityI;
-
-	private static DataSource ds;
-	private static PersistenceProviderFacade facade;
-	private static Connection c;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -69,6 +58,7 @@ public class SingleFileContextTest {
 		entityI.setUri(URI.create("http://entityI"));
 		entityI.setOwlClassA(entityA);
 		facade = TestEnv.getProviderFacade();
+		storageConfig = new OwlapiStorageConfig();
 	}
 
 	@After
@@ -84,8 +74,8 @@ public class SingleFileContextTest {
 		LOG.config("Test: simple persist.");
 		acquireConnection("SingleFileContextSimplePersist");
 		c.setAutoCommit(true);
-		c.persist(entityB.getUri(), entityB);
-		final OWLClassB res = c.find(entityB.getClass(), entityB.getUri());
+		persist(entityB.getUri(), entityB);
+		final OWLClassB res = find(entityB.getClass(), entityB.getUri());
 		assertNotNull(res);
 		assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
 	}
@@ -95,13 +85,13 @@ public class SingleFileContextTest {
 		LOG.config("Test: persist relationship, referenced first.");
 		acquireConnection("SingleFileContextPersistRelationship");
 		c.setAutoCommit(false);
-		c.persist(entityA.getUri(), entityA);
-		c.persist(entityD.getUri(), entityD);
+		persist(entityA.getUri(), entityA);
+		persist(entityD.getUri(), entityD);
 		c.commit();
-		final OWLClassA resA = c.find(entityA.getClass(), entityA.getUri());
+		final OWLClassA resA = find(entityA.getClass(), entityA.getUri());
 		assertNotNull(resA);
 		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
-		final OWLClassD resD = c.find(entityD.getClass(), entityD.getUri());
+		final OWLClassD resD = find(entityD.getClass(), entityD.getUri());
 		assertNotNull(resD);
 		assertEquals(entityD.getUri(), resD.getUri());
 	}
@@ -111,13 +101,13 @@ public class SingleFileContextTest {
 		LOG.config("Test: persist relationship, owner first.");
 		acquireConnection("SingleFileContextPersistRelationshipInverse");
 		c.setAutoCommit(false);
-		c.persist(entityD.getUri(), entityD);
-		c.persist(entityA.getUri(), entityA);
+		persist(entityD.getUri(), entityD);
+		persist(entityA.getUri(), entityA);
 		c.commit();
-		final OWLClassA resA = c.find(entityA.getClass(), entityA.getUri());
+		final OWLClassA resA = c.find(entityA.getClass(), entityA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(resA);
 		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
-		final OWLClassD resD = c.find(entityD.getClass(), entityD.getUri());
+		final OWLClassD resD = c.find(entityD.getClass(), entityD.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(resD);
 		assertEquals(entityD.getUri(), resD.getUri());
 	}
@@ -128,9 +118,9 @@ public class SingleFileContextTest {
 		acquireConnection("SingleFileContextPersistGeneratePk");
 		c.setAutoCommit(true);
 		assertNull(entityE.getUri());
-		c.persist(null, entityE);
+		persist(null, entityE);
 		assertNotNull(entityE.getUri());
-		final OWLClassE res = c.find(entityE.getClass(), entityE.getUri());
+		final OWLClassE res = find(entityE.getClass(), entityE.getUri());
 		assertNotNull(res);
 		assertEquals(entityE.getUri(), res.getUri());
 		assertEquals(entityE.getStringAttribute(), res.getStringAttribute());
@@ -140,7 +130,7 @@ public class SingleFileContextTest {
 	public void testPersistNull() throws Exception {
 		LOG.config("Test: persist, null passed as entity.");
 		acquireConnection("SingleFileContextPersistNull");
-		c.persist(null, null);
+		persist(null, null);
 		fail("This line should not have been reached.");
 	}
 
@@ -149,9 +139,9 @@ public class SingleFileContextTest {
 		LOG.config("Test: rollback connection.");
 		acquireConnection("SingleFileContextRollback");
 		c.setAutoCommit(false);
-		c.persist(entityA.getUri(), entityA);
+		persist(entityA.getUri(), entityA);
 		c.rollback();
-		assertFalse(c.contains(entityA.getUri()));
+		assertFalse(contains(entityA.getUri()));
 	}
 
 	@Test
@@ -159,8 +149,8 @@ public class SingleFileContextTest {
 		LOG.config("Test: contains.");
 		acquireConnection("SingleFileContextContains");
 		c.setAutoCommit(true);
-		c.persist(entityB.getUri(), entityB);
-		assertTrue(c.contains(entityB.getUri()));
+		persist(entityB.getUri(), entityB);
+		assertTrue(contains(entityB.getUri()));
 	}
 
 	@Test
@@ -169,20 +159,12 @@ public class SingleFileContextTest {
 		acquireConnection("SingleFileContextRemove");
 		c.setAutoCommit(true);
 		final URI pk = entityA.getUri();
-		c.persist(pk, entityA);
-		final OWLClassA res = c.find(entityA.getClass(), pk);
+		persist(pk, entityA);
+		final OWLClassA res = find(entityA.getClass(), pk);
 		assertNotNull(res);
-		c.remove(pk, res);
-		assertNull(c.find(entityA.getClass(), pk));
-		assertFalse(c.contains(pk));
-	}
-
-	@Test(expected = EntityNotRegisteredException.class)
-	public void testRemoveNotExisting() throws Exception {
-		LOG.config("Test: remove entity which doesn't exist.");
-		acquireConnection("SingleFileContextRemoveNotExisting");
-		c.setAutoCommit(true);
-		c.remove(entityB.getUri(), entityB);
+		remove(pk);
+		assertNull(find(entityA.getClass(), pk));
+		assertFalse(contains(pk));
 	}
 
 	@Test
@@ -191,14 +173,14 @@ public class SingleFileContextTest {
 		acquireConnection("SingleFileContextMergeSimple");
 		c.setAutoCommit(true);
 		final URI pk = entityB.getUri();
-		c.persist(pk, entityB);
-		final OWLClassB changed = c.find(entityB.getClass(), pk);
+		persist(pk, entityB);
+		final OWLClassB changed = find(entityB.getClass(), pk);
 		assertNotNull(changed);
 		final String newString = "newStringAttributeForEntityB";
 		changed.setStringAttribute(newString);
 		final Field strField = OWLClassB.getStrAttField();
-		c.merge(pk, changed, strField);
-		final OWLClassB res = c.find(entityB.getClass(), pk);
+		merge(changed, strField);
+		final OWLClassB res = find(entityB.getClass(), pk);
 		assertNotNull(res);
 		assertEquals(newString, res.getStringAttribute());
 	}
@@ -209,8 +191,8 @@ public class SingleFileContextTest {
 		acquireConnection("SingleFileContextMergeTypesChange");
 		c.setAutoCommit(true);
 		final URI pk = entityA.getUri();
-		c.persist(pk, entityA);
-		final OWLClassA toChange = c.find(entityA.getClass(), pk);
+		persist(pk, entityA);
+		final OWLClassA toChange = find(entityA.getClass(), pk);
 		assertNotNull(toChange);
 		final String typeOne = "http://AddedTypeOne";
 		final String typeTwo = "http://AddedTypeTwo";
@@ -218,8 +200,8 @@ public class SingleFileContextTest {
 		toChange.getTypes().add(typeTwo);
 		final int size = toChange.getTypes().size();
 		final Field typesField = OWLClassA.getTypesField();
-		c.merge(pk, toChange, typesField);
-		final OWLClassA res = c.find(entityA.getClass(), pk);
+		merge(toChange, typesField);
+		final OWLClassA res = find(entityA.getClass(), pk);
 		assertNotNull(res);
 		assertEquals(size, res.getTypes().size());
 		assertTrue(res.getTypes().contains(typeOne));
@@ -232,58 +214,33 @@ public class SingleFileContextTest {
 		acquireConnection("SingleFileContextLoadField");
 		c.setAutoCommit(false);
 		final URI pk = entityI.getUri();
-		c.persist(pk, entityI);
-		c.persist(entityA.getUri(), entityA);
+		persist(pk, entityI);
+		persist(entityA.getUri(), entityA);
 		c.commit();
-		final OWLClassA a = c.find(entityA.getClass(), entityA.getUri());
+		final OWLClassA a = find(entityA.getClass(), entityA.getUri());
 		assertNotNull(a);
-		final OWLClassI i = c.find(entityI.getClass(), pk);
+		final OWLClassI i = find(entityI.getClass(), pk);
 		assertNotNull(i);
 		assertNull(i.getOwlClassA());
-		c.loadFieldValue(i, OWLClassI.getOwlClassAField());
+		loadFieldValue(i, OWLClassI.getOwlClassAField());
 		assertNotNull(i.getOwlClassA());
 		assertEquals(a.getUri(), i.getOwlClassA().getUri());
 		assertEquals(a.getStringAttribute(), i.getOwlClassA().getStringAttribute());
 	}
 
-	@Test(expected = EntityNotRegisteredException.class)
-	public void testLoadFieldUnregistered() throws Exception {
-		LOG.config("Test: load lazily loaded field for an unregistered entity.");
-		acquireConnection("SingleFileContextLoadFieldUnregistered");
-		c.setAutoCommit(false);
-		final URI pk = entityI.getUri();
-		c.persist(pk, entityI);
-		c.persist(entityA.getUri(), entityA);
-		c.commit();
-		c.loadFieldValue(entityI, OWLClassI.getOwlClassAField());
-		fail("This line should not have been reached.");
-	}
-
 	@Test
-	public void testRegisterEntityWithContext() throws Exception {
-		LOG.config("Test: register existing entity with context.");
-		acquireConnection("SingleFileContextRegisterEntityWithContext");
-		final List<Context> ctxs = c.getContexts();
-		assertEquals(1, ctxs.size());
-		final Context ctx = ctxs.get(0);
-		c.registerWithContext(entityB, ctx.getUri());
-		final Context res = c.getSaveContextFor(entityB);
-		assertNotNull(res);
-		assertEquals(ctx, res);
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testRegisterEntityWithContextNull() throws Exception {
-		LOG.config("Test: register entity with context. Null passed as entity.");
-		acquireConnection("SingleFileContextRegisterNull");
-		final List<Context> ctxs = c.getContexts();
-		assertEquals(1, ctxs.size());
-		final Context ctx = ctxs.get(0);
-		c.registerWithContext(null, ctx.getUri());
-	}
-
-	private static void acquireConnection(String baseName) throws OntoDriverException {
-		ds = TestEnv.createDataSource(baseName, storage);
-		c = ds.getConnection(facade);
+	public void testIsConsistent() throws Exception {
+		LOG.config("Test: check consistency of the storage.");
+		acquireConnection("SingleFileContextIsConsistent");
+		c.setAutoCommit(false);
+		assertFalse(c.getAutoCommit());
+		persist(entityA.getUri(), entityA);
+		persist(entityB.getUri(), entityB);
+		persist(entityD.getUri(), entityD);
+		persist(null, entityE);
+		persist(entityI.getUri(), entityI);
+		c.commit();
+		// No need for context URI in OWLAPI
+		assertTrue(c.isConsistent(null));
 	}
 }

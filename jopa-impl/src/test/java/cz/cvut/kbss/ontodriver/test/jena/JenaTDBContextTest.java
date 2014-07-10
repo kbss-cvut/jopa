@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.test.owlapi;
+package cz.cvut.kbss.ontodriver.test.jena;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
