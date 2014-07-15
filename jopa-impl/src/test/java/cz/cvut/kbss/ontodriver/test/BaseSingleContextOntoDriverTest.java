@@ -51,4 +51,10 @@ public class BaseSingleContextOntoDriverTest {
 		this.ds = TestEnv.createDataSource(baseName, storageConfig);
 		this.c = ds.getConnection(facade);
 	}
+
+	protected void after() throws Exception {
+		if (c != null) {
+			c.close();
+		}
+	}
 }

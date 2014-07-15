@@ -10,9 +10,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -24,14 +22,11 @@ import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassI;
 import cz.cvut.kbss.jopa.test.utils.JenaTDBStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.Context;
-import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.impl.jena.DriverCachingJenaFactory;
+import cz.cvut.kbss.ontodriver.test.BaseSingleContextOntoDriverTest;
 import cz.cvut.kbss.ontodriver.test.TestEnv;
 
 /**
@@ -41,12 +36,8 @@ import cz.cvut.kbss.ontodriver.test.TestEnv;
  * @author kidney
  * 
  */
-public class JenaTDBContextTest {
+public class JenaTDBContextTest extends BaseSingleContextOntoDriverTest {
 
-	private static final Logger LOG = Logger.getLogger(JenaTDBContextTest.class.getName());
-
-	private static final List<StorageConfig> storage = Collections
-			.<StorageConfig> singletonList(new JenaTDBStorageConfig());
 	private static final Map<String, String> properties = initProperties();
 
 	private static OWLClassA entityA;
@@ -54,10 +45,6 @@ public class JenaTDBContextTest {
 	private static OWLClassD entityD;
 	private static OWLClassE entityE;
 	private static OWLClassI entityI;
-
-	private static DataSource ds;
-	private static Connection c;
-	private static PersistenceProviderFacade facade;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -78,6 +65,7 @@ public class JenaTDBContextTest {
 		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
 		entityI.setOwlClassA(entityA);
 		facade = TestEnv.getProviderFacade();
+		storageConfig = new JenaTDBStorageConfig();
 	}
 
 	@After
@@ -93,12 +81,8 @@ public class JenaTDBContextTest {
 		LOG.config("Test: connect to the storage.");
 		acquireConnection("JenaTDBContextConnector");
 		assertNotNull(c);
-		final List<Context> contexts = c.getContexts();
-		assertNotNull(contexts);
-		assertFalse(contexts.isEmpty());
-		assertEquals(1, contexts.size());
 		// Force connector initialization
-		assertNull(c.find(OWLClassA.class, entityA.getUri()));
+		assertNull(find(OWLClassA.class, entityA.getUri()));
 	}
 
 	@Test
@@ -107,25 +91,25 @@ public class JenaTDBContextTest {
 		acquireConnection("JenaTDBContextPersist");
 		assertNotNull(c);
 		c.setAutoCommit(false);
-		c.persist(entityA.getUri(), entityA);
-		c.persist(entityB.getUri(), entityB);
+		persist(entityA.getUri(), entityA);
+		persist(entityB.getUri(), entityB);
 		assertNull(entityE.getUri());
-		c.persist(entityE.getUri(), entityE);
+		persist(entityE.getUri(), entityE);
 		assertNotNull(entityE.getUri());
-		c.persist(entityD.getUri(), entityD);
+		persist(entityD.getUri(), entityD);
 		c.commit();
 
-		final OWLClassD resD = c.find(OWLClassD.class, entityD.getUri());
+		final OWLClassD resD = find(OWLClassD.class, entityD.getUri());
 		assertNotNull(resD);
 		assertNotNull(resD.getOwlClassA());
 		assertEquals(entityA.getUri(), resD.getOwlClassA().getUri());
-		final OWLClassE resE = c.find(OWLClassE.class, entityE.getUri());
+		final OWLClassE resE = find(OWLClassE.class, entityE.getUri());
 		assertNotNull(resE);
 		assertEquals(entityE.getStringAttribute(), resE.getStringAttribute());
-		final OWLClassB resB = c.find(OWLClassB.class, entityB.getUri());
+		final OWLClassB resB = find(OWLClassB.class, entityB.getUri());
 		assertNotNull(resB);
 		assertEquals(entityB.getStringAttribute(), resB.getStringAttribute());
-		final OWLClassA resA = c.find(OWLClassA.class, entityA.getUri());
+		final OWLClassA resA = find(OWLClassA.class, entityA.getUri());
 		assertNotNull(resA);
 		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
 	}
@@ -135,27 +119,27 @@ public class JenaTDBContextTest {
 		LOG.config("Test: simple update.");
 		acquireConnection("JenaTDBContextUpdate");
 		// Let it commit every operation
-		c.persist(entityB.getUri(), entityB);
-		c.persist(entityA.getUri(), entityA);
+		persist(entityB.getUri(), entityB);
+		persist(entityA.getUri(), entityA);
 
-		final OWLClassA a = c.find(OWLClassA.class, entityA.getUri());
+		final OWLClassA a = find(OWLClassA.class, entityA.getUri());
 		assertNotNull(a);
 		final String newType = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/OWLClassANew";
 		a.getTypes().add(newType);
 		final Field typesField = OWLClassA.getTypesField();
-		c.merge(a.getUri(), a, typesField);
-		final OWLClassB b = c.find(OWLClassB.class, entityB.getUri());
+		merge(a, typesField);
+		final OWLClassB b = find(OWLClassB.class, entityB.getUri());
 		assertNotNull(b);
 		final String newStr = "newStringAttribute";
 		b.setStringAttribute(newStr);
 		final Field strField = OWLClassB.getStrAttField();
-		c.merge(b.getUri(), b, strField);
+		merge(b, strField);
 
-		final OWLClassA resA = c.find(OWLClassA.class, entityA.getUri());
+		final OWLClassA resA = find(OWLClassA.class, entityA.getUri());
 		assertNotNull(resA);
 		assertEquals(entityA.getTypes().size() + 1, resA.getTypes().size());
 		assertTrue(resA.getTypes().contains(newType));
-		final OWLClassB resB = c.find(OWLClassB.class, entityB.getUri());
+		final OWLClassB resB = find(OWLClassB.class, entityB.getUri());
 		assertNotNull(resB);
 		assertEquals(newStr, resB.getStringAttribute());
 	}
@@ -165,31 +149,31 @@ public class JenaTDBContextTest {
 		LOG.config("Test: update relationship.");
 		acquireConnection("JenaTBContextUpdateRelationship");
 		c.setAutoCommit(false);
-		c.persist(entityA.getUri(), entityA);
-		c.persist(entityI.getUri(), entityI);
+		persist(entityA.getUri(), entityA);
+		persist(entityI.getUri(), entityI);
 		c.commit();
 
-		final OWLClassI i = c.find(OWLClassI.class, entityI.getUri());
+		final OWLClassI i = find(OWLClassI.class, entityI.getUri());
 		assertNotNull(i);
 		assertNull(i.getOwlClassA());
 		final Field f = OWLClassI.getOwlClassAField();
-		c.loadFieldValue(i, f);
+		loadFieldValue(i, f);
 		assertNotNull(i.getOwlClassA());
 		final OWLClassA newA = new OWLClassA();
 		newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/newA"));
 		newA.setStringAttribute("someString");
 		i.setOwlClassA(newA);
-		c.persist(newA.getUri(), newA);
+		persist(newA.getUri(), newA);
 		final Field aField = OWLClassI.getOwlClassAField();
-		c.merge(i.getUri(), i, aField);
+		merge(i, aField);
 		c.commit();
 
-		final OWLClassI resI = c.find(OWLClassI.class, entityI.getUri());
+		final OWLClassI resI = find(OWLClassI.class, entityI.getUri());
 		assertNotNull(resI);
-		c.loadFieldValue(resI, f);
+		loadFieldValue(resI, f);
 		assertNotNull(resI.getOwlClassA());
 		assertEquals(newA.getUri(), resI.getOwlClassA().getUri());
-		final OWLClassA resA = c.find(OWLClassA.class, entityA.getUri());
+		final OWLClassA resA = find(OWLClassA.class, entityA.getUri());
 		assertNotNull(resA);
 		assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
 	}
@@ -199,28 +183,28 @@ public class JenaTDBContextTest {
 		LOG.config("Test: remove an entity.");
 		acquireConnection("JenaTDBContextRemove");
 		c.setAutoCommit(false);
-		c.persist(entityA.getUri(), entityA);
-		c.persist(entityD.getUri(), entityD);
-		c.persist(null, entityE);
+		persist(entityA.getUri(), entityA);
+		persist(entityD.getUri(), entityD);
+		persist(null, entityE);
 		c.commit();
 
-		final OWLClassD d = c.find(OWLClassD.class, entityD.getUri());
+		final OWLClassD d = find(OWLClassD.class, entityD.getUri());
 		assertNotNull(d);
-		c.remove(d.getUri(), d);
-		final OWLClassE e = c.find(OWLClassE.class, entityE.getUri());
+		remove(d.getUri());
+		final OWLClassE e = find(OWLClassE.class, entityE.getUri());
 		assertNotNull(e);
-		c.remove(e.getUri(), e);
+		remove(e.getUri());
 		c.commit();
 
 		final Connection cTwo = ds.getConnection(facade);
 		try {
 			assertNotNull(cTwo);
-			assertFalse(cTwo.contains(entityE.getUri()));
-			assertNull(cTwo.find(OWLClassE.class, entityE.getUri()));
-			assertFalse(cTwo.contains(entityD.getUri()));
-			assertNull(cTwo.find(OWLClassD.class, entityD.getUri()));
-			assertTrue(cTwo.contains(entityA.getUri()));
-			final OWLClassA res = c.find(OWLClassA.class, entityA.getUri());
+			assertFalse(cTwo.contains(entityE.getUri(), null));
+			assertNull(cTwo.find(OWLClassE.class, entityE.getUri(), DEFAULT_DESCRIPTOR));
+			assertFalse(cTwo.contains(entityD.getUri(), null));
+			assertNull(cTwo.find(OWLClassD.class, entityD.getUri(), DEFAULT_DESCRIPTOR));
+			assertTrue(cTwo.contains(entityA.getUri(), null));
+			final OWLClassA res = c.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR);
 			assertNotNull(res);
 			assertEquals(entityA.getStringAttribute(), res.getStringAttribute());
 		} finally {
@@ -228,8 +212,9 @@ public class JenaTDBContextTest {
 		}
 	}
 
-	private static void acquireConnection(String baseName) throws OntoDriverException {
-		ds = TestEnv.createDataSource(baseName, storage, properties);
+	@Override
+	protected void acquireConnection(String baseName) throws OntoDriverException {
+		ds = TestEnv.createDataSource(baseName, storageConfig, properties);
 		c = ds.getConnection(facade);
 	}
 
