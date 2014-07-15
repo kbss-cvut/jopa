@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.SesameNativeStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 
 public class TestCreateOperations {
 
@@ -35,7 +36,7 @@ public class TestCreateOperations {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		runner = new CreateOperationsRunner();
+		runner = new CreateOperationsRunner(LOG);
 	}
 
 	@After
@@ -52,15 +53,41 @@ public class TestCreateOperations {
 
 	@Test
 	public void testPersistWithGenerated() {
-		LOG.config("Test: persist into all contexts, also with generated id.");
 		em = TestEnvironment.getPersistenceConnector("SesamePersistWithGenerated", storages, false,
 				properties);
 		runner.persistWithGenerated(em, context(1));
 	}
 
+	@Test(expected = PrimaryKeyNotSetException.class)
+	public void testPersistWithoutId() {
+		em = TestEnvironment.getPersistenceConnector("SesamePersistWithoutId", storages, false,
+				properties);
+		runner.persistWithoutId(em, context(0));
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testPersistNull() {
+		em = TestEnvironment.getPersistenceConnector("SesamePersistNull", storages, false,
+				properties);
+		runner.persistNull(em, context(1));
+	}
+
+	@Test
+	public void testPersistRollback() {
+		em = TestEnvironment.getPersistenceConnector("SesamePersistRollback", storages, false,
+				properties);
+		runner.persistRollback(em, context(0));
+	}
+
+	@Test(expected = RollbackException.class)
+	public void testPersistRollbackOnly() {
+		em = TestEnvironment.getPersistenceConnector("SesamePersistRollbackOnly", storages, false,
+				properties);
+		runner.persistRollbackOnly(em, context(1));
+	}
+
 	@Test
 	public void testPersistCascade() {
-		LOG.config("Test: persist with cascade over two relationships.");
 		em = TestEnvironment.getPersistenceConnector("SesamePersistWithCascade", storages, false,
 				properties);
 		runner.persistCascade(em, context(0));
@@ -68,7 +95,6 @@ public class TestCreateOperations {
 
 	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistTwiceInOne() {
-		LOG.config("Test: persist twice into one context.");
 		em = TestEnvironment.getPersistenceConnector("SesamePersistTwice", storages, false,
 				properties);
 		runner.persistTwice(em, context(0));
@@ -76,15 +102,20 @@ public class TestCreateOperations {
 
 	@Test(expected = RollbackException.class)
 	public void testPersistWithoutCascade() {
-		LOG.config("Test: try persisting relationship not marked as cascade.");
 		em = TestEnvironment.getPersistenceConnector("SesamePersistWithoutCascade", storages,
 				false, properties);
 		runner.persistWithoutCascade(em, context(0));
 	}
 
+	@Test(expected = OWLEntityExistsException.class)
+	public void testPersistDetached() {
+		em = TestEnvironment.getPersistenceConnector("SesamePersistDetached", storages, false,
+				properties);
+		runner.persistDetachedEntity(em, context(1));
+	}
+
 	@Test
 	public void testPersistSimpleList() {
-		LOG.config("Test: persist entity with simple list.");
 		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleList", storages, false,
 				properties);
 		runner.persistSimpleList(em, context(1));
@@ -92,7 +123,6 @@ public class TestCreateOperations {
 
 	@Test(expected = RollbackException.class)
 	public void testPersistSimpleListNoCascade() {
-		LOG.config("Test: persist entity with simple list, but don't persist the referenced entities.");
 		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleListNoCascade", storages,
 				false, properties);
 		runner.persistSimpleListNoCascade(em, context(1));
@@ -100,7 +130,6 @@ public class TestCreateOperations {
 
 	@Test
 	public void testPersistReferencedList() {
-		LOG.config("Test: persist entity with referenced list.");
 		em = TestEnvironment.getPersistenceConnector("SesamePersistReferencedList", storages,
 				false, properties);
 		runner.persistReferencedList(em, context(0));
@@ -108,7 +137,6 @@ public class TestCreateOperations {
 
 	@Test(expected = RollbackException.class)
 	public void testPersistReferencedListNoCascade() {
-		LOG.config("Test: persist entity with referenced list. Don't persist the referenced entities.");
 		em = TestEnvironment.getPersistenceConnector("SesamePersistReferencedListNoCascade",
 				storages, false, properties);
 		runner.persistReferencedListNoCascade(em, context(0));
@@ -116,7 +144,6 @@ public class TestCreateOperations {
 
 	@Test
 	public void testPersistSimpleAndReferencedList() {
-		LOG.config("Test: persist entity with both simple and referenced list.");
 		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleAndReferencedList",
 				storages, false, properties);
 		runner.persistSimpleAndReferencedList(em, context(0));
@@ -124,7 +151,6 @@ public class TestCreateOperations {
 
 	@Test
 	public void testPersistProperties() {
-		LOG.config("Test: persist entity with properties.");
 		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistWithProperties",
 				storages, false, properties);
 		runner.persistProperties(em, context(1));
@@ -132,7 +158,6 @@ public class TestCreateOperations {
 
 	@Test
 	public void testPersistPropertiesEmpty() {
-		LOG.config("Test: persist entity with properties. The properties will be an empty map.");
 		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistWithPropertiesEmpty",
 				storages, false, properties);
 		runner.persistPropertiesEmpty(em, context(0));

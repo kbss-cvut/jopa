@@ -11,6 +11,7 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
@@ -33,7 +34,7 @@ public class TestUpdateOperations {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		runner = new UpdateOperationsRunner();
+		runner = new UpdateOperationsRunner(LOG);
 	}
 
 	@After
@@ -50,7 +51,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testUpdateDataLeaveLazy() throws Exception {
-		LOG.config("Test: updates data property. Leaves lazily loaded field empty and checks that after commit the field's value hasn't changed.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateDataProperty", storages, false,
 				properties);
 		runner.updateDataPropertyKeepLazyEmpty(em, context(0));
@@ -58,7 +58,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testUpdateDataPropertySetNull() {
-		LOG.config("Test: update data property. Set it to null.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateDataPropertyToNull", storages,
 				true, properties);
 		runner.updateDataPropertySetNull(em, context(1));
@@ -66,7 +65,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testUpdateReference() {
-		LOG.config("Test: update reference to entity.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateReference", storages, true,
 				properties);
 		runner.updateReference(em, context(0));
@@ -74,7 +72,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testMergeDetachedWithChanges() {
-		LOG.config("Test: merge detached entity with changes.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateDetached", storages, true,
 				properties);
 		runner.mergeDetachedWithChanges(em, context(1));
@@ -82,7 +79,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testMergeDetachedCascade() {
-		LOG.config("Test: merge detached with cascade.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateCascade", storages, true,
 				properties);
 		runner.mergeDetachedCascade(em, context(0));
@@ -90,7 +86,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testRemoveFromSimpleList() {
-		LOG.config("Test: remove entity from simple list. (But keep it in the ontology.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateRemoveFromSimpleList", storages,
 				true, properties);
 		runner.removeFromSimpleList(em, context(1));
@@ -98,7 +93,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testAddToSimpleList() {
-		LOG.config("Test: add entity to simple list.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateAddToSimpleList", storages, true,
 				properties);
 		runner.addToSimpleList(em, context(0));
@@ -106,7 +100,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testClearSimpleList() {
-		LOG.config("Test: clear a simple list (but keep the entities in ontology).");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateClearSimpleList", storages, true,
 				properties);
 		runner.clearSimpleList(em, context(1));
@@ -114,7 +107,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testReplaceSimpleList() {
-		LOG.config("Test: replace simple list with a new one.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateReplaceSimpleList", storages,
 				true, properties);
 		runner.replaceSimpleList(em, context(0));
@@ -122,7 +114,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testRemoveFromReferencedList() {
-		LOG.config("Test: remove entity from referenced list. (But keep it in the ontology.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateRemoveFromReferencedList",
 				storages, true, properties);
 		runner.removeFromReferencedList(em, context(1));
@@ -130,7 +121,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testAddToReferencedList() {
-		LOG.config("Test: add entity to Referenced list.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateAddToReferencedList", storages,
 				true, properties);
 		runner.addToReferencedList(em, context(0));
@@ -138,7 +128,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testClearReferencedList() {
-		LOG.config("Test: clear referenced list (but keep the entities in ontology).");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateClearReferencedList", storages,
 				true, properties);
 		runner.clearReferencedList(em, context(1));
@@ -146,7 +135,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testReplaceReferencedList() {
-		LOG.config("Test: replace referenced list with a new one.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateReplaceReferencedList", storages,
 				true, properties);
 		runner.replaceReferencedList(em, context(0));
@@ -154,7 +142,6 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testAddNewToProperties() {
-		LOG.config("Test: add a new property value to entity's properties.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateAddNewToProperties", storages,
 				false, properties);
 		runner.addNewToProperties(em, context(1));
@@ -162,10 +149,16 @@ public class TestUpdateOperations {
 
 	@Test
 	public void testAddPropertyValue() {
-		LOG.config("Test: add another value to an existing property.");
 		em = TestEnvironment.getPersistenceConnector("SesameUpdateAddPropertyValue", storages,
 				false, properties);
 		runner.addPropertyValue(em, context(0));
+	}
+
+	@Test(expected = OWLInferredAttributeModifiedException.class)
+	public void testModifyInferredAttribute() {
+		em = TestEnvironment.getPersistenceConnector("SesameModifyInferredAttribute", storages,
+				false, properties);
+		runner.modifyInferredAttribute(em, context(1));
 	}
 
 	private URI context(int index) {

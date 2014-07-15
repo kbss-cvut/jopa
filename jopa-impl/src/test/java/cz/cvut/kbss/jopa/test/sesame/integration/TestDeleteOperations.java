@@ -33,7 +33,7 @@ public class TestDeleteOperations {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		runner = new DeleteOperationsRunner();
+		runner = new DeleteOperationsRunner(LOG);
 	}
 
 	@After
@@ -49,8 +49,14 @@ public class TestDeleteOperations {
 	}
 
 	@Test
+	public void testRemoveSimple() {
+		em = TestEnvironment.getPersistenceConnector("SesameSimpleRemove", storages, false,
+				properties);
+		runner.removeSimple(em, context(1));
+	}
+
+	@Test
 	public void testRemoveReference() {
-		LOG.config("Test: remove entity referenced by another entity.");
 		em = TestEnvironment.getPersistenceConnector("SesameRemoveReference", storages, true,
 				properties);
 		runner.removeReference(em, context(0));
@@ -58,7 +64,6 @@ public class TestDeleteOperations {
 
 	@Test
 	public void testRemoveCascade() {
-		LOG.config("Test: remove cascade.");
 		em = TestEnvironment.getPersistenceConnector("SesameRemoveCascade", storages, true,
 				properties);
 		runner.removeCascade(em, context(1));
@@ -66,7 +71,6 @@ public class TestDeleteOperations {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testRemoveDetached() {
-		LOG.config("Test: try removing detached entity.");
 		em = TestEnvironment.getPersistenceConnector("SesameRemoveDetached", storages, true,
 				properties);
 		runner.removeDetached(em, context(1));
@@ -74,7 +78,6 @@ public class TestDeleteOperations {
 
 	@Test
 	public void testRemoveFromSimpleList() {
-		LOG.config("Test: remove entity from simple list.");
 		em = TestEnvironment.getPersistenceConnector("SesameRemoveFromSimpleList", storages, true,
 				properties);
 		runner.removeFromSimpleList(em, context(0));
@@ -82,7 +85,6 @@ public class TestDeleteOperations {
 
 	@Test
 	public void testRemoveFromReferencedList() {
-		LOG.config("Test: remove entity from referenced list.");
 		em = TestEnvironment.getPersistenceConnector("SesameRemoveFromReferencedList", storages,
 				true, properties);
 		runner.removeFromReferencedList(em, context(1));
@@ -90,7 +92,6 @@ public class TestDeleteOperations {
 
 	@Test
 	public void testRemoveListOwner() {
-		LOG.config("Test: remove owner of simple and referenced list.");
 		em = TestEnvironment.getPersistenceConnector("SesameRemoveListOwner", storages, true,
 				properties);
 		runner.removeListOwner(em, context(0));

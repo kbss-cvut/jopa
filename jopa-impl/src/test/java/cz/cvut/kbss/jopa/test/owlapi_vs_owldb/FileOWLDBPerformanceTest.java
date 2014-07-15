@@ -19,7 +19,6 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 
 public class FileOWLDBPerformanceTest {
 
@@ -81,8 +80,8 @@ public class FileOWLDBPerformanceTest {
 	public void testOWLDBOntologyPerformancePersist() {
 		LOG.config("Testing OWLDB ontology access performance. Persisting " + COUNT + " entities.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"OWLDBOntologyPerformanceTest-Persist",
-				Collections.<StorageConfig> singletonList(new OwldbStorageConfig()), true);
+				"OWLDBOntologyPerformanceTest-Persist", new OwldbStorageConfig(), true,
+				Collections.<String, String> emptyMap());
 		try {
 			final long start = System.currentTimeMillis();
 			persistEntities(em);
@@ -125,8 +124,8 @@ public class FileOWLDBPerformanceTest {
 	public void testOWLDBOntologyPerformanceRead() {
 		LOG.config("Search for several randomly chosen entities and measure OWLDB ontology performance.");
 		final EntityManager em = TestEnvironment.getPersistenceConnector(
-				"OWLDBOntologyPerformanceTest-Find",
-				Collections.<StorageConfig> singletonList(new OwldbStorageConfig()), false);
+				"OWLDBOntologyPerformanceTest-Find", new OwldbStorageConfig(), false,
+				Collections.<String, String> emptyMap());
 		try {
 			persistEntities(em);
 

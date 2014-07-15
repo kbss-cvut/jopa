@@ -35,6 +35,7 @@ import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory {
 
@@ -802,7 +803,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			final Class<?> cls = entity.getClass();
 			final EntityType<?> eType = getMetamodel().entity(cls);
 			if (!eType.getIdentifier().isGenerated()) {
-				throw new OWLPersistenceException("The id for entity " + entity
+				throw new PrimaryKeyNotSetException("The id for entity " + entity
 						+ " is null and it is not specified as \'generated\' ");
 			}
 		}

@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -29,7 +30,11 @@ import cz.cvut.kbss.jopa.test.utils.Generators;
 
 public class CreateOperationsRunner {
 
-	public CreateOperationsRunner() {
+	private final Logger logger;
+
+	public CreateOperationsRunner(Logger logger) {
+		assert logger != null;
+		this.logger = logger;
 		init();
 	}
 
@@ -84,6 +89,7 @@ public class CreateOperationsRunner {
 	}
 
 	public void persistWithGenerated(EntityManager em, URI ctx) {
+		logger.config("Test: persist into all contexts, also with generated id.");
 		em.getTransaction().begin();
 		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		final EntityDescriptor eDescriptor = EntityDescriptor.createWithEntityContext(ctx);
@@ -103,7 +109,49 @@ public class CreateOperationsRunner {
 		assertEquals(entityE.getStringAttribute(), resE.getStringAttribute());
 	}
 
+	public void persistNull(EntityManager em, URI ctx) {
+		logger.config("Test: persist null.");
+		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		em.getTransaction().begin();
+		em.persist(null, aDescriptor);
+		fail("This line should not have been reached.");
+	}
+
+	public void persistWithoutId(EntityManager em, URI ctx) {
+		logger.config("Test: persist without id. No ID generation specified.");
+		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final OWLClassB b = new OWLClassB();
+		b.setStringAttribute("someValue");
+		em.getTransaction().begin();
+		em.persist(b, bDescriptor);
+		em.getTransaction().commit();
+		fail("This line should not have been reached.");
+	}
+
+	public void persistRollback(EntityManager em, URI ctx) {
+		logger.config("Test: persist and then rollback the transaction.");
+		final EntityDescriptor eDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		em.getTransaction().begin();
+		em.persist(entityE, eDescriptor);
+		assertTrue(em.contains(entityE));
+		em.getTransaction().rollback();
+
+		assertFalse(em.contains(entityE));
+		assertNull(em.find(entityE.getClass(), entityE.getUri(), eDescriptor));
+	}
+
+	public void persistRollbackOnly(EntityManager em, URI ctx) {
+		logger.config("Test: set transaction as rollback only and the try persisting an entity.");
+		final EntityDescriptor eDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		em.getTransaction().begin();
+		em.getTransaction().setRollbackOnly();
+		em.persist(entityE, eDescriptor);
+		em.getTransaction().commit();
+		fail("This line should not have been reached.");
+	}
+
 	public void persistCascade(EntityManager em, URI ctx) {
+		logger.config("Test: persist with cascade over two relationships.");
 		final EntityDescriptor gDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		em.persist(entityG, gDescriptor);
@@ -123,6 +171,7 @@ public class CreateOperationsRunner {
 	}
 
 	public void persistTwice(EntityManager em, URI ctx) {
+		logger.config("Test: persist twice into one context.");
 		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		em.persist(entityB, bDescriptor);
@@ -132,6 +181,7 @@ public class CreateOperationsRunner {
 	}
 
 	public void persistWithoutCascade(EntityManager em, URI ctx) {
+		logger.config("Test: try persisting relationship not marked as cascade.");
 		final EntityDescriptor dDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		em.persist(entityD, dDescriptor);
@@ -139,7 +189,21 @@ public class CreateOperationsRunner {
 		fail("This line should not have been reached.");
 	}
 
+	public void persistDetachedEntity(EntityManager em, URI ctx) {
+		logger.config("Test: persist detached entity. Should throw entity exists exception.");
+		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		em.getTransaction().begin();
+		em.persist(entityA, aDescriptor);
+		em.getTransaction().commit();
+		final OWLClassA det = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
+		assertNotNull(det);
+		em.detach(det);
+		em.persist(det);
+		fail("This line should not have been reached.");
+	}
+
 	public void persistSimpleList(EntityManager em, URI ctx) {
+		logger.config("Test: persist entity with simple list.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setSimpleList(Generators.createSimpleList(5));
 		em.getTransaction().begin();
@@ -161,6 +225,7 @@ public class CreateOperationsRunner {
 	}
 
 	public void persistSimpleListNoCascade(EntityManager em, URI ctx) {
+		logger.config("Test: persist entity with simple list, but don't persist the referenced entities.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setSimpleList(Generators.createSimpleList(10));
 		em.getTransaction().begin();
@@ -170,6 +235,7 @@ public class CreateOperationsRunner {
 	}
 
 	public void persistReferencedList(EntityManager em, URI ctx) {
+		logger.config("Test: persist entity with referenced list.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setReferencedList(Generators.createReferencedList(5));
 		em.getTransaction().begin();
@@ -195,6 +261,7 @@ public class CreateOperationsRunner {
 	}
 
 	public void persistReferencedListNoCascade(EntityManager em, URI ctx) {
+		logger.config("Test: persist entity with referenced list. Don't persist the referenced entities.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setReferencedList(Generators.createReferencedList(5));
 		em.getTransaction().begin();
@@ -204,6 +271,7 @@ public class CreateOperationsRunner {
 	}
 
 	public void persistSimpleAndReferencedList(EntityManager em, URI ctx) {
+		logger.config("Test: persist entity with both simple and referenced list.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setReferencedList(Generators.createReferencedList(5));
 		entityC.setSimpleList(Generators.createSimpleList(5));
@@ -236,6 +304,7 @@ public class CreateOperationsRunner {
 	}
 
 	public void persistProperties(EntityManager em, URI ctx) {
+		logger.config("Test: persist entity with properties.");
 		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		final Map<String, Set<String>> props = new HashMap<>(3);
 		props.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyOne", Collections
@@ -269,6 +338,7 @@ public class CreateOperationsRunner {
 	}
 
 	public void persistPropertiesEmpty(EntityManager em, URI ctx) {
+		logger.config("Test: persist entity with properties. The properties will be an empty map.");
 		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityB.setProperties(Collections.<String, Set<String>> emptyMap());
 		em.getTransaction().begin();

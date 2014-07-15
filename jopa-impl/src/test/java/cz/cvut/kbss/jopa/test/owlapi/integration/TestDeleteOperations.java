@@ -30,7 +30,7 @@ public class TestDeleteOperations {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		runner = new DeleteOperationsRunner();
+		runner = new DeleteOperationsRunner(LOG);
 	}
 
 	@After
@@ -46,8 +46,14 @@ public class TestDeleteOperations {
 	}
 
 	@Test
+	public void testRemoveSimple() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiSimpleRemove", storage, false,
+				properties);
+		runner.removeSimple(em, context());
+	}
+
+	@Test
 	public void testRemoveReference() {
-		LOG.config("Test: remove entity referenced by another entity.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveReference", storage, true,
 				properties);
 		runner.removeReference(em, context());
@@ -55,7 +61,6 @@ public class TestDeleteOperations {
 
 	@Test
 	public void testRemoveCascade() {
-		LOG.config("Test: remove cascade.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveCascade", storage, true,
 				properties);
 		runner.removeCascade(em, context());
@@ -63,7 +68,6 @@ public class TestDeleteOperations {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testRemoveDetached() {
-		LOG.config("Test: try removing detached entity.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveDetached", storage, true,
 				properties);
 		runner.removeDetached(em, context());
@@ -71,7 +75,6 @@ public class TestDeleteOperations {
 
 	@Test
 	public void testRemoveFromSimpleList() {
-		LOG.config("Test: remove entity from simple list.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveFromSimpleList", storage, true,
 				properties);
 		runner.removeFromSimpleList(em, context());
@@ -79,7 +82,6 @@ public class TestDeleteOperations {
 
 	@Test
 	public void testRemoveFromReferencedList() {
-		LOG.config("Test: remove entity from referenced list.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveFromReferencedList", storage,
 				true, properties);
 		runner.removeFromReferencedList(em, context());
@@ -87,7 +89,6 @@ public class TestDeleteOperations {
 
 	@Test
 	public void testRemoveListOwner() {
-		LOG.config("Test: remove owner of simple and referenced list.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveListOwner", storage, true,
 				properties);
 		runner.removeListOwner(em, context());

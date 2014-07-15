@@ -33,7 +33,7 @@ public class TestRetrieveOperations {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		runner = new RetrieveOperationsRunner();
+		runner = new RetrieveOperationsRunner(LOG);
 	}
 
 	@After
@@ -49,8 +49,21 @@ public class TestRetrieveOperations {
 	}
 
 	@Test
+	public void testRetrieveSimple() {
+		em = TestEnvironment.getPersistenceConnector("SesameRetrieveSimple", storages, false,
+				properties);
+		runner.retrieveSimple(em, context(1));
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testRetrieveNull() {
+		em = TestEnvironment.getPersistenceConnector("SesameRetrieveNull", storages, false,
+				properties);
+		runner.retrieveNull(em, context(0));
+	}
+
+	@Test
 	public void testRetrieveLazy() throws Exception {
-		LOG.config("Test: retrieve entity with lazy loaded attribute.");
 		em = TestEnvironment.getPersistenceConnector("SesameRetrieveLazy", storages, false,
 				properties);
 		runner.retrieveLazily(em, context(1));
@@ -58,7 +71,6 @@ public class TestRetrieveOperations {
 
 	@Test
 	public void testRetrieveGenerated() throws Exception {
-		LOG.config("Test: persist and retrieve several entities with generated identifiers.");
 		em = TestEnvironment.getPersistenceConnector("SesameRetrieveGenerated", storages, false,
 				properties);
 		runner.retrieveGenerated(em, context(0));
@@ -66,7 +78,6 @@ public class TestRetrieveOperations {
 
 	@Test
 	public void testRetrieveNotExisting() {
-		LOG.config("Test: retrieve entity which does not exist in the specified context.");
 		em = TestEnvironment.getPersistenceConnector("SesameRetrieveNotExisting", storages, false,
 				properties);
 		runner.retrieveNotExisting(em, context(1));
@@ -74,7 +85,6 @@ public class TestRetrieveOperations {
 
 	@Test
 	public void testRefresh() {
-		LOG.config("Test: refresh entity.");
 		em = TestEnvironment.getPersistenceConnector("SesameRefresh", storages, false, properties);
 		runner.refresh(em, context(0));
 	}

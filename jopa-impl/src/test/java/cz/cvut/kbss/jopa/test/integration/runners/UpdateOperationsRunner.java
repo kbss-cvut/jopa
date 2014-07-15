@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -25,6 +27,7 @@ import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.OWLClassF;
 import cz.cvut.kbss.jopa.test.OWLClassG;
 import cz.cvut.kbss.jopa.test.OWLClassH;
 import cz.cvut.kbss.jopa.test.OWLClassI;
@@ -32,6 +35,8 @@ import cz.cvut.kbss.jopa.test.OWLClassJ;
 import cz.cvut.kbss.jopa.test.utils.Generators;
 
 public class UpdateOperationsRunner {
+
+	private final Logger logger;
 
 	private OWLClassA entityA;
 	private OWLClassA entityA2;
@@ -41,6 +46,7 @@ public class UpdateOperationsRunner {
 	private OWLClassD entityD;
 	// Generated IRI
 	private OWLClassE entityE;
+	private OWLClassF entityF;
 	// Lazy reference to OWLClassA
 	private OWLClassI entityI;
 	// Two relationships
@@ -48,40 +54,44 @@ public class UpdateOperationsRunner {
 	private OWLClassH entityH;
 	private OWLClassJ entityJ;
 
-	public UpdateOperationsRunner() {
+	public UpdateOperationsRunner(Logger logger) {
+		assert logger != null;
+		this.logger = logger;
 		init();
 	}
 
 	private void init() {
-		entityA = new OWLClassA();
+		this.entityA = new OWLClassA();
 		entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
 		entityA.setStringAttribute("entityAStringAttribute");
 		final Set<String> types = new HashSet<String>();
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
 		entityA.setTypes(types);
-		entityB = new OWLClassB();
+		this.entityB = new OWLClassB();
 		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
 		entityB.setStringAttribute("entityBStringAttribute");
-		entityC = new OWLClassC();
+		this.entityC = new OWLClassC();
 		entityC.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
-		entityD = new OWLClassD();
+		this.entityD = new OWLClassD();
 		entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
 		entityD.setOwlClassA(entityA);
-		entityE = new OWLClassE();
+		this.entityE = new OWLClassE();
 		entityE.setStringAttribute("entityEStringAttribute");
-		entityI = new OWLClassI();
+		this.entityF = new OWLClassF();
+		entityF.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityF"));
+		this.entityI = new OWLClassI();
 		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
 		entityI.setOwlClassA(entityA);
-		entityH = new OWLClassH();
+		this.entityH = new OWLClassH();
 		entityH.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH"));
 		entityH.setOwlClassA(entityA);
-		entityG = new OWLClassG();
+		this.entityG = new OWLClassG();
 		entityG.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
 		entityG.setOwlClassH(entityH);
 
-		entityA2 = new OWLClassA();
+		this.entityA2 = new OWLClassA();
 		entityA2.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA2"));
-		entityJ = new OWLClassJ();
+		this.entityJ = new OWLClassJ();
 		entityJ.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityJ"));
 		final Set<OWLClassA> set = new HashSet<>(2);
 		set.add(entityA);
@@ -96,7 +106,8 @@ public class UpdateOperationsRunner {
 		entityE.setUri(null);
 	}
 
-	public void mergeList(EntityManager em, URI ctx) {
+	public void mergeSet(EntityManager em, URI ctx) {
+		logger.config("Test: merge set property.");
 		final EntityDescriptor jDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		em.persist(entityJ, jDescriptor);
@@ -117,6 +128,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void updateDataPropertyKeepLazyEmpty(EntityManager em, URI ctx) throws Exception {
+		logger.config("Test: update data property. Leaves lazily loaded field empty and checks that after commit the field's value hasn't changed.");
 		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityB.setProperties(Generators.createProperties());
 		em.getTransaction().begin();
@@ -141,6 +153,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void updateDataPropertySetNull(EntityManager em, URI ctx) {
+		logger.config("Test: update data property. Set it to null.");
 		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		em.persist(entityA, aDescriptor);
@@ -160,6 +173,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void updateReference(EntityManager em, URI ctx) {
+		logger.config("Test: update reference to entity.");
 		final EntityDescriptor dDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		final EntityDescriptor iDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
@@ -193,6 +207,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void mergeDetachedWithChanges(EntityManager em, URI ctx) {
+		logger.config("Test: merge detached entity with changes.");
 		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		em.persist(entityA, aDescriptor);
@@ -215,12 +230,14 @@ public class UpdateOperationsRunner {
 	}
 
 	public void mergeDetachedCascade(EntityManager em, URI ctx) {
+		logger.config("Test: merge detached with cascade.");
 		final EntityDescriptor hDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		em.persist(entityH, hDescriptor);
 		assertTrue(em.contains(entityA));
 		em.getTransaction().commit();
 
+		em.getTransaction().begin();
 		final OWLClassH h = em.find(OWLClassH.class, entityH.getUri(), hDescriptor);
 		assertNotNull(h.getOwlClassA());
 		em.detach(h);
@@ -228,7 +245,6 @@ public class UpdateOperationsRunner {
 		assertFalse(em.contains(h.getOwlClassA()));
 		final String newStr = "newStringAttribute";
 		h.getOwlClassA().setStringAttribute(newStr);
-		em.getTransaction().begin();
 		final OWLClassH merged = em.merge(h, hDescriptor);
 		assertEquals(newStr, merged.getOwlClassA().getStringAttribute());
 		em.getTransaction().commit();
@@ -239,6 +255,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void removeFromSimpleList(EntityManager em, URI ctx) {
+		logger.config("Test: remove entity from simple list. (But keep it in the ontology.)");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setSimpleList(Generators.createSimpleList());
 		em.getTransaction().begin();
@@ -266,6 +283,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void addToSimpleList(EntityManager em, URI ctx) {
+		logger.config("Test: add entity to simple list.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setSimpleList(Generators.createSimpleList());
 		em.getTransaction().begin();
@@ -295,6 +313,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void clearSimpleList(EntityManager em, URI ctx) {
+		logger.config("Test: clear a simple list (but keep the entities in ontology).");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setSimpleList(Generators.createSimpleList());
 		em.getTransaction().begin();
@@ -320,6 +339,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void replaceSimpleList(EntityManager em, URI ctx) {
+		logger.config("Test: replace simple list with a new one.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setSimpleList(Generators.createSimpleList());
 		em.getTransaction().begin();
@@ -357,6 +377,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void removeFromReferencedList(EntityManager em, URI ctx) {
+		logger.config("Test: remove entity from referenced list. (But keep it in the ontology.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setReferencedList(Generators.createReferencedList());
 		em.getTransaction().begin();
@@ -384,6 +405,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void addToReferencedList(EntityManager em, URI ctx) {
+		logger.config("Test: add entity to Referenced list.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setReferencedList(Generators.createReferencedList());
 		em.getTransaction().begin();
@@ -409,6 +431,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void clearReferencedList(EntityManager em, URI ctx) {
+		logger.config("Test: clear referenced list (but keep the entities in ontology).");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setReferencedList(Generators.createReferencedList());
 		em.getTransaction().begin();
@@ -434,6 +457,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void replaceReferencedList(EntityManager em, URI ctx) {
+		logger.config("Test: replace referenced list with a new one.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setReferencedList(Generators.createReferencedList());
 		em.getTransaction().begin();
@@ -471,6 +495,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void addNewToProperties(EntityManager em, URI ctx) {
+		logger.config("Test: add a new property value to entity's properties.");
 		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityB.setProperties(Generators.createProperties());
 		final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
@@ -503,6 +528,7 @@ public class UpdateOperationsRunner {
 	}
 
 	public void addPropertyValue(EntityManager em, URI ctx) {
+		logger.config("Test: add another value to an existing property.");
 		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityB.setProperties(Generators.createProperties());
 		final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
@@ -538,5 +564,20 @@ public class UpdateOperationsRunner {
 				assertTrue(resS.contains(s.iterator().next()));
 			}
 		}
+	}
+
+	public void modifyInferredAttribute(EntityManager em, URI ctx) {
+		logger.config("Test: modify an inferred attribute.");
+		final EntityDescriptor fDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		em.getTransaction().begin();
+		em.persist(entityF, fDescriptor);
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		final OWLClassF f = em.find(OWLClassF.class, entityF.getUri(), fDescriptor);
+		assertNotNull(f);
+		f.setSecondStringAttribute("otherValue");
+		em.getTransaction().commit();
+		fail("This line should not have been reached.");
 	}
 }

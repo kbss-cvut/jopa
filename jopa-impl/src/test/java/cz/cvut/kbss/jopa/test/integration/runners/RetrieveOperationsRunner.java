@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -25,6 +26,8 @@ import cz.cvut.kbss.jopa.test.OWLClassI;
 
 public class RetrieveOperationsRunner {
 
+	private final Logger logger;
+
 	private OWLClassA entityA;
 	private OWLClassB entityB;
 	private OWLClassD entityD;
@@ -36,7 +39,9 @@ public class RetrieveOperationsRunner {
 	private OWLClassG entityG;
 	private OWLClassH entityH;
 
-	public RetrieveOperationsRunner() {
+	public RetrieveOperationsRunner(Logger logger) {
+		assert logger != null;
+		this.logger = logger;
 		init();
 	}
 
@@ -70,7 +75,30 @@ public class RetrieveOperationsRunner {
 		entityE.setUri(null);
 	}
 
+	public void retrieveSimple(EntityManager em, URI ctx) {
+		logger.config("Test: retrieve a simple entity.");
+		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		em.getTransaction().begin();
+		em.persist(entityA, aDescriptor);
+		em.getTransaction().commit();
+
+		em.getEntityManagerFactory().getCache().evictAll();
+		final OWLClassA res = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
+		assertNotNull(res);
+		assertEquals(entityA.getUri(), res.getUri());
+		assertEquals(entityA.getStringAttribute(), res.getStringAttribute());
+		assertTrue(entityA.getTypes().containsAll(res.getTypes()));
+		assertTrue(em.contains(res));
+	}
+
+	public void retrieveNull(EntityManager em, URI ctx) {
+		logger.config("Test: retrieve null.");
+		em.find(OWLClassA.class, null, EntityDescriptor.createWithEntityContext(ctx));
+		fail("This line should not have been reached.");
+	}
+
 	public void retrieveLazily(EntityManager em, URI ctx) throws Exception {
+		logger.config("Test: retrieve entity with lazy loaded attribute.");
 		final EntityDescriptor iDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		em.persist(entityI, iDescriptor);
@@ -90,6 +118,7 @@ public class RetrieveOperationsRunner {
 	}
 
 	public void retrieveGenerated(EntityManager em, URI ctx) {
+		logger.config("Test: persist and retrieve several entities with generated identifiers.");
 		final EntityDescriptor eDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		final int size = 10;
@@ -113,12 +142,14 @@ public class RetrieveOperationsRunner {
 	}
 
 	public void retrieveNotExisting(EntityManager em, URI ctx) {
+		logger.config("Test: retrieve entity which does not exist in the specified context.");
 		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		final OWLClassB res = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
 		assertNull(res);
 	}
 
 	public void refresh(EntityManager em, URI ctx) {
+		logger.config("Test: refresh entity.");
 		final EntityDescriptor dDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
@@ -138,6 +169,7 @@ public class RetrieveOperationsRunner {
 	}
 
 	public void refreshNotManaged(EntityManager em, URI ctx) {
+		logger.config("Test: refresh entity which is not managed.");
 		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		em.persist(entityA, aDescriptor);

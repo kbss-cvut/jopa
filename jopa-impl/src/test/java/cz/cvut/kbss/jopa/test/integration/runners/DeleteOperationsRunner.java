@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -25,6 +26,8 @@ import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
 
 public class DeleteOperationsRunner {
 
+	private final Logger logger;
+
 	private OWLClassA entityA;
 	private OWLClassB entityB;
 	private OWLClassC entityC;
@@ -37,7 +40,9 @@ public class DeleteOperationsRunner {
 	private OWLClassG entityG;
 	private OWLClassH entityH;
 
-	public DeleteOperationsRunner() {
+	public DeleteOperationsRunner(Logger logger) {
+		assert logger != null;
+		this.logger = logger;
 		init();
 	}
 
@@ -75,7 +80,24 @@ public class DeleteOperationsRunner {
 		entityC.setSimpleList(null);
 	}
 
+	public void removeSimple(EntityManager em, URI ctx) {
+		logger.config("Test: simple entity removal.");
+		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		em.getTransaction().begin();
+		em.persist(entityA, aDescriptor);
+		em.getTransaction().commit();
+
+		final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
+		assertNotNull(a);
+		em.getTransaction().begin();
+		em.remove(a);
+		em.getTransaction().commit();
+
+		assertNull(em.find(OWLClassA.class, entityA.getUri(), aDescriptor));
+	}
+
 	public void removeReference(EntityManager em, URI ctx) {
+		logger.config("Test: remove entity referenced by another entity.");
 		final EntityDescriptor dDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
@@ -98,6 +120,7 @@ public class DeleteOperationsRunner {
 	}
 
 	public void removeCascade(EntityManager em, URI ctx) {
+		logger.config("Test: remove cascade.");
 		final EntityDescriptor gDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		em.persist(entityG, gDescriptor);
@@ -126,6 +149,7 @@ public class DeleteOperationsRunner {
 	}
 
 	public void removeDetached(EntityManager em, URI ctx) {
+		logger.config("Test: try removing detached entity.");
 		final EntityDescriptor eDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		em.getTransaction().begin();
 		assertNull(entityE.getUri());
@@ -144,6 +168,7 @@ public class DeleteOperationsRunner {
 	}
 
 	public void removeFromSimpleList(EntityManager em, URI ctx) {
+		logger.config("Test: remove entity from simple list.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		final int size = 5;
 		entityC.setSimpleList(Generators.createSimpleList(size));
@@ -181,6 +206,7 @@ public class DeleteOperationsRunner {
 	}
 
 	public void removeFromReferencedList(EntityManager em, URI ctx) {
+		logger.config("Test: remove entity from referenced list.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		final int size = 10;
 		entityC.setReferencedList(Generators.createReferencedList(size));
@@ -218,6 +244,7 @@ public class DeleteOperationsRunner {
 	}
 
 	public void removeListOwner(EntityManager em, URI ctx) {
+		logger.config("Test: remove owner of simple and referenced list.");
 		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
 		entityC.setSimpleList(Generators.createSimpleList());
 		entityC.setReferencedList(Generators.createReferencedList());

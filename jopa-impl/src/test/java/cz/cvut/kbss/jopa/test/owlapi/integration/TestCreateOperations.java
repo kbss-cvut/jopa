@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.test.integration.runners.CreateOperationsRunner;
 import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 
 public class TestCreateOperations {
 
@@ -26,13 +27,13 @@ public class TestCreateOperations {
 	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
-	private static CreateOperationsRunner runner;
+	private CreateOperationsRunner runner;
 
 	private EntityManager em;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		runner = new CreateOperationsRunner();
+	@Before
+	public void setUp() throws Exception {
+		runner = new CreateOperationsRunner(LOG);
 	}
 
 	@After
@@ -49,15 +50,41 @@ public class TestCreateOperations {
 
 	@Test
 	public void testPersistWithGenerated() {
-		LOG.config("Test: persist into all contexts, also with generated id.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithGenerated", storage, false,
 				properties);
 		runner.persistWithGenerated(em, context());
 	}
 
+	@Test(expected = PrimaryKeyNotSetException.class)
+	public void testPersistWithoutId() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithoutId", storage, false,
+				properties);
+		runner.persistWithoutId(em, context());
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testPersistNull() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistNull", storage, false,
+				properties);
+		runner.persistNull(em, context());
+	}
+
+	@Test
+	public void testPersistRollback() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistRollback", storage, false,
+				properties);
+		runner.persistRollback(em, context());
+	}
+
+	@Test(expected = RollbackException.class)
+	public void testPersistRollbackOnly() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistRollbackOnly", storage, false,
+				properties);
+		runner.persistRollbackOnly(em, context());
+	}
+
 	@Test
 	public void testPersistCascade() {
-		LOG.config("Test: persist with cascade over two relationships.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithCascade", storage, false,
 				properties);
 		runner.persistCascade(em, context());
@@ -65,7 +92,6 @@ public class TestCreateOperations {
 
 	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistTwiceInOne() {
-		LOG.config("Test: persist twice into one context.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistTwice", storage, false,
 				properties);
 		runner.persistTwice(em, context());
@@ -73,15 +99,20 @@ public class TestCreateOperations {
 
 	@Test(expected = RollbackException.class)
 	public void testPersistWithoutCascade() {
-		LOG.config("Test: try persisting relationship not marked as cascade.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithoutCascade", storage, false,
 				properties);
 		runner.persistWithoutCascade(em, context());
 	}
 
+	@Test(expected = OWLEntityExistsException.class)
+	public void testPersistDetached() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistDetached", storage, false,
+				properties);
+		runner.persistDetachedEntity(em, context());
+	}
+
 	@Test
 	public void testPersistSimpleList() {
-		LOG.config("Test: persist entity with simple list.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleList", storage, false,
 				properties);
 		runner.persistSimpleList(em, context());
@@ -89,7 +120,6 @@ public class TestCreateOperations {
 
 	@Test(expected = RollbackException.class)
 	public void testPersistSimpleListNoCascade() {
-		LOG.config("Test: persist entity with simple list, but don't persist the referenced entities.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleListNoCascade", storage,
 				false, properties);
 		runner.persistSimpleListNoCascade(em, context());
@@ -97,7 +127,6 @@ public class TestCreateOperations {
 
 	@Test
 	public void testPersistReferencedList() {
-		LOG.config("Test: persist entity with referenced list.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistReferencedList", storage, false,
 				properties);
 		runner.persistReferencedList(em, context());
@@ -105,7 +134,6 @@ public class TestCreateOperations {
 
 	@Test(expected = RollbackException.class)
 	public void testPersistReferencedListNoCascade() {
-		LOG.config("Test: persist entity with referenced list. Don't persist the referenced entities.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistReferencedListNoCascade",
 				storage, false, properties);
 		runner.persistReferencedListNoCascade(em, context());
@@ -113,7 +141,6 @@ public class TestCreateOperations {
 
 	@Test
 	public void testPersistSimpleAndReferencedList() {
-		LOG.config("Test: persist entity with both simple and referenced list.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleAndReferencedList",
 				storage, false, properties);
 		runner.persistSimpleAndReferencedList(em, context());
@@ -121,7 +148,6 @@ public class TestCreateOperations {
 
 	@Test
 	public void testPersistProperties() {
-		LOG.config("Test: persist entity with properties.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithProperties", storage, false,
 				properties);
 		runner.persistProperties(em, context());
@@ -129,7 +155,6 @@ public class TestCreateOperations {
 
 	@Test
 	public void testPersistPropertiesEmpty() {
-		LOG.config("Test: persist entity with properties. The properties will be an empty map.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithPropertiesEmpty", storage,
 				false, properties);
 		runner.persistPropertiesEmpty(em, context());

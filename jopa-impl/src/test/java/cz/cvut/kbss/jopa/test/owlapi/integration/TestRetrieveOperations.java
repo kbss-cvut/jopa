@@ -30,7 +30,7 @@ public class TestRetrieveOperations {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		runner = new RetrieveOperationsRunner();
+		runner = new RetrieveOperationsRunner(LOG);
 	}
 
 	@After
@@ -46,8 +46,21 @@ public class TestRetrieveOperations {
 	}
 
 	@Test
+	public void testRetrieveSimple() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveSimple", storage, false,
+				properties);
+		runner.retrieveSimple(em, context());
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testRetrieveNull() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveNull", storage, false,
+				properties);
+		runner.retrieveNull(em, context());
+	}
+
+	@Test
 	public void testRetrieveLazy() throws Exception {
-		LOG.config("Test: retrieve entity with lazy loaded attribute.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveLazy", storage, false,
 				properties);
 		runner.retrieveLazily(em, context());
@@ -55,7 +68,6 @@ public class TestRetrieveOperations {
 
 	@Test
 	public void testRetrieveGenerated() throws Exception {
-		LOG.config("Test: persist and retrieve several entities with generated identifiers.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveGenerated", storage, false,
 				properties);
 		runner.retrieveGenerated(em, context());
@@ -63,7 +75,6 @@ public class TestRetrieveOperations {
 
 	@Test
 	public void testRetrieveNotExisting() {
-		LOG.config("Test: retrieve entity which does not exist in the specified context.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiRetrieveNotExisting", storage, false,
 				properties);
 		runner.retrieveNotExisting(em, context());
@@ -71,14 +82,12 @@ public class TestRetrieveOperations {
 
 	@Test
 	public void testRefresh() {
-		LOG.config("Test: refresh entity.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiRefresh", storage, false, properties);
 		runner.refresh(em, context());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testRefreshNotManaged() {
-		LOG.config("Test: refresh entity which is not managed.");
 		em = TestEnvironment.getPersistenceConnector("OwlapiRefreshNotManaged", storage, false,
 				properties);
 		runner.refreshNotManaged(em, context());
