@@ -1,155 +1,193 @@
 package cz.cvut.kbss.jopa.test.owldb.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassC;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
+import cz.cvut.kbss.jopa.test.integration.runners.UpdateOperationsRunner;
 import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
+import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
 public class TestUpdateOperations {
 
-	private static int index;
-	private static EntityManager pc;
+	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());
 
-	private Logger log = TestEnvironment.getLogger();
+	private static EntityManager em;
 
-	private OWLClassC testCToChange;
+	private static final StorageConfig storage = initStorage();
+	private static final Map<String, String> properties = initProperties();
 
-	public TestUpdateOperations() {
-		this.testCToChange = new OWLClassC();
-		final URI pkC3 = URI.create("http://testCToChange");
-		testCToChange.setUri(pkC3);
-		final List<OWLClassA> simple = new ArrayList<OWLClassA>();
-		for (int i = 0; i < 10; i++) {
-			OWLClassA a = new OWLClassA();
-			URI pkA = URI.create("http://simpleToChangeA" + Integer.toString(i));
-			a.setUri(pkA);
-			a.setStringAttribute("StringAttributeSimple" + Integer.toString(i + 1));
-			simple.add(a);
-		}
-		final List<OWLClassA> refs = new ArrayList<OWLClassA>();
-		for (int i = 0; i < 10; i++) {
-			OWLClassA a = new OWLClassA();
-			final URI pkRA = URI.create("http://refAToChange" + Integer.toString(i + 1));
-			a.setUri(pkRA);
-			a.setStringAttribute("strAttForRefA_" + Integer.toString(i + 1));
-			refs.add(a);
-		}
-		testCToChange.setSimpleList(simple);
-		testCToChange.setReferencedList(refs);
-	}
+	private UpdateOperationsRunner runner;
 
 	@BeforeClass
 	public static void setupBeforeClass() throws Exception {
-		index = 1;
 		TestEnvironment.clearDatabase();
 		TestEnvironment.resetOwldbHibernateProvider();
-		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-update",
-				Collections.<StorageConfig> singletonList(new OwldbStorageConfig()), true);
+		em = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-update", storage, true,
+				properties);
 	}
 
-	@AfterClass
-	public static void teardownAfterClass() {
-		pc.getEntityManagerFactory().close();
+	@Before
+	public void setUp() throws Exception {
+		TestEnvironment.clearDatabase();
+		this.runner = new UpdateOperationsRunner(LOG);
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		if (pc.getTransaction().isActive()) {
-			pc.getTransaction().rollback();
+		if (em.getTransaction().isActive()) {
+			em.getTransaction().rollback();
 		}
 	}
 
-	@Test
-	public void testMergeDetachedEntity() {
-		log.info("Test: Merge detached (detached during transaction)");
-		pc.clear();
-		OWLClassA entity = new OWLClassA();
-		final URI pk = URI.create("http://testA" + (index++));
-		entity.setStringAttribute("OriginalStringAttribute");
-		entity.setUri(pk);
-		pc.getTransaction().begin();
-		pc.persist(entity);
-		pc.getTransaction().commit();
-		pc.getTransaction().begin();
-		OWLClassA det = pc.find(OWLClassA.class, pk);
-		pc.detach(det);
-		assertFalse(pc.contains(det));
-		det.setStringAttribute("NewStringAttribute");
-		pc.merge(det);
-		assertTrue(pc.contains(det));
-		pc.getTransaction().commit();
-		det = pc.find(OWLClassA.class, pk);
-		assertNotNull(det);
-		assertEquals("NewStringAttribute", det.getStringAttribute());
+	@AfterClass
+	public static void teardownAfterClass() {
+		em.getEntityManagerFactory().close();
 	}
 
 	@Test
-	public void testMergeDetachedOutsideTransaction() {
-		log.info("Test: Merge detached (detached outside transaction)");
-		pc.clear();
-		OWLClassA entity = new OWLClassA();
-		final URI pk = URI.create("http://testA" + (index++));
-		entity.setStringAttribute("OriginalStringAttribute");
-		entity.setUri(pk);
-		pc.getTransaction().begin();
-		pc.persist(entity);
-		pc.getTransaction().commit();
-		OWLClassA det = pc.find(OWLClassA.class, pk);
-		pc.detach(det);
-		det.setStringAttribute("NewStringAttribute");
-		pc.getTransaction().begin();
-		pc.merge(det);
-		pc.getTransaction().commit();
-		det = pc.find(OWLClassA.class, pk);
-		assertNotNull(det);
-		assertEquals("NewStringAttribute", det.getStringAttribute());
+	public void testMergeSet() throws Exception {
+		em = TestEnvironment.getPersistenceConnector("OwldbMergeSet", storage, false, properties);
+		runner.mergeSet(em, context());
 	}
 
 	@Test
-	public void testChangeReferenceInList() {
-		log.info("Test: change a reference in referenced list of an entity and persist this change");
-		pc.clear();
-		pc.getTransaction().begin();
-		for (OWLClassA ref : testCToChange.getReferencedList()) {
-			pc.persist(ref);
-		}
-		for (OWLClassA simple : testCToChange.getSimpleList()) {
-			pc.persist(simple);
-		}
-		pc.persist(testCToChange);
-		pc.getTransaction().commit();
-		OWLClassC c = pc.find(OWLClassC.class, testCToChange.getUri());
-		assertNotNull(c);
-		pc.getTransaction().begin();
-		OWLClassA a = c.getReferencedList().get(3);
-		final String nStr = "newString";
-		a.setStringAttribute(nStr);
-		pc.getTransaction().commit();
-		c = pc.find(OWLClassC.class, testCToChange.getUri());
-		boolean found = false;
-		for (OWLClassA aa : c.getReferencedList()) {
-			if (nStr.equals(aa.getStringAttribute())) {
-				found = true;
-			}
-		}
-		assertTrue(found);
+	public void testUpdateDataLeaveLazy() throws Exception {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateDataProperty", storage, false,
+				properties);
+		runner.updateDataPropertyKeepLazyEmpty(em, context());
+	}
+
+	@Test
+	public void testUpdateDataPropertySetNull() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateDataPropertyToNull", storage,
+				true, properties);
+		runner.updateDataPropertySetNull(em, context());
+	}
+
+	@Test
+	public void testUpdateReference() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateReference", storage, true,
+				properties);
+		runner.updateReference(em, context());
+	}
+
+	@Test
+	public void testMergeDetachedWithChanges() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateDetached", storage, true,
+				properties);
+		runner.mergeDetachedWithChanges(em, context());
+	}
+
+	@Test
+	public void testMergeDetachedCascade() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateCascade", storage, true,
+				properties);
+		runner.mergeDetachedCascade(em, context());
+	}
+
+	@Test
+	public void testRemoveFromSimpleList() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateRemoveFromSimpleList", storage,
+				true, properties);
+		runner.removeFromSimpleList(em, context());
+	}
+
+	@Test
+	public void testAddToSimpleList() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateAddToSimpleList", storage, true,
+				properties);
+		runner.addToSimpleList(em, context());
+	}
+
+	@Test
+	public void testClearSimpleList() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateClearSimpleList", storage, true,
+				properties);
+		runner.clearSimpleList(em, context());
+	}
+
+	@Test
+	public void testReplaceSimpleList() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateReplaceSimpleList", storage, true,
+				properties);
+		runner.replaceSimpleList(em, context());
+	}
+
+	@Test
+	public void testRemoveFromReferencedList() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateRemoveFromReferencedList",
+				storage, true, properties);
+		runner.removeFromReferencedList(em, context());
+	}
+
+	@Test
+	public void testAddToReferencedList() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateAddToReferencedList", storage,
+				true, properties);
+		runner.addToReferencedList(em, context());
+	}
+
+	@Test
+	public void testClearReferencedList() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateClearReferencedList", storage,
+				true, properties);
+		runner.clearReferencedList(em, context());
+	}
+
+	@Test
+	public void testReplaceReferencedList() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateReplaceReferencedList", storage,
+				true, properties);
+		runner.replaceReferencedList(em, context());
+	}
+
+	@Test
+	public void testAddNewToProperties() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateAddNewToProperties", storage,
+				false, properties);
+		runner.addNewToProperties(em, context());
+	}
+
+	@Test
+	public void testAddPropertyValue() {
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateAddPropertyValue", storage, false,
+				properties);
+		runner.addPropertyValue(em, context());
+	}
+
+	@Test(expected = OWLInferredAttributeModifiedException.class)
+	public void testModifyInferredAttribute() {
+		em = TestEnvironment.getPersistenceConnector("OwldbModifyInferredAttribute", storage,
+				false, properties);
+		runner.modifyInferredAttribute(em, context());
+	}
+
+	private URI context() {
+		// OWLAPI storages don't use contexts
+		return null;
+	}
+
+	private static StorageConfig initStorage() {
+		return new OwldbStorageConfig();
+	}
+
+	private static Map<String, String> initProperties() {
+		final Map<String, String> map = new HashMap<>();
+		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
+		map.put(OWLAPIPersistenceProperties.LANG, "en");
+		return map;
 	}
 }

@@ -1,237 +1,157 @@
 package cz.cvut.kbss.jopa.test.owldb.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassC;
-import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
+import cz.cvut.kbss.jopa.test.integration.runners.CreateOperationsRunner;
 import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
+import cz.cvut.kbss.ontodriver.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 
 public class TestCreateOperations {
 
-	private static int index;
-	private static EntityManager pc;
+	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());
 
-	private Logger log = TestEnvironment.getLogger();
+	private static EntityManager em;
 
-	private OWLClassC testC;
-	private OWLClassC testCWithRefs;
-	private List<OWLClassA> classes;
-	private List<OWLClassA> simples;
-	private List<OWLClassA> refList;
+	private static final StorageConfig storage = initStorage();
+	private static final Map<String, String> properties = initProperties();
 
-	public TestCreateOperations() {
-		this.testC = new OWLClassC();
-		final URI pkC = URI.create("http://testC");
-		testC.setUri(pkC);
-		this.testCWithRefs = new OWLClassC();
-		final URI pkC2 = URI.create("http://testCWitRefs");
-		testCWithRefs.setUri(pkC2);
-		this.classes = new ArrayList<OWLClassA>();
-		for (int i = 0; i < 10; i++) {
-			OWLClassA a = new OWLClassA();
-			URI pkA = URI.create("http://classA" + Integer.toString(i));
-			a.setUri(pkA);
-			a.setStringAttribute("StringAttribute" + Integer.toString(i + 1));
-			this.classes.add(a);
-		}
-		testC.setSimpleList(classes);
-		this.simples = new ArrayList<OWLClassA>();
-		for (int i = 0; i < 10; i++) {
-			OWLClassA a = new OWLClassA();
-			URI pkA = URI.create("http://simpleA" + Integer.toString(i));
-			a.setUri(pkA);
-			a.setStringAttribute("StringAttributeSimple" + Integer.toString(i + 1));
-			this.simples.add(a);
-		}
-		this.refList = new ArrayList<OWLClassA>();
-		for (int i = 0; i < 10; i++) {
-			OWLClassA a = new OWLClassA();
-			final URI pkRA = URI.create("http://refA" + Integer.toString(i + 1));
-			a.setUri(pkRA);
-			a.setStringAttribute("strAttForRefA_" + Integer.toString(i + 1));
-			this.refList.add(a);
-		}
-		testCWithRefs.setSimpleList(simples);
-		testCWithRefs.setReferencedList(refList);
-	}
+	private CreateOperationsRunner runner;
 
 	@BeforeClass
 	public static void setupBeforeClass() throws Exception {
-		index = 100;
 		TestEnvironment.clearDatabase();
 		TestEnvironment.resetOwldbHibernateProvider();
-		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-create",
-				Collections.<StorageConfig> singletonList(new OwldbStorageConfig()), true);
+		em = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-create", storage, true,
+				properties);
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		TestEnvironment.clearDatabase();
+		this.runner = new CreateOperationsRunner(LOG);
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		if (pc.getTransaction().isActive()) {
-			pc.getTransaction().rollback();
+		if (em.getTransaction().isActive()) {
+			em.getTransaction().rollback();
 		}
 	}
 
 	@AfterClass
 	public static void teardownAfterClass() {
-		pc.getEntityManagerFactory().close();
+		em.getEntityManagerFactory().close();
 	}
 
 	@Test
-	public void testPersistEntity() {
-		log.info("Test: Persist entity");
-		pc.clear();
-		final OWLClassA entity = new OWLClassA();
-		final URI pk = URI.create("http://testA" + (index++));
-		entity.setUri(pk);
-		entity.setStringAttribute("TEST");
-		try {
-			pc.getTransaction().begin();
-			pc.persist(entity);
-			pc.getTransaction().commit();
-			OWLClassA ent = pc.find(OWLClassA.class, pk);
-			assertTrue(entity.getUri().equals(ent.getUri()));
-		} catch (OWLPersistenceException e) {
-			log.info("Persisting failed.");
-			fail();
-		}
+	public void testPersistWithGenerated() {
+		runner.persistWithGenerated(em, context());
+	}
+
+	@Test(expected = PrimaryKeyNotSetException.class)
+	public void testPersistWithoutId() {
+		runner.persistWithoutId(em, context());
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testPersistNull() {
+		runner.persistNull(em, context());
+	}
+
+	@Test
+	public void testPersistRollback() {
+		runner.persistRollback(em, context());
+	}
+
+	@Test(expected = RollbackException.class)
+	public void testPersistRollbackOnly() {
+		runner.persistRollbackOnly(em, context());
+	}
+
+	@Test
+	public void testPersistCascade() {
+		runner.persistCascade(em, context());
 	}
 
 	@Test(expected = OWLEntityExistsException.class)
-	public void testPersistViolatingIC() {
-		log.info("Test: persist Entity with IC violation");
-		pc.clear();
-		final OWLClassB entityOne = new OWLClassB();
-		final URI pkOne = URI.create("http://testOne");
-		entityOne.setUri(pkOne);
-		final OWLClassB entityTwo = new OWLClassB();
-		entityTwo.setUri(pkOne);
-		entityTwo.setStringAttribute("testAttribute");
-		pc.getTransaction().begin();
-		pc.persist(entityTwo);
-		pc.persist(entityOne);
-		pc.getTransaction().commit();
-		fail("This line should not have been reached.");
+	public void testPersistTwiceInOne() {
+		runner.persistTwice(em, context());
 	}
 
-	@Test(expected = OWLPersistenceException.class)
-	public void testPersistNull() {
-		log.info("Test: persist a null object");
-		pc.clear();
-		final OWLClassA testEntity = new OWLClassA();
-		try {
-			pc.getTransaction().begin();
-			pc.persist(testEntity);
-			pc.getTransaction().commit();
-			fail();
-		} catch (OWLPersistenceException e) {
-			log.severe("Exception caught. Correct.");
-			pc.getTransaction().rollback();
-			throw e;
-		}
+	@Test(expected = RollbackException.class)
+	public void testPersistWithoutCascade() {
+		runner.persistWithoutCascade(em, context());
 	}
 
-	@Test
-	public void testPersistEntityWithCascade() {
-		log.info("Test: persistEntityWithCascade");
-		pc.clear();
-		final OWLClassD testEntity = new OWLClassD();
-		final URI pk = URI.create("http://testEntityURI");
-		final OWLClassA referencedEntity = new OWLClassA();
-		final URI refPK = URI.create("http://referencedEntityURI");
-		testEntity.setUri(pk);
-		referencedEntity.setUri(refPK);
-		referencedEntity.setStringAttribute("testStringAttribute");
-		testEntity.setOwlClassA(referencedEntity);
-		try {
-			pc.getTransaction().begin();
-			// Since OWLClassD has not CASCADE set, we need to persist the
-			// referenced
-			// entity as well
-			pc.persist(referencedEntity);
-			pc.persist(testEntity);
-			pc.getTransaction().commit();
-			assertNotNull(pc.find(OWLClassD.class, pk));
-		} catch (OWLPersistenceException e) {
-			log.info("Persist failed");
-			e.printStackTrace();
-			fail();
-		}
+	@Test(expected = OWLEntityExistsException.class)
+	public void testPersistDetached() {
+		runner.persistDetachedEntity(em, context());
 	}
 
 	@Test
 	public void testPersistSimpleList() {
-		log.info("Test: persist an entity containing simple list of referenced entites");
-		pc.clear();
-		pc.getTransaction().begin();
-		for (OWLClassA ent : classes) {
-			pc.persist(ent);
-		}
-		pc.persist(testC);
-		pc.getTransaction().commit();
-		final OWLClassC res = pc.find(OWLClassC.class, testC.getUri());
-		assertNotNull(res);
-		assertEquals(testC.getSimpleList().size(), res.getSimpleList().size());
-		assertNull(res.getReferencedList());
+		runner.persistSimpleList(em, context());
+	}
+
+	@Test(expected = RollbackException.class)
+	public void testPersistSimpleListNoCascade() {
+		runner.persistSimpleListNoCascade(em, context());
 	}
 
 	@Test
-	public void testPersistEntityWithLists() {
-		log.info("Test: persist entity with referenced list and simple list");
-		pc.clear();
-		pc.getTransaction().begin();
-		for (OWLClassA ref : testCWithRefs.getReferencedList()) {
-			pc.persist(ref);
-		}
-		for (OWLClassA simple : testCWithRefs.getSimpleList()) {
-			pc.persist(simple);
-		}
-		pc.persist(testCWithRefs);
-		pc.getTransaction().commit();
-		final OWLClassC c = pc.find(OWLClassC.class, testCWithRefs.getUri());
-		assertNotNull(c);
-		assertEquals(refList.get(0).getStringAttribute(), c.getReferencedList().get(0)
-				.getStringAttribute());
-		assertEquals(simples.get(5).getUri(), c.getSimpleList().get(5).getUri());
+	public void testPersistReferencedList() {
+		runner.persistReferencedList(em, context());
 	}
 
-	@Test(expected = OWLEntityExistsException.class)
-	public void testPersistDetachedEntity() {
-		log.info("Test: persist detached entity.");
-		pc.clear();
-		final OWLClassA a = new OWLClassA();
-		final URI pk = URI.create("http://testA" + (index++));
-		a.setUri(pk);
-		a.setStringAttribute("stringAttribute");
-		pc.getTransaction().begin();
-		pc.persist(a);
-		pc.getTransaction().commit();
-		final OWLClassA det = pc.find(OWLClassA.class, pk);
-		assertNotNull(det);
-		pc.detach(det);
-		pc.persist(det);
-		fail("This line should not have been reached.");
+	@Test(expected = RollbackException.class)
+	public void testPersistReferencedListNoCascade() {
+		runner.persistReferencedListNoCascade(em, context());
 	}
 
+	@Test
+	public void testPersistSimpleAndReferencedList() {
+		runner.persistSimpleAndReferencedList(em, context());
+	}
+
+	@Test
+	public void testPersistProperties() {
+		runner.persistProperties(em, context());
+	}
+
+	@Test
+	public void testPersistPropertiesEmpty() {
+		runner.persistPropertiesEmpty(em, context());
+	}
+
+	private URI context() {
+		// OWLAPI doesn't use contexts
+		return null;
+	}
+
+	private static StorageConfig initStorage() {
+		return new OwldbStorageConfig();
+	}
+
+	private static Map<String, String> initProperties() {
+		final Map<String, String> map = new HashMap<>();
+		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
+		map.put(OWLAPIPersistenceProperties.LANG, "en");
+		return map;
+	}
 }

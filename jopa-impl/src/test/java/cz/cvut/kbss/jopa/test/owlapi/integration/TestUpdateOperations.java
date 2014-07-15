@@ -179,5 +179,4 @@ public class TestUpdateOperations {
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
 		return map;
 	}
-
 }

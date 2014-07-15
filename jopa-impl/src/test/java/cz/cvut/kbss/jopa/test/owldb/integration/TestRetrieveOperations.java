@@ -1,109 +1,121 @@
 package cz.cvut.kbss.jopa.test.owldb.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.net.URI;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
+import cz.cvut.kbss.jopa.test.integration.runners.RetrieveOperationsRunner;
 import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
+import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
 public class TestRetrieveOperations {
 
-	private static int index;
-	private static EntityManager pc;
+	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());
 
-	private Logger log = TestEnvironment.getLogger();
+	private static EntityManager em;
 
-	public TestRetrieveOperations() {
+	private static final StorageConfig storage = initStorage();
+	private static final Map<String, String> properties = initProperties();
 
-	}
+	private RetrieveOperationsRunner runner;
 
 	@BeforeClass
 	public static void setupBeforeClass() throws Exception {
-		index = 1;
 		TestEnvironment.clearDatabase();
 		TestEnvironment.resetOwldbHibernateProvider();
-		pc = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-retrieve",
-				Collections.<StorageConfig> singletonList(new OwldbStorageConfig()), true);
+		em = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-retrieve", storage,
+				true, properties);
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		TestEnvironment.clearDatabase();
+		this.runner = new RetrieveOperationsRunner(LOG);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		if (em.getTransaction().isActive()) {
+			em.getTransaction().rollback();
+		}
 	}
 
 	@AfterClass
 	public static void teardownAfterClass() {
-		pc.getEntityManagerFactory().close();
+		em.getEntityManagerFactory().close();
 	}
 
 	@Test
-	public void testFindEntity() {
-		log.info("Test: Find entity");
-		pc.clear();
-		final OWLClassA entity = new OWLClassA();
-		final URI pk = URI.create("http://testA" + (index++));
-		entity.setUri(pk);
-		try {
-			pc.getTransaction().begin();
-			pc.persist(entity);
-			pc.getTransaction().commit();
-			pc.clear();
-			OWLClassA result = pc.find(OWLClassA.class, pk);
-			assertNotNull(result);
-			assertEquals(pk, result.getUri());
-		} catch (OWLPersistenceException e) {
-			log.info("Loading entity failed.");
-			fail();
-		}
+	public void testRetrieveSimple() {
+		em = TestEnvironment.getPersistenceConnector("OwldbRetrieveSimple", storage, false,
+				properties);
+		runner.retrieveSimple(em, context());
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void testRetrieveNull() {
+		em = TestEnvironment.getPersistenceConnector("OwldbRetrieveNull", storage, false,
+				properties);
+		runner.retrieveNull(em, context());
 	}
 
 	@Test
-	public void testContainsMember() {
-		log.info("Test: does the EntityManager contain object which is a member of another object");
-		pc.clear();
-		final OWLClassA a = new OWLClassA();
-		final URI pkOne = URI.create("http://testA" + (index++));
-		a.setUri(pkOne);
-		a.setStringAttribute("someStringAttribute");
-		final OWLClassD d = new OWLClassD();
-		final URI pkTwo = URI.create("http://testD");
-		d.setUri(pkTwo);
-		d.setOwlClassA(a);
-		pc.getTransaction().begin();
-		pc.persist(a);
-		pc.persist(d);
-		pc.getTransaction().commit();
-		OWLClassD resD = pc.find(OWLClassD.class, pkTwo);
-		assertNotNull(resD);
-		assertTrue(pc.contains(resD.getOwlClassA()));
+	public void testRetrieveLazy() throws Exception {
+		em = TestEnvironment.getPersistenceConnector("OwldbRetrieveLazy", storage, false,
+				properties);
+		runner.retrieveLazily(em, context());
 	}
 
 	@Test
-	public void testRefreshEntity() {
-		log.info("Test: refresh the entity state.");
-		pc.clear();
-		final OWLClassA a = new OWLClassA();
-		final URI pk = URI.create("http://testA" + (index++));
-		a.setUri(pk);
-		a.setStringAttribute("stringAttribute");
-		pc.getTransaction().begin();
-		pc.persist(a);
-		pc.getTransaction().commit();
-		OWLClassA toChange = pc.find(OWLClassA.class, pk);
-		assertNotNull(toChange);
-		toChange.setStringAttribute("newString");
-		pc.refresh(toChange);
-		assertEquals(a.getStringAttribute(), toChange.getStringAttribute());
+	public void testRetrieveGenerated() throws Exception {
+		em = TestEnvironment.getPersistenceConnector("OwldbRetrieveGenerated", storage, false,
+				properties);
+		runner.retrieveGenerated(em, context());
 	}
 
+	@Test
+	public void testRetrieveNotExisting() {
+		em = TestEnvironment.getPersistenceConnector("OwldbRetrieveNotExisting", storage, false,
+				properties);
+		runner.retrieveNotExisting(em, context());
+	}
+
+	@Test
+	public void testRefresh() {
+		em = TestEnvironment.getPersistenceConnector("OwldbRefresh", storage, false, properties);
+		runner.refresh(em, context());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testRefreshNotManaged() {
+		em = TestEnvironment.getPersistenceConnector("OwldbRefreshNotManaged", storage, false,
+				properties);
+		runner.refreshNotManaged(em, context());
+	}
+
+	private URI context() {
+		return null;
+	}
+
+	private static StorageConfig initStorage() {
+		return new OwldbStorageConfig();
+	}
+
+	private static Map<String, String> initProperties() {
+		final Map<String, String> map = new HashMap<>();
+		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
+		map.put(OWLAPIPersistenceProperties.LANG, "en");
+		return map;
+	}
 }
