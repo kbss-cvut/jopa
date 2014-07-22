@@ -22,43 +22,44 @@ import java.util.HashSet;
 
 public abstract class SimpleOneLevelCascadeExplorer extends OneLevelCascadeExplorer {
 
-    protected void runForEach(final Attribute<?, ?> at,
-                              final Object o, boolean cascaded) throws IllegalAccessException {
-        Object attVal = at.getJavaField().get(o);
-        if (at.isCollection()) {
-            for (final Object ox2 : new HashSet((Collection) attVal)) {
-                if (cascaded) {
-                    runCascadedForEach(ox2);
-                } else {
-                    runNonCascadedForEach(ox2);
-                }
-            }
-        } else {
-            if (attVal != null) {
-                if (cascaded) {
-                    runCascadedForEach(attVal);
-                } else {
-                    runNonCascadedForEach(attVal);
-                }
-            }
-        }   // nothing
-    }
+	protected void runForEach(final Attribute<?, ?> at, final Object o, boolean cascaded)
+			throws IllegalAccessException {
+		Object attVal = at.getJavaField().get(o);
+		if (attVal == null) {
+			return;
+		}
+		if (at.isCollection()) {
+			for (final Object ox2 : new HashSet((Collection) attVal)) {
+				if (cascaded) {
+					runCascadedForEach(ox2);
+				} else {
+					runNonCascadedForEach(ox2);
+				}
+			}
+		} else {
+			if (cascaded) {
+				runCascadedForEach(attVal);
+			} else {
+				runNonCascadedForEach(attVal);
+			}
+		}
+	}
 
-    protected void exploreCascaded(final Attribute<?, ?> at,
-                                   final Object o) throws IllegalAccessException {
-        runForEach(at, o, true);
-    }
+	protected void exploreCascaded(final Attribute<?, ?> at, final Object o)
+			throws IllegalAccessException {
+		runForEach(at, o, true);
+	}
 
-    protected void runCascadedForEach(Object ox2) {
-        // nothing
-    }
+	protected void runCascadedForEach(Object ox2) {
+		// nothing
+	}
 
-    protected void exploreNonCascaded(final Attribute<?, ?> at,
-                                      final Object o) throws IllegalAccessException {
-        runForEach(at, o, false);
-    }
+	protected void exploreNonCascaded(final Attribute<?, ?> at, final Object o)
+			throws IllegalAccessException {
+		runForEach(at, o, false);
+	}
 
-    protected void runNonCascadedForEach(Object ox2) {
-        // nothing
-    }
+	protected void runNonCascadedForEach(Object ox2) {
+		// nothing
+	}
 }

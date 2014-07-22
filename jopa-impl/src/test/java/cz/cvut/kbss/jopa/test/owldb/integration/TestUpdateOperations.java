@@ -31,7 +31,7 @@ public class TestUpdateOperations {
 
 	@Before
 	public void setUp() throws Exception {
-//		TestEnvironment.clearDatabase();
+		TestEnvironment.clearDatabase();
 		TestEnvironment.resetOwldbHibernateProvider();
 		this.runner = new UpdateOperationsRunner(LOG);
 	}
