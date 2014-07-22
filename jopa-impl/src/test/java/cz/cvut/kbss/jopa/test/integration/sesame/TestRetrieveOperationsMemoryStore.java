@@ -1,14 +1,12 @@
 package cz.cvut.kbss.jopa.test.integration.sesame;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -16,24 +14,24 @@ import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.integration.runners.RetrieveOperationsRunner;
 import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.SesameNativeStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
-public class TestRetrieveOperations {
+public class TestRetrieveOperationsMemoryStore {
 
-	private static final Logger LOG = Logger.getLogger(TestRetrieveOperations.class.getName());
+	private static final Logger LOG = Logger.getLogger(TestRetrieveOperationsMemoryStore.class
+			.getName());
 
-	private static final List<StorageConfig> storages = initStorages();
+	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
-	private static RetrieveOperationsRunner runner;
+	private RetrieveOperationsRunner runner;
 
 	private EntityManager em;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		runner = new RetrieveOperationsRunner(LOG);
+	@Before
+	public void setUp() {
+		this.runner = new RetrieveOperationsRunner(LOG);
 	}
 
 	@After
@@ -50,54 +48,52 @@ public class TestRetrieveOperations {
 
 	@Test
 	public void testRetrieveSimple() {
-		em = TestEnvironment.getPersistenceConnector("SesameRetrieveSimple", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesameRetrieveSimple", storage, false,
 				properties);
-		runner.retrieveSimple(em, context(1));
+		runner.retrieveSimple(em, context());
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testRetrieveNull() {
-		em = TestEnvironment.getPersistenceConnector("SesameRetrieveNull", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesameRetrieveNull", storage, false,
 				properties);
-		runner.retrieveNull(em, context(0));
+		runner.retrieveNull(em, context());
 	}
 
 	@Test
 	public void testRetrieveLazy() throws Exception {
-		em = TestEnvironment.getPersistenceConnector("SesameRetrieveLazy", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesameRetrieveLazy", storage, false,
 				properties);
-		runner.retrieveLazily(em, context(1));
+		runner.retrieveLazily(em, context());
 	}
 
 	@Test
 	public void testRetrieveGenerated() throws Exception {
-		em = TestEnvironment.getPersistenceConnector("SesameRetrieveGenerated", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesameRetrieveGenerated", storage, false,
 				properties);
-		runner.retrieveGenerated(em, context(0));
+		runner.retrieveGenerated(em, context());
 	}
 
 	@Test
 	public void testRetrieveNotExisting() {
-		em = TestEnvironment.getPersistenceConnector("SesameRetrieveNotExisting", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesameRetrieveNotExisting", storage, false,
 				properties);
-		runner.retrieveNotExisting(em, context(1));
+		runner.retrieveNotExisting(em, context());
 	}
 
 	@Test
 	public void testRefresh() {
-		em = TestEnvironment.getPersistenceConnector("SesameRefresh", storages, false, properties);
-		runner.refresh(em, context(0));
+		em = TestEnvironment.getPersistenceConnector("SesameRefresh", storage, false, properties);
+		runner.refresh(em, context());
 	}
 
-	private URI context(int index) {
-		return em.getAvailableContexts().get(index).getUri();
+	private URI context() {
+		// Don't use contexts for now
+		return null;
 	}
 
-	private static List<StorageConfig> initStorages() {
-		final List<StorageConfig> lst = new ArrayList<>(2);
-		lst.add(new SesameNativeStorageConfig());
-		lst.add(new SesameMemoryStorageConfig());
-		return lst;
+	private static StorageConfig initStorage() {
+		return new SesameMemoryStorageConfig();
 	}
 
 	private static Map<String, String> initProperties() {

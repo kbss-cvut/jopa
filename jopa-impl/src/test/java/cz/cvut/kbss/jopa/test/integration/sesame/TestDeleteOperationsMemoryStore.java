@@ -1,14 +1,12 @@
 package cz.cvut.kbss.jopa.test.integration.sesame;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -16,24 +14,23 @@ import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.integration.runners.DeleteOperationsRunner;
 import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.SesameNativeStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
-public class TestDeleteOperations {
+public class TestDeleteOperationsMemoryStore {
 
-	private static final Logger LOG = Logger.getLogger(TestDeleteOperations.class.getName());
+	private static final Logger LOG = Logger.getLogger(TestDeleteOperationsMemoryStore.class.getName());
 
-	private static final List<StorageConfig> storages = initStorages();
+	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
-	private static DeleteOperationsRunner runner;
+	private DeleteOperationsRunner runner;
 
 	private EntityManager em;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		runner = new DeleteOperationsRunner(LOG);
+	@Before
+	public void setUp() {
+		this.runner = new DeleteOperationsRunner(LOG);
 	}
 
 	@After
@@ -50,69 +47,67 @@ public class TestDeleteOperations {
 
 	@Test
 	public void testRemoveSimple() {
-		em = TestEnvironment.getPersistenceConnector("SesameSimpleRemove", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesameSimpleRemove", storage, false,
 				properties);
-		runner.removeSimple(em, context(1));
+		runner.removeSimple(em, context());
 	}
 
 	@Test
 	public void testRemoveReference() {
-		em = TestEnvironment.getPersistenceConnector("SesameRemoveReference", storages, true,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveReference", storage, true,
 				properties);
-		runner.removeReference(em, context(0));
+		runner.removeReference(em, context());
 	}
 
 	@Test
 	public void testRemoveCascade() {
-		em = TestEnvironment.getPersistenceConnector("SesameRemoveCascade", storages, true,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveCascade", storage, true,
 				properties);
-		runner.removeCascade(em, context(1));
+		runner.removeCascade(em, context());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testRemoveDetached() {
-		em = TestEnvironment.getPersistenceConnector("SesameRemoveDetached", storages, true,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveDetached", storage, true,
 				properties);
-		runner.removeDetached(em, context(1));
+		runner.removeDetached(em, context());
 	}
 
 	@Test
 	public void testRemoveFromSimpleList() {
-		em = TestEnvironment.getPersistenceConnector("SesameRemoveFromSimpleList", storages, true,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveFromSimpleList", storage, true,
 				properties);
-		runner.removeFromSimpleList(em, context(0));
+		runner.removeFromSimpleList(em, context());
 	}
 
 	@Test
 	public void testRemoveFromReferencedList() {
-		em = TestEnvironment.getPersistenceConnector("SesameRemoveFromReferencedList", storages,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveFromReferencedList", storage,
 				true, properties);
-		runner.removeFromReferencedList(em, context(1));
+		runner.removeFromReferencedList(em, context());
 	}
 
 	@Test
 	public void testRemoveListOwner() {
-		em = TestEnvironment.getPersistenceConnector("SesameRemoveListOwner", storages, true,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveListOwner", storage, true,
 				properties);
-		runner.removeListOwner(em, context(0));
+		runner.removeListOwner(em, context());
 	}
-	
+
 	@Test
 	public void testRemoveNotYetCommitted() {
-		em = TestEnvironment.getPersistenceConnector("SesameRemoveNotYetCommitted", storages, true,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveNotYetCommitted", storage, true,
 				properties);
-		runner.removeNotYetCommitted(em, context(1));
+		runner.removeNotYetCommitted(em, context());
 	}
 
-	private URI context(int index) {
-		return em.getAvailableContexts().get(index).getUri();
+	private URI context() {
+		// Don't use contexts for now
+		return null;
 	}
 
-	private static List<StorageConfig> initStorages() {
-		final List<StorageConfig> lst = new ArrayList<>(2);
-		lst.add(new SesameNativeStorageConfig());
-		lst.add(new SesameMemoryStorageConfig());
-		return lst;
+	private static StorageConfig initStorage() {
+		return new SesameMemoryStorageConfig();
 	}
 
 	private static Map<String, String> initProperties() {

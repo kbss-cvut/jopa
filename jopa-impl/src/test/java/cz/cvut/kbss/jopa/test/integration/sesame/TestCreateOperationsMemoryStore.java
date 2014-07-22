@@ -1,14 +1,12 @@
 package cz.cvut.kbss.jopa.test.integration.sesame;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
@@ -18,25 +16,25 @@ import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.integration.runners.CreateOperationsRunner;
 import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.SesameNativeStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 
-public class TestCreateOperations {
+public class TestCreateOperationsMemoryStore {
 
-	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());
+	private static final Logger LOG = Logger.getLogger(TestCreateOperationsMemoryStore.class
+			.getName());
 
-	private static final List<StorageConfig> storages = initStorages();
+	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
-	private static CreateOperationsRunner runner;
+	private CreateOperationsRunner runner;
 
 	private EntityManager em;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		runner = new CreateOperationsRunner(LOG);
+	@Before
+	public void setUp() {
+		this.runner = new CreateOperationsRunner(LOG);
 	}
 
 	@After
@@ -53,125 +51,123 @@ public class TestCreateOperations {
 
 	@Test
 	public void testPersistWithGenerated() {
-		em = TestEnvironment.getPersistenceConnector("SesamePersistWithGenerated", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesamePersistWithGenerated", storage, false,
 				properties);
-		runner.persistWithGenerated(em, context(1));
+		runner.persistWithGenerated(em, context());
 	}
 
 	@Test(expected = PrimaryKeyNotSetException.class)
 	public void testPersistWithoutId() {
-		em = TestEnvironment.getPersistenceConnector("SesamePersistWithoutId", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesamePersistWithoutId", storage, false,
 				properties);
-		runner.persistWithoutId(em, context(0));
+		runner.persistWithoutId(em, context());
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testPersistNull() {
-		em = TestEnvironment.getPersistenceConnector("SesamePersistNull", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesamePersistNull", storage, false,
 				properties);
-		runner.persistNull(em, context(1));
+		runner.persistNull(em, context());
 	}
 
 	@Test
 	public void testPersistRollback() {
-		em = TestEnvironment.getPersistenceConnector("SesamePersistRollback", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesamePersistRollback", storage, false,
 				properties);
-		runner.persistRollback(em, context(0));
+		runner.persistRollback(em, context());
 	}
 
 	@Test(expected = RollbackException.class)
 	public void testPersistRollbackOnly() {
-		em = TestEnvironment.getPersistenceConnector("SesamePersistRollbackOnly", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesamePersistRollbackOnly", storage, false,
 				properties);
-		runner.persistRollbackOnly(em, context(1));
+		runner.persistRollbackOnly(em, context());
 	}
 
 	@Test
 	public void testPersistCascade() {
-		em = TestEnvironment.getPersistenceConnector("SesamePersistWithCascade", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesamePersistWithCascade", storage, false,
 				properties);
-		runner.persistCascade(em, context(0));
+		runner.persistCascade(em, context());
 	}
 
 	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistTwiceInOne() {
-		em = TestEnvironment.getPersistenceConnector("SesamePersistTwice", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesamePersistTwice", storage, false,
 				properties);
-		runner.persistTwice(em, context(0));
+		runner.persistTwice(em, context());
 	}
 
 	@Test(expected = RollbackException.class)
 	public void testPersistWithoutCascade() {
-		em = TestEnvironment.getPersistenceConnector("SesamePersistWithoutCascade", storages,
-				false, properties);
-		runner.persistWithoutCascade(em, context(0));
+		em = TestEnvironment.getPersistenceConnector("SesamePersistWithoutCascade", storage, false,
+				properties);
+		runner.persistWithoutCascade(em, context());
 	}
 
 	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistDetached() {
-		em = TestEnvironment.getPersistenceConnector("SesamePersistDetached", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesamePersistDetached", storage, false,
 				properties);
-		runner.persistDetachedEntity(em, context(1));
+		runner.persistDetachedEntity(em, context());
 	}
 
 	@Test
 	public void testPersistSimpleList() {
-		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleList", storages, false,
+		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleList", storage, false,
 				properties);
-		runner.persistSimpleList(em, context(1));
+		runner.persistSimpleList(em, context());
 	}
 
 	@Test(expected = RollbackException.class)
 	public void testPersistSimpleListNoCascade() {
-		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleListNoCascade", storages,
+		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleListNoCascade", storage,
 				false, properties);
-		runner.persistSimpleListNoCascade(em, context(1));
+		runner.persistSimpleListNoCascade(em, context());
 	}
 
 	@Test
 	public void testPersistReferencedList() {
-		em = TestEnvironment.getPersistenceConnector("SesamePersistReferencedList", storages,
-				false, properties);
-		runner.persistReferencedList(em, context(0));
+		em = TestEnvironment.getPersistenceConnector("SesamePersistReferencedList", storage, false,
+				properties);
+		runner.persistReferencedList(em, context());
 	}
 
 	@Test(expected = RollbackException.class)
 	public void testPersistReferencedListNoCascade() {
 		em = TestEnvironment.getPersistenceConnector("SesamePersistReferencedListNoCascade",
-				storages, false, properties);
-		runner.persistReferencedListNoCascade(em, context(0));
+				storage, false, properties);
+		runner.persistReferencedListNoCascade(em, context());
 	}
 
 	@Test
 	public void testPersistSimpleAndReferencedList() {
 		em = TestEnvironment.getPersistenceConnector("SesamePersistSimpleAndReferencedList",
-				storages, false, properties);
-		runner.persistSimpleAndReferencedList(em, context(0));
+				storage, false, properties);
+		runner.persistSimpleAndReferencedList(em, context());
 	}
 
 	@Test
 	public void testPersistProperties() {
-		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistWithProperties",
-				storages, false, properties);
-		runner.persistProperties(em, context(1));
+		em = TestEnvironment.getPersistenceConnector("SesameNativePersistWithProperties", storage,
+				false, properties);
+		runner.persistProperties(em, context());
 	}
 
 	@Test
 	public void testPersistPropertiesEmpty() {
-		em = TestEnvironment.getPersistenceConnector("JpaIntegration-PersistWithPropertiesEmpty",
-				storages, false, properties);
-		runner.persistPropertiesEmpty(em, context(0));
+		em = TestEnvironment.getPersistenceConnector("SesameNativePersistWithPropertiesEmpty",
+				storage, false, properties);
+		runner.persistPropertiesEmpty(em, context());
 	}
 
-	private URI context(int index) {
-		return em.getAvailableContexts().get(index).getUri();
+	private URI context() {
+		// Don't use contexts for now
+		return null;
 	}
 
-	private static List<StorageConfig> initStorages() {
-		final List<StorageConfig> lst = new ArrayList<>(2);
-		lst.add(new SesameNativeStorageConfig());
-		lst.add(new SesameMemoryStorageConfig());
-		return lst;
+	private static StorageConfig initStorage() {
+		return new SesameMemoryStorageConfig();
 	}
 
 	private static Map<String, String> initProperties() {
