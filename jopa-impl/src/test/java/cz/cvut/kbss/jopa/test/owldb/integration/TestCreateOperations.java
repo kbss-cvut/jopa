@@ -6,9 +6,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
@@ -26,24 +24,17 @@ public class TestCreateOperations {
 
 	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());
 
-	private static EntityManager em;
+	private EntityManager em;
 
 	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
 	private CreateOperationsRunner runner;
 
-	@BeforeClass
-	public static void setupBeforeClass() throws Exception {
-		TestEnvironment.clearDatabase();
-		TestEnvironment.resetOwldbHibernateProvider();
-		em = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-create", storage, true,
-				properties);
-	}
-
 	@Before
 	public void setUp() throws Exception {
 		TestEnvironment.clearDatabase();
+		TestEnvironment.resetOwldbHibernateProvider();
 		this.runner = new CreateOperationsRunner(LOG);
 	}
 
@@ -52,90 +43,118 @@ public class TestCreateOperations {
 		if (em.getTransaction().isActive()) {
 			em.getTransaction().rollback();
 		}
-	}
-
-	@AfterClass
-	public static void teardownAfterClass() {
 		em.getEntityManagerFactory().close();
 	}
 
 	@Test
 	public void testPersistWithGenerated() {
+		em = TestEnvironment.getPersistenceConnector("OwldbPersistWithGenerated", storage, false,
+				properties);
 		runner.persistWithGenerated(em, context());
 	}
 
 	@Test(expected = PrimaryKeyNotSetException.class)
 	public void testPersistWithoutId() {
+		em = TestEnvironment.getPersistenceConnector("OwldbPersistWithoutId", storage, false,
+				properties);
 		runner.persistWithoutId(em, context());
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testPersistNull() {
+		em = TestEnvironment
+				.getPersistenceConnector("OwldbPersistNull", storage, false, properties);
 		runner.persistNull(em, context());
 	}
 
 	@Test
 	public void testPersistRollback() {
+		em = TestEnvironment.getPersistenceConnector("OwldbPersistRollback", storage, false,
+				properties);
 		runner.persistRollback(em, context());
 	}
 
 	@Test(expected = RollbackException.class)
 	public void testPersistRollbackOnly() {
+		em = TestEnvironment.getPersistenceConnector("OwldbPersistRollbackOnly", storage, false,
+				properties);
 		runner.persistRollbackOnly(em, context());
 	}
 
 	@Test
 	public void testPersistCascade() {
+		em = TestEnvironment.getPersistenceConnector("OwldbPersistWithCascade", storage, false,
+				properties);
 		runner.persistCascade(em, context());
 	}
 
 	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistTwiceInOne() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistTwice", storage, true,
+				properties);
 		runner.persistTwice(em, context());
 	}
 
 	@Test(expected = RollbackException.class)
 	public void testPersistWithoutCascade() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithoutCascade", storage, false,
+				properties);
 		runner.persistWithoutCascade(em, context());
 	}
 
 	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistDetached() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistDetached", storage, false,
+				properties);
 		runner.persistDetachedEntity(em, context());
 	}
 
 	@Test
 	public void testPersistSimpleList() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleList", storage, false,
+				properties);
 		runner.persistSimpleList(em, context());
 	}
 
 	@Test(expected = RollbackException.class)
 	public void testPersistSimpleListNoCascade() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleListNoCascade", storage,
+				false, properties);
 		runner.persistSimpleListNoCascade(em, context());
 	}
 
 	@Test
 	public void testPersistReferencedList() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistReferencedList", storage, false,
+				properties);
 		runner.persistReferencedList(em, context());
 	}
 
 	@Test(expected = RollbackException.class)
 	public void testPersistReferencedListNoCascade() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistReferencedListNoCascade",
+				storage, false, properties);
 		runner.persistReferencedListNoCascade(em, context());
 	}
 
 	@Test
 	public void testPersistSimpleAndReferencedList() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistSimpleAndReferencedList",
+				storage, false, properties);
 		runner.persistSimpleAndReferencedList(em, context());
 	}
 
 	@Test
 	public void testPersistProperties() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithProperties", storage, false,
+				properties);
 		runner.persistProperties(em, context());
 	}
 
 	@Test
 	public void testPersistPropertiesEmpty() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithPropertiesEmpty", storage,
+				false, properties);
 		runner.persistPropertiesEmpty(em, context());
 	}
 

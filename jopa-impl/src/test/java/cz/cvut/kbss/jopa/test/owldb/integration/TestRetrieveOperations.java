@@ -6,9 +6,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -23,24 +21,17 @@ public class TestRetrieveOperations {
 
 	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());
 
-	private static EntityManager em;
+	private EntityManager em;
 
 	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
 	private RetrieveOperationsRunner runner;
 
-	@BeforeClass
-	public static void setupBeforeClass() throws Exception {
-		TestEnvironment.clearDatabase();
-		TestEnvironment.resetOwldbHibernateProvider();
-		em = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-retrieve", storage,
-				true, properties);
-	}
-
 	@Before
 	public void setUp() throws Exception {
 		TestEnvironment.clearDatabase();
+		TestEnvironment.resetOwldbHibernateProvider();
 		this.runner = new RetrieveOperationsRunner(LOG);
 	}
 
@@ -49,10 +40,6 @@ public class TestRetrieveOperations {
 		if (em.getTransaction().isActive()) {
 			em.getTransaction().rollback();
 		}
-	}
-
-	@AfterClass
-	public static void teardownAfterClass() {
 		em.getEntityManagerFactory().close();
 	}
 

@@ -201,23 +201,23 @@ public class TestEnvironment {
 	 * @throws Exception
 	 */
 	public static void clearDatabase() throws Exception {
-		java.sql.Connection con = null;
+		java.sql.Connection conn = null;
 		Statement st1 = null;
 		Statement st2 = null;
 		ResultSet rs = null;
-		con = DriverManager.getConnection(DB_URI, DB_USERNAME, DB_PASSWORD);
-		st1 = con.createStatement();
+		conn = DriverManager.getConnection(DB_URI, DB_USERNAME, DB_PASSWORD);
+		st1 = conn.createStatement();
 		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
 		final String deleteStmt = "TRUNCATE ";
 		while (rs.next()) {
 			final String table = rs.getString(1);
-			st2 = con.createStatement();
+			st2 = conn.createStatement();
 			st2.executeUpdate(deleteStmt + table + " CASCADE");
 			st2.close();
 			st2 = null;
 		}
 		st1.close();
-		con.close();
+		conn.close();
 	}
 
 	/**

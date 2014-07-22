@@ -6,9 +6,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -23,24 +21,17 @@ public class TestDeleteOperations {
 
 	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());
 
-	private static EntityManager em;
+	private EntityManager em;
 
 	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
 	private DeleteOperationsRunner runner;
 
-	@BeforeClass
-	public static void setupBeforeClass() throws Exception {
-		TestEnvironment.clearDatabase();
-		TestEnvironment.resetOwldbHibernateProvider();
-		em = TestEnvironment.getPersistenceConnector("OWLDBPersistenceTest-delete", storage, true,
-				properties);
-	}
-
 	@Before
 	public void setUp() throws Exception {
 		TestEnvironment.clearDatabase();
+		TestEnvironment.resetOwldbHibernateProvider();
 		this.runner = new DeleteOperationsRunner(LOG);
 	}
 
@@ -49,10 +40,6 @@ public class TestDeleteOperations {
 		if (em.getTransaction().isActive()) {
 			em.getTransaction().rollback();
 		}
-	}
-
-	@AfterClass
-	public static void teardownAfterClass() {
 		em.getEntityManagerFactory().close();
 	}
 
@@ -65,28 +52,28 @@ public class TestDeleteOperations {
 
 	@Test
 	public void testRemoveReference() {
-		em = TestEnvironment.getPersistenceConnector("OwldbRemoveReference", storage, true,
+		em = TestEnvironment.getPersistenceConnector("OwldbRemoveReference", storage, false,
 				properties);
 		runner.removeReference(em, context());
 	}
 
 	@Test
 	public void testRemoveCascade() {
-		em = TestEnvironment.getPersistenceConnector("OwldbRemoveCascade", storage, true,
+		em = TestEnvironment.getPersistenceConnector("OwldbRemoveCascade", storage, false,
 				properties);
 		runner.removeCascade(em, context());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testRemoveDetached() {
-		em = TestEnvironment.getPersistenceConnector("OwldbRemoveDetached", storage, true,
+		em = TestEnvironment.getPersistenceConnector("OwldbRemoveDetached", storage, false,
 				properties);
 		runner.removeDetached(em, context());
 	}
 
 	@Test
 	public void testRemoveFromSimpleList() {
-		em = TestEnvironment.getPersistenceConnector("OwldbRemoveFromSimpleList", storage, true,
+		em = TestEnvironment.getPersistenceConnector("OwldbRemoveFromSimpleList", storage, false,
 				properties);
 		runner.removeFromSimpleList(em, context());
 	}
@@ -94,13 +81,13 @@ public class TestDeleteOperations {
 	@Test
 	public void testRemoveFromReferencedList() {
 		em = TestEnvironment.getPersistenceConnector("OwldbRemoveFromReferencedList", storage,
-				true, properties);
+				false, properties);
 		runner.removeFromReferencedList(em, context());
 	}
 
 	@Test
 	public void testRemoveListOwner() {
-		em = TestEnvironment.getPersistenceConnector("OwldbRemoveListOwner", storage, true,
+		em = TestEnvironment.getPersistenceConnector("OwldbRemoveListOwner", storage, false,
 				properties);
 		runner.removeListOwner(em, context());
 	}
