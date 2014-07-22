@@ -146,7 +146,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(id);
 		addIndividualToOntology(entity, type);
 
-		saveEntityAttributes(id, entity, type, individual);
+		saveEntityAttributes(id, entity, type, individual, false);
 		temporaryIndividuals.remove(id);
 	}
 
@@ -171,15 +171,16 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			if (LOG.isLoggable(Level.FINEST)) {
 				LOG.finest("Saving value of field " + mergedField + " for entity with id = " + id);
 			}
+			final boolean checkInferred = true;
 			final TypesSpecification<?, ?> ts = type.getTypes();
 			final PropertiesSpecification<?, ?> ps = type.getProperties();
 			if (ts != null && ts.getJavaField().equals(mergedField)) {
-				_saveTypesReference(entity, type, ts, individual);
+				_saveTypesReference(entity, type, ts, individual, checkInferred);
 			} else if (ps != null && ps.getJavaField().equals(mergedField)) {
 				_savePropertiesReference(entity, type, ps, individual);
 			} else {
 				final Attribute<?, ?> att = type.getAttribute(mergedField.getName());
-				_saveReference(entity, id, att, individual);
+				_saveReference(entity, id, att, individual, checkInferred);
 			}
 		} catch (Exception e) {
 			throw new OntoDriverException("An error occured when" + " persisting entity "
@@ -387,16 +388,16 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	 *            Type of the entity. Used for accessing the attributes.
 	 * @param individual
 	 *            OWLNamedIndividual for this entity.
-	 * @param uow
-	 *            The committing UnitOfWork.
+	 * @param checkInferred
+	 *            Whether to verify that the saved attribute is not inferred
 	 * @throws OntoDriverException
 	 */
 	private void saveEntityAttributes(IRI id, Object entity, EntityType<?> type,
-			OWLNamedIndividual individual) throws OntoDriverException {
+			OWLNamedIndividual individual, boolean checkInferred) throws OntoDriverException {
 		try {
 			final TypesSpecification<?, ?> types = type.getTypes();
 			if (types != null) {
-				_saveTypesReference(entity, type, types, individual);
+				_saveTypesReference(entity, type, types, individual, checkInferred);
 			}
 
 			final PropertiesSpecification<?, ?> properties = type.getProperties();
@@ -405,7 +406,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			}
 
 			for (final Attribute<?, ?> a : type.getAttributes()) {
-				_saveReference(entity, id, a, individual);
+				_saveReference(entity, id, a, individual, checkInferred);
 			}
 		} catch (Exception e) {
 			throw new OntoDriverException("An error occured when" + " persisting entity "
@@ -534,13 +535,15 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	 *            Specification of type
 	 * @param individual
 	 *            OWLNamedIndividual corresponding to the saved entity
+	 * @param checkInferred
+	 *            Whether to check if an inferred attribute is modified
 	 * @throws IllegalAccessException
 	 * @throws OntoDriverException
 	 */
 	private void _saveTypesReference(Object entity, EntityType<?> entityType,
-			TypesSpecification<?, ?> spec, OWLNamedIndividual individual)
+			TypesSpecification<?, ?> spec, OWLNamedIndividual individual, boolean checkInferred)
 			throws IllegalAccessException, OntoDriverException {
-		if (spec.isInferred()) {
+		if (checkInferred && spec.isInferred()) {
 			throw new OntoDriverException("Inferred fields must not be set externally.");
 		}
 		Object value = spec.getJavaField().get(entity);
@@ -710,11 +713,14 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	 * @param attribute
 	 * @param individual
 	 *            OWLNamedIndividual corresponding to the saved entity
+	 * @param checkInferred
+	 *            Whether it should be checked if the saved attribute is
+	 *            inferred
 	 * @throws Exception
 	 */
 	private void _saveReference(Object entity, IRI id, Attribute<?, ?> attribute,
-			OWLNamedIndividual individual) throws Exception {
-		if (attribute.isInferred()) {
+			OWLNamedIndividual individual, boolean checkInferred) throws Exception {
+		if (checkInferred && attribute.isInferred()) {
 			throw new OntoDriverException("Inferred fields must not be set externally.");
 		}
 		ICValidationUtils.validateIntegrityConstraints(entity, id, attribute);

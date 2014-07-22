@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,10 +46,10 @@ public class TestEnvironment {
 	private static final Logger LOG = Logger.getLogger(TestEnvironment.class.getName());
 
 	public static final String dir = "testResults";
-	public static final String DB_URI = "jdbc:postgresql://localhost/owldb";
-	public static final String DB_USERNAME = "owldb";
-	public static final String DB_PASSWORD = "owldb";
-	public static final String DB_DRIVER = "org.postgresql.Driver";
+	public static final String DB_URI = "jdbc:hsqldb:mem:owldb";
+	public static final String DB_USERNAME = "sa";
+	public static final String DB_PASSWORD = "";
+	public static final String DB_DRIVER = "org.hsqldb.jdbc.JDBCDriver";
 
 	public static final String REASONER_FACTORY_CLASS = "com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory";
 	public static final String IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/";
@@ -202,21 +201,14 @@ public class TestEnvironment {
 	 */
 	public static void clearDatabase() throws Exception {
 		java.sql.Connection conn = null;
-		Statement st1 = null;
-		Statement st2 = null;
-		ResultSet rs = null;
 		conn = DriverManager.getConnection(DB_URI, DB_USERNAME, DB_PASSWORD);
-		st1 = conn.createStatement();
-		rs = st1.executeQuery("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
-		final String deleteStmt = "TRUNCATE ";
-		while (rs.next()) {
-			final String table = rs.getString(1);
-			st2 = conn.createStatement();
-			st2.executeUpdate(deleteStmt + table + " CASCADE");
-			st2.close();
-			st2 = null;
+		Statement stmt = conn.createStatement();
+		try {
+			stmt.execute("TRUNCATE SCHEMA PUBLIC RESTART IDENTITY AND COMMIT NO CHECK");
+			conn.commit();
+		} finally {
+			stmt.close();
 		}
-		st1.close();
 		conn.close();
 	}
 

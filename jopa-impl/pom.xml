@@ -114,12 +114,6 @@
 			<optional>false</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>9.3-1100-jdbc41</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.semanticweb</groupId>
 			<artifactId>owlapi</artifactId>
 			<version>${owlapi.version}</version>
@@ -191,7 +185,13 @@
 			<version>1.9.5</version>
 			<scope>test</scope>
 		</dependency>
-    </dependencies>
+        <dependency>
+        	<groupId>org.hsqldb</groupId>
+        	<artifactId>hsqldb</artifactId>
+        	<version>2.3.2</version>
+        	<scope>test</scope>
+        </dependency>
+	</dependencies>
 
 
 	<build>

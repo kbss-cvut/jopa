@@ -54,13 +54,13 @@ public class UpdateOperationsRunner {
 	private OWLClassH entityH;
 	private OWLClassJ entityJ;
 
-	public UpdateOperationsRunner(Logger logger) {
+	public UpdateOperationsRunner(Logger logger) throws Exception {
 		assert logger != null;
 		this.logger = logger;
 		init();
 	}
 
-	private void init() {
+	private void init() throws Exception {
 		this.entityA = new OWLClassA();
 		entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
 		entityA.setStringAttribute("entityAStringAttribute");
@@ -79,6 +79,9 @@ public class UpdateOperationsRunner {
 		entityE.setStringAttribute("entityEStringAttribute");
 		this.entityF = new OWLClassF();
 		entityF.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityF"));
+		final Field f = OWLClassF.getStrAttField();
+		f.setAccessible(true);
+		f.set(entityF, "inferredValue");
 		this.entityI = new OWLClassI();
 		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
 		entityI.setOwlClassA(entityA);
