@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
@@ -20,6 +21,8 @@ import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.ontodriver.Connection;
 
 final class SesameSingleContextTests {
+
+	private static final EntityDescriptor DEFAULT_DESCRIPTOR = new EntityDescriptor();
 
 	static final String A_STRING_ATT = "entityAStringAttribute";
 
@@ -62,17 +65,18 @@ final class SesameSingleContextTests {
 		assertTrue(c.isOpen());
 		// Make the connection initialize the storage module by asking for some
 		// entity
-		OWLClassB res = c.find(OWLClassB.class, URI.create("http://someUnknownB"));
+		OWLClassB res = c.find(OWLClassB.class, URI.create("http://someUnknownB"),
+				DEFAULT_DESCRIPTOR);
 		assertNull(res);
 	}
 
 	public void testPersistSimple() throws Exception {
 		LOG.config("Test: persist a simple entity.");
 		c.setAutoCommit(false);
-		c.persist(entityB.getUri(), entityB);
+		c.persist(entityB.getUri(), entityB, DEFAULT_DESCRIPTOR);
 		c.commit();
-		assertTrue(c.contains(entityB.getUri()));
-		final OWLClassB res = c.find(OWLClassB.class, entityB.getUri());
+		assertTrue(c.contains(entityB.getUri(), null));
+		final OWLClassB res = c.find(OWLClassB.class, entityB.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(res);
 		assertEquals(entityB.getUri(), res.getUri());
 		assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
@@ -80,10 +84,10 @@ final class SesameSingleContextTests {
 
 	public void testPersistWithTypes() throws Exception {
 		LOG.config("Test: persist entity with types.");
-		c.persist(entityA.getUri(), entityA);
+		c.persist(entityA.getUri(), entityA, DEFAULT_DESCRIPTOR);
 		// Let auto commit do its work
-		assertTrue(c.contains(entityA.getUri()));
-		final OWLClassA res = c.find(OWLClassA.class, entityA.getUri());
+		assertTrue(c.contains(entityA.getUri(), null));
+		final OWLClassA res = c.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(res);
 		assertEquals(entityA.getUri(), res.getUri());
 		assertEquals(entityA.getStringAttribute(), res.getStringAttribute());
@@ -96,11 +100,11 @@ final class SesameSingleContextTests {
 		LOG.config("Test: persist with ID generation.");
 		c.setAutoCommit(false);
 		assertNull(entityE.getUri());
-		c.persist(null, entityE);
+		c.persist(null, entityE, DEFAULT_DESCRIPTOR);
 		assertNotNull(entityE.getUri());
 		c.commit();
-		assertTrue(c.contains(entityE.getUri()));
-		final OWLClassE res = c.find(OWLClassE.class, entityE.getUri());
+		assertTrue(c.contains(entityE.getUri(), null));
+		final OWLClassE res = c.find(OWLClassE.class, entityE.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(res);
 		assertEquals(entityE.getUri(), res.getUri());
 		assertEquals(entityE.getStringAttribute(), res.getStringAttribute());
@@ -115,7 +119,7 @@ final class SesameSingleContextTests {
 			final OWLClassE e = new OWLClassE();
 			e.setStringAttribute("stringNo" + i);
 			assertNull(e.getUri());
-			c.persist(null, e);
+			c.persist(null, e, DEFAULT_DESCRIPTOR);
 			assertNotNull(e.getUri());
 			assertFalse(generated.contains(e.getUri()));
 			generated.add(e.getUri());
@@ -129,48 +133,48 @@ final class SesameSingleContextTests {
 	public void testPersistWithObjectProperty() throws Exception {
 		LOG.config("Test: persist with object property, i. e. reference to another entity.");
 		c.setAutoCommit(false);
-		c.persist(entityD.getUri(), entityD);
-		c.persist(entityA.getUri(), entityA);
+		c.persist(entityD.getUri(), entityD, DEFAULT_DESCRIPTOR);
+		c.persist(entityA.getUri(), entityA, DEFAULT_DESCRIPTOR);
 		c.commit();
-		final OWLClassD resD = c.find(OWLClassD.class, entityD.getUri());
+		final OWLClassD resD = c.find(OWLClassD.class, entityD.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(resD);
 		assertEquals(entityD.getUri(), resD.getUri());
 		assertNotNull(resD.getOwlClassA());
 		assertEquals(entityA.getUri(), resD.getOwlClassA().getUri());
-		final OWLClassA resA = c.find(OWLClassA.class, entityA.getUri());
+		final OWLClassA resA = c.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(resA);
 	}
 
 	public void testPersistTwice() throws Exception {
 		LOG.config("Test: persist entity twice.");
-		c.persist(entityB.getUri(), entityB);
-		assertTrue(c.contains(entityB.getUri()));
-		c.persist(entityB.getUri(), entityB);
+		c.persist(entityB.getUri(), entityB, DEFAULT_DESCRIPTOR);
+		assertTrue(c.contains(entityB.getUri(), null));
+		c.persist(entityB.getUri(), entityB, DEFAULT_DESCRIPTOR);
 		fail("This line should not have been reached.");
 	}
 
 	public void testPersistTwiceInTransaction() throws Exception {
 		LOG.config("Test: persist entity twice in one transaction.");
 		c.setAutoCommit(false);
-		c.persist(entityB.getUri(), entityB);
-		assertTrue(c.contains(entityB.getUri()));
-		c.persist(entityB.getUri(), entityB);
+		c.persist(entityB.getUri(), entityB, DEFAULT_DESCRIPTOR);
+		assertTrue(c.contains(entityB.getUri(), null));
+		c.persist(entityB.getUri(), entityB, DEFAULT_DESCRIPTOR);
 		fail("This line should not have been reached.");
 	}
 
 	public void testUpdateDataPropertyValue() throws Exception {
 		LOG.config("Test: update data property value of an entity.");
 		c.setAutoCommit(false);
-		c.persist(entityB.getUri(), entityB);
+		c.persist(entityB.getUri(), entityB, DEFAULT_DESCRIPTOR);
 		c.commit();
-		final OWLClassB b = c.find(OWLClassB.class, entityB.getUri());
+		final OWLClassB b = c.find(OWLClassB.class, entityB.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(b);
 		final String newString = "newStringAttributeValue";
 		b.setStringAttribute(newString);
 		final Field strField = OWLClassB.getStrAttField();
-		c.merge(entityB.getUri(), b, strField);
+		c.merge(b, strField, DEFAULT_DESCRIPTOR);
 		c.commit();
-		final OWLClassB res = c.find(OWLClassB.class, entityB.getUri());
+		final OWLClassB res = c.find(OWLClassB.class, entityB.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(res);
 		assertEquals(newString, res.getStringAttribute());
 	}
@@ -178,19 +182,19 @@ final class SesameSingleContextTests {
 	public void testUpdateTypes() throws Exception {
 		LOG.config("Test: update types of an entity.");
 		c.setAutoCommit(false);
-		c.persist(entityA.getUri(), entityA);
+		c.persist(entityA.getUri(), entityA, DEFAULT_DESCRIPTOR);
 		c.commit();
-		final OWLClassA a = c.find(OWLClassA.class, entityA.getUri());
+		final OWLClassA a = c.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(a);
 		final String newType = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#newTypeA";
 		final String toRemove = entityA.getTypes().iterator().next();
 		a.getTypes().remove(toRemove);
 		a.getTypes().add(newType);
 		final Field typesField = OWLClassA.getTypesField();
-		c.merge(a.getUri(), a, typesField);
+		c.merge(a, typesField, DEFAULT_DESCRIPTOR);
 		c.commit();
 
-		final OWLClassA res = c.find(OWLClassA.class, entityA.getUri());
+		final OWLClassA res = c.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(res);
 		assertFalse(res.getTypes().isEmpty());
 		assertTrue(res.getTypes().contains(newType));
@@ -200,86 +204,86 @@ final class SesameSingleContextTests {
 	public void testUpdateObjectProperty() throws Exception {
 		LOG.config("Test: update object property value.");
 		c.setAutoCommit(false);
-		c.persist(entityA.getUri(), entityA);
-		c.persist(entityD.getUri(), entityD);
+		c.persist(entityA.getUri(), entityA, DEFAULT_DESCRIPTOR);
+		c.persist(entityD.getUri(), entityD, DEFAULT_DESCRIPTOR);
 		c.commit();
 		final OWLClassA newA = new OWLClassA();
 		newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/newEntityA"));
 		newA.setStringAttribute("newAsStringAttribute");
-		final OWLClassD d = c.find(OWLClassD.class, entityD.getUri());
+		final OWLClassD d = c.find(OWLClassD.class, entityD.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(d);
 		d.setOwlClassA(newA);
 		final Field aField = OWLClassD.getOwlClassAField();
-		c.merge(d.getUri(), d, aField);
-		c.persist(newA.getUri(), newA);
+		c.merge(d, aField, DEFAULT_DESCRIPTOR);
+		c.persist(newA.getUri(), newA, DEFAULT_DESCRIPTOR);
 		c.commit();
 
-		final OWLClassD resD = c.find(OWLClassD.class, d.getUri());
+		final OWLClassD resD = c.find(OWLClassD.class, d.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(resD);
 		assertNotNull(resD.getOwlClassA());
 		assertEquals(newA.getUri(), resD.getOwlClassA().getUri());
-		final OWLClassA resA = c.find(OWLClassA.class, newA.getUri());
+		final OWLClassA resA = c.find(OWLClassA.class, newA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(resA);
 		assertEquals(resD.getOwlClassA().getUri(), resA.getUri());
-		final OWLClassA resAOld = c.find(OWLClassA.class, entityA.getUri());
+		final OWLClassA resAOld = c.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(resAOld);
 	}
 
 	public void testUpdateObjectPropertyToNull() throws Exception {
 		LOG.config("Test: update object property value. Set it to null.");
 		c.setAutoCommit(false);
-		c.persist(entityA.getUri(), entityA);
-		c.persist(entityD.getUri(), entityD);
+		c.persist(entityA.getUri(), entityA, DEFAULT_DESCRIPTOR);
+		c.persist(entityD.getUri(), entityD, DEFAULT_DESCRIPTOR);
 		c.commit();
-		final OWLClassD d = c.find(OWLClassD.class, entityD.getUri());
+		final OWLClassD d = c.find(OWLClassD.class, entityD.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(d);
 		d.setOwlClassA(null);
 		final Field aField = OWLClassD.getOwlClassAField();
-		c.merge(d.getUri(), d, aField);
+		c.merge(d, aField, DEFAULT_DESCRIPTOR);
 		c.commit();
-		final OWLClassD resD = c.find(OWLClassD.class, d.getUri());
+		final OWLClassD resD = c.find(OWLClassD.class, d.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(resD);
 		assertNull(resD.getOwlClassA());
-		final OWLClassA resA = c.find(OWLClassA.class, entityA.getUri());
+		final OWLClassA resA = c.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(resA);
 	}
 
 	public void updateDataPropertyToNull() throws Exception {
 		LOG.config("Test: update data property value. Set it to null.");
-		c.persist(entityA.getUri(), entityA);
+		c.persist(entityA.getUri(), entityA, DEFAULT_DESCRIPTOR);
 
 		c.setAutoCommit(false);
-		final OWLClassA a = c.find(OWLClassA.class, entityA.getUri());
+		final OWLClassA a = c.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(a);
 		assertNotNull(a.getStringAttribute());
 		a.setStringAttribute(null);
 		final Field strField = OWLClassA.getStrAttField();
-		c.merge(a.getUri(), a, strField);
+		c.merge(a, strField, DEFAULT_DESCRIPTOR);
 		c.commit();
 
-		final OWLClassA res = c.find(OWLClassA.class, entityA.getUri());
+		final OWLClassA res = c.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(res);
 		assertNull(res.getStringAttribute());
 	}
 
 	public void testRemove() throws Exception {
 		LOG.config("Test: remove entity.");
-		c.persist(entityA.getUri(), entityA);
+		c.persist(entityA.getUri(), entityA, DEFAULT_DESCRIPTOR);
 		// auto commit
-		c.persist(entityB.getUri(), entityB);
+		c.persist(entityB.getUri(), entityB, DEFAULT_DESCRIPTOR);
 		// auto commit
-		c.persist(entityE.getUri(), entityE);
+		c.persist(entityE.getUri(), entityE, DEFAULT_DESCRIPTOR);
 		// auto commit
-		final OWLClassA a = c.find(OWLClassA.class, entityA.getUri());
+		final OWLClassA a = c.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(a);
-		c.remove(a.getUri(), a); // auto commit
-		assertFalse(c.contains(a.getUri()));
-		assertNull(c.find(OWLClassA.class, entityA.getUri()));
-		final OWLClassE e = c.find(OWLClassE.class, entityE.getUri());
+		c.remove(a.getUri(), DEFAULT_DESCRIPTOR); // auto commit
+		assertFalse(c.contains(a.getUri(), null));
+		assertNull(c.find(OWLClassA.class, entityA.getUri(), DEFAULT_DESCRIPTOR));
+		final OWLClassE e = c.find(OWLClassE.class, entityE.getUri(), DEFAULT_DESCRIPTOR);
 		assertNotNull(e);
-		c.remove(e.getUri(), e); // auto commit
-		assertFalse(c.contains(e.getUri()));
-		assertNull(c.find(OWLClassE.class, e.getUri()));
-		assertTrue(c.contains(entityB.getUri()));
+		c.remove(e.getUri(), DEFAULT_DESCRIPTOR); // auto commit
+		assertFalse(c.contains(e.getUri(), null));
+		assertNull(c.find(OWLClassE.class, e.getUri(), DEFAULT_DESCRIPTOR));
+		assertTrue(c.contains(entityB.getUri(), null));
 	}
 }

@@ -1,10 +1,7 @@
 package cz.cvut.kbss.ontodriver.test.sesame;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -13,26 +10,14 @@ import org.junit.Test;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.utils.SesameNativeStorageConfig;
-import cz.cvut.kbss.jopa.test.utils.StorageConfig;
-import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.DataSource;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.test.BaseSingleContextOntoDriverTest;
 import cz.cvut.kbss.ontodriver.test.TestEnv;
 
-public class SesameSingleContextNativeStoreTest {
+public class SesameSingleContextNativeStoreTest extends BaseSingleContextOntoDriverTest {
 
-	private static final Logger LOG = Logger.getLogger(SesameSingleContextMemoryStoreTest.class
-			.getName());
-
-	private static final List<StorageConfig> storageInfo = Collections
-			.<StorageConfig> singletonList(new SesameNativeStorageConfig());
 	private static final Map<String, String> properties = initProperties();
-
-	private static PersistenceProviderFacade facade;
-	private DataSource ds;
-	private Connection c;
 
 	private static SesameSingleContextTests tests;
 
@@ -40,6 +25,7 @@ public class SesameSingleContextNativeStoreTest {
 	public static void setUpBeforeClass() throws Exception {
 		tests = new SesameSingleContextTests(LOG);
 		facade = TestEnv.getProviderFacade();
+		storageConfig = new SesameNativeStorageConfig();
 	}
 
 	@After
@@ -123,7 +109,7 @@ public class SesameSingleContextNativeStoreTest {
 		acquireConnection("UpdateObjectPropertyToNull");
 		tests.testUpdateObjectPropertyToNull();
 	}
-	
+
 	@Test
 	public void testUpdateDataPropertyToNull() throws Exception {
 		acquireConnection("UpdateDataPropertyToNull");
@@ -136,8 +122,9 @@ public class SesameSingleContextNativeStoreTest {
 		tests.testRemove();
 	}
 
-	private void acquireConnection(String ontoName) throws OntoDriverException {
-		this.ds = TestEnv.createDataSource(ontoName, storageInfo, properties);
+	@Override
+	protected void acquireConnection(String ontoName) throws OntoDriverException {
+		this.ds = TestEnv.createDataSource(ontoName, storageConfig, properties);
 		this.c = ds.getConnection(facade);
 		tests.setConnection(c);
 	}
