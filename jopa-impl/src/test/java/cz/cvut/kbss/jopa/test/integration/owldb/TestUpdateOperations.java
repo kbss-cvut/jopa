@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.owlapi.integration;
+package cz.cvut.kbss.jopa.test.integration.owldb;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
@@ -14,152 +14,150 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.integration.runners.UpdateOperationsRunner;
-import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
 public class TestUpdateOperations {
 
-	private static final Logger LOG = Logger.getLogger(TestUpdateOperations.class.getName());
+	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());
+
+	private EntityManager em;
 
 	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
-	private static UpdateOperationsRunner runner;
+	private UpdateOperationsRunner runner;
 
-	private EntityManager em;
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		runner = new UpdateOperationsRunner(LOG);
+	@Before
+	public void setUp() throws Exception {
+		TestEnvironment.clearDatabase();
+		TestEnvironment.resetOwldbHibernateProvider();
+		this.runner = new UpdateOperationsRunner(LOG);
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		if (em.isOpen()) {
-			if (em.getTransaction().isActive()) {
-				em.getTransaction().rollback();
-			}
-			em.close();
-			em.getEntityManagerFactory().close();
+		if (em.getTransaction().isActive()) {
+			em.getTransaction().rollback();
 		}
-		runner.initBeforeTest();
+		em.getEntityManagerFactory().close();
 	}
 
 	@Test
 	public void testMergeSet() throws Exception {
-		em = TestEnvironment.getPersistenceConnector("OwlapiMergeSet", storage, false, properties);
+		em = TestEnvironment.getPersistenceConnector("OwldbMergeSet", storage, false, properties);
 		runner.mergeSet(em, context());
 	}
 
 	@Test
 	public void testUpdateDataLeaveLazy() throws Exception {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDataProperty", storage, false,
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateDataProperty", storage, false,
 				properties);
 		runner.updateDataPropertyKeepLazyEmpty(em, context());
 	}
 
 	@Test
 	public void testUpdateDataPropertySetNull() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDataPropertyToNull", storage,
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateDataPropertyToNull", storage,
 				true, properties);
 		runner.updateDataPropertySetNull(em, context());
 	}
 
 	@Test
 	public void testUpdateReference() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateReference", storage, true,
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateReference", storage, true,
 				properties);
 		runner.updateReference(em, context());
 	}
 
 	@Test
 	public void testMergeDetachedWithChanges() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDetached", storage, true,
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateDetached", storage, true,
 				properties);
 		runner.mergeDetachedWithChanges(em, context());
 	}
 
 	@Test
 	public void testMergeDetachedCascade() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateCascade", storage, true,
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateCascade", storage, true,
 				properties);
 		runner.mergeDetachedCascade(em, context());
 	}
 
 	@Test
 	public void testRemoveFromSimpleList() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateRemoveFromSimpleList", storage,
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateRemoveFromSimpleList", storage,
 				true, properties);
 		runner.removeFromSimpleList(em, context());
 	}
 
 	@Test
 	public void testAddToSimpleList() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddToSimpleList", storage, true,
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateAddToSimpleList", storage, true,
 				properties);
 		runner.addToSimpleList(em, context());
 	}
 
 	@Test
 	public void testClearSimpleList() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateClearSimpleList", storage, true,
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateClearSimpleList", storage, true,
 				properties);
 		runner.clearSimpleList(em, context());
 	}
 
 	@Test
 	public void testReplaceSimpleList() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateReplaceSimpleList", storage,
-				true, properties);
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateReplaceSimpleList", storage, true,
+				properties);
 		runner.replaceSimpleList(em, context());
 	}
 
 	@Test
 	public void testRemoveFromReferencedList() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateRemoveFromReferencedList",
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateRemoveFromReferencedList",
 				storage, true, properties);
 		runner.removeFromReferencedList(em, context());
 	}
 
 	@Test
 	public void testAddToReferencedList() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddToReferencedList", storage,
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateAddToReferencedList", storage,
 				true, properties);
 		runner.addToReferencedList(em, context());
 	}
 
 	@Test
 	public void testClearReferencedList() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateClearReferencedList", storage,
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateClearReferencedList", storage,
 				true, properties);
 		runner.clearReferencedList(em, context());
 	}
 
 	@Test
 	public void testReplaceReferencedList() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateReplaceReferencedList", storage,
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateReplaceReferencedList", storage,
 				true, properties);
 		runner.replaceReferencedList(em, context());
 	}
 
 	@Test
 	public void testAddNewToProperties() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddNewToProperties", storage,
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateAddNewToProperties", storage,
 				false, properties);
 		runner.addNewToProperties(em, context());
 	}
 
 	@Test
 	public void testAddPropertyValue() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateAddPropertyValue", storage,
-				false, properties);
+		em = TestEnvironment.getPersistenceConnector("OwldbUpdateAddPropertyValue", storage, false,
+				properties);
 		runner.addPropertyValue(em, context());
 	}
 
 	@Test(expected = OWLInferredAttributeModifiedException.class)
 	public void testModifyInferredAttribute() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiModifyInferredAttribute", storage,
+		em = TestEnvironment.getPersistenceConnector("OwldbModifyInferredAttribute", storage,
 				false, properties);
 		runner.modifyInferredAttribute(em, context());
 	}
@@ -170,7 +168,7 @@ public class TestUpdateOperations {
 	}
 
 	private static StorageConfig initStorage() {
-		return new OwlapiStorageConfig();
+		return new OwldbStorageConfig();
 	}
 
 	private static Map<String, String> initProperties() {

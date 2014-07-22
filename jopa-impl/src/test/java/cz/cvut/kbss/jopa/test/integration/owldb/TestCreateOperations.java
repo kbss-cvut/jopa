@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.owlapi.integration;
+package cz.cvut.kbss.jopa.test.integration.owldb;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.integration.runners.CreateOperationsRunner;
-import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
@@ -24,75 +24,73 @@ public class TestCreateOperations {
 
 	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());
 
+	private EntityManager em;
+
 	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
 	private CreateOperationsRunner runner;
 
-	private EntityManager em;
-
 	@Before
 	public void setUp() throws Exception {
-		runner = new CreateOperationsRunner(LOG);
+		TestEnvironment.clearDatabase();
+		TestEnvironment.resetOwldbHibernateProvider();
+		this.runner = new CreateOperationsRunner(LOG);
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		if (em.isOpen()) {
-			if (em.getTransaction().isActive()) {
-				em.getTransaction().rollback();
-			}
-			em.close();
-			em.getEntityManagerFactory().close();
+		if (em.getTransaction().isActive()) {
+			em.getTransaction().rollback();
 		}
-		runner.initBeforeTest();
+		em.getEntityManagerFactory().close();
 	}
 
 	@Test
 	public void testPersistWithGenerated() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithGenerated", storage, false,
+		em = TestEnvironment.getPersistenceConnector("OwldbPersistWithGenerated", storage, false,
 				properties);
 		runner.persistWithGenerated(em, context());
 	}
 
 	@Test(expected = PrimaryKeyNotSetException.class)
 	public void testPersistWithoutId() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithoutId", storage, false,
+		em = TestEnvironment.getPersistenceConnector("OwldbPersistWithoutId", storage, false,
 				properties);
 		runner.persistWithoutId(em, context());
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testPersistNull() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistNull", storage, false,
-				properties);
+		em = TestEnvironment
+				.getPersistenceConnector("OwldbPersistNull", storage, false, properties);
 		runner.persistNull(em, context());
 	}
 
 	@Test
 	public void testPersistRollback() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistRollback", storage, false,
+		em = TestEnvironment.getPersistenceConnector("OwldbPersistRollback", storage, false,
 				properties);
 		runner.persistRollback(em, context());
 	}
 
 	@Test(expected = RollbackException.class)
 	public void testPersistRollbackOnly() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistRollbackOnly", storage, false,
+		em = TestEnvironment.getPersistenceConnector("OwldbPersistRollbackOnly", storage, false,
 				properties);
 		runner.persistRollbackOnly(em, context());
 	}
 
 	@Test
 	public void testPersistCascade() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistWithCascade", storage, false,
+		em = TestEnvironment.getPersistenceConnector("OwldbPersistWithCascade", storage, false,
 				properties);
 		runner.persistCascade(em, context());
 	}
 
 	@Test(expected = OWLEntityExistsException.class)
 	public void testPersistTwiceInOne() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiPersistTwice", storage, false,
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistTwice", storage, true,
 				properties);
 		runner.persistTwice(em, context());
 	}
@@ -166,7 +164,7 @@ public class TestCreateOperations {
 	}
 
 	private static StorageConfig initStorage() {
-		return new OwlapiStorageConfig();
+		return new OwldbStorageConfig();
 	}
 
 	private static Map<String, String> initProperties() {

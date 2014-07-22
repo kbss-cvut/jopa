@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.sesame.integration;
+package cz.cvut.kbss.jopa.test.integration.sesame;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

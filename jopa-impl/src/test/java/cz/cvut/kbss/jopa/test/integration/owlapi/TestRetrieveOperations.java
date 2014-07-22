@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.owlapi.integration;
+package cz.cvut.kbss.jopa.test.integration.owlapi;
 
 import java.net.URI;
 import java.util.HashMap;

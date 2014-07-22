@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.sesame.integration;
+package cz.cvut.kbss.jopa.test.integration.sesame;
 
 import java.net.URI;
 import java.util.ArrayList;

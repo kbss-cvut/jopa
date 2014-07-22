@@ -1,7 +1,9 @@
-package cz.cvut.kbss.jopa.test.owlapi.integration;
+package cz.cvut.kbss.jopa.test.integration.sesame;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -13,7 +15,8 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.integration.runners.DeleteOperationsRunner;
-import cz.cvut.kbss.jopa.test.utils.OwlapiStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.SesameNativeStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
@@ -21,7 +24,7 @@ public class TestDeleteOperations {
 
 	private static final Logger LOG = Logger.getLogger(TestDeleteOperations.class.getName());
 
-	private static final StorageConfig storage = initStorage();
+	private static final List<StorageConfig> storages = initStorages();
 	private static final Map<String, String> properties = initProperties();
 
 	private static DeleteOperationsRunner runner;
@@ -47,64 +50,76 @@ public class TestDeleteOperations {
 
 	@Test
 	public void testRemoveSimple() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiSimpleRemove", storage, false,
+		em = TestEnvironment.getPersistenceConnector("SesameSimpleRemove", storages, false,
 				properties);
-		runner.removeSimple(em, context());
+		runner.removeSimple(em, context(1));
 	}
 
 	@Test
 	public void testRemoveReference() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveReference", storage, true,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveReference", storages, true,
 				properties);
-		runner.removeReference(em, context());
+		runner.removeReference(em, context(0));
 	}
 
 	@Test
 	public void testRemoveCascade() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveCascade", storage, true,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveCascade", storages, true,
 				properties);
-		runner.removeCascade(em, context());
+		runner.removeCascade(em, context(1));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testRemoveDetached() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveDetached", storage, true,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveDetached", storages, true,
 				properties);
-		runner.removeDetached(em, context());
+		runner.removeDetached(em, context(1));
 	}
 
 	@Test
 	public void testRemoveFromSimpleList() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveFromSimpleList", storage, true,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveFromSimpleList", storages, true,
 				properties);
-		runner.removeFromSimpleList(em, context());
+		runner.removeFromSimpleList(em, context(0));
 	}
 
 	@Test
 	public void testRemoveFromReferencedList() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveFromReferencedList", storage,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveFromReferencedList", storages,
 				true, properties);
-		runner.removeFromReferencedList(em, context());
+		runner.removeFromReferencedList(em, context(1));
 	}
 
 	@Test
 	public void testRemoveListOwner() {
-		em = TestEnvironment.getPersistenceConnector("OwlapiRemoveListOwner", storage, true,
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveListOwner", storages, true,
 				properties);
-		runner.removeListOwner(em, context());
+		runner.removeListOwner(em, context(0));
+	}
+	
+	@Test
+	public void testRemoveNotYetCommitted() {
+		em = TestEnvironment.getPersistenceConnector("SesameRemoveNotYetCommitted", storages, true,
+				properties);
+		runner.removeNotYetCommitted(em, context(1));
 	}
 
-	private URI context() {
-		return null;
+	private URI context(int index) {
+		return em.getAvailableContexts().get(index).getUri();
 	}
 
-	private static StorageConfig initStorage() {
-		return new OwlapiStorageConfig();
+	private static List<StorageConfig> initStorages() {
+		final List<StorageConfig> lst = new ArrayList<>(2);
+		lst.add(new SesameNativeStorageConfig());
+		lst.add(new SesameMemoryStorageConfig());
+		return lst;
 	}
 
 	private static Map<String, String> initProperties() {
 		final Map<String, String> map = new HashMap<>();
 		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
+		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
+		map.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
 		return map;
 	}

@@ -272,4 +272,18 @@ public class DeleteOperationsRunner {
 			assertNotNull(em.find(OWLClassA.class, a.getUri(), cDescriptor));
 		}
 	}
+
+	public void removeNotYetCommitted(EntityManager em, URI ctx) {
+		logger.config("Test: persist entity, but remove it before committing the transaction.");
+		final EntityDescriptor eDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		em.getTransaction().begin();
+		em.persist(entityE, eDescriptor);
+		assertTrue(em.contains(entityE));
+		em.remove(entityE);
+		assertFalse(em.contains(entityE));
+		em.getTransaction().commit();
+
+		final OWLClassE res = em.find(OWLClassE.class, entityE.getUri(), eDescriptor);
+		assertNull(res);
+	}
 }
