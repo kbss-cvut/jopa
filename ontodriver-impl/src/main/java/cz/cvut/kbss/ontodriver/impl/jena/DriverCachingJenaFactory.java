@@ -46,8 +46,7 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider,
-			boolean autoCommit) throws OntoDriverException {
+	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider) throws OntoDriverException {
 		ensureParametersAndState(persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating caching Jena storage module.");
@@ -58,7 +57,7 @@ public class DriverCachingJenaFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public JenaCachingStorageConnector createStorageConnector(boolean autoCommit)
+	public JenaCachingStorageConnector createStorageConnector()
 			throws OntoDriverException {
 		ensureOpen();
 		if (LOG.isLoggable(Level.FINER)) {

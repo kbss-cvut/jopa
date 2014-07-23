@@ -1,12 +1,10 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.Repository;
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -20,10 +18,9 @@ public class SesameStorageModule extends StorageModule {
 	private SesameStorageConnector connector;
 	private ModuleInternal<SesameChange, SesameStatement> internal;
 
-	public SesameStorageModule(Repository repository,
-			PersistenceProviderFacade persistenceProvider, DriverFactory factory)
+	public SesameStorageModule(PersistenceProviderFacade persistenceProvider, DriverFactory factory)
 			throws OntoDriverException {
-		super(repository, persistenceProvider, factory);
+		super(persistenceProvider, factory);
 	}
 
 	@Override
@@ -56,19 +53,16 @@ public class SesameStorageModule extends StorageModule {
 
 	@Override
 	protected void initialize() throws OntoDriverException {
-		this.connector = (SesameStorageConnector) factory.createStorageConnector(repository, false);
+		this.connector = (SesameStorageConnector) factory.createStorageConnector();
+		setPrimaryKeyCounter((int) connector.getSubjectCount());
 		this.internal = createModuleInternal();
-		if (!primaryKeyCounters.containsKey(repository)) {
-			primaryKeyCounters.put(repository.getId(),
-					new AtomicInteger((int) connector.getSubjectCount()));
-		}
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, RepositoryID contexts) throws OntoDriverException {
-		preContains(primaryKey, contexts);
+	public boolean contains(Object primaryKey, URI context) throws OntoDriverException {
+		preContains(primaryKey, context);
 
-		return internal.containsEntity(primaryKey, contexts);
+		return internal.containsEntity(primaryKey, context);
 	}
 
 	@Override
@@ -80,10 +74,10 @@ public class SesameStorageModule extends StorageModule {
 	}
 
 	@Override
-	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException {
-		preIsConsistent(contexts);
+	public boolean isConsistent(URI context) throws OntoDriverException {
+		preIsConsistent(context);
 
-		return internal.isConsistent(contexts);
+		return internal.isConsistent(context);
 	}
 
 	@Override
@@ -150,5 +144,11 @@ public class SesameStorageModule extends StorageModule {
 			throws OntoDriverException {
 		// Can add more internal implementations here
 		return new SesameModuleInternal(getOntologyData(), this);
+	}
+
+	@Override
+	public List<URI> getContexts() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -1,11 +1,8 @@
 package cz.cvut.kbss.ontodriver.impl.owlim;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import cz.cvut.kbss.jopa.model.Repository;
 import cz.cvut.kbss.ontodriver.DriverAbstractFactory;
 import cz.cvut.kbss.ontodriver.DriverStatement;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -31,74 +28,69 @@ import cz.cvut.kbss.ontodriver.impl.owlapi.OwlapiStatement;
  */
 public class DriverOwlimFactory extends DriverAbstractFactory {
 
-	private final Map<Repository, OwlapiBasedJenaConnector> centralConnectors;
+	private OwlapiBasedJenaConnector centralConnector;
 
-	public DriverOwlimFactory(List<Repository> repositories,
-			Map<Repository, OntologyStorageProperties> repositoryProperties,
+	public DriverOwlimFactory(OntologyStorageProperties repositoryProperties,
 			Map<String, String> properties) throws OntoDriverException {
-		super(repositories, repositoryProperties, properties);
-		this.centralConnectors = new HashMap<>();
+		super(repositoryProperties, properties);
 	}
 
 	@Override
-	public void close() throws OntoDriverException {
+	public synchronized void close() throws OntoDriverException {
 		if (!isOpen()) {
 			return;
 		}
 		super.close();
-		for (OwlapiBasedJenaConnector c : centralConnectors.values()) {
-			c.close();
+		if (centralConnector != null) {
+			centralConnector.close();
 		}
 	}
 
 	@Override
-	public StorageModule createStorageModule(Repository repository,
-			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
+	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException {
-		ensureState(repository, persistenceProvider);
+		ensureParametersAndState(persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating caching Jena storage module.");
 		}
-		final StorageModule m = new OwlapiBasedCachingJenaModule(repository, persistenceProvider,
-				this);
+		final StorageModule m = new OwlapiBasedCachingJenaModule(persistenceProvider, this);
 		registerModule(m);
 		return m;
 	}
 
 	@Override
-	public StorageConnector createStorageConnector(Repository repository, boolean autoCommit)
-			throws OntoDriverException {
-		ensureParametersAndState(repository);
+	public StorageConnector createStorageConnector() throws OntoDriverException {
+		ensureOpen();
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLIM storage connector.");
 		}
-		return createConnectorInternal(repository);
+		return createConnectorInternal();
 	}
 
-	private synchronized OwlapiBasedJenaConnector createConnectorInternal(Repository repository)
+	private synchronized OwlapiBasedJenaConnector createConnectorInternal()
 			throws OntoDriverException {
-		assert repository != null;
-		if (!centralConnectors.containsKey(repository)) {
-			createCentralConnector(repository);
+		if (centralConnector == null) {
+			synchronized (this) {
+				if (centralConnector == null) {
+					createCentralConnector();
+				}
+			}
 		}
-		final JenaCachingStorageConnector conn = new JenaCachingStorageConnector(
-				centralConnectors.get(repository));
+		final JenaCachingStorageConnector conn = new JenaCachingStorageConnector(centralConnector);
 		registerConnector(conn);
 		return conn;
 	}
 
-	private void createCentralConnector(Repository repository) throws OntoDriverException {
-		final OntologyStorageProperties p = storageProperties.get(repository);
-		if (!(p instanceof OwlimOntologyStorageProperties)) {
+	private void createCentralConnector() throws OntoDriverException {
+		if (!(storageProperties instanceof OwlimOntologyStorageProperties)) {
 			throw new OntoDriverException(
 					"The storage properties is not suitable for OWLIM based connectors.");
 		}
-		final OwlimOntologyStorageProperties owlimP = (OwlimOntologyStorageProperties) p;
+		final OwlimOntologyStorageProperties owlimP = (OwlimOntologyStorageProperties) storageProperties;
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.fine("Creating central OWLIM storage connector.");
 		}
-		final JenaBasedOwlimConnector c = new JenaBasedOwlimConnector(owlimP, properties);
-		centralConnectors.put(repository, c);
+		this.centralConnector = new JenaBasedOwlimConnector(owlimP, properties);
 	}
 
 	@Override

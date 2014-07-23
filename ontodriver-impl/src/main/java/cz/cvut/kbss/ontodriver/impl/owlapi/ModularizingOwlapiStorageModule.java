@@ -42,7 +42,7 @@ public class ModularizingOwlapiStorageModule extends BaseOwlapiModule {
 
 	@Override
 	protected void initialize() throws OntoDriverException {
-		this.connector = (ModularizingStorageConnector) factory.createStorageConnector(false);
+		this.connector = (ModularizingStorageConnector) factory.createStorageConnector();
 		setPrimaryKeyCounter(connector.getClassAssertionsCount());
 		this.data = connector.extractOntologyModule(getMetamodel());
 		this.internal = new OwlapiModuleInternal(data, this);

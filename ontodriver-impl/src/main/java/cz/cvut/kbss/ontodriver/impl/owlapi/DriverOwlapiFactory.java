@@ -25,8 +25,7 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider,
-			boolean autoCommit) throws OntoDriverException {
+	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider) throws OntoDriverException {
 		ensureParametersAndState(persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLAPI storage module.");
@@ -37,7 +36,7 @@ public class DriverOwlapiFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public OwlapiStorageConnector createStorageConnector(boolean autoCommit)
+	public OwlapiStorageConnector createStorageConnector()
 			throws OntoDriverException {
 		ensureOpen();
 		if (LOG.isLoggable(Level.FINER)) {

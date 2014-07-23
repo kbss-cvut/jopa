@@ -38,7 +38,7 @@ public class OwlapiBasedJenaModule extends BaseOwlapiModule {
 
 	@Override
 	protected void initialize() throws OntoDriverException {
-		this.connector = (OwlapiBasedJenaConnector) factory.createStorageConnector(false);
+		this.connector = (OwlapiBasedJenaConnector) factory.createStorageConnector();
 		final OwlapiConnectorDataHolder holder = getOntologyData();
 		setPrimaryKeyCounter(connector.getClassAssertionAxiomsCount());
 		this.internal = new OwlapiModuleInternal(holder, this);

@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -95,6 +96,16 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 					+ " not managed in this factory.");
 		}
 		c.close();
+	}
+
+	@Override
+	public URI getOntologyUri() {
+		return storageProperties.getOntologyURI();
+	}
+
+	@Override
+	public URI getPhysicalUri() {
+		return storageProperties.getPhysicalURI();
 	}
 
 	/**

@@ -1,5 +1,7 @@
 package cz.cvut.kbss.ontodriver;
 
+import java.net.URI;
+
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 public interface DriverFactory extends Closeable {
@@ -12,15 +14,13 @@ public interface DriverFactory extends Closeable {
 	 * 
 	 * @param persistenceProvider
 	 *            Facade representing the persistence provider
-	 * @param autoCommit
-	 *            {@code true} if the module is for an auto commit operation
 	 * @return StorageModule
 	 * @throws OntoDriverException
 	 *             If called on a closed factory or if an ontology access error
 	 *             occurs
 	 */
-	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider,
-			boolean autoCommit) throws OntoDriverException;
+	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException;
 
 	/**
 	 * Releases the specified storage module. </p>
@@ -44,14 +44,12 @@ public interface DriverFactory extends Closeable {
 	 * Implementations may choose to pool storage modules or create lazy loaded
 	 * proxies.
 	 * 
-	 * @param autoCommit
-	 *            {@code true} if the connector is for an auto commit operation
 	 * @return StorageConnector
 	 * @throws OntoDriverException
 	 *             If called on a closed factory or if an ontology access error
 	 *             occurs
 	 */
-	public StorageConnector createStorageConnector(boolean autoCommit) throws OntoDriverException;
+	public StorageConnector createStorageConnector() throws OntoDriverException;
 
 	/**
 	 * Releases the specified storage connector. </p>
@@ -80,4 +78,23 @@ public interface DriverFactory extends Closeable {
 	 *             If called on a closed factory
 	 */
 	public DriverStatement createStatement(JopaStatement statement) throws OntoDriverException;
+
+	/**
+	 * Gets the logical URI of the underlying ontology. </p>
+	 * 
+	 * Note that the ontology may not have a logical URI, e. g. Sesame
+	 * repositories don't have logical URIs.
+	 * 
+	 * @return Logical URI or {@code null}
+	 */
+	public URI getOntologyUri();
+
+	/**
+	 * Gets the physical URI of the underlying ontology. </p>
+	 * 
+	 * This can be a remote URL or a local file URI.
+	 * 
+	 * @return Physical URI
+	 */
+	public URI getPhysicalUri();
 }

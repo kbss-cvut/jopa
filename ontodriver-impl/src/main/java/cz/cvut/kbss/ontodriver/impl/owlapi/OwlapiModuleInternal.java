@@ -720,8 +720,8 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	 */
 	private void _saveReference(Object entity, IRI id, Attribute<?, ?> attribute,
 			OWLNamedIndividual individual, boolean checkInferred) throws Exception {
-		if (checkInferred && attribute.isInferred()) {
-			throw new OntoDriverException("Inferred fields must not be set externally.");
+		if (attribute.isInferred()) {
+			return;
 		}
 		ICValidationUtils.validateIntegrityConstraints(entity, id, attribute);
 

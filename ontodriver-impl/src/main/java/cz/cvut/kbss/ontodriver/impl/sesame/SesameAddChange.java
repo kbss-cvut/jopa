@@ -12,7 +12,6 @@ final class SesameAddChange implements SesameChange {
 
 	SesameAddChange(Statement statement, URI context) {
 		assert statement != null;
-		assert context != null;
 
 		this.statement = statement;
 		this.context = context;

@@ -114,10 +114,11 @@ abstract class AttributeStrategy {
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("Getting " + subjectUri + " of " + cls);
 		}
-		final EntityDescriptor rid = internal.module.getRepository().createDescriptor()
-				.setEntityContext(java.net.URI.create(context.stringValue()));
+		final java.net.URI ctx = context != null ? java.net.URI.create(context.stringValue())
+				: null;
+		final EntityDescriptor descriptor = EntityDescriptor.createWithEntityContext(ctx);
 		final IRI pk = IRI.create(subjectUri.toString());
-		final Object ob = internal.module.getEntityFromProviderCache(cls, pk, rid);
+		final Object ob = internal.module.getEntityFromProviderCache(cls, pk, descriptor);
 		if (ob != null && cls.isAssignableFrom(ob.getClass())) {
 			// We can load the instance from cache
 			return cls.cast(ob);
@@ -126,7 +127,7 @@ abstract class AttributeStrategy {
 			return cls.cast(getEnum(cls.asSubclass(Enum.class), subjectUri));
 		} else {
 			// Otherwise load the entity
-			return internal.loadEntity(cls, subjectUri, rid);
+			return internal.loadEntity(cls, subjectUri, descriptor);
 		}
 	}
 

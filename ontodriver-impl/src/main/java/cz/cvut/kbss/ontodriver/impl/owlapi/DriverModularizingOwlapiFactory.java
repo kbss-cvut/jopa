@@ -31,7 +31,7 @@ public class DriverModularizingOwlapiFactory extends DriverAbstractFactory {
 
 	@Override
 	public ModularizingOwlapiStorageModule createStorageModule(
-			PersistenceProviderFacade persistenceProvider, boolean autoCommit)
+			PersistenceProviderFacade persistenceProvider)
 			throws OntoDriverException {
 		ensureParametersAndState(persistenceProvider);
 		if (LOG.isLoggable(Level.FINER)) {
@@ -44,13 +44,12 @@ public class DriverModularizingOwlapiFactory extends DriverAbstractFactory {
 	}
 
 	@Override
-	public ModularizingStorageConnector createStorageConnector(boolean autoCommit)
-			throws OntoDriverException {
+	public ModularizingStorageConnector createStorageConnector() throws OntoDriverException {
 		ensureOpen();
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating OWLAPI modularizing storage connector.");
 		}
-		return createConnectorInternal(autoCommit);
+		return createConnectorInternal();
 	}
 
 	/**
@@ -59,13 +58,10 @@ public class DriverModularizingOwlapiFactory extends DriverAbstractFactory {
 	 * This method has to be synchronized since it performs a put-if-absent
 	 * operation on the {@code centralConnectors}, which is not thread safe.
 	 * 
-	 * @param ctx
-	 * @param autoCommit
 	 * @return
 	 * @throws OntoDriverException
 	 */
-	private ModularizingStorageConnector createConnectorInternal(boolean autoCommit)
-			throws OntoDriverException {
+	private ModularizingStorageConnector createConnectorInternal() throws OntoDriverException {
 		if (centralConnector == null) {
 			synchronized (this) {
 				if (centralConnector == null) {

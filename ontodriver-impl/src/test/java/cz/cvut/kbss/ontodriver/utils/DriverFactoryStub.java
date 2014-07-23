@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.utils;
 
+import java.net.URI;
 import java.util.Map;
 
 import cz.cvut.kbss.ontodriver.DriverFactory;
@@ -56,8 +57,8 @@ public class DriverFactoryStub implements DriverFactory {
 	}
 
 	@Override
-	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider,
-			boolean autoCommit) throws OntoDriverException {
+	public StorageModule createStorageModule(PersistenceProviderFacade persistenceProvider)
+			throws OntoDriverException {
 		return storageModule;
 	}
 
@@ -71,11 +72,21 @@ public class DriverFactoryStub implements DriverFactory {
 	}
 
 	@Override
-	public StorageConnector createStorageConnector(boolean autoCommit) throws OntoDriverException {
+	public StorageConnector createStorageConnector() throws OntoDriverException {
 		return storageConnector;
 	}
 
 	public void setStorageConnector(StorageConnector connector) {
 		this.storageConnector = connector;
+	}
+
+	@Override
+	public URI getOntologyUri() {
+		return null;
+	}
+
+	@Override
+	public URI getPhysicalUri() {
+		return null;
 	}
 }

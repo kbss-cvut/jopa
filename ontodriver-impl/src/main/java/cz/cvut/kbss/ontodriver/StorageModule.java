@@ -116,6 +116,27 @@ public abstract class StorageModule implements Transactional {
 		incrementPrimaryKeyCounterImpl();
 	}
 
+	/**
+	 * Gets logical URI of the underlying ontology. </p>
+	 * 
+	 * Note that the logical URI may be {@code null}, e. g. for Sesame
+	 * repositories.
+	 * 
+	 * @return Logical URI or {@code null}
+	 */
+	public URI getOntologyUri() {
+		return factory.getOntologyUri();
+	}
+
+	/**
+	 * Gets physical URI of the underlying ontology. </p>
+	 * 
+	 * @return Physical URI
+	 */
+	public URI getPhysicalUri() {
+		return factory.getPhysicalUri();
+	}
+
 	@Override
 	public boolean isOpen() {
 		return open;

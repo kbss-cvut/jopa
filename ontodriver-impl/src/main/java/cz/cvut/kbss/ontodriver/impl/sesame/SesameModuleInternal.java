@@ -21,7 +21,6 @@ import org.openrdf.model.vocabulary.RDF;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.RepositoryID;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -73,11 +72,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	@Override
-	public boolean containsEntity(Object primaryKey, RepositoryID contexts)
+	public boolean containsEntity(Object primaryKey, java.net.URI context)
 			throws OntoDriverException {
 		assert primaryKey != null : "argument primaryKey is null";
 		final URI uri = getAddressAsSesameUri(primaryKey);
-		return isInOntologySignature(uri, asSesameUris(contexts.getContexts()));
+		return isInOntologySignature(uri, asSesameUri(context));
 	}
 
 	@Override
@@ -88,7 +87,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 
 		final URI uri = getAddressAsSesameUri(primaryKey);
 		final URI ctx = getAddressAsSesameUri(descriptor.getEntityContext());
-		if (!isInOntologySignature(uri, Collections.singleton(ctx))) {
+		if (!isInOntologySignature(uri, ctx)) {
 			return null;
 		}
 		final T entity = loadEntity(cls, uri, descriptor);
@@ -98,8 +97,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	@Override
-	public boolean isConsistent(RepositoryID contexts) throws OntoDriverException {
-		assert contexts != null;
+	public boolean isConsistent(java.net.URI context) throws OntoDriverException {
+		assert context != null;
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -117,7 +116,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			module.incrementPrimaryKeyCounter();
 		}
 		final URI ctx = getAddressAsSesameUri(descriptor.getEntityContext());
-		if (isInOntologySignature(uri, Collections.singleton(ctx))) {
+		if (isInOntologySignature(uri, ctx)) {
 			throw new OWLEntityExistsException("Entity with primary key " + uri
 					+ " already exists in one of contexts " + descriptor);
 		}
@@ -134,7 +133,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 
 		final URI uri = getIdentifier(entity);
 		final URI entityContext = getAddressAsSesameUri(descriptor.getEntityContext());
-		if (!isInOntologySignature(uri, Collections.singleton(entityContext))) {
+		if (!isInOntologySignature(uri, entityContext)) {
 			throw new OntoDriverException(new IllegalArgumentException("The entity " + entity
 					+ " is not persistent within this context."));
 		}
@@ -275,8 +274,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			if (uri == null) {
 				uri = resolveIdentifier(ob, et);
 			}
-			if (!isInOntologySignature(uri, Collections.singleton(context))
-					&& !temporaryIndividuals.contains(uri)) {
+			if (!isInOntologySignature(uri, context) && !temporaryIndividuals.contains(uri)) {
 				if (LOG.isLoggable(Level.FINEST)) {
 					LOG.finest("Adding class assertion axiom for a not yet persisted entity " + uri);
 				}
@@ -294,7 +292,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	private void addInstanceToOntology(URI primaryKey, EntityType<?> et, URI context) {
 		assert primaryKey != null;
 		assert et != null;
-		assert context != null;
 
 		final URI typeUri = valueFactory.createURI(et.getIRI().toString());
 		final Statement stmt = valueFactory.createStatement(primaryKey, RDF.TYPE, typeUri);
@@ -316,12 +313,13 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 
 		URI uri = null;
 		int i;
-		final String base = module.getRepository().getPhysicalUri().toString() + "#" + typeName
-				+ "_";
+		final java.net.URI ontoUri = module.getOntologyUri() != null ? module.getOntologyUri()
+				: module.getPhysicalUri();
+		final String base = ontoUri.toString() + "#" + typeName + "_";
 		do {
 			i = module.getNewPrimaryKey();
 			uri = valueFactory.createURI(base + i);
-		} while (isInOntologySignature(uri, Collections.<URI> emptySet()));
+		} while (isInOntologySignature(uri, null));
 		return uri;
 	}
 
@@ -403,9 +401,9 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 * @param uri
 	 * @return
 	 */
-	private boolean isInOntologySignature(URI uri, Set<URI> contexts) {
+	private boolean isInOntologySignature(URI uri, URI context) {
 		assert uri != null : "argument uri is null";
-		final boolean inModel = storage.contains(uri, contexts);
+		final boolean inModel = storage.contains(uri, Collections.singleton(context));
 		return (inModel && !temporaryIndividuals.contains(uri));
 	}
 
@@ -519,11 +517,12 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			contexts.add(getAddressAsSesameUri(u));
 		}
 		contexts.add(getAddressAsSesameUri(descriptor.getEntityContext()));
-		for (Statement stmt : storage.filter(primaryKey, null, null, false, contexts)) {
-			changes.add(new SesameRemoveChange(stmt, (URI) stmt.getContext()));
-			storage.removeStatement(stmt, (URI) stmt.getContext());
-		}
-		for (Statement stmt : storage.filter(null, null, primaryKey, false, contexts)) {
+		// We need to put the statements into a separate collection to prevent
+		// ConcurrentModificationExceptions
+		final Set<Statement> toRemove = new HashSet<>();
+		toRemove.addAll(storage.filter(primaryKey, null, null, false, contexts));
+		toRemove.addAll(storage.filter(null, null, primaryKey, false, contexts));
+		for (Statement stmt : toRemove) {
 			changes.add(new SesameRemoveChange(stmt, (URI) stmt.getContext()));
 			storage.removeStatement(stmt, (URI) stmt.getContext());
 		}
@@ -600,7 +599,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			boolean removeOld, SubjectModels<T> models) throws OntoDriverException,
 			IllegalArgumentException, IllegalAccessException {
 		if (att.isInferred()) {
-			throw new OntoDriverException("Inferred fields must not be set externally.");
+			return;
 		}
 		ICValidationUtils.validateIntegrityConstraints(models.entity, models.primaryKey, att);
 
@@ -643,13 +642,8 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		return (value == null || (value instanceof URI));
 	}
 
-	private Set<URI> asSesameUris(Set<java.net.URI> javaUris) {
-		assert javaUris != null;
+	private URI asSesameUri(java.net.URI javaUri) {
 
-		final Set<URI> toReturn = new HashSet<>(javaUris.size());
-		for (java.net.URI u : javaUris) {
-			toReturn.add(valueFactory.createURI(u.toString()));
-		}
-		return toReturn;
+		return javaUri != null ? valueFactory.createURI(javaUri.toString()) : null;
 	}
 }

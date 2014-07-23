@@ -12,7 +12,6 @@ final class SesameRemoveChange implements SesameChange {
 
 	SesameRemoveChange(Statement statement, URI context) {
 		assert statement != null;
-		assert context != null;
 
 		this.statement = statement;
 		this.context = context;

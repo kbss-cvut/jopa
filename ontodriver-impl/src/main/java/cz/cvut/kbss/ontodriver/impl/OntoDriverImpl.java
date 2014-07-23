@@ -82,7 +82,7 @@ public class OntoDriverImpl implements OntoDriver {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Creating storage module.");
 		}
-		return factory.createStorageModule(persistenceProvider, false);
+		return factory.createStorageModule(persistenceProvider);
 	}
 
 	@Override

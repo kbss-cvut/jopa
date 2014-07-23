@@ -42,7 +42,7 @@ public class CachingOwlapiStorageModule extends BaseOwlapiModule {
 
 	@Override
 	protected void initialize() throws OntoDriverException {
-		this.connector = (CachingOwlapiStorageConnector) factory.createStorageConnector(false);
+		this.connector = (CachingOwlapiStorageConnector) factory.createStorageConnector();
 		setPrimaryKeyCounter(connector.getClassAssertionsCount());
 		this.internal = new OwlapiModuleInternal(getOntologyData(), this);
 	}

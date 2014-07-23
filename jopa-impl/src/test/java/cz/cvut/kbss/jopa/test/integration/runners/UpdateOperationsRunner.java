@@ -79,9 +79,6 @@ public class UpdateOperationsRunner {
 		entityE.setStringAttribute("entityEStringAttribute");
 		this.entityF = new OWLClassF();
 		entityF.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityF"));
-		final Field f = OWLClassF.getStrAttField();
-		f.setAccessible(true);
-		f.set(entityF, "inferredValue");
 		this.entityI = new OWLClassI();
 		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
 		entityI.setOwlClassA(entityA);

@@ -91,7 +91,7 @@ public class OwlapiStorageModuleTest {
 		final DriverFactoryStub fact = spy(factory);
 		final OwlapiStorageModule m = new OwlapiStorageModule(provider, fact);
 		assertNotNull(m);
-		verify(fact).createStorageConnector(false);
+		verify(fact).createStorageConnector();
 		// Twice, once in the setUp method
 		verify(connectorMock, times(2)).getClassAssertionsCount();
 		verify(connectorMock, times(2)).getOntologyData();
