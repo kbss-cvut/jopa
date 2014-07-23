@@ -235,6 +235,43 @@ public class UnitOfWorkTest {
 	}
 
 	@Test
+	public void testCalculateModificationsObjectProperty() throws Exception {
+		final OWLClassD d = new OWLClassD();
+		d.setUri(URI.create("http://tempD"));
+		final OWLClassA a = new OWLClassA();
+		a.setUri(URI.create("http://oldA"));
+		d.setOwlClassA(a);
+		final OWLClassD clone = (OWLClassD) uow.registerExistingObject(d, descriptor);
+		final OWLClassA newA = new OWLClassA();
+		newA.setUri(URI.create("http://newA"));
+		newA.setStringAttribute("somestring");
+		clone.setOwlClassA(newA);
+		uow.registerNewObject(newA, descriptor);
+		uow.commit();
+
+		assertEquals(d.getOwlClassA().getUri(), newA.getUri());
+		verify(cacheManagerMock).add(eq(IRI.create(newA.getUri())), any(Object.class),
+				eq(CONTEXT_URI));
+	}
+
+	@Test
+	public void testCalculateModificationsDataProperty() throws Exception {
+		when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+		final OWLClassA newA = new OWLClassA();
+		newA.setUri(URI.create("http://newA"));
+		newA.setStringAttribute("somestring");
+		final OWLClassA clone = (OWLClassA) uow.registerExistingObject(newA, descriptor);
+		// Trigger change, otherwise we would have to stub
+		// OWLAPIPersistenceProvider's emfs and server session
+		uow.setHasChanges();
+		final String newStr = "newStr";
+		clone.setStringAttribute(newStr);
+		uow.commit();
+
+		assertEquals(newStr, newA.getStringAttribute());
+	}
+
+	@Test
 	public void testContains() throws Exception {
 		OWLClassA res = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
 		assertNotNull(res);
