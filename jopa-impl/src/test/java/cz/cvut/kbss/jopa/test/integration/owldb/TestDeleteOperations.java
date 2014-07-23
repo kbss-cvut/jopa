@@ -94,7 +94,7 @@ public class TestDeleteOperations {
 	
 	@Test
 	public void testRemoveNotYetCommitted() {
-		em = TestEnvironment.getPersistenceConnector("OwldbRemoveNotYetCommitted", storage, true,
+		em = TestEnvironment.getPersistenceConnector("OwldbRemoveNotYetCommitted", storage, false,
 				properties);
 		runner.removeNotYetCommitted(em, context());
 	}

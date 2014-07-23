@@ -1,7 +1,6 @@
 package cz.cvut.kbss.ontodriver.impl.owlapi;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -194,7 +193,6 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 	@Override
 	public void applyChanges(List<OWLOntologyChange> changes) throws OntoDriverException {
 		ensureOpen();
-		final List<OWLOntologyChange> applyFirst = new ArrayList<OWLOntologyChange>();
 		for (OWLOntologyChange change : changes) {
 			if (change.getOntology().getOntologyID().equals(workingOntology.getOntologyID())) {
 				assert (change instanceof OntologyMutable);
@@ -208,7 +206,6 @@ public abstract class OwlapiStorageConnector implements StorageConnector, Owlapi
 			// exception
 		}
 		try {
-			ontologyManager.applyChanges(applyFirst);
 			ontologyManager.applyChanges(changes);
 		} catch (OWLOntologyRenameException e) {
 			reload();
