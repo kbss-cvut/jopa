@@ -3,32 +3,49 @@ package cz.cvut.kbss.jopa.test.transactionsUnitTests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import javax.persistence.EntityTransaction;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.semanticweb.owlapi.model.IRI;
 
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
@@ -38,6 +55,7 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 
 public class UnitOfWorkTest {
 
@@ -71,9 +89,12 @@ public class UnitOfWorkTest {
 	private Identifier idB;
 	@Mock
 	private Identifier idD;
+	@Mock
+	EntityManagerImpl emMock;
+	@Mock
+	EntityTransaction transactionMock;
 
 	UnitOfWorkImpl uow;
-	EntityManagerImpl em;
 
 	@BeforeClass
 	public static void setUpBeforeClass() {
@@ -115,7 +136,9 @@ public class UnitOfWorkTest {
 		when(idA.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
 		when(idB.getJavaField()).thenReturn(OWLClassB.class.getDeclaredField("uri"));
 		when(idD.getJavaField()).thenReturn(OWLClassD.class.getDeclaredField("uri"));
+		when(emMock.getTransaction()).thenReturn(transactionMock);
 		uow = new UnitOfWorkImpl(serverSessionMock);
+		uow.setEntityManager(emMock);
 		final Field connectionField = UnitOfWorkImpl.class.getDeclaredField("storageConnection");
 		connectionField.setAccessible(true);
 		connectionField.set(uow, connectionMock);
@@ -174,13 +197,41 @@ public class UnitOfWorkTest {
 	}
 
 	@Test
-	public void testCalculateChanges() {
-		fail("Not yet implemented");
+	public void testReadObjectJustPersisted() throws Exception {
+		uow.registerNewObject(entityA, descriptor);
+		assertTrue(uow.contains(entityA));
+		final OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+		assertNotNull(res);
+		assertSame(entityA, res);
 	}
 
 	@Test
 	public void testCalculateNewObjects() {
-		fail("Not yet implemented");
+		uow.registerNewObject(entityA, descriptor);
+		uow.registerNewObject(entityB, descriptor);
+		uow.registerNewObject(entityD, descriptor);
+		uow.commit();
+
+		ArgumentCaptor<Object> pks = ArgumentCaptor.forClass(Object.class);
+		verify(cacheManagerMock, times(3)).add(pks.capture(), any(Object.class), eq(CONTEXT_URI));
+		final Set<URI> uris = new HashSet<>();
+		for (Object pk : pks.getAllValues()) {
+			uris.add(URI.create(pk.toString()));
+		}
+		assertTrue(uris.contains(entityA.getUri()));
+		assertTrue(uris.contains(entityB.getUri()));
+		assertTrue(uris.contains(entityD.getUri()));
+	}
+
+	@Test
+	public void testCalculateDeletedObjects() throws Exception {
+		final Object toRemove = uow.registerExistingObject(entityA, descriptor);
+		uow.registerExistingObject(entityB, descriptor);
+		uow.removeObject(toRemove);
+		uow.commit();
+
+		verify(cacheManagerMock).evict(OWLClassA.class, IRI.create(entityA.getUri()), CONTEXT_URI);
+		verify(connectionMock).remove(IRI.create(entityA.getUri()), descriptor);
 	}
 
 	@Test
@@ -265,11 +316,6 @@ public class UnitOfWorkTest {
 	}
 
 	@Test
-	public void testMergeChangesIntoParent() {
-		fail("Not yet implemented");
-	}
-
-	@Test
 	public void testRegisterExistingObject() {
 		OWLClassB clone = (OWLClassB) uow.registerExistingObject(entityB, descriptor);
 		assertNotNull(clone);
@@ -322,6 +368,25 @@ public class UnitOfWorkTest {
 		fail("This line should not have been reached.");
 	}
 
+	@Test(expected = PrimaryKeyNotSetException.class)
+	public void testRegisterNewObjectNullPkNotGenerated() throws Exception {
+		final OWLClassB b = new OWLClassB();
+		try {
+			uow.registerNewObject(b, descriptor);
+		} finally {
+			verify(connectionMock, never()).persist(any(Object.class), any(Object.class),
+					eq(descriptor));
+		}
+		fail("This line should not have been reached.");
+	}
+
+	@Test(expected = OWLEntityExistsException.class)
+	public void testRegisterNewObjectAlreadyExists() {
+		uow.registerNewObject(entityB, descriptor);
+		uow.registerNewObject(entityB, descriptor);
+		fail("This line should not have been reached.");
+	}
+
 	@Test
 	public void testReleaseUnitOfWork() throws Exception {
 		assertTrue(uow.isActive());
@@ -350,6 +415,12 @@ public class UnitOfWorkTest {
 		// Now try to remove it
 		uow.removeObject(newOne);
 		assertFalse(uow.contains(newOne));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testRemoveObjectNotRegistered() {
+		uow.removeObject(entityA);
+		fail("This line should not have been reached.");
 	}
 
 	@Test
@@ -381,7 +452,7 @@ public class UnitOfWorkTest {
 		this.uow.revertObject(clone);
 		assertEquals(entityA.getUri(), clone.getOwlClassA().getUri());
 		assertEquals(entityA.getStringAttribute(), clone.getOwlClassA().getStringAttribute());
-		 assertNotNull(clone.getOwlClassA().getTypes());
+		assertNotNull(clone.getOwlClassA().getTypes());
 	}
 
 	@Test
@@ -398,6 +469,184 @@ public class UnitOfWorkTest {
 		uow.setUseTransactionalOntologyForQueryProcessing();
 		assertTrue(uow.useTransactionalOntologyForQueryProcessing());
 		assertFalse(uow.useBackupOntologyForQueryProcessing());
+	}
+
+	@Test
+	public void testRollback() throws Exception {
+		uow.registerNewObject(entityA, descriptor);
+		final Object clone = uow.registerExistingObject(entityB, descriptor);
+		verify(connectionMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
+		assertTrue(uow.contains(entityA));
+		assertTrue(uow.contains(clone));
+
+		uow.rollback();
+		verify(connectionMock).rollback();
+		assertFalse(uow.contains(entityA));
+		assertFalse(uow.contains(clone));
+	}
+
+	@Test(expected = OWLPersistenceException.class)
+	public void testCommitFailed() throws Exception {
+		doThrow(IllegalStateException.class).when(connectionMock).commit();
+		try {
+			uow.commit();
+		} finally {
+			verify(emMock).removeCurrentPersistenceContext();
+		}
+	}
+
+	@Test
+	public void testClearCacheAfterCommit() throws Exception {
+		uow.registerNewObject(entityA, descriptor);
+		final Object clone = uow.registerExistingObject(entityB, descriptor);
+		verify(connectionMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
+		assertTrue(uow.contains(entityA));
+		assertTrue(uow.contains(clone));
+		uow.setShouldClearAfterCommit(true);
+		uow.commit();
+
+		verify(cacheManagerMock).evictAll();
+	}
+
+	@Test
+	public void testLoadFieldValue() throws Exception {
+		final OWLClassB b = new OWLClassB();
+		b.setUri(URI.create("http://bUri"));
+		final String stringAtt = "string";
+		final OWLClassB clone = (OWLClassB) uow.registerExistingObject(b, descriptor);
+		assertNull(clone.getStringAttribute());
+		final Field strField = OWLClassB.getStrAttField();
+		strField.setAccessible(true);
+		doAnswer(new Answer<Void>() {
+
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				final Field f = (Field) invocation.getArguments()[1];
+				f.set(invocation.getArguments()[0], stringAtt);
+				return null;
+			}
+
+		}).when(connectionMock).loadFieldValue(clone, strField, descriptor);
+
+		uow.loadEntityField(clone, strField);
+		assertNotNull(clone.getStringAttribute());
+		verify(connectionMock).loadFieldValue(clone, strField, descriptor);
+	}
+
+	@Test
+	public void testLoadFieldValueManagedType() throws Exception {
+		final OWLClassD d = new OWLClassD();
+		d.setUri(URI.create("http://dUri"));
+		final OWLClassD clone = (OWLClassD) uow.registerExistingObject(d, descriptor);
+		assertNull(clone.getOwlClassA());
+		final Field toLoad = OWLClassD.getOwlClassAField();
+		doAnswer(new Answer<Void>() {
+
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				final Field f = (Field) invocation.getArguments()[1];
+				f.set(invocation.getArguments()[0], entityA);
+				return null;
+			}
+
+		}).when(connectionMock).loadFieldValue(clone, toLoad, descriptor);
+
+		uow.loadEntityField(clone, toLoad);
+		assertNotNull(clone.getOwlClassA());
+		// Verify that the loaded value was cloned
+		assertNotSame(entityA, clone.getOwlClassA());
+		assertTrue(uow.contains(clone.getOwlClassA()));
+		verify(connectionMock).loadFieldValue(clone, toLoad, descriptor);
+	}
+
+	@Test(expected = OWLPersistenceException.class)
+	public void testLoadFieldValueNotRegistered() throws Exception {
+		try {
+			uow.loadEntityField(entityB, OWLClassB.getStrAttField());
+		} finally {
+			verify(connectionMock, never()).loadFieldValue(any(Object.class),
+					eq(OWLClassB.getStrAttField()), eq(descriptor));
+		}
+	}
+
+	@Test
+	public void testAttributeChanged() throws Exception {
+		when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+		final OWLClassA clone = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+		final Field strField = OWLClassA.getStrAttField();
+
+		uow.attributeChanged(clone, strField);
+		verify(connectionMock).merge(clone, strField, descriptor);
+	}
+
+	@Test(expected = OWLPersistenceException.class)
+	public void testAttributeChangedNotRegistered() throws Exception {
+		when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+		final Field strField = OWLClassA.getStrAttField();
+		try {
+			uow.attributeChanged(entityA, strField);
+		} finally {
+			verify(connectionMock, never()).merge(any(Object.class), eq(strField), eq(descriptor));
+		}
+		fail("This line should not have been reached.");
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testAttributeChangedOutsideTransaction() throws Exception {
+		final Field strField = OWLClassA.getStrAttField();
+		try {
+			uow.attributeChanged(entityA, strField);
+		} finally {
+			verify(connectionMock, never()).merge(any(Object.class), eq(strField), eq(descriptor));
+		}
+		fail("This line should not have been reached.");
+	}
+
+	@Test
+	public void testMergeDetachedExisting() throws Exception {
+		mergeDetachedTest();
+	}
+
+	@SuppressWarnings("unchecked")
+	private void mergeDetachedTest() throws Exception {
+		when(connectionMock.contains(IRI.create(entityA.getUri()), CONTEXT_URI)).thenReturn(
+				Boolean.TRUE);
+		final Attribute<? super OWLClassA, ?> strAtt = mock(Attribute.class);
+		when(strAtt.getJavaField()).thenReturn(OWLClassA.getStrAttField());
+		@SuppressWarnings("rawtypes")
+		final TypesSpecification typesAtt = mock(TypesSpecification.class);
+		when(typesAtt.getJavaField()).thenReturn(OWLClassA.getTypesField());
+		final Set<Attribute<? super OWLClassA, ?>> atts = new HashSet<>();
+		atts.add(strAtt);
+		when(typeA.getAttributes()).thenReturn(atts);
+		when(typeA.getTypes()).thenReturn(typesAtt);
+		final OWLClassA res = uow.mergeDetached(entityA, descriptor);
+		assertNotNull(res);
+		assertEquals(entityA.getUri(), res.getUri());
+		final ArgumentCaptor<Field> ac = ArgumentCaptor.forClass(Field.class);
+		verify(connectionMock, atLeastOnce())
+				.merge(any(Object.class), ac.capture(), eq(descriptor));
+		final List<Field> mergedFields = ac.getAllValues();
+		assertTrue(mergedFields.contains(OWLClassA.getStrAttField()));
+		assertTrue(mergedFields.contains(OWLClassA.getTypesField()));
+	}
+
+	@Test
+	public void testMergeDetachedEvictFromCache() throws Exception {
+		when(cacheManagerMock.contains(OWLClassA.class, IRI.create(entityA.getUri()), CONTEXT_URI))
+				.thenReturn(Boolean.TRUE);
+		mergeDetachedTest();
+		verify(cacheManagerMock).evict(OWLClassA.class, IRI.create(entityA.getUri()), CONTEXT_URI);
+	}
+
+	@Test
+	public void testMergeDetachedNew() throws Exception {
+		when(connectionMock.contains(IRI.create(entityA.getUri()), CONTEXT_URI)).thenReturn(
+				Boolean.FALSE);
+		final OWLClassA res = uow.mergeDetached(entityA, descriptor);
+		assertNotNull(res);
+		assertSame(entityA, res);
+		verify(connectionMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
 	}
 
 	private static class ServerSessionStub extends ServerSession {

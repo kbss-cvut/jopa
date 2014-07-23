@@ -161,6 +161,13 @@ public class TestCreateOperationsNativeStore {
 		runner.persistPropertiesEmpty(em, context());
 	}
 
+	@Test(expected = OWLEntityExistsException.class)
+	public void persistURITwiceInDifferentClasses() {
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameNativePersistURITwiceInDifferentClasses", storage, false, properties);
+		runner.persistURITwiceInDifferentClasses(em, context());
+	}
+
 	private URI context() {
 		// Don't use contexts for now
 		return null;

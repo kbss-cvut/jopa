@@ -160,6 +160,13 @@ public class TestCreateOperations {
 		runner.persistPropertiesEmpty(em, context());
 	}
 
+	@Test(expected = OWLEntityExistsException.class)
+	public void persistURITwiceInDifferentClasses() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistURITwiceInDifferentClasses",
+				storage, false, properties);
+		runner.persistURITwiceInDifferentClasses(em, context());
+	}
+
 	private URI context() {
 		// OWLAPI doesn't use contexts
 		return null;

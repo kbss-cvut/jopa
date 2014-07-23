@@ -353,4 +353,20 @@ public class CreateOperationsRunner {
 		assertEquals(entityB.getStringAttribute(), b.getStringAttribute());
 		assertNull(b.getProperties());
 	}
+
+	public void persistURITwiceInDifferentClasses(EntityManager em, URI ctx) {
+		logger.config("Test: persist two different entities (of different types) with the same URI.");
+		final URI pk = URI.create("http://krizik.felk.cvut.cz/jopa/onto/sameEntity");
+		final OWLClassA a = new OWLClassA();
+		a.setUri(pk);
+		final OWLClassB b = new OWLClassB();
+		b.setUri(pk);
+		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		em.getTransaction().begin();
+		em.persist(a, aDescriptor);
+		em.persist(b, bDescriptor);
+		em.getTransaction().commit();
+		fail("This line should not have been reached.");
+	}
 }

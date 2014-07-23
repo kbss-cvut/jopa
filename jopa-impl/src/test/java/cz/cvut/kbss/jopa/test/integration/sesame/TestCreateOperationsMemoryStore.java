@@ -149,16 +149,23 @@ public class TestCreateOperationsMemoryStore {
 
 	@Test
 	public void testPersistProperties() {
-		em = TestEnvironment.getPersistenceConnector("SesameNativePersistWithProperties", storage,
-				false, properties);
+		em = TestEnvironment.getPersistenceConnector("SesamePersistWithProperties", storage, false,
+				properties);
 		runner.persistProperties(em, context());
 	}
 
 	@Test
 	public void testPersistPropertiesEmpty() {
-		em = TestEnvironment.getPersistenceConnector("SesameNativePersistWithPropertiesEmpty",
-				storage, false, properties);
+		em = TestEnvironment.getPersistenceConnector("SesamePersistWithPropertiesEmpty", storage,
+				false, properties);
 		runner.persistPropertiesEmpty(em, context());
+	}
+
+	@Test(expected = OWLEntityExistsException.class)
+	public void persistURITwiceInDifferentClasses() {
+		em = TestEnvironment.getPersistenceConnector("SesamePersistURITwiceInDifferentClasses",
+				storage, false, properties);
+		runner.persistURITwiceInDifferentClasses(em, context());
 	}
 
 	private URI context() {

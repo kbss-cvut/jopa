@@ -44,7 +44,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private Map<Object, Object> deletedObjects;
 	private Map<Object, Object> newObjectsCloneToOriginal;
 	private Map<Object, Object> newObjectsOriginalToClone;
-	private Map<Object, Object> newObjectsKeyToClone;
+	private Map<IRI, Object> newObjectsKeyToClone;
 	private final RepositoryMap repoMap;
 
 	private boolean hasChanges;
@@ -68,10 +68,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private final ChangeManager changeManager;
 	private final QueryFactory queryFactory;
 	/**
-	 * This is a shortcut for the second level cache. Performance reasons (to
-	 * prevent server session method call chain).
+	 * This is a shortcut for the second level cache.
 	 */
-	protected final CacheManager cacheManager;
+	private final CacheManager cacheManager;
 
 	public UnitOfWorkImpl(AbstractSession parent) {
 		this.parent = parent;
@@ -118,7 +117,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		assert primaryKey != null;
 		assert descriptor != null;
 		// First try to find the object among new uncommitted objects
-		Object result = getNewObjectsKeyToClone().get(primaryKey);
+		Object result = getNewObjectsKeyToClone().get(
+				EntityPropertiesUtils.getValueAsIRI(primaryKey));
 		if (result != null && (isInRepository(descriptor, result))) {
 			// The result can be returned, since it is already registered in
 			// this UOW
@@ -146,54 +146,16 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * @param changeSet
 	 * @param registeredObjects
 	 */
-	protected void calculateChanges(UnitOfWorkChangeSet changeSet,
-			Map<Object, Object> registeredObjects) {
+	private void calculateChanges() {
+		final UnitOfWorkChangeSet changeSet = getUowChangeSet();
 		if (hasNew()) {
 			calculateNewObjects(changeSet);
 		}
 		if (hasDeleted()) {
-			for (Object clone : getDeletedObjects().keySet()) {
-				Object original = cloneToOriginals.get(clone);
-				if (original == null) {
-					throw new OWLPersistenceException("Cannot find an original for clone!");
-				}
-				EntityDescriptor descriptor = getEntityDescriptor(clone);
-				changeSet.addDeletedObject(ChangeSetFactory.createObjectChangeSet(original, clone,
-						descriptor));
-			}
+			calculateDeletedObjects(changeSet);
 		}
 		if (hasChanges()) {
-			try {
-				for (Object clone : cloneMapping.keySet()) {
-					if (getDeletedObjects().containsKey(clone)) {
-						// Make sure deleted objects are not persisted again
-						continue;
-					}
-					Object original = cloneToOriginals.get(clone);
-					if (original == null && !getNewObjectsCloneToOriginal().containsKey(clone)) {
-						throw new OWLPersistenceException("Cannot find an original for clone!");
-					}
-					if (original == null) {
-						continue; // It was a new object
-					}
-					EntityDescriptor descriptor = getEntityDescriptor(clone);
-					ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(original, clone,
-							descriptor);
-					final boolean anyChanges = changeManager.calculateChanges(chSet);
-					if (anyChanges) {
-						changeSet.addObjectChangeSet(chSet);
-					}
-				}
-			} catch (IllegalAccessException e) {
-				throw new OWLPersistenceException(e);
-			} catch (IllegalArgumentException e) {
-				throw new OWLPersistenceException(e);
-			} catch (OWLInferredAttributeModifiedException e) {
-				LOG.severe("Inferred attribute modified. This transaction won't be able to commit.");
-				if (entityManager != null) {
-					entityManager.getTransaction().setRollbackOnly();
-				}
-			}
+			calculateModifiedObjects(changeSet);
 		}
 	}
 
@@ -204,7 +166,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * @param changeSet
 	 *            UnitOfWorkChangeSet
 	 */
-	protected void calculateNewObjects(UnitOfWorkChangeSet changeSet) {
+	private void calculateNewObjects(UnitOfWorkChangeSet changeSet) {
 		if (changeSet == null) {
 			return;
 		}
@@ -224,6 +186,52 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			getNewObjectsOriginalToClone().put(original, clone);
 			changeSet.addNewObjectChangeSet(ChangeSetFactory.createObjectChangeSet(original, clone,
 					c));
+		}
+	}
+
+	private void calculateDeletedObjects(final UnitOfWorkChangeSet changeSet) {
+		for (Object clone : getDeletedObjects().keySet()) {
+			Object original = cloneToOriginals.get(clone);
+			if (original == null) {
+				throw new OWLPersistenceException("Cannot find an original for clone!");
+			}
+			EntityDescriptor descriptor = getEntityDescriptor(clone);
+			changeSet.addDeletedObject(ChangeSetFactory.createObjectChangeSet(original, clone,
+					descriptor));
+		}
+	}
+
+	private void calculateModifiedObjects(final UnitOfWorkChangeSet changeSet) {
+		try {
+			for (Object clone : cloneMapping.keySet()) {
+				if (getDeletedObjects().containsKey(clone)) {
+					// Make sure deleted objects are not persisted again
+					continue;
+				}
+				Object original = cloneToOriginals.get(clone);
+				if (original == null && !getNewObjectsCloneToOriginal().containsKey(clone)) {
+					throw new OWLPersistenceException("Cannot find an original for clone!");
+				}
+				if (original == null) {
+					continue; // It was a new object
+				}
+				EntityDescriptor descriptor = getEntityDescriptor(clone);
+				ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(original, clone,
+						descriptor);
+				final boolean anyChanges = changeManager.calculateChanges(chSet);
+				if (anyChanges) {
+					changeSet.addObjectChangeSet(chSet);
+				}
+			}
+		} catch (IllegalAccessException e) {
+			throw new OWLPersistenceException(e);
+		} catch (IllegalArgumentException e) {
+			throw new OWLPersistenceException(e);
+		} catch (OWLInferredAttributeModifiedException e) {
+			LOG.severe("Inferred attribute modified. This transaction won't be able to commit.");
+			if (entityManager != null) {
+				entityManager.getTransaction().setRollbackOnly();
+			}
 		}
 	}
 
@@ -318,7 +326,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	protected void commitToOntology() {
 		boolean hasChanges = this.hasNew || this.hasChanges || this.hasDeleted;
 		if (hasChanges) {
-			calculateChanges(getUowChangeSet(), cloneMapping);
+			calculateChanges();
 		}
 	}
 
@@ -489,11 +497,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		return newObjectsOriginalToClone;
 	}
 
-	public Map<Object, Object> getNewObjectsKeyToClone() {
+	public Map<IRI, Object> getNewObjectsKeyToClone() {
 		if (newObjectsKeyToClone == null) {
 			// Cannot use identity map, since it compares the key references
 			// which may not be the same
-			this.newObjectsKeyToClone = new HashMap<Object, Object>();
+			this.newObjectsKeyToClone = new HashMap<>();
 		}
 		return newObjectsKeyToClone;
 	}
@@ -957,6 +965,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			throw new NullPointerException();
 		}
 		try {
+			field.setAccessible(true);
 			if (field.get(entity) != null) {
 				return;
 			}
