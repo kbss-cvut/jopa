@@ -9,6 +9,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 
 /**
  * Strategy for singular data property values. </p>
@@ -59,10 +60,13 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 			if (!(val instanceof Literal)) {
 				continue;
 			}
+			if (value != null) {
+				throw new IntegrityConstraintViolatedException(
+						"Expected only one value of property " + property + ", but got multiple.");
+			}
 			Literal lit = (Literal) val;
 			datatype = lit.getDatatype();
 			value = SesameUtils.getDataPropertyValue(lit);
-			break;
 		}
 		if (value == null && LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Value of data property " + property.getIRI()

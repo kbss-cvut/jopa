@@ -1010,27 +1010,46 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	 */
 	private OWLLiteral getDataProperty(final OWLNamedIndividual subject,
 			final org.semanticweb.owlapi.model.OWLDataProperty property, boolean inferred) {
+		OWLLiteral value = null;
 		for (final OWLDataPropertyAssertionAxiom axiom : workingOntology
 				.getDataPropertyAssertionAxioms(subject)) {
-			if (axiom.getProperty().equals(property) && axiom.getSubject().equals(subject)) {
-				return axiom.getObject();
+			if (axiom.getProperty().equals(property)) {
+				if (value != null) {
+					throw new IntegrityConstraintViolatedException(
+							"Expected only one value of property " + property
+									+ ", but got multiple.");
+				}
+				value = axiom.getObject();
 			}
 		}
-		OWLLiteral inferredObject = null;
+		if (value != null) {
+			return value;
+		}
 		if (inferred) {
 			reasoner.flush();
 			final Set<OWLLiteral> inferredObjects = reasoner.getDataPropertyValues(subject,
 					property);
-			if (inferredObjects != null) {
-				if (inferredObjects.size() > 1) {
-					throw new IntegrityConstraintViolatedException(inferredObjects
-							+ " should be of size 1, but is " + inferredObjects.size());
-				} else {
-					inferredObject = inferredObjects.iterator().next();
-				}
+			return getInferredPropertyValue(property, inferredObjects);
+		}
+		return null;
+	}
+
+	private <T> T getInferredPropertyValue(
+			final org.semanticweb.owlapi.model.OWLProperty<?, ?> property,
+			final Set<T> inferredObjects) {
+		if (inferredObjects != null) {
+			switch (inferredObjects.size()) {
+			case 0:
+				return null;
+			case 1:
+				return inferredObjects.iterator().next();
+			default:
+				throw new IntegrityConstraintViolatedException(
+						"Expected only one inferred value of property " + property
+								+ ", but got multiple.");
 			}
 		}
-		return inferredObject;
+		return null;
 	}
 
 	/**
@@ -1138,28 +1157,28 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	 */
 	private OWLIndividual getObjectProperty(final OWLIndividual subject,
 			final org.semanticweb.owlapi.model.OWLObjectProperty property, boolean inferred) {
+		OWLIndividual ind = null;
 		for (final OWLObjectPropertyAssertionAxiom axiom : workingOntology
 				.getObjectPropertyAssertionAxioms(subject)) {
 			if (axiom.getProperty().equals(property)) {
-				return axiom.getObject();
+				if (ind != null) {
+					throw new IntegrityConstraintViolatedException(
+							"Expected only one value of property " + property
+									+ ", but got multiple.");
+				}
+				ind = axiom.getObject();
 			}
 		}
-		OWLNamedIndividual inferredObject = null;
+		if (ind != null) {
+			return ind;
+		}
 		if (inferred && subject.isNamed()) {
 			reasoner.flush();
 			final Set<OWLNamedIndividual> inferredObjects = reasoner.getObjectPropertyValues(
 					subject.asOWLNamedIndividual(), property).getFlattened();
-			if (inferredObjects != null) {
-				if (inferredObjects.size() > 1) {
-					throw new IntegrityConstraintViolatedException(inferredObjects
-							+ " should be of size 1, but is " + inferredObjects.size());
-					
-				} else {
-					inferredObject = inferredObjects.iterator().next();
-				}
-			}
+			return getInferredPropertyValue(property, inferredObjects);
 		}
-		return inferredObject;
+		return null;
 	}
 
 	/**

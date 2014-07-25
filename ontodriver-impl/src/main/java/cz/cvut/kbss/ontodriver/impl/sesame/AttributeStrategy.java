@@ -17,6 +17,7 @@ import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInternalException;
 
@@ -191,8 +192,12 @@ abstract class AttributeStrategy {
 			if (!internal.isUri(val)) {
 				continue;
 			}
+			if (objectUri != null) {
+				throw new IntegrityConstraintViolatedException(
+						"Expected only one value of property " + propertyUri
+								+ ", but got multiple.");
+			}
 			objectUri = (URI) val;
-			break;
 		}
 		return objectUri;
 	}
@@ -205,7 +210,8 @@ abstract class AttributeStrategy {
 			return null;
 		}
 		if (res.size() > 1) {
-			// TODO should we throw exception if we expected only single value?
+			throw new IntegrityConstraintViolatedException("Expected only one value of property "
+					+ propertyUri + ", but got multiple.");
 		}
 		final Value ob = res.iterator().next().getObject();
 		return ob;

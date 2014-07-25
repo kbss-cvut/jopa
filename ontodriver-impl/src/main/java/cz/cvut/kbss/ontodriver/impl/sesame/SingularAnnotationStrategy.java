@@ -9,6 +9,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 
 /**
  * Strategy for singular annotation property values.
@@ -56,6 +57,11 @@ class SingularAnnotationStrategy extends SingularDataPropertyStrategy {
 			final Literal lit = (Literal) val;
 			if (lang != null && !lang.equals(lit.getLanguage())) {
 				continue;
+			}
+			if (value != null) {
+				throw new IntegrityConstraintViolatedException(
+						"Expected only one value of annotation property " + property
+								+ ", but got multiple.");
 			}
 			datatype = lit.getDatatype();
 			value = SesameUtils.getDataPropertyValue(lit);
