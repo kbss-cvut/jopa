@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import javax.persistence.EntityTransaction;
-
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -16,6 +14,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -116,7 +115,7 @@ public class ServerSession extends AbstractSession {
 	}
 
 	public boolean transactionStarted(EntityTransaction t, EntityManager em) {
-		if (!t.isActive() || t.getRollbackOnly()) {
+		if (!t.isActive() || t.isRollbackOnly()) {
 			return false;
 		}
 		getRunningTransactions().put(t, em);
@@ -187,7 +186,8 @@ public class ServerSession extends AbstractSession {
 	 * @param uow
 	 *            Persistence context of the specified entity
 	 */
-	protected synchronized void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
+	protected synchronized void registerEntityWithPersistenceContext(Object entity,
+			UnitOfWorkImpl uow) {
 		if (entity == null || uow == null) {
 			throw new NullPointerException("Null passed to as argument. Entity: " + entity
 					+ ", unit of work: " + uow);

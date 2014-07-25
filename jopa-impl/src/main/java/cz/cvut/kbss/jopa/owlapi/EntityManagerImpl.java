@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.persistence.EntityTransaction;
 import javax.persistence.TransactionRequiredException;
 
 import org.semanticweb.owlapi.model.AddAxiom;
@@ -62,6 +61,7 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
@@ -382,7 +382,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		return open;
 	}
 
-	public javax.persistence.EntityTransaction getTransaction() {
+	@Override
+	public EntityTransaction getTransaction() {
 		return transaction.getTransaction();
 	}
 

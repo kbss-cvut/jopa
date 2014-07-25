@@ -19,11 +19,10 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
-import javax.persistence.PersistenceException;
-import javax.transaction.TransactionRequiredException;
-
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 
 public interface Query<ResultElement> {
 	/**
@@ -44,7 +43,7 @@ public interface Query<ResultElement> {
 	 * @throws LockTimeoutException
 	 *             if pessimistic locking fails and only the statement is rolled
 	 *             back
-	 * @throws PersistenceException
+	 * @throws OWLPersistenceException
 	 *             if the query execution exceeds the query timeout value set
 	 *             and the transaction is rolled back
 	 */

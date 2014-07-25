@@ -18,17 +18,15 @@ package cz.cvut.kbss.jopa.model;
 import java.net.URI;
 import java.util.List;
 
-import javax.persistence.EntityExistsException;
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.EntityTransaction;
-import javax.persistence.PersistenceException;
-import javax.transaction.TransactionRequiredException;
-
 import cz.cvut.kbss.jopa.NonJPA;
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 
 public interface EntityManager {
 
@@ -39,7 +37,7 @@ public interface EntityManager {
 	 * 
 	 * @param entity
 	 *            entity instance
-	 * @throws EntityExistsException
+	 * @throws OWLEntityExistsException
 	 *             if the entity already exists. (The EntityExistsException may
 	 *             be thrown when the persist operation is invoked, or the
 	 *             EntityExistsException or another PersistenceException may be
@@ -66,7 +64,7 @@ public interface EntityManager {
 	 *            entity instance
 	 * @param descriptor
 	 *            Entity descriptor
-	 * @throws EntityExistsException
+	 * @throws OWLEntityExistsException
 	 *             if the entity already exists. (The EntityExistsException may
 	 *             be thrown when the persist operation is invoked, or the
 	 *             EntityExistsException or another PersistenceException may be
@@ -217,7 +215,7 @@ public interface EntityManager {
 	 * 
 	 * @throws TransactionRequiredException
 	 *             if there is no transaction
-	 * @throws PersistenceException
+	 * @throws OWLPersistenceException
 	 *             if the flush fails
 	 */
 	public void flush();
@@ -260,8 +258,6 @@ public interface EntityManager {
 	 *             if invoked on a container-managed entity manager of type
 	 *             PersistenceContextType.TRANSACTION and there is no
 	 *             transaction.
-	 * @throws EntityNotFoundException
-	 *             if the entity no longer exists in the database
 	 */
 	public void refresh(final Object entity);
 
@@ -441,7 +437,7 @@ public interface EntityManager {
 	 * @throws IllegalStateException
 	 *             if invoked on a JTA EntityManager.
 	 */
-	public javax.persistence.EntityTransaction getTransaction();
+	public EntityTransaction getTransaction();
 
 	/**
 	 * @since JPA 2.0

@@ -1,12 +1,13 @@
 package cz.cvut.kbss.jopa.transactions;
 
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
-import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
-public class EntityTransactionImpl implements javax.persistence.EntityTransaction {
+public class EntityTransactionImpl implements EntityTransaction {
 
 	private static final Logger LOG = Logger.getLogger(EntityTransactionImpl.class.getName());
 
@@ -14,11 +15,11 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 
 	private boolean rollbackOnly = false;
 
-	private EntityTransactionWrapper wrapper;
+	private final EntityTransactionWrapper wrapper;
 
 	public EntityTransactionImpl(EntityTransactionWrapper wrapper) {
 		super();
-		this.wrapper = wrapper;
+		this.wrapper = Objects.requireNonNull(wrapper, ErrorUtils.constructNPXMessage("wrapper"));
 	}
 
 	/**
@@ -27,14 +28,14 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 	 * @throws IllegalStateException
 	 *             if the transaction is already active
 	 */
+	@Override
 	public void begin() {
 		if (isActive()) {
 			throw new IllegalStateException("Transaction already active!");
 		}
-		EntityManager em = this.wrapper.getEntityManager();
-		this.wrapper.transactionUOW = em.getCurrentPersistenceContext();
+		wrapper.begin();
 		this.active = true;
-		em.transactionStarted(this);
+		wrapper.getEntityManager().transactionStarted(this);
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.config("EntityTransaction begin.");
 		}
@@ -46,41 +47,41 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 	 * @throws IllegalStateException
 	 *             when the transaction is not active
 	 */
+	@Override
 	public void commit() {
-		if (!this.isActive()) {
+		if (!isActive()) {
 			throw new IllegalStateException("Cannot commit inactive transaction!");
 		}
 		try {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.fine("EntityTransaction commit started.");
 			}
-			if (this.wrapper.transactionUOW != null) {
-				if (!this.rollbackOnly) {
-					this.wrapper.transactionUOW.commit();
-				} else {
-					throw new RollbackException(
-							"Trying to commit transaction marked as rollback only.");
+			if (rollbackOnly) {
+				throw new RollbackException("Trying to commit transaction marked as rollback only.");
+			} else {
+				try {
+					wrapper.getTransactionUOW().commit();
+				} catch (RuntimeException ex) {
+					wrapper.getEntityManager().removeCurrentPersistenceContext();
+					throw new RollbackException(ex);
 				}
 			}
-		} catch (RuntimeException ex) {
-			ex.printStackTrace();
-			if (this.wrapper.transactionUOW != null) {
-				this.wrapper.getEntityManager().removeCurrentPersistenceContext();
-				this.wrapper.transactionUOW.release();
-				throw new RollbackException(ex);
-			}
 		} finally {
-			this.active = false;
-			this.rollbackOnly = false;
-			if (wrapper.transactionUOW != null && wrapper.transactionUOW.shouldReleaseAfterCommit()) {
-				this.wrapper.getEntityManager().removeCurrentPersistenceContext();
+			if (wrapper.getTransactionUOW().shouldReleaseAfterCommit()) {
+				wrapper.getEntityManager().removeCurrentPersistenceContext();
 			}
-			this.wrapper.setTransactionUOW(null);
-			this.wrapper.getEntityManager().transactionFinished(this);
+			cleanup();
 			if (LOG.isLoggable(Level.FINE)) {
 				LOG.config("EntityTransaction commit finished.");
 			}
 		}
+	}
+
+	private void cleanup() {
+		this.active = false;
+		this.rollbackOnly = false;
+		wrapper.setTransactionUOW(null);
+		wrapper.getEntityManager().transactionFinished(this);
 	}
 
 	/**
@@ -89,18 +90,14 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 	 * @throws IllegalStateException
 	 *             when the transaction is not active
 	 */
+	@Override
 	public void rollback() {
-		if (!this.isActive()) {
+		if (!isActive()) {
 			throw new IllegalStateException("Cannot rollback inactive transaction!");
 		}
-		if (wrapper.getTransactionUOW() != null) {
-			this.wrapper.transactionUOW.release();
-		}
-		this.active = false;
-		this.rollbackOnly = false;
-		this.wrapper.getEntityManager().removeCurrentPersistenceContext();
-		this.wrapper.setTransactionUOW(null);
-		this.wrapper.getEntityManager().transactionFinished(this);
+		wrapper.getTransactionUOW().rollback();
+		wrapper.getEntityManager().removeCurrentPersistenceContext();
+		cleanup();
 		if (LOG.isLoggable(Level.FINE)) {
 			LOG.config("EntityTransaction rolled back.");
 		}
@@ -113,8 +110,9 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 	 * @throws IllegalStateException
 	 *             when the transaction is not active
 	 */
+	@Override
 	public void setRollbackOnly() {
-		if (!this.isActive()) {
+		if (!isActive()) {
 			throw new IllegalStateException("Cannot set rollbackOnly on inactive transaction!");
 		}
 		this.rollbackOnly = true;
@@ -126,23 +124,26 @@ public class EntityTransactionImpl implements javax.persistence.EntityTransactio
 	 * @throws IllegalStateException
 	 *             when the transacion is not active
 	 */
-	public boolean getRollbackOnly() {
-		if (!this.isActive()) {
+	@Override
+	public boolean isRollbackOnly() {
+		if (!isActive()) {
 			throw new IllegalStateException("Accessing rollbackOnly on inactive transaction!");
 		}
 		return this.rollbackOnly;
 	}
 
+	@Override
 	public boolean isActive() {
-		return this.active;
+		return active;
 	}
 
 	/**
 	 * Roll back any changes if we forgot to commit or roll it back manually
 	 */
+	@Override
 	public void finalize() throws Throwable {
-		if (this.isActive()) {
-			this.rollback();
+		if (isActive()) {
+			rollback();
 		}
 		super.finalize();
 	}

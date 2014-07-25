@@ -2,14 +2,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>cz.cvut.kbss.jopa</groupId>
-        <artifactId>jopa-parent</artifactId>
-        <version>0.4-SNAPSHOT</version>
-        <relativePath>../jopa-parent/pom.xml</relativePath>
-    </parent>
+	<parent>
+		<groupId>cz.cvut.kbss.jopa</groupId>
+		<artifactId>jopa-parent</artifactId>
+		<version>0.4-SNAPSHOT</version>
+		<relativePath>../jopa-parent/pom.xml</relativePath>
+	</parent>
 
-    <name>JOPA - API</name>
+	<name>JOPA - API</name>
 	<artifactId>jopa-api</artifactId>
 	<packaging>jar</packaging>
 
@@ -22,7 +22,7 @@
 	</repositories>
 
 	<dependencies>
-        <!-- TODO remove dependency on OWLAPI-->
+		<!-- TODO remove dependency on OWLAPI -->
 		<dependency>
 			<groupId>org.semanticweb</groupId>
 			<artifactId>owlapi</artifactId>
@@ -32,11 +32,6 @@
 		</dependency>
 		<!--dependency> <groupId>cz.cvut.kbss</groupId> <artifactId>owl2query</artifactId> 
 			<version>1.0-SNAPSHOT</version> <type>jar</type> <scope>compile</scope> </dependency -->
-		<dependency>
-			<groupId>javax.persistence</groupId>
-			<artifactId>persistence-api</artifactId>
-			<version>1.0.2</version>
-		</dependency>
 	</dependencies>
 
 </project>

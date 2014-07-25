@@ -19,7 +19,7 @@ package cz.cvut.kbss.jopa.transactions;
  * Taken from javax.persistence.EntityTransacion
  * 
  * @author kidney
- *
+ * 
  */
 public interface EntityTransaction {
 
@@ -31,7 +31,7 @@ public interface EntityTransaction {
 
 	public void setRollbackOnly();
 
-	public boolean getRollbackOnly();
+	public boolean isRollbackOnly();
 
 	public boolean isActive();
 }
