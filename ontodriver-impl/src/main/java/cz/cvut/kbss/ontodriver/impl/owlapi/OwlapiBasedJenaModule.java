@@ -22,7 +22,7 @@ public class OwlapiBasedJenaModule extends BaseOwlapiModule {
 	public void close() throws OntoDriverException {
 		factory.releaseStorageConnector(connector);
 		this.internal = null;
-		this.open = false;
+		super.close();
 	}
 
 	@Override

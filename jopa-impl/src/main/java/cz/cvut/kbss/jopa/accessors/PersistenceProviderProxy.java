@@ -33,12 +33,7 @@ class PersistenceProviderProxy implements PersistenceProviderFacade {
 
 		T entity = null;
 		CacheManager cache = serverSession.getLiveObjectCache();
-		cache.acquireReadLock();
-		try {
-			entity = cache.get(cls, primaryKey, context);
-		} finally {
-			cache.releaseReadLock();
-		}
+		entity = cache.get(cls, primaryKey, context);
 		return entity;
 	}
 

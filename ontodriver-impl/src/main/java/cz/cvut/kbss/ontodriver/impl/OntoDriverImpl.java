@@ -19,8 +19,8 @@ import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.StorageModule;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInitializationException;
-import cz.cvut.kbss.ontodriver.impl.jena.DriverJenaFactory;
-import cz.cvut.kbss.ontodriver.impl.owlapi.DriverOwlapiFactory;
+import cz.cvut.kbss.ontodriver.impl.jena.DriverCachingJenaFactory;
+import cz.cvut.kbss.ontodriver.impl.owlapi.DriverCachingOwlapiFactory;
 import cz.cvut.kbss.ontodriver.impl.owlim.DriverOwlimFactory;
 import cz.cvut.kbss.ontodriver.impl.sesame.DriverSesameFactory;
 
@@ -187,6 +187,7 @@ public class OntoDriverImpl implements OntoDriver {
 								+ " does not implement the DriverFactory interface."));
 			}
 			// This cast is safe thanks to the check above
+			@SuppressWarnings("unchecked")
 			final Constructor<? extends DriverFactory> ctor = (Constructor<? extends DriverFactory>) factoryClass
 					.getConstructor(OntologyStorageProperties.class, Map.class);
 			return ctor;
@@ -209,8 +210,8 @@ public class OntoDriverImpl implements OntoDriver {
 	 */
 	private static Map<OntologyConnectorType, Class<? extends DriverFactory>> initDefaultFactories() {
 		final Map<OntologyConnectorType, Class<? extends DriverFactory>> m = new HashMap<OntologyConnectorType, Class<? extends DriverFactory>>();
-		m.put(OntologyConnectorType.OWLAPI, DriverOwlapiFactory.class);
-		m.put(OntologyConnectorType.JENA, DriverJenaFactory.class);
+		m.put(OntologyConnectorType.OWLAPI, DriverCachingOwlapiFactory.class);
+		m.put(OntologyConnectorType.JENA, DriverCachingJenaFactory.class);
 		m.put(OntologyConnectorType.OWLIM, DriverOwlimFactory.class);
 		m.put(OntologyConnectorType.SESAME, DriverSesameFactory.class);
 		return m;
