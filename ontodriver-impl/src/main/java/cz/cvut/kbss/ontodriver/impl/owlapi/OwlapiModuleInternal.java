@@ -1022,11 +1022,11 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			final Set<OWLLiteral> inferredObjects = reasoner.getDataPropertyValues(subject,
 					property);
 			if (inferredObjects != null) {
-				if (inferredObjects.size() == 1) {
-					inferredObject = inferredObjects.iterator().next();
-				} else {
+				if (inferredObjects.size() > 1) {
 					throw new IntegrityConstraintViolatedException(inferredObjects
 							+ " should be of size 1, but is " + inferredObjects.size());
+				} else {
+					inferredObject = inferredObjects.iterator().next();
 				}
 			}
 		}
@@ -1150,11 +1150,12 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			final Set<OWLNamedIndividual> inferredObjects = reasoner.getObjectPropertyValues(
 					subject.asOWLNamedIndividual(), property).getFlattened();
 			if (inferredObjects != null) {
-				if (inferredObjects.size() == 1) {
-					inferredObject = inferredObjects.iterator().next();
-				} else {
+				if (inferredObjects.size() > 1) {
 					throw new IntegrityConstraintViolatedException(inferredObjects
 							+ " should be of size 1, but is " + inferredObjects.size());
+					
+				} else {
+					inferredObject = inferredObjects.iterator().next();
 				}
 			}
 		}
