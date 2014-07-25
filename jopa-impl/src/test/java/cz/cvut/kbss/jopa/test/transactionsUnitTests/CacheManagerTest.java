@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,7 +20,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.CacheManagerImpl;
@@ -75,14 +75,39 @@ public class CacheManagerTest {
 		this.mngr = new CacheManagerImpl(Collections.<String, String> emptyMap());
 	}
 
-	@Test(expected = OWLPersistenceException.class)
-	public void testConstructorNumberInvalid() {
-		LOG.config("Invalid value for TTL in constructor.");
+	@Test
+	public void testConstructorNumberInvalid() throws Exception {
+		LOG.config("Invalid value for TTL in constructor. Should use default one.");
 		final Map<String, String> m = new HashMap<>();
 		m.put(OWLAPIPersistenceProperties.CACHE_TTL, "1s");
 		m.put(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE, "2");
 		final CacheManager man = new CacheManagerImpl(m);
-		assertNull(man);
+		assertNotNull(man);
+		final Field ttlField = CacheManagerImpl.class.getDeclaredField("timeToLive");
+		ttlField.setAccessible(true);
+		final Field defaultTtlField = CacheManagerImpl.class.getDeclaredField("DEFAULT_TTL");
+		defaultTtlField.setAccessible(true);
+		final long expected = defaultTtlField.getLong(null);
+		final long actual = ttlField.getLong(man);
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testConstructorInvalidSweepRate() throws Exception {
+		LOG.config("Invalid value for sweep rate in constructor. Should use default one.");
+		final Map<String, String> m = new HashMap<>();
+		m.put(OWLAPIPersistenceProperties.CACHE_TTL, "1");
+		m.put(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE, "fdsfa");
+		final CacheManager man = new CacheManagerImpl(m);
+		assertNotNull(man);
+		final Field sweepRateField = CacheManagerImpl.class.getDeclaredField("sweepRate");
+		sweepRateField.setAccessible(true);
+		final Field defaultSweepRateField = CacheManagerImpl.class
+				.getDeclaredField("DEFAULT_SWEEP_RATE");
+		defaultSweepRateField.setAccessible(true);
+		final long expected = defaultSweepRateField.getLong(null);
+		final long actual = sweepRateField.getLong(man);
+		assertEquals(expected, actual);
 	}
 
 	@Test
@@ -261,10 +286,19 @@ public class CacheManagerTest {
 
 	@Test
 	public void testEvictByContextNull() {
-		mngr.add(testA.getUri(), testA, null);
 		LOG.config("Test: evict by context. Null passed as context identifier.");
+		mngr.add(testA.getUri(), testA, null);
 		mngr.evict((URI) null);
 		assertNull(mngr.get(testA.getClass(), testA.getUri(), null));
+	}
+
+	@Test
+	public void testEvictByContextUnknownContext() {
+		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
+		mngr.add(testB.getUri(), testB, CONTEXT_TWO);
+		mngr.evict(URI.create("http://someUnknownContextUri"));
+		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
+		assertTrue(mngr.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
 	}
 
 	@Test
@@ -332,23 +366,6 @@ public class CacheManagerTest {
 		}
 		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
 		assertFalse(mngr.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
-	}
-
-	@Test
-	public void testReadLock() throws Exception {
-		boolean res = mngr.acquireReadLock();
-		assertTrue(res);
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				assertTrue(mngr.acquireReadLock());
-				mngr.releaseReadLock();
-			}
-		});
-		t.start();
-		t.join();
-		mngr.releaseReadLock();
-		assertTrue(mngr.acquireWriteLock());
 	}
 
 	private void initSweepeableManager() {

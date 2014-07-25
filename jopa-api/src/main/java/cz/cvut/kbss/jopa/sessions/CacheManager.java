@@ -53,45 +53,6 @@ public interface CacheManager extends Cache {
 	public void clearInferredObjects();
 
 	/**
-	 * Acquire a read lock. </p>
-	 * 
-	 * Read locks are non-exclusive, i. e. multiple threads can simultaneously
-	 * acquire read locks and read the same data. If an exclusive lock is held
-	 * (see {@link #acquireWriteLock()}) the thread blocks until the exclusive
-	 * lock is released.
-	 * 
-	 * @return True if the lock was successfully acquired, false otherwise.
-	 */
-	public boolean acquireReadLock();
-
-	/**
-	 * Release the previously acquired read lock. </p>
-	 * 
-	 * @see #acquireReadLock()
-	 */
-	public void releaseReadLock();
-
-	/**
-	 * Acquire an exclusive write lock. </p>
-	 * 
-	 * Acquiring write lock exclusively locks the cache manager so the calling
-	 * thread can modify the data in the cache. Since the write lock is
-	 * exclusive, if another thread already holds a lock (no matter whether
-	 * exclusive or non-exclusive), the calling thread waits until the lock is
-	 * released.
-	 * 
-	 * @return True if the lock was successfully acquired, false otherwise.
-	 */
-	public boolean acquireWriteLock();
-
-	/**
-	 * Release the previously acquired write lock. </p>
-	 * 
-	 * @see #acquireWriteLock()
-	 */
-	public void releaseWriteLock();
-
-	/**
 	 * Set the inferred classes for this cache manager. </p>
 	 * 
 	 * Entities from inferred classes are special in that when anything in the

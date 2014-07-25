@@ -310,12 +310,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		this.cloneBuilder.reset();
 		this.uowChangeSet = null;
 		if (shouldClearCacheAfterCommit) {
-			cacheManager.acquireWriteLock();
-			try {
-				cacheManager.evictAll();
-			} finally {
-				cacheManager.releaseWriteLock();
-			}
+			cacheManager.evictAll();
 			this.shouldReleaseAfterCommit = true;
 		}
 	}
@@ -574,13 +569,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			return true;
 		}
 		if (primaryKey != null) {
-			cacheManager.acquireReadLock();
-			try {
-				return cacheManager.contains(entity.getClass(), primaryKey,
-						descriptor.getEntityContext());
-			} finally {
-				cacheManager.releaseReadLock();
-			}
+			return cacheManager.contains(entity.getClass(), primaryKey,
+					descriptor.getEntityContext());
 		}
 		return false;
 	}
@@ -617,12 +607,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 */
 	public void mergeChangesIntoParent() {
 		if (hasChanges()) {
-			getLiveObjectCache().acquireWriteLock();
-			try {
-				mergeManager.mergeChangesFromChangeSet(getUowChangeSet());
-			} finally {
-				getLiveObjectCache().releaseWriteLock();
-			}
+			mergeManager.mergeChangesFromChangeSet(getUowChangeSet());
 		}
 		// Mark new persistent object as existing and managed
 		Iterator<?> it = getNewObjectsCloneToOriginal().keySet().iterator();
@@ -690,21 +675,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			unregisterObject(clone);
 			throw e;
 		}
-
-		cacheManager.acquireReadLock();
-		try {
-			if (cacheManager.contains(clone.getClass(), iri, descriptor.getEntityContext())) {
-				cacheManager.releaseReadLock();
-				cacheManager.acquireWriteLock();
-				try {
-					cacheManager.evict(entity.getClass(), iri, descriptor.getEntityContext());
-					cacheManager.acquireReadLock();
-				} finally {
-					cacheManager.releaseWriteLock();
-				}
-			}
-		} finally {
-			cacheManager.releaseReadLock();
+		if (cacheManager.contains(clone.getClass(), iri, descriptor.getEntityContext())) {
+			cacheManager.evict(entity.getClass(), iri, descriptor.getEntityContext());
 		}
 		setHasChanges();
 		return clone;
@@ -1006,12 +978,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	public void removeObjectFromCache(Object toRemove, URI context) {
 		Objects.requireNonNull(toRemove, ErrorUtils.constructNPXMessage("toRemove"));
 		final Object primaryKey = getIdentifier(toRemove);
-		cacheManager.acquireWriteLock();
-		try {
-			cacheManager.evict(toRemove.getClass(), primaryKey, context);
-		} finally {
-			cacheManager.releaseWriteLock();
-		}
+		cacheManager.evict(toRemove.getClass(), primaryKey, context);
 	}
 
 	@Override
@@ -1171,22 +1138,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private <T> T getObjectFromCache(Class<T> cls, Object primaryKey, URI context) {
 		assert cls != null;
 		assert primaryKey != null;
-		cacheManager.acquireReadLock();
-		try {
-			final T entity = cacheManager.get(cls, primaryKey, context);
-			return entity;
-		} finally {
-			cacheManager.releaseReadLock();
-		}
+		return cacheManager.get(cls, primaryKey, context);
 	}
 
 	public void putObjectIntoCache(Object primaryKey, Object entity, URI context) {
-		cacheManager.acquireWriteLock();
-		try {
-			cacheManager.add(primaryKey, entity, context);
-		} finally {
-			cacheManager.releaseWriteLock();
-		}
+		cacheManager.add(primaryKey, entity, context);
 	}
 
 	private IRI getIdentifier(Object entity) {

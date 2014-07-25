@@ -16,26 +16,6 @@ public class DisabledCacheManager implements CacheManager {
 	}
 
 	@Override
-	public boolean acquireReadLock() {
-		return true;
-	}
-
-	@Override
-	public void releaseReadLock() {
-		// Do nothing
-	}
-
-	@Override
-	public boolean acquireWriteLock() {
-		return true;
-	}
-
-	@Override
-	public void releaseWriteLock() {
-		// Do nothing
-	}
-
-	@Override
 	public void setInferredClasses(Set<Class<?>> inferredClasses) {
 		// Do nothing
 	}

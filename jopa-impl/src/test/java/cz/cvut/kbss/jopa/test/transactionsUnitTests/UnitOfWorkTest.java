@@ -125,8 +125,6 @@ public class UnitOfWorkTest {
 		when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
 		when(serverSessionMock.getManagedTypes()).thenReturn(managedTypes);
 		when(serverSessionMock.getLiveObjectCache()).thenReturn(cacheManagerMock);
-		when(cacheManagerMock.acquireReadLock()).thenReturn(Boolean.TRUE);
-		when(cacheManagerMock.acquireWriteLock()).thenReturn(Boolean.TRUE);
 		when(metamodelMock.entity(OWLClassA.class)).thenReturn(typeA);
 		when(metamodelMock.entity(OWLClassB.class)).thenReturn(typeB);
 		when(metamodelMock.entity(OWLClassD.class)).thenReturn(typeD);

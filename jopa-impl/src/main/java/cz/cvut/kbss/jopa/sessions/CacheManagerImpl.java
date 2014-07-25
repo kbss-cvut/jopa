@@ -19,14 +19,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 /**
- * The CacheManager is responsible for managing the live object cache of our
- * session. It controls adding and removing objects from the cache. It supports
- * finding object by id or by a reference to it.
+ * Manages the second level cache shared by all persistence contexts. </p>
+ * 
+ * This implementation of CacheManager uses cache-wide locking, i. e. the whole
+ * cache is locked when an entity is being put in it, no matter that only one
+ * context is affected by the change.
  * 
  * 
  * @author kidney
@@ -36,13 +37,12 @@ public class CacheManagerImpl implements CacheManager {
 
 	private static final Logger LOG = Logger.getLogger(CacheManagerImpl.class.getName());
 
-	// TODO Modify cache manager to handle locking internally on the repo cache
-	// level
-
-	private static final Long DEFAULT_TTL = 60000L;
+	/** Default time to live in millis */
+	private static final long DEFAULT_TTL = 60000L;
 	// Initial delay is the sweep rate multiplied by this multiplier
 	private static final int DELAY_MULTIPLIER = 2;
-	private static final long DEFAULT_SWEEP_RATE = 30L;
+	/** Default sweep rate in millis */
+	private static final long DEFAULT_SWEEP_RATE = 30000L;
 
 	private Set<Class<?>> inferredClasses;
 
@@ -58,7 +58,7 @@ public class CacheManagerImpl implements CacheManager {
 	private final ScheduledExecutorService sweeperScheduler;
 	private long initDelay;
 	private long sweepRate;
-	private Long timeToLive;
+	private long timeToLive;
 	private volatile boolean sweepRunning;
 
 	public CacheManagerImpl(Map<String, String> properties) {
@@ -69,31 +69,38 @@ public class CacheManagerImpl implements CacheManager {
 		this.writeLock = lock.writeLock();
 		this.cacheSweeper = new CacheSweeper();
 		this.sweeperScheduler = Executors.newSingleThreadScheduledExecutor();
-		sweeperScheduler.scheduleAtFixedRate(cacheSweeper, initDelay, sweepRate, TimeUnit.SECONDS);
+		sweeperScheduler.scheduleAtFixedRate(cacheSweeper, initDelay, sweepRate,
+				TimeUnit.MILLISECONDS);
 	}
 
 	private void initSettings(Map<String, String> properties) {
 		if (!properties.containsKey(OWLAPIPersistenceProperties.CACHE_TTL)) {
 			this.timeToLive = DEFAULT_TTL;
 		} else {
+			final String strCacheTtl = properties.get(OWLAPIPersistenceProperties.CACHE_TTL);
 			try {
 				// The property is in seconds, we need milliseconds
-				this.timeToLive = Long.valueOf(properties
-						.get(OWLAPIPersistenceProperties.CACHE_TTL)) * 1000;
+				this.timeToLive = Long.parseLong(strCacheTtl) * 1000;
 			} catch (NumberFormatException e) {
-				throw new OWLPersistenceException("Unable to parse long value from "
-						+ properties.get(OWLAPIPersistenceProperties.CACHE_TTL), e);
+				LOG.log(Level.SEVERE,
+						"Unable to parse cache time to live setting value {0}, using default value.",
+						strCacheTtl);
+				this.timeToLive = DEFAULT_TTL;
 			}
 		}
 		if (!properties.containsKey(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE)) {
 			this.sweepRate = DEFAULT_SWEEP_RATE;
 		} else {
+			final String strSweepRate = properties
+					.get(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE);
 			try {
-				this.sweepRate = Long.parseLong(properties
-						.get(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE));
+				// The property is in seconds, we need milliseconds
+				this.sweepRate = Long.parseLong(strSweepRate) * 1000;
 			} catch (NumberFormatException e) {
-				throw new OWLPersistenceException("Unable to parse long value from "
-						+ properties.get(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE), e);
+				LOG.log(Level.SEVERE,
+						"Unable to parse sweep rate setting value {0}, using default value.",
+						strSweepRate);
+				this.sweepRate = DEFAULT_SWEEP_RATE;
 			}
 		}
 		this.initDelay = DELAY_MULTIPLIER * sweepRate;
@@ -104,29 +111,35 @@ public class CacheManagerImpl implements CacheManager {
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 
-		cache.put(primaryKey, entity, context);
-	}
-
-	/**
-	 * Create a particular implementation of the Map interface. This method
-	 * enables the implementation to be changed according to our needs.
-	 * 
-	 * @return A new map instance.
-	 */
-	protected Map<Object, Object> createMap() {
-		return new HashMap<Object, Object>();
+		acquireWriteLock();
+		try {
+			cache.put(primaryKey, entity, context);
+		} finally {
+			releaseWriteLock();
+		}
 	}
 
 	/**
 	 * Releases the live object cache.
 	 */
 	private void releaseCache() {
-		this.cache = new CacheImpl();
+		acquireWriteLock();
+		try {
+			this.cache = new CacheImpl();
+		} finally {
+			releaseWriteLock();
+		}
 	}
 
+	@Override
 	public void clearInferredObjects() {
-		for (Class<?> c : getInferredClasses()) {
-			evict(c);
+		acquireWriteLock();
+		try {
+			for (Class<?> c : getInferredClasses()) {
+				cache.evict(c);
+			}
+		} finally {
+			releaseWriteLock();
 		}
 	}
 
@@ -135,7 +148,12 @@ public class CacheManagerImpl implements CacheManager {
 		if (cls == null || primaryKey == null) {
 			return null;
 		}
-		return cache.get(cls, primaryKey, context);
+		acquireReadLock();
+		try {
+			return cache.get(cls, primaryKey, context);
+		} finally {
+			releaseReadLock();
+		}
 	}
 
 	/**
@@ -144,7 +162,7 @@ public class CacheManagerImpl implements CacheManager {
 	 * Inferred classes (i. e. classes with inferred attributes) are tracked
 	 * separately since they require special behavior.
 	 * 
-	 * @return
+	 * @return Set of inferred classes
 	 */
 	public Set<Class<?>> getInferredClasses() {
 		if (inferredClasses == null) {
@@ -162,18 +180,22 @@ public class CacheManagerImpl implements CacheManager {
 	 * @param inferredClasses
 	 *            The set of inferred classes
 	 */
+	@Override
 	public void setInferredClasses(Set<Class<?>> inferredClasses) {
 		this.inferredClasses = inferredClasses;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	public boolean contains(Class<?> cls, Object primaryKey) {
 		if (cls == null || primaryKey == null) {
 			return false;
 		}
-		return cache.contains(cls, primaryKey);
+		acquireReadLock();
+		try {
+			return cache.contains(cls, primaryKey);
+		} finally {
+			releaseReadLock();
+		}
 	}
 
 	@Override
@@ -181,15 +203,24 @@ public class CacheManagerImpl implements CacheManager {
 		if (cls == null || primaryKey == null) {
 			return false;
 		}
-		return cache.contains(cls, primaryKey, context);
+		acquireReadLock();
+		try {
+			return cache.contains(cls, primaryKey, context);
+		} finally {
+			releaseReadLock();
+		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	public void evict(Class<?> cls) {
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
-		cache.evict(cls);
+
+		acquireWriteLock();
+		try {
+			cache.evict(cls);
+		} finally {
+			releaseWriteLock();
+		}
 	}
 
 	@Override
@@ -197,37 +228,43 @@ public class CacheManagerImpl implements CacheManager {
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 
-		cache.evict(cls, primaryKey, context);
+		acquireWriteLock();
+		try {
+			cache.evict(cls, primaryKey, context);
+		} finally {
+			releaseWriteLock();
+		}
 
 	}
 
 	@Override
 	public void evict(URI context) {
-		cache.evict(context);
+		acquireWriteLock();
+		try {
+			cache.evict(context);
+		} finally {
+			releaseWriteLock();
+		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	public void evictAll() {
 		releaseCache();
 	}
 
-	public boolean acquireReadLock() {
+	private void acquireReadLock() {
 		readLock.lock();
-		return true;
 	}
 
-	public void releaseReadLock() {
+	private void releaseReadLock() {
 		readLock.unlock();
 	}
 
-	public boolean acquireWriteLock() {
+	private void acquireWriteLock() {
 		writeLock.lock();
-		return true;
 	}
 
-	public void releaseWriteLock() {
+	private void releaseWriteLock() {
 		writeLock.unlock();
 	}
 
