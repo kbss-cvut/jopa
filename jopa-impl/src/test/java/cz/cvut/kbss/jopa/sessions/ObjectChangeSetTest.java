@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.transactionsUnitTests;
+package cz.cvut.kbss.jopa.sessions;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

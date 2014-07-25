@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
@@ -76,6 +77,23 @@ public interface UnitOfWork extends Session {
 	 *             If an ontology access error occurs
 	 */
 	public boolean isConsistent(URI context);
+
+	/**
+	 * Loads value of the specified field for the specified entity. </p>
+	 * 
+	 * The value is set on the entity.
+	 * 
+	 * @param entity
+	 *            The entity to load field for
+	 * @param field
+	 *            The field to load
+	 * @throws NullPointerException
+	 *             If {@code entity} or {@code field} is {@code null}
+	 * @throws OWLPersistenceException
+	 *             If an error occurs, this may be e. g. that the field is not
+	 *             present on the entity, an ontology access error occurred etc.
+	 */
+	public <T> void loadEntityField(T entity, Field field);
 
 	/**
 	 * Merges the state of the given entity into the current persistence

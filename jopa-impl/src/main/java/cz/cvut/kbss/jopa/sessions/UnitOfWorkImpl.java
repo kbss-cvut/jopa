@@ -167,9 +167,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 *            UnitOfWorkChangeSet
 	 */
 	private void calculateNewObjects(UnitOfWorkChangeSet changeSet) {
-		if (changeSet == null) {
-			return;
-		}
 		Iterator<?> it = getNewObjectsCloneToOriginal().keySet().iterator();
 		while (it.hasNext()) {
 			Object clone = it.next();
@@ -248,9 +245,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	public boolean contains(Object entity) {
-		if (entity == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+
 		return isObjectManaged(entity);
 	}
 
@@ -259,7 +255,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			LOG.fine("UnitOfWork commit started.");
 		}
 		if (!isActive()) {
-			throw new OWLPersistenceException("Cannot commit inactive Unit of Work!");
+			throw new IllegalStateException("Cannot commit inactive Unit of Work!");
 		}
 		this.inCommit = true;
 		commitUnitOfWork();
@@ -273,7 +269,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			LOG.fine("UnitOfWork rollback started.");
 		}
 		if (!isActive()) {
-			throw new OWLPersistenceException("Cannot rollback inactive Unit of Work!");
+			throw new IllegalStateException("Cannot rollback inactive Unit of Work!");
 		}
 		rollbackInternal();
 		clear();
@@ -358,9 +354,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * @return State of the entity
 	 */
 	public State getState(Object entity) {
-		if (entity == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+
 		if (getDeletedObjects().containsKey(entity)) {
 			return State.REMOVED;
 		} else if (getNewObjectsCloneToOriginal().containsKey(entity)) {
@@ -555,9 +550,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * @return boolean
 	 */
 	public boolean isObjectManaged(Object entity) {
-		if (entity == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+
 		return (cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity));
 	}
 
@@ -635,10 +629,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
 	@Override
 	public <T> T mergeDetached(T entity, EntityDescriptor descriptor) {
-		if (entity == null || descriptor == null) {
-			throw new NullPointerException("Null passed to mergeDetached: entity = " + entity
-					+ ", repository = " + descriptor);
-		}
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+
 		final IRI pk = getIdentifier(entity);
 		if (!storageContains(pk, descriptor)) {
 			registerNewObject(entity, descriptor);
@@ -729,6 +722,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	@Override
 	public <T> void revertObject(T object) {
 		Objects.requireNonNull(object, ErrorUtils.constructNPXMessage("object"));
+
 		if (!isObjectManaged(object) && !getDeletedObjects().containsKey(object)) {
 			throw new IllegalArgumentException("The specified enity " + object
 					+ " is not managed by this persistence context.");
@@ -760,10 +754,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
 	@Override
 	public void registerNewObject(Object entity, EntityDescriptor descriptor) {
-		if (entity == null || descriptor == null) {
-			throw new NullPointerException("Null passed to registerNewObject: entity " + entity
-					+ ", repository = " + descriptor);
-		}
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+
 		registerNewObjectInternal(entity, descriptor);
 	}
 
@@ -920,22 +913,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		return getManagedTypes().contains(cls);
 	}
 
-	/**
-	 * Loads lazily loaded field on the specified entity. </p>
-	 * 
-	 * @param entity
-	 *            Entity
-	 * @param field
-	 *            The field to load
-	 * @throws NullPointerException
-	 *             If {@code entity} or {@code fieldName} is {@code null}
-	 * @throws OWLPersistenceException
-	 *             If an error during loading occurs
-	 */
+	@Override
 	public <T> void loadEntityField(T entity, Field field) {
-		if (entity == null || field == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
+
 		try {
 			field.setAccessible(true);
 			if (field.get(entity) != null) {
@@ -977,6 +959,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	@Override
 	public void removeObjectFromCache(Object toRemove, URI context) {
 		Objects.requireNonNull(toRemove, ErrorUtils.constructNPXMessage("toRemove"));
+
 		final Object primaryKey = getIdentifier(toRemove);
 		cacheManager.evict(toRemove.getClass(), primaryKey, context);
 	}
@@ -1071,9 +1054,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 *             Reflection
 	 */
 	public void setIndirectCollectionIfPresent(Object entity, Field field) {
-		if (entity == null || field == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+		Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
+
 		if (!field.isAccessible()) {
 			field.setAccessible(true);
 		}
