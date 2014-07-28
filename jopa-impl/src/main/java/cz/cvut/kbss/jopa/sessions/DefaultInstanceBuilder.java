@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 /**
@@ -33,7 +33,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 	 * @return New object of the given class.
 	 */
 	@Override
-	Object buildClone(Object cloneOwner, Field field, Object original, EntityDescriptor repository) {
+	Object buildClone(Object cloneOwner, Field field, Object original, Descriptor repository) {
 		if (original == null) {
 			return null;
 		}

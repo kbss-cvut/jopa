@@ -26,7 +26,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 import cz.cvut.kbss.ontodriver.ResultSet;
@@ -44,7 +45,7 @@ public class OwlapiStorageModuleTest {
 
 	private static DriverFactoryStub factory;
 	private static OWLClassA entity;
-	private static EntityDescriptor descriptor;
+	private static Descriptor descriptor;
 
 	@Mock
 	private ModuleInternal<OWLOntologyChange, OwlapiStatement> internalMock;

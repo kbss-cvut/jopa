@@ -18,8 +18,8 @@ import java.util.Set;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 /**
@@ -54,7 +54,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 * @return A deep clone of the specified collection
 	 */
 	@Override
-	Object buildClone(Object cloneOwner, Field field, Object collection, EntityDescriptor repository)
+	Object buildClone(Object cloneOwner, Field field, Object collection, Descriptor repository)
 			throws OWLPersistenceException {
 		assert (collection instanceof Collection);
 		Collection<?> container = (Collection<?>) collection;
@@ -126,7 +126,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 * @return
 	 */
 	private Collection<?> cloneUsingDefaultConstructor(Object cloneOwner, Field field,
-			Collection<?> container, EntityDescriptor repository) {
+			Collection<?> container, Descriptor repository) {
 		Class<?> javaClass = container.getClass();
 		Collection<?> result = createNewInstance(javaClass, container.size());
 		if (result != null) {
@@ -179,7 +179,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 *            The collection to clone.
 	 */
 	private void cloneCollectionContent(Object cloneOwner, Field field, Collection<?> source,
-			Collection<?> target, EntityDescriptor repository) {
+			Collection<?> target, Descriptor repository) {
 		if (source.isEmpty()) {
 			return;
 		}

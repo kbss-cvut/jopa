@@ -3,7 +3,8 @@ package cz.cvut.kbss.ontodriver.test;
 import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.DataSource;
@@ -15,7 +16,7 @@ public class BaseSingleContextOntoDriverTest {
 	protected static final Logger LOG = Logger.getLogger(BaseSingleContextOntoDriverTest.class
 			.getName());
 
-	protected static final EntityDescriptor DEFAULT_DESCRIPTOR = new EntityDescriptor();
+	protected static final Descriptor DEFAULT_DESCRIPTOR = new EntityDescriptor();
 
 	protected static PersistenceProviderFacade facade;
 	protected static StorageConfig storageConfig;

@@ -8,7 +8,8 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 
 class SubjectModels<T> {
 
@@ -16,10 +17,10 @@ class SubjectModels<T> {
 	protected final URI primaryKey;
 	protected final T entity;
 	protected final ValueFactory vf;
-	protected final EntityDescriptor descriptor;
+	protected final Descriptor descriptor;
 
 	SubjectModels(StorageProxy storage, URI primaryKey, T entity, ValueFactory valueFactory,
-			EntityDescriptor descriptor) {
+			Descriptor descriptor) {
 		this.storage = storage;
 		this.primaryKey = primaryKey;
 		this.entity = entity;
@@ -49,13 +50,14 @@ class SubjectModels<T> {
 	 * If the descriptor does not explicitly specify field context, the one for
 	 * the entity is used (and therefore it may be also {@code null}).
 	 * 
-	 * @param fieldName
-	 *            Field name
+	 * @param attribute
+	 *            Attribute representing the field
 	 * @return Context URI or {@code null} if it is the default one
 	 */
-	URI getFieldContext(String fieldName) {
-		assert fieldName != null;
-		final java.net.URI u = descriptor.getFieldContext(fieldName);
+	URI getFieldContext(Attribute<?, ?> attribute) {
+		assert attribute != null;
+		final Descriptor fieldDesc = descriptor.getAttributeDescriptor(attribute);
+		final java.net.URI u = fieldDesc.getContext();
 		return (u != null ? vf.createURI(u.toString()) : null);
 	}
 
@@ -65,7 +67,7 @@ class SubjectModels<T> {
 	 * @return Context URI or {@code null} if it is the default one
 	 */
 	URI getEntityContext() {
-		return (descriptor.getEntityContext() != null ? vf.createURI(descriptor.getEntityContext()
-				.toString()) : null);
+		return (descriptor.getContext() != null ? vf.createURI(descriptor.getContext().toString())
+				: null);
 	}
 }

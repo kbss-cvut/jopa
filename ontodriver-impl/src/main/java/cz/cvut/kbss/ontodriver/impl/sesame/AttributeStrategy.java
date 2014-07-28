@@ -13,8 +13,9 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
@@ -117,7 +118,7 @@ abstract class AttributeStrategy {
 		}
 		final java.net.URI ctx = context != null ? java.net.URI.create(context.stringValue())
 				: null;
-		final EntityDescriptor descriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final Descriptor descriptor = new EntityDescriptor(ctx);
 		final IRI pk = IRI.create(subjectUri.toString());
 		final Object ob = internal.module.getEntityFromProviderCache(cls, pk, descriptor);
 		if (ob != null && cls.isAssignableFrom(ob.getClass())) {

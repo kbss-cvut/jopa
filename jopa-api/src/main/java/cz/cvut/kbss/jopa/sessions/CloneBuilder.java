@@ -3,7 +3,7 @@ package cz.cvut.kbss.jopa.sessions;
 import java.lang.reflect.Field;
 import java.net.URI;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 /**
  * Objects of this interface are responsible for building clones for UnitOfWork
@@ -25,7 +25,7 @@ public interface CloneBuilder {
 	 * @throws NullPointerException
 	 *             If {@code original} or {@code repository} is {@code null}
 	 */
-	public Object buildClone(Object original, EntityDescriptor descriptor);
+	public Object buildClone(Object original, Descriptor descriptor);
 
 	/**
 	 * Builds clone of the given object. </p>
@@ -49,7 +49,7 @@ public interface CloneBuilder {
 	 *             is {@code null}
 	 */
 	public Object buildClone(Object cloneOwner, Field clonedField, Object original,
-			EntityDescriptor descriptor);
+			Descriptor descriptor);
 
 	/**
 	 * Resets the clone builder. Especially resets the visited objects cache to

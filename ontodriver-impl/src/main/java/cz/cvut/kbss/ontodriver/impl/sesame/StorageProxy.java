@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.openrdf.model.Model;
@@ -141,4 +142,11 @@ interface StorageProxy extends Closeable {
 	 * @return Query result set
 	 */
 	public TupleQueryResult executeQuery(String query) throws QueryExecutionException;
+
+	/**
+	 * Gets a list of contexts available in this repository. </p>
+	 * 
+	 * @return List of context URIs
+	 */
+	public List<URI> getContexts();
 }

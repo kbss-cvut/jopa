@@ -11,8 +11,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
@@ -82,7 +82,7 @@ public class DeleteOperationsRunner {
 
 	public void removeSimple(EntityManager em, URI ctx) {
 		logger.config("Test: simple entity removal.");
-		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor aDescriptor = new EntityDescriptor(ctx);
 		em.getTransaction().begin();
 		em.persist(entityA, aDescriptor);
 		em.getTransaction().commit();
@@ -98,8 +98,8 @@ public class DeleteOperationsRunner {
 
 	public void removeReference(EntityManager em, URI ctx) {
 		logger.config("Test: remove entity referenced by another entity.");
-		final EntityDescriptor dDescriptor = EntityDescriptor.createWithEntityContext(ctx);
-		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor dDescriptor = new EntityDescriptor(ctx);
+		final EntityDescriptor aDescriptor = new EntityDescriptor(ctx);
 		em.getTransaction().begin();
 		em.persist(entityD, dDescriptor);
 		em.persist(entityA, aDescriptor);
@@ -121,7 +121,7 @@ public class DeleteOperationsRunner {
 
 	public void removeCascade(EntityManager em, URI ctx) {
 		logger.config("Test: remove cascade.");
-		final EntityDescriptor gDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor gDescriptor = new EntityDescriptor(ctx);
 		em.getTransaction().begin();
 		em.persist(entityG, gDescriptor);
 		assertTrue(em.contains(entityG));
@@ -150,7 +150,7 @@ public class DeleteOperationsRunner {
 
 	public void removeDetached(EntityManager em, URI ctx) {
 		logger.config("Test: try removing detached entity.");
-		final EntityDescriptor eDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor eDescriptor = new EntityDescriptor(ctx);
 		em.getTransaction().begin();
 		assertNull(entityE.getUri());
 		em.persist(entityE, eDescriptor);
@@ -169,7 +169,7 @@ public class DeleteOperationsRunner {
 
 	public void removeFromSimpleList(EntityManager em, URI ctx) {
 		logger.config("Test: remove entity from simple list.");
-		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
 		final int size = 5;
 		entityC.setSimpleList(Generators.createSimpleList(size));
 		em.getTransaction().begin();
@@ -207,7 +207,7 @@ public class DeleteOperationsRunner {
 
 	public void removeFromReferencedList(EntityManager em, URI ctx) {
 		logger.config("Test: remove entity from referenced list.");
-		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
 		final int size = 10;
 		entityC.setReferencedList(Generators.createReferencedList(size));
 		em.getTransaction().begin();
@@ -245,7 +245,7 @@ public class DeleteOperationsRunner {
 
 	public void removeListOwner(EntityManager em, URI ctx) {
 		logger.config("Test: remove owner of simple and referenced list.");
-		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
 		entityC.setSimpleList(Generators.createSimpleList());
 		entityC.setReferencedList(Generators.createReferencedList());
 		em.getTransaction().begin();
@@ -275,7 +275,7 @@ public class DeleteOperationsRunner {
 
 	public void removeNotYetCommitted(EntityManager em, URI ctx) {
 		logger.config("Test: persist entity, but remove it before committing the transaction.");
-		final EntityDescriptor eDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor eDescriptor = new EntityDescriptor(ctx);
 		em.getTransaction().begin();
 		em.persist(entityE, eDescriptor);
 		assertTrue(em.contains(entityE));

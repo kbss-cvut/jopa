@@ -42,13 +42,6 @@ public final class OntoDriverProperties {
 	public static final String JENA_DRIVER_FACTORY = "cz.cvut.kbss.ontodriver.jena-factory";
 
 	/**
-	 * Property for setting factory for OWLIM based modules and connectors. </p>
-	 * 
-	 * If not specified, default factories are used.
-	 */
-	public static final String OWLIM_DRIVER_FACTORY = "cz.cvut.kbss.ontodriver.owlim-factory";
-
-	/**
 	 * Property for setting factory for Sesame based modules and connectors.
 	 * </p>
 	 * 

@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 class ChangeSetFactory {
 
@@ -29,10 +29,10 @@ class ChangeSetFactory {
 	 * @return New object change set
 	 */
 	static ObjectChangeSet createObjectChangeSet(Object original, Object clone,
-			EntityDescriptor descriptor) {
+			Descriptor descriptor) {
 		assert original != null;
 		assert descriptor != null;
 
-		return new ObjectChangeSetImpl(original, clone, descriptor.getEntityContext());
+		return new ObjectChangeSetImpl(original, clone, descriptor.getContext());
 	}
 }

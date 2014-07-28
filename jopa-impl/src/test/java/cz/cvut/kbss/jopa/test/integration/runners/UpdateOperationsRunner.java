@@ -20,8 +20,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
@@ -108,7 +108,7 @@ public class UpdateOperationsRunner {
 
 	public void mergeSet(EntityManager em, URI ctx) {
 		logger.config("Test: merge set property.");
-		final EntityDescriptor jDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor jDescriptor = new EntityDescriptor(ctx);
 		em.getTransaction().begin();
 		em.persist(entityJ, jDescriptor);
 		em.getTransaction().commit();
@@ -129,7 +129,7 @@ public class UpdateOperationsRunner {
 
 	public void updateDataPropertyKeepLazyEmpty(EntityManager em, URI ctx) throws Exception {
 		logger.config("Test: update data property. Leaves lazily loaded field empty and checks that after commit the field's value hasn't changed.");
-		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor bDescriptor = new EntityDescriptor(ctx);
 		entityB.setProperties(Generators.createProperties());
 		em.getTransaction().begin();
 		em.persist(entityB, bDescriptor);
@@ -154,7 +154,7 @@ public class UpdateOperationsRunner {
 
 	public void updateDataPropertySetNull(EntityManager em, URI ctx) {
 		logger.config("Test: update data property. Set it to null.");
-		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor aDescriptor = new EntityDescriptor(ctx);
 		em.getTransaction().begin();
 		em.persist(entityA, aDescriptor);
 		em.getTransaction().commit();
@@ -174,8 +174,8 @@ public class UpdateOperationsRunner {
 
 	public void updateReference(EntityManager em, URI ctx) {
 		logger.config("Test: update reference to entity.");
-		final EntityDescriptor dDescriptor = EntityDescriptor.createWithEntityContext(ctx);
-		final EntityDescriptor iDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor dDescriptor = new EntityDescriptor(ctx);
+		final EntityDescriptor iDescriptor = new EntityDescriptor(ctx);
 		em.getTransaction().begin();
 		em.persist(entityD, dDescriptor);
 		// em.persist(entityA, ctx);
@@ -208,7 +208,7 @@ public class UpdateOperationsRunner {
 
 	public void mergeDetachedWithChanges(EntityManager em, URI ctx) {
 		logger.config("Test: merge detached entity with changes.");
-		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor aDescriptor = new EntityDescriptor(ctx);
 		em.getTransaction().begin();
 		em.persist(entityA, aDescriptor);
 		em.getTransaction().commit();
@@ -231,7 +231,7 @@ public class UpdateOperationsRunner {
 
 	public void mergeDetachedCascade(EntityManager em, URI ctx) {
 		logger.config("Test: merge detached with cascade.");
-		final EntityDescriptor hDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor hDescriptor = new EntityDescriptor(ctx);
 		em.getTransaction().begin();
 		em.persist(entityH, hDescriptor);
 		assertTrue(em.contains(entityA));
@@ -256,7 +256,7 @@ public class UpdateOperationsRunner {
 
 	public void removeFromSimpleList(EntityManager em, URI ctx) {
 		logger.config("Test: remove entity from simple list. (But keep it in the ontology.)");
-		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
 		entityC.setSimpleList(Generators.createSimpleList());
 		em.getTransaction().begin();
 		em.persist(entityC, cDescriptor);
@@ -284,14 +284,14 @@ public class UpdateOperationsRunner {
 
 	public void addToSimpleList(EntityManager em, URI ctx) {
 		logger.config("Test: add entity to simple list.");
-		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
 		entityC.setSimpleList(Generators.createSimpleList());
 		em.getTransaction().begin();
 		em.persist(entityC, cDescriptor);
 		for (OWLClassA a : entityC.getSimpleList()) {
 			em.persist(a, cDescriptor);
 		}
-		final EntityDescriptor aDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor aDescriptor = new EntityDescriptor(ctx);
 		em.persist(entityA, aDescriptor);
 		em.getTransaction().commit();
 
@@ -314,7 +314,7 @@ public class UpdateOperationsRunner {
 
 	public void clearSimpleList(EntityManager em, URI ctx) {
 		logger.config("Test: clear a simple list (but keep the entities in ontology).");
-		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
 		entityC.setSimpleList(Generators.createSimpleList());
 		em.getTransaction().begin();
 		em.persist(entityC, cDescriptor);
@@ -340,7 +340,7 @@ public class UpdateOperationsRunner {
 
 	public void replaceSimpleList(EntityManager em, URI ctx) {
 		logger.config("Test: replace simple list with a new one.");
-		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
 		entityC.setSimpleList(Generators.createSimpleList());
 		em.getTransaction().begin();
 		em.persist(entityC, cDescriptor);
@@ -378,7 +378,7 @@ public class UpdateOperationsRunner {
 
 	public void removeFromReferencedList(EntityManager em, URI ctx) {
 		logger.config("Test: remove entity from referenced list. (But keep it in the ontology.");
-		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
 		entityC.setReferencedList(Generators.createReferencedList());
 		em.getTransaction().begin();
 		em.persist(entityC, cDescriptor);
@@ -406,7 +406,7 @@ public class UpdateOperationsRunner {
 
 	public void addToReferencedList(EntityManager em, URI ctx) {
 		logger.config("Test: add entity to Referenced list.");
-		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
 		entityC.setReferencedList(Generators.createReferencedList());
 		em.getTransaction().begin();
 		em.persist(entityC, cDescriptor);
@@ -432,7 +432,7 @@ public class UpdateOperationsRunner {
 
 	public void clearReferencedList(EntityManager em, URI ctx) {
 		logger.config("Test: clear referenced list (but keep the entities in ontology).");
-		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
 		entityC.setReferencedList(Generators.createReferencedList());
 		em.getTransaction().begin();
 		em.persist(entityC, cDescriptor);
@@ -458,7 +458,7 @@ public class UpdateOperationsRunner {
 
 	public void replaceReferencedList(EntityManager em, URI ctx) {
 		logger.config("Test: replace referenced list with a new one.");
-		final EntityDescriptor cDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
 		entityC.setReferencedList(Generators.createReferencedList());
 		em.getTransaction().begin();
 		em.persist(entityC, cDescriptor);
@@ -496,7 +496,7 @@ public class UpdateOperationsRunner {
 
 	public void addNewToProperties(EntityManager em, URI ctx) {
 		logger.config("Test: add a new property value to entity's properties.");
-		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor bDescriptor = new EntityDescriptor(ctx);
 		entityB.setProperties(Generators.createProperties());
 		final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
 		expected.putAll(entityB.getProperties());
@@ -529,7 +529,7 @@ public class UpdateOperationsRunner {
 
 	public void addPropertyValue(EntityManager em, URI ctx) {
 		logger.config("Test: add another value to an existing property.");
-		final EntityDescriptor bDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor bDescriptor = new EntityDescriptor(ctx);
 		entityB.setProperties(Generators.createProperties());
 		final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
 		final String prop = entityB.getProperties().keySet().iterator().next();
@@ -568,7 +568,7 @@ public class UpdateOperationsRunner {
 
 	public void modifyInferredAttribute(EntityManager em, URI ctx) {
 		logger.config("Test: modify an inferred attribute.");
-		final EntityDescriptor fDescriptor = EntityDescriptor.createWithEntityContext(ctx);
+		final EntityDescriptor fDescriptor = new EntityDescriptor(ctx);
 		em.getTransaction().begin();
 		em.persist(entityF, fDescriptor);
 		em.getTransaction().commit();

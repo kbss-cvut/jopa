@@ -32,12 +32,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
@@ -116,12 +115,12 @@ public class CloneBuilderTest {
 			}
 		});
 		when(uow.getMetamodel()).thenReturn(metamodel);
-		when(uow.registerExistingObject(any(), any(EntityDescriptor.class))).thenAnswer(
+		when(uow.registerExistingObject(any(), any(Descriptor.class))).thenAnswer(
 				new Answer<Object>() {
 					@Override
 					public Object answer(InvocationOnMock invocation) {
 						Object obj = invocation.getArguments()[0];
-						EntityDescriptor desc = (EntityDescriptor) invocation.getArguments()[1];
+						Descriptor desc = (EntityDescriptor) invocation.getArguments()[1];
 						return builder.buildClone(obj, desc);
 					}
 				});

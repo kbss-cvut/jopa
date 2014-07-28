@@ -38,7 +38,8 @@ import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
@@ -58,7 +59,7 @@ public class UnitOfWorkTest {
 	private static final URI CONTEXT_URI = URI.create("http://testContext");
 
 	private static Set<Class<?>> managedTypes;
-	private static EntityDescriptor descriptor;
+	private static Descriptor descriptor;
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
@@ -106,7 +107,7 @@ public class UnitOfWorkTest {
 		entityD = new OWLClassD();
 		entityD.setUri(pkThree);
 		entityD.setOwlClassA(entityA);
-		descriptor = EntityDescriptor.createWithEntityContext(CONTEXT_URI);
+		descriptor = new EntityDescriptor(CONTEXT_URI);
 		managedTypes = new HashSet<>();
 		managedTypes.add(OWLClassA.class);
 		managedTypes.add(OWLClassB.class);
@@ -371,9 +372,9 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testRemoveObjectFromCache() {
-		uow.removeObjectFromCache(entityB, descriptor.getEntityContext());
+		uow.removeObjectFromCache(entityB, descriptor.getContext());
 		verify(cacheManagerMock).evict(OWLClassB.class, IRI.create(entityB.getUri()),
-				descriptor.getEntityContext());
+				descriptor.getContext());
 	}
 
 	@Test

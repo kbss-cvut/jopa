@@ -5,14 +5,14 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 final class RepositoryMap {
 
 	private static final URI DEFAULT_CONTEXT = URI.create("http://defaultContext");
 
 	private final Map<URI, Map<Object, Object>> map;
-	private Map<Object, EntityDescriptor> entityDescriptors;
+	private Map<Object, Descriptor> entityDescriptors;
 
 	RepositoryMap() {
 		this.map = new HashMap<>();
@@ -22,7 +22,7 @@ final class RepositoryMap {
 		this.entityDescriptors = new IdentityHashMap<>();
 	}
 
-	void add(EntityDescriptor descriptor, Object key, Object value) {
+	void add(Descriptor descriptor, Object key, Object value) {
 		assert descriptor != null;
 		assert key != null;
 		// Null values are permitted
@@ -31,7 +31,7 @@ final class RepositoryMap {
 		entities.put(key, value);
 	}
 
-	void remove(EntityDescriptor descriptor, Object key) {
+	void remove(Descriptor descriptor, Object key) {
 		assert descriptor != null;
 		assert key != null;
 
@@ -42,7 +42,7 @@ final class RepositoryMap {
 	/**
 	 * Make sure to call {@link #initDescriptors()} before calling this.
 	 */
-	void addEntityToRepository(Object entity, EntityDescriptor descriptor) {
+	void addEntityToRepository(Object entity, Descriptor descriptor) {
 		assert entityDescriptors != null;
 		entityDescriptors.put(entity, descriptor);
 	}
@@ -55,7 +55,7 @@ final class RepositoryMap {
 		entityDescriptors.remove(entity);
 	}
 
-	boolean contains(EntityDescriptor descriptor, Object key) {
+	boolean contains(Descriptor descriptor, Object key) {
 		assert descriptor != null;
 		assert key != null;
 
@@ -63,7 +63,7 @@ final class RepositoryMap {
 		return entities.containsKey(key);
 	}
 
-	Object get(EntityDescriptor descriptor, Object key) {
+	Object get(Descriptor descriptor, Object key) {
 		assert descriptor != null;
 		assert key != null;
 
@@ -77,7 +77,7 @@ final class RepositoryMap {
 	/**
 	 * Make sure to call {@link #initDescriptors()} before calling this.
 	 */
-	EntityDescriptor getEntityDescriptor(Object entity) {
+	Descriptor getEntityDescriptor(Object entity) {
 		assert entityDescriptors != null;
 		assert entity != null;
 
@@ -93,9 +93,8 @@ final class RepositoryMap {
 		}
 	}
 
-	private Map<Object, Object> getMap(EntityDescriptor descriptor) {
-		final URI ctx = descriptor.getEntityContext() != null ? descriptor.getEntityContext()
-				: DEFAULT_CONTEXT;
+	private Map<Object, Object> getMap(Descriptor descriptor) {
+		final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : DEFAULT_CONTEXT;
 		Map<Object, Object> entities;
 		if (!map.containsKey(ctx)) {
 			entities = new HashMap<>();

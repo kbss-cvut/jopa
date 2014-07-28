@@ -40,8 +40,8 @@ import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
@@ -106,7 +106,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public <T> T findEntity(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
+	public <T> T findEntity(Class<T> cls, Object primaryKey, Descriptor descriptor)
 			throws OntoDriverException {
 		assert cls != null : "argument cls is null";
 		assert primaryKey != null : "argument primaryKey is null";
@@ -126,7 +126,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public <T> void persistEntity(Object primaryKey, T entity, EntityDescriptor descriptor)
+	public <T> void persistEntity(Object primaryKey, T entity, Descriptor descriptor)
 			throws OntoDriverException {
 		checkStatus();
 		assert entity != null : "argument entity is null";
@@ -151,7 +151,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public <T> void mergeEntity(T entity, Field mergedField, EntityDescriptor descriptor)
+	public <T> void mergeEntity(T entity, Field mergedField, Descriptor descriptor)
 			throws OntoDriverException {
 		checkStatus();
 		assert entity != null : "argument entity is null";
@@ -197,8 +197,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public void removeEntity(Object primaryKey, EntityDescriptor descriptor)
-			throws OntoDriverException {
+	public void removeEntity(Object primaryKey, Descriptor descriptor) throws OntoDriverException {
 		checkStatus();
 		assert primaryKey != null : "argument primaryKey is null";
 
@@ -211,7 +210,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
+	public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor)
 			throws OntoDriverException {
 		assert entity != null : "argument entity is null";
 		assert field != null : "argument field is null";
@@ -244,6 +243,11 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 					"There are some uncommitted and unpersisted entities in the ontology.");
 		}
 		return toReturn;
+	}
+
+	@Override
+	public List<URI> getContexts() {
+		return Collections.emptyList();
 	}
 
 	@Override

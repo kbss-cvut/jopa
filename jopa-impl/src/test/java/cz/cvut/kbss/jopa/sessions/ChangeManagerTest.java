@@ -24,7 +24,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.ChangeManager;
 import cz.cvut.kbss.jopa.sessions.ChangeManagerImpl;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
@@ -51,7 +52,7 @@ public class ChangeManagerTest {
 	private static OWLClassB testBClone;
 	private static Set<String> typesCollection;
 	private static TestEntity primitivesTest;
-	private static EntityDescriptor defaultDescriptor;
+	private static Descriptor defaultDescriptor;
 
 	private ChangeManager manager;
 
@@ -69,8 +70,7 @@ public class ChangeManagerTest {
 		testF.setUri(URI.create("http://testF"));
 		primitivesTest = new TestEntity();
 		primitivesTest.setId(0);
-		defaultDescriptor = new EntityDescriptor();
-		defaultDescriptor.setEntityContext(DEFAULT_CONTEXT);
+		defaultDescriptor = new EntityDescriptor(DEFAULT_CONTEXT);
 	}
 
 	private static void initAs() {
@@ -436,7 +436,7 @@ public class ChangeManagerTest {
 
 	private ObjectChangeSet createChangeSet(Object orig, Object clone) {
 		return TestEnvironmentUtils.createObjectChangeSet(orig, clone,
-				defaultDescriptor.getEntityContext());
+				defaultDescriptor.getContext());
 	}
 
 	private static final class TestEntity {

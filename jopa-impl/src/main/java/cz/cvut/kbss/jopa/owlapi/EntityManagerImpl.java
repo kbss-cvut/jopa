@@ -53,8 +53,9 @@ import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
@@ -111,12 +112,12 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 	@Override
 	public void persist(final Object entity) {
-		final EntityDescriptor d = new EntityDescriptor();
+		final Descriptor d = new EntityDescriptor();
 		persist(entity, d);
 	}
 
 	@Override
-	public void persist(final Object entity, final EntityDescriptor descriptor) {
+	public void persist(final Object entity, final Descriptor descriptor) {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Persisting " + entity);
 		}
@@ -177,12 +178,12 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 	@Override
 	public <T> T merge(final T entity) {
-		final EntityDescriptor d = new EntityDescriptor();
+		final Descriptor d = new EntityDescriptor();
 		return merge(entity, d);
 	}
 
 	@Override
-	public <T> T merge(final T entity, final EntityDescriptor descriptor) {
+	public <T> T merge(final T entity, final Descriptor descriptor) {
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
@@ -200,7 +201,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	 *            its field should be merged
 	 * @return Managed instance of the merged entity
 	 */
-	private <T> T mergeInternal(final T entity, final EntityDescriptor descriptor) {
+	private <T> T mergeInternal(final T entity, final Descriptor descriptor) {
 		assert entity != null;
 		assert descriptor != null;
 		if (LOG.isLoggable(Level.FINER)) {
@@ -245,7 +246,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 	}
 
-	private void mergeX(Attribute<?, ?> at, Object o, EntityDescriptor descriptor)
+	private void mergeX(Attribute<?, ?> at, Object o, Descriptor descriptor)
 			throws IllegalAccessException {
 		Object attVal = at.getJavaField().get(o);
 		if (at.isCollection()) {
@@ -291,7 +292,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor) {
+	public <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor) {
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
@@ -593,8 +594,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		return getCurrentPersistenceContext().getState(entity);
 	}
 
-	private State getState(Object entity, EntityDescriptor repository) {
-		return getCurrentPersistenceContext().getState(entity, repository);
+	private State getState(Object entity, Descriptor descriptor) {
+		return getCurrentPersistenceContext().getState(entity, descriptor);
 	}
 
 	@Override

@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.net.URI;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 
 /**
  * Defines base descriptor, which is used to specify context information for
@@ -50,6 +52,28 @@ public abstract class Descriptor implements Serializable {
 	 *             If the descriptor is not available
 	 */
 	public abstract Descriptor getAttributeDescriptor(Attribute<?, ?> attribute);
+
+	/**
+	 * Gets descriptor for the specified types attribute. </p>
+	 * 
+	 * @param attribute
+	 *            Types attribute, as specified by application metamodel
+	 * @return Descriptor
+	 * @throws IllegalArgumentException
+	 *             If the descriptor is not available
+	 */
+	public abstract Descriptor getTypesDescriptor(TypesSpecification<?, ?> types);
+
+	/**
+	 * Gets descriptor for the specified properties attribute. </p>
+	 * 
+	 * @param attribute
+	 *            Properties attribute, as specified by application metamodel
+	 * @return Descriptor
+	 * @throws IllegalArgumentException
+	 *             If the descriptor is not available
+	 */
+	public abstract Descriptor getPropertiesDescriptor(PropertiesSpecification<?, ?> properties);
 
 	@Override
 	public int hashCode() {

@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -99,7 +99,7 @@ public interface Connection extends Transactional {
 	 *             If called on a closed connection, if the entity cannot be
 	 *             cast to the specified type or an ontology access error occurs
 	 */
-	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
+	public <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -130,13 +130,13 @@ public interface Connection extends Transactional {
 	 * @param field
 	 *            The field to load
 	 * @param descriptor
-	 *            Identifier of a repository from which the field value will be
-	 *            loaded
+	 *            Identifier of a repository context from which the field value
+	 *            will be loaded
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or if an ontology access
 	 *             error occurs
 	 */
-	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
+	public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -162,7 +162,7 @@ public interface Connection extends Transactional {
 	 *             repository or if it has no field corresponding to
 	 *             {@code mergedField}
 	 */
-	public <T> void merge(T entity, Field mergedField, EntityDescriptor descriptor)
+	public <T> void merge(T entity, Field mergedField, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -183,7 +183,7 @@ public interface Connection extends Transactional {
 	 *             If called on a closed connection, if the repository
 	 *             identifier is not valid or an ontology access error occurs
 	 */
-	public <T> void persist(Object primaryKey, T entity, EntityDescriptor descriptor)
+	public <T> void persist(Object primaryKey, T entity, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -204,14 +204,13 @@ public interface Connection extends Transactional {
 	 * @param primaryKey
 	 *            Primary key of the entity to be removed
 	 * @param descriptor
-	 *            Identifier of a repository and contexts from which the entity
-	 *            and its fields will be removed
+	 *            Identifier of a repository context from which the entity and
+	 *            its fields will be removed
 	 * @throws OntoDriverException
 	 *             If called on a closed connection or if an ontology access
 	 *             error occurs
 	 */
-	public <T> void remove(Object primaryKey, EntityDescriptor descriptor)
-			throws OntoDriverException;
+	public <T> void remove(Object primaryKey, Descriptor descriptor) throws OntoDriverException;
 
 	/**
 	 * Sets auto commit mode on this connection. </p>

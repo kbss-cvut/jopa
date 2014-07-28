@@ -8,7 +8,8 @@ import java.util.Objects;
 
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -41,7 +42,7 @@ public abstract class BaseOwlapiModule extends StorageModule implements OwlapiMo
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
+	public <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor)
 			throws OntoDriverException {
 		preFind(cls, primaryKey, descriptor);
 
@@ -62,14 +63,14 @@ public abstract class BaseOwlapiModule extends StorageModule implements OwlapiMo
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
+	public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor)
 			throws OntoDriverException {
 		preLoadFieldValue(entity, field, descriptor);
 		internal.loadFieldValue(entity, field, descriptor);
 	}
 
 	@Override
-	public <T> void merge(T entity, Field mergedField, EntityDescriptor descriptor)
+	public <T> void merge(T entity, Field mergedField, Descriptor descriptor)
 			throws OntoDriverException {
 		preMerge(entity, mergedField, descriptor);
 
@@ -77,14 +78,14 @@ public abstract class BaseOwlapiModule extends StorageModule implements OwlapiMo
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, EntityDescriptor descriptor)
+	public <T> void persist(Object primaryKey, T entity, Descriptor descriptor)
 			throws OntoDriverException {
 		prePersist(entity, descriptor);
 		internal.persistEntity(primaryKey, entity, descriptor);
 	}
 
 	@Override
-	public void remove(Object primaryKey, EntityDescriptor descriptor) throws OntoDriverException {
+	public void remove(Object primaryKey, Descriptor descriptor) throws OntoDriverException {
 		preRemove(primaryKey, descriptor);
 
 		internal.removeEntity(primaryKey, descriptor);
@@ -105,7 +106,7 @@ public abstract class BaseOwlapiModule extends StorageModule implements OwlapiMo
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		// OWLAPI repositories don't use contexts
-		final EntityDescriptor descriptor = new EntityDescriptor();
+		final Descriptor descriptor = new EntityDescriptor();
 
 		return getEntityFromProviderCache(cls, primaryKey, descriptor);
 	}

@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.ontodriver.AbstractStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -62,7 +62,7 @@ public interface ModuleInternal<X, Y extends AbstractStatement> {
 	 * @throws OntoDriverException
 	 *             If an error occurs during load
 	 */
-	public <T> T findEntity(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
+	public <T> T findEntity(Class<T> cls, Object primaryKey, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -93,7 +93,7 @@ public interface ModuleInternal<X, Y extends AbstractStatement> {
 	 * @throws OntoDriverException
 	 *             If an error occurs during persist
 	 */
-	public <T> void persistEntity(Object primaryKey, T entity, EntityDescriptor descriptor)
+	public <T> void persistEntity(Object primaryKey, T entity, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -109,7 +109,7 @@ public interface ModuleInternal<X, Y extends AbstractStatement> {
 	 *             If the entity is not persistent or if an error occurs during
 	 *             merge
 	 */
-	public <T> void mergeEntity(T entity, Field mergedField, EntityDescriptor descriptor)
+	public <T> void mergeEntity(T entity, Field mergedField, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -124,8 +124,7 @@ public interface ModuleInternal<X, Y extends AbstractStatement> {
 	 *             If no entity with {@code primaryKey} exists or if an error
 	 *             occurs during removal
 	 */
-	public void removeEntity(Object primaryKey, EntityDescriptor descriptor)
-			throws OntoDriverException;
+	public void removeEntity(Object primaryKey, Descriptor descriptor) throws OntoDriverException;
 
 	/**
 	 * Loads value of field {@code fieldName} to the entity. </p>
@@ -142,7 +141,7 @@ public interface ModuleInternal<X, Y extends AbstractStatement> {
 	 *             If the entity has no field with name {@code fieldName} or if
 	 *             an error occurs during load
 	 */
-	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
+	public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -178,4 +177,14 @@ public interface ModuleInternal<X, Y extends AbstractStatement> {
 	 * @return List of changes applied since last call of this method
 	 */
 	public List<X> commitAndRetrieveChanges();
+
+	/**
+	 * Gets a list of available repository contexts. </p>
+	 * 
+	 * If there are no named contexts (only the default one exists), an empty
+	 * list is returned.
+	 * 
+	 * @return List of URIs of contexts
+	 */
+	public List<URI> getContexts();
 }

@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.JopaStatement;
@@ -74,7 +74,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
+	public <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor)
 			throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
@@ -104,7 +104,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
+	public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor)
 			throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
@@ -115,7 +115,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void merge(T entity, Field mergedField, EntityDescriptor descriptor)
+	public <T> void merge(T entity, Field mergedField, Descriptor descriptor)
 			throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
@@ -130,7 +130,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, EntityDescriptor descriptor)
+	public <T> void persist(Object primaryKey, T entity, Descriptor descriptor)
 			throws OntoDriverException {
 		ensureOpen();
 		// Primary key can be null
@@ -151,8 +151,7 @@ public class ConnectionImpl implements Connection {
 	}
 
 	@Override
-	public <T> void remove(Object primaryKey, EntityDescriptor descriptor)
-			throws OntoDriverException {
+	public <T> void remove(Object primaryKey, Descriptor descriptor) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));

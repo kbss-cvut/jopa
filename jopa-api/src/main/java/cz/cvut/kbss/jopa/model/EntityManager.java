@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.NonJPA;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -78,7 +79,7 @@ public interface EntityManager {
 	 *             PersistenceContextType.TRANSACTION and there is no
 	 *             transaction.
 	 */
-	public void persist(final Object entity, final EntityDescriptor descriptor);
+	public void persist(final Object entity, final Descriptor descriptor);
 
 	/**
 	 * Merge the state of the given entity into the current persistence context.
@@ -114,7 +115,7 @@ public interface EntityManager {
 	 *             PersistenceContextType.TRANSACTION and there is no
 	 *             transaction.
 	 */
-	public <T> T merge(final T entity, EntityDescriptor descriptor);
+	public <T> T merge(final T entity, Descriptor descriptor);
 
 	/**
 	 * Remove the entity instance.
@@ -166,7 +167,7 @@ public interface EntityManager {
 	 * @param primaryKey
 	 *            Primary key
 	 * @param descriptor
-	 *            Repository identifier
+	 *            Entity descriptor
 	 * @return the found entity instance or {@code null} if the entity does not
 	 *         exist in the given ontology context
 	 * @throws IllegalArgumentException
@@ -179,7 +180,7 @@ public interface EntityManager {
 	 * @see #getAvailableContexts()
 	 */
 	public <T> T find(final Class<T> entityClass, final Object primaryKey,
-			final EntityDescriptor descriptor);
+			final Descriptor descriptor);
 
 	// TODO JPA 2.0 find with properties
 

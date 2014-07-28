@@ -25,7 +25,8 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -39,7 +40,7 @@ public class ConnectionImplTest {
 	private static final URI CONTEXT = URI.create("http://defaultUri");
 
 	private static Field hasChangesField;
-	private static EntityDescriptor descriptor;
+	private static Descriptor descriptor;
 
 	private ConnectionImpl connection;
 
@@ -191,8 +192,7 @@ public class ConnectionImplTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testFind() throws Exception {
-		final EntityDescriptor descriptor = new EntityDescriptor();
-		descriptor.setEntityContext(CONTEXT);
+		final Descriptor descriptor = new EntityDescriptor(CONTEXT);
 		final URI pk = URI.create("http://pk");
 		final OWLClassA a = new OWLClassA();
 		when(

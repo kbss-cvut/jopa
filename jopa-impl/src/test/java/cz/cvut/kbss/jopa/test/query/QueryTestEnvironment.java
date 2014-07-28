@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
@@ -83,7 +83,7 @@ public final class QueryTestEnvironment {
 
 	private static void persistIntoContext(EntityManager em, Map<Class<?>, List<?>> data,
 			URI context) {
-		final EntityDescriptor desc = EntityDescriptor.createWithEntityContext(context);
+		final EntityDescriptor desc = new EntityDescriptor(context);
 		em.getTransaction().begin();
 		try {
 			for (List<?> l : data.values()) {

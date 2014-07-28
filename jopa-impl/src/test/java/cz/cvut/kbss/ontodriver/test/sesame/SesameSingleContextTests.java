@@ -13,7 +13,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
@@ -22,7 +23,7 @@ import cz.cvut.kbss.ontodriver.Connection;
 
 final class SesameSingleContextTests {
 
-	private static final EntityDescriptor DEFAULT_DESCRIPTOR = new EntityDescriptor();
+	private static final Descriptor DEFAULT_DESCRIPTOR = new EntityDescriptor();
 
 	static final String A_STRING_ATT = "entityAStringAttribute";
 

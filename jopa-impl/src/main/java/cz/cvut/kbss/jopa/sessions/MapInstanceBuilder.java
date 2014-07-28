@@ -13,7 +13,7 @@ import java.util.Map.Entry;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 class MapInstanceBuilder extends AbstractInstanceBuilder {
 
@@ -26,7 +26,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 	}
 
 	@Override
-	Object buildClone(Object cloneOwner, Field field, Object original, EntityDescriptor repository) {
+	Object buildClone(Object cloneOwner, Field field, Object original, Descriptor repository) {
 		Map<?, ?> orig = (Map<?, ?>) original;
 		if (original instanceof IndirectCollection) {
 			orig = ((IndirectCollection<Map<?, ?>>) original).getReferencedCollection();
@@ -47,7 +47,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 	}
 
 	private Map<?, ?> cloneUsingDefaultConstructor(Object cloneOwner, Field field,
-			Class<?> origCls, Map<?, ?> original, EntityDescriptor repository) {
+			Class<?> origCls, Map<?, ?> original, Descriptor repository) {
 		Map<?, ?> result = createNewInstance(origCls, original.size());
 		if (result != null) {
 			cloneMapContent(cloneOwner, field, original, result, repository);
@@ -88,7 +88,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 	}
 
 	private Map<?, ?> buildSingletonClone(Object cloneOwner, Field field, Map<?, ?> orig,
-			EntityDescriptor repository) {
+			Descriptor repository) {
 		final Constructor<?> c = getFirstDeclaredConstructorFor(singletonMapClass);
 		if (!c.isAccessible()) {
 			c.setAccessible(true);
@@ -116,7 +116,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 	}
 
 	private void cloneMapContent(Object cloneOwner, Field field, Map<?, ?> source,
-			Map<?, ?> target, EntityDescriptor repository) {
+			Map<?, ?> target, Descriptor repository) {
 		if (source.isEmpty()) {
 			return;
 		}
@@ -143,7 +143,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 		}
 	}
 
-	private Object cloneObject(Object owner, Field field, Object obj, EntityDescriptor repository) {
+	private Object cloneObject(Object owner, Field field, Object obj, Descriptor repository) {
 		Object clone;
 		if (obj == null) {
 			clone = null;

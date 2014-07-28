@@ -10,7 +10,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 public class LoadingSubjectModels<T> extends SubjectModels<T> {
 
@@ -20,7 +20,7 @@ public class LoadingSubjectModels<T> extends SubjectModels<T> {
 	private Model inferredModel;
 
 	public LoadingSubjectModels(StorageProxy storage, URI subject, T entity,
-			ValueFactory valueFactory, EntityDescriptor descriptor) {
+			ValueFactory valueFactory, Descriptor descriptor) {
 		super(storage, subject, entity, valueFactory, descriptor);
 	}
 
@@ -28,7 +28,7 @@ public class LoadingSubjectModels<T> extends SubjectModels<T> {
 	protected void init() {
 		// If entity context or field context is null, it means search the whole
 		// repository
-		if (descriptor.getEntityContext() != null) {
+		if (descriptor.getContext() != null) {
 			this.sesameContexts = new HashSet<>(descriptor.getFieldContexts().size() + 1);
 			for (java.net.URI u : descriptor.getFieldContexts().values()) {
 				if (u == null) {

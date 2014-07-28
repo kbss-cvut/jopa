@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 public interface UnitOfWork extends Session {
 
@@ -105,12 +105,12 @@ public interface UnitOfWork extends Session {
 	 * @param entity
 	 *            entity instance
 	 * @param descriptor
-	 *            Repository identifier
+	 *            Entity descriptor, specifies repository context
 	 * @return the managed instance that the state was merged to
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code repository} is {@code null}
 	 */
-	public <T> T mergeDetached(T entity, EntityDescriptor descriptor);
+	public <T> T mergeDetached(T entity, Descriptor descriptor);
 
 	/**
 	 * Retrieves object with the specified primary key. </p>
@@ -133,7 +133,7 @@ public interface UnitOfWork extends Session {
 	 *             If {@code repository} is not valid or if an error during
 	 *             object loading occurs
 	 */
-	public <T> T readObject(Class<T> cls, Object primaryKey, EntityDescriptor descriptor);
+	public <T> T readObject(Class<T> cls, Object primaryKey, Descriptor descriptor);
 
 	/**
 	 * Register an existing object in this Unit of Work. The passed object comes
@@ -144,11 +144,10 @@ public interface UnitOfWork extends Session {
 	 * @param object
 	 *            Object
 	 * @param descriptor
-	 *            Identifier of the repository to which the object being
-	 *            registered belongs
+	 *            Entity descriptor identifying repository contexts
 	 * @return Object Returns clone of the registered object
 	 */
-	public Object registerExistingObject(Object object, EntityDescriptor descriptor);
+	public Object registerExistingObject(Object object, Descriptor descriptor);
 
 	/**
 	 * Registers the specified new object in this Unit of Work. </p>
@@ -159,15 +158,14 @@ public interface UnitOfWork extends Session {
 	 * @param object
 	 *            The object to register
 	 * @param descriptor
-	 *            Identifier of the repository into which the object should be
-	 *            persisted
+	 *            Entity descriptor
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code context} is {@code null}
 	 * @throws OWLPersistenceException
 	 *             If {@code context} is not a valid context URI or if an error
 	 *             during registration occurs
 	 */
-	public void registerNewObject(Object object, EntityDescriptor descriptor);
+	public void registerNewObject(Object object, Descriptor descriptor);
 
 	/**
 	 * Remove the given object. Calling this method causes the entity to be

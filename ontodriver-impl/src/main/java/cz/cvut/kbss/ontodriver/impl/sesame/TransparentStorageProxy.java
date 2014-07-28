@@ -2,8 +2,10 @@ package cz.cvut.kbss.ontodriver.impl.sesame;
 
 import info.aduna.iteration.Iterations;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -159,6 +161,31 @@ class TransparentStorageProxy implements StorageProxy {
 			return tq.evaluate();
 		} catch (RepositoryException | MalformedQueryException | QueryEvaluationException e) {
 			throw new QueryExecutionException(e);
+		}
+	}
+
+	@Override
+	public List<URI> getContexts() {
+		RepositoryResult<Resource> ctxs = null;
+		try {
+			try {
+				final List<URI> uris = new ArrayList<>();
+				ctxs = conn.getContextIDs();
+				while (ctxs.hasNext()) {
+					final Resource r = ctxs.next();
+					if (r instanceof URI) {
+						uris.add((URI) r);
+					}
+				}
+				return uris;
+			} finally {
+				if (ctxs != null) {
+					ctxs.close();
+				}
+			}
+		} catch (RepositoryException e) {
+			throw new SesameModuleException(
+					"Exception caught when retrieving repository contexts.", e);
 		}
 	}
 

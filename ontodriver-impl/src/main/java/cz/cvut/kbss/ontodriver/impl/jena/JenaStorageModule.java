@@ -5,7 +5,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.ontodriver.DriverFactory;
 import cz.cvut.kbss.ontodriver.JopaStatement;
 import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
@@ -46,7 +46,7 @@ public class JenaStorageModule extends StorageModule {
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
+	public <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor)
 			throws OntoDriverException {
 		// TODO Auto-generated method stub
 		return null;
@@ -64,28 +64,28 @@ public class JenaStorageModule extends StorageModule {
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
+	public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor)
 			throws OntoDriverException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public <T> void merge(T entity, Field mergedField, EntityDescriptor descriptor)
+	public <T> void merge(T entity, Field mergedField, Descriptor descriptor)
 			throws OntoDriverException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, EntityDescriptor descriptor)
+	public <T> void persist(Object primaryKey, T entity, Descriptor descriptor)
 			throws OntoDriverException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void remove(Object primaryKey, EntityDescriptor descriptor) throws OntoDriverException {
+	public void remove(Object primaryKey, Descriptor descriptor) throws OntoDriverException {
 		// TODO Auto-generated method stub
 
 	}

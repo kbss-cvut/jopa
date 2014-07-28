@@ -14,7 +14,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassE;
@@ -26,12 +27,12 @@ public class RepositoryMapTest {
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
 	private static OWLClassE entityE;
-	private static EntityDescriptor descriptor;
+	private static Descriptor descriptor;
 
 	private RepositoryMap repoMap;
 
 	private Map<URI, Map<Object, Object>> theMap;
-	private Map<Object, EntityDescriptor> descriptors;
+	private Map<Object, Descriptor> descriptors;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -43,7 +44,7 @@ public class RepositoryMapTest {
 		entityB.setStringAttribute("otherString");
 		entityE = new OWLClassE();
 		entityE.setUri(URI.create("http://krizik.felk.cvut.cz/jopa/ontology/entityE"));
-		descriptor = EntityDescriptor.createWithEntityContext(CONTEXT);
+		descriptor = new EntityDescriptor(CONTEXT);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -56,7 +57,7 @@ public class RepositoryMapTest {
 		this.theMap = (Map<URI, Map<Object, Object>>) mapField.get(repoMap);
 		final Field descriptorsField = RepositoryMap.class.getDeclaredField("entityDescriptors");
 		descriptorsField.setAccessible(true);
-		this.descriptors = (Map<Object, EntityDescriptor>) descriptorsField.get(repoMap);
+		this.descriptors = (Map<Object, Descriptor>) descriptorsField.get(repoMap);
 	}
 
 	@Test
@@ -128,7 +129,7 @@ public class RepositoryMapTest {
 		repoMap.addEntityToRepository(entityA, descriptor);
 		assertTrue(descriptors.containsKey(entityA));
 
-		final EntityDescriptor res = repoMap.getEntityDescriptor(entityA);
+		final Descriptor res = repoMap.getEntityDescriptor(entityA);
 		assertNotNull(res);
 		assertSame(descriptor, res);
 	}

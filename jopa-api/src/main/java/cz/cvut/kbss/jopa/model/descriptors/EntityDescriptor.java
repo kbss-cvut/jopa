@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 /**
@@ -69,14 +71,41 @@ public class EntityDescriptor extends Descriptor {
 
 	@Override
 	public Descriptor getAttributeDescriptor(Attribute<?, ?> attribute) {
+		Descriptor d = getFieldDescriptor(attribute.getJavaField());
+		if (d == null) {
+			d = createDescriptor(attribute, context);
+		}
+		return d;
+	}
+
+	@Override
+	public Descriptor getTypesDescriptor(TypesSpecification<?, ?> types) {
+		Descriptor d = getFieldDescriptor(types.getJavaField());
+		if (d == null) {
+			d = new FieldDescriptor(context, types);
+		}
+		return d;
+	}
+
+	@Override
+	public Descriptor getPropertiesDescriptor(PropertiesSpecification<?, ?> properties) {
+		Descriptor d = getFieldDescriptor(properties.getJavaField());
+		if (d == null) {
+			d = new FieldDescriptor(context, properties);
+		}
+		return d;
+	}
+
+	private Descriptor getFieldDescriptor(Field field) {
 		for (Entry<Field, Descriptor> e : fieldDescriptors.entrySet()) {
-			if (e.getKey().equals(attribute)) {
+			if (e.getKey().equals(field)) {
 				return e.getValue();
 			}
 		}
-		// Use our context
-		return createDescriptor(attribute, context);
+		return null;
 	}
+
+	// TODO Override hashcode and equals
 
 	private static Descriptor createDescriptor(Attribute<?, ?> att, URI context) {
 		if (att.getPersistentAttributeType() == Attribute.PersistentAttributeType.OBJECT

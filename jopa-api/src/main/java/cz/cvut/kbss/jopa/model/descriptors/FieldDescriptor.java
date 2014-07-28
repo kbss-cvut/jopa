@@ -5,6 +5,8 @@ import java.net.URI;
 import java.util.Objects;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 /**
@@ -32,11 +34,37 @@ public class FieldDescriptor extends Descriptor {
 		this.field = attribute.getJavaField();
 	}
 
+	public FieldDescriptor(URI context, TypesSpecification<?, ?> types) {
+		super(context);
+		Objects.requireNonNull(types, ErrorUtils.constructNPXMessage("types"));
+		this.field = types.getJavaField();
+	}
+
+	public FieldDescriptor(URI context, PropertiesSpecification<?, ?> properties) {
+		super(context);
+		Objects.requireNonNull(properties, ErrorUtils.constructNPXMessage("properties"));
+		this.field = properties.getJavaField();
+	}
+
 	@Override
 	public Descriptor getAttributeDescriptor(Attribute<?, ?> attribute) {
-		if (!this.field.equals(attribute.getJavaField())) {
+		return getFieldDescriptor(attribute.getJavaField());
+	}
+
+	@Override
+	public Descriptor getTypesDescriptor(TypesSpecification<?, ?> types) {
+		return getFieldDescriptor(types.getJavaField());
+	}
+
+	@Override
+	public Descriptor getPropertiesDescriptor(PropertiesSpecification<?, ?> properties) {
+		return getFieldDescriptor(properties.getJavaField());
+	}
+
+	private Descriptor getFieldDescriptor(Field field) {
+		if (!this.field.equals(field)) {
 			throw new IllegalArgumentException("This field descriptor does not describe field "
-					+ attribute);
+					+ field);
 		}
 		return this;
 	}

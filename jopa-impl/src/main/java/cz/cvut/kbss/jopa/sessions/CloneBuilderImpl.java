@@ -23,7 +23,7 @@ import cz.cvut.kbss.jopa.adapters.IndirectList;
 import cz.cvut.kbss.jopa.adapters.IndirectMap;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
@@ -50,7 +50,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	}
 
 	@Override
-	public Object buildClone(Object original, EntityDescriptor descriptor) {
+	public Object buildClone(Object original, Descriptor descriptor) {
 		if (original == null || descriptor == null) {
 			throw new NullPointerException();
 		}
@@ -62,7 +62,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	@Override
 	public Object buildClone(Object cloneOwner, Field clonedField, Object original,
-			EntityDescriptor descriptor) {
+			Descriptor descriptor) {
 		if (cloneOwner == null || original == null || descriptor == null) {
 			throw new NullPointerException();
 		}
@@ -73,7 +73,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	}
 
 	private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original,
-			EntityDescriptor descriptor) {
+			Descriptor descriptor) {
 
 		if (visitedObjects.containsKey(original)) {
 			return visitedObjects.get(original);
@@ -113,7 +113,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	 *            Object
 	 */
 	private void populateAttributes(final Object original, Object clone,
-			final EntityDescriptor repository) {
+			final Descriptor repository) {
 		Class<?> theClass = original.getClass();
 		List<Field> fields = new ArrayList<Field>();
 		fields.addAll(Arrays.asList(theClass.getDeclaredFields()));
@@ -189,7 +189,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	 *            of the ontology context the original belongs to
 	 * @return Deep copy of the specified array.
 	 */
-	Object[] cloneArray(final Object array, EntityDescriptor repository) {
+	Object[] cloneArray(final Object array, Descriptor repository) {
 		if (array == null) {
 			return null;
 		}
@@ -270,13 +270,13 @@ public class CloneBuilderImpl implements CloneBuilder {
 		return original;
 	}
 
-	private Object getVisitedEntity(EntityDescriptor descriptor, Object primaryKey) {
+	private Object getVisitedEntity(Descriptor descriptor, Object primaryKey) {
 		assert descriptor != null;
 		assert primaryKey != null;
 		return visitedEntities.get(descriptor, primaryKey);
 	}
 
-	private void putVisitedEntity(EntityDescriptor descriptor, Object primaryKey, Object entity) {
+	private void putVisitedEntity(Descriptor descriptor, Object primaryKey, Object entity) {
 		assert descriptor != null;
 		visitedEntities.add(descriptor, primaryKey, entity);
 	}

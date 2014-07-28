@@ -27,7 +27,7 @@ import java.util.Set;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
@@ -138,7 +138,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 				final URI uri = URI.create(rs.getString(0));
 				// TODO Setting the context like this won't work for queries
 				// over multiple contexts
-				final EntityDescriptor descriptor = new EntityDescriptor().setEntityContext(ctx);
+				final EntityDescriptor descriptor = new EntityDescriptor(ctx);
 
 				final T entity = uow.readObject(classT, uri, descriptor);
 				if (entity == null) {

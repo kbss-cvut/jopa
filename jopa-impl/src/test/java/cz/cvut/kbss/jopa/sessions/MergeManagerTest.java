@@ -15,17 +15,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.semanticweb.owlapi.model.IRI;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
-import cz.cvut.kbss.jopa.sessions.MergeManager;
-import cz.cvut.kbss.jopa.sessions.MergeManagerImpl;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSetImpl;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
 
@@ -33,7 +27,7 @@ public class MergeManagerTest {
 
 	private static final URI DEFAULT_URI = URI.create("http://defaultContext");
 
-	private static EntityDescriptor defaultDescriptor;
+	private static Descriptor defaultDescriptor;
 
 	@Mock
 	private UnitOfWorkImpl uow;
@@ -54,8 +48,7 @@ public class MergeManagerTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		defaultDescriptor = new EntityDescriptor();
-		defaultDescriptor.setEntityContext(DEFAULT_URI);
+		defaultDescriptor = new EntityDescriptor(DEFAULT_URI);
 	}
 
 	@Before
@@ -107,7 +100,7 @@ public class MergeManagerTest {
 		final ObjectChangeSet ochs = createChangeSet(objOne, cloneOne);
 		uowChangeSet.addObjectChangeSet(ochs);
 		mm.mergeChangesFromChangeSet(uowChangeSet);
-		verify(uow).removeObjectFromCache(objTwo, defaultDescriptor.getEntityContext());
+		verify(uow).removeObjectFromCache(objTwo, defaultDescriptor.getContext());
 		assertEquals(((OWLClassB) cloneOne).getStringAttribute(), objOne.getStringAttribute());
 	}
 
@@ -121,8 +114,7 @@ public class MergeManagerTest {
 		final ObjectChangeSet ochs = createChangeSet(objOne, clone);
 		uowChangeSet.addNewObjectChangeSet(ochs);
 		mm.mergeChangesFromChangeSet(uowChangeSet);
-		verify(uow)
-				.putObjectIntoCache(IRI.create(pk), objOne, defaultDescriptor.getEntityContext());
+		verify(uow).putObjectIntoCache(IRI.create(pk), objOne, defaultDescriptor.getContext());
 	}
 
 	@Test
@@ -133,13 +125,12 @@ public class MergeManagerTest {
 		final Object clone = cloneBuilder.buildClone(newOne, defaultDescriptor);
 		final ObjectChangeSet ochs = createChangeSet(newOne, clone);
 		mm.mergeNewObject(ochs);
-		verify(uow)
-				.putObjectIntoCache(IRI.create(pk), newOne, defaultDescriptor.getEntityContext());
+		verify(uow).putObjectIntoCache(IRI.create(pk), newOne, defaultDescriptor.getContext());
 	}
 
 	private static ObjectChangeSet createChangeSet(Object orig, Object clone) {
 		return TestEnvironmentUtils.createObjectChangeSet(orig, clone,
-				defaultDescriptor.getEntityContext());
+				defaultDescriptor.getContext());
 	}
 
 	private static class CloneBuilderStub extends CloneBuilderImpl {

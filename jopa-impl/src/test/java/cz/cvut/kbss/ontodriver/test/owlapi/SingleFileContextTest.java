@@ -15,7 +15,8 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
@@ -30,7 +31,7 @@ public class SingleFileContextTest extends BaseSingleContextOntoDriverTest {
 	/**
 	 * We don't really care about descriptors in case of OWLAPI connectors.
 	 */
-	private static final EntityDescriptor DEFAULT_DESCRIPTOR = new EntityDescriptor();
+	private static final Descriptor DEFAULT_DESCRIPTOR = new EntityDescriptor();
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;

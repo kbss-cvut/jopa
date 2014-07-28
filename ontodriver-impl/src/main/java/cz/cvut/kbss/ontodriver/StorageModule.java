@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import cz.cvut.kbss.jopa.model.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -99,14 +99,13 @@ public abstract class StorageModule implements Transactional {
 	 *            Entity descriptor
 	 * @return Matching entity or {@code null}
 	 */
-	public <T> T getEntityFromProviderCache(Class<T> cls, Object primaryKey,
-			EntityDescriptor descriptor) {
+	public <T> T getEntityFromProviderCache(Class<T> cls, Object primaryKey, Descriptor descriptor) {
 		assert cls != null;
 		assert primaryKey != null;
 		assert descriptor != null;
 
 		return persistenceProvider.getEntityFromLiveObjectCache(cls, primaryKey,
-				descriptor.getEntityContext());
+				descriptor.getContext());
 	}
 
 	/**
@@ -189,7 +188,7 @@ public abstract class StorageModule implements Transactional {
 	 *             If {@code cls}, {@code primaryKey} or {@code descriptor} is
 	 *             {@code null}
 	 */
-	public abstract <T> T find(Class<T> cls, Object primaryKey, EntityDescriptor descriptor)
+	public abstract <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -235,7 +234,7 @@ public abstract class StorageModule implements Transactional {
 	 *             If {@code entity}, {@code fieldName} or {@code descriptor} is
 	 *             null
 	 */
-	public abstract <T> void loadFieldValue(T entity, Field field, EntityDescriptor descriptor)
+	public abstract <T> void loadFieldValue(T entity, Field field, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -255,7 +254,7 @@ public abstract class StorageModule implements Transactional {
 	 *             If {@code primaryKey}, {@code entity} or {@code descriptor}
 	 *             is {@code null}
 	 */
-	public abstract <T> void merge(T entity, Field mergedField, EntityDescriptor descriptor)
+	public abstract <T> void merge(T entity, Field mergedField, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -275,7 +274,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code entity} or {@code descriptor} is null
 	 */
-	public abstract <T> void persist(Object primaryKey, T entity, EntityDescriptor descriptor)
+	public abstract <T> void persist(Object primaryKey, T entity, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -294,7 +293,7 @@ public abstract class StorageModule implements Transactional {
 	 * @throws NullPointerException
 	 *             If {@code primaryKey} or {@code context} is null
 	 */
-	public abstract void remove(Object primaryKey, EntityDescriptor descriptor)
+	public abstract void remove(Object primaryKey, Descriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -337,13 +336,13 @@ public abstract class StorageModule implements Transactional {
 	}
 
 	/**
-	 * Preliminary steps before running
-	 * {@link #find(Class, Object, EntityDescriptor)} </p>
+	 * Preliminary steps before running {@link #find(Class, Object, Descriptor)}
+	 * </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected void preFind(Class<?> cls, Object primaryKey, EntityDescriptor descriptor)
+	protected void preFind(Class<?> cls, Object primaryKey, Descriptor descriptor)
 			throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
@@ -365,12 +364,12 @@ public abstract class StorageModule implements Transactional {
 
 	/**
 	 * Preliminary steps before running
-	 * {@link #loadFieldValue(Object, Field, EntityDescriptor)} </p>
+	 * {@link #loadFieldValue(Object, Field, Descriptor)} </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected <T> void preLoadFieldValue(T entity, Field field, EntityDescriptor descriptor)
+	protected <T> void preLoadFieldValue(T entity, Field field, Descriptor descriptor)
 			throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
@@ -381,12 +380,12 @@ public abstract class StorageModule implements Transactional {
 
 	/**
 	 * Preliminary steps before running
-	 * {@link #merge(Object, Object, Field, EntityDescriptor)} </p>
+	 * {@link #merge(Object, Object, Field, escriptor)} </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected <T> void preMerge(T entity, Field mergedField, EntityDescriptor descriptor)
+	protected <T> void preMerge(T entity, Field mergedField, Descriptor descriptor)
 			throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
@@ -397,12 +396,12 @@ public abstract class StorageModule implements Transactional {
 
 	/**
 	 * Preliminary steps before running
-	 * {@link #persist(Object, Object, EntityDescriptor)} </p>
+	 * {@link #persist(Object, Object, Descriptor)} </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected <T> void prePersist(T entity, EntityDescriptor descriptor) throws OntoDriverException {
+	protected <T> void prePersist(T entity, Descriptor descriptor) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
@@ -410,14 +409,12 @@ public abstract class StorageModule implements Transactional {
 	}
 
 	/**
-	 * Preliminary steps before running
-	 * {@link #remove(Object, EntityDescriptor)} </p>
+	 * Preliminary steps before running {@link #remove(Object, Descriptor)} </p>
 	 * 
 	 * Checks for module state, validates arguments and starts a transaction if
 	 * necessary.
 	 */
-	protected void preRemove(Object primaryKey, EntityDescriptor descriptor)
-			throws OntoDriverException {
+	protected void preRemove(Object primaryKey, Descriptor descriptor) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
