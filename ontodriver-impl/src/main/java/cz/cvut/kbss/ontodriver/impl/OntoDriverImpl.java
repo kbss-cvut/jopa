@@ -21,7 +21,6 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverInitializationException;
 import cz.cvut.kbss.ontodriver.impl.jena.DriverCachingJenaFactory;
 import cz.cvut.kbss.ontodriver.impl.owlapi.DriverCachingOwlapiFactory;
-import cz.cvut.kbss.ontodriver.impl.owlim.DriverOwlimFactory;
 import cz.cvut.kbss.ontodriver.impl.sesame.DriverSesameFactory;
 
 public class OntoDriverImpl implements OntoDriver {
@@ -212,7 +211,6 @@ public class OntoDriverImpl implements OntoDriver {
 		final Map<OntologyConnectorType, Class<? extends DriverFactory>> m = new HashMap<OntologyConnectorType, Class<? extends DriverFactory>>();
 		m.put(OntologyConnectorType.OWLAPI, DriverCachingOwlapiFactory.class);
 		m.put(OntologyConnectorType.JENA, DriverCachingJenaFactory.class);
-		m.put(OntologyConnectorType.OWLIM, DriverOwlimFactory.class);
 		m.put(OntologyConnectorType.SESAME, DriverSesameFactory.class);
 		return m;
 	}

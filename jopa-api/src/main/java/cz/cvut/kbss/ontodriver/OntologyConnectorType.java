@@ -10,11 +10,6 @@ public enum OntologyConnectorType {
 	 */
 	JENA("jena", OntoDriverProperties.JENA_DRIVER_FACTORY),
 	/**
-	 * OWLIM ontology connector.
-	 */
-	// TODO OWLIM will be removed since it is a Sesame SAIL implementation
-	OWLIM("owlim", OntoDriverProperties.OWLIM_DRIVER_FACTORY),
-	/**
 	 * Sesame ontology connector. Name: sesame
 	 */
 	SESAME("sesame", OntoDriverProperties.SESAME_DRIVER_FACTORY);

@@ -85,9 +85,6 @@ public final class OntologyProfileChecker {
 		case JENA:
 			// TODO
 			break;
-		case OWLIM:
-			// TODO
-			break;
 		case SESAME:
 			// TODO
 			break;
