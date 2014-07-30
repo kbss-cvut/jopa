@@ -3,10 +3,9 @@ package cz.cvut.kbss.jopa.model.descriptors;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Objects;
+import java.util.Set;
 
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 /**
@@ -22,50 +21,59 @@ public class FieldDescriptor extends Descriptor {
 
 	private final Field field;
 
-	public FieldDescriptor(Attribute<?, ?> attribute) {
+	public FieldDescriptor(FieldSpecification<?, ?> attribute) {
 		super();
 		Objects.requireNonNull(attribute, ErrorUtils.constructNPXMessage("attribute"));
 		this.field = attribute.getJavaField();
 	}
 
-	public FieldDescriptor(URI context, Attribute<?, ?> attribute) {
+	public FieldDescriptor(URI context, FieldSpecification<?, ?> attribute) {
 		super(context);
 		Objects.requireNonNull(attribute, ErrorUtils.constructNPXMessage("attribute"));
 		this.field = attribute.getJavaField();
 	}
 
-	public FieldDescriptor(URI context, TypesSpecification<?, ?> types) {
-		super(context);
-		Objects.requireNonNull(types, ErrorUtils.constructNPXMessage("types"));
-		this.field = types.getJavaField();
-	}
-
-	public FieldDescriptor(URI context, PropertiesSpecification<?, ?> properties) {
-		super(context);
-		Objects.requireNonNull(properties, ErrorUtils.constructNPXMessage("properties"));
-		this.field = properties.getJavaField();
-	}
-
 	@Override
-	public Descriptor getAttributeDescriptor(Attribute<?, ?> attribute) {
+	public Descriptor getAttributeDescriptor(FieldSpecification<?, ?> attribute) {
 		return getFieldDescriptor(attribute.getJavaField());
 	}
 
-	@Override
-	public Descriptor getTypesDescriptor(TypesSpecification<?, ?> types) {
-		return getFieldDescriptor(types.getJavaField());
-	}
-
-	@Override
-	public Descriptor getPropertiesDescriptor(PropertiesSpecification<?, ?> properties) {
-		return getFieldDescriptor(properties.getJavaField());
-	}
-
 	private Descriptor getFieldDescriptor(Field field) {
-		if (!this.field.equals(field)) {
-			throw new IllegalArgumentException("This field descriptor does not describe field "
-					+ field);
+		if (this.field.equals(field)) {
+			return this;
 		}
-		return this;
+		throw new IllegalArgumentException("This field descriptor does not describe field " + field);
+	}
+
+	@Override
+	protected Set<URI> getContextsInternal(Set<URI> contexts, Set<Descriptor> visited) {
+		if (context == null) {
+			return null;
+		}
+		contexts.add(context);
+		visited.add(this);
+		return contexts;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + field.hashCode();
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		FieldDescriptor other = (FieldDescriptor) obj;
+		if (!field.equals(other.field))
+			return false;
+		return true;
 	}
 }

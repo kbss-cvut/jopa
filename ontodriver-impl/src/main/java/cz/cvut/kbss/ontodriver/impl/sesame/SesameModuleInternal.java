@@ -25,6 +25,7 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.ontodriver.ResultSet;
@@ -148,13 +149,10 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		final TypesSpecification<?, ?> ts = et.getTypes();
 		final PropertiesSpecification<?, ?> ps = et.getProperties();
 		try {
-			// Get context URI
-			final URI ctx = getAddressAsSesameUri(descriptor.getFieldContext(mergedField.getName()));
-
 			if (ts != null && ts.getJavaField().equals(mergedField)) {
-				typesHandler.save(entity, uri, ts, et, ctx, true);
+				typesHandler.save(entity, uri, et, descriptor, true);
 			} else if (ps != null && ps.getJavaField().equals(mergedField)) {
-				propertiesHandler.save(entity, uri, ps, et, ctx, true);
+				propertiesHandler.save(entity, uri, et, descriptor, true);
 			} else {
 				final Attribute<?, ?> att = et.getAttribute(mergedField.getName());
 				final SubjectModels<T> m = new SubjectModels<T>(storage, uri, entity, valueFactory,
@@ -182,13 +180,12 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		final Class<T> cls = (Class<T>) entity.getClass();
 		final EntityType<T> et = getEntityType(cls);
 		final URI primaryKey = getIdentifier(entity);
-		final URI ctx = getAddressAsSesameUri(descriptor.getFieldContext(field.getName()));
 		try {
 			if (et.getTypes() != null && et.getTypes().getJavaField().equals(field)) {
-				typesHandler.load(entity, primaryKey, et.getTypes(), et, ctx);
+				typesHandler.load(entity, primaryKey, et, descriptor);
 			} else if (et.getProperties() != null
 					&& et.getProperties().getJavaField().equals(field)) {
-				propertiesHandler.load(entity, primaryKey, et.getProperties(), et, ctx);
+				propertiesHandler.load(entity, primaryKey, et, descriptor);
 			} else {
 				final SubjectModels<T> m = new SubjectModels<T>(storage, primaryKey, entity,
 						valueFactory, descriptor);
@@ -468,14 +465,14 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		try {
 			final SubjectModels<T> sm = new LoadingSubjectModels<T>(storage, uri, instance,
 					valueFactory, descriptor);
-			final TypesSpecification<?, ?> types = entityType.getTypes();
+			final FieldSpecification<?, ?> types = entityType.getTypes();
 			if (types != null && types.getFetchType() != FetchType.LAZY) {
-				typesHandler.load(instance, types, entityType, sm);
+				typesHandler.load(instance, entityType, sm);
 			}
 
 			final PropertiesSpecification<?, ?> properties = entityType.getProperties();
 			if (properties != null && properties.getFetchType() != FetchType.LAZY) {
-				propertiesHandler.load(instance, properties, entityType, sm);
+				propertiesHandler.load(instance, entityType, sm);
 			}
 			for (Attribute<?, ?> att : entityType.getAttributes()) {
 				loadReference(att, sm, false);
@@ -522,11 +519,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	 *            Resource URI
 	 */
 	private void removeEntityFromOntology(URI primaryKey, Descriptor descriptor) {
-		final Set<URI> contexts = new HashSet<>(descriptor.getFieldContexts().size() + 1);
-		for (java.net.URI u : descriptor.getFieldContexts().values()) {
-			contexts.add(getAddressAsSesameUri(u));
+		final Set<java.net.URI> descriptorContexts = descriptor.getAllContexts();
+		final Set<URI> contexts = new HashSet<>(descriptorContexts.size());
+		for (java.net.URI u : descriptorContexts) {
+			contexts.add(SesameUtils.toSesameUri(u, valueFactory));
 		}
-		contexts.add(getAddressAsSesameUri(descriptor.getContext()));
 		// We need to put the statements into a separate collection to prevent
 		// ConcurrentModificationExceptions
 		final Set<Statement> toRemove = new HashSet<>();
@@ -570,13 +567,11 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 					valueFactory, descriptor);
 			final TypesSpecification<?, ?> types = entityType.getTypes();
 			if (types != null) {
-				final URI ctx = m.getFieldContext(types);
-				typesHandler.save(entity, primaryKey, types, entityType, ctx, false);
+				typesHandler.save(entity, primaryKey, entityType, descriptor, false);
 			}
 			final PropertiesSpecification<?, ?> properties = entityType.getProperties();
 			if (properties != null) {
-				final URI ctx = m.getFieldContext(properties);
-				propertiesHandler.save(entity, primaryKey, properties, entityType, ctx, false);
+				propertiesHandler.save(entity, primaryKey, entityType, descriptor, false);
 			}
 			for (Attribute<?, ?> att : entityType.getAttributes()) {
 				saveReference(att, entityType, false, m);

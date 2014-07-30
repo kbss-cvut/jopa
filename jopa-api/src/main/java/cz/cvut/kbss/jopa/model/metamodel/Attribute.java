@@ -19,7 +19,6 @@ import cz.cvut.kbss.jopa.NonJPA;
 import cz.cvut.kbss.jopa.UnusedJPA;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 
 /**
@@ -30,7 +29,7 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
  * @param <Y>
  *            The type of the represented attribute
  */
-public interface Attribute<X, Y> {
+public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
 	public static enum PersistentAttributeType {
 		// @UnusedJPA
 		// @Deprecated
@@ -97,21 +96,6 @@ public interface Attribute<X, Y> {
 	PersistentAttributeType getPersistentAttributeType();
 
 	/**
-	 * Return the managed type representing the type in which the attribute was
-	 * declared.
-	 * 
-	 * @return declaring type
-	 */
-	ManagedType<X> getDeclaringType();
-
-	/**
-	 * Return the Java type of the represented attribute.
-	 * 
-	 * @return Java type
-	 */
-	Class<Y> getJavaType();
-
-	/**
 	 * Return the java.lang.reflect.Member for the represented attribute.
 	 * 
 	 * @return corresponding java.lang.reflect.Member
@@ -126,18 +110,7 @@ public interface Attribute<X, Y> {
 	 * @return corresponding java.lang.reflect.Member
 	 */
 	@NonJPA
-	java.lang.reflect.Field getJavaField();
-
-	/**
-	 * Return the java.lang.reflect.Member for the represented attribute.
-	 * 
-	 * @return corresponding java.lang.reflect.Member
-	 */
-	@NonJPA
 	IRI getIRI();
-
-	@NonJPA
-	boolean isInferred();
 
 	/**
 	 * Return the set of cascadetypes specified for this attribute.
@@ -149,12 +122,6 @@ public interface Attribute<X, Y> {
 	 */
 	@NonJPA
 	CascadeType[] getCascadeTypes();
-
-	/**
-	 * Return the fetch type for this attribute
-	 */
-	@NonJPA
-	FetchType getFetchType();
 
 	/**
 	 * Is the attribute an association.

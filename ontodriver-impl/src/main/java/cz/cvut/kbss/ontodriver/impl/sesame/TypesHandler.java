@@ -13,6 +13,8 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 
+import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -31,17 +33,20 @@ class TypesHandler {
 		this.storage = internal.getStorage();
 	}
 
-	<T> void load(T entity, URI entityUri, TypesSpecification<?, ?> types, EntityType<T> et,
-			URI context) throws IllegalArgumentException, IllegalAccessException {
-		final Model m = storage.filter(entityUri, RDF.TYPE, null, types.isInferred(), context);
-		loadImpl(entity, types, et, m);
+	<T> void load(T entity, URI entityUri, EntityType<T> et, Descriptor descriptor)
+			throws IllegalArgumentException, IllegalAccessException {
+		final Descriptor typesDescriptor = descriptor.getAttributeDescriptor(et.getTypes());
+		final URI context = SesameUtils.toSesameUri(typesDescriptor.getContext(), factory);
+		final Model m = storage.filter(entityUri, RDF.TYPE, null, et.getTypes().isInferred(),
+				context);
+		loadImpl(entity, et, m);
 	}
 
-	<T> void load(T entity, TypesSpecification<?, ?> types, EntityType<T> entityType,
-			SubjectModels<T> statements) throws IllegalArgumentException, IllegalAccessException {
-		final Model res = statements.filter(null, RDF.TYPE, null, types.isInferred(),
-				statements.getFieldContext(types.getJavaField().getName()));
-		loadImpl(entity, types, entityType, res);
+	<T> void load(T entity, EntityType<T> entityType, SubjectModels<T> statements)
+			throws IllegalArgumentException, IllegalAccessException {
+		final Model res = statements.filter(null, RDF.TYPE, null, entityType.getTypes()
+				.isInferred(), statements.getFieldContext(entityType.getTypes()));
+		loadImpl(entity, entityType, res);
 	}
 
 	/**
@@ -55,12 +60,10 @@ class TypesHandler {
 	 *            The entity
 	 * @param uri
 	 *            Entity primary key
-	 * @param types
-	 *            TypesSpecification
 	 * @param entityType
 	 *            Entity type as resolved from the metamodel
-	 * @param context
-	 *            URI of context into which the types information will be saved
+	 * @param descriptor
+	 *            Entity descriptor, contains info about context
 	 * @param deleteOld
 	 *            Whether to remove old types information. E. g. for newly
 	 *            persisted entities this will be false because there is
@@ -68,12 +71,16 @@ class TypesHandler {
 	 * @throws OntoDriverException
 	 *             If the types are inferred
 	 */
-	<T> void save(T entity, URI uri, TypesSpecification<?, ?> types, EntityType<T> entityType,
-			URI context, boolean deleteOld) throws OntoDriverException, IllegalArgumentException,
+	<T> void save(T entity, URI uri, EntityType<T> entityType, Descriptor descriptor,
+			boolean deleteOld) throws OntoDriverException, IllegalArgumentException,
 			IllegalAccessException {
+		final TypesSpecification<?, ?> types = entityType.getTypes();
 		if (types.isInferred()) {
-			throw new OntoDriverException("Inferred fields cannot be set externally.");
+			throw new OWLInferredAttributeModifiedException("Cannot modify attribute " + types
+					+ ", it is inferred.");
 		}
+		final Descriptor typesDescriptor = descriptor.getAttributeDescriptor(entityType.getTypes());
+		final URI context = SesameUtils.toSesameUri(typesDescriptor.getContext(), factory);
 		URI typeUri = factory.createURI(entityType.getIRI().toString());
 		Object value = types.getJavaField().get(entity);
 		if (LOG.isLoggable(Level.FINEST)) {
@@ -107,8 +114,8 @@ class TypesHandler {
 		internal.addStatements(toAdd, context);
 	}
 
-	private <T> void loadImpl(T entity, TypesSpecification<?, ?> types, EntityType<T> et,
-			Model statements) throws IllegalArgumentException, IllegalAccessException {
+	private <T> void loadImpl(T entity, EntityType<T> et, Model statements)
+			throws IllegalArgumentException, IllegalAccessException {
 		final Set<Object> res = new HashSet<>();
 		final String typeIri = et.getIRI().toString();
 		for (Statement stmt : statements) {
@@ -118,8 +125,7 @@ class TypesHandler {
 			}
 			res.add(tp);
 		}
-
-		types.getJavaField().set(entity, res);
+		et.getTypes().getJavaField().set(entity, res);
 	}
 
 }

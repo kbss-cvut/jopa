@@ -51,7 +51,7 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 			IllegalAccessException {
 		final URI subjectUri = models.primaryKey;
 		final URI propertyUri = getAddressAsSesameUri(property.getIRI());
-		final URI ctx = models.getFieldContext(property.getName());
+		final URI ctx = models.getFieldContext(property);
 		final Model res = filter(subjectUri, propertyUri, null, property.isInferred(), ctx);
 		Object value = null;
 		URI datatype = null;
@@ -96,7 +96,7 @@ public class SingularDataPropertyStrategy extends AttributeStrategy {
 	 *            Whether to remove any old values of the specified attribute
 	 */
 	private void saveDataProperty(URI property, Object value, Attribute<?, ?> att, boolean removeOld) {
-		final URI ctx = models.getFieldContext(att.getName());
+		final URI ctx = models.getFieldContext(att);
 		if (removeOld) {
 			removeOldDataPropertyValues(models.primaryKey, property, ctx);
 		}

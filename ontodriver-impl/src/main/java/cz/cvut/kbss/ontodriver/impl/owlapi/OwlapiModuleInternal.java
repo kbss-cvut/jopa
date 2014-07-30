@@ -44,11 +44,11 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
@@ -172,7 +172,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 				LOG.finest("Saving value of field " + mergedField + " for entity with id = " + id);
 			}
 			final boolean checkInferred = true;
-			final TypesSpecification<?, ?> ts = type.getTypes();
+			final FieldSpecification<?, ?> ts = type.getTypes();
 			final PropertiesSpecification<?, ?> ps = type.getProperties();
 			if (ts != null && ts.getJavaField().equals(mergedField)) {
 				_saveTypesReference(entity, type, ts, individual, checkInferred);
@@ -399,7 +399,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	private void saveEntityAttributes(IRI id, Object entity, EntityType<?> type,
 			OWLNamedIndividual individual, boolean checkInferred) throws OntoDriverException {
 		try {
-			final TypesSpecification<?, ?> types = type.getTypes();
+			final FieldSpecification<?, ?> types = type.getTypes();
 			if (types != null) {
 				_saveTypesReference(entity, type, types, individual, checkInferred);
 			}
@@ -480,7 +480,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		final EntityType<?> type = getEntityType(cls);
 
 		try {
-			final TypesSpecification<?, ?> types = type.getTypes();
+			final FieldSpecification<?, ?> types = type.getTypes();
 			if (types != null) {
 				_loadTypesReference(entity, individual, types, false);
 			}
@@ -499,7 +499,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	private void _loadTypesReference(Object entity, OWLNamedIndividual individual,
-			TypesSpecification<?, ?> types, boolean alwaysLoad) throws IllegalAccessException {
+			FieldSpecification<?, ?> types, boolean alwaysLoad) throws IllegalAccessException {
 		if (!alwaysLoad && types.getFetchType() == FetchType.LAZY) {
 			return;
 		}
@@ -545,7 +545,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	 * @throws OntoDriverException
 	 */
 	private void _saveTypesReference(Object entity, EntityType<?> entityType,
-			TypesSpecification<?, ?> spec, OWLNamedIndividual individual, boolean checkInferred)
+			FieldSpecification<?, ?> spec, OWLNamedIndividual individual, boolean checkInferred)
 			throws IllegalAccessException, OntoDriverException {
 		if (checkInferred && spec.isInferred()) {
 			throw new OntoDriverException("Inferred fields must not be set externally.");

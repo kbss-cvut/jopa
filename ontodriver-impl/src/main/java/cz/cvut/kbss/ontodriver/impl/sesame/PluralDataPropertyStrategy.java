@@ -35,7 +35,7 @@ class PluralDataPropertyStrategy extends AttributeStrategy {
 		assert att instanceof PluralAttribute<?, ?, ?>;
 		final PluralAttribute<?, ?, ?> pa = (PluralAttribute<?, ?, ?>) att;
 		final URI attUri = getAddressAsSesameUri(pa.getIRI());
-		final URI attCtx = models.getFieldContext(att.getName());
+		final URI attCtx = models.getFieldContext(att);
 		switch (pa.getCollectionType()) {
 		case SET:
 			saveDataPropertyValues(models.primaryKey, attUri, value, attCtx, removeOld);

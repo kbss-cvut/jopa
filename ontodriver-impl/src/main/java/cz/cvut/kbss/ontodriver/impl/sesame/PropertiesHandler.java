@@ -21,7 +21,9 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 
+import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
@@ -54,17 +56,21 @@ class PropertiesHandler {
 	 *            entity
 	 * @param uri
 	 *            primary key
-	 * @param properties
-	 *            properties specification
 	 * @param entityType
 	 *            entity type resolved from the metamodel
+	 * @param descriptor
+	 *            Entity descriptor, specifies context
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-	<T> void load(T entity, URI uri, PropertiesSpecification<?, ?> att, EntityType<T> entityType,
-			URI context) throws IllegalAccessException, IllegalArgumentException {
-		final Model statements = storage.filter(uri, null, null, att.isInferred(), context);
-		loadImpl(entity, att, entityType, statements);
+	<T> void load(T entity, URI uri, EntityType<T> entityType, Descriptor descriptor)
+			throws IllegalAccessException, IllegalArgumentException {
+		PropertiesSpecification<? super T, ?> propertiesSpec = entityType.getProperties();
+		final Descriptor propsDescriptor = descriptor.getAttributeDescriptor(propertiesSpec);
+		final URI context = SesameUtils.toSesameUri(propsDescriptor.getContext(), valueFactory);
+		final Model statements = storage.filter(uri, null, null, propertiesSpec.isInferred(),
+				context);
+		loadImpl(entity, propertiesSpec, entityType, statements);
 	}
 
 	/**
@@ -75,8 +81,6 @@ class PropertiesHandler {
 	 * 
 	 * @param entity
 	 *            entity
-	 * @param properties
-	 *            properties specification
 	 * @param entityType
 	 *            entity type resolved from the metamodel
 	 * @param models
@@ -85,11 +89,12 @@ class PropertiesHandler {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-	<T> void load(T entity, PropertiesSpecification<?, ?> att, EntityType<T> entityType,
-			SubjectModels<T> models) throws IllegalArgumentException, IllegalAccessException {
-		final Model statements = models.filter(models.primaryKey, null, null, att.isInferred(),
-				models.getFieldContext(att.getJavaField().getName()));
-		loadImpl(entity, att, entityType, statements);
+	<T> void load(T entity, EntityType<T> entityType, SubjectModels<T> models)
+			throws IllegalArgumentException, IllegalAccessException {
+		final PropertiesSpecification<?, ?> propertiesSpec = entityType.getProperties();
+		final Model statements = models.filter(models.primaryKey, null, null,
+				propertiesSpec.isInferred(), models.getFieldContext(propertiesSpec));
+		loadImpl(entity, propertiesSpec, entityType, statements);
 	}
 
 	/**
@@ -114,9 +119,19 @@ class PropertiesHandler {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-	<T> void save(T entity, URI uri, PropertiesSpecification<?, ?> att, EntityType<T> entityType,
-			URI context, boolean removeOld) throws IllegalArgumentException, IllegalAccessException {
-		Object value = att.getJavaField().get(entity);
+	<T> void save(T entity, URI uri, EntityType<T> entityType, Descriptor descriptor,
+			boolean removeOld) throws IllegalArgumentException, IllegalAccessException {
+		final PropertiesSpecification<?, ?> propertiesSpec = entityType.getProperties();
+		// TODO Should we check for inferred, when PropertiesSpecification is
+		// created as inferred always (see MetamodelImpl)
+		// if (propertiesSpec.isInferred()) {
+		// throw new
+		// OWLInferredAttributeModifiedException("Cannot modify attribute "
+		// + propertiesSpec + ", it is inferred.");
+		// }
+		Object value = propertiesSpec.getJavaField().get(entity);
+		final Descriptor propsDescriptor = descriptor.getAttributeDescriptor(propertiesSpec);
+		final URI context = SesameUtils.toSesameUri(propsDescriptor.getContext(), valueFactory);
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("Saving other properties of " + entity + " with value = " + value);
 		}

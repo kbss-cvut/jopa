@@ -205,6 +205,7 @@ public class CreateOperationsRunner {
 	public void persistSimpleList(EntityManager em, URI ctx) {
 		logger.config("Test: persist entity with simple list.");
 		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
+		entityC.setSimpleList(Generators.createSimpleList(10));
 		em.getTransaction().begin();
 		em.persist(entityC, cDescriptor);
 		for (OWLClassA a : entityC.getSimpleList()) {

@@ -83,7 +83,7 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return name;
 	}
 
-	// 
+	//
 	// public <Y> SingularAttribute<X, Y> getDeclaredId(Class<Y> type) {
 	// for (final Attribute<X, ?> a : declaredAttributeMap.values()) {
 	// final SingularAttribute<X, Y> sa = (SingularAttribute<X, Y>) a;
@@ -96,7 +96,7 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 	// throw new IllegalArgumentException();
 	// }
 	//
-	// 
+	//
 	// public <Y> SingularAttribute<? super X, Y> getId(Class<Y> type) {
 	// for (final Attribute<? super X, ?> a : attributeMap.values()) {
 	// final SingularAttribute<? super X, Y> sa = (SingularAttribute<? super X,
@@ -110,7 +110,7 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 	// throw new IllegalArgumentException();
 	// }
 	//
-	// 
+	//
 	// public Type<?> getIdType() {
 	// return idField.getType();
 	// }
@@ -153,8 +153,7 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return new HashSet<Attribute<? super X, ?>>(attributeMap.values());
 	}
 
-	public <E> CollectionAttribute<? super X, E> getCollection(String name,
-			Class<E> elementType) {
+	public <E> CollectionAttribute<? super X, E> getCollection(String name, Class<E> elementType) {
 		final CollectionAttribute<? super X, E> a = (CollectionAttribute<? super X, E>) getAttribute(name);
 
 		if (!a.getBindableJavaType().isAssignableFrom(elementType)) {
@@ -176,8 +175,7 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return new HashSet<Attribute<X, ?>>(declaredAttributeMap.values());
 	}
 
-	public <E> CollectionAttribute<X, E> getDeclaredCollection(String name,
-			Class<E> elementType) {
+	public <E> CollectionAttribute<X, E> getDeclaredCollection(String name, Class<E> elementType) {
 		final CollectionAttribute<X, E> a = (CollectionAttribute<X, E>) getDeclaredAttribute(name);
 
 		if (!a.getBindableJavaType().isAssignableFrom(elementType)) {
@@ -191,8 +189,7 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return getDeclaredCollection(name, Object.class);
 	}
 
-	public <E> ListAttribute<X, E> getDeclaredList(String name,
-			Class<E> elementType) {
+	public <E> ListAttribute<X, E> getDeclaredList(String name, Class<E> elementType) {
 		final ListAttribute<X, E> a = (ListAttribute<X, E>) getDeclaredAttribute(name);
 
 		if (!a.getBindableJavaType().isAssignableFrom(elementType)) {
@@ -206,8 +203,8 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return getDeclaredList(name, Object.class);
 	}
 
-	public <K, V> MapAttribute<X, K, V> getDeclaredMap(String name,
-			Class<K> keyType, Class<V> valueType) {
+	public <K, V> MapAttribute<X, K, V> getDeclaredMap(String name, Class<K> keyType,
+			Class<V> valueType) {
 		final MapAttribute<X, K, V> a = (MapAttribute<X, K, V>) getDeclaredAttribute(name);
 
 		if (!a.getKeyJavaType().isAssignableFrom(keyType)
@@ -234,8 +231,7 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return set;
 	}
 
-	public <E> SetAttribute<X, E> getDeclaredSet(String name,
-			Class<E> elementType) {
+	public <E> SetAttribute<X, E> getDeclaredSet(String name, Class<E> elementType) {
 		final SetAttribute<X, E> a = (SetAttribute<X, E>) getDeclaredAttribute(name);
 
 		if (!a.getBindableJavaType().isAssignableFrom(elementType)) {
@@ -245,14 +241,11 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	
 	public SetAttribute<X, ?> getDeclaredSet(String name) {
 		return getDeclaredSet(name, Object.class);
 	}
 
-	
-	public <Y> SingularAttribute<X, Y> getDeclaredSingularAttribute(
-			String name, Class<Y> type) {
+	public <Y> SingularAttribute<X, Y> getDeclaredSingularAttribute(String name, Class<Y> type) {
 		final SingularAttribute<X, Y> a = (SingularAttribute<X, Y>) getDeclaredAttribute(name);
 
 		if (!a.getJavaType().isAssignableFrom(type)) {
@@ -262,12 +255,10 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	
 	public SingularAttribute<X, ?> getDeclaredSingularAttribute(String name) {
 		return getDeclaredSingularAttribute(name, Object.class);
 	}
 
-	
 	public Set<SingularAttribute<X, ?>> getDeclaredSingularAttributes() {
 		final Set<SingularAttribute<X, ?>> set = new HashSet<SingularAttribute<X, ?>>();
 
@@ -280,9 +271,7 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return set;
 	}
 
-	
-	public <E> ListAttribute<? super X, E> getList(String name,
-			Class<E> elementType) {
+	public <E> ListAttribute<? super X, E> getList(String name, Class<E> elementType) {
 		final ListAttribute<? super X, E> a = (ListAttribute<? super X, E>) getAttribute(name);
 
 		if (!a.getBindableJavaType().isAssignableFrom(elementType)) {
@@ -292,14 +281,12 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	
 	public ListAttribute<? super X, ?> getList(String name) {
 		return getList(name, Object.class);
 	}
 
-	
-	public <K, V> MapAttribute<? super X, K, V> getMap(String name,
-			Class<K> keyType, Class<V> valueType) {
+	public <K, V> MapAttribute<? super X, K, V> getMap(String name, Class<K> keyType,
+			Class<V> valueType) {
 		final MapAttribute<? super X, K, V> a = (MapAttribute<? super X, K, V>) getAttribute(name);
 
 		if (!a.getKeyJavaType().isAssignableFrom(keyType)
@@ -310,12 +297,10 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	
 	public MapAttribute<? super X, ?, ?> getMap(String name) {
 		return getMap(name, Object.class, Object.class);
 	}
 
-	
 	public Set<PluralAttribute<? super X, ?, ?>> getPluralAttributes() {
 		final Set<PluralAttribute<? super X, ?, ?>> set = new HashSet<PluralAttribute<? super X, ?, ?>>();
 
@@ -328,9 +313,7 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return set;
 	}
 
-	
-	public <E> SetAttribute<? super X, E> getSet(String name,
-			Class<E> elementType) {
+	public <E> SetAttribute<? super X, E> getSet(String name, Class<E> elementType) {
 		final SetAttribute<? super X, E> a = (SetAttribute<? super X, E>) getAttribute(name);
 
 		if (!a.getBindableJavaType().isAssignableFrom(elementType)) {
@@ -340,14 +323,11 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return a;
 	}
 
-	
 	public SetAttribute<? super X, ?> getSet(String name) {
 		return getSet(name, Object.class);
 	}
 
-	
-	public <Y> SingularAttribute<? super X, Y> getSingularAttribute(
-			String name, Class<Y> type) {
+	public <Y> SingularAttribute<? super X, Y> getSingularAttribute(String name, Class<Y> type) {
 		final Attribute<? super X, ?> a = getAttribute(name);
 
 		if (!a.getJavaType().isAssignableFrom(type)) {
@@ -357,12 +337,10 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return (SingularAttribute<? super X, Y>) a;
 	}
 
-	
 	public SingularAttribute<? super X, ?> getSingularAttribute(String name) {
 		return getSingularAttribute(name, Object.class);
 	}
 
-	
 	public Set<SingularAttribute<? super X, ?>> getSingularAttributes() {
 		final Set<SingularAttribute<? super X, ?>> set = new HashSet<SingularAttribute<? super X, ?>>();
 
@@ -375,42 +353,34 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 		return set;
 	}
 
-	
 	public Class<X> getJavaType() {
 		return javaType;
 	}
 
-	
 	public cz.cvut.kbss.jopa.model.metamodel.Type.PersistenceType getPersistenceType() {
 		return PersistenceType.ENTITY;
 	}
 
-	
 	public Class<X> getBindableJavaType() {
 		return getJavaType();
 	}
 
-	
 	public cz.cvut.kbss.jopa.model.metamodel.Bindable.BindableType getBindableType() {
 		return BindableType.ENTITY_TYPE;
 	}
 
-	
 	public IRI getIRI() {
 		return iri;
 	}
 
-	
 	public Identifier getIdentifier() {
 		return identifier;
 	}
 
-	
 	public TypesSpecification<? super X, ?> getTypes() {
 		return directTypes;
 	}
 
-	
 	public PropertiesSpecification<? super X, ?> getProperties() {
 		return properties;
 	}

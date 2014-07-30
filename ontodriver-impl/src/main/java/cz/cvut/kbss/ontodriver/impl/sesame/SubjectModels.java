@@ -9,7 +9,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 class SubjectModels<T> {
 
@@ -54,11 +54,11 @@ class SubjectModels<T> {
 	 *            Attribute representing the field
 	 * @return Context URI or {@code null} if it is the default one
 	 */
-	URI getFieldContext(Attribute<?, ?> attribute) {
+	URI getFieldContext(FieldSpecification<?, ?> attribute) {
 		assert attribute != null;
 		final Descriptor fieldDesc = descriptor.getAttributeDescriptor(attribute);
 		final java.net.URI u = fieldDesc.getContext();
-		return (u != null ? vf.createURI(u.toString()) : null);
+		return SesameUtils.toSesameUri(u, vf);
 	}
 
 	/**
@@ -67,7 +67,6 @@ class SubjectModels<T> {
 	 * @return Context URI or {@code null} if it is the default one
 	 */
 	URI getEntityContext() {
-		return (descriptor.getContext() != null ? vf.createURI(descriptor.getContext().toString())
-				: null);
+		return SesameUtils.toSesameUri(descriptor.getContext(), vf);
 	}
 }

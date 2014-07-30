@@ -24,9 +24,9 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
@@ -653,7 +653,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 				storageMerge(iri, clone, att.getJavaField(), descriptor);
 				setIndirectCollectionIfPresent(clone, att.getJavaField());
 			}
-			final TypesSpecification<?, ?> ts = et.getTypes();
+			final FieldSpecification<?, ?> ts = et.getTypes();
 			if (ts != null) {
 				storageMerge(iri, clone, ts.getJavaField(), descriptor);
 				setIndirectCollectionIfPresent(clone, ts.getJavaField());

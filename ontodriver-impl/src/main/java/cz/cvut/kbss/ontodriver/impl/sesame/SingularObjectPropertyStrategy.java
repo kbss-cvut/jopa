@@ -60,7 +60,7 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 	private <T> void loadObjectProperty(Attribute<?, ?> property) throws OntoDriverException,
 			IllegalArgumentException, IllegalAccessException {
 		final URI propertyUri = getAddressAsSesameUri(property.getIRI());
-		final URI ctx = models.getFieldContext(property.getName());
+		final URI ctx = models.getFieldContext(property);
 		URI objectUri = getObjectPropertyValue(models.primaryKey, propertyUri,
 				property.isInferred(), ctx);
 		if (objectUri == null) {
@@ -78,7 +78,7 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 
 	private void saveObjectProperty(URI property, Object value, Attribute<?, ?> att,
 			boolean removeOld) throws OntoDriverException {
-		final URI ctx = models.getFieldContext(att.getName());
+		final URI ctx = models.getFieldContext(att);
 		if (removeOld) {
 			removeOldObjectPropertyValues(models.primaryKey, property, ctx);
 		}

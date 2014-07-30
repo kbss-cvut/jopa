@@ -53,7 +53,7 @@ public class BasicTypeImpl<X> implements BasicType<X> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		BasicTypeImpl other = (BasicTypeImpl) obj;
+		BasicTypeImpl<?> other = (BasicTypeImpl<?>) obj;
 		if (c == null) {
 			if (other.c != null)
 				return false;

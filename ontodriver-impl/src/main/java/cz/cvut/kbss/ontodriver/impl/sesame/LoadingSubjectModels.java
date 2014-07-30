@@ -1,6 +1,5 @@
 package cz.cvut.kbss.ontodriver.impl.sesame;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,19 +25,10 @@ public class LoadingSubjectModels<T> extends SubjectModels<T> {
 
 	@Override
 	protected void init() {
-		// If entity context or field context is null, it means search the whole
-		// repository
-		if (descriptor.getContext() != null) {
-			this.sesameContexts = new HashSet<>(descriptor.getFieldContexts().size() + 1);
-			for (java.net.URI u : descriptor.getFieldContexts().values()) {
-				if (u == null) {
-					this.sesameContexts = Collections.emptySet();
-					break;
-				}
-				sesameContexts.add(vf.createURI(u.toString()));
-			}
-		} else {
-			this.sesameContexts = Collections.emptySet();
+		final Set<java.net.URI> descriptorContexts = descriptor.getAllContexts();
+		this.sesameContexts = new HashSet<>(descriptorContexts.size());
+		for (java.net.URI u : descriptorContexts) {
+			sesameContexts.add(SesameUtils.toSesameUri(u, vf));
 		}
 		this.assertedModel = storage.filter(primaryKey, null, null, false, sesameContexts);
 	}

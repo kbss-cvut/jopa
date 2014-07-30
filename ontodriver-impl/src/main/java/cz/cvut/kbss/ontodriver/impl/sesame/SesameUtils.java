@@ -179,4 +179,17 @@ abstract class SesameUtils {
 
 		return col.toArray(new URI[col.size()]);
 	}
+
+	/**
+	 * Constructs a Sesame URI from the specified java.net.URI.
+	 * 
+	 * @param javaUri
+	 *            The uri to convert
+	 * @param factory
+	 *            ValueFactory used for the conversion
+	 * @return Sesame URI
+	 */
+	static URI toSesameUri(java.net.URI javaUri, ValueFactory factory) {
+		return (javaUri != null ? factory.createURI(javaUri.toString()) : null);
+	}
 }
