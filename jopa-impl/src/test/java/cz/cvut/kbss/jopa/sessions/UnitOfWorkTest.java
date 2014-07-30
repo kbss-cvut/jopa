@@ -41,9 +41,11 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
@@ -86,6 +88,16 @@ public class UnitOfWorkTest {
 	private Identifier idB;
 	@Mock
 	private Identifier idD;
+	@Mock
+	private Attribute strAttMock;
+	@Mock
+	private TypesSpecification typesMock;
+	@Mock
+	private Attribute classAAttMock;
+	@Mock
+	private PropertiesSpecification propertiesMock;
+	@Mock
+	private Attribute strAttBMock;
 	@Mock
 	EntityManagerImpl emMock;
 	@Mock
@@ -131,6 +143,20 @@ public class UnitOfWorkTest {
 		when(idA.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
 		when(idB.getJavaField()).thenReturn(OWLClassB.class.getDeclaredField("uri"));
 		when(idD.getJavaField()).thenReturn(OWLClassD.class.getDeclaredField("uri"));
+		when(typeA.getFieldSpecification(OWLClassA.getTypesField().getName()))
+				.thenReturn(typesMock);
+		when(typeD.getFieldSpecification(OWLClassD.getOwlClassAField().getName())).thenReturn(
+				classAAttMock);
+		when(typeB.getFieldSpecification(OWLClassB.getPropertiesField().getName())).thenReturn(
+				propertiesMock);
+		when(typeB.getFieldSpecification(OWLClassB.getStrAttField().getName())).thenReturn(
+				strAttBMock);
+		when(strAttMock.getJavaField()).thenReturn(OWLClassA.getStrAttField());
+		when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
+		when(classAAttMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
+		when(classAAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
+		when(strAttBMock.getJavaField()).thenReturn(OWLClassB.getStrAttField());
+		when(propertiesMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
 		when(emMock.getTransaction()).thenReturn(transactionMock);
 		uow = new UnitOfWorkImpl(serverSessionMock);
 		uow.setEntityManager(emMock);
@@ -201,7 +227,7 @@ public class UnitOfWorkTest {
 	}
 
 	@Test
-	public void testCalculateNewObjects() {
+	public void testCalculateNewObjects() throws Exception {
 		uow.registerNewObject(entityA, descriptor);
 		uow.registerNewObject(entityB, descriptor);
 		uow.registerNewObject(entityD, descriptor);
@@ -231,6 +257,10 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testCalculateModificationsObjectProperty() throws Exception {
+		final Attribute attMock = mock(Attribute.class);
+		when(typeD.getFieldSpecification(OWLClassD.getOwlClassAField().getName())).thenReturn(
+				attMock);
+		when(attMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
 		final OWLClassD d = new OWLClassD();
 		d.setUri(URI.create("http://tempD"));
 		final OWLClassA a = new OWLClassA();
@@ -474,7 +504,7 @@ public class UnitOfWorkTest {
 	}
 
 	@Test
-	public void revertObjectReference() {
+	public void revertObjectReference() throws Exception {
 		OWLClassD clone = (OWLClassD) uow.registerExistingObject(entityD, descriptor);
 		OWLClassA changedRef = new OWLClassA();
 		final URI pk = URI.create("http://changedOne");

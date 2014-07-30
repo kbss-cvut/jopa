@@ -133,6 +133,9 @@ public class DeleteOperationsRunner {
 		final OWLClassG g = em.find(OWLClassG.class, entityG.getUri(), gDescriptor);
 		final OWLClassH h = em.find(OWLClassH.class, entityH.getUri(), gDescriptor);
 		final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), gDescriptor);
+		assertNotNull(g);
+		assertNotNull(h);
+		assertNotNull(a);
 		assertTrue(em.contains(g));
 		assertTrue(em.contains(h));
 		assertTrue(em.contains(a));

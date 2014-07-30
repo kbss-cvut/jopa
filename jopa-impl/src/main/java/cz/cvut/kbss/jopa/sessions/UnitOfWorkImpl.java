@@ -696,6 +696,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		cloneToOriginals.put(clone, object);
 		registerEntityWithPersistenceContext(clone, this);
 		registerEntityWithOntologyContext(descriptor, clone);
+		// putObjectIntoCache(getIdentifier(object), object,
+		// descriptor.getContext());
 		return clone;
 	}
 

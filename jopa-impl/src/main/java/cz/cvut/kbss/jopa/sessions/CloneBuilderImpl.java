@@ -24,6 +24,8 @@ import cz.cvut.kbss.jopa.adapters.IndirectMap;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
@@ -112,8 +114,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	 * @param clone
 	 *            Object
 	 */
-	private void populateAttributes(final Object original, Object clone,
-			final Descriptor repository) {
+	private void populateAttributes(final Object original, Object clone, final Descriptor descriptor) {
 		Class<?> theClass = original.getClass();
 		List<Field> fields = new ArrayList<Field>();
 		fields.addAll(Arrays.asList(theClass.getDeclaredFields()));
@@ -139,12 +140,14 @@ public class CloneBuilderImpl implements CloneBuilder {
 					// The field is an immutable type
 					f.set(clone, origVal);
 				} else if (origVal instanceof Collection || origVal instanceof Map) {
+					final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass, descriptor);
 					// Collection or a Map
 					final Object clonedCollection = getInstanceBuilder(origVal).buildClone(clone,
-							f, origVal, repository);
+							f, origVal, fieldDescriptor);
 					f.set(clone, clonedCollection);
 				} else if (f.getType().isArray()) {
-					Object[] arr = cloneArray(origVal, repository);
+					final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass, descriptor);
+					Object[] arr = cloneArray(origVal, fieldDescriptor);
 					f.set(clone, arr);
 				} else {
 					// Else we have a relationship and we need to clone its
@@ -160,13 +163,15 @@ public class CloneBuilderImpl implements CloneBuilder {
 					}
 					Object toAssign = null;
 					if (isTypeManaged(origClass)) {
+						final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass,
+								descriptor);
 						final IRI pk = getIdentifier(origVal);
-						toAssign = getVisitedEntity(repository, pk);
+						toAssign = getVisitedEntity(descriptor, pk);
 						if (toAssign == null) {
-							toAssign = uow.registerExistingObject(origVal, repository);
+							toAssign = uow.registerExistingObject(origVal, fieldDescriptor);
 						}
 					} else {
-						toAssign = buildClone(origVal, repository);
+						toAssign = buildClone(origVal, descriptor);
 					}
 					f.set(clone, toAssign);
 				}
@@ -178,6 +183,13 @@ public class CloneBuilderImpl implements CloneBuilder {
 			e.printStackTrace();
 			throw new OWLPersistenceException("Error while cloning object.", e);
 		}
+	}
+
+	private Descriptor getFieldDescriptor(Field field, Class<?> entityClass,
+			Descriptor entityDescriptor) {
+		final EntityType<?> et = getMetamodel().entity(entityClass);
+		final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(field.getName());
+		return entityDescriptor.getAttributeDescriptor(fieldSpec);
 	}
 
 	/**

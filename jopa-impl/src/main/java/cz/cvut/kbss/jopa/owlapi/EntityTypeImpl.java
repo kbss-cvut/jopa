@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.CollectionAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
@@ -383,5 +384,17 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 
 	public PropertiesSpecification<? super X, ?> getProperties() {
 		return properties;
+	}
+
+	public FieldSpecification<? super X, ?> getFieldSpecification(String fieldName) {
+		FieldSpecification<? super X, ?> att = getAttribute(fieldName);
+		if (att == null) {
+			if (directTypes != null && directTypes.getJavaField().getName().equals(fieldName)) {
+				att = directTypes;
+			} else if (properties != null && properties.getJavaField().getName().equals(fieldName)) {
+				att = properties;
+			}
+		}
+		return att;
 	}
 }

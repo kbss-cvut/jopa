@@ -7,6 +7,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -43,26 +44,13 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 		saveObjectProperty(attUri, value, att, removeOld);
 	}
 
-	/**
-	 * Loads value of the specified object property for the specified entity
-	 * instance.
-	 * 
-	 * @param instance
-	 *            Entity instance
-	 * @param uri
-	 *            Entity primary key
-	 * @param property
-	 *            Attribute representing the object property
-	 * @throws OntoDriverException
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 */
 	private <T> void loadObjectProperty(Attribute<?, ?> property) throws OntoDriverException,
 			IllegalArgumentException, IllegalAccessException {
 		final URI propertyUri = getAddressAsSesameUri(property.getIRI());
-		final URI ctx = models.getFieldContext(property);
+		final Descriptor propertyDescriptor = models.descriptor.getAttributeDescriptor(property);
+		final URI context = SesameUtils.toSesameUri(propertyDescriptor.getContext(), valueFactory);
 		URI objectUri = getObjectPropertyValue(models.primaryKey, propertyUri,
-				property.isInferred(), ctx);
+				property.isInferred(), context);
 		if (objectUri == null) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.finer("Value of object property " + property.getIRI()
@@ -70,7 +58,8 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 			}
 			return;
 		}
-		final Object value = getJavaInstanceForSubject(property.getJavaType(), objectUri, ctx);
+		final Object value = getJavaInstanceForSubject(property.getJavaType(), objectUri,
+				propertyDescriptor);
 		if (value != null) {
 			property.getJavaField().set(models.entity, value);
 		}
@@ -78,20 +67,22 @@ class SingularObjectPropertyStrategy extends AttributeStrategy {
 
 	private void saveObjectProperty(URI property, Object value, Attribute<?, ?> att,
 			boolean removeOld) throws OntoDriverException {
-		final URI ctx = models.getFieldContext(att);
+		final Descriptor descriptor = models.descriptor.getAttributeDescriptor(att);
 		if (removeOld) {
-			removeOldObjectPropertyValues(models.primaryKey, property, ctx);
+			removeOldObjectPropertyValues(models.primaryKey, property,
+					SesameUtils.toSesameUri(descriptor.getContext(), valueFactory));
 		}
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("setObjectProperty '" + property + "' of " + models.primaryKey + " to "
 					+ value);
 		}
 		if (value != null) {
-			addIndividualsForReferencedEntities(Collections.singletonList(value), ctx);
+			final URI context = SesameUtils.toSesameUri(descriptor.getContext(), valueFactory);
+			addIndividualsForReferencedEntities(Collections.singletonList(value), context);
 			final URI uri = getIdentifier(value);
 			assert uri != null;
 			final Statement stmt = valueFactory.createStatement(models.primaryKey, property, uri);
-			addStatement(stmt, ctx);
+			addStatement(stmt, context);
 		}
 	}
 }

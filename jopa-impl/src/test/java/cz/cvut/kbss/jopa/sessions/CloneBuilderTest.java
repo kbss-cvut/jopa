@@ -34,9 +34,13 @@ import org.mockito.stubbing.Answer;
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
@@ -77,6 +81,18 @@ public class CloneBuilderTest {
 	private EntityType<OWLClassD> etD;
 	@Mock
 	private Identifier identifierD;
+	@Mock
+	private Attribute strAttMock;
+	@Mock
+	private TypesSpecification typesMock;
+	@Mock
+	private Attribute classAAttMock;
+	@Mock
+	private PropertiesSpecification propertiesMock;
+	@Mock
+	private Attribute strAttBMock;
+	@Mock
+	private Attribute refListMock;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -120,7 +136,7 @@ public class CloneBuilderTest {
 					@Override
 					public Object answer(InvocationOnMock invocation) {
 						Object obj = invocation.getArguments()[0];
-						Descriptor desc = (EntityDescriptor) invocation.getArguments()[1];
+						Descriptor desc = (Descriptor) invocation.getArguments()[1];
 						return builder.buildClone(obj, desc);
 					}
 				});
@@ -136,6 +152,25 @@ public class CloneBuilderTest {
 		when(identifierB.getJavaField()).thenReturn(OWLClassB.class.getDeclaredField(ID_FIELD));
 		when(identifierC.getJavaField()).thenReturn(OWLClassC.class.getDeclaredField(ID_FIELD));
 		when(identifierD.getJavaField()).thenReturn(OWLClassD.class.getDeclaredField(ID_FIELD));
+		when(etA.getFieldSpecification(OWLClassA.getStrAttField().getName()))
+				.thenReturn(strAttMock);
+		when(etA.getFieldSpecification(OWLClassA.getTypesField().getName())).thenReturn(typesMock);
+		when(etD.getFieldSpecification(OWLClassD.getOwlClassAField().getName())).thenReturn(
+				classAAttMock);
+		when(etB.getFieldSpecification(OWLClassB.getPropertiesField().getName())).thenReturn(
+				propertiesMock);
+		when(etB.getFieldSpecification(OWLClassB.getStrAttField().getName())).thenReturn(
+				strAttBMock);
+		when(etC.getFieldSpecification(OWLClassC.getRefListField().getName())).thenReturn(
+				refListMock);
+		when(strAttMock.getJavaField()).thenReturn(OWLClassA.getStrAttField());
+		when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
+		when(classAAttMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
+		when(classAAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
+		when(strAttBMock.getJavaField()).thenReturn(OWLClassB.getStrAttField());
+		when(propertiesMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
+		when(refListMock.getJavaField()).thenReturn(OWLClassC.getRefListField());
+		when(refListMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
 		this.builder = new CloneBuilderImpl(uow);
 		entityA.setTypes(types);
 		entityB.setProperties(null);
@@ -234,7 +269,7 @@ public class CloneBuilderTest {
 	}
 
 	@Test
-	public void testCloneObjectProperty() {
+	public void testCloneObjectProperty() throws Exception {
 		final OWLClassD another = new OWLClassD();
 		another.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityDD"));
 		another.setOwlClassA(entityA);

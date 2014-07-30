@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.model.descriptors;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
@@ -53,6 +54,30 @@ public abstract class Descriptor implements Serializable {
 	 *             If the descriptor is not available
 	 */
 	public abstract Descriptor getAttributeDescriptor(FieldSpecification<?, ?> attribute);
+
+	/**
+	 * Adds descriptor for the specified attribute. </p>
+	 * 
+	 * @param attribute
+	 *            The attribute to set descriptor for
+	 * @param descriptor
+	 *            The descriptor to use
+	 */
+	public abstract void addAttributeDescriptor(Field attribute, Descriptor descriptor);
+
+	/**
+	 * Adds repository context for the specified attribute. </p>
+	 * 
+	 * This in effect means creating a descriptor for the specified field with
+	 * the specified context.
+	 * 
+	 * @param attribute
+	 *            The attribute to set context for
+	 * @param context
+	 *            The context to set
+	 * @see #addAttributeDescriptor(Field, Descriptor)
+	 */
+	public abstract void addAttributeContext(Field attribute, URI context);
 
 	/**
 	 * Gets all contexts present in this descriptor. </p>

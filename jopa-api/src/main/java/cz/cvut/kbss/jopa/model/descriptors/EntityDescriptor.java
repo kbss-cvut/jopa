@@ -38,39 +38,19 @@ public class EntityDescriptor extends Descriptor {
 		this.fieldDescriptors = new HashMap<>();
 	}
 
-	/**
-	 * Adds the specified descriptor to this EntityDescriptor. </p>
-	 * 
-	 * @param attribute
-	 *            Attribute which the specified descriptor describes
-	 * @param descriptor
-	 *            The descriptor to add
-	 * @return This instance
-	 */
-	public EntityDescriptor addAttributeDescriptor(FieldSpecification<?, ?> attribute,
-			Descriptor descriptor) {
+	@Override
+	public void addAttributeDescriptor(Field attribute, Descriptor descriptor) {
 		Objects.requireNonNull(attribute, ErrorUtils.constructNPXMessage("attribute"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		fieldDescriptors.put(attribute.getJavaField(), descriptor);
-		return this;
+		fieldDescriptors.put(attribute, descriptor);
 	}
 
-	/**
-	 * Creates and adds a descriptor to this EntityDescriptor. </p>
-	 * 
-	 * @param attribute
-	 *            Attribute which the specified descriptor describes
-	 * @param context
-	 *            Context information for the new descriptor. This can be
-	 *            {@code null}, meaning that the default context is referenced
-	 * @return This instance
-	 */
-	public EntityDescriptor addAttributeDescriptor(FieldSpecification<?, ?> attribute, URI context) {
+	@Override
+	public void addAttributeContext(Field attribute, URI context) {
 		Objects.requireNonNull(attribute, ErrorUtils.constructNPXMessage("attribute"));
 
-		fieldDescriptors.put(attribute.getJavaField(), createDescriptor(attribute, context));
-		return this;
+		fieldDescriptors.put(attribute, new FieldDescriptor(context, attribute));
 	}
 
 	@Override
@@ -94,14 +74,17 @@ public class EntityDescriptor extends Descriptor {
 	private static Descriptor createDescriptor(FieldSpecification<?, ?> att, URI context) {
 		if ((att instanceof TypesSpecification<?, ?>)
 				|| (att instanceof PropertiesSpecification<?, ?>)) {
-			return new FieldDescriptor(context, att);
+			return new FieldDescriptor(context, att.getJavaField());
 		}
 		final Attribute<?, ?> attSpec = (Attribute<?, ?>) att;
-		if (attSpec.getPersistentAttributeType() == PersistentAttributeType.OBJECT
-				&& !attSpec.isCollection()) {
-			return new EntityDescriptor(context);
+		if (attSpec.getPersistentAttributeType() == PersistentAttributeType.OBJECT) {
+			if (attSpec.isCollection()) {
+				return new ObjectPropertyCollectionDescriptor(context, att.getJavaField());
+			} else {
+				return new EntityDescriptor(context);
+			}
 		}
-		return new FieldDescriptor(context, att);
+		return new FieldDescriptor(context, att.getJavaField());
 	}
 
 	@Override

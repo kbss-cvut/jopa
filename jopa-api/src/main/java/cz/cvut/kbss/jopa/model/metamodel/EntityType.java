@@ -43,4 +43,7 @@ public interface EntityType<X> extends IdentifiableType<X>, Bindable<X> {
 
 	@NonJPA
 	PropertiesSpecification<? super X, ?> getProperties();
+
+	@NonJPA
+	FieldSpecification<? super X, ?> getFieldSpecification(String fieldName);
 }

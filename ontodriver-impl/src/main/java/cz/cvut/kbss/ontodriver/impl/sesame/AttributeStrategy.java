@@ -15,7 +15,6 @@ import org.openrdf.model.impl.LinkedHashModel;
 
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
@@ -108,7 +107,7 @@ abstract class AttributeStrategy {
 	// for the entity returned by this method.
 	// We'll be looking for its attributes in one context but they might not be
 	// only there
-	protected <T> T getJavaInstanceForSubject(Class<T> cls, URI subjectUri, URI context)
+	protected <T> T getJavaInstanceForSubject(Class<T> cls, URI subjectUri, Descriptor descriptor)
 			throws OntoDriverException {
 		assert cls != null;
 		assert subjectUri != null;
@@ -116,9 +115,6 @@ abstract class AttributeStrategy {
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.finest("Getting " + subjectUri + " of " + cls);
 		}
-		final java.net.URI ctx = context != null ? java.net.URI.create(context.stringValue())
-				: null;
-		final Descriptor descriptor = new EntityDescriptor(ctx);
 		final IRI pk = IRI.create(subjectUri.toString());
 		final Object ob = internal.module.getEntityFromProviderCache(cls, pk, descriptor);
 		if (ob != null && cls.isAssignableFrom(ob.getClass())) {

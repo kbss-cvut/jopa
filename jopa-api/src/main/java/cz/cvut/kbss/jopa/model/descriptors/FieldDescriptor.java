@@ -21,21 +21,31 @@ public class FieldDescriptor extends Descriptor {
 
 	private final Field field;
 
-	public FieldDescriptor(FieldSpecification<?, ?> attribute) {
+	public FieldDescriptor(Field attribute) {
 		super();
 		Objects.requireNonNull(attribute, ErrorUtils.constructNPXMessage("attribute"));
-		this.field = attribute.getJavaField();
+		this.field = attribute;
 	}
 
-	public FieldDescriptor(URI context, FieldSpecification<?, ?> attribute) {
+	public FieldDescriptor(URI context, Field attribute) {
 		super(context);
 		Objects.requireNonNull(attribute, ErrorUtils.constructNPXMessage("attribute"));
-		this.field = attribute.getJavaField();
+		this.field = attribute;
 	}
 
 	@Override
 	public Descriptor getAttributeDescriptor(FieldSpecification<?, ?> attribute) {
 		return getFieldDescriptor(attribute.getJavaField());
+	}
+
+	@Override
+	public void addAttributeDescriptor(Field attribute, Descriptor descriptor) {
+		// Do nothing
+	}
+
+	@Override
+	public void addAttributeContext(Field attribute, URI context) {
+		// Do nothing
 	}
 
 	private Descriptor getFieldDescriptor(Field field) {
@@ -53,6 +63,10 @@ public class FieldDescriptor extends Descriptor {
 		contexts.add(context);
 		visited.add(this);
 		return contexts;
+	}
+
+	Field getField() {
+		return field;
 	}
 
 	@Override
