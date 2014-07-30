@@ -8,6 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
@@ -63,6 +64,28 @@ public class TestCreateOperationsMultiContextNativeStore {
 		em = TestEnvironment.getPersistenceConnector(
 				"SesameNativeMultiPersistWithGeneratedIntoContext", storage, false, properties);
 		runner.persistWithGeneratedIntoContext(em);
+	}
+
+	@Test(expected = OWLEntityExistsException.class)
+	public void testPersistTwiceIntoOneContext() {
+		em = TestEnvironment.getPersistenceConnector("SesameNativeMultiPersistTwiceIntoOneContext",
+				storage, false, properties);
+		runner.persistTwiceIntoOneContext(em);
+	}
+
+	@Test
+	public void testPersistTwiceIntoDifferentContexts() {
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameNativeMultiPersistTwiceIntoDifferentContexts", storage, false, properties);
+		runner.persistTwiceIntoDifferentContexts(em);
+	}
+
+	@Test
+	public void testPersistPropertiesIntoDifferentContext() throws Exception {
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameNativeMultiPersistPropertiesIntoDifferentContext", storage, false,
+				properties);
+		runner.persistPropertiesIntoDifferent(em);
 	}
 
 	private static StorageConfig initStorage() {
