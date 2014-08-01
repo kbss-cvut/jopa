@@ -28,7 +28,7 @@ import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC")
 public class OWLClassC {
-	
+
 	private static final String REF_LIST_FIELD = "referencedList";
 	private static final String SIMPLE_LIST_FIELD = "simpleList";
 
@@ -41,7 +41,7 @@ public class OWLClassC {
 
 	@Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleNext")
 	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence")
-	private List<OWLClassA> simplelist;
+	private List<OWLClassA> simpleList;
 
 	public void setUri(URI uri) {
 		this.uri = uri;
@@ -59,22 +59,22 @@ public class OWLClassC {
 		return referencedList;
 	}
 
-	public void setSimpleList(List<OWLClassA> simplelist) {
-		this.simplelist = simplelist;
+	public void setSimpleList(List<OWLClassA> simpleList) {
+		this.simpleList = simpleList;
 	}
 
 	public List<OWLClassA> getSimpleList() {
-		return simplelist;
+		return simpleList;
 	}
-	
+
 	public static String getClassIri() {
 		return OWLClassC.class.getAnnotation(OWLClass.class).iri();
 	}
-	
+
 	public static Field getRefListField() throws NoSuchFieldException, SecurityException {
 		return OWLClassC.class.getDeclaredField(REF_LIST_FIELD);
 	}
-	
+
 	public static Field getSimpleListField() throws NoSuchFieldException, SecurityException {
 		return OWLClassC.class.getDeclaredField(SIMPLE_LIST_FIELD);
 	}

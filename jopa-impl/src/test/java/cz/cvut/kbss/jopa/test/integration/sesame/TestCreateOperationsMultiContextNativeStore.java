@@ -95,6 +95,13 @@ public class TestCreateOperationsMultiContextNativeStore {
 		runner.persistCascadeIntoThreeContexts(em);
 	}
 
+	@Test
+	public void testPersistSetWithAttributeContexts() throws Exception {
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameNativeMultiPersistSetWithAttributeContexts", storage, false, properties);
+		runner.persistSetWithAttributeContexts(em);
+	}
+
 	private static StorageConfig initStorage() {
 		return new SesameNativeStorageConfig();
 	}

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
-import java.net.URI;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -17,11 +16,6 @@ import cz.cvut.kbss.jopa.test.OWLClassG;
 import cz.cvut.kbss.jopa.test.OWLClassH;
 
 public class DeleteOperationsMultiContextRunner extends BaseRunner {
-
-	private static final URI CONTEXT_ONE = URI
-			.create("http://krizik.felk.cvut.cz/jopa/contexts#One");
-	private static final URI CONTEXT_TWO = URI
-			.create("http://krizik.felk.cvut.cz/jopa/contexts#Two");
 
 	public DeleteOperationsMultiContextRunner(Logger logger) {
 		super(logger);

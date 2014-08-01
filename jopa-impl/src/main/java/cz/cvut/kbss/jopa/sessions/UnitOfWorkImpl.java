@@ -924,37 +924,43 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			if (field.get(entity) != null) {
 				return;
 			}
-			final Descriptor repository = getDescriptor(entity);
-			if (repository == null) {
+			final Descriptor descriptor = getDescriptor(entity);
+			if (descriptor == null) {
 				throw new OWLPersistenceException(
 						"Unable to find repository identifier for entity " + entity
 								+ ". Is it managed by this UoW?");
 			}
-			storageConnection.loadFieldValue(entity, field, repository);
-			final Class<?> cls = field.getType();
+			storageConnection.loadFieldValue(entity, field, descriptor);
 			final Object orig = field.get(entity);
 			final Object entityOriginal = getOriginal(entity);
 			if (entityOriginal != null) {
 				field.set(entityOriginal, orig);
 			}
-			Object clone;
-			if (orig == null) {
-				clone = null;
-			} else {
-				if (isManagedType(cls)) {
-					clone = registerExistingObject(orig, repository);
-				} else {
-					clone = cloneBuilder.buildClone(entity, field, orig, repository);
-				}
-			}
+			final Object clone = cloneLoadedFieldValue(entity, field, descriptor, orig);
 			field.set(entity, clone);
-		} catch (OntoDriverException e) {
-			throw new OWLPersistenceException(e);
-		} catch (IllegalArgumentException e) {
-			throw new OWLPersistenceException(e);
-		} catch (IllegalAccessException e) {
+		} catch (OntoDriverException | IllegalArgumentException | IllegalAccessException e) {
 			throw new OWLPersistenceException(e);
 		}
+	}
+
+	private <T> Object cloneLoadedFieldValue(T entity, Field field, final Descriptor descriptor,
+			final Object fieldValueOrig) {
+		Object clone;
+		if (fieldValueOrig == null) {
+			clone = null;
+		} else {
+			if (isManagedType(field.getType())) {
+				clone = registerExistingObject(fieldValueOrig, descriptor);
+				final EntityType<?> et = getMetamodel().entity(entity.getClass());
+				final FieldSpecification<?, ?> fieldSpec = et
+						.getFieldSpecification(field.getName());
+				final URI fieldContext = descriptor.getAttributeDescriptor(fieldSpec).getContext();
+				putObjectIntoCache(getIdentifier(clone), fieldValueOrig, fieldContext);
+			} else {
+				clone = cloneBuilder.buildClone(entity, field, fieldValueOrig, descriptor);
+			}
+		}
+		return clone;
 	}
 
 	@Override

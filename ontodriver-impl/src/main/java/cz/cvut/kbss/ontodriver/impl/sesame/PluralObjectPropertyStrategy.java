@@ -15,8 +15,6 @@ import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
@@ -128,7 +126,8 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 			if (content == null) {
 				break;
 			}
-			Object inst = getJavaInstanceForSubject(cls, content, descriptorForContext(ctx));
+			Object inst = getJavaInstanceForSubject(cls, content,
+					models.descriptor.getAttributeDescriptor(la));
 			assert inst != null;
 			lst.add(inst);
 			seq = getPropertyValue(seqUri, hasNextUri, includeInferred, ctx);
@@ -142,11 +141,6 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 			lst = null;
 		}
 		return lst;
-	}
-
-	private Descriptor descriptorForContext(URI context) {
-		return new EntityDescriptor(context != null ? java.net.URI.create(context.stringValue())
-				: null);
 	}
 
 	/**
@@ -175,7 +169,8 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 				continue;
 			}
 			final URI objUri = (URI) obj;
-			final Object o = getJavaInstanceForSubject(cls, objUri, descriptorForContext(ctx));
+			final Object o = getJavaInstanceForSubject(cls, objUri,
+					models.descriptor.getAttributeDescriptor(pa));
 			set.add(o);
 		}
 		return set;
@@ -209,7 +204,8 @@ class PluralObjectPropertyStrategy extends AttributeStrategy {
 		}
 		URI newSubject = (URI) val;
 		while (newSubject != null) {
-			final Object o = getJavaInstanceForSubject(cls, newSubject, descriptorForContext(ctx));
+			final Object o = getJavaInstanceForSubject(cls, newSubject,
+					models.descriptor.getAttributeDescriptor(la));
 			lst.add(o);
 			final Value nextValue = getPropertyValue(newSubject, hasNextUri, includeInferred, ctx);
 			if (nextValue == null) {

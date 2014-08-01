@@ -16,6 +16,11 @@ import cz.cvut.kbss.jopa.test.OWLClassI;
 
 abstract class BaseRunner {
 
+	protected static final URI CONTEXT_ONE = URI
+			.create("http://krizik.felk.cvut.cz/jopa/contexts#One");
+	protected static final URI CONTEXT_TWO = URI
+			.create("http://krizik.felk.cvut.cz/jopa/contexts#Two");
+
 	protected final Logger logger;
 
 	protected OWLClassA entityA;

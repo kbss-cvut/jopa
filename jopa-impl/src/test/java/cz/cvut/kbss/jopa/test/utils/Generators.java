@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.test.utils;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,34 +35,23 @@ public abstract class Generators {
 		return createReferencedList(DEFAULT_SIZE);
 	}
 
+	public static Set<OWLClassA> createSimpleSet() {
+		return createSimpleSet(DEFAULT_SIZE);
+	}
+
 	public static List<OWLClassA> createSimpleList(int size) {
 		assert size > 0;
 		final List<OWLClassA> lst = new ArrayList<>(size);
-		int counter = 110;
-		for (int i = 0; i < size; i++) {
-			final OWLClassA a = new OWLClassA();
-			a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityASimple"
-					+ counter));
-			a.setStringAttribute("stringAttributeeee" + counter++);
-			a.setTypes(TYPES);
-			lst.add(a);
-		}
+		generateInstances(lst, "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityASimple",
+				size);
 		return lst;
 	}
 
 	public static List<OWLClassA> createReferencedList(int size) {
 		assert size > 0;
 		final List<OWLClassA> lst = new ArrayList<>(size);
-		int counter = 101;
-		for (int i = 0; i < size; i++) {
-			final OWLClassA a = new OWLClassA();
-			a.setUri(URI
-					.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAReferenced"
-							+ counter));
-			a.setStringAttribute("stringAttributeeee" + counter++);
-			a.setTypes(TYPES);
-			lst.add(a);
-		}
+		generateInstances(lst,
+				"http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAReferenced", size);
 		return lst;
 	}
 
@@ -80,6 +70,26 @@ public abstract class Generators {
 
 		}
 		return m;
+	}
+
+	public static Set<OWLClassA> createSimpleSet(int size) {
+		assert size > 0;
+		final Set<OWLClassA> set = new HashSet<>(size);
+		generateInstances(set, "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityASimpleSet",
+				size);
+		return set;
+	}
+
+	private static void generateInstances(Collection<OWLClassA> col, String uriBase, int size) {
+		assert size > 0;
+		int counter = TestEnvironmentUtils.randomInt(1000);
+		for (int i = 0; i < size; i++) {
+			final OWLClassA a = new OWLClassA();
+			a.setUri(URI.create(uriBase + counter));
+			a.setStringAttribute("stringAttributeeee" + counter++);
+			a.setTypes(TYPES);
+			col.add(a);
+		}
 	}
 
 	private static Set<String> getTypes() {

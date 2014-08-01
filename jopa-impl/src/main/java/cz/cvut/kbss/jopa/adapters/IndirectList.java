@@ -98,7 +98,7 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 	}
 
 	public Iterator<E> iterator() {
-		return internalList.iterator();
+		return new IndirectIterator(internalList.iterator());
 	}
 
 	public int lastIndexOf(Object arg0) {
@@ -106,11 +106,11 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 	}
 
 	public ListIterator<E> listIterator() {
-		return internalList.listIterator();
+		return new IndirectListIterator(internalList.listIterator());
 	}
 
 	public ListIterator<E> listIterator(int arg0) {
-		return internalList.listIterator(arg0);
+		return new IndirectListIterator(internalList.listIterator(arg0));
 	}
 
 	public boolean remove(Object arg0) {
@@ -154,7 +154,8 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 	}
 
 	public List<E> subList(int arg0, int arg1) {
-		return new IndirectList<E>(owner, field, persistenceContext, internalList.subList(arg0, arg1));
+		return new IndirectList<E>(owner, field, persistenceContext, internalList.subList(arg0,
+				arg1));
 	}
 
 	public Object[] toArray() {
@@ -183,5 +184,87 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 	@Override
 	public String toString() {
 		return internalList.toString();
+	}
+
+	private class IndirectIterator implements Iterator<E> {
+
+		private final Iterator<E> it;
+
+		private IndirectIterator(Iterator<E> it) {
+			this.it = it;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return it.hasNext();
+		}
+
+		@Override
+		public E next() {
+			return it.next();
+		}
+
+		@Override
+		public void remove() {
+			it.remove();
+			IndirectList.this.persistChange();
+		}
+	}
+
+	private class IndirectListIterator implements ListIterator<E> {
+
+		private final ListIterator<E> lit;
+
+		private IndirectListIterator(ListIterator<E> lit) {
+			this.lit = lit;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return lit.hasNext();
+		}
+
+		@Override
+		public E next() {
+			return lit.next();
+		}
+
+		@Override
+		public boolean hasPrevious() {
+			return lit.hasPrevious();
+		}
+
+		@Override
+		public E previous() {
+			return lit.previous();
+		}
+
+		@Override
+		public int nextIndex() {
+			return lit.nextIndex();
+		}
+
+		@Override
+		public int previousIndex() {
+			return lit.previousIndex();
+		}
+
+		@Override
+		public void remove() {
+			lit.remove();
+			IndirectList.this.persistChange();
+		}
+
+		@Override
+		public void set(E e) {
+			lit.set(e);
+			IndirectList.this.persistChange();
+		}
+
+		@Override
+		public void add(E e) {
+			lit.add(e);
+			IndirectList.this.persistChange();
+		}
 	}
 }
