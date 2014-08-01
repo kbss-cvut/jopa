@@ -73,8 +73,6 @@ public class CreateOperationsMultiContextRunner extends BaseRunner {
 		assertEquals(resD.getOwlClassA().getUri(), resA.getUri());
 		assertEquals(resD.getOwlClassA().getStringAttribute(), resA.getStringAttribute());
 		assertTrue(resD.getOwlClassA().getTypes().containsAll(resA.getTypes()));
-		// TODO Temporarily commented out
-		// assertSame(resD.getOwlClassA(), resA);
 	}
 
 	public void persistWithGeneratedIntoContext(EntityManager em) {

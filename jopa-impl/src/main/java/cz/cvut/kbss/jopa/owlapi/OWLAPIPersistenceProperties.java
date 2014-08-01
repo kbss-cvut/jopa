@@ -32,7 +32,7 @@ public interface OWLAPIPersistenceProperties extends PersistenceProperties {
 	 */
 	public static final String CACHE_TTL = "cz.cvut.jopa.cache.ttl";
 	/**
-	 * How often should the cache be swept for dead entities. In sceonds.
+	 * How often should the cache be swept for dead entities. In seconds.
 	 */
 	public static final String CACHE_SWEEP_RATE = "cz.cvut.jopa.cache.sweepRate";
 }

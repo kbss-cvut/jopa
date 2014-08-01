@@ -594,35 +594,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	/**
-	 * Merge the changes from this Unit of Work's change set into the parent
-	 * session and to the original objects. Also mark new objects as existing,
-	 * since they are already persisted.
+	 * Merge the changes from this Unit of Work's change set into the server
+	 * session.
 	 */
 	public void mergeChangesIntoParent() {
 		if (hasChanges()) {
 			mergeManager.mergeChangesFromChangeSet(getUowChangeSet());
-		}
-		// Mark new persistent object as existing and managed
-		Iterator<?> it = getNewObjectsCloneToOriginal().keySet().iterator();
-		while (it.hasNext()) {
-			Object clone = it.next();
-			Object original = getNewObjectsCloneToOriginal().get(clone);
-			if (original != null) {
-				getNewObjectsOriginalToClone().remove(original);
-			}
-			it.remove();
-			// getNewObjectsCloneToOriginal().remove(clone);
-			// Clones are already in cloneMapping, so just put them here
-			cloneToOriginals.put(clone, original);
-		}
-		// Remove the clones and originals of the deleted objects from the
-		// context
-		Iterator<?> deletedIt = getUowChangeSet().getDeletedObjects().keySet().iterator();
-		while (deletedIt.hasNext()) {
-			ObjectChangeSet ochSet = (ObjectChangeSet) deletedIt.next();
-			Object clone = ochSet.getCloneObject();
-			cloneMapping.remove(clone);
-			cloneToOriginals.remove(clone);
 		}
 	}
 
@@ -696,8 +673,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		cloneToOriginals.put(clone, object);
 		registerEntityWithPersistenceContext(clone, this);
 		registerEntityWithOntologyContext(descriptor, clone);
-		// putObjectIntoCache(getIdentifier(object), object,
-		// descriptor.getContext());
 		return clone;
 	}
 
@@ -1176,6 +1151,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		try {
 			final T result = storageConnection.find(cls, primaryKey, descriptor);
 			if (result != null) {
+				// Put into cache here, when we are sure that the entity is in the ontology
 				putObjectIntoCache(primaryKey, result, descriptor.getContext());
 			}
 			return result;
