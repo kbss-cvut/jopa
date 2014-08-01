@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.adapters;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -11,7 +12,9 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -19,7 +22,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import cz.cvut.kbss.jopa.adapters.IndirectList;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassC;
@@ -117,6 +119,21 @@ public class IndirectListTest {
 	}
 
 	@Test
+	public void testAddAllAtIndex() {
+		final List<OWLClassA> toAdd = new ArrayList<OWLClassA>();
+		for (int i = 0; i < 5; i++) {
+			final OWLClassA a = new OWLClassA();
+			a.setUri(URI.create("http://addedA" + i));
+			toAdd.add(a);
+		}
+		final int index = 4;
+		owner.getReferencedList().addAll(index, toAdd);
+		verify(uow).attributeChanged(owner, ownerField);
+		assertEquals(backupList.size() + toAdd.size(), target.size());
+		assertEquals(toAdd.get(0), target.get(index));
+	}
+
+	@Test
 	public void testClear() {
 		owner.getReferencedList().clear();
 		verify(uow).attributeChanged(owner, ownerField);
@@ -169,5 +186,66 @@ public class IndirectListTest {
 		verify(uow).attributeChanged(owner, ownerField);
 		assertEquals(backupList.size(), target.size());
 		assertTrue(target.contains(a));
+	}
+
+	@Test
+	public void testIteratorRemove() {
+		int cnt = 3;
+		final OWLClassA toRemove = owner.getReferencedList().get(cnt);
+		final Iterator<OWLClassA> it = owner.getReferencedList().iterator();
+		int i = 0;
+		while (it.hasNext() && i < cnt + 1) {
+			i++;
+			it.next();
+		}
+		it.remove();
+		verify(uow).attributeChanged(owner, ownerField);
+		assertFalse(owner.getReferencedList().contains(toRemove));
+	}
+
+	@Test
+	public void testListIteratorAdd() {
+		final OWLClassA addA = new OWLClassA();
+		addA.setUri(URI.create("http://addA"));
+		final ListIterator<OWLClassA> lit = owner.getReferencedList().listIterator();
+		int i = 0;
+		int pos = 4;
+		while (lit.hasNext() && i < pos) {
+			i++;
+			lit.next();
+		}
+		lit.add(addA);
+		verify(uow).attributeChanged(owner, ownerField);
+		assertEquals(owner.getReferencedList().get(pos), addA);
+	}
+
+	@Test
+	public void testListIteratorSetReverse() {
+		final OWLClassA a = new OWLClassA();
+		a.setUri(URI.create("http://setA"));
+		final ListIterator<OWLClassA> lit = owner.getReferencedList().listIterator(5);
+		while (lit.hasPrevious()) {
+			lit.previous();
+		}
+		lit.set(a);
+		verify(uow).attributeChanged(owner, ownerField);
+		assertEquals(owner.getReferencedList().get(0), a);
+	}
+
+	@Test
+	public void testListIteratorRemove() {
+		int cnt = 3;
+		final OWLClassA toRemove = owner.getReferencedList().get(cnt);
+		final ListIterator<OWLClassA> it = owner.getReferencedList().listIterator();
+		int i = 0;
+		while (it.hasNext() && i < cnt + 1) {
+			i++;
+			it.next();
+		}
+		it.remove();
+		verify(uow).attributeChanged(owner, ownerField);
+		assertFalse(owner.getReferencedList().contains(toRemove));
+		assertEquals(cnt - 1, it.previousIndex());
+		assertEquals(cnt, it.nextIndex());
 	}
 }
