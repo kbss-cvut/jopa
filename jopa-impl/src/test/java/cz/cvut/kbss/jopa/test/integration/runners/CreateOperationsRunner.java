@@ -10,7 +10,6 @@ import static org.junit.Assert.fail;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -21,67 +20,15 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
-import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassG;
 import cz.cvut.kbss.jopa.test.OWLClassH;
-import cz.cvut.kbss.jopa.test.OWLClassI;
 import cz.cvut.kbss.jopa.test.utils.Generators;
 
-public class CreateOperationsRunner {
-
-	private final Logger logger;
+public class CreateOperationsRunner extends BaseRunner {
 
 	public CreateOperationsRunner(Logger logger) {
-		assert logger != null;
-		this.logger = logger;
-		init();
-	}
-
-	private OWLClassA entityA;
-	private OWLClassB entityB;
-	private OWLClassC entityC;
-	private OWLClassD entityD;
-	// Generated IRI
-	private OWLClassE entityE;
-	// Lazy reference to OWLClassA
-	private OWLClassI entityI;
-	// Two relationships
-	private OWLClassG entityG;
-	private OWLClassH entityH;
-
-	private void init() {
-		this.entityA = new OWLClassA();
-		this.entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
-		this.entityA.setStringAttribute("entityAStringAttribute");
-		final Set<String> types = new HashSet<String>();
-		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
-		this.entityA.setTypes(types);
-		this.entityB = new OWLClassB();
-		this.entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
-		this.entityB.setStringAttribute("entityBStringAttribute");
-		this.entityC = new OWLClassC();
-		this.entityC.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
-		this.entityD = new OWLClassD();
-		this.entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
-		this.entityD.setOwlClassA(entityA);
-		this.entityE = new OWLClassE();
-		this.entityE.setStringAttribute("entityEStringAttribute");
-		this.entityI = new OWLClassI();
-		this.entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
-		this.entityI.setOwlClassA(entityA);
-		this.entityH = new OWLClassH();
-		this.entityH.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH"));
-		this.entityH.setOwlClassA(entityA);
-		this.entityG = new OWLClassG();
-		this.entityG.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
-		this.entityG.setOwlClassH(entityH);
-	}
-
-	public void initBeforeTest() {
-		entityE.setUri(null);
-		entityC.setSimpleList(null);
-		entityC.setReferencedList(null);
+		super(logger);
 	}
 
 	public void persistWithGenerated(EntityManager em) {

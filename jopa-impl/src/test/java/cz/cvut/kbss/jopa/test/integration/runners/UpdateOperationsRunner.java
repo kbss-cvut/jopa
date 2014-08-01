@@ -26,69 +26,26 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassF;
-import cz.cvut.kbss.jopa.test.OWLClassG;
 import cz.cvut.kbss.jopa.test.OWLClassH;
 import cz.cvut.kbss.jopa.test.OWLClassI;
 import cz.cvut.kbss.jopa.test.OWLClassJ;
 import cz.cvut.kbss.jopa.test.utils.Generators;
 
-public class UpdateOperationsRunner {
+public class UpdateOperationsRunner extends BaseRunner {
 
-	private final Logger logger;
-
-	private OWLClassA entityA;
 	private OWLClassA entityA2;
-
-	private OWLClassB entityB;
-	private OWLClassC entityC;
-	private OWLClassD entityD;
-	// Generated IRI
-	private OWLClassE entityE;
 	private OWLClassF entityF;
-	// Lazy reference to OWLClassA
-	private OWLClassI entityI;
-	// Two relationships
-	private OWLClassG entityG;
-	private OWLClassH entityH;
 	private OWLClassJ entityJ;
 
 	public UpdateOperationsRunner(Logger logger) throws Exception {
-		assert logger != null;
-		this.logger = logger;
-		init();
+		super(logger);
+		initialize();
 	}
 
-	private void init() throws Exception {
-		this.entityA = new OWLClassA();
-		entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
-		entityA.setStringAttribute("entityAStringAttribute");
-		final Set<String> types = new HashSet<String>();
-		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
-		entityA.setTypes(types);
-		this.entityB = new OWLClassB();
-		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
-		entityB.setStringAttribute("entityBStringAttribute");
-		this.entityC = new OWLClassC();
-		entityC.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
-		this.entityD = new OWLClassD();
-		entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
-		entityD.setOwlClassA(entityA);
-		this.entityE = new OWLClassE();
-		entityE.setStringAttribute("entityEStringAttribute");
+	private void initialize() throws Exception {
 		this.entityF = new OWLClassF();
 		entityF.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityF"));
-		this.entityI = new OWLClassI();
-		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
-		entityI.setOwlClassA(entityA);
-		this.entityH = new OWLClassH();
-		entityH.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH"));
-		entityH.setOwlClassA(entityA);
-		this.entityG = new OWLClassG();
-		entityG.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
-		entityG.setOwlClassH(entityH);
-
 		this.entityA2 = new OWLClassA();
 		entityA2.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA2"));
 		this.entityJ = new OWLClassJ();
@@ -97,13 +54,6 @@ public class UpdateOperationsRunner {
 		set.add(entityA);
 		set.add(entityA2);
 		entityJ.setOwlClassA(set);
-	}
-
-	public void initBeforeTest() {
-		entityB.setProperties(null);
-		entityC.setSimpleList(null);
-		entityC.setReferencedList(null);
-		entityE.setUri(null);
 	}
 
 	public void mergeSet(EntityManager em, URI ctx) {

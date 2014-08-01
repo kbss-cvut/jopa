@@ -9,9 +9,7 @@ import static org.junit.Assert.fail;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -20,59 +18,12 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
-import cz.cvut.kbss.jopa.test.OWLClassG;
-import cz.cvut.kbss.jopa.test.OWLClassH;
 import cz.cvut.kbss.jopa.test.OWLClassI;
 
-public class RetrieveOperationsRunner {
-
-	private final Logger logger;
-
-	private OWLClassA entityA;
-	private OWLClassB entityB;
-	private OWLClassD entityD;
-	// Generated IRI
-	private OWLClassE entityE;
-	// Lazy reference to OWLClassA
-	private OWLClassI entityI;
-	// Two relationships
-	private OWLClassG entityG;
-	private OWLClassH entityH;
+public class RetrieveOperationsRunner extends BaseRunner {
 
 	public RetrieveOperationsRunner(Logger logger) {
-		assert logger != null;
-		this.logger = logger;
-		init();
-	}
-
-	private void init() {
-		entityA = new OWLClassA();
-		entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
-		entityA.setStringAttribute("entityAStringAttribute");
-		final Set<String> types = new HashSet<String>();
-		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
-		entityA.setTypes(types);
-		entityB = new OWLClassB();
-		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
-		entityB.setStringAttribute("entityBStringAttribute");
-		entityD = new OWLClassD();
-		entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
-		entityD.setOwlClassA(entityA);
-		entityE = new OWLClassE();
-		entityE.setStringAttribute("entityEStringAttribute");
-		entityI = new OWLClassI();
-		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
-		entityI.setOwlClassA(entityA);
-		entityH = new OWLClassH();
-		entityH.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH"));
-		entityH.setOwlClassA(entityA);
-		entityG = new OWLClassG();
-		entityG.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
-		entityG.setOwlClassH(entityH);
-	}
-
-	public void initBeforeTest() {
-		entityE.setUri(null);
+		super(logger);
 	}
 
 	public void retrieveSimple(EntityManager em, URI ctx) {

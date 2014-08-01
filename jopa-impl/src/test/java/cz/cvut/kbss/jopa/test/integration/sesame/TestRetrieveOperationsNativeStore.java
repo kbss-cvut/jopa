@@ -43,7 +43,6 @@ public class TestRetrieveOperationsNativeStore {
 			em.close();
 			em.getEntityManagerFactory().close();
 		}
-		runner.initBeforeTest();
 	}
 
 	@Test

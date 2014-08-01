@@ -46,7 +46,6 @@ public class TestCreateOperationsFile {
 			em.close();
 			em.getEntityManagerFactory().close();
 		}
-		runner.initBeforeTest();
 	}
 
 	@Test

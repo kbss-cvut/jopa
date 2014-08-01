@@ -3,11 +3,11 @@ package cz.cvut.kbss.jopa.test.integration.runners;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
-import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -19,43 +19,19 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.OWLClassG;
+import cz.cvut.kbss.jopa.test.OWLClassH;
 import cz.cvut.kbss.jopa.test.utils.Generators;
 
-public class CreateOperationsMultiContextRunner {
+public class CreateOperationsMultiContextRunner extends BaseRunner {
 
 	private static final URI CONTEXT_ONE = URI
 			.create("http://krizik.felk.cvut.cz/jopa/contexts#One");
 	private static final URI CONTEXT_TWO = URI
 			.create("http://krizik.felk.cvut.cz/jopa/contexts#Two");
 
-	private final Logger logger;
-
-	private OWLClassA entityA;
-	private OWLClassB entityB;
-	private OWLClassD entityD;
-	private OWLClassE entityE;
-
 	public CreateOperationsMultiContextRunner(Logger logger) {
-		assert logger != null;
-		this.logger = logger;
-		init();
-	}
-
-	private void init() {
-		this.entityA = new OWLClassA();
-		this.entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
-		this.entityA.setStringAttribute("entityAStringAttribute");
-		final Set<String> types = new HashSet<String>();
-		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
-		this.entityA.setTypes(types);
-		this.entityB = new OWLClassB();
-		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
-		entityB.setStringAttribute("stringAttributeForB");
-		this.entityD = new OWLClassD();
-		this.entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
-		this.entityD.setOwlClassA(entityA);
-		this.entityE = new OWLClassE();
-		this.entityE.setStringAttribute("entityEStringAttribute");
+		super(logger);
 	}
 
 	public void persistDataPropertyIntoContext(EntityManager em) throws Exception {
@@ -158,5 +134,29 @@ public class CreateOperationsMultiContextRunner {
 			assertTrue(entityB.getProperties().containsKey(e.getKey()));
 			assertEquals(e.getValue(), entityB.getProperties().get(e.getKey()));
 		}
+	}
+
+	public void persistCascadeIntoThreeContexts(EntityManager em) throws Exception {
+		logger.config("Test: persist three entities in cascaded relationship, each into a different context.");
+		final Descriptor gDescriptor = new EntityDescriptor();
+		final Descriptor hDescriptor = new EntityDescriptor(CONTEXT_ONE);
+		final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
+		hDescriptor.addAttributeDescriptor(OWLClassH.getOwlClassAField(), aDescriptor);
+		gDescriptor.addAttributeDescriptor(OWLClassG.getOwlClassHField(), hDescriptor);
+		em.getTransaction().begin();
+		em.persist(entityG, gDescriptor);
+		assertTrue(em.contains(entityG));
+		assertTrue(em.contains(entityH));
+		assertTrue(em.contains(entityA));
+		em.getTransaction().commit();
+
+		final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
+		assertNotNull(resA);
+		final OWLClassH resH = em.find(OWLClassH.class, entityH.getUri(), hDescriptor);
+		assertNotNull(resH);
+		assertSame(resA, resH.getOwlClassA());
+		final OWLClassG resG = em.find(OWLClassG.class, entityG.getUri(), gDescriptor);
+		assertNotNull(resG);
+		assertSame(resH, resG.getOwlClassH());
 	}
 }

@@ -13,7 +13,7 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 import cz.cvut.kbss.jopa.test.integration.runners.CreateOperationsMultiContextRunner;
-import cz.cvut.kbss.jopa.test.utils.SesameNativeStorageConfig;
+import cz.cvut.kbss.jopa.test.utils.SesameMemoryStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
@@ -87,8 +87,15 @@ public class TestCreateOperationsMultiContextMemoryStore {
 		runner.persistPropertiesIntoDifferent(em);
 	}
 
+	@Test
+	public void testPersistCascadeIntoThreeContexts() throws Exception {
+		em = TestEnvironment.getPersistenceConnector("SesameMultiPersistCascadeIntoThreeContexts",
+				storage, false, properties);
+		runner.persistCascadeIntoThreeContexts(em);
+	}
+
 	private static StorageConfig initStorage() {
-		return new SesameNativeStorageConfig();
+		return new SesameMemoryStorageConfig();
 	}
 
 	private static Map<String, String> initProperties() {

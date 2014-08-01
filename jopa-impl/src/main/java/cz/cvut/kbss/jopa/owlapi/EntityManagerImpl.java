@@ -148,13 +148,13 @@ public class EntityManagerImpl extends AbstractEntityManager {
 						if (ox == null) {
 							return;
 						}
-
+						final Descriptor attDescriptor = descriptor.getAttributeDescriptor(at);
 						if (at.isCollection()) {
 							for (final Object ox2 : (Collection<?>) ox) {
-								persist(ox2, descriptor);
+								persist(ox2, attDescriptor);
 							}
 						} else {
-							persist(ox, descriptor);
+							persist(ox, attDescriptor);
 						}
 					} catch (Exception e) {
 						if (getTransaction().isActive()) {
@@ -229,7 +229,8 @@ public class EntityManagerImpl extends AbstractEntityManager {
 				@Override
 				protected void exploreCascaded(Attribute<?, ?> at, Object o)
 						throws IllegalAccessException {
-					mergeX(at, o, descriptor);
+					final Descriptor attDescriptor = descriptor.getAttributeDescriptor(at);
+					mergeX(at, o, attDescriptor);
 				}
 
 				@Override

@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -25,12 +25,12 @@ public class TestDeleteOperationsTDB {
 	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 
-	private static DeleteOperationsRunner runner;
+	private DeleteOperationsRunner runner;
 
 	private EntityManager em;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	@Before
+	public void setUpBeforeClass() throws Exception {
 		runner = new DeleteOperationsRunner(LOG);
 	}
 
@@ -43,7 +43,6 @@ public class TestDeleteOperationsTDB {
 			em.close();
 			em.getEntityManagerFactory().close();
 		}
-		runner.initBeforeTest();
 	}
 
 	@Test

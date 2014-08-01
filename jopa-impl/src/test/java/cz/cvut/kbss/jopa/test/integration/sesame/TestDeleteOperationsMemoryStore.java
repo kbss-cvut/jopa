@@ -19,7 +19,8 @@ import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
 public class TestDeleteOperationsMemoryStore {
 
-	private static final Logger LOG = Logger.getLogger(TestDeleteOperationsMemoryStore.class.getName());
+	private static final Logger LOG = Logger.getLogger(TestDeleteOperationsMemoryStore.class
+			.getName());
 
 	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
@@ -42,7 +43,6 @@ public class TestDeleteOperationsMemoryStore {
 			em.close();
 			em.getEntityManagerFactory().close();
 		}
-		runner.initBeforeTest();
 	}
 
 	@Test

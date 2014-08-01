@@ -46,7 +46,6 @@ public class TestCreateOperationsTDB {
 			em.close();
 			em.getEntityManagerFactory().close();
 		}
-		runner.initBeforeTest();
 	}
 
 	@Test

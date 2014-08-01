@@ -46,7 +46,6 @@ public class TestCreateOperationsNativeStore {
 			em.close();
 			em.getEntityManagerFactory().close();
 		}
-		runner.initBeforeTest();
 	}
 
 	@Test
