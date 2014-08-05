@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -533,6 +534,13 @@ public class UnitOfWorkTest {
 		assertFalse(uow.useBackupOntologyForQueryProcessing());
 	}
 
+	@Test(expected = IllegalStateException.class)
+	public void testCommitInactive() throws Exception {
+		uow.release();
+		uow.commit();
+		fail("This line should not have been reached.");
+	}
+
 	@Test
 	public void testRollback() throws Exception {
 		uow.registerNewObject(entityA, descriptor);
@@ -545,6 +553,13 @@ public class UnitOfWorkTest {
 		verify(connectionMock).rollback();
 		assertFalse(uow.contains(entityA));
 		assertFalse(uow.contains(clone));
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testRollbackInactive() throws Exception {
+		uow.release();
+		uow.rollback();
+		fail("This line should not have been reached.");
 	}
 
 	@Test(expected = OWLPersistenceException.class)
@@ -709,6 +724,25 @@ public class UnitOfWorkTest {
 		assertNotNull(res);
 		assertSame(entityA, res);
 		verify(connectionMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
+	}
+
+	@Test
+	public void testIsConsistent() throws Exception {
+		when(connectionMock.isConsistent(CONTEXT_URI)).thenReturn(Boolean.TRUE);
+		final boolean res = uow.isConsistent(CONTEXT_URI);
+		assertTrue(res);
+		verify(connectionMock).isConsistent(CONTEXT_URI);
+	}
+
+	@Test
+	public void testGetContexts() throws Exception {
+		final List<URI> contexts = new ArrayList<>(1);
+		contexts.add(CONTEXT_URI);
+		when(connectionMock.getContexts()).thenReturn(contexts);
+		final List<URI> res = uow.getContexts();
+		assertSame(contexts, res);
+		assertEquals(contexts, res);
+		verify(connectionMock).getContexts();
 	}
 
 	private static class ServerSessionStub extends ServerSession {

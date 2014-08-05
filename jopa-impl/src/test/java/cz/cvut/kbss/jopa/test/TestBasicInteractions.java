@@ -15,82 +15,85 @@
 
 package cz.cvut.kbss.jopa.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.logging.Logger;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Test;
+
+import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 
-public class TestBasicInteractions extends TestCase {
+public class TestBasicInteractions {
+
 	private Logger log = TestEnvironment.getLogger();
 
-	public void testPersistFound() {
-		EntityManager pc = TestEnvironment
-				.getPersistenceConnector("TestBasicInteractions-testPersistFound");
-		OWLClassA t = new OWLClassA();
+	private EntityManager em;
 
-		final URI pk = URI.create("http://new-class");
-
-		t.setUri(pk);
-
-		pc.persist(t);
-
-		final OWLClassA a = pc.find(OWLClassA.class, pk);
-
-		log.info("Persisted " + t + ", found " + a);
-		assertEquals(a, t);
-		pc.close();
+	@After
+	public void tearDown() throws Exception {
+		if (em.isOpen()) {
+			if (em.getTransaction().isActive()) {
+				em.getTransaction().rollback();
+			}
+			em.close();
+			em.getEntityManagerFactory().close();
+		}
 	}
 
-	public void testRemove() {
-		EntityManager pc = TestEnvironment
-				.getPersistenceConnector("TestBasicInteractions-testRemove");
+	@Test
+	public void testPersistFound() {
+		this.em = TestEnvironment.getPersistenceConnector("TestBasicInteractions-testPersistFound");
 		OWLClassA t = new OWLClassA();
 
 		final URI pk = URI.create("http://new-class");
 
 		t.setUri(pk);
 
-		pc.persist(t);
+		em.persist(t);
+
+		final OWLClassA a = em.find(OWLClassA.class, pk);
+
+		assertEquals(a, t);
+	}
+
+	@Test
+	public void testRemove() {
+		this.em = TestEnvironment.getPersistenceConnector("TestBasicInteractions-testRemove");
+		OWLClassA t = new OWLClassA();
+
+		final URI pk = URI.create("http://new-class");
+
+		t.setUri(pk);
+
+		em.persist(t);
 
 		log.info("Persisted " + t);
-		assertTrue(pc.contains(t));
+		assertTrue(em.contains(t));
 
-		pc.remove(t);
+		em.remove(t);
 
 		log.info("Removed " + t);
-		assertFalse(pc.contains(t));
-		pc.close();
+		assertFalse(em.contains(t));
 	}
 
-	public void testSingleDataReference() {
-		EntityManager pc = TestEnvironment
-				.getPersistenceConnector("TestBasicInteractions-testSingleDataReference");
-		OWLClassA a = new OWLClassA();
-		final URI pkA = URI.create("http://newA");
-		a.setUri(pkA);
-
-		pc.persist(a);
-
-		a.setStringAttribute("testValue");
-
-		pc.close();
-
-	}
-
+	@Test
 	public void testSingleOWLClassReference() {
-		EntityManager pc = TestEnvironment
+		this.em = TestEnvironment
 				.getPersistenceConnector("TestBasicInteractions-testSingleOWLClassReference");
 		OWLClassA a = new OWLClassA();
 		final URI pkA = URI.create("http://newA");
 		a.setUri(pkA);
 
-		pc.persist(a);
+		em.persist(a);
 
 		OWLClassD d = new OWLClassD();
 		final URI pkD = URI.create("http://newD");
@@ -98,80 +101,67 @@ public class TestBasicInteractions extends TestCase {
 
 		d.setOwlClassA(a);
 
-		pc.persist(d);
-
-		pc.close();
-
+		em.persist(d);
 	}
 
-	public void testArrayOWLClassReference() {
-		EntityManager pc = TestEnvironment
-				.getPersistenceConnector("TestBasicInteractions-testArrayOWLClassReference");
-		OWLClassA a = new OWLClassA();
-		final URI pkA = URI.create("http://newA-1");
-		a.setUri(pkA);
-
-		OWLClassC c = new OWLClassC();
-		final URI pkC = URI.create("http://newC-1");
-		c.setUri(pkC);
-
-		c.setReferencedList(Collections.singletonList(a));
-
-		pc.persist(a);
-		pc.persist(c);
-
-		pc.close();
-
-	}
-
-	public void testArrayOWLClassReference2() {
-		EntityManager pc = TestEnvironment
-				.getPersistenceConnector("TestBasicInteractions-testArrayOWLClassReference");
-
-		List<OWLClassA> list = new ArrayList<OWLClassA>();
-
-		// 486
-		for (int i = 0; i < 40; i++) {
-			OWLClassA a = new OWLClassA();
-			final URI pkA = URI.create("http://newA1-" + i);
-			a.setUri(pkA);
-			list.add(a);
-			pc.persist(a);
-		}
-
-		OWLClassC c = new OWLClassC();
-		final URI pkC = URI.create("http://newC-2");
-		c.setUri(pkC);
-		c.setReferencedList(list);
-
-		pc.persist(c);
-
-		pc.close();
-	}
-
+	@Test
 	public void testTypes() {
-		EntityManager pc = TestEnvironment
-				.getPersistenceConnector("TestBasicInteractions-testTypes");
+		this.em = TestEnvironment.getPersistenceConnector("TestBasicInteractions-testTypes");
 
 		OWLClassA a = new OWLClassA();
 		final URI pkA = URI.create("http://newA");
 		a.setUri(pkA);
 
-		a.setTypes(new HashSet<String>(Arrays.asList("http://classA",
-				"http://classB", "http://classC")));
+		a.setTypes(new HashSet<String>(Arrays.asList("http://classA", "http://classB",
+				"http://classC")));
 
-		pc.getTransaction().begin();
-		pc.persist(a);
-		pc.flush();
-		pc.getTransaction().commit();
-		pc.clear();
+		em.getTransaction().begin();
+		em.persist(a);
+		em.flush();
+		em.getTransaction().commit();
+		em.clear();
 
-		OWLClassA ax = pc.find(OWLClassA.class, pkA);
+		OWLClassA ax = em.find(OWLClassA.class, pkA);
 
 		assertEquals(a.getTypes().size(), 3);
 		assertEquals(ax.getTypes().size(), 3);
-
-		pc.close();
 	}
 
+	@Test(expected = TransactionRequiredException.class)
+	public void testFlushOutsideTransaction() {
+		this.em = TestEnvironment
+				.getPersistenceConnector("TestBasicInteractions-flushOutsideTransaction");
+		OWLClassA a = new OWLClassA();
+		final URI pkA = URI.create("http://newA");
+		a.setUri(pkA);
+
+		em.getTransaction().begin();
+		em.persist(a);
+		em.getTransaction().commit();
+
+		final OWLClassA modA = em.find(OWLClassA.class, pkA);
+		modA.setStringAttribute("someString");
+		em.flush();
+		fail("This line should not have been reached.");
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testMergeRemovedEntity() {
+		this.em = TestEnvironment
+				.getPersistenceConnector("TestBasicInteractions-mergeRemovedEntity");
+		OWLClassA a = new OWLClassA();
+		final URI pkA = URI.create("http://newA");
+		a.setUri(pkA);
+
+		em.getTransaction().begin();
+		em.persist(a);
+		em.getTransaction().commit();
+
+		final OWLClassA toRemove = em.find(OWLClassA.class, pkA);
+		assertNotNull(toRemove);
+		em.getTransaction().begin();
+		em.remove(toRemove);
+		em.merge(toRemove);
+		fail("This line should not have been reached.");
+	}
 }

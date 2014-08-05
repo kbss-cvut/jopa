@@ -248,8 +248,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	}
 
 	@Override
-	public Object mergeChanges(Object original, Object clone, ObjectChangeSet changeSet,
-			MergeManager mergeManager) {
+	public Object mergeChanges(Object original, ObjectChangeSet changeSet) {
 		Map<String, ChangeRecord> changes = changeSet.getAttributesToChange();
 		try {
 			for (String att : changes.keySet()) {

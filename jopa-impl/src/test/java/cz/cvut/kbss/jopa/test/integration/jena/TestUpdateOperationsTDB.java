@@ -156,6 +156,13 @@ public class TestUpdateOperationsTDB {
 				false, properties);
 		runner.addPropertyValue(em, context());
 	}
+	
+	@Test
+	public void testAddPropertyValueDetached() {
+		em = TestEnvironment.getPersistenceConnector("JenaTDBUpdateAddPropertyValueDetached", storage,
+				false, properties);
+		runner.addPropertyValueDetached(em, context());
+	}
 
 	@Test(expected = OWLInferredAttributeModifiedException.class)
 	public void testModifyInferredAttribute() {

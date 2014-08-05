@@ -15,13 +15,10 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import java.lang.reflect.Field;
-
 import cz.cvut.kbss.jopa.model.EntityManager;
 
 public abstract class AbstractEntityManager implements EntityManager {
 
-	public abstract boolean isLoaded(final Object object,
-			final String attributeName);
+	public abstract boolean isLoaded(final Object object, final String attributeName);
 
 }

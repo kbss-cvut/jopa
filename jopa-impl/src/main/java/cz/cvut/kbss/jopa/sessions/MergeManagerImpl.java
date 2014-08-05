@@ -47,7 +47,7 @@ public class MergeManagerImpl implements MergeManager {
 				throw new OWLPersistenceException("Cannot find the original object.");
 			}
 		} else {
-			this.builder.mergeChanges(original, clone, changeSet, this);
+			this.builder.mergeChanges(original, changeSet);
 		}
 		return clone;
 	}

@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.semanticweb.owlapi.model.IRI;
 
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -73,7 +74,7 @@ public class MergeManagerTest {
 	}
 
 	@Test
-	public void testMergeChangesOnObject() {
+	public void testMergeChangesOnObject() throws Exception {
 		final OWLClassB orig = new OWLClassB();
 		final URI pk = URI.create("http://testObject");
 		orig.setUri(pk);
@@ -81,23 +82,27 @@ public class MergeManagerTest {
 		final OWLClassB clone = (OWLClassB) cloneBuilder.buildClone(orig, defaultDescriptor);
 		final ObjectChangeSet chs = createChangeSet(orig, clone);
 		clone.setStringAttribute("AnotherStringAttribute");
-		this.mm.mergeChangesOnObject(clone, chs);
+		chs.addChangeRecord(new ChangeRecordImpl(OWLClassB.getStrAttField().getName(), clone
+				.getStringAttribute()));
+		mm.mergeChangesOnObject(clone, chs);
 		assertEquals(clone.getStringAttribute(), orig.getStringAttribute());
 	}
 
 	@Test
-	public void testMergeChangesFromChangeSet() {
+	public void testMergeChangesFromChangeSet() throws Exception {
 		final OWLClassB objOne = new OWLClassB();
 		final URI pk = URI.create("http://objOne");
 		objOne.setUri(pk);
 		final OWLClassB objTwo = new OWLClassB();
 		final URI pkTwo = URI.create("http://objTwo");
 		objTwo.setUri(pkTwo);
-		Object cloneOne = cloneBuilder.buildClone(objOne, defaultDescriptor);
-		Object cloneTwo = cloneBuilder.buildClone(objTwo, defaultDescriptor);
-		((OWLClassB) cloneOne).setStringAttribute("testAtt");
+		OWLClassB cloneOne = (OWLClassB) cloneBuilder.buildClone(objOne, defaultDescriptor);
+		OWLClassB cloneTwo = (OWLClassB) cloneBuilder.buildClone(objTwo, defaultDescriptor);
+		cloneOne.setStringAttribute("testAtt");
 		uowChangeSet.addDeletedObject(createChangeSet(objTwo, cloneTwo));
 		final ObjectChangeSet ochs = createChangeSet(objOne, cloneOne);
+		ochs.addChangeRecord(new ChangeRecordImpl(OWLClassB.getStrAttField().getName(), cloneOne
+				.getStringAttribute()));
 		uowChangeSet.addObjectChangeSet(ochs);
 		mm.mergeChangesFromChangeSet(uowChangeSet);
 		verify(uow).removeObjectFromCache(objTwo, defaultDescriptor.getContext());
@@ -110,7 +115,7 @@ public class MergeManagerTest {
 		final URI pk = URI.create("http://newOnesUri");
 		objOne.setUri(pk);
 		objOne.setStringAttribute("ABeautifulAttribute");
-		final Object clone = cloneBuilder.buildClone(objOne, defaultDescriptor);
+		final OWLClassB clone = (OWLClassB) cloneBuilder.buildClone(objOne, defaultDescriptor);
 		final ObjectChangeSet ochs = createChangeSet(objOne, clone);
 		uowChangeSet.addNewObjectChangeSet(ochs);
 		mm.mergeChangesFromChangeSet(uowChangeSet);
@@ -122,13 +127,13 @@ public class MergeManagerTest {
 		final OWLClassB newOne = new OWLClassB();
 		final URI pk = URI.create("http://newOnesUri");
 		newOne.setUri(pk);
-		final Object clone = cloneBuilder.buildClone(newOne, defaultDescriptor);
+		final OWLClassB clone = (OWLClassB) cloneBuilder.buildClone(newOne, defaultDescriptor);
 		final ObjectChangeSet ochs = createChangeSet(newOne, clone);
 		mm.mergeNewObject(ochs);
 		verify(uow).putObjectIntoCache(IRI.create(pk), newOne, defaultDescriptor.getContext());
 	}
 
-	private static ObjectChangeSet createChangeSet(Object orig, Object clone) {
+	private static ObjectChangeSet createChangeSet(OWLClassB orig, OWLClassB clone) {
 		return TestEnvironmentUtils.createObjectChangeSet(orig, clone,
 				defaultDescriptor.getContext());
 	}
@@ -142,12 +147,19 @@ public class MergeManagerTest {
 		/**
 		 * Does no merge, just assigns the clone to the original
 		 */
-		public Object mergeChanges(Object original, Object clone, ObjectChangeSet changeSet,
-				MergeManager manager) {
+		public Object mergeChanges(Object original, ObjectChangeSet changeSet) {
 			OWLClassB or = (OWLClassB) original;
-			OWLClassB cl = (OWLClassB) clone;
-			or.setStringAttribute(cl.getStringAttribute());
-			return clone;
+			ChangeRecord change;
+			try {
+				change = changeSet.getAttributesToChange()
+						.get(OWLClassB.getStrAttField().getName());
+				if (change != null) {
+					or.setStringAttribute((String) change.getNewValue());
+				}
+			} catch (NoSuchFieldException | SecurityException e) {
+				throw new OWLPersistenceException(e);
+			}
+			return or;
 		}
 	}
 }

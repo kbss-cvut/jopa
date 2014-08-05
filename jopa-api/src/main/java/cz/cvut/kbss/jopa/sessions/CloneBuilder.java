@@ -59,18 +59,13 @@ public interface CloneBuilder {
 	public void reset();
 
 	/**
-	 * Merges the changes on clone into the original object
+	 * Merges the changes on clone into the original object.
 	 * 
 	 * @param original
-	 *            Object
-	 * @param clone
-	 *            Object
+	 *            The original object
 	 * @param changeSet
-	 *            ObjectChangeSet
-	 * @param mergeManager
-	 *            MergeManager
+	 *            Contains changes to merge
 	 * @return
 	 */
-	public Object mergeChanges(Object original, Object clone, ObjectChangeSet changeSet,
-			MergeManager mergeManager);
+	public Object mergeChanges(Object original, ObjectChangeSet changeSet);
 }

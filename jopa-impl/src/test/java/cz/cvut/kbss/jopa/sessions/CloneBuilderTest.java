@@ -15,7 +15,6 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -93,6 +92,8 @@ public class CloneBuilderTest {
 	private Attribute strAttBMock;
 	@Mock
 	private Attribute refListMock;
+	@Mock
+	private Attribute simpleListMock;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -163,6 +164,8 @@ public class CloneBuilderTest {
 				strAttBMock);
 		when(etC.getFieldSpecification(OWLClassC.getRefListField().getName())).thenReturn(
 				refListMock);
+		when(etC.getFieldSpecification(OWLClassC.getSimpleListField().getName())).thenReturn(
+				simpleListMock);
 		when(strAttMock.getJavaField()).thenReturn(OWLClassA.getStrAttField());
 		when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
 		when(classAAttMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
@@ -171,6 +174,9 @@ public class CloneBuilderTest {
 		when(propertiesMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
 		when(refListMock.getJavaField()).thenReturn(OWLClassC.getRefListField());
 		when(refListMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
+		when(simpleListMock.getJavaField()).thenReturn(OWLClassC.getSimpleListField());
+		when(simpleListMock.getPersistentAttributeType())
+				.thenReturn(PersistentAttributeType.OBJECT);
 		this.builder = new CloneBuilderImpl(uow);
 		entityA.setTypes(types);
 		entityB.setProperties(null);
@@ -198,6 +204,12 @@ public class CloneBuilderTest {
 		fail("This line should not have been reached.");
 	}
 
+	@Test(expected = NullPointerException.class)
+	public void testBuildCloneNullCloneOwner() throws Exception {
+		builder.buildClone(null, OWLClassB.getPropertiesField(), entityB, defaultDescriptor);
+		fail("This line should not have been reached.");
+	}
+
 	@Test
 	public void testCloneCollection() {
 		final OWLClassA clone = (OWLClassA) builder.buildClone(entityA, defaultDescriptor);
@@ -216,6 +228,15 @@ public class CloneBuilderTest {
 		assertNotSame(entityA, res);
 		final OWLClassA resTwo = (OWLClassA) builder.buildClone(entityA, defaultDescriptor);
 		assertSame(res, resTwo);
+	}
+
+	@Test
+	public void testBuildCloneOriginalInUoW() {
+		when(uow.containsOriginal(entityA)).thenReturn(Boolean.TRUE);
+		when(uow.getCloneForOriginal(entityA)).thenReturn(entityA);
+		final OWLClassA res = (OWLClassA) builder.buildClone(entityA, defaultDescriptor);
+		assertNotNull(res);
+		assertSame(entityA, res);
 	}
 
 	@Test
@@ -248,8 +269,33 @@ public class CloneBuilderTest {
 	}
 
 	@Test
+	public void testCloneEmptyList() {
+		entityC.setSimpleList(Collections.<OWLClassA> emptyList());
+		entityC.setReferencedList(Generators.createReferencedList(10));
+		final OWLClassC res = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
+		assertNotNull(res);
+		assertTrue(res.getSimpleList().isEmpty());
+		for (int i = 0; i < res.getReferencedList().size(); i++) {
+			assertEquals(entityC.getReferencedList().get(i).getUri(), res.getReferencedList()
+					.get(i).getUri());
+		}
+	}
+
+	@Test
+	public void testCloneEmptySet() {
+		final OWLClassA obj = new OWLClassA();
+		final URI pk = URI.create("http://singletonTest");
+		obj.setUri(pk);
+		obj.setStringAttribute("TEST");
+		obj.setTypes(Collections.<String> emptySet());
+		final OWLClassA res = (OWLClassA) builder.buildClone(obj, defaultDescriptor);
+		assertNotNull(res);
+		assertTrue(res.getTypes().isEmpty());
+	}
+
+	@Test
 	public void testCloneProperties() {
-		entityB.setProperties(createProperties());
+		entityB.setProperties(Generators.createProperties(5));
 		OWLClassB res = (OWLClassB) builder.buildClone(entityB, defaultDescriptor);
 		assertNotNull(res);
 		assertEquals(entityB.getUri(), res.getUri());
@@ -266,6 +312,14 @@ public class CloneBuilderTest {
 				assertTrue(rv.contains(s));
 			}
 		}
+	}
+
+	@Test
+	public void testCloneEmptyMap() {
+		entityB.setProperties(Collections.<String, Set<String>> emptyMap());
+		OWLClassB res = (OWLClassB) builder.buildClone(entityB, defaultDescriptor);
+		assertNotNull(res);
+		assertTrue(res.getProperties().isEmpty());
 	}
 
 	@Test
@@ -373,16 +427,54 @@ public class CloneBuilderTest {
 		assertTrue(visitedObjects.isEmpty());
 	}
 
-	private static Map<String, Set<String>> createProperties() {
-		final Map<String, Set<String>> m = new HashMap<>(5);
-		for (int i = 0; i < 5; i++) {
-			final String key = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#attr" + i;
-			final String value = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/value" + i;
-			final Set<String> vals = new HashSet<>(1);
-			vals.add(value);
-			m.put(key, vals);
+	@Test
+	public void testMergeChangesOnString() throws Exception {
+		final OWLClassA a = new OWLClassA();
+		a.setUri(entityA.getUri());
+		a.setStringAttribute("oldString");
+		final OWLClassA cloneA = (OWLClassA) builder.buildClone(a, defaultDescriptor);
+		final String newStrAtt = "newString";
+		cloneA.setStringAttribute(newStrAtt);
+		final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(a, cloneA,
+				defaultDescriptor);
+		chSet.addChangeRecord(new ChangeRecordImpl(OWLClassA.getStrAttField().getName(), newStrAtt));
+		builder.mergeChanges(a, chSet);
+
+		assertEquals(newStrAtt, a.getStringAttribute());
+	}
+
+	@Test
+	public void testMergeChangesPropertiesFromNull() throws Exception {
+		final OWLClassB b = (OWLClassB) builder.buildClone(entityB, defaultDescriptor);
+		assertNull(b.getProperties());
+		b.setProperties(Generators.createProperties());
+		final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityB, b,
+				defaultDescriptor);
+		chSet.addChangeRecord(new ChangeRecordImpl(OWLClassB.getPropertiesField().getName(), b
+				.getProperties()));
+		builder.mergeChanges(entityB, chSet);
+
+		assertNotNull(entityB.getProperties());
+		assertEquals(b.getProperties(), entityB.getProperties());
+	}
+
+	@Test
+	public void testMergeChangesRefListFromNull() throws Exception {
+		final OWLClassC c = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
+		assertNotSame(entityC, c);
+		assertNull(entityC.getReferencedList());
+		c.setReferencedList(Generators.createReferencedList(5));
+		final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c,
+				defaultDescriptor);
+		chSet.addChangeRecord(new ChangeRecordImpl(OWLClassC.getRefListField().getName(), c
+				.getReferencedList()));
+		builder.mergeChanges(entityC, chSet);
+
+		assertNotNull(entityC.getReferencedList());
+		for (int i = 0; i < c.getReferencedList().size(); i++) {
+			assertEquals(c.getReferencedList().get(i).getUri(), entityC.getReferencedList().get(i)
+					.getUri());
 		}
-		return m;
 	}
 
 	private static void initManagedTypes() {

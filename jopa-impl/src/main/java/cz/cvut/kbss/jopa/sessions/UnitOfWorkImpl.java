@@ -3,7 +3,6 @@ package cz.cvut.kbss.jopa.sessions;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -73,7 +72,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private final CacheManager cacheManager;
 
 	public UnitOfWorkImpl(AbstractSession parent) {
-		this.parent = parent;
+		this.parent = Objects.requireNonNull(parent, ErrorUtils.constructNPXMessage("parent"));
 		this.cloneMapping = createMap();
 		this.cloneToOriginals = createMap();
 		this.repoMap = new RepositoryMap();
@@ -338,10 +337,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		return new IdentityHashMap<Object, Object>();
 	}
 
-	public AbstractSession getParent() {
-		return parent;
-	}
-
 	/**
 	 * Gets current state of the specified entity. </p>
 	 * 
@@ -507,14 +502,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * @return Set of managed classes.
 	 */
 	public Set<Class<?>> getManagedTypes() {
-		if (parent == null) {
-			return Collections.emptySet();
-		}
 		return parent.getManagedTypes();
-	}
-
-	public MergeManager getMergeManager() {
-		return mergeManager;
 	}
 
 	public UnitOfWorkChangeSet getUowChangeSet() {
@@ -669,6 +657,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			return getCloneForOriginal(object);
 		}
 		Object clone = this.cloneBuilder.buildClone(object, descriptor);
+		assert clone != null;
 		cloneMapping.put(clone, clone);
 		cloneToOriginals.put(clone, object);
 		registerEntityWithPersistenceContext(clone, this);
@@ -1151,7 +1140,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		try {
 			final T result = storageConnection.find(cls, primaryKey, descriptor);
 			if (result != null) {
-				// Put into cache here, when we are sure that the entity is in the ontology
+				// Put into cache here, when we are sure that the entity is in
+				// the ontology
 				putObjectIntoCache(primaryKey, result, descriptor.getContext());
 			}
 			return result;

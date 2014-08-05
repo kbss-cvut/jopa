@@ -110,15 +110,11 @@ public class ServerSession extends AbstractSession {
 		return liveObjectCache;
 	}
 
-	public Map<EntityTransaction, EntityManager> getRunningTransactions() {
-		return runningTransactions;
-	}
-
 	public boolean transactionStarted(EntityTransaction t, EntityManager em) {
 		if (!t.isActive() || t.isRollbackOnly()) {
 			return false;
 		}
-		getRunningTransactions().put(t, em);
+		runningTransactions.put(t, em);
 		return true;
 	}
 
@@ -126,7 +122,7 @@ public class ServerSession extends AbstractSession {
 		if (t == null) {
 			return;
 		}
-		EntityManager em = getRunningTransactions().remove(t);
+		EntityManager em = runningTransactions.remove(t);
 		if (em == null) {
 			return;
 		}
@@ -144,7 +140,7 @@ public class ServerSession extends AbstractSession {
 	public void close() {
 		if (!runningTransactions.isEmpty()) {
 			LOG.warning("There are still transactions running. Marking them for rollback.");
-			for (EntityTransaction t : getRunningTransactions().keySet()) {
+			for (EntityTransaction t : runningTransactions.keySet()) {
 				if (t.isActive()) {
 					t.setRollbackOnly();
 				}
@@ -188,10 +184,9 @@ public class ServerSession extends AbstractSession {
 	 */
 	protected synchronized void registerEntityWithPersistenceContext(Object entity,
 			UnitOfWorkImpl uow) {
-		if (entity == null || uow == null) {
-			throw new NullPointerException("Null passed to as argument. Entity: " + entity
-					+ ", unit of work: " + uow);
-		}
+		assert entity != null;
+		assert uow != null;
+
 		activePersistenceContexts.put(entity, uow);
 		if (!uowsToEntities.containsKey(uow)) {
 			uowsToEntities.put(uow, new HashSet<Object>());

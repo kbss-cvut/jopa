@@ -3,7 +3,6 @@ package cz.cvut.kbss.jopa.test.utils;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -62,11 +61,13 @@ public abstract class Generators {
 	public static Map<String, Set<String>> createProperties(int size) {
 		assert size > 0;
 		final Map<String, Set<String>> m = new HashMap<>(size);
+		int counter = TestEnvironmentUtils.randomInt(1000);
 		for (int i = 0; i < size; i++) {
-			m.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#property" + i,
-					Collections
-							.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/ObjectPropertyValue"
-									+ i));
+			final Set<String> value = new HashSet<>(4);
+			value.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/ObjectPropertyValue"
+					+ counter);
+			m.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#property" + counter, value);
+			counter++;
 
 		}
 		return m;
@@ -86,7 +87,8 @@ public abstract class Generators {
 		for (int i = 0; i < size; i++) {
 			final OWLClassA a = new OWLClassA();
 			a.setUri(URI.create(uriBase + counter));
-			a.setStringAttribute("stringAttributeeee" + counter++);
+			a.setStringAttribute("stringAttributeeee" + counter);
+			counter++;
 			a.setTypes(TYPES);
 			col.add(a);
 		}

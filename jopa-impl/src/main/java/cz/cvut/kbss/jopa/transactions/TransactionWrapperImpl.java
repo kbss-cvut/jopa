@@ -2,7 +2,6 @@ package cz.cvut.kbss.jopa.transactions;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
 
 public abstract class TransactionWrapperImpl implements TransactionWrapper {
 
@@ -12,12 +11,6 @@ public abstract class TransactionWrapperImpl implements TransactionWrapper {
 
 	public TransactionWrapperImpl(EntityManager entityManger) {
 		this.entityManager = entityManger;
-	}
-
-	public void clear() {
-		if (transactionUOW != null) {
-			transactionUOW.clear();
-		}
 	}
 
 	/**

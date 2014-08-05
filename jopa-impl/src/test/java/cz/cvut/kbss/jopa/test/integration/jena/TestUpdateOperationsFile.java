@@ -158,6 +158,13 @@ public class TestUpdateOperationsFile {
 		runner.addPropertyValue(em, context());
 	}
 
+	@Test
+	public void testAddPropertyValueDetached() {
+		em = TestEnvironment.getPersistenceConnector("JenaFileUpdateAddPropertyValueDetached",
+				storage, false, properties);
+		runner.addPropertyValueDetached(em, context());
+	}
+
 	@Test(expected = OWLInferredAttributeModifiedException.class)
 	public void testModifyInferredAttribute() {
 		em = TestEnvironment.getPersistenceConnector("JenaFileModifyInferredAttribute", storage,
