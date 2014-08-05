@@ -15,10 +15,43 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
+import cz.cvut.kbss.jopa.NonJPA;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 
 public abstract class AbstractEntityManager implements EntityManager {
 
 	public abstract boolean isLoaded(final Object object, final String attributeName);
 
+	/**
+	 * Return the UnitOfWork that holds the current persistence context.
+	 * 
+	 * @return UnitOfWork
+	 */
+	public abstract UnitOfWork getCurrentPersistenceContext();
+
+	/**
+	 * Remove the current persistence context UnitOfWork.
+	 */
+	public abstract void removeCurrentPersistenceContext();
+
+	/**
+	 * Let the managing server session know that a transaction has been started.
+	 * 
+	 * @param t
+	 *            The entity transaction that was started.
+	 */
+	@NonJPA
+	public abstract void transactionStarted(EntityTransaction t);
+
+	/**
+	 * Let the managing server session know that a transaction has finished
+	 * successfully.
+	 * 
+	 * @param t
+	 *            The committed entity transaction.
+	 */
+	@NonJPA
+	public abstract void transactionFinished(EntityTransaction t);
 }

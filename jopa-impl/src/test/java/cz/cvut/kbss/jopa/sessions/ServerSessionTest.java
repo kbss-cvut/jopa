@@ -12,9 +12,9 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
@@ -44,7 +44,7 @@ public class ServerSessionTest {
 		final EntityTransaction et = mock(EntityTransaction.class);
 		when(et.isActive()).thenReturn(Boolean.TRUE);
 		when(et.isRollbackOnly()).thenReturn(Boolean.FALSE);
-		final EntityManager em = mock(EntityManager.class);
+		final AbstractEntityManager em = mock(AbstractEntityManager.class);
 		session.transactionStarted(et, em);
 
 		session.close();

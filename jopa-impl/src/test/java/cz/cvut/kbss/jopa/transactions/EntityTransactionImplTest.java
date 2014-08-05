@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
-import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 public class EntityTransactionImplTest {
@@ -21,7 +21,7 @@ public class EntityTransactionImplTest {
 	@Mock
 	private EntityTransactionWrapper wrapperMock;
 	@Mock
-	private EntityManager emMock;
+	private AbstractEntityManager emMock;
 	@Mock
 	private UnitOfWork uowMock;
 

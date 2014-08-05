@@ -1,13 +1,13 @@
 package cz.cvut.kbss.jopa.transactions;
 
-import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 public class EntityTransactionWrapper extends TransactionWrapperImpl {
 
 	private EntityTransaction entityTransaction;
 
-	public EntityTransactionWrapper(EntityManager entityManger) {
+	public EntityTransactionWrapper(AbstractEntityManager entityManger) {
 		super(entityManger);
 	}
 

@@ -19,7 +19,6 @@ import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -28,6 +27,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
@@ -59,7 +59,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private UnitOfWorkChangeSet uowChangeSet;
 
 	private AbstractSession parent;
-	private EntityManager entityManager;
+	private AbstractEntityManager entityManager;
 	private Connection storageConnection;
 
 	private final MergeManager mergeManager;
@@ -828,7 +828,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		this.shouldClearCacheAfterCommit = shouldClearCache;
 	}
 
-	public void setEntityManager(EntityManager entityManager) {
+	public void setEntityManager(AbstractEntityManager entityManager) {
 		this.entityManager = entityManager;
 	}
 

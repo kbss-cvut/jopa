@@ -9,10 +9,10 @@ import java.util.WeakHashMap;
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
+import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.ontodriver.Connection;
@@ -37,7 +37,7 @@ public class ServerSession extends AbstractSession {
 	private CacheManager liveObjectCache;
 	private StorageAccessor storageAccessor;
 
-	private Map<EntityTransaction, EntityManager> runningTransactions;
+	private Map<EntityTransaction, AbstractEntityManager> runningTransactions;
 	private Map<Object, UnitOfWorkImpl> activePersistenceContexts;
 	private Map<UnitOfWorkImpl, Set<Object>> uowsToEntities;
 
@@ -83,9 +83,9 @@ public class ServerSession extends AbstractSession {
 			Map<String, String> properties, Metamodel metamodel) {
 		assert properties != null;
 		assert metamodel != null;
-		this.runningTransactions = new WeakHashMap<EntityTransaction, EntityManager>();
-		this.activePersistenceContexts = new WeakHashMap<Object, UnitOfWorkImpl>();
-		this.uowsToEntities = new WeakHashMap<UnitOfWorkImpl, Set<Object>>();
+		this.runningTransactions = new WeakHashMap<>();
+		this.activePersistenceContexts = new WeakHashMap<>();
+		this.uowsToEntities = new WeakHashMap<>();
 		this.storageAccessor = new StorageAccessorImpl(metamodel, this, storageProperties,
 				properties);
 		String cache = properties.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
@@ -110,7 +110,7 @@ public class ServerSession extends AbstractSession {
 		return liveObjectCache;
 	}
 
-	public boolean transactionStarted(EntityTransaction t, EntityManager em) {
+	public boolean transactionStarted(EntityTransaction t, AbstractEntityManager em) {
 		if (!t.isActive() || t.isRollbackOnly()) {
 			return false;
 		}
@@ -122,7 +122,7 @@ public class ServerSession extends AbstractSession {
 		if (t == null) {
 			return;
 		}
-		EntityManager em = runningTransactions.remove(t);
+		AbstractEntityManager em = runningTransactions.remove(t);
 		if (em == null) {
 			return;
 		}

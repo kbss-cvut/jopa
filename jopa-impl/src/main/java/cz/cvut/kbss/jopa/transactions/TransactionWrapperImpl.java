@@ -1,15 +1,15 @@
 package cz.cvut.kbss.jopa.transactions;
 
-import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 
 public abstract class TransactionWrapperImpl implements TransactionWrapper {
 
-	private final EntityManager entityManager;
+	private final AbstractEntityManager entityManager;
 
 	private UnitOfWork transactionUOW;
 
-	public TransactionWrapperImpl(EntityManager entityManger) {
+	public TransactionWrapperImpl(AbstractEntityManager entityManger) {
 		this.entityManager = entityManger;
 	}
 
@@ -37,7 +37,7 @@ public abstract class TransactionWrapperImpl implements TransactionWrapper {
 		this.transactionUOW = transactionUOW;
 	}
 
-	public EntityManager getEntityManager() {
-		return this.entityManager;
+	AbstractEntityManager getEntityManager() {
+		return entityManager;
 	}
 }

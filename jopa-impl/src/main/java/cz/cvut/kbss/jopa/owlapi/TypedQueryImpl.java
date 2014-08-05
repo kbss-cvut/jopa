@@ -45,7 +45,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 	private final Class<T> classT;
 	private final UnitOfWork uow;
 	private final Connection connection;
-	private final boolean useBackupOntology;
+	private boolean useBackupOntology;
 
 	private int maxResults;
 
@@ -59,7 +59,6 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 		this.connection = Objects.requireNonNull(connection,
 				ErrorUtils.constructNPXMessage("connection"));
 		this.contexts = new HashSet<>();
-		this.useBackupOntology = uow.useBackupOntologyForQueryProcessing();
 		this.maxResults = Integer.MAX_VALUE;
 	}
 
@@ -173,5 +172,16 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 	public Query<T> clearContexts() {
 		contexts.clear();
 		return this;
+	}
+
+	/**
+	 * Sets ontology used for processing of this query. </p>
+	 * 
+	 * @param useTransactional
+	 *            If true, the backup (central) ontology is used, otherwise the
+	 *            transactional ontology is used (default)
+	 */
+	public void setUseBackupOntology(boolean useBackupOntology) {
+		this.useBackupOntology = useBackupOntology;
 	}
 }

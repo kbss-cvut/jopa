@@ -23,10 +23,10 @@ import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 
 public interface EntityManager {
@@ -467,41 +467,6 @@ public interface EntityManager {
 
 	// TODO JPA 2.0 public CriteriaBuilder getCriteriaBuilder();
 	public Metamodel getMetamodel();
-
-	/**
-	 * Return the UnitOfWork that holds the current persistence context.
-	 * INTERNAL.
-	 * 
-	 * @return UnitOfWork
-	 */
-	@NonJPA
-	public UnitOfWork getCurrentPersistenceContext();
-
-	/**
-	 * Remove the current persistence context UnitOfWork. INTERNAL.
-	 */
-	@NonJPA
-	public void removeCurrentPersistenceContext();
-
-	/**
-	 * Let the managing server session know that a transaction has been started.
-	 * INTERNAL.
-	 * 
-	 * @param t
-	 *            The entity transaction that was started.
-	 */
-	@NonJPA
-	public void transactionStarted(EntityTransaction t);
-
-	/**
-	 * Let the managing server session know that a transaction has finished
-	 * successfully. INTERNAL.
-	 * 
-	 * @param t
-	 *            The committed entity transaction.
-	 */
-	@NonJPA
-	public void transactionFinished(EntityTransaction t);
 
 	/**
 	 * Sets the transactional ontology as the one which will be used when

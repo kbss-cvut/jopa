@@ -1,11 +1,13 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.util.List;
+import java.util.Objects;
 
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.QueryImpl;
 import cz.cvut.kbss.jopa.owlapi.TypedQueryImpl;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.Connection;
 
 class QueryFactoryImpl implements QueryFactory {
@@ -22,9 +24,8 @@ class QueryFactoryImpl implements QueryFactory {
 
 	@Override
 	public Query<List<String>> createNativeQuery(String sparql) {
-		if (sparql == null) {
-			throw new NullPointerException("Query not specified!");
-		}
+		Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
+
 		final QueryImpl q = new QueryImpl(sparql, true, connection);
 		q.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
 		return q;
@@ -32,19 +33,19 @@ class QueryFactoryImpl implements QueryFactory {
 
 	@Override
 	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass) {
-		if (sparql == null || resultClass == null) {
-			throw new NullPointerException("Query or resultClass not specified!");
-		}
+		Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
+		Objects.requireNonNull(resultClass, ErrorUtils.constructNPXMessage("resultClass"));
+
 		final TypedQueryImpl<T> tq = new TypedQueryImpl<T>(sparql, resultClass, true, uow,
 				connection);
+		tq.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
 		return tq;
 	}
 
 	@Override
 	public Query createQuery(String query) {
-		if (query == null) {
-			throw new NullPointerException("Query not specified!");
-		}
+		Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
+
 		// We specify the query as SPARQL since currently we don't support any
 		// more abstract syntax
 		final QueryImpl q = new QueryImpl(query, false, connection);
@@ -54,12 +55,12 @@ class QueryFactoryImpl implements QueryFactory {
 
 	@Override
 	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass) {
-		if (query == null || resultClass == null) {
-			throw new NullPointerException("Query or resultClass not specified!");
-		}
+		Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
+		Objects.requireNonNull(resultClass, ErrorUtils.constructNPXMessage("resultClass"));
+
 		final TypedQueryImpl<T> tq = new TypedQueryImpl<T>(query, resultClass, false, uow,
 				connection);
+		tq.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
 		return tq;
 	}
-
 }
