@@ -42,10 +42,10 @@ public class OWLClassE {
 		return OWLClassE.class.getDeclaredField(STR_ATT_FIELD);
 	}
 
-	// @Override
-	// public String toString() {
-	// String out = "OWLClassE: uri = " + uri;
-	// out += ", stringAttribute = " + stringAttribute;
-	// return out;
-	// }
+	@Override
+	public String toString() {
+		String out = "OWLClassE: uri = " + uri;
+		out += ", stringAttribute = " + stringAttribute;
+		return out;
+	}
 }

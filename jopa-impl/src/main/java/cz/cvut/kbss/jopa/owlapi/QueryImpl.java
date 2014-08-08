@@ -121,6 +121,7 @@ public class QueryImpl implements Query<List<String>> {
 		URI[] uris = new URI[contexts.size()];
 		uris = contexts.toArray(uris);
 		final ResultSet rs = stmt.executeQuery(query, uris);
+		// TODO Fix the bug in Sesame statement, the context information gets lost along the way
 		try {
 			final int cols = rs.getColumnCount();
 			int cnt = 0;

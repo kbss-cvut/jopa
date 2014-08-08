@@ -3,10 +3,12 @@ package cz.cvut.kbss.jopa.test.query;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -15,9 +17,9 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
 
 public final class QueryTestEnvironment {
 
@@ -26,7 +28,7 @@ public final class QueryTestEnvironment {
 	private static final String BASE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA_";
 	private static final String TYPE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA";
 	private static final String BASE_B = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB_";
-	private static final String BASE_C = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC_";
+//	private static final String BASE_C = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC_";
 	private static final String BASE_D = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD_";
 
 	/**
@@ -41,7 +43,10 @@ public final class QueryTestEnvironment {
 	/** owl:Thing class */
 	public static final String OWL_THING = "http://www.w3.org/2002/07/owl#Thing";
 
+	private static final URI NULL_CONTEXT = URI.create("http://NullContext");
+
 	private static Map<Class<?>, List<?>> data;
+	private static Map<URI, Map<Class<?>, List<?>>> dataByContext = new HashMap<>();
 
 	private QueryTestEnvironment() {
 		// Private constructor to prevent instantiation
@@ -65,6 +70,9 @@ public final class QueryTestEnvironment {
 	/**
 	 * Generates and persists test data into the specified contexts. </p>
 	 * 
+	 * This method distributes the data approximately uniformly into all the
+	 * specified contexts.
+	 * 
 	 * @param em
 	 *            EntityManager
 	 * @param contexts
@@ -75,8 +83,23 @@ public final class QueryTestEnvironment {
 		assert contexts != null && !contexts.isEmpty();
 		final Map<Class<?>, List<?>> map = generate();
 		LOG.config("Persisting test data...");
-		for (URI ctx : contexts) {
-			persistIntoContext(em, map, ctx);
+		final int contextCount = contexts.size();
+		final Map<URI, Map<Class<?>, List<?>>> contextMap = new HashMap<>();
+		for (Entry<Class<?>, List<?>> e : map.entrySet()) {
+			final List<?> dataLst = e.getValue();
+			final int sublistSize = dataLst.size() / contextCount;
+			int sublistStart = 0;
+			for (URI ctx : contexts) {
+				if (!contextMap.containsKey(ctx)) {
+					contextMap.put(ctx, new HashMap<Class<?>, List<?>>());
+				}
+				final List<?> sublist = dataLst.subList(sublistStart, sublistStart + sublistSize);
+				contextMap.get(ctx).put(e.getKey(), sublist);
+				sublistStart += sublistSize;
+			}
+		}
+		for (URI ctx : contextMap.keySet()) {
+			persistIntoContext(em, contextMap.get(ctx), ctx);
 		}
 		data = map;
 	}
@@ -92,6 +115,10 @@ public final class QueryTestEnvironment {
 				}
 			}
 			em.getTransaction().commit();
+			if (context == null) {
+				context = NULL_CONTEXT;
+			}
+			dataByContext.put(context, data);
 		} catch (RuntimeException e) {
 			if (em.getTransaction().isActive()) {
 				em.getTransaction().rollback();
@@ -122,6 +149,48 @@ public final class QueryTestEnvironment {
 		return (List<T>) data.get(cls);
 	}
 
+	/**
+	 * Gets all data from the specified context. </p>
+	 * 
+	 * @param context
+	 *            Context URI, null is permitted
+	 * @return Map of all data or an empty map
+	 */
+	public static Map<Class<?>, List<?>> getDataByContext(URI context) {
+		if (context == null) {
+			context = NULL_CONTEXT;
+		}
+		if (!dataByContext.containsKey(context)) {
+			return Collections.emptyMap();
+		}
+		return dataByContext.get(context);
+	}
+
+	/**
+	 * Gets data from the specified context and of the specified type
+	 * 
+	 * @param context
+	 *            Context URI, null is permitted
+	 * @param cls
+	 *            Data type
+	 * @return List of data or an empty list
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> List<T> getDataByContext(URI context, Class<T> cls) {
+		assert cls != null;
+		if (context == null) {
+			context = NULL_CONTEXT;
+		}
+		if (!dataByContext.containsKey(context)) {
+			return Collections.emptyList();
+		}
+		final Map<Class<?>, List<?>> contextData = dataByContext.get(context);
+		if (!contextData.containsKey(cls)) {
+			return Collections.emptyList();
+		}
+		return (List<T>) contextData.get(cls);
+	}
+
 	private static Map<Class<?>, List<?>> generate() {
 		LOG.config("Generating test data...");
 		final Map<Class<?>, List<?>> m = new HashMap<>();
@@ -129,41 +198,49 @@ public final class QueryTestEnvironment {
 		final OWLClass ann = OWLClassA.class.getAnnotation(OWLClass.class);
 		final List<OWLClassA> aa = new ArrayList<>(count);
 		m.put(OWLClassA.class, aa);
+		int randomNum = TestEnvironmentUtils.randomInt(1000);
 		for (int i = 0; i < count; i++) {
 			final OWLClassA a = new OWLClassA();
-			a.setUri(URI.create(BASE_A + i));
-			a.setStringAttribute("stringAttribute" + i);
+			a.setUri(URI.create(BASE_A + randomNum));
+			a.setStringAttribute("stringAttribute" + randomNum);
 			final Set<String> s = new HashSet<String>();
 			s.add(TYPE_A);
 			s.add(ann.iri());
 			a.setTypes(s);
 			aa.add(a);
+			randomNum++;
 		}
 		final List<OWLClassB> bb = new ArrayList<>(count);
 		m.put(OWLClassB.class, bb);
+		randomNum = TestEnvironmentUtils.randomInt(1000);
 		for (int i = 0; i < count; i++) {
 			final OWLClassB b = new OWLClassB();
-			b.setUri(URI.create(BASE_B + (i + 1)));
-			b.setStringAttribute("strAtt" + (i + 1));
+			b.setUri(URI.create(BASE_B + randomNum));
+			b.setStringAttribute("strAtt" + randomNum);
 			bb.add(b);
+			randomNum++;
 		}
-		final List<OWLClassC> cc = new ArrayList<>(count);
-		m.put(OWLClassC.class, cc);
-		for (int i = 0; i < count; i++) {
-			final OWLClassC c = new OWLClassC();
-			c.setUri(URI.create(BASE_C + i));
-			if (i % 2 != 0) {
-				c.setReferencedList(new ArrayList<>(aa));
-			}
-			cc.add(c);
-		}
+		// final List<OWLClassC> cc = new ArrayList<>(count);
+		// m.put(OWLClassC.class, cc);
+		// randomNum = TestEnvironmentUtils.randomInt(1000);
+		// for (int i = 0; i < count; i++) {
+		// final OWLClassC c = new OWLClassC();
+		// c.setUri(URI.create(BASE_C + randomNum));
+		// if (i % 2 != 0) {
+		// c.setReferencedList(new ArrayList<>(aa));
+		// }
+		// randomNum++;
+		// cc.add(c);
+		// }
 		final List<OWLClassD> dd = new ArrayList<>();
 		m.put(OWLClassD.class, dd);
+		randomNum = TestEnvironmentUtils.randomInt(1000);
 		for (int i = 0; i < count; i++) {
 			final OWLClassD d = new OWLClassD();
-			d.setUri(URI.create(BASE_D + i));
+			d.setUri(URI.create(BASE_D + randomNum));
 			d.setOwlClassA(aa.get(i));
 			dd.add(d);
+			randomNum++;
 		}
 		final List<OWLClassE> ee = new ArrayList<>();
 		m.put(OWLClassE.class, ee);

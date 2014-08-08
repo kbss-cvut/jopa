@@ -79,15 +79,15 @@ public class OWLClassC {
 		return OWLClassC.class.getDeclaredField(SIMPLE_LIST_FIELD);
 	}
 
-	// @Override
-	// public String toString() {
-	// String out = "OWLClassC: uri = " + uri;
-	// if (referencedList != null) {
-	// out += ", referencedList = {" + referencedList.toString() + "}";
-	// }
-	// if (simplelist != null) {
-	// out += ", simpleList = {" + simplelist.toString() + "}";
-	// }
-	// return out;
-	// }
+	@Override
+	public String toString() {
+		String out = "OWLClassC: uri = " + uri;
+		if (referencedList != null) {
+			out += ", referencedList = {" + referencedList.toString() + "}";
+		}
+		if (simpleList != null) {
+			out += ", simpleList = {" + simpleList.toString() + "}";
+		}
+		return out;
+	}
 }

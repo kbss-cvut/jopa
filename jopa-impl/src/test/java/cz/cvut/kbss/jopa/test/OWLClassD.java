@@ -69,10 +69,10 @@ public class OWLClassD {
 		return OWLClassD.class.getDeclaredField(CLS_A_FIELD);
 	}
 
-	// @Override
-	// public String toString() {
-	// String out = "OWLClassD: uri = " + uri;
-	// out += ", owlClassA = " + owlClassA;
-	// return out;
-	// }
+	@Override
+	public String toString() {
+		String out = "OWLClassD: uri = " + uri;
+		out += ", owlClassA = " + owlClassA;
+		return out;
+	}
 }

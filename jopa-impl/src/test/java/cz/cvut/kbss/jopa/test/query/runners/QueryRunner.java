@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,14 +34,19 @@ public class QueryRunner {
 		logger.config("Test: get URIs of individuals of a certain type.");
 		final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA> . }";
 		final Query<List<String>> q = em.createNativeQuery(query);
-		for (URI ctx : ctxs) {
-			q.addContext(ctx);
+		final List<OWLClassA> as = new ArrayList<>();
+		if (ctxs.length == 0) {
+			as.addAll(QueryTestEnvironment.getDataByContext(null, OWLClassA.class));
+		} else {
+			for (URI ctx : ctxs) {
+				q.addContext(ctx);
+				as.addAll(QueryTestEnvironment.getDataByContext(ctx, OWLClassA.class));
+			}
 		}
 		assertNotNull(q);
 		final List<List<String>> res = q.getResultList();
 		assertNotNull(res);
 		assertFalse(res.isEmpty());
-		final List<OWLClassA> as = QueryTestEnvironment.getData(OWLClassA.class);
 		assertEquals(as.size(), res.size());
 		boolean found = false;
 		for (OWLClassA a : as) {
@@ -60,16 +66,22 @@ public class QueryRunner {
 		logger.config("Test: select data property values.");
 		final String query = "SELECT ?y WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> ?y . }";
 		final Query<List<String>> q = em.createNativeQuery(query);
-		for (URI ctx : ctxs) {
-			q.addContext(ctx);
+		final Set<String> exp = new HashSet<>();
+		if (ctxs.length == 0) {
+			for (OWLClassB b : QueryTestEnvironment.getDataByContext(null, OWLClassB.class)) {
+				exp.add(b.getStringAttribute());
+			}
+		} else {
+			for (URI ctx : ctxs) {
+				q.addContext(ctx);
+				for (OWLClassB b : QueryTestEnvironment.getDataByContext(ctx, OWLClassB.class)) {
+					exp.add(b.getStringAttribute());
+				}
+			}
 		}
 		final List<List<String>> res = q.getResultList();
 		assertNotNull(res);
 		assertFalse(res.isEmpty());
-		final Set<String> exp = new HashSet<>();
-		for (OWLClassB e : QueryTestEnvironment.getData(OWLClassB.class)) {
-			exp.add(e.getStringAttribute());
-		}
 		assertEquals(exp.size(), res.size());
 		for (List<String> lst2 : res) {
 			assertEquals(1, lst2.size());

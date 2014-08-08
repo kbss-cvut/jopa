@@ -83,13 +83,13 @@ public class OWLClassA {
 		return OWLClassA.class.getDeclaredField(TYPES_FIELD);
 	}
 
-	// @Override
-	// public String toString() {
-	// String out = "OWLClassA: uri = " + uri;
-	// out += ", stringAttribute = " + stringAttribute;
-	// if (types != null) {
-	// out += ", types = {" + types.toString() + "}";
-	// }
-	// return out;
-	// }
+	@Override
+	public String toString() {
+		String out = "OWLClassA: uri = " + uri;
+		out += ", stringAttribute = " + stringAttribute;
+		if (types != null) {
+			out += ", types = {" + types.toString() + "}";
+		}
+		return out;
+	}
 }

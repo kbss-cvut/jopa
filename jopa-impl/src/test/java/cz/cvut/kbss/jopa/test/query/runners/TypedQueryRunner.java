@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -30,10 +31,14 @@ public class TypedQueryRunner {
 	public void findAll(EntityManager em, URI... ctxs) {
 		logger.config("Test: select all entities of a certain type.");
 		final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD> .}";
-		final List<OWLClassD> ds = QueryTestEnvironment.getData(OWLClassD.class);
+		final List<OWLClassD> ds = new ArrayList<>();
 		final TypedQuery<OWLClassD> q = em.createNativeQuery(query, OWLClassD.class);
+		if (ctxs.length == 0) {
+			ds.addAll(QueryTestEnvironment.getDataByContext(null, OWLClassD.class));
+		}
 		for (URI ctx : ctxs) {
 			q.addContext(ctx);
+			ds.addAll(QueryTestEnvironment.getDataByContext(ctx, OWLClassD.class));
 		}
 		final List<OWLClassD> res = q.getResultList();
 		assertNotNull(res);
@@ -71,14 +76,19 @@ public class TypedQueryRunner {
 
 	public void selectByObjectProperty(EntityManager em, URI... ctxs) {
 		logger.config("Test: select entity by object property value.");
-		final List<OWLClassD> ds = QueryTestEnvironment.getData(OWLClassD.class);
-		final int cnt = ds.size() / 2;
-		assertTrue(cnt > 1);
 		final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> ?y . }";
 		final TypedQuery<OWLClassD> q = em.createNativeQuery(query, OWLClassD.class);
-		for (URI ctx : ctxs) {
-			q.addContext(ctx);
+		final List<OWLClassD> ds = new ArrayList<>();
+		if (ctxs.length == 0) {
+			ds.addAll(QueryTestEnvironment.getDataByContext(null, OWLClassD.class));
+		} else {
+			for (URI ctx : ctxs) {
+				q.addContext(ctx);
+				ds.addAll(QueryTestEnvironment.getDataByContext(ctx, OWLClassD.class));
+			}
 		}
+		final int cnt = ds.size() / 2;
+		assertTrue(cnt > 1);
 		final List<OWLClassD> res = q.setMaxResults(cnt).getResultList();
 		assertEquals(cnt, res.size());
 	}
