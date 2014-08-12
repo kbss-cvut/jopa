@@ -11,7 +11,6 @@ import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
 public interface Connection extends AutoCloseable {
-	// TODO
 
 	/**
 	 * Whether this connection is still active. </p>
@@ -130,26 +129,49 @@ public interface Connection extends AutoCloseable {
 	public Collection<Axiom> find(AxiomDescriptor descriptor) throws OntoDriverException;
 
 	/**
-	 * Gets types of the specified subject. </p>
+	 * Persists new individual and its property values specified by the
+	 * descriptor.
 	 * 
-	 * The types are returned as a collection of class assertion axioms with the
-	 * specified subjects.
-	 * 
-	 * @param subject
-	 *            The subject to find types for
-	 * @param context
-	 *            In which context to search. Can be {@code null}
-	 * @param includeInferred
-	 *            Whether inferred types should be included as well
-	 * @return Collection of class assertion axioms
+	 * @param descriptor
+	 *            Descriptor of the persisted values
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
 	 * @throws IllegalStateException
 	 *             If called on a closed connection
 	 */
-	public Collection<Axiom> getTypes(NamedResource subject, URI context, boolean includeInferred);
+	public void persist(MutationAxiomDescriptor descriptor) throws OntoDriverException;
 
-	// persist
-	// update
-	// remove
+	/**
+	 * Persists the values specified by this descriptor, removing existing
+	 * property values from the ontology. </p>
+	 * 
+	 * This method removes original values of properties specified in the
+	 * descriptor and persists new values specified therein.
+	 * 
+	 * @param descriptor
+	 *            Descriptor of the update values
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @throws IllegalStateException
+	 *             If called on a closed connection
+	 */
+	public void update(MutationAxiomDescriptor descriptor) throws OntoDriverException;
+
+	/**
+	 * Removes all axioms related to subject specified by the descriptor. </p>
+	 * 
+	 * The descriptor may also specify contexts from which property assertion
+	 * axioms should be removed. </p>
+	 * 
+	 * Note that this method will cause also removal of axioms in which the
+	 * {@link NamedResource} specified by the argument stands as value.
+	 * 
+	 * @param descriptor
+	 *            Descriptor of contexts and the subject of removal
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @throws IllegalStateException
+	 *             If called on a closed connection
+	 */
+	public void remove(AxiomDescriptor descriptor) throws OntoDriverException;
 }

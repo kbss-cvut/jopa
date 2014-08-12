@@ -17,7 +17,7 @@ import cz.cvut.kbss.ontodriver_new.model.Property;
  * the ontology. </p>
  * 
  * Additionally, it can specify context URIs for both the descriptor and
- * individual properties so that the underlying driver knowns where to look for
+ * individual properties so that the underlying driver knows where to look for
  * the corresponding axioms.
  * 
  * @author ledvima1
