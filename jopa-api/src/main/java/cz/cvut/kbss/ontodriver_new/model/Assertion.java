@@ -47,17 +47,44 @@ public abstract class Assertion extends NamedResource {
 	 */
 	public abstract AssertionType getType();
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + (inferred ? 1231 : 1237);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Assertion other = (Assertion) obj;
+		if (inferred != other.inferred)
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return super.toString() + (inferred ? " - inferred" : " - non-inferred");
+	}
+
 	/**
-	 * Creates new class assertion.
+	 * Creates new class assertion. </p>
 	 * 
-	 * @param assertionIdentifier
-	 *            Assertion identifier
+	 * Class assertions use the rdf:type identifier.
+	 * 
 	 * @param isInferred
 	 *            Whether the assertion uses inferred values
 	 * @return Assertion
 	 */
-	public static Assertion createClassAssertion(URI assertionIdentifier, boolean isInferred) {
-		return new ClassAssertion(assertionIdentifier, isInferred);
+	public static Assertion createClassAssertion(boolean isInferred) {
+		return new ClassAssertion(isInferred);
 	}
 
 	/**
