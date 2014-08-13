@@ -2,6 +2,8 @@ package cz.cvut.kbss.jopa.model.descriptors;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -31,6 +33,11 @@ public class FieldDescriptor extends Descriptor {
 		super(context);
 		Objects.requireNonNull(attribute, ErrorUtils.constructNPXMessage("attribute"));
 		this.field = attribute;
+	}
+
+	@Override
+	public Collection<Descriptor> getAttributeDescriptors() {
+		return Collections.<Descriptor> singleton(this);
 	}
 
 	@Override

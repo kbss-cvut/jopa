@@ -2,6 +2,8 @@ package cz.cvut.kbss.jopa.model.descriptors;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,6 +62,11 @@ public class EntityDescriptor extends Descriptor {
 			d = createDescriptor(attribute, context);
 		}
 		return d;
+	}
+
+	@Override
+	public Collection<Descriptor> getAttributeDescriptors() {
+		return Collections.unmodifiableCollection(fieldDescriptors.values());
 	}
 
 	private Descriptor getFieldDescriptor(Field field) {

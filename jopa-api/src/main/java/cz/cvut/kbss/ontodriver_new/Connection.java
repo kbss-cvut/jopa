@@ -13,7 +13,7 @@ import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 public interface Connection extends AutoCloseable {
 
 	/**
-	 * Whether this connection is still active. </p>
+	 * Whether this connection is active. </p>
 	 */
 	public boolean isOpen();
 

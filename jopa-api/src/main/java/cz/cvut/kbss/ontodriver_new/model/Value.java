@@ -1,5 +1,7 @@
 package cz.cvut.kbss.ontodriver_new.model;
 
+import java.io.Serializable;
+
 /**
  * Represents assertion value. </p>
  * 
@@ -8,7 +10,7 @@ package cz.cvut.kbss.ontodriver_new.model;
  * @author ledvima1
  * 
  */
-public interface Value<T> {
+public interface Value<T> extends Serializable {
 
 	/**
 	 * Gets this value. </p>

@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.model.descriptors;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,6 +44,13 @@ public abstract class Descriptor implements Serializable {
 	public URI getContext() {
 		return context;
 	}
+
+	/**
+	 * Gets attribute descriptors specified in this descriptor. </p>
+	 * 
+	 * @return Unmodifiable view of attribute descriptors
+	 */
+	public abstract Collection<Descriptor> getAttributeDescriptors();
 
 	/**
 	 * Gets descriptor for the specified attribute. </p>
