@@ -23,7 +23,11 @@ public abstract class Assertion extends NamedResource {
 	private final boolean inferred;
 
 	public static enum AssertionType {
-		CLASS, OBJECT_PROPERTY, DATA_PROPERTY, ANNOTATION_PROPERTY
+		/**
+		 * PROPERTY assertion is used in cases where we don't know the property
+		 * type, for instance when loading value of the Properties attribute
+		 */
+		CLASS, PROPERTY, OBJECT_PROPERTY, DATA_PROPERTY, ANNOTATION_PROPERTY
 	}
 
 	protected Assertion(URI identifier, boolean isInferred) {
@@ -85,6 +89,20 @@ public abstract class Assertion extends NamedResource {
 	 */
 	public static Assertion createClassAssertion(boolean isInferred) {
 		return new ClassAssertion(isInferred);
+	}
+
+	/**
+	 * Creates new property assertion without specifying what kind of property
+	 * it is. </p>
+	 * 
+	 * @param assertionIdentifier
+	 *            Assertion identifier
+	 * @param isInferred
+	 *            Whether the assertion uses inferred values
+	 * @return Assertion
+	 */
+	public static Assertion createPropertyAssertion(URI assertionIdentifier, boolean isInferred) {
+		return new PropertyAssertion(assertionIdentifier, isInferred);
 	}
 
 	/**

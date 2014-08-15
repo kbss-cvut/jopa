@@ -1,24 +1,102 @@
 package cz.cvut.kbss.jopa.oom;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.ontodriver.exceptions.UnassignableIdentifierException;
+import cz.cvut.kbss.ontodriver_new.model.Assertion.AssertionType;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.Value;
 
 class EntityConstructor {
 
-	private final UnitOfWorkImpl uow;
+	private final ObjectOntologyMapper mapper;
 
-	public EntityConstructor(UnitOfWorkImpl uow) {
-		this.uow = uow;
+	public EntityConstructor(ObjectOntologyMapper mapper) {
+		this.mapper = mapper;
 	}
 
 	<T> T reconstructEntity(Class<T> cls, Object primaryKey, Collection<Axiom> axioms,
-			EntityType<T> et) {
-		// TODO
-		return null;
+			EntityType<T> et) throws InstantiationException, IllegalAccessException {
+		assert !axioms.isEmpty();
+		final T instance = cls.newInstance();
+		setIdentifier(primaryKey, instance, et);
+		final Set<String> types = new HashSet<>();
+		final Map<String, String> properties = new HashMap<>();
+		final Map<URI, Attribute<?, ?>> attributes = indexEntityAttributes(et);
+		for (Axiom ax : axioms) {
+			if (isClassAssertion(ax)) {
+				if (!isEntityClass(ax, cls)) {
+					types.add(ax.getValue().toString());
+				}
+			} else if (!attributes.containsKey(ax.getAssertion().getIdentifier())) {
+				properties.put(ax.getAssertion().getIdentifier().toString(), ax.getValue()
+						.toString());
+			} else {
+				// TODO This will work only for singular data properties
+				final Value<?> val = ax.getValue();
+				setFieldValue(attributes.get(ax.getAssertion().getIdentifier()), instance,
+						val.getValue());
+			}
+		}
+		if (et.getTypes() != null && !types.isEmpty()) {
+			setFieldValue(et.getTypes(), instance, types);
+		}
+		if (et.getProperties() != null && !properties.isEmpty()) {
+			setFieldValue(et.getProperties(), instance, properties);
+		}
+		return instance;
+	}
+
+	private <T> void setIdentifier(Object identifier, T instance, EntityType<T> et)
+			throws IllegalArgumentException, IllegalAccessException {
+		final Identifier id = et.getIdentifier();
+		final Field idField = id.getJavaField();
+		if (!idField.getType().isAssignableFrom(identifier.getClass())) {
+			throw new UnassignableIdentifierException("Cannot assign identifier of type "
+					+ identifier + " to field of type " + idField.getType());
+		}
+		idField.setAccessible(true);
+		idField.set(instance, identifier);
+	}
+
+	private Map<URI, Attribute<?, ?>> indexEntityAttributes(EntityType<?> et) {
+		final Map<URI, Attribute<?, ?>> atts = new HashMap<>(et.getAttributes().size());
+		for (Attribute<?, ?> at : et.getAttributes()) {
+			atts.put(at.getIRI().toURI(), at);
+		}
+		return atts;
+	}
+
+	private boolean isClassAssertion(Axiom ax) {
+		return ax.getAssertion().getType() == AssertionType.CLASS;
+	}
+
+	private boolean isEntityClass(Axiom ax, Class<?> cls) {
+		final OWLClass clsAnn = cls.getAnnotation(OWLClass.class);
+		if (clsAnn == null) {
+			throw new IllegalArgumentException("The specified type " + cls
+					+ " is not an entity type.");
+		}
+		final String val = ax.getValue().toString();
+		return val.equals(clsAnn.iri());
+	}
+
+	private void setFieldValue(FieldSpecification<?, ?> fieldSpec, Object instance, Object value)
+			throws IllegalArgumentException, IllegalAccessException {
+		final Field field = fieldSpec.getJavaField();
+		field.setAccessible(true);
+		field.set(instance, value);
 	}
 
 	<T> void setFieldValue(T entity, Field field, Collection<Axiom> axioms, EntityType<T> et) {

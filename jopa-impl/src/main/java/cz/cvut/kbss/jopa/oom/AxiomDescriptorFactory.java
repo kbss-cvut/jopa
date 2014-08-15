@@ -14,32 +14,41 @@ import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
 class AxiomDescriptorFactory {
 
+	private static final URI PROPERTIES_URI = URI.create("http://jopa.org/properties");
+
 	AxiomDescriptor createForEntityLoading(URI primaryKey, Descriptor entityDescriptor,
 			EntityType<?> et) {
 		final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(primaryKey));
+		descriptor.setSubjectContext(entityDescriptor.getContext());
 		if (et.getTypes() != null && et.getTypes().getFetchType() != FetchType.LAZY) {
 			final Assertion typesAssertion = Assertion.createClassAssertion(et.getTypes()
 					.isInferred());
-			descriptor.addAssertion(typesAssertion);
-			final URI typesContext = entityDescriptor.getAttributeDescriptor(et.getTypes())
-					.getContext();
-			if (typesContext != null) {
-				descriptor.setAssertionContext(typesAssertion, typesContext);
-			}
+			addAssertionToDescriptor(entityDescriptor, et.getTypes(), descriptor, typesAssertion);
 		}
-		// TODO
+		if (et.getProperties() != null && et.getProperties().getFetchType() != FetchType.LAZY) {
+			final Assertion propsAssertion = Assertion.createPropertyAssertion(PROPERTIES_URI, et
+					.getProperties().isInferred());
+			addAssertionToDescriptor(entityDescriptor, et.getProperties(), descriptor,
+					propsAssertion);
+		}
 		for (Attribute<?, ?> att : et.getAttributes()) {
 			if (att.getFetchType() == FetchType.LAZY) {
 				continue;
 			}
 			final Assertion a = createAssertion(att);
-			descriptor.addAssertion(a);
-			final URI attContext = entityDescriptor.getAttributeDescriptor(att).getContext();
-			if (attContext != null) {
-				descriptor.setAssertionContext(a, attContext);
-			}
+			addAssertionToDescriptor(entityDescriptor, att, descriptor, a);
 		}
 		return descriptor;
+	}
+
+	private void addAssertionToDescriptor(Descriptor entityDescriptor,
+			FieldSpecification<?, ?> att, final AxiomDescriptor descriptor,
+			final Assertion assertion) {
+		descriptor.addAssertion(assertion);
+		final URI typesContext = entityDescriptor.getAttributeDescriptor(att).getContext();
+		if (typesContext != null) {
+			descriptor.setAssertionContext(assertion, typesContext);
+		}
 	}
 
 	private Assertion createAssertion(Attribute<?, ?> att) {

@@ -2,21 +2,17 @@ package cz.cvut.kbss.ontodriver_new.model;
 
 import java.net.URI;
 
-import cz.cvut.kbss.jopa.CommonVocabulary;
+class PropertyAssertion extends Assertion {
 
-class ClassAssertion extends Assertion {
+	private static final long serialVersionUID = 8288252700890646040L;
 
-	private static final long serialVersionUID = 7238514047567604200L;
-
-	private static final URI RDF_TYPE = URI.create(CommonVocabulary.RDF_TYPE);
-
-	ClassAssertion(boolean isInferred) {
-		super(RDF_TYPE, isInferred);
+	public PropertyAssertion(URI identifier, boolean isInferred) {
+		super(identifier, isInferred);
 	}
 
 	@Override
 	public AssertionType getType() {
-		return AssertionType.CLASS;
+		return AssertionType.PROPERTY;
 	}
 
 	@Override

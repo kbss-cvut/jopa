@@ -19,6 +19,7 @@ public class CommonVocabulary {
 
 	public static final String RDFS_LABEL = "http://www.w3.org/2000/01/rdf-schema#label";
 
-    public static final String DC_DESCRIPTION = "http://purl.org/dc/elements/1.1/description";
-	
+	public static final String DC_DESCRIPTION = "http://purl.org/dc/elements/1.1/description";
+
+	public static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 }

@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver_new.model;
 
 import java.net.URI;
 
-final class AnnotationPropertyAssertion extends Assertion {
+final class AnnotationPropertyAssertion extends PropertyAssertion {
 
 	private static final long serialVersionUID = 6708237135179035172L;
 

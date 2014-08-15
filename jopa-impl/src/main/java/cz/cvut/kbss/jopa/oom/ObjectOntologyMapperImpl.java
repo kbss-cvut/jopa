@@ -29,7 +29,7 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		this.storageConnection = Objects.requireNonNull(connection);
 		this.metamodel = uow.getMetamodel();
 		this.descriptorFactory = new AxiomDescriptorFactory();
-		this.entityBuilder = new EntityConstructor(uow);
+		this.entityBuilder = new EntityConstructor(this);
 	}
 
 	@Override
@@ -49,6 +49,8 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 			return entityBuilder.reconstructEntity(cls, primaryKey, axioms, et);
 		} catch (OntoDriverException e) {
 			throw new StorageAccessException(e);
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new EntityReconstructionException(e);
 		}
 	}
 
