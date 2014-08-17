@@ -1,0 +1,38 @@
+package cz.cvut.kbss.jopa.oom;
+
+import java.lang.reflect.Field;
+
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.Value;
+
+class SingularDataPropertyStrategy extends FieldStrategy {
+
+	private Object value;
+
+	SingularDataPropertyStrategy(EntityType<?> et, Attribute<?, ?> att,
+			ObjectOntologyMapper mapper) {
+		super(et, att, mapper);
+	}
+
+	@Override
+	void addValueFromAxiom(Axiom ax) {
+		final Value<?> val = ax.getValue();
+		this.value = val.getValue();
+	}
+
+	@Override
+	void buildInstanceFieldValue(Object entity) throws IllegalArgumentException,
+			IllegalAccessException {
+		final Field f = attribute.getJavaField();
+		f.setAccessible(true);
+		if (!f.getType().isAssignableFrom(value.getClass())) {
+			throw new EntityReconstructionException("Incompatible types found. The field " + f
+					+ " requires type " + f.getType() + ", but the loaded value is of type "
+					+ value.getClass());
+		}
+		f.set(entity, value);
+	}
+
+}

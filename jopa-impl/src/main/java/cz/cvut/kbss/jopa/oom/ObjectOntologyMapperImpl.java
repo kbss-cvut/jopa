@@ -48,6 +48,10 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 			}
 			return entityBuilder.reconstructEntity(cls, primaryKey, axioms, et);
 		} catch (OntoDriverException e) {
+			// TODO Introduce some Connection wrapper, which would catch the
+			// checked exceptions and wrap them in StorageAccessException so
+			// that we don't have to repeat the try-catch everywhere we ue
+			// connection
 			throw new StorageAccessException(e);
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new EntityReconstructionException(e);

@@ -13,6 +13,7 @@ import java.util.Set;
 
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -22,6 +23,7 @@ import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassD;
 
 public final class TestEnvironmentUtils {
 
@@ -35,7 +37,8 @@ public final class TestEnvironmentUtils {
 		random = new Random();
 	}
 
-	public static ObjectChangeSet createObjectChangeSet(Object original, Object clone, URI context) {
+	public static ObjectChangeSet createObjectChangeSet(Object original,
+			Object clone, URI context) {
 		return new ObjectChangeSetImpl(original, clone, context);
 	}
 
@@ -75,7 +78,8 @@ public final class TestEnvironmentUtils {
 	 * @param mock
 	 *            The new value
 	 */
-	public static void setMock(Object target, Field field, Object mock) throws Exception {
+	public static void setMock(Object target, Field field, Object mock)
+			throws Exception {
 		assert field != null;
 		field.setAccessible(true);
 		removeFinalModifier(field);
@@ -91,47 +95,64 @@ public final class TestEnvironmentUtils {
 
 	/**
 	 * Initializes the specified mock objects to return reasonable values.
-	 * 
-	 * @param etMock
-	 * @param strAttMock
-	 * @param typesMock
-	 * @throws NoSuchFieldException
-	 * @throws SecurityException
 	 */
-	public static void initOWLClassAMocks(EntityType<OWLClassA> etMock, Attribute strAttMock,
-			TypesSpecification typesMock) throws NoSuchFieldException, SecurityException {
-		when(etMock.getAttribute(OWLClassA.getStrAttField().getName())).thenReturn(strAttMock);
+	public static void initOWLClassAMocks(EntityType<OWLClassA> etMock,
+			Attribute strAttMock, TypesSpecification typesMock)
+			throws NoSuchFieldException, SecurityException {
+		when(etMock.getAttribute(OWLClassA.getStrAttField().getName()))
+				.thenReturn(strAttMock);
 		when(etMock.getTypes()).thenReturn(typesMock);
-		when(etMock.getAttributes()).thenReturn(
-				Collections.<Attribute<? super OWLClassA, ?>> singleton(strAttMock));
+		when(etMock.getAttributes())
+				.thenReturn(
+						Collections
+								.<Attribute<? super OWLClassA, ?>> singleton(strAttMock));
 		when(strAttMock.getJavaField()).thenReturn(OWLClassA.getStrAttField());
-		final String stringAttIri = OWLClassA.getStrAttField().getAnnotation(OWLDataProperty.class)
-				.iri();
+		final String stringAttIri = OWLClassA.getStrAttField()
+				.getAnnotation(OWLDataProperty.class).iri();
 		when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
-		when(strAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
+		when(strAttMock.getPersistentAttributeType()).thenReturn(
+				PersistentAttributeType.DATA);
 		when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
 	}
 
 	/**
 	 * Initializes the specified mock objects to return reasonable values.
-	 * 
-	 * @param etMock
-	 * @param strAttMock
-	 * @param typesMock
-	 * @throws NoSuchFieldException
-	 * @throws SecurityException
 	 */
-	public static void initOWLClassBMocks(EntityType<OWLClassB> etMock, Attribute strAttMock,
-			PropertiesSpecification propsMock) throws NoSuchFieldException, SecurityException {
-		when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
+	public static void initOWLClassBMocks(EntityType<OWLClassB> etMock,
+			Attribute strAttMock, PropertiesSpecification propsMock)
+			throws NoSuchFieldException, SecurityException {
+		when(etMock.getAttribute(OWLClassB.getStrAttField().getName()))
+				.thenReturn(strAttMock);
 		when(etMock.getProperties()).thenReturn(propsMock);
-		when(etMock.getAttributes()).thenReturn(
-				Collections.<Attribute<? super OWLClassB, ?>> singleton(strAttMock));
+		when(etMock.getAttributes())
+				.thenReturn(
+						Collections
+								.<Attribute<? super OWLClassB, ?>> singleton(strAttMock));
 		when(strAttMock.getJavaField()).thenReturn(OWLClassB.getStrAttField());
-		final String stringAttIri = OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class)
-				.iri();
+		final String stringAttIri = OWLClassB.getStrAttField()
+				.getAnnotation(OWLDataProperty.class).iri();
 		when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
-		when(strAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
-		when(propsMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
+		when(strAttMock.getPersistentAttributeType()).thenReturn(
+				PersistentAttributeType.DATA);
+		when(propsMock.getJavaField()).thenReturn(
+				OWLClassB.getPropertiesField());
+	}
+
+	/**
+	 * Initializes the specified mock objects to return reasonable values.
+	 */
+	public static void initOWLClassDMocks(EntityType<OWLClassD> etMock,
+			Attribute clsAMock) throws NoSuchFieldException, SecurityException {
+		when(etMock.getAttribute(OWLClassD.getOwlClassAField().getName()))
+				.thenReturn(clsAMock);
+		when(etMock.getAttributes()).thenReturn(
+				Collections
+						.<Attribute<? super OWLClassD, ?>> singleton(clsAMock));
+		when(clsAMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
+		when(clsAMock.getPersistentAttributeType()).thenReturn(
+				PersistentAttributeType.OBJECT);
+		final String clsAIri = OWLClassD.getOwlClassAField()
+				.getAnnotation(OWLObjectProperty.class).iri();
+		when(clsAMock.getIRI()).thenReturn(IRI.create(clsAIri));
 	}
 }

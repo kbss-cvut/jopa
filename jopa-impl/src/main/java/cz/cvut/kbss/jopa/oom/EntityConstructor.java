@@ -16,7 +16,6 @@ import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.ontodriver.exceptions.UnassignableIdentifierException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion.AssertionType;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.Value;
 
 class EntityConstructor {
 
@@ -34,6 +33,8 @@ class EntityConstructor {
 		final Set<String> types = new HashSet<>();
 		final Map<String, String> properties = new HashMap<>();
 		final Map<URI, Attribute<?, ?>> attributes = indexEntityAttributes(et);
+		final Map<Attribute<?, ?>, FieldStrategy> fieldLoaders = new HashMap<>(et.getAttributes()
+				.size());
 		for (Axiom ax : axioms) {
 			if (isClassAssertion(ax)) {
 				if (!isEntityClass(ax, cls)) {
@@ -43,10 +44,8 @@ class EntityConstructor {
 				properties.put(ax.getAssertion().getIdentifier().toString(), ax.getValue()
 						.toString());
 			} else {
-				// TODO This will work only for singular data properties
-				final Value<?> val = ax.getValue();
-				setFieldValue(attributes.get(ax.getAssertion().getIdentifier()), instance,
-						val.getValue());
+				final FieldStrategy fs = getFieldLoader(ax, attributes, fieldLoaders, et);
+				fs.addValueFromAxiom(ax);
 			}
 		}
 		if (et.getTypes() != null && !types.isEmpty()) {
@@ -54,6 +53,9 @@ class EntityConstructor {
 		}
 		if (et.getProperties() != null && !properties.isEmpty()) {
 			setFieldValue(et.getProperties(), instance, properties);
+		}
+		for (FieldStrategy fs : fieldLoaders.values()) {
+			fs.buildInstanceFieldValue(instance);
 		}
 		return instance;
 	}
@@ -90,6 +92,16 @@ class EntityConstructor {
 		}
 		final String val = ax.getValue().toString();
 		return val.equals(clsAnn.iri());
+	}
+
+	private FieldStrategy getFieldLoader(Axiom ax, Map<URI, Attribute<?, ?>> attributes,
+			Map<Attribute<?, ?>, FieldStrategy> loaders, EntityType<?> et) {
+		final URI attId = ax.getAssertion().getIdentifier();
+		final Attribute<?, ?> att = attributes.get(attId);
+		if (!loaders.containsKey(att)) {
+			loaders.put(attributes.get(attId), FieldStrategy.createFieldStrategy(et, att, mapper));
+		}
+		return loaders.get(att);
 	}
 
 	private void setFieldValue(FieldSpecification<?, ?> fieldSpec, Object instance, Object value)
