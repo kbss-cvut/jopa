@@ -1,7 +1,9 @@
 package cz.cvut.kbss.jopa.oom;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -10,16 +12,17 @@ class SingularObjectPropertyStrategy extends FieldStrategy {
 
 	private Object value;
 
-	SingularObjectPropertyStrategy(EntityType<?> et, Attribute<?, ?> att,
-			ObjectOntologyMapper mapper) {
-		super(et, att, mapper);
+	SingularObjectPropertyStrategy(EntityType<?> et, Attribute<?, ?> att, Descriptor descriptor,
+			ObjectOntologyMapperImpl mapper) {
+		super(et, att, descriptor, mapper);
 	}
 
 	@Override
 	void addValueFromAxiom(Axiom ax) {
-		final Object valueIdentifier = ax.getValue().getValue();
-		// TODO
-		//this.value = mapper.getEntityFromCacheOrLoadItFromOntology
+		// TODO Check that this cast is OK
+		final URI valueIdentifier = (URI) ax.getValue().getValue();
+		this.value = mapper.getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier,
+				descriptor);
 	}
 
 	@Override

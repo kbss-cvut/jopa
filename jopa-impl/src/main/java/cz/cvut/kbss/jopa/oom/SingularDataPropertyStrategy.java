@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import java.lang.reflect.Field;
 
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -11,9 +12,9 @@ class SingularDataPropertyStrategy extends FieldStrategy {
 
 	private Object value;
 
-	SingularDataPropertyStrategy(EntityType<?> et, Attribute<?, ?> att,
-			ObjectOntologyMapper mapper) {
-		super(et, att, mapper);
+	SingularDataPropertyStrategy(EntityType<?> et, Attribute<?, ?> att, Descriptor descriptor,
+			ObjectOntologyMapperImpl mapper) {
+		super(et, att, descriptor, mapper);
 	}
 
 	@Override

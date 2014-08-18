@@ -46,7 +46,7 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 			if (axioms.isEmpty()) {
 				return null;
 			}
-			return entityBuilder.reconstructEntity(cls, primaryKey, axioms, et);
+			return entityBuilder.reconstructEntity(primaryKey, et, descriptor, axioms);
 		} catch (OntoDriverException e) {
 			// TODO Introduce some Connection wrapper, which would catch the
 			// checked exceptions and wrap them in StorageAccessException so
@@ -83,4 +83,13 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		}
 	}
 
+	<T> T getEntityFromCacheOrOntology(Class<T> cls, URI primaryKey, Descriptor descriptor) {
+		// TODO We should introduce some algorithm to prevent endless cycles
+		// when loading entities
+		if (uow.getLiveObjectCache().contains(cls, primaryKey, descriptor.getContext())) {
+			return uow.getLiveObjectCache().get(cls, primaryKey, descriptor.getContext());
+		} else {
+			return loadEntity(cls, primaryKey, descriptor);
+		}
+	}
 }

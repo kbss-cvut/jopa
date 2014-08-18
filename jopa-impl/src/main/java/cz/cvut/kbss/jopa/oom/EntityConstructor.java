@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
@@ -19,16 +20,16 @@ import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 class EntityConstructor {
 
-	private final ObjectOntologyMapper mapper;
+	private final ObjectOntologyMapperImpl mapper;
 
-	public EntityConstructor(ObjectOntologyMapper mapper) {
+	public EntityConstructor(ObjectOntologyMapperImpl mapper) {
 		this.mapper = mapper;
 	}
 
-	<T> T reconstructEntity(Class<T> cls, Object primaryKey, Collection<Axiom> axioms,
-			EntityType<T> et) throws InstantiationException, IllegalAccessException {
+	<T> T reconstructEntity(Object primaryKey, EntityType<T> et, Descriptor descriptor,
+			Collection<Axiom> axioms) throws InstantiationException, IllegalAccessException {
 		assert !axioms.isEmpty();
-		final T instance = cls.newInstance();
+		final T instance = et.getJavaType().newInstance();
 		setIdentifier(primaryKey, instance, et);
 		final Set<String> types = new HashSet<>();
 		final Map<String, String> properties = new HashMap<>();
@@ -37,14 +38,15 @@ class EntityConstructor {
 				.size());
 		for (Axiom ax : axioms) {
 			if (isClassAssertion(ax)) {
-				if (!isEntityClass(ax, cls)) {
+				if (!isEntityClass(ax, et.getJavaType())) {
 					types.add(ax.getValue().toString());
 				}
 			} else if (!attributes.containsKey(ax.getAssertion().getIdentifier())) {
 				properties.put(ax.getAssertion().getIdentifier().toString(), ax.getValue()
 						.toString());
 			} else {
-				final FieldStrategy fs = getFieldLoader(ax, attributes, fieldLoaders, et);
+				final FieldStrategy fs = getFieldLoader(ax, attributes, fieldLoaders, et,
+						descriptor);
 				fs.addValueFromAxiom(ax);
 			}
 		}
@@ -95,11 +97,12 @@ class EntityConstructor {
 	}
 
 	private FieldStrategy getFieldLoader(Axiom ax, Map<URI, Attribute<?, ?>> attributes,
-			Map<Attribute<?, ?>, FieldStrategy> loaders, EntityType<?> et) {
+			Map<Attribute<?, ?>, FieldStrategy> loaders, EntityType<?> et, Descriptor desc) {
 		final URI attId = ax.getAssertion().getIdentifier();
 		final Attribute<?, ?> att = attributes.get(attId);
 		if (!loaders.containsKey(att)) {
-			loaders.put(attributes.get(attId), FieldStrategy.createFieldStrategy(et, att, mapper));
+			loaders.put(attributes.get(attId), FieldStrategy.createFieldStrategy(et, att,
+					desc.getAttributeDescriptor(att), mapper));
 		}
 		return loaders.get(att);
 	}

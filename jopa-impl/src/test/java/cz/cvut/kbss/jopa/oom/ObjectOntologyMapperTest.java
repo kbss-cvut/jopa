@@ -111,8 +111,8 @@ public class ObjectOntologyMapperTest {
 		final Collection<Axiom> entityAAxioms = getAxiomsForEntityA();
 		when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
 		when(
-				entityConstructorMock.reconstructEntity(OWLClassA.class, ENTITY_PK, entityAAxioms,
-						etAMock)).thenReturn(entityA);
+				entityConstructorMock.reconstructEntity(ENTITY_PK, etAMock, aDescriptor,
+						entityAAxioms)).thenReturn(entityA);
 		final OWLClassA res = mapper.loadEntity(OWLClassA.class, ENTITY_PK, aDescriptor);
 
 		assertNotNull(res);
@@ -195,8 +195,8 @@ public class ObjectOntologyMapperTest {
 			mapper.loadFieldValue(ENTITY_PK, entityA, typesField, aDescriptor);
 			fail("This line should not have been reached.");
 		} finally {
-			verify(entityConstructorMock, never()).setFieldValue(any(OWLClassA.class), eq(typesField),
-					any(Collection.class), any(EntityType.class));
+			verify(entityConstructorMock, never()).setFieldValue(any(OWLClassA.class),
+					eq(typesField), any(Collection.class), any(EntityType.class));
 		}
 	}
 }
