@@ -8,11 +8,14 @@ import java.util.Objects;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exceptions.UnassignableIdentifierException;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.Connection;
+import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
@@ -23,6 +26,7 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 
 	private final AxiomDescriptorFactory descriptorFactory;
 	private final EntityConstructor entityBuilder;
+	private final EntityDeconstructor entityBreaker;
 	private final InstanceRegistry instanceRegistry;
 
 	public ObjectOntologyMapperImpl(UnitOfWorkImpl uow, Connection connection) {
@@ -32,6 +36,7 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		this.descriptorFactory = new AxiomDescriptorFactory();
 		this.instanceRegistry = new InstanceRegistry();
 		this.entityBuilder = new EntityConstructor(this);
+		this.entityBreaker = new EntityDeconstructor();
 	}
 
 	@Override
@@ -61,8 +66,8 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		}
 	}
 
-	private <T> EntityType<T> getEntityType(Class<T> cls) {
-		return metamodel.entity(cls);
+	private <T> EntityType<T> getEntityType(Class<?> cls) {
+		return (EntityType<T>) metamodel.entity(cls);
 	}
 
 	@Override
@@ -72,7 +77,7 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		assert field != null;
 		assert descriptor != null;
 
-		final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
+		final EntityType<T> et = getEntityType(entity.getClass());
 		final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(primaryKey,
 				field, descriptor, et);
 		try {
@@ -84,6 +89,40 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		} catch (OntoDriverException e) {
 			throw new StorageAccessException(e);
 		}
+	}
+
+	@Override
+	public <T> void persistEntity(URI primaryKey, T entity, Descriptor descriptor) {
+		assert entity != null;
+		assert descriptor != null;
+
+		final EntityType<T> et = getEntityType(entity.getClass());
+		try {
+			if (primaryKey == null) {
+				// TODO Request new primary key from the ontology (similar to
+				// SELECT FROM sequence in JPA)
+				setIdentifier(primaryKey, entity, et);
+			}
+			final MutationAxiomDescriptor axiomDescriptor = entityBreaker.mapEntityToAxioms(
+					primaryKey, entity, et, descriptor);
+			storageConnection.persist(axiomDescriptor);
+		} catch (IllegalAccessException | IllegalArgumentException e) {
+			throw new EntityDeconstructionException("Unable to deconstruct entity " + entity, e);
+		} catch (OntoDriverException e) {
+			throw new StorageAccessException(e);
+		}
+	}
+
+	<T> void setIdentifier(Object identifier, T instance, EntityType<T> et)
+			throws IllegalArgumentException, IllegalAccessException {
+		final Identifier id = et.getIdentifier();
+		final Field idField = id.getJavaField();
+		if (!idField.getType().isAssignableFrom(identifier.getClass())) {
+			throw new UnassignableIdentifierException("Cannot assign identifier of type "
+					+ identifier + " to field of type " + idField.getType());
+		}
+		idField.setAccessible(true);
+		idField.set(instance, identifier);
 	}
 
 	<T> T getEntityFromCacheOrOntology(Class<T> cls, URI primaryKey, Descriptor descriptor) {

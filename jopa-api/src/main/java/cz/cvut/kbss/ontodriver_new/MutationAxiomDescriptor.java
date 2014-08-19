@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver_new;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,23 @@ public class MutationAxiomDescriptor extends AxiomDescriptor {
 		final List<Value<?>> assertionValues = getAssertionList(assertion);
 		assertionValues.add(value);
 		return this;
+	}
+
+	/**
+	 * Gets values of the specified assertion held by this descriptor. </p>
+	 * 
+	 * @param assertion
+	 *            The assertion
+	 * @return Unmodifiable list of values or an empty list, if there are none
+	 * @throws NullPointerException
+	 *             If the argument is {@code null}
+	 */
+	public List<Value<?>> getAssertionValues(Assertion assertion) {
+		Objects.requireNonNull(assertion, ErrorUtils.constructNPXMessage("assertion"));
+		if (!values.containsKey(assertion)) {
+			return Collections.emptyList();
+		}
+		return Collections.unmodifiableList(values.get(assertion));
 	}
 
 	private List<Value<?>> getAssertionList(Assertion assertion) {

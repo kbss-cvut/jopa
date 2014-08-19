@@ -13,8 +13,6 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.ontodriver.exceptions.UnassignableIdentifierException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion.AssertionType;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
@@ -30,7 +28,7 @@ class EntityConstructor {
 			Collection<Axiom> axioms) throws InstantiationException, IllegalAccessException {
 		assert !axioms.isEmpty();
 		final T instance = et.getJavaType().newInstance();
-		setIdentifier(primaryKey, instance, et);
+		mapper.setIdentifier(primaryKey, instance, et);
 		mapper.registerInstance(primaryKey, instance, descriptor.getContext());
 		final Set<String> types = new HashSet<>();
 		final Map<String, String> properties = new HashMap<>();
@@ -61,18 +59,6 @@ class EntityConstructor {
 			fs.buildInstanceFieldValue(instance);
 		}
 		return instance;
-	}
-
-	private <T> void setIdentifier(Object identifier, T instance, EntityType<T> et)
-			throws IllegalArgumentException, IllegalAccessException {
-		final Identifier id = et.getIdentifier();
-		final Field idField = id.getJavaField();
-		if (!idField.getType().isAssignableFrom(identifier.getClass())) {
-			throw new UnassignableIdentifierException("Cannot assign identifier of type "
-					+ identifier + " to field of type " + idField.getType());
-		}
-		idField.setAccessible(true);
-		idField.set(instance, identifier);
 	}
 
 	private Map<URI, Attribute<?, ?>> indexEntityAttributes(EntityType<?> et) {

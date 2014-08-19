@@ -40,6 +40,7 @@ import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.Connection;
+import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
@@ -70,6 +71,8 @@ public class ObjectOntologyMapperTest {
 
 	@Mock
 	private EntityConstructor entityConstructorMock;
+	@Mock
+	private EntityDeconstructor entityDeconstructorMock;
 
 	private ObjectOntologyMapper mapper;
 
@@ -103,6 +106,9 @@ public class ObjectOntologyMapperTest {
 		TestEnvironmentUtils.setMock(mapper,
 				ObjectOntologyMapperImpl.class.getDeclaredField("entityBuilder"),
 				entityConstructorMock);
+		TestEnvironmentUtils.setMock(mapper,
+				ObjectOntologyMapperImpl.class.getDeclaredField("entityBreaker"),
+				entityDeconstructorMock);
 
 	}
 
@@ -198,5 +204,14 @@ public class ObjectOntologyMapperTest {
 			verify(entityConstructorMock, never()).setFieldValue(any(OWLClassA.class),
 					eq(typesField), any(Collection.class), any(EntityType.class));
 		}
+	}
+
+	@Test
+	public void testPersistEntity() throws Exception {
+		final MutationAxiomDescriptor madMock = mock(MutationAxiomDescriptor.class);
+		when(entityDeconstructorMock.mapEntityToAxioms(ENTITY_PK, entityA, etAMock, aDescriptor))
+				.thenReturn(madMock);
+		mapper.persistEntity(ENTITY_PK, entityA, aDescriptor);
+		verify(connectionMock).persist(madMock);
 	}
 }
