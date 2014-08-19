@@ -1,6 +1,5 @@
 package cz.cvut.kbss.jopa.oom;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -28,11 +27,6 @@ class SingularObjectPropertyStrategy extends FieldStrategy {
 	@Override
 	void buildInstanceFieldValue(Object instance) throws IllegalArgumentException,
 			IllegalAccessException {
-		final Field f = attribute.getJavaField();
-		f.setAccessible(true);
-		// The type check was performed when the referenced value was being
-		// loaded
-		f.set(instance, value);
+		setValueOnInstance(instance, value);
 	}
-
 }

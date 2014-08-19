@@ -31,6 +31,7 @@ class EntityConstructor {
 		assert !axioms.isEmpty();
 		final T instance = et.getJavaType().newInstance();
 		setIdentifier(primaryKey, instance, et);
+		mapper.registerInstance(primaryKey, instance, descriptor.getContext());
 		final Set<String> types = new HashSet<>();
 		final Map<String, String> properties = new HashMap<>();
 		final Map<URI, Attribute<?, ?>> attributes = indexEntityAttributes(et);
@@ -88,10 +89,7 @@ class EntityConstructor {
 
 	private boolean isEntityClass(Axiom ax, Class<?> cls) {
 		final OWLClass clsAnn = cls.getAnnotation(OWLClass.class);
-		if (clsAnn == null) {
-			throw new IllegalArgumentException("The specified type " + cls
-					+ " is not an entity type.");
-		}
+		assert clsAnn != null;
 		final String val = ax.getValue().toString();
 		return val.equals(clsAnn.iri());
 	}

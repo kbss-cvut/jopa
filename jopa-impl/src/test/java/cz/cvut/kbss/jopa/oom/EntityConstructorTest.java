@@ -104,6 +104,7 @@ public class EntityConstructorTest {
 		assertEquals(PK, res.getUri());
 		assertEquals(STRING_ATT, res.getStringAttribute());
 		assertEquals(TYPES, res.getTypes());
+		verify(mapperMock).registerInstance(PK, res, descriptor.getContext());
 	}
 
 	private Axiom getClassAssertionAxiomForType(String type) {
@@ -146,6 +147,7 @@ public class EntityConstructorTest {
 		assertEquals(PK, res.getUri());
 		assertEquals(STRING_ATT, res.getStringAttribute());
 		assertNull(res.getTypes());
+		verify(mapperMock).registerInstance(PK, res, descriptor.getContext());
 	}
 
 	@Test
@@ -166,6 +168,7 @@ public class EntityConstructorTest {
 			assertTrue(res.getProperties().containsKey(key));
 			assertEquals(a.getValue().getValue().toString(), res.getProperties().get(key));
 		}
+		verify(mapperMock).registerInstance(PK, res, descriptor.getContext());
 	}
 
 	private Collection<Axiom> getProperties() {
@@ -208,6 +211,7 @@ public class EntityConstructorTest {
 		assertEquals(PK, res.getUri());
 		assertEquals(STRING_ATT, res.getStringAttribute());
 		assertNull(res.getProperties());
+		verify(mapperMock).registerInstance(PK, res, descriptor.getContext());
 	}
 
 	@Test
@@ -230,6 +234,7 @@ public class EntityConstructorTest {
 		assertEquals(PK, res.getOwlClassA().getUri());
 		assertEquals(STRING_ATT, res.getOwlClassA().getStringAttribute());
 		verify(mapperMock).getEntityFromCacheOrOntology(OWLClassA.class, PK, fieldDesc);
+		verify(mapperMock).registerInstance(PK, res, descriptor.getContext());
 	}
 
 	private Set<Axiom> getAxiomsForD() throws Exception {

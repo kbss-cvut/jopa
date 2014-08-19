@@ -23,12 +23,14 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 
 	private final AxiomDescriptorFactory descriptorFactory;
 	private final EntityConstructor entityBuilder;
+	private final InstanceRegistry instanceRegistry;
 
 	public ObjectOntologyMapperImpl(UnitOfWorkImpl uow, Connection connection) {
 		this.uow = Objects.requireNonNull(uow);
 		this.storageConnection = Objects.requireNonNull(connection);
 		this.metamodel = uow.getMetamodel();
 		this.descriptorFactory = new AxiomDescriptorFactory();
+		this.instanceRegistry = new InstanceRegistry();
 		this.entityBuilder = new EntityConstructor(this);
 	}
 
@@ -38,6 +40,11 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		assert primaryKey != null;
 		assert descriptor != null;
 
+		instanceRegistry.reset();
+		return loadEntityInternal(cls, primaryKey, descriptor);
+	}
+
+	private <T> T loadEntityInternal(Class<T> cls, URI primaryKey, Descriptor descriptor) {
 		final EntityType<T> et = getEntityType(cls);
 		final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(
 				primaryKey, descriptor, et);
@@ -48,10 +55,6 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 			}
 			return entityBuilder.reconstructEntity(primaryKey, et, descriptor, axioms);
 		} catch (OntoDriverException e) {
-			// TODO Introduce some Connection wrapper, which would catch the
-			// checked exceptions and wrap them in StorageAccessException so
-			// that we don't have to repeat the try-catch everywhere we ue
-			// connection
 			throw new StorageAccessException(e);
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new EntityReconstructionException(e);
@@ -84,12 +87,17 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 	}
 
 	<T> T getEntityFromCacheOrOntology(Class<T> cls, URI primaryKey, Descriptor descriptor) {
-		// TODO We should introduce some algorithm to prevent endless cycles
-		// when loading entities
 		if (uow.getLiveObjectCache().contains(cls, primaryKey, descriptor.getContext())) {
 			return uow.getLiveObjectCache().get(cls, primaryKey, descriptor.getContext());
+		} else if (instanceRegistry.containsInstance(primaryKey, descriptor.getContext())) {
+			// This prevents endless cycles in bidirectional relationships
+			return instanceRegistry.getInstance(primaryKey, descriptor.getContext());
 		} else {
-			return loadEntity(cls, primaryKey, descriptor);
+			return loadEntityInternal(cls, primaryKey, descriptor);
 		}
+	}
+
+	<T> void registerInstance(Object primaryKey, T instance, URI context) {
+		instanceRegistry.registerInstance(primaryKey, instance, context);
 	}
 }
