@@ -1,10 +1,13 @@
 package cz.cvut.kbss.jopa.oom;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Collections;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
@@ -36,4 +39,24 @@ class SingularDataPropertyStrategy extends FieldStrategy {
 		f.set(entity, value);
 	}
 
+	@Override
+	Collection<Value<?>> extractAttributeValuesFromInstance(Object instance)
+			throws IllegalArgumentException, IllegalAccessException {
+		final Field field = attribute.getJavaField();
+		if (!field.isAccessible()) {
+			field.setAccessible(true);
+		}
+		final Object value = field.get(instance);
+		if (value == null) {
+			return Collections.emptySet();
+		}
+		final Value<?> val = new Value<>(value);
+		return Collections.<Value<?>> singleton(val);
+	}
+
+	@Override
+	Assertion createAssertion() {
+		return Assertion.createDataPropertyAssertion(attribute.getIRI().toURI(),
+				attribute.isInferred());
+	}
 }

@@ -10,7 +10,9 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
+import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.Value;
 
 class PluralObjectPropertyStrategy extends FieldStrategy {
 
@@ -52,5 +54,17 @@ class PluralObjectPropertyStrategy extends FieldStrategy {
 	void buildInstanceFieldValue(Object instance) throws IllegalArgumentException,
 			IllegalAccessException {
 		setValueOnInstance(instance, values);
+	}
+
+	@Override
+	Collection<Value<?>> extractAttributeValuesFromInstance(Object instance) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	Assertion createAssertion() {
+		return Assertion.createObjectPropertyAssertion(attribute.getIRI().toURI(),
+				attribute.isInferred());
 	}
 }

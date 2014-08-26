@@ -5,6 +5,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,6 +21,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
@@ -77,6 +81,7 @@ public class EntityConstructorTest {
 
 	private EntityConstructor constructor;
 
+	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
@@ -89,6 +94,21 @@ public class EntityConstructorTest {
 		TestEnvironmentUtils.initOWLClassDMocks(etDMock, clsAAttMock);
 		when(etDMock.getIdentifier()).thenReturn(idDMock);
 		when(idDMock.getJavaField()).thenReturn(OWLClassD.class.getDeclaredField("uri"));
+		doAnswer(new Answer<Void>() {
+
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				final Object pk = invocation.getArguments()[0];
+				final Object entity = invocation.getArguments()[1];
+				final EntityType<?> et = (EntityType<?>) invocation.getArguments()[2];
+				final Field idField = et.getIdentifier().getJavaField();
+				idField.setAccessible(true);
+				idField.set(entity, pk);
+				return null;
+			}
+
+		}).when(mapperMock).setIdentifier(any(Object.class), any(Object.class),
+				any(EntityType.class));
 		this.descriptor = new EntityDescriptor();
 		this.constructor = new EntityConstructor(mapperMock);
 	}

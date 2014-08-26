@@ -20,4 +20,14 @@
 			<url>http://krizik.felk.cvut.cz/m2repo</url>
 		</repository>
 	</repositories>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.5</version>
+			<type>jar</type>
+			<scope>test</scope>
+			<optional>false</optional>
+		</dependency>
+	</dependencies>
 </project>

@@ -1,8 +1,11 @@
 package cz.cvut.kbss.jopa.oom;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -33,7 +36,9 @@ import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
@@ -62,6 +67,8 @@ public class ObjectOntologyMapperTest {
 
 	@Mock
 	private Metamodel metamodelMock;
+	@Mock
+	private CacheManager cacheMock;
 
 	@Mock
 	private EntityType<OWLClassA> etAMock;
@@ -74,7 +81,7 @@ public class ObjectOntologyMapperTest {
 	@Mock
 	private EntityDeconstructor entityDeconstructorMock;
 
-	private ObjectOntologyMapper mapper;
+	private ObjectOntologyMapperImpl mapper;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -92,6 +99,7 @@ public class ObjectOntologyMapperTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		when(uowMock.getMetamodel()).thenReturn(metamodelMock);
+		when(uowMock.getLiveObjectCache()).thenReturn(cacheMock);
 		when(descriptorFactoryMock.createForEntityLoading(ENTITY_PK, aDescriptor, etAMock))
 				.thenReturn(axiomDescriptor);
 		when(
@@ -213,5 +221,65 @@ public class ObjectOntologyMapperTest {
 				.thenReturn(madMock);
 		mapper.persistEntity(ENTITY_PK, entityA, aDescriptor);
 		verify(connectionMock).persist(madMock);
+	}
+
+	@Test
+	public void testSetIdentifier() throws Exception {
+		final Identifier id = mock(Identifier.class);
+		when(etAMock.getIdentifier()).thenReturn(id);
+		when(id.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
+		final OWLClassA a = new OWLClassA();
+		final URI pk = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tempUri");
+		assertNull(a.getUri());
+		mapper.setIdentifier(pk, a, etAMock);
+		assertNotNull(a.getUri());
+		assertEquals(pk, a.getUri());
+	}
+
+	@Test
+	public void testGetEntityFromCacheOrOntologyFromCache() {
+		when(cacheMock.contains(OWLClassA.class, ENTITY_PK, null)).thenReturn(Boolean.TRUE);
+		when(cacheMock.get(OWLClassA.class, ENTITY_PK, null)).thenReturn(entityA);
+		final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, ENTITY_PK,
+				aDescriptor);
+		assertNotNull(res);
+		assertSame(entityA, res);
+		verify(cacheMock).get(OWLClassA.class, ENTITY_PK, null);
+	}
+
+	@Test
+	public void testGetEntityFromCacheOrOntologyFromRegisteredInstances() {
+		when(cacheMock.contains(OWLClassA.class, ENTITY_PK, null)).thenReturn(Boolean.FALSE);
+		mapper.registerInstance(ENTITY_PK, entityA, null);
+		final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, ENTITY_PK,
+				aDescriptor);
+		assertNotNull(res);
+		assertSame(entityA, res);
+	}
+
+	@Test
+	public void testGetEntityFromCacheOrOntologyLoadIt() throws Exception {
+		when(cacheMock.contains(OWLClassA.class, ENTITY_PK, null)).thenReturn(Boolean.FALSE);
+		final Collection<Axiom> entityAAxioms = getAxiomsForEntityA();
+		when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
+		when(
+				entityConstructorMock.reconstructEntity(ENTITY_PK, etAMock, aDescriptor,
+						entityAAxioms)).thenReturn(entityA);
+		final OWLClassA res = mapper.getEntityFromCacheOrOntology(OWLClassA.class, ENTITY_PK,
+				aDescriptor);
+		assertSame(entityA, res);
+		verify(entityConstructorMock).reconstructEntity(ENTITY_PK, etAMock, aDescriptor,
+				entityAAxioms);
+	}
+
+	@Test
+	public void testRegisterInstance() throws Exception {
+		final URI context = URI.create("http://someNamedContext");
+		final Field regField = mapper.getClass().getDeclaredField("instanceRegistry");
+		regField.setAccessible(true);
+		final InstanceRegistry reg = (InstanceRegistry) regField.get(mapper);
+		assertFalse(reg.containsInstance(ENTITY_PK, context));
+		mapper.registerInstance(ENTITY_PK, entityA, context);
+		assertTrue(reg.containsInstance(ENTITY_PK, context));
 	}
 }

@@ -62,6 +62,7 @@ public class MutationAxiomDescriptor extends AxiomDescriptor {
 		assert assertion != null;
 		if (!values.containsKey(assertion)) {
 			values.put(assertion, new ArrayList<Value<?>>());
+			addAssertion(assertion);
 		}
 		return values.get(assertion);
 	}

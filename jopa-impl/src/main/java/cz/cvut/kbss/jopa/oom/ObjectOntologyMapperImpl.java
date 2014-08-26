@@ -36,7 +36,7 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		this.descriptorFactory = new AxiomDescriptorFactory();
 		this.instanceRegistry = new InstanceRegistry();
 		this.entityBuilder = new EntityConstructor(this);
-		this.entityBreaker = new EntityDeconstructor();
+		this.entityBreaker = new EntityDeconstructor(this);
 	}
 
 	@Override
@@ -66,7 +66,7 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		}
 	}
 
-	private <T> EntityType<T> getEntityType(Class<?> cls) {
+	<T> EntityType<T> getEntityType(Class<T> cls) {
 		return (EntityType<T>) metamodel.entity(cls);
 	}
 
@@ -77,7 +77,7 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		assert field != null;
 		assert descriptor != null;
 
-		final EntityType<T> et = getEntityType(entity.getClass());
+		final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
 		final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(primaryKey,
 				field, descriptor, et);
 		try {
@@ -96,7 +96,7 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		assert entity != null;
 		assert descriptor != null;
 
-		final EntityType<T> et = getEntityType(entity.getClass());
+		final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
 		try {
 			if (primaryKey == null) {
 				// TODO Request new primary key from the ontology (similar to
