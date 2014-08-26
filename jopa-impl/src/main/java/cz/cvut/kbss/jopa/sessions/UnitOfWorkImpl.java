@@ -32,8 +32,6 @@ import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.Connection;
-import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory {
@@ -60,7 +58,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
 	private AbstractSession parent;
 	private AbstractEntityManager entityManager;
-	private Connection storageConnection;
+	private final ConnectionWrapper storage;
 
 	private final MergeManager mergeManager;
 	private final CloneBuilder cloneBuilder;
@@ -79,13 +77,19 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		repoMap.initDescriptors();
 		this.cloneBuilder = new CloneBuilderImpl(this);
 		this.cacheManager = parent.getLiveObjectCache();
-		this.storageConnection = acquireConnection();
-		this.queryFactory = new QueryFactoryImpl(this, storageConnection);
+		this.storage = createConnectionWrapper();
+		this.queryFactory = new QueryFactoryImpl(this, storage);
 		this.mergeManager = new MergeManagerImpl(this);
 		this.changeManager = new ChangeManagerImpl();
 		this.inCommit = false;
 		this.useTransactionalOntology = true;
 		this.isActive = true;
+	}
+
+	private ConnectionWrapper createConnectionWrapper() {
+		// For now, when the new connection wrapper is ready, we'll use it here
+		// as well
+		return new LegacyConnectionWrapper(this, acquireConnection());
 	}
 
 	/**
@@ -127,7 +131,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		result = getObjectFromCache(cls, primaryKey, descriptor.getContext());
 		if (result == null) {
 			// The object is not in the session cache, so search the ontology
-			result = storageFind(cls, primaryKey, descriptor);
+			result = storage.find(cls, primaryKey, descriptor);
 		}
 		if (result == null) {
 			return null;
@@ -270,7 +274,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		if (!isActive()) {
 			throw new IllegalStateException("Cannot rollback inactive Unit of Work!");
 		}
-		rollbackInternal();
+		storage.rollback();
 		clear();
 	}
 
@@ -317,14 +321,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		boolean hasChanges = this.hasNew || this.hasChanges || this.hasDeleted;
 		if (hasChanges) {
 			calculateChanges();
-		}
-	}
-
-	private void rollbackInternal() {
-		try {
-			storageConnection.rollback();
-		} catch (OntoDriverException e) {
-			throw new OWLPersistenceException(e);
 		}
 	}
 
@@ -575,7 +571,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			throw new OWLPersistenceException("Unable to find repository for entity " + entity
 					+ ". Is it registered in this UoW?");
 		}
-		storageMerge(getIdentifier(entity), entity, f, repo);
+		storage.merge(entity, f, repo);
 		setHasChanges();
 		// Let's see how this works
 		setIndirectCollectionIfPresent(entity, f);
@@ -597,7 +593,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
 		final IRI pk = getIdentifier(entity);
-		if (!storageContains(pk, descriptor)) {
+		if (!storage.contains(pk, descriptor)) {
 			registerNewObject(entity, descriptor);
 			return entity;
 		} else {
@@ -615,17 +611,17 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			// Propagate the entity's state into storage
 			final EntityType<?> et = getMetamodel().entity(entity.getClass());
 			for (Attribute<?, ?> att : et.getAttributes()) {
-				storageMerge(iri, clone, att.getJavaField(), descriptor);
+				storage.merge(clone, att.getJavaField(), descriptor);
 				setIndirectCollectionIfPresent(clone, att.getJavaField());
 			}
 			final FieldSpecification<?, ?> ts = et.getTypes();
 			if (ts != null) {
-				storageMerge(iri, clone, ts.getJavaField(), descriptor);
+				storage.merge(clone, ts.getJavaField(), descriptor);
 				setIndirectCollectionIfPresent(clone, ts.getJavaField());
 			}
 			final PropertiesSpecification<?, ?> ps = et.getProperties();
 			if (ps != null) {
-				storageMerge(iri, clone, ps.getJavaField(), descriptor);
+				storage.merge(clone, ps.getJavaField(), descriptor);
 				setIndirectCollectionIfPresent(clone, ps.getJavaField());
 			}
 		} catch (OWLEntityExistsException e) {
@@ -671,13 +667,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 */
 	public void release() {
 		clear();
-		if (storageConnection != null) {
-			try {
-				storageConnection.close();
-			} catch (OntoDriverException e) {
-				LOG.log(Level.SEVERE, "Exception caugth when closing connection.", e);
-			}
-		}
+		storage.close();
 		this.isActive = false;
 		if (LOG.isLoggable(Level.CONFIG)) {
 			LOG.config("UnitOfWork released.");
@@ -749,7 +739,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			throw new OWLEntityExistsException("An entity with URI " + id
 					+ " is already persisted in repository " + descriptor);
 		}
-		storagePersist(id, entity, descriptor);
+		storage.persist(id, entity, descriptor);
 		if (id == null) {
 			// If the ID was null, extract it from the entity
 			// It is present now
@@ -794,7 +784,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			getDeletedObjects().put(object, object);
 			this.hasDeleted = true;
 		}
-		storageRemove(primaryKey, object, repo);
+		storage.remove(primaryKey, repo);
 	}
 
 	/**
@@ -894,7 +884,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 						"Unable to find repository identifier for entity " + entity
 								+ ". Is it managed by this UoW?");
 			}
-			storageConnection.loadFieldValue(entity, field, descriptor);
+			storage.loadFieldValue(entity, field, descriptor);
 			final Object orig = field.get(entity);
 			final Object entityOriginal = getOriginal(entity);
 			if (entityOriginal != null) {
@@ -902,7 +892,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			}
 			final Object clone = cloneLoadedFieldValue(entity, field, descriptor, orig);
 			field.set(entity, clone);
-		} catch (OntoDriverException | IllegalArgumentException | IllegalAccessException e) {
+		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new OWLPersistenceException(e);
 		}
 	}
@@ -937,20 +927,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
 	@Override
 	public boolean isConsistent(URI context) {
-		try {
-			return storageConnection.isConsistent(context);
-		} catch (OntoDriverException e) {
-			throw new OWLPersistenceException(e);
-		}
+		return storage.isConsistent(context);
 	}
 
 	@Override
 	public List<URI> getContexts() {
-		try {
-			return storageConnection.getContexts();
-		} catch (OntoDriverException e) {
-			throw new OWLPersistenceException(e);
-		}
+		return storage.getContexts();
 	}
 
 	@Override
@@ -1125,77 +1107,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		return repoMap.getEntityDescriptor(entity);
 	}
 
-	private boolean storageContains(Object primaryKey, Descriptor descriptor) {
-		assert primaryKey != null;
-		try {
-			return storageConnection.contains(primaryKey, descriptor.getContext());
-		} catch (OntoDriverException e) {
-			throw new OWLPersistenceException(e);
-		}
-	}
-
-	private <T> T storageFind(Class<T> cls, Object primaryKey, Descriptor descriptor) {
-		assert cls != null;
-		assert primaryKey != null;
-		try {
-			final T result = storageConnection.find(cls, primaryKey, descriptor);
-			if (result != null) {
-				// Put into cache here, when we are sure that the entity is in
-				// the ontology
-				putObjectIntoCache(primaryKey, result, descriptor.getContext());
-			}
-			return result;
-		} catch (MetamodelNotSetException e) {
-			throw new OWLPersistenceException(e);
-		} catch (OntoDriverException e) {
-			throw new OWLPersistenceException(e);
-		}
-	}
-
-	private <T> void storageMerge(Object primaryKey, T entity, Field field, Descriptor repository) {
-		assert primaryKey != null;
-		assert entity != null;
-		assert repository != null;
-		try {
-			storageConnection.merge(entity, field, repository);
-		} catch (MetamodelNotSetException e) {
-			throw new OWLPersistenceException(e);
-		} catch (OntoDriverException e) {
-			throw new OWLPersistenceException(e);
-		}
-	}
-
-	private <T> void storagePersist(Object primaryKey, T entity, Descriptor descriptor) {
-		assert entity != null;
-		assert descriptor != null;
-		try {
-			storageConnection.persist(primaryKey, entity, descriptor);
-		} catch (MetamodelNotSetException e) {
-			throw new OWLPersistenceException(e);
-		} catch (OntoDriverException e) {
-			throw new OWLPersistenceException(e);
-		}
-	}
-
-	private <T> void storageRemove(Object primaryKey, T entity, Descriptor repository) {
-		assert primaryKey != null;
-		assert entity != null;
-		assert repository != null;
-		try {
-			storageConnection.remove(primaryKey, repository);
-		} catch (MetamodelNotSetException e) {
-			throw new OWLPersistenceException(e);
-		} catch (OntoDriverException e) {
-			throw new OWLPersistenceException(e);
-		}
-	}
-
 	private void storageCommit() {
 		try {
-			storageConnection.commit();
-		} catch (Exception e) {
+			storage.commit();
+		} catch (OWLPersistenceException e) {
 			entityManager.removeCurrentPersistenceContext();
-			throw new OWLPersistenceException(e);
+			throw e;
 		}
 	}
 }

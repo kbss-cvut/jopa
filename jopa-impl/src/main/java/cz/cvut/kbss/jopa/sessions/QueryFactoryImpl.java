@@ -8,14 +8,13 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.QueryImpl;
 import cz.cvut.kbss.jopa.owlapi.TypedQueryImpl;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.Connection;
 
 class QueryFactoryImpl implements QueryFactory {
 
 	private final UnitOfWork uow;
-	private final Connection connection;
+	private final ConnectionWrapper connection;
 
-	QueryFactoryImpl(UnitOfWork uow, Connection connection) {
+	QueryFactoryImpl(UnitOfWork uow, ConnectionWrapper connection) {
 		assert uow != null;
 		assert connection != null;
 		this.uow = uow;

@@ -30,9 +30,9 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -44,14 +44,14 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 	private final Set<URI> contexts;
 	private final Class<T> classT;
 	private final UnitOfWork uow;
-	private final Connection connection;
+	private final ConnectionWrapper connection;
 	private boolean useBackupOntology;
 
 	private int maxResults;
 
 	// sparql=false -> abstract syntax
 	public TypedQueryImpl(final String query, final Class<T> classT, final boolean sparql,
-			final UnitOfWork uow, final Connection connection) {
+			final UnitOfWork uow, final ConnectionWrapper connection) {
 		this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
 		this.sparql = sparql;
 		this.classT = Objects.requireNonNull(classT, ErrorUtils.constructNPXMessage("classT"));

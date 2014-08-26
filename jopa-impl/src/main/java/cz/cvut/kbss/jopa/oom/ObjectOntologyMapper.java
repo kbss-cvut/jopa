@@ -32,7 +32,7 @@ public interface ObjectOntologyMapper {
 	 * @param descriptor
 	 *            Descriptor possibly specifying the field context
 	 */
-	public <T> void loadFieldValue(URI primaryKey, T entity, Field field, Descriptor descriptor);
+	public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor);
 
 	/**
 	 * Persists the specified entity into the underlying ontology. </p>

@@ -14,7 +14,6 @@ import org.mockito.MockitoAnnotations;
 
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.ontodriver.Connection;
 
 public class QueryFactoryImplTest {
 
@@ -25,7 +24,7 @@ public class QueryFactoryImplTest {
 	private UnitOfWork uowMock;
 
 	@Mock
-	private Connection connectionMock;
+	private ConnectionWrapper connectionMock;
 
 	private QueryFactoryImpl factory;
 

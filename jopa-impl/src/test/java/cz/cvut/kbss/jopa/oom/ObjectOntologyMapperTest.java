@@ -72,6 +72,8 @@ public class ObjectOntologyMapperTest {
 
 	@Mock
 	private EntityType<OWLClassA> etAMock;
+	@Mock
+	private Identifier idA;
 
 	@Mock
 	private AxiomDescriptorFactory descriptorFactoryMock;
@@ -106,6 +108,8 @@ public class ObjectOntologyMapperTest {
 				descriptorFactoryMock.createForFieldLoading(ENTITY_PK, OWLClassA.getTypesField(),
 						aDescriptor, etAMock)).thenReturn(axiomDescriptor);
 		when(metamodelMock.entity(OWLClassA.class)).thenReturn(etAMock);
+		when(etAMock.getIdentifier()).thenReturn(idA);
+		when(idA.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
 		entityA.setTypes(null);
 		this.mapper = new ObjectOntologyMapperImpl(uowMock, connectionMock);
 		TestEnvironmentUtils.setMock(mapper,
@@ -180,7 +184,7 @@ public class ObjectOntologyMapperTest {
 			}
 
 		}).when(entityConstructorMock).setFieldValue(entityA, typesField, axiomsForA, etAMock);
-		mapper.loadFieldValue(ENTITY_PK, entityA, typesField, aDescriptor);
+		mapper.loadFieldValue(entityA, typesField, aDescriptor);
 		assertNotNull(typesField.get(entityA));
 		assertEquals(aTypes, entityA.getTypes());
 		verify(connectionMock).find(axiomDescriptor);
@@ -193,7 +197,7 @@ public class ObjectOntologyMapperTest {
 		typesField.setAccessible(true);
 		assertNull(typesField.get(entityA));
 		when(connectionMock.find(axiomDescriptor)).thenReturn(Collections.<Axiom> emptyList());
-		mapper.loadFieldValue(ENTITY_PK, entityA, typesField, aDescriptor);
+		mapper.loadFieldValue(entityA, typesField, aDescriptor);
 		assertNull(typesField.get(entityA));
 		verify(entityConstructorMock, never()).setFieldValue(any(OWLClassA.class), eq(typesField),
 				any(Collection.class), any(EntityType.class));
@@ -206,7 +210,7 @@ public class ObjectOntologyMapperTest {
 		typesField.setAccessible(true);
 		assertNull(typesField.get(entityA));
 		try {
-			mapper.loadFieldValue(ENTITY_PK, entityA, typesField, aDescriptor);
+			mapper.loadFieldValue(entityA, typesField, aDescriptor);
 			fail("This line should not have been reached.");
 		} finally {
 			verify(entityConstructorMock, never()).setFieldValue(any(OWLClassA.class),

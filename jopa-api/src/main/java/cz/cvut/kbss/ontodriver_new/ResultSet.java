@@ -14,7 +14,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * @author kidney
  * 
  */
-public interface ResultSet extends AutoCloseable {
+public interface ResultSet extends AutoCloseable, cz.cvut.kbss.ontodriver.ResultSet {
 
 	/**
 	 * Retrieves index of a column with the specified label.
@@ -372,7 +372,7 @@ public interface ResultSet extends AutoCloseable {
 	 * @throws OntoDriverException
 	 *             If some other error occurs
 	 */
-	public Statement getStatement() throws OntoDriverException;
+	public cz.cvut.kbss.ontodriver.Statement getStatement() throws OntoDriverException;
 
 	/**
 	 * Retrieves value of column at the specified index and returns it as

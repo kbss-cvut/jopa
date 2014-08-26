@@ -76,7 +76,7 @@ public class UnitOfWorkTest {
 	@Mock
 	private CacheManager cacheManagerMock;
 	@Mock
-	private Connection connectionMock;
+	private ConnectionWrapper storageMock;
 	@Mock
 	private EntityType<OWLClassA> typeA;
 	@Mock
@@ -130,7 +130,7 @@ public class UnitOfWorkTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		final ServerSessionStub ssStub = new ServerSessionStub(connectionMock);
+		final ServerSessionStub ssStub = new ServerSessionStub(mock(Connection.class));
 		this.serverSessionMock = spy(ssStub);
 		when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
 		when(serverSessionMock.getManagedTypes()).thenReturn(managedTypes);
@@ -161,9 +161,9 @@ public class UnitOfWorkTest {
 		when(emMock.getTransaction()).thenReturn(transactionMock);
 		uow = new UnitOfWorkImpl(serverSessionMock);
 		uow.setEntityManager(emMock);
-		final Field connectionField = UnitOfWorkImpl.class.getDeclaredField("storageConnection");
+		final Field connectionField = UnitOfWorkImpl.class.getDeclaredField("storage");
 		connectionField.setAccessible(true);
-		connectionField.set(uow, connectionMock);
+		connectionField.set(uow, storageMock);
 	}
 
 	@Test
@@ -210,8 +210,7 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testReadObjectFromOntology() throws Exception {
-		when(connectionMock.find(OWLClassA.class, entityA.getUri(), descriptor))
-				.thenReturn(entityA);
+		when(storageMock.find(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(entityA);
 		OWLClassA res = this.uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
 		assertNotNull(res);
 		assertEquals(entityA.getUri(), res.getUri());
@@ -253,7 +252,7 @@ public class UnitOfWorkTest {
 		uow.commit();
 
 		verify(cacheManagerMock).evict(OWLClassA.class, IRI.create(entityA.getUri()), CONTEXT_URI);
-		verify(connectionMock).remove(IRI.create(entityA.getUri()), descriptor);
+		verify(storageMock).remove(IRI.create(entityA.getUri()), descriptor);
 	}
 
 	@Test
@@ -334,8 +333,7 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testGetOriginal() throws Exception {
-		when(connectionMock.find(OWLClassA.class, entityA.getUri(), descriptor))
-				.thenReturn(entityA);
+		when(storageMock.find(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(entityA);
 		OWLClassA tO = this.uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
 		assertNotNull(tO);
 		OWLClassA origOne = (OWLClassA) uow.getOriginal(tO);
@@ -356,7 +354,7 @@ public class UnitOfWorkTest {
 		testNew.setUri(pk);
 		uow.registerNewObject(testNew, descriptor);
 		assertTrue(uow.isObjectNew(testNew));
-		verify(connectionMock).persist(IRI.create(pk), testNew, descriptor);
+		verify(storageMock).persist(IRI.create(pk), testNew, descriptor);
 	}
 
 	@Test
@@ -416,7 +414,7 @@ public class UnitOfWorkTest {
 		newOne.setStringAttribute("stringAttributeOne");
 		uow.registerNewObject(newOne, descriptor);
 		assertTrue(uow.getNewObjectsCloneToOriginal().containsKey(newOne));
-		verify(connectionMock).persist(IRI.create(pk), newOne, descriptor);
+		verify(storageMock).persist(IRI.create(pk), newOne, descriptor);
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -437,7 +435,7 @@ public class UnitOfWorkTest {
 		try {
 			uow.registerNewObject(b, descriptor);
 		} finally {
-			verify(connectionMock, never()).persist(any(Object.class), any(Object.class),
+			verify(storageMock, never()).persist(any(Object.class), any(Object.class),
 					eq(descriptor));
 		}
 		fail("This line should not have been reached.");
@@ -455,7 +453,7 @@ public class UnitOfWorkTest {
 		assertTrue(uow.isActive());
 		uow.release();
 		assertFalse(uow.isActive());
-		verify(connectionMock).close();
+		verify(storageMock).close();
 	}
 
 	@Test
@@ -464,7 +462,7 @@ public class UnitOfWorkTest {
 		uow.removeObject(toRemove);
 		assertTrue(uow.getDeletedObjects().containsKey(toRemove));
 		assertFalse(uow.contains(toRemove));
-		verify(connectionMock).remove(IRI.create(entityB.getUri()), descriptor);
+		verify(storageMock).remove(IRI.create(entityB.getUri()), descriptor);
 	}
 
 	@Test
@@ -545,12 +543,12 @@ public class UnitOfWorkTest {
 	public void testRollback() throws Exception {
 		uow.registerNewObject(entityA, descriptor);
 		final Object clone = uow.registerExistingObject(entityB, descriptor);
-		verify(connectionMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
+		verify(storageMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
 		assertTrue(uow.contains(entityA));
 		assertTrue(uow.contains(clone));
 
 		uow.rollback();
-		verify(connectionMock).rollback();
+		verify(storageMock).rollback();
 		assertFalse(uow.contains(entityA));
 		assertFalse(uow.contains(clone));
 	}
@@ -564,7 +562,7 @@ public class UnitOfWorkTest {
 
 	@Test(expected = OWLPersistenceException.class)
 	public void testCommitFailed() throws Exception {
-		doThrow(IllegalStateException.class).when(connectionMock).commit();
+		doThrow(OWLPersistenceException.class).when(storageMock).commit();
 		try {
 			uow.commit();
 		} finally {
@@ -576,7 +574,7 @@ public class UnitOfWorkTest {
 	public void testClearCacheAfterCommit() throws Exception {
 		uow.registerNewObject(entityA, descriptor);
 		final Object clone = uow.registerExistingObject(entityB, descriptor);
-		verify(connectionMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
+		verify(storageMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
 		assertTrue(uow.contains(entityA));
 		assertTrue(uow.contains(clone));
 		uow.setShouldClearAfterCommit(true);
@@ -603,11 +601,11 @@ public class UnitOfWorkTest {
 				return null;
 			}
 
-		}).when(connectionMock).loadFieldValue(clone, strField, descriptor);
+		}).when(storageMock).loadFieldValue(clone, strField, descriptor);
 
 		uow.loadEntityField(clone, strField);
 		assertNotNull(clone.getStringAttribute());
-		verify(connectionMock).loadFieldValue(clone, strField, descriptor);
+		verify(storageMock).loadFieldValue(clone, strField, descriptor);
 	}
 
 	@Test
@@ -626,14 +624,14 @@ public class UnitOfWorkTest {
 				return null;
 			}
 
-		}).when(connectionMock).loadFieldValue(clone, toLoad, descriptor);
+		}).when(storageMock).loadFieldValue(clone, toLoad, descriptor);
 
 		uow.loadEntityField(clone, toLoad);
 		assertNotNull(clone.getOwlClassA());
 		// Verify that the loaded value was cloned
 		assertNotSame(entityA, clone.getOwlClassA());
 		assertTrue(uow.contains(clone.getOwlClassA()));
-		verify(connectionMock).loadFieldValue(clone, toLoad, descriptor);
+		verify(storageMock).loadFieldValue(clone, toLoad, descriptor);
 	}
 
 	@Test(expected = OWLPersistenceException.class)
@@ -641,7 +639,7 @@ public class UnitOfWorkTest {
 		try {
 			uow.loadEntityField(entityB, OWLClassB.getStrAttField());
 		} finally {
-			verify(connectionMock, never()).loadFieldValue(any(Object.class),
+			verify(storageMock, never()).loadFieldValue(any(Object.class),
 					eq(OWLClassB.getStrAttField()), eq(descriptor));
 		}
 	}
@@ -653,7 +651,7 @@ public class UnitOfWorkTest {
 		final Field strField = OWLClassA.getStrAttField();
 
 		uow.attributeChanged(clone, strField);
-		verify(connectionMock).merge(clone, strField, descriptor);
+		verify(storageMock).merge(clone, strField, descriptor);
 	}
 
 	@Test(expected = OWLPersistenceException.class)
@@ -663,7 +661,7 @@ public class UnitOfWorkTest {
 		try {
 			uow.attributeChanged(entityA, strField);
 		} finally {
-			verify(connectionMock, never()).merge(any(Object.class), eq(strField), eq(descriptor));
+			verify(storageMock, never()).merge(any(Object.class), eq(strField), eq(descriptor));
 		}
 		fail("This line should not have been reached.");
 	}
@@ -674,7 +672,7 @@ public class UnitOfWorkTest {
 		try {
 			uow.attributeChanged(entityA, strField);
 		} finally {
-			verify(connectionMock, never()).merge(any(Object.class), eq(strField), eq(descriptor));
+			verify(storageMock, never()).merge(any(Object.class), eq(strField), eq(descriptor));
 		}
 		fail("This line should not have been reached.");
 	}
@@ -686,7 +684,7 @@ public class UnitOfWorkTest {
 
 	@SuppressWarnings("unchecked")
 	private void mergeDetachedTest() throws Exception {
-		when(connectionMock.contains(IRI.create(entityA.getUri()), CONTEXT_URI)).thenReturn(
+		when(storageMock.contains(IRI.create(entityA.getUri()), descriptor)).thenReturn(
 				Boolean.TRUE);
 		final Attribute<? super OWLClassA, ?> strAtt = mock(Attribute.class);
 		when(strAtt.getJavaField()).thenReturn(OWLClassA.getStrAttField());
@@ -701,8 +699,7 @@ public class UnitOfWorkTest {
 		assertNotNull(res);
 		assertEquals(entityA.getUri(), res.getUri());
 		final ArgumentCaptor<Field> ac = ArgumentCaptor.forClass(Field.class);
-		verify(connectionMock, atLeastOnce())
-				.merge(any(Object.class), ac.capture(), eq(descriptor));
+		verify(storageMock, atLeastOnce()).merge(any(Object.class), ac.capture(), eq(descriptor));
 		final List<Field> mergedFields = ac.getAllValues();
 		assertTrue(mergedFields.contains(OWLClassA.getStrAttField()));
 		assertTrue(mergedFields.contains(OWLClassA.getTypesField()));
@@ -718,31 +715,31 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testMergeDetachedNew() throws Exception {
-		when(connectionMock.contains(IRI.create(entityA.getUri()), CONTEXT_URI)).thenReturn(
+		when(storageMock.contains(IRI.create(entityA.getUri()), descriptor)).thenReturn(
 				Boolean.FALSE);
 		final OWLClassA res = uow.mergeDetached(entityA, descriptor);
 		assertNotNull(res);
 		assertSame(entityA, res);
-		verify(connectionMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
+		verify(storageMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
 	}
 
 	@Test
 	public void testIsConsistent() throws Exception {
-		when(connectionMock.isConsistent(CONTEXT_URI)).thenReturn(Boolean.TRUE);
+		when(storageMock.isConsistent(CONTEXT_URI)).thenReturn(Boolean.TRUE);
 		final boolean res = uow.isConsistent(CONTEXT_URI);
 		assertTrue(res);
-		verify(connectionMock).isConsistent(CONTEXT_URI);
+		verify(storageMock).isConsistent(CONTEXT_URI);
 	}
 
 	@Test
 	public void testGetContexts() throws Exception {
 		final List<URI> contexts = new ArrayList<>(1);
 		contexts.add(CONTEXT_URI);
-		when(connectionMock.getContexts()).thenReturn(contexts);
+		when(storageMock.getContexts()).thenReturn(contexts);
 		final List<URI> res = uow.getContexts();
 		assertSame(contexts, res);
 		assertEquals(contexts, res);
-		verify(connectionMock).getContexts();
+		verify(storageMock).getContexts();
 	}
 
 	private static class ServerSessionStub extends ServerSession {

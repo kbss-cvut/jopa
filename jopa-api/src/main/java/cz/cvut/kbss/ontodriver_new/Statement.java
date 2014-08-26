@@ -10,7 +10,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * @author kidney
  * 
  */
-public interface Statement extends AutoCloseable {
+public interface Statement extends AutoCloseable, cz.cvut.kbss.ontodriver.Statement {
 
 	/**
 	 * Execute the specified SPARQL query.

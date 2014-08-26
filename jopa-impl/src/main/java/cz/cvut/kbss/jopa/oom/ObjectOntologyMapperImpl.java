@@ -11,6 +11,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.exceptions.UnassignableIdentifierException;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
@@ -18,7 +19,7 @@ import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
-class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
+public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 
 	private final UnitOfWorkImpl uow;
 	private final Connection storageConnection;
@@ -71,12 +72,12 @@ class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 	}
 
 	@Override
-	public <T> void loadFieldValue(URI primaryKey, T entity, Field field, Descriptor descriptor) {
-		assert primaryKey != null;
+	public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
 		assert entity != null;
 		assert field != null;
 		assert descriptor != null;
 
+		final URI primaryKey = EntityPropertiesUtils.getPrimaryKey(entity, metamodel).toURI();
 		final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
 		final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(primaryKey,
 				field, descriptor, et);

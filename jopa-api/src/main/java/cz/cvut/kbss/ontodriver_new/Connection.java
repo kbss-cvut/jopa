@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver_new;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
@@ -106,13 +106,13 @@ public interface Connection extends AutoCloseable {
 	 * 
 	 * Note that the default context is not included in the result.
 	 * 
-	 * @return Set of context URIs
+	 * @return List of context URIs
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
 	 * @throws IllegalStateException
 	 *             If called on a closed connection
 	 */
-	public Set<URI> getContexts() throws OntoDriverException;
+	public List<URI> getContexts() throws OntoDriverException;
 
 	/**
 	 * Finds axioms with the corresponding subject and properties. </p>

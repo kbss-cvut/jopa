@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +39,9 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion.AssertionType;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
 public class EntityDeconstructorTest {
+
+	private static final URI CONTEXT = URI
+			.create("http://krizik.felk.cvut.cz/ontologies/jopa/contextOne");
 
 	private static OWLClassA entityA;
 	private static URI strAttAIdentifier;
@@ -131,7 +135,7 @@ public class EntityDeconstructorTest {
 	public void testMapEntityWithDataPropertyAndTypes() {
 		final Descriptor aDescriptor = new EntityDescriptor();
 		final Set<String> types = createTypes();
-		entityA.setTypes(createTypes());
+		entityA.setTypes(types);
 		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityA.getUri(),
 				entityA, etAMock, aDescriptor);
 		assertNotNull(res);
@@ -159,6 +163,22 @@ public class EntityDeconstructorTest {
 		types.add("http://krizik.felk.cvut.cz/ontologies/entityX");
 		types.add("http://krizik.felk.cvut.cz/ontologies/entityY");
 		return types;
+	}
+
+	@Test
+	public void testMapEntityWithDataPropertyAndTypesPropertyInDifferentContext() throws Exception {
+		final Descriptor aDescriptor = new EntityDescriptor();
+		aDescriptor.addAttributeContext(OWLClassA.getStrAttField(), CONTEXT);
+		final Set<String> types = createTypes();
+		entityA.setTypes(types);
+		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityA.getUri(),
+				entityA, etAMock, aDescriptor);
+		assertNotNull(res);
+		assertEquals(entityA.getUri(), res.getSubject().getIdentifier());
+		assertNull(res.getSubjectContext());
+		assertEquals(CONTEXT, res.getAssertionContext(Assertion.createDataPropertyAssertion(
+				strAttAIdentifier, false)));
+		assertNull(res.getAssertionContext(Assertion.createClassAssertion(false)));
 	}
 
 	@Test
@@ -195,6 +215,19 @@ public class EntityDeconstructorTest {
 		// Only the class assertion
 		assertEquals(1, res.getAssertions().size());
 		assertTrue(res.getAssertions().iterator().next().getType() == AssertionType.CLASS);
+	}
+
+	@Test
+	public void testMapEntityWithObjectPropertyAndContext() {
+		final Descriptor dDescriptor = new EntityDescriptor(CONTEXT);
+		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityD.getUri(),
+				entityD, etDMock, dDescriptor);
+		assertNotNull(res);
+		assertEquals(entityD.getUri(), res.getSubject().getIdentifier());
+		assertEquals(CONTEXT, res.getSubjectContext());
+		for (Assertion ass : res.getAssertions()) {
+			assertEquals(CONTEXT, res.getAssertionContext(ass));
+		}
 	}
 
 	@Test

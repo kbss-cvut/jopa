@@ -28,8 +28,8 @@ import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Query;
+import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -39,13 +39,13 @@ public class QueryImpl implements Query<List<String>> {
 	private final String query;
 	private final Set<URI> contexts;
 	private final boolean sparql;
-	private final Connection connection;
+	private final ConnectionWrapper connection;
 
 	private int maxResults;
 	private boolean useBackupOntology;
 
 	// sparql=false -> abstract syntax
-	public QueryImpl(final String query, final boolean sparql, final Connection connection) {
+	public QueryImpl(final String query, final boolean sparql, final ConnectionWrapper connection) {
 		this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
 		this.connection = Objects.requireNonNull(connection,
 				ErrorUtils.constructNPXMessage("connection"));
@@ -121,7 +121,8 @@ public class QueryImpl implements Query<List<String>> {
 		URI[] uris = new URI[contexts.size()];
 		uris = contexts.toArray(uris);
 		final ResultSet rs = stmt.executeQuery(query, uris);
-		// TODO Fix the bug in Sesame statement, the context information gets lost along the way
+		// TODO Fix the bug in Sesame statement, the context information gets
+		// lost along the way
 		try {
 			final int cols = rs.getColumnCount();
 			int cnt = 0;
