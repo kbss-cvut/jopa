@@ -12,53 +12,59 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver_new.Connection;
 
-class NewConnectionWrapper implements ConnectionWrapper {
+class NewConnectionWrapper extends ConnectionWrapper {
 
 	private final Connection connection;
-	private final ObjectOntologyMapper mapper;
+	private ObjectOntologyMapper mapper;
 
-	public NewConnectionWrapper(UnitOfWorkImpl uow, Connection connection) {
+	public NewConnectionWrapper(Connection connection) {
 		this.connection = connection;
+
+	}
+
+	@Override
+	void setUnitOfWork(UnitOfWorkImpl uow) {
+		this.uow = uow;
 		this.mapper = new ObjectOntologyMapperImpl(uow, connection);
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, Descriptor descriptor) {
+	boolean contains(Object primaryKey, Descriptor descriptor) {
 		// TODO
 		return false;
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor) {
+	<T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor) {
 		final URI pkUri = getPrimaryKeyAsUri(primaryKey);
 		return mapper.loadEntity(cls, pkUri, descriptor);
 	}
 
 	@Override
-	public <T> void merge(T entity, Field field, Descriptor repository) {
+	<T> void merge(T entity, Field field, Descriptor repository) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, Descriptor descriptor) {
+	<T> void persist(Object primaryKey, T entity, Descriptor descriptor) {
 		final URI pkUri = getPrimaryKeyAsUri(primaryKey);
 		mapper.persistEntity(pkUri, entity, descriptor);
 	}
 
 	@Override
-	public <T> void remove(Object primaryKey, Descriptor descriptor) {
+	<T> void remove(Object primaryKey, Descriptor descriptor) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
+	<T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
 		mapper.loadFieldValue(entity, field, descriptor);
 	}
 
 	@Override
-	public void commit() {
+	void commit() {
 		try {
 			connection.commit();
 		} catch (OntoDriverException e) {
@@ -67,7 +73,7 @@ class NewConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public void rollback() {
+	void rollback() {
 		try {
 			connection.rollback();
 		} catch (OntoDriverException e) {
@@ -76,7 +82,7 @@ class NewConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public void close() {
+	void close() {
 		try {
 			connection.close();
 		} catch (Exception e) {
@@ -85,7 +91,7 @@ class NewConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public boolean isConsistent(URI context) {
+	boolean isConsistent(URI context) {
 		try {
 			return connection.isConsistent(context);
 		} catch (OntoDriverException e) {
@@ -94,7 +100,7 @@ class NewConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public List<URI> getContexts() {
+	List<URI> getContexts() {
 		try {
 			return connection.getContexts();
 		} catch (OntoDriverException e) {

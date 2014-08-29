@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver_new;
 
+import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -14,7 +15,7 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * @author kidney
  * 
  */
-public interface DataSource {
+public interface DataSource extends Closeable {
 
 	/**
 	 * Requests a connection to the underlying data source. </p>

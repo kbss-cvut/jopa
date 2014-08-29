@@ -3,33 +3,42 @@ package cz.cvut.kbss.jopa.sessions;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
+import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.ontodriver.Statement;
 
-public interface ConnectionWrapper {
+public abstract class ConnectionWrapper {
 
-	boolean contains(Object primaryKey, Descriptor descriptor);
+	protected static final Logger LOG = Logger.getLogger(ConnectionWrapper.class.getName());
 
-	<T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor);
+	protected UnitOfWorkImpl uow;
 
-	<T> void merge(T entity, Field field, Descriptor repository);
+	abstract boolean contains(Object primaryKey, Descriptor descriptor);
 
-	<T> void persist(Object primaryKey, T entity, Descriptor descriptor);
+	abstract <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor);
 
-	<T> void remove(Object primaryKey, Descriptor descriptor);
+	abstract <T> void merge(T entity, Field field, Descriptor repository);
 
-	<T> void loadFieldValue(T entity, Field field, Descriptor descriptor);
+	abstract <T> void persist(Object primaryKey, T entity, Descriptor descriptor);
 
-	void commit();
+	abstract <T> void remove(Object primaryKey, Descriptor descriptor);
 
-	void rollback();
+	abstract <T> void loadFieldValue(T entity, Field field, Descriptor descriptor);
 
-	void close();
+	abstract void commit();
 
-	boolean isConsistent(URI context);
+	abstract void rollback();
 
-	List<URI> getContexts();
-	
-	Statement createStatement();
+	abstract void close();
+
+	abstract boolean isConsistent(URI context);
+
+	abstract List<URI> getContexts();
+
+	public abstract Statement createStatement();
+
+	void setUnitOfWork(UnitOfWorkImpl uow) {
+		this.uow = uow;
+	}
 }

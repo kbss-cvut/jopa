@@ -54,7 +54,6 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
-import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 
 public class UnitOfWorkTest {
@@ -130,7 +129,7 @@ public class UnitOfWorkTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		final ServerSessionStub ssStub = new ServerSessionStub(mock(Connection.class));
+		final ServerSessionStub ssStub = new ServerSessionStub(mock(ConnectionWrapper.class));
 		this.serverSessionMock = spy(ssStub);
 		when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
 		when(serverSessionMock.getManagedTypes()).thenReturn(managedTypes);
@@ -744,13 +743,13 @@ public class UnitOfWorkTest {
 
 	private static class ServerSessionStub extends ServerSession {
 
-		private Connection connection;
+		private ConnectionWrapper connection;
 
-		private ServerSessionStub(Connection conn) {
+		private ServerSessionStub(ConnectionWrapper conn) {
 			this.connection = conn;
 		}
 
-		protected Connection acquireConnection() {
+		protected ConnectionWrapper acquireConnection() {
 			return connection;
 		}
 

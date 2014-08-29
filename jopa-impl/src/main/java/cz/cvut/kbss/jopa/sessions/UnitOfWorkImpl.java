@@ -31,7 +31,6 @@ import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory {
@@ -77,19 +76,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		repoMap.initDescriptors();
 		this.cloneBuilder = new CloneBuilderImpl(this);
 		this.cacheManager = parent.getLiveObjectCache();
-		this.storage = createConnectionWrapper();
+		this.storage = acquireConnection();
 		this.queryFactory = new QueryFactoryImpl(this, storage);
 		this.mergeManager = new MergeManagerImpl(this);
 		this.changeManager = new ChangeManagerImpl();
 		this.inCommit = false;
 		this.useTransactionalOntology = true;
 		this.isActive = true;
-	}
-
-	private ConnectionWrapper createConnectionWrapper() {
-		// For now, when the new connection wrapper is ready, we'll use it here
-		// as well
-		return new LegacyConnectionWrapper(this, acquireConnection());
 	}
 
 	/**
@@ -102,8 +95,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	}
 
 	@Override
-	protected Connection acquireConnection() {
-		return parent.acquireConnection();
+	protected ConnectionWrapper acquireConnection() {
+		final ConnectionWrapper conn = parent.acquireConnection();
+		conn.setUnitOfWork(this);
+		return conn;
 	}
 
 	@Override

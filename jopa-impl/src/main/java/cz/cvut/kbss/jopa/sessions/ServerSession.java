@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import cz.cvut.kbss.jopa.accessors.NewStorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -15,7 +16,6 @@ import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
-import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
@@ -36,6 +36,7 @@ public class ServerSession extends AbstractSession {
 
 	private CacheManager liveObjectCache;
 	private StorageAccessor storageAccessor;
+	private NewStorageAccessor newStorageAccessor;
 
 	private Map<EntityTransaction, AbstractEntityManager> runningTransactions;
 	private Map<Object, UnitOfWorkImpl> activePersistenceContexts;
@@ -86,19 +87,28 @@ public class ServerSession extends AbstractSession {
 		this.runningTransactions = new WeakHashMap<>();
 		this.activePersistenceContexts = new WeakHashMap<>();
 		this.uowsToEntities = new WeakHashMap<>();
-		this.storageAccessor = new StorageAccessorImpl(metamodel, this, storageProperties,
-				properties);
-		String cache = properties.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
+		final String cache = properties.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
 		if (cache == null || cache.equals("on")) {
 			this.liveObjectCache = new CacheManagerImpl(properties);
 			liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
 		} else {
 			this.liveObjectCache = new DisabledCacheManager();
 		}
+		final String storage = properties.get("storage");
+		if (storage != null && storage.equals("new")) {
+			this.newStorageAccessor = new NewStorageAccessor(storageProperties, properties);
+		} else {
+			this.storageAccessor = new StorageAccessorImpl(metamodel, this, storageProperties,
+					properties);
+		}
 	}
 
-	protected Connection acquireConnection() {
-		return storageAccessor.acquireConnection();
+	protected ConnectionWrapper acquireConnection() {
+		if (storageAccessor != null) {
+			return new LegacyConnectionWrapper(storageAccessor.acquireConnection());
+		} else {
+			return new NewConnectionWrapper(newStorageAccessor.acquireConnection());
+		}
 	}
 
 	@Override

@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -13,20 +12,16 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.MetamodelNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
-class LegacyConnectionWrapper implements ConnectionWrapper {
+class LegacyConnectionWrapper extends ConnectionWrapper {
 
-	private static final Logger LOG = Logger.getLogger(LegacyConnectionWrapper.class.getName());
-
-	private final UnitOfWorkImpl uow;
 	private Connection connection;
 
-	LegacyConnectionWrapper(UnitOfWorkImpl uow, Connection connection) {
-		this.uow = uow;
+	LegacyConnectionWrapper(Connection connection) {
 		this.connection = connection;
 	}
 
 	@Override
-	public boolean contains(Object primaryKey, Descriptor descriptor) {
+	boolean contains(Object primaryKey, Descriptor descriptor) {
 		assert primaryKey != null;
 		try {
 			return connection.contains(primaryKey, descriptor.getContext());
@@ -36,7 +31,7 @@ class LegacyConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor) {
+	<T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor) {
 		assert cls != null;
 		assert primaryKey != null;
 		try {
@@ -53,7 +48,7 @@ class LegacyConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public <T> void merge(T entity, Field field, Descriptor repository) {
+	<T> void merge(T entity, Field field, Descriptor repository) {
 		assert entity != null;
 		assert repository != null;
 		try {
@@ -66,7 +61,7 @@ class LegacyConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public <T> void persist(Object primaryKey, T entity, Descriptor descriptor) {
+	<T> void persist(Object primaryKey, T entity, Descriptor descriptor) {
 		assert entity != null;
 		assert descriptor != null;
 		try {
@@ -79,7 +74,7 @@ class LegacyConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public <T> void remove(Object primaryKey, Descriptor descriptor) {
+	<T> void remove(Object primaryKey, Descriptor descriptor) {
 		assert primaryKey != null;
 		assert descriptor != null;
 		try {
@@ -92,7 +87,7 @@ class LegacyConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
+	<T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
 		try {
 			connection.loadFieldValue(entity, field, descriptor);
 		} catch (OntoDriverException e) {
@@ -101,7 +96,7 @@ class LegacyConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public void commit() {
+	void commit() {
 		try {
 			connection.commit();
 		} catch (Exception e) {
@@ -110,7 +105,7 @@ class LegacyConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public void rollback() {
+	void rollback() {
 		try {
 			connection.rollback();
 		} catch (OntoDriverException e) {
@@ -119,7 +114,7 @@ class LegacyConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public void close() {
+	void close() {
 		try {
 			connection.close();
 		} catch (OntoDriverException e) {
@@ -128,7 +123,7 @@ class LegacyConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public boolean isConsistent(URI context) {
+	boolean isConsistent(URI context) {
 		try {
 			return connection.isConsistent(context);
 		} catch (OntoDriverException e) {
@@ -137,7 +132,7 @@ class LegacyConnectionWrapper implements ConnectionWrapper {
 	}
 
 	@Override
-	public List<URI> getContexts() {
+	List<URI> getContexts() {
 		try {
 			return connection.getContexts();
 		} catch (OntoDriverException e) {
@@ -153,5 +148,4 @@ class LegacyConnectionWrapper implements ConnectionWrapper {
 			throw new OWLPersistenceException(e);
 		}
 	}
-
 }

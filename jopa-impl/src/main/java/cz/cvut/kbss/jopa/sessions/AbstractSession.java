@@ -5,7 +5,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.ontodriver.Connection;
 
 /**
  * This is the implementation of the basic Session operations. Other more
@@ -60,7 +59,7 @@ public abstract class AbstractSession implements Session {
 	 * 
 	 * @return Connection
 	 */
-	protected abstract Connection acquireConnection();
+	protected abstract ConnectionWrapper acquireConnection();
 
 	/**
 	 * Get a set of all classes managed in this persistence unit - i. e. get all
