@@ -37,11 +37,10 @@ public interface Statement extends AutoCloseable, cz.cvut.kbss.ontodriver.Statem
 	 * @param contexts
 	 *            Specifies contexts against which to run the query. Since this
 	 *            parameter is optional, it is defined as varargs.
-	 * @return Number of affected axioms
 	 * @throws OntoDriverException
 	 *             If an error occurs during query execution
 	 */
-	public int executeUpdate(String sparql, URI... contexts) throws OntoDriverException;
+	public void executeUpdate(String sparql, URI... contexts) throws OntoDriverException;
 
 	/**
 	 * Use the transactional ontology for query processing. </p>

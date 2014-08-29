@@ -40,6 +40,8 @@ public class NewStorageAccessor implements Closeable {
 			dataSource.close();
 		} catch (OntoDriverException e) {
 			throw new StorageAccessException(e);
+		} finally {
+			this.open = false;
 		}
 	}
 

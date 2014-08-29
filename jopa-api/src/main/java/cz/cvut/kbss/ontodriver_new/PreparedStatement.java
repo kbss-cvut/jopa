@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver_new;
 
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 /**
@@ -12,7 +13,28 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
  * @author kidney
  * 
  */
-public interface PreparedStatement extends Statement {
+public interface PreparedStatement extends Statement, cz.cvut.kbss.ontodriver.PreparedStatement {
+
+	/**
+	 * Executes query represented by this statement. </p>
+	 * 
+	 * @return ResultSet of the query
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @throws IllegalStateException
+	 *             If called on a closed statement
+	 */
+	public ResultSet executeQuery() throws OntoDriverException;
+
+	/**
+	 * Executes an update represented by this statement.
+	 * 
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @throws IllegalStateException
+	 *             If called on a closed statement
+	 */
+	public void executeUpdate() throws OntoDriverException;
 
 	/**
 	 * Set query parameter at the specified index.
@@ -25,22 +47,18 @@ public interface PreparedStatement extends Statement {
 	 * @throws OntoDriverException
 	 *             If the {@code parameterIndex} is not valid or some other
 	 *             error occurs
+	 * @throws IllegalStateException
+	 *             If called on a closed statement
 	 */
-	public PreparedStatement setParameter(int parameterIndex, Object value)
-			throws OntoDriverException;
+	public void setObject(int parameterIndex, Object value) throws OntoDriverException;
 
 	/**
-	 * Set query parameter with the specified value.
+	 * Clears the currently set parameters.
 	 * 
-	 * @param parameterLabel
-	 *            Label of the parameter
-	 * @param value
-	 *            The value of the parameter
-	 * @return This statement
 	 * @throws OntoDriverException
-	 *             If the {@code parameterLabel} is not valid or some other
-	 *             error occurs
+	 *             If an ontology access error occurs
+	 * @throws IllegalStateException
+	 *             If called on a closed statement
 	 */
-	public PreparedStatement setParameter(String parameterLabel, Object value)
-			throws OntoDriverException;
+	public void clearParameters() throws OntoDriverException;
 }

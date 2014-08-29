@@ -21,7 +21,10 @@ public interface Connection extends AutoCloseable {
 	 * Commits this connection. </p>
 	 * 
 	 * This effectively makes persistent any changes made since the last
-	 * commit/rollback or since this connection was opened.
+	 * commit/rollback or since this connection was opened. </p>
+	 * 
+	 * If this connection is in auto-commit mode, calling this method has no
+	 * effect.
 	 * 
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs
@@ -31,7 +34,10 @@ public interface Connection extends AutoCloseable {
 	public void commit() throws OntoDriverException;
 
 	/**
-	 * Rolls back any changes made in the current transaction.
+	 * Rolls back any changes made in the current transaction. </p>
+	 * 
+	 * If this connection is in auto-commit mode, calling this method has no
+	 * effect.
 	 * 
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs

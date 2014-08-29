@@ -64,12 +64,9 @@ public class JopaStatement implements Statement {
 	}
 
 	@Override
-	public int executeUpdate(String sparql, URI... contexts) throws OntoDriverException {
+	public void executeUpdate(String sparql, URI... contexts) throws OntoDriverException {
 		initQuery(sparql, contexts);
 		storageModule.executeStatement(this);
-		// Return 0 for now, we don't known how many statements have been
-		// affected
-		return 0;
 	}
 
 	private void initQuery(String sparql, URI... contexts) {
