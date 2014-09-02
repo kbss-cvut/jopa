@@ -11,6 +11,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.TupleQueryResult;
 
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.sesame.TransactionState;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
 public class PoolingStorageConnector implements Connector {
@@ -21,9 +22,12 @@ public class PoolingStorageConnector implements Connector {
 
 	private final Connector centralConnector;
 	private boolean open;
+	private TransactionState transaction;
+	private LocalModel localModel;
 
 	public PoolingStorageConnector(Connector centralConnector) {
 		this.centralConnector = centralConnector;
+		this.transaction = TransactionState.INACTIVE;
 	}
 
 	@Override
@@ -77,18 +81,59 @@ public class PoolingStorageConnector implements Connector {
 	}
 
 	@Override
-	public void commit() {
-		// TODO
+	public void begin() {
+		if (transaction != TransactionState.INACTIVE && transaction != TransactionState.COMMITTED) {
+			throw new IllegalStateException();
+		}
+		this.localModel = new LocalModel();
+		this.transaction = TransactionState.ACTIVE;
+	}
+
+	@Override
+	public void commit() throws SesameDriverException {
+		verifyTransactionActive();
+		this.transaction = TransactionState.PARTIALLY_COMMITTED;
+		WRITE.lock();
+		try {
+			centralConnector.begin();
+			centralConnector.addStatements(localModel.getAddedStatements());
+			centralConnector.removeStatements(localModel.getRemovedStatements());
+			centralConnector.commit();
+			this.transaction = TransactionState.COMMITTED;
+		} catch (SesameDriverException e) {
+			this.transaction = TransactionState.FAILED;
+			centralConnector.rollback();
+		} finally {
+			WRITE.unlock();
+			this.localModel = null;
+		}
+	}
+
+	private void verifyTransactionActive() {
+		if (transaction != TransactionState.ACTIVE) {
+			throw new IllegalStateException();
+		}
 	}
 
 	@Override
 	public void rollback() {
-		// TODO Auto-generated method stub
-
+		verifyTransactionActive();
+		this.transaction = TransactionState.FAILED;
+		this.localModel = null;
+		this.transaction = TransactionState.INACTIVE;
 	}
 
 	@Override
 	public void addStatements(Collection<Statement> statements) {
-		// TODO
+		verifyTransactionActive();
+		assert statements != null;
+		localModel.addStatements(statements);
+	}
+
+	@Override
+	public void removeStatements(Collection<Statement> statements) throws SesameDriverException {
+		verifyTransactionActive();
+		assert statements != null;
+		localModel.removeStatements(statements);
 	}
 }

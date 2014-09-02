@@ -29,6 +29,7 @@ class SesameAdapter implements Closeable {
 	private final ValueFactory valueFactory;
 	private final String language;
 	private boolean open;
+	private TransactionState transaction;
 
 	public SesameAdapter(Connector connector, Map<String, String> properties) {
 		assert connector != null;
@@ -37,6 +38,7 @@ class SesameAdapter implements Closeable {
 		this.valueFactory = connector.getValueFactory();
 		this.language = getLanguage(properties);
 		this.open = true;
+		this.transaction = TransactionState.INACTIVE;
 	}
 
 	private String getLanguage(Map<String, String> properties) {
@@ -61,12 +63,20 @@ class SesameAdapter implements Closeable {
 		return open;
 	}
 
-	void commit() {
-		// TODO
+	void commit() throws SesameDriverException {
+		if (transaction != TransactionState.ACTIVE) {
+			return;
+		}
+		connector.commit();
+		this.transaction = TransactionState.COMMITTED;
 	}
 
-	void rollback() {
-		// TODO
+	void rollback() throws SesameDriverException {
+		if (transaction != TransactionState.ACTIVE) {
+			return;
+		}
+		connector.rollback();
+		this.transaction = TransactionState.INACTIVE;
 	}
 
 	boolean isConsistent(URI context) {
@@ -93,6 +103,7 @@ class SesameAdapter implements Closeable {
 	}
 
 	void persist(MutationAxiomDescriptor axiomDescriptor) throws SesameDriverException {
+		startTransactionIfNotActive();
 		final List<Statement> statements = new ArrayList<>();
 		for (Assertion assertion : axiomDescriptor.getAssertions()) {
 			statements.addAll(createSesameStatements(axiomDescriptor.getSubject(), assertion,
@@ -100,6 +111,13 @@ class SesameAdapter implements Closeable {
 					axiomDescriptor.getAssertionContext(assertion)));
 		}
 		connector.addStatements(statements);
+	}
+
+	private void startTransactionIfNotActive() throws SesameDriverException {
+		if (transaction != TransactionState.ACTIVE) {
+			connector.begin();
+			this.transaction = TransactionState.ACTIVE;
+		}
 	}
 
 	private Collection<? extends Statement> createSesameStatements(NamedResource subject,
@@ -162,11 +180,13 @@ class SesameAdapter implements Closeable {
 		}
 	}
 
-	void update(MutationAxiomDescriptor axiomDescriptor) {
+	void update(MutationAxiomDescriptor axiomDescriptor) throws SesameDriverException {
+		startTransactionIfNotActive();
 		// TODO
 	}
 
-	void remove(AxiomDescriptor axiomDescriptor) {
+	void remove(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
+		startTransactionIfNotActive();
 		// TODO
 	}
 
