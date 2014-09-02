@@ -1,11 +1,17 @@
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.TupleQueryResult;
 
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
 public class PoolingStorageConnector implements Connector {
 
@@ -34,7 +40,7 @@ public class PoolingStorageConnector implements Connector {
 	}
 
 	@Override
-	public TupleQueryResult executeQuery(String query) {
+	public TupleQueryResult executeQuery(String query) throws SesameDriverException {
 		READ.lock();
 		try {
 			return centralConnector.executeQuery(query);
@@ -44,12 +50,45 @@ public class PoolingStorageConnector implements Connector {
 	}
 
 	@Override
-	public void executeUpdate(String query) {
+	public void executeUpdate(String query) throws SesameDriverException {
 		WRITE.lock();
 		try {
 			centralConnector.executeUpdate(query);
 		} finally {
 			WRITE.unlock();
 		}
+	}
+
+	@Override
+	public List<Resource> getContexts() throws SesameDriverException {
+		READ.lock();
+		try {
+			return centralConnector.getContexts();
+		} finally {
+			READ.unlock();
+		}
+	}
+
+	@Override
+	public ValueFactory getValueFactory() {
+		// We don't need to lock the central connector, as getting the value
+		// factory does not require communication with the repository
+		return centralConnector.getValueFactory();
+	}
+
+	@Override
+	public void commit() {
+		// TODO
+	}
+
+	@Override
+	public void rollback() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void addStatements(Collection<Statement> statements) {
+		// TODO
 	}
 }

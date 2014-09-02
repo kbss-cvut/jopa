@@ -99,7 +99,7 @@ public class AxiomDescriptor {
 	 */
 	public URI getAssertionContext(Assertion assertion) {
 		Objects.requireNonNull(assertion, ErrorUtils.constructNPXMessage("assertion"));
-		if (!assertions.contains(assertion)) {
+		if (!assertionContexts.containsKey(assertion)) {
 			return subjectContext;
 		}
 		return assertionContexts.get(assertion);

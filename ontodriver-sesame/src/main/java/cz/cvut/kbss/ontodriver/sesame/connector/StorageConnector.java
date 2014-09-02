@@ -1,14 +1,29 @@
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
+import info.aduna.iteration.Iterations;
+
 import java.io.File;
 import java.net.URI;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.Update;
+import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
@@ -196,14 +211,87 @@ class StorageConnector implements Connector {
 	}
 
 	@Override
-	public TupleQueryResult executeQuery(String query) {
-		// TODO Auto-generated method stub
-		return null;
+	public TupleQueryResult executeQuery(String query) throws SesameDriverException {
+		RepositoryConnection connection = null;
+		try {
+			connection = acquireConnection();
+			final TupleQuery tq = connection.prepareTupleQuery(QueryLanguage.SPARQL, query);
+			return tq.evaluate();
+		} catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
+			throw new SesameDriverException(e);
+		} finally {
+			try {
+				connection.close();
+			} catch (RepositoryException e) {
+				throw new SesameDriverException(e);
+			}
+		}
+	}
+
+	private RepositoryConnection acquireConnection() throws SesameDriverException {
+		try {
+			return repository.getConnection();
+		} catch (RepositoryException e) {
+			throw new SesameDriverException(e);
+		}
 	}
 
 	@Override
-	public void executeUpdate(String query) {
-		// TODO Auto-generated method stub
+	public void executeUpdate(String query) throws SesameDriverException {
+		RepositoryConnection connection = null;
+		try {
+			connection = acquireConnection();
+			final Update u = connection.prepareUpdate(QueryLanguage.SPARQL, query);
+			u.execute();
+		} catch (MalformedQueryException | UpdateExecutionException | RepositoryException e) {
+			throw new SesameDriverException(e);
+		} finally {
+			try {
+				connection.close();
+			} catch (RepositoryException e) {
+				throw new SesameDriverException(e);
+			}
+		}
+	}
 
+	@Override
+	public List<Resource> getContexts() throws SesameDriverException {
+		RepositoryConnection connection = null;
+		try {
+			connection = acquireConnection();
+			final RepositoryResult<Resource> res = connection.getContextIDs();
+			return Iterations.asList(res);
+		} catch (RepositoryException e) {
+			throw new SesameDriverException(e);
+		} finally {
+			try {
+				connection.close();
+			} catch (RepositoryException e) {
+				throw new SesameDriverException(e);
+			}
+		}
+	}
+
+	@Override
+	public ValueFactory getValueFactory() {
+		return repository.getValueFactory();
+	}
+
+	@Override
+	public void commit() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void rollback() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addStatements(Collection<Statement> statements) {
+		// TODO Auto-generated method stub
+		
 	}
 }

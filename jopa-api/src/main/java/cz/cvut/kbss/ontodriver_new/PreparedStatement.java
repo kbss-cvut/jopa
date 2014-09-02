@@ -37,20 +37,20 @@ public interface PreparedStatement extends Statement, cz.cvut.kbss.ontodriver.Pr
 	public void executeUpdate() throws OntoDriverException;
 
 	/**
-	 * Set query parameter at the specified index.
+	 * Sets value of binding with the specified name.
 	 * 
-	 * @param parameterIndex
-	 *            Parameter index, the first parameter has index 0
+	 * @param binding
+	 *            Binding name
 	 * @param value
 	 *            The value of the parameter
 	 * @return This statement
 	 * @throws OntoDriverException
-	 *             If the {@code parameterIndex} is not valid or some other
+	 *             If there is no such binding in the statement or some other
 	 *             error occurs
 	 * @throws IllegalStateException
 	 *             If called on a closed statement
 	 */
-	public void setObject(int parameterIndex, Object value) throws OntoDriverException;
+	public void setObject(String binding, Object value) throws OntoDriverException;
 
 	/**
 	 * Clears the currently set parameters.

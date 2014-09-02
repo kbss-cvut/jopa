@@ -3,7 +3,9 @@ package cz.cvut.kbss.ontodriver.sesame;
 import java.util.Collection;
 import java.util.Date;
 
+import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -128,5 +130,18 @@ final class SesameUtils {
 	 */
 	static URI toSesameUri(java.net.URI javaUri, ValueFactory factory) {
 		return (javaUri != null ? factory.createURI(javaUri.toString()) : null);
+	}
+
+	static java.net.URI toJavaUri(Resource resource) {
+		if (resource instanceof BNode) {
+			// We have to check for BNode explicitly, because java's URI treats
+			// BNode's identifier as a valid URI
+			return null;
+		}
+		try {
+			return java.net.URI.create(resource.stringValue());
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
 	}
 }
