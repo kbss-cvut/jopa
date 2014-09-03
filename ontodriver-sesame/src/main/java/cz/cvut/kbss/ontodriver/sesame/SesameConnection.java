@@ -102,7 +102,7 @@ class SesameConnection implements Connection {
 	}
 
 	@Override
-	public Collection<Axiom> find(AxiomDescriptor descriptor) throws OntoDriverException {
+	public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 		return adapter.find(descriptor);

@@ -19,7 +19,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
 
 import cz.cvut.kbss.ontodriver.sesame.TestUtils;
 import cz.cvut.kbss.ontodriver.sesame.Transaction;
@@ -162,6 +164,17 @@ public class PoolingStorageConnectorTest {
 	public void testRemoveStatementsInactiveTransaction() throws Exception {
 		final List<Statement> statements = getStatements();
 		connector.removeStatements(statements);
+	}
+
+	@Test
+	public void testFindStatements() throws Exception {
+		final Resource subject = mock(Resource.class);
+		final URI property = mock(URI.class);
+		connector.begin();
+		connector.findStatements(subject, property, null, false, (URI[]) null);
+		verify(readLock).lock();
+		verify(centralMock).findStatements(subject, property, null, false, (URI[]) null);
+		verify(readLock).unlock();
 	}
 
 	@Test

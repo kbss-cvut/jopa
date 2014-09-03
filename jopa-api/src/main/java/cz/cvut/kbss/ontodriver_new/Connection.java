@@ -132,7 +132,7 @@ public interface Connection extends AutoCloseable {
 	 * @throws IllegalStateException
 	 *             If called on a closed connection
 	 */
-	public Collection<Axiom> find(AxiomDescriptor descriptor) throws OntoDriverException;
+	public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException;
 
 	/**
 	 * Persists new individual and its property values specified by the

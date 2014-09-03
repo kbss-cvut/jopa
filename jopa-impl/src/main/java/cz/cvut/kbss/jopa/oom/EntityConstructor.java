@@ -25,7 +25,7 @@ class EntityConstructor {
 	}
 
 	<T> T reconstructEntity(Object primaryKey, EntityType<T> et, Descriptor descriptor,
-			Collection<Axiom> axioms) throws InstantiationException, IllegalAccessException {
+			Collection<Axiom<?>> axioms) throws InstantiationException, IllegalAccessException {
 		assert !axioms.isEmpty();
 		final T instance = et.getJavaType().newInstance();
 		mapper.setIdentifier(primaryKey, instance, et);
@@ -35,7 +35,7 @@ class EntityConstructor {
 		final Map<URI, Attribute<?, ?>> attributes = indexEntityAttributes(et);
 		final Map<Attribute<?, ?>, FieldStrategy> fieldLoaders = new HashMap<>(et.getAttributes()
 				.size());
-		for (Axiom ax : axioms) {
+		for (Axiom<?> ax : axioms) {
 			if (isClassAssertion(ax)) {
 				if (!isEntityClass(ax, et.getJavaType())) {
 					types.add(ax.getValue().toString());
@@ -69,18 +69,18 @@ class EntityConstructor {
 		return atts;
 	}
 
-	private boolean isClassAssertion(Axiom ax) {
+	private boolean isClassAssertion(Axiom<?> ax) {
 		return ax.getAssertion().getType() == AssertionType.CLASS;
 	}
 
-	private boolean isEntityClass(Axiom ax, Class<?> cls) {
+	private boolean isEntityClass(Axiom<?> ax, Class<?> cls) {
 		final OWLClass clsAnn = cls.getAnnotation(OWLClass.class);
 		assert clsAnn != null;
 		final String val = ax.getValue().toString();
 		return val.equals(clsAnn.iri());
 	}
 
-	private FieldStrategy getFieldLoader(Axiom ax, Map<URI, Attribute<?, ?>> attributes,
+	private FieldStrategy getFieldLoader(Axiom<?> ax, Map<URI, Attribute<?, ?>> attributes,
 			Map<Attribute<?, ?>, FieldStrategy> loaders, EntityType<?> et, Descriptor desc) {
 		final URI attId = ax.getAssertion().getIdentifier();
 		final Attribute<?, ?> att = attributes.get(attId);
@@ -98,7 +98,7 @@ class EntityConstructor {
 		field.set(instance, value);
 	}
 
-	<T> void setFieldValue(T entity, Field field, Collection<Axiom> axioms, EntityType<T> et) {
+	<T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et) {
 		// TODO
 	}
 }

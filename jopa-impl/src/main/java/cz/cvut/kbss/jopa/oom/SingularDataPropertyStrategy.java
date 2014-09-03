@@ -21,7 +21,7 @@ class SingularDataPropertyStrategy extends FieldStrategy {
 	}
 
 	@Override
-	void addValueFromAxiom(Axiom ax) {
+	void addValueFromAxiom(Axiom<?> ax) {
 		final Value<?> val = ax.getValue();
 		this.value = val.getValue();
 	}

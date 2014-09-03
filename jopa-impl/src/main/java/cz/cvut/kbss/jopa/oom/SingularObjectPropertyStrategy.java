@@ -22,7 +22,7 @@ class SingularObjectPropertyStrategy extends FieldStrategy {
 	}
 
 	@Override
-	void addValueFromAxiom(Axiom ax) {
+	void addValueFromAxiom(Axiom<?> ax) {
 		// TODO Check that this cast is OK
 		final URI valueIdentifier = (URI) ax.getValue().getValue();
 		this.value = mapper.getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier,

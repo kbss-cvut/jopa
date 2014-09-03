@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 
 import cz.cvut.kbss.ontodriver.Closeable;
@@ -54,6 +56,29 @@ public interface Connector extends Closeable, StatementExecutor {
 	 * @return {@link ValueFactory}
 	 */
 	public ValueFactory getValueFactory();
+
+	/**
+	 * Finds statements corresponding to the specified criteria. </p>
+	 * 
+	 * Note that some of the parameters are optional
+	 * 
+	 * @param subject
+	 *            Statement subject, optional
+	 * @param property
+	 *            Statement property, optional
+	 * @param value
+	 *            Statement value, optional
+	 * @param includeInferred
+	 *            Whether to include inferred statements as well
+	 * @param contexts
+	 *            Optionally specify contexts in which the search should be
+	 *            performed. If not specified, the default one is used
+	 * @return Collection of matching statements
+	 * @throws SesameDriverException
+	 *             If a repository access error occurs
+	 */
+	public Collection<Statement> findStatements(Resource subject, URI property, Value value,
+			boolean includeInferred, URI... contexts) throws SesameDriverException;
 
 	/**
 	 * Adds the specified statements to the underlying repository. </p>

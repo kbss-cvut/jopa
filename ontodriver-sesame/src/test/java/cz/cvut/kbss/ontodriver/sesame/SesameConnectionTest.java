@@ -154,18 +154,18 @@ public class SesameConnectionTest {
 	@Test
 	public void testFind() throws Exception {
 		final AxiomDescriptor axDesc = mock(AxiomDescriptor.class);
-		final List<Axiom> axioms = new ArrayList<>();
+		final List<Axiom<?>> axioms = new ArrayList<>();
 		axioms.add(mock(Axiom.class));
 		axioms.add(mock(Axiom.class));
 		when(adapterMock.find(axDesc)).thenReturn(axioms);
-		final Collection<Axiom> res = connection.find(axDesc);
+		final Collection<Axiom<?>> res = connection.find(axDesc);
 		assertEquals(axioms, res);
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testFindNull() throws Exception {
 		try {
-			final Collection<Axiom> res = connection.find(null);
+			final Collection<Axiom<?>> res = connection.find(null);
 			fail("This line should not have been reached.");
 			assert res == null;
 		} finally {

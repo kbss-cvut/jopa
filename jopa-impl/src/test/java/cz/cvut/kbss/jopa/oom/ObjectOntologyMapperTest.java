@@ -126,7 +126,7 @@ public class ObjectOntologyMapperTest {
 
 	@Test
 	public void testLoadEntity() throws Exception {
-		final Collection<Axiom> entityAAxioms = getAxiomsForEntityA();
+		final Collection<Axiom<?>> entityAAxioms = getAxiomsForEntityA();
 		when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
 		when(
 				entityConstructorMock.reconstructEntity(ENTITY_PK, etAMock, aDescriptor,
@@ -139,18 +139,18 @@ public class ObjectOntologyMapperTest {
 		verify(connectionMock).find(axiomDescriptor);
 	}
 
-	private Collection<Axiom> getAxiomsForEntityA() {
-		final List<Axiom> res = new ArrayList<>();
-		final Axiom clsAssertion = mock(Axiom.class);
+	private Collection<Axiom<?>> getAxiomsForEntityA() {
+		final List<Axiom<?>> res = new ArrayList<>();
+		final Axiom<?> clsAssertion = mock(Axiom.class);
 		res.add(clsAssertion);
-		final Axiom strAttAssertion = mock(Axiom.class);
+		final Axiom<?> strAttAssertion = mock(Axiom.class);
 		res.add(strAttAssertion);
 		return res;
 	}
 
 	@Test
 	public void testLoadEntityUnknown() throws Exception {
-		when(connectionMock.find(axiomDescriptor)).thenReturn(Collections.<Axiom> emptyList());
+		when(connectionMock.find(axiomDescriptor)).thenReturn(Collections.<Axiom<?>> emptyList());
 		final OWLClassA res = mapper.loadEntity(OWLClassA.class, ENTITY_PK, aDescriptor);
 		assertNull(res);
 		verify(connectionMock).find(axiomDescriptor);
@@ -170,7 +170,7 @@ public class ObjectOntologyMapperTest {
 		final Field typesField = OWLClassA.getTypesField();
 		typesField.setAccessible(true);
 		assertNull(typesField.get(entityA));
-		final Collection<Axiom> axiomsForA = getAxiomsForEntityA();
+		final Collection<Axiom<?>> axiomsForA = getAxiomsForEntityA();
 		when(connectionMock.find(axiomDescriptor)).thenReturn(axiomsForA);
 		doAnswer(new Answer<Void>() {
 
@@ -196,7 +196,7 @@ public class ObjectOntologyMapperTest {
 		final Field typesField = OWLClassA.getTypesField();
 		typesField.setAccessible(true);
 		assertNull(typesField.get(entityA));
-		when(connectionMock.find(axiomDescriptor)).thenReturn(Collections.<Axiom> emptyList());
+		when(connectionMock.find(axiomDescriptor)).thenReturn(Collections.<Axiom<?>> emptyList());
 		mapper.loadFieldValue(entityA, typesField, aDescriptor);
 		assertNull(typesField.get(entityA));
 		verify(entityConstructorMock, never()).setFieldValue(any(OWLClassA.class), eq(typesField),
@@ -264,7 +264,7 @@ public class ObjectOntologyMapperTest {
 	@Test
 	public void testGetEntityFromCacheOrOntologyLoadIt() throws Exception {
 		when(cacheMock.contains(OWLClassA.class, ENTITY_PK, null)).thenReturn(Boolean.FALSE);
-		final Collection<Axiom> entityAAxioms = getAxiomsForEntityA();
+		final Collection<Axiom<?>> entityAAxioms = getAxiomsForEntityA();
 		when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
 		when(
 				entityConstructorMock.reconstructEntity(ENTITY_PK, etAMock, aDescriptor,

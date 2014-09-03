@@ -55,7 +55,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(
 				primaryKey, descriptor, et);
 		try {
-			final Collection<Axiom> axioms = storageConnection.find(axiomDescriptor);
+			final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
 			if (axioms.isEmpty()) {
 				return null;
 			}
@@ -82,7 +82,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(primaryKey,
 				field, descriptor, et);
 		try {
-			final Collection<Axiom> axioms = storageConnection.find(axiomDescriptor);
+			final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
 			if (axioms.isEmpty()) {
 				return;
 			}

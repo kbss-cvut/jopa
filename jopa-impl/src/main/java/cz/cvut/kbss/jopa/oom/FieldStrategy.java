@@ -49,7 +49,7 @@ abstract class FieldStrategy {
 	 * @param ax
 	 *            Axiom to extract value from
 	 */
-	abstract void addValueFromAxiom(Axiom ax);
+	abstract void addValueFromAxiom(Axiom<?> ax);
 
 	/**
 	 * Sets instance field from values gathered in this strategy.

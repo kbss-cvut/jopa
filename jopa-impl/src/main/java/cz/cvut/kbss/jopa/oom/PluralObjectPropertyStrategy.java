@@ -42,7 +42,7 @@ class PluralObjectPropertyStrategy extends FieldStrategy {
 	}
 
 	@Override
-	void addValueFromAxiom(Axiom ax) {
+	void addValueFromAxiom(Axiom<?> ax) {
 		final URI valueIdentifier = (URI) ax.getValue().getValue();
 		final Object value = mapper.getEntityFromCacheOrOntology(pluralAtt.getBindableJavaType(),
 				valueIdentifier, descriptor);

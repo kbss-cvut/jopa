@@ -22,7 +22,7 @@ class LocalModel {
 		this.removedStatements = new LinkedHashModel();
 	}
 
-	void enhanceModel(Model model) {
+	void enhanceStatements(Collection<Statement> statements) {
 		// TODO
 
 	}

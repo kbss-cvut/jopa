@@ -7,7 +7,7 @@ package cz.cvut.kbss.ontodriver_new.model;
  * @author ledvima1
  * 
  */
-public interface Axiom {
+public interface Axiom<T> {
 
 	/**
 	 * Gets the subject of this axiom.
@@ -28,5 +28,5 @@ public interface Axiom {
 	 * 
 	 * @return Value, either a NamedResource, or a literal value
 	 */
-	public <T> Value<T> getValue();
+	public Value<T> getValue();
 }

@@ -7,6 +7,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.TupleQueryResult;
 
@@ -108,5 +110,23 @@ class PoolingStorageConnector extends AbstractConnector {
 		verifyTransactionActive();
 		assert statements != null;
 		localModel.removeStatements(statements);
+	}
+
+	@Override
+	public Collection<Statement> findStatements(Resource subject, URI property, Value value,
+			boolean includeInferred, URI... contexts) throws SesameDriverException {
+		verifyTransactionActive();
+		READ.lock();
+		try {
+			final Collection<Statement> statements = centralConnector.findStatements(subject,
+					property, value, includeInferred, contexts);
+			localModel.enhanceStatements(statements);
+			return statements;
+		} catch (SesameDriverException e) {
+			centralConnector.rollback();
+			throw e;
+		} finally {
+			READ.unlock();
+		}
 	}
 }

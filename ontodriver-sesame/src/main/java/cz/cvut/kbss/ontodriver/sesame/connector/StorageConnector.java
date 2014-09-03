@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -215,17 +216,23 @@ class StorageConnector extends AbstractConnector {
 		} catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
 			throw new SesameDriverException(e);
 		} finally {
-			try {
-				connection.close();
-			} catch (RepositoryException e) {
-				throw new SesameDriverException(e);
-			}
+			releaseConnection(connection);
 		}
 	}
 
 	private RepositoryConnection acquireConnection() throws SesameDriverException {
 		try {
 			return repository.getConnection();
+		} catch (RepositoryException e) {
+			throw new SesameDriverException(e);
+		}
+	}
+
+	private void releaseConnection(RepositoryConnection connection) throws SesameDriverException {
+		try {
+			if (connection != null) {
+				connection.close();
+			}
 		} catch (RepositoryException e) {
 			throw new SesameDriverException(e);
 		}
@@ -241,11 +248,7 @@ class StorageConnector extends AbstractConnector {
 		} catch (MalformedQueryException | UpdateExecutionException | RepositoryException e) {
 			throw new SesameDriverException(e);
 		} finally {
-			try {
-				connection.close();
-			} catch (RepositoryException e) {
-				throw new SesameDriverException(e);
-			}
+			releaseConnection(connection);
 		}
 	}
 
@@ -259,11 +262,7 @@ class StorageConnector extends AbstractConnector {
 		} catch (RepositoryException e) {
 			throw new SesameDriverException(e);
 		} finally {
-			try {
-				connection.close();
-			} catch (RepositoryException e) {
-				throw new SesameDriverException(e);
-			}
+			releaseConnection(connection);
 		}
 	}
 
@@ -336,6 +335,23 @@ class StorageConnector extends AbstractConnector {
 			connection.remove(statements);
 		} catch (RepositoryException e) {
 			throw new SesameDriverException(e);
+		}
+	}
+
+	@Override
+	public Collection<Statement> findStatements(Resource subject, org.openrdf.model.URI property,
+			Value value, boolean includeInferred, org.openrdf.model.URI... contexts)
+			throws SesameDriverException {
+		RepositoryConnection connection = null;
+		try {
+			connection = acquireConnection();
+			final RepositoryResult<Statement> m = connection.getStatements(subject, property, null,
+					includeInferred, contexts);
+			return Iterations.asList(m);
+		} catch (RepositoryException e) {
+			throw new SesameDriverException(e);
+		} finally {
+			releaseConnection(connection);
 		}
 	}
 }
