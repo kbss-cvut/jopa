@@ -191,6 +191,11 @@
         	<version>2.3.2</version>
         	<scope>test</scope>
         </dependency>
+        <dependency>
+        	<groupId>cz.cvut.kbss.jopa</groupId>
+        	<artifactId>ontodriver-sesame</artifactId>
+        	<version>${project.version}</version>
+        </dependency>
 	</dependencies>
 
 

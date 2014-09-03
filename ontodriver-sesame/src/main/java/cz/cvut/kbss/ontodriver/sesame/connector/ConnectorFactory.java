@@ -6,41 +6,19 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
-public final class ConnectorFactory {
+public abstract class ConnectorFactory {
 
-	private static boolean open = true;
+	private static final ConnectorFactory instance = new ConnectorFactoryImpl();
 
-	private static volatile Connector centralConnector;
-
-	private ConnectorFactory() {
-		throw new AssertionError();
+	protected ConnectorFactory() {
 	}
 
-	public static Connector createStorageConnector(OntologyStorageProperties storageProperties,
-			Map<String, String> properties) throws SesameDriverException {
-		if (centralConnector == null) {
-			synchronized (centralConnector) {
-				if (centralConnector == null) {
-					initCentralConnector(storageProperties, properties);
-				}
-			}
-		}
-		return new PoolingStorageConnector(centralConnector);
+	public static ConnectorFactory getInstance() {
+		return instance;
 	}
 
-	private static void initCentralConnector(OntologyStorageProperties storageProperties,
-			Map<String, String> properties) throws SesameDriverException {
-		centralConnector = new StorageConnector(storageProperties, properties);
-	}
+	public abstract Connector createStorageConnector(OntologyStorageProperties storageProperties,
+			Map<String, String> properties) throws SesameDriverException;
 
-	public static synchronized void close() throws OntoDriverException {
-		if (!open) {
-			return;
-		}
-		if (centralConnector != null) {
-			centralConnector.close();
-		}
-		open = false;
-	}
-
+	public abstract void close() throws OntoDriverException;
 }

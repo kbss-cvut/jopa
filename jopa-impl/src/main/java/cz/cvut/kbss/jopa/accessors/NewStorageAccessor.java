@@ -6,6 +6,7 @@ import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.sesame.SesameDataSource;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.DataSource;
 
@@ -16,8 +17,7 @@ public class NewStorageAccessor implements Closeable {
 
 	public NewStorageAccessor(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) {
-		// TODO Auto-generated constructor stub
-		this.dataSource = null;
+		this.dataSource = new SesameDataSource(storageProperties, properties);
 		this.open = true;
 	}
 

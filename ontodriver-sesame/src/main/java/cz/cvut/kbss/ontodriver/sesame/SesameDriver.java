@@ -16,6 +16,7 @@ class SesameDriver implements Closeable, ConnectionListener {
 	private final OntologyStorageProperties storageProperties;
 	private final Map<String, String> properties;
 	private boolean open;
+	private final ConnectorFactory connectorFactory;
 
 	private final Set<Connection> openedConnections;
 
@@ -26,6 +27,7 @@ class SesameDriver implements Closeable, ConnectionListener {
 		this.storageProperties = storageProperties;
 		this.properties = properties;
 		this.openedConnections = new HashSet<>();
+		this.connectorFactory = ConnectorFactory.getInstance();
 		this.open = true;
 	}
 
@@ -38,7 +40,7 @@ class SesameDriver implements Closeable, ConnectionListener {
 			for (Connection c : openedConnections) {
 				c.close();
 			}
-			ConnectorFactory.close();
+			connectorFactory.close();
 		} catch (Exception e) {
 			if (e instanceof OntoDriverException || e instanceof SesameDriverException) {
 				throw (OntoDriverException) e;
@@ -58,7 +60,7 @@ class SesameDriver implements Closeable, ConnectionListener {
 	Connection acquireConnection() throws SesameDriverException {
 		assert open;
 		final Connection c = new SesameConnection(new SesameAdapter(
-				ConnectorFactory.createStorageConnector(storageProperties, properties), properties));
+				connectorFactory.createStorageConnector(storageProperties, properties), properties));
 		openedConnections.add(c);
 		return c;
 	}
