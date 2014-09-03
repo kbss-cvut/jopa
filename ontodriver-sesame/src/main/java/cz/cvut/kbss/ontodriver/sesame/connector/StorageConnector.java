@@ -39,12 +39,11 @@ import org.openrdf.sail.nativerdf.config.NativeStoreConfig;
 
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.sesame.TransactionState;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryCreationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryNotFoundException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
-class StorageConnector implements Connector {
+class StorageConnector extends AbstractConnector {
 
 	private static final String[] KNOWN_REMOTE_SCHEMES = { "http", "https", "ftp" };
 	private static final String LOCAL_NATIVE_REPO = "/repositories/";
@@ -53,8 +52,6 @@ class StorageConnector implements Connector {
 	private static final Logger LOG = Logger.getLogger(StorageConnector.class.getName());
 
 	private final OntologyStorageProperties storageProperties;
-	private boolean open;
-	private TransactionState transaction;
 
 	private Repository repository;
 	private RepositoryManager manager;
@@ -67,7 +64,6 @@ class StorageConnector implements Connector {
 
 		this.storageProperties = storageProperties;
 		initialize(properties);
-		this.transaction = TransactionState.INACTIVE;
 		this.open = true;
 	}
 
@@ -189,11 +185,6 @@ class StorageConnector implements Connector {
 		}
 	}
 
-	@Override
-	public boolean isOpen() {
-		return open;
-	}
-
 	private static boolean isFileUri(URI uri) {
 		return (uri.getScheme() != null && uri.getScheme().equals(FILE_SCHEME));
 	}
@@ -283,46 +274,36 @@ class StorageConnector implements Connector {
 
 	@Override
 	public void begin() throws SesameDriverException {
-		if (transaction != TransactionState.INACTIVE && transaction != TransactionState.COMMITTED) {
-			throw new IllegalStateException();
-		}
+		super.begin();
 		this.connection = acquireConnection();
 		try {
 			connection.begin();
-			this.transaction = TransactionState.ACTIVE;
 		} catch (RepositoryException e) {
+			transaction.rollback();
 			throw new SesameDriverException(e);
 		}
 	}
 
 	@Override
 	public void commit() throws SesameDriverException {
-		verifyTransactionActive();
 		assert connection != null;
 
-		this.transaction = TransactionState.PARTIALLY_COMMITTED;
+		transaction.commit();
 		try {
 			connection.commit();
 			connection.close();
 			this.connection = null;
-			this.transaction = TransactionState.COMMITTED;
+			transaction.afterCommit();
 		} catch (RepositoryException e) {
-			this.transaction = TransactionState.FAILED;
+			transaction.rollback();
 			throw new SesameDriverException(e);
-		}
-	}
-
-	private void verifyTransactionActive() {
-		if (transaction != TransactionState.ACTIVE) {
-			throw new IllegalStateException();
 		}
 	}
 
 	@Override
 	public void rollback() throws SesameDriverException {
-		verifyTransactionActive();
 		assert connection != null;
-		this.transaction = TransactionState.FAILED;
+		transaction.rollback();
 		try {
 			connection.rollback();
 			connection.close();
@@ -330,7 +311,7 @@ class StorageConnector implements Connector {
 		} catch (RepositoryException e) {
 			throw new SesameDriverException(e);
 		} finally {
-			this.transaction = TransactionState.INACTIVE;
+			transaction.afterRollback();
 		}
 	}
 

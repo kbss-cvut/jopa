@@ -7,5 +7,5 @@ package cz.cvut.kbss.ontodriver.sesame;
  * 
  */
 public enum TransactionState {
-	ACTIVE, PARTIALLY_COMMITTED, COMMITTED, FAILED, INACTIVE
+	ACTIVE, PARTIALLY_COMMITTED, COMMITTED, FAILED, ABORTED
 }

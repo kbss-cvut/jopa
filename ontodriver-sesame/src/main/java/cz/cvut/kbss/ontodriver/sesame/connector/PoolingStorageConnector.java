@@ -10,37 +10,20 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.TupleQueryResult;
 
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.sesame.TransactionState;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
-public class PoolingStorageConnector implements Connector {
+class PoolingStorageConnector extends AbstractConnector {
 
 	private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
 	private static final Lock READ = LOCK.readLock();
 	private static final Lock WRITE = LOCK.writeLock();
 
 	private final Connector centralConnector;
-	private boolean open;
-	private TransactionState transaction;
 	private LocalModel localModel;
 
 	public PoolingStorageConnector(Connector centralConnector) {
 		this.centralConnector = centralConnector;
-		this.transaction = TransactionState.INACTIVE;
-	}
-
-	@Override
-	public void close() throws OntoDriverException {
-		if (!open) {
-			return;
-		}
-		this.open = false;
-	}
-
-	@Override
-	public boolean isOpen() {
-		return open;
+		this.open = true;
 	}
 
 	@Override
@@ -81,46 +64,36 @@ public class PoolingStorageConnector implements Connector {
 	}
 
 	@Override
-	public void begin() {
-		if (transaction != TransactionState.INACTIVE && transaction != TransactionState.COMMITTED) {
-			throw new IllegalStateException();
-		}
+	public void begin() throws SesameDriverException {
+		super.begin();
 		this.localModel = new LocalModel();
-		this.transaction = TransactionState.ACTIVE;
 	}
 
 	@Override
 	public void commit() throws SesameDriverException {
-		verifyTransactionActive();
-		this.transaction = TransactionState.PARTIALLY_COMMITTED;
+		transaction.commit();
 		WRITE.lock();
 		try {
 			centralConnector.begin();
 			centralConnector.addStatements(localModel.getAddedStatements());
 			centralConnector.removeStatements(localModel.getRemovedStatements());
 			centralConnector.commit();
-			this.transaction = TransactionState.COMMITTED;
+			transaction.afterCommit();
 		} catch (SesameDriverException e) {
-			this.transaction = TransactionState.FAILED;
+			transaction.rollback();
 			centralConnector.rollback();
+			transaction.afterRollback();
 		} finally {
 			WRITE.unlock();
 			this.localModel = null;
 		}
 	}
 
-	private void verifyTransactionActive() {
-		if (transaction != TransactionState.ACTIVE) {
-			throw new IllegalStateException();
-		}
-	}
-
 	@Override
 	public void rollback() {
-		verifyTransactionActive();
-		this.transaction = TransactionState.FAILED;
+		transaction.rollback();
 		this.localModel = null;
-		this.transaction = TransactionState.INACTIVE;
+		transaction.afterRollback();
 	}
 
 	@Override

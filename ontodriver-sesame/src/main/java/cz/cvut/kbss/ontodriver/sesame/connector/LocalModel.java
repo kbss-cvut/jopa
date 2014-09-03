@@ -24,8 +24,7 @@ class LocalModel {
 
 	void enhanceModel(Model model) {
 		// TODO
-		model.addAll(addedStatements);
-		model.removeAll(removedStatements);
+
 	}
 
 	void addStatements(Collection<Statement> statements) {

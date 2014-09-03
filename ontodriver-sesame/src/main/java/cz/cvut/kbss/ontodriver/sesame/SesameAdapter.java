@@ -29,7 +29,7 @@ class SesameAdapter implements Closeable {
 	private final ValueFactory valueFactory;
 	private final String language;
 	private boolean open;
-	private TransactionState transaction;
+	private Transaction transaction;
 
 	public SesameAdapter(Connector connector, Map<String, String> properties) {
 		assert connector != null;
@@ -38,7 +38,7 @@ class SesameAdapter implements Closeable {
 		this.valueFactory = connector.getValueFactory();
 		this.language = getLanguage(properties);
 		this.open = true;
-		this.transaction = TransactionState.INACTIVE;
+		this.transaction = new Transaction();
 	}
 
 	private String getLanguage(Map<String, String> properties) {
@@ -64,19 +64,15 @@ class SesameAdapter implements Closeable {
 	}
 
 	void commit() throws SesameDriverException {
-		if (transaction != TransactionState.ACTIVE) {
-			return;
-		}
+		transaction.commit();
 		connector.commit();
-		this.transaction = TransactionState.COMMITTED;
+		transaction.afterCommit();
 	}
 
 	void rollback() throws SesameDriverException {
-		if (transaction != TransactionState.ACTIVE) {
-			return;
-		}
+		transaction.rollback();
 		connector.rollback();
-		this.transaction = TransactionState.INACTIVE;
+		transaction.afterRollback();
 	}
 
 	boolean isConsistent(URI context) {
@@ -114,9 +110,9 @@ class SesameAdapter implements Closeable {
 	}
 
 	private void startTransactionIfNotActive() throws SesameDriverException {
-		if (transaction != TransactionState.ACTIVE) {
+		if (!transaction.isActive()) {
 			connector.begin();
-			this.transaction = TransactionState.ACTIVE;
+			transaction.begin();
 		}
 	}
 
