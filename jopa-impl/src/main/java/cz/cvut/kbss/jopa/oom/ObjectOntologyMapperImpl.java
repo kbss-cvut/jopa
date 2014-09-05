@@ -89,6 +89,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 			entityBuilder.setFieldValue(entity, field, axioms, et);
 		} catch (OntoDriverException e) {
 			throw new StorageAccessException(e);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new EntityReconstructionException(e);
 		}
 	}
 

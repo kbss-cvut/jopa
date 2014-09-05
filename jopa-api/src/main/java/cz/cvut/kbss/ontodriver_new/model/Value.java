@@ -29,6 +29,15 @@ public class Value<T> implements Serializable {
 		return value;
 	}
 
+	/**
+	 * Gets this value as string. </p>
+	 * 
+	 * @return Value as string
+	 */
+	public String stringValue() {
+		return (value != null ? value.toString() : "");
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

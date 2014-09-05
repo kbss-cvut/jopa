@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -24,6 +23,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
@@ -87,12 +87,15 @@ public class EntityConstructorTest {
 		MockitoAnnotations.initMocks(this);
 		TestEnvironmentUtils.initOWLClassAMocks(etAMock, strAttAMock, typesSpecMock);
 		when(etAMock.getIdentifier()).thenReturn(idAMock);
+		when(etAMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
 		when(idAMock.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
 		TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsSpecMock);
 		when(etBMock.getIdentifier()).thenReturn(idBMock);
+		when(etBMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
 		when(idBMock.getJavaField()).thenReturn(OWLClassB.class.getDeclaredField("uri"));
 		TestEnvironmentUtils.initOWLClassDMocks(etDMock, clsAAttMock);
 		when(etDMock.getIdentifier()).thenReturn(idDMock);
+		when(etDMock.getIRI()).thenReturn(IRI.create(OWLClassD.getClassIri()));
 		when(idDMock.getJavaField()).thenReturn(OWLClassD.class.getDeclaredField("uri"));
 		doAnswer(new Answer<Void>() {
 
@@ -186,7 +189,8 @@ public class EntityConstructorTest {
 		for (Axiom<?> a : properties) {
 			final String key = a.getAssertion().getIdentifier().toString();
 			assertTrue(res.getProperties().containsKey(key));
-			assertEquals(a.getValue().getValue().toString(), res.getProperties().get(key));
+			assertEquals(1, res.getProperties().get(key).size());
+			assertEquals(a.getValue().stringValue(), res.getProperties().get(key).iterator().next());
 		}
 		verify(mapperMock).registerInstance(PK, res, descriptor.getContext());
 	}
@@ -273,8 +277,15 @@ public class EntityConstructorTest {
 	}
 
 	@Test
-	public void testSetFieldValue() {
-		fail("Not yet implemented");
+	public void testSetFieldValue_DataProperty() throws Exception {
+		final Set<Axiom<?>> axioms = new HashSet<>();
+		axioms.add(getStringAttAssertionAxiom(OWLClassA.getStrAttField()));
+		final OWLClassA entityA = new OWLClassA();
+		entityA.setUri(PK);
+		assertNull(entityA.getStringAttribute());
+		constructor.setFieldValue(entityA, OWLClassA.getStrAttField(), axioms, etAMock);
+		assertNotNull(entityA.getStringAttribute());
+		assertEquals(STRING_ATT, entityA.getStringAttribute());
 	}
 
 	private static Set<String> initTypes() {

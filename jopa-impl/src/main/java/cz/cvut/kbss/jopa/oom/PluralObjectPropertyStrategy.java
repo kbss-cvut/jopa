@@ -14,7 +14,7 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
-class PluralObjectPropertyStrategy extends FieldStrategy {
+class PluralObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 
 	private final PluralAttribute<?, ?, ?> pluralAtt;
 	private Collection<Object> values;
@@ -27,7 +27,7 @@ class PluralObjectPropertyStrategy extends FieldStrategy {
 	}
 
 	private void initCollection() {
-		final PluralAttribute<?, ?, ?> plAtt = (PluralAttribute<?, ?, ?>) attribute;
+		final PluralAttribute<?, ?, ?> plAtt = (PluralAttribute<?, ?, ?>) pluralAtt;
 		switch (plAtt.getCollectionType()) {
 		case COLLECTION:
 		case LIST:
@@ -64,7 +64,7 @@ class PluralObjectPropertyStrategy extends FieldStrategy {
 
 	@Override
 	Assertion createAssertion() {
-		return Assertion.createObjectPropertyAssertion(attribute.getIRI().toURI(),
+		return Assertion.createObjectPropertyAssertion(pluralAtt.getIRI().toURI(),
 				attribute.isInferred());
 	}
 }

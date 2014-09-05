@@ -12,7 +12,7 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
-class SingularObjectPropertyStrategy extends FieldStrategy {
+class SingularObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 
 	private Object value;
 

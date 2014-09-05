@@ -4,10 +4,9 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
+import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -30,43 +29,58 @@ class EntityConstructor {
 		final T instance = et.getJavaType().newInstance();
 		mapper.setIdentifier(primaryKey, instance, et);
 		mapper.registerInstance(primaryKey, instance, descriptor.getContext());
-		final Set<String> types = new HashSet<>();
-		final Map<String, String> properties = new HashMap<>();
-		final Map<URI, Attribute<?, ?>> attributes = indexEntityAttributes(et);
-		final Map<Attribute<?, ?>, FieldStrategy> fieldLoaders = new HashMap<>(et.getAttributes()
-				.size());
+		final Map<URI, FieldSpecification<?, ?>> attributes = indexEntityAttributes(et);
+		final Map<FieldSpecification<?, ?>, FieldStrategy<? extends FieldSpecification<?, ?>>> fieldLoaders = new HashMap<>(
+				et.getAttributes().size() + 2);
 		for (Axiom<?> ax : axioms) {
-			if (isClassAssertion(ax)) {
-				if (!isEntityClass(ax, et.getJavaType())) {
-					types.add(ax.getValue().toString());
-				}
-			} else if (!attributes.containsKey(ax.getAssertion().getIdentifier())) {
-				properties.put(ax.getAssertion().getIdentifier().toString(), ax.getValue()
-						.toString());
-			} else {
-				final FieldStrategy fs = getFieldLoader(ax, attributes, fieldLoaders, et,
-						descriptor);
-				fs.addValueFromAxiom(ax);
+			final FieldStrategy<? extends FieldSpecification<?, ?>> fs = getFieldLoader(ax,
+					attributes, fieldLoaders, et, descriptor);
+			if (fs == null && isEntityClassAssertion(ax, et.getJavaType())) {
+				continue;
 			}
+			assert fs != null;
+			fs.addValueFromAxiom(ax);
 		}
-		if (et.getTypes() != null && !types.isEmpty()) {
-			setFieldValue(et.getTypes(), instance, types);
-		}
-		if (et.getProperties() != null && !properties.isEmpty()) {
-			setFieldValue(et.getProperties(), instance, properties);
-		}
-		for (FieldStrategy fs : fieldLoaders.values()) {
+		for (FieldStrategy<?> fs : fieldLoaders.values()) {
 			fs.buildInstanceFieldValue(instance);
 		}
 		return instance;
 	}
 
-	private Map<URI, Attribute<?, ?>> indexEntityAttributes(EntityType<?> et) {
-		final Map<URI, Attribute<?, ?>> atts = new HashMap<>(et.getAttributes().size());
+	private Map<URI, FieldSpecification<?, ?>> indexEntityAttributes(EntityType<?> et) {
+		final Map<URI, FieldSpecification<?, ?>> atts = new HashMap<>(et.getAttributes().size());
 		for (Attribute<?, ?> at : et.getAttributes()) {
 			atts.put(at.getIRI().toURI(), at);
 		}
+		if (et.getTypes() != null) {
+			atts.put(URI.create(CommonVocabulary.RDF_TYPE), et.getTypes());
+		}
 		return atts;
+	}
+
+	private FieldStrategy<? extends FieldSpecification<?, ?>> getFieldLoader(
+			Axiom<?> ax,
+			Map<URI, FieldSpecification<?, ?>> attributes,
+			Map<FieldSpecification<?, ?>, FieldStrategy<? extends FieldSpecification<?, ?>>> loaders,
+			EntityType<?> et, Descriptor desc) {
+		final URI attId = ax.getAssertion().getIdentifier();
+		FieldSpecification<?, ?> att = attributes.get(attId);
+		if (att == null) {
+			if (et.getProperties() != null) {
+				att = et.getProperties();
+			} else {
+				return null;
+			}
+		}
+		if (!loaders.containsKey(att)) {
+			loaders.put(att, FieldStrategy.createFieldStrategy(et, att,
+					desc.getAttributeDescriptor(att), mapper));
+		}
+		return loaders.get(att);
+	}
+
+	private boolean isEntityClassAssertion(Axiom<?> ax, Class<?> cls) {
+		return isClassAssertion(ax) && isEntityClass(ax, cls);
 	}
 
 	private boolean isClassAssertion(Axiom<?> ax) {
@@ -76,29 +90,27 @@ class EntityConstructor {
 	private boolean isEntityClass(Axiom<?> ax, Class<?> cls) {
 		final OWLClass clsAnn = cls.getAnnotation(OWLClass.class);
 		assert clsAnn != null;
-		final String val = ax.getValue().toString();
+		final String val = ax.getValue().stringValue();
 		return val.equals(clsAnn.iri());
 	}
 
-	private FieldStrategy getFieldLoader(Axiom<?> ax, Map<URI, Attribute<?, ?>> attributes,
-			Map<Attribute<?, ?>, FieldStrategy> loaders, EntityType<?> et, Descriptor desc) {
-		final URI attId = ax.getAssertion().getIdentifier();
-		final Attribute<?, ?> att = attributes.get(attId);
-		if (!loaders.containsKey(att)) {
-			loaders.put(attributes.get(attId), FieldStrategy.createFieldStrategy(et, att,
-					desc.getAttributeDescriptor(att), mapper));
-		}
-		return loaders.get(att);
-	}
-
-	private void setFieldValue(FieldSpecification<?, ?> fieldSpec, Object instance, Object value)
+	<T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et)
 			throws IllegalArgumentException, IllegalAccessException {
-		final Field field = fieldSpec.getJavaField();
-		field.setAccessible(true);
-		field.set(instance, value);
+		final FieldSpecification<?, ?> fieldSpec = getFieldSpecification(field, et);
+		final FieldStrategy<?> fs = FieldStrategy.createFieldStrategy(et, fieldSpec, null, mapper);
+		for (Axiom<?> ax : axioms) {
+			fs.addValueFromAxiom(ax);
+		}
+		fs.buildInstanceFieldValue(entity);
 	}
 
-	<T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et) {
-		// TODO
+	private FieldSpecification<?, ?> getFieldSpecification(Field field, EntityType<?> et) {
+		if (et.getTypes() != null && et.getTypes().getJavaField().equals(field)) {
+			return et.getTypes();
+		} else if (et.getProperties() != null && et.getProperties().getJavaField().equals(field)) {
+			return et.getProperties();
+		} else {
+			return et.getAttribute(field.getName());
+		}
 	}
 }

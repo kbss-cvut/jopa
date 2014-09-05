@@ -1,5 +1,7 @@
 package cz.cvut.kbss.jopa.oom;
 
+import static cz.cvut.kbss.jopa.utils.CommonConstants.PROPERTIES_URI;
+
 import java.lang.reflect.Field;
 import java.net.URI;
 
@@ -13,8 +15,6 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
 class AxiomDescriptorFactory {
-
-	private static final URI PROPERTIES_URI = URI.create("http://jopa.org/properties");
 
 	AxiomDescriptor createForEntityLoading(URI primaryKey, Descriptor entityDescriptor,
 			EntityType<?> et) {
@@ -70,12 +70,26 @@ class AxiomDescriptorFactory {
 			EntityType<?> et) {
 		final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(primaryKey));
 		FieldSpecification<?, ?> fieldSpec = getFieldSpecification(field, et);
-		// TODO
+		Assertion assertion;
+		if (et.getTypes() != null && fieldSpec.equals(et.getTypes())) {
+			assertion = Assertion.createClassAssertion(et.getTypes().isInferred());
+		} else if (et.getProperties() != null && fieldSpec.equals(et.getProperties())) {
+			assertion = Assertion.createPropertyAssertion(PROPERTIES_URI, et.getProperties()
+					.isInferred());
+		} else {
+			assertion = createAssertion((Attribute<?, ?>) fieldSpec);
+		}
+		addAssertionToDescriptor(entityDescriptor, fieldSpec, descriptor, assertion);
 		return descriptor;
 	}
 
 	private FieldSpecification<?, ?> getFieldSpecification(Field field, EntityType<?> et) {
-		// TODO Auto-generated method stub
-		return null;
+		if (et.getTypes() != null && et.getTypes().getJavaField().equals(field)) {
+			return et.getTypes();
+		} else if (et.getProperties() != null && et.getProperties().getJavaField().equals(field)) {
+			return et.getProperties();
+		} else {
+			return et.getAttribute(field.getName());
+		}
 	}
 }

@@ -6,20 +6,22 @@ import java.util.Collection;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
-abstract class FieldStrategy {
+abstract class FieldStrategy<T extends FieldSpecification<?, ?>> {
 
 	final EntityType<?> et;
-	final Attribute<?, ?> attribute;
+	final T attribute;
 	final Descriptor descriptor;
 	final ObjectOntologyMapperImpl mapper;
 
-	FieldStrategy(EntityType<?> et, Attribute<?, ?> att, Descriptor descriptor,
-			ObjectOntologyMapperImpl mapper) {
+	FieldStrategy(EntityType<?> et, T att, Descriptor descriptor, ObjectOntologyMapperImpl mapper) {
 		this.et = et;
 		this.attribute = att;
 		this.descriptor = descriptor;
@@ -36,7 +38,9 @@ abstract class FieldStrategy {
 	void setValueOnInstance(Object instance, Object value) throws IllegalArgumentException,
 			IllegalAccessException {
 		final Field f = attribute.getJavaField();
-		f.setAccessible(true);
+		if (!f.isAccessible()) {
+			f.setAccessible(true);
+		}
 		f.set(instance, value);
 	}
 
@@ -87,25 +91,32 @@ abstract class FieldStrategy {
 	 */
 	abstract Assertion createAssertion();
 
-	static FieldStrategy createFieldStrategy(EntityType<?> et, Attribute<?, ?> att,
-			Descriptor descriptor, ObjectOntologyMapperImpl mapper) {
-		if (att.isCollection()) {
-			switch (att.getPersistentAttributeType()) {
+	static FieldStrategy<? extends FieldSpecification<?, ?>> createFieldStrategy(EntityType<?> et,
+			FieldSpecification<?, ?> att, Descriptor descriptor, ObjectOntologyMapperImpl mapper) {
+		if (att instanceof TypesSpecification<?, ?>) {
+			return new TypesFieldStrategy(et, (TypesSpecification<?, ?>) att, descriptor, mapper);
+		} else if (att instanceof PropertiesSpecification<?, ?>) {
+			return new PropertiesFieldStrategy(et, (PropertiesSpecification<?, ?>) att, descriptor,
+					mapper);
+		}
+		final Attribute<?, ?> attribute = (Attribute<?, ?>) att;
+		if (attribute.isCollection()) {
+			switch (attribute.getPersistentAttributeType()) {
 			case ANNOTATION:
 			case DATA:
 				throw new NotYetImplementedException();
 			case OBJECT:
-				return new PluralObjectPropertyStrategy(et, att, descriptor, mapper);
+				return new PluralObjectPropertyStrategy(et, attribute, descriptor, mapper);
 			default:
 				break;
 			}
 		} else {
-			switch (att.getPersistentAttributeType()) {
+			switch (attribute.getPersistentAttributeType()) {
 			case ANNOTATION:
 			case DATA:
-				return new SingularDataPropertyStrategy(et, att, descriptor, mapper);
+				return new SingularDataPropertyStrategy(et, attribute, descriptor, mapper);
 			case OBJECT:
-				return new SingularObjectPropertyStrategy(et, att, descriptor, mapper);
+				return new SingularObjectPropertyStrategy(et, attribute, descriptor, mapper);
 			default:
 				break;
 			}

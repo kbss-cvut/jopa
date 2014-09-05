@@ -2,9 +2,9 @@ package cz.cvut.kbss.jopa.oom;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
@@ -31,6 +31,7 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.utils.CommonConstants;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
@@ -83,6 +84,8 @@ public class AxiomDescriptorFactoryTest {
 		TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsSpecMock);
 		when(etDMock.getAttributes()).thenReturn(
 				Collections.<Attribute<? super OWLClassD, ?>> singleton(owlclassAAttMock));
+		when(etDMock.getAttribute(OWLClassD.getOwlClassAField().getName())).thenReturn(
+				owlclassAAttMock);
 		when(owlclassAAttMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
 		when(owlclassAAttMock.getIRI()).thenReturn(IRI.create(owlclassAAttUri.toString()));
 		when(owlclassAAttMock.getPersistentAttributeType()).thenReturn(
@@ -174,8 +177,49 @@ public class AxiomDescriptorFactoryTest {
 	}
 
 	@Test
-	public void testCreateForFieldLoading() {
-		fail("Not yet implemented");
+	public void testCreateForFieldLoadingDataProperty() throws Exception {
+		final Descriptor desc = new EntityDescriptor();
+		when(strAttAMock.getFetchType()).thenReturn(FetchType.LAZY);
+		final AxiomDescriptor res = factory.createForFieldLoading(PK, OWLClassA.getStrAttField(),
+				desc, etAMock);
+		assertNotNull(res);
+		assertEquals(1, res.getAssertions().size());
+		assertTrue(res.getAssertions().contains(
+				Assertion.createDataPropertyAssertion(stringAttAUri, false)));
 	}
 
+	@Test
+	public void testCreateForFieldLoadingObjectPropertyInContext() throws Exception {
+		final Descriptor desc = new EntityDescriptor();
+		desc.addAttributeDescriptor(OWLClassD.getOwlClassAField(), new EntityDescriptor(CONTEXT));
+		final AxiomDescriptor res = factory.createForFieldLoading(PK,
+				OWLClassD.getOwlClassAField(), desc, etDMock);
+		assertEquals(1, res.getAssertions().size());
+		final Assertion as = res.getAssertions().iterator().next();
+		assertEquals(Assertion.createObjectPropertyAssertion(owlclassAAttUri, false), as);
+		assertEquals(CONTEXT, res.getAssertionContext(as));
+	}
+
+	@Test
+	public void testCreateForFieldLoadingTypes() throws Exception {
+		final Descriptor desc = new EntityDescriptor(CONTEXT);
+		final AxiomDescriptor res = factory.createForFieldLoading(PK, OWLClassA.getTypesField(),
+				desc, etAMock);
+		assertEquals(1, res.getAssertions().size());
+		final Assertion as = res.getAssertions().iterator().next();
+		assertEquals(Assertion.createClassAssertion(typesSpecMock.isInferred()), as);
+		assertEquals(CONTEXT, res.getAssertionContext(as));
+	}
+
+	@Test
+	public void testCreateForFieldLoadingProperties() throws Exception {
+		final Descriptor desc = new EntityDescriptor();
+		final AxiomDescriptor res = factory.createForFieldLoading(PK,
+				OWLClassB.getPropertiesField(), desc, etBMock);
+		assertEquals(1, res.getAssertions().size());
+		final Assertion as = res.getAssertions().iterator().next();
+		assertEquals(
+				Assertion.createPropertyAssertion(CommonConstants.PROPERTIES_URI,
+						propsSpecMock.isInferred()), as);
+	}
 }
