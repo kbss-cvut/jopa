@@ -45,9 +45,9 @@ class AxiomDescriptorFactory {
 			FieldSpecification<?, ?> att, final AxiomDescriptor descriptor,
 			final Assertion assertion) {
 		descriptor.addAssertion(assertion);
-		final URI typesContext = entityDescriptor.getAttributeDescriptor(att).getContext();
-		if (typesContext != null) {
-			descriptor.setAssertionContext(assertion, typesContext);
+		final URI attContext = entityDescriptor.getAttributeDescriptor(att).getContext();
+		if (attContext != null) {
+			descriptor.setAssertionContext(assertion, attContext);
 		}
 	}
 

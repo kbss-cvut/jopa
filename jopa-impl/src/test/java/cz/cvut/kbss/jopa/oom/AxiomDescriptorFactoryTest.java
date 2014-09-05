@@ -189,7 +189,7 @@ public class AxiomDescriptorFactoryTest {
 	}
 
 	@Test
-	public void testCreateForFieldLoadingObjectPropertyInContext() throws Exception {
+	public void testCreateForFieldLoadingObjectPropertyInEntityContext() throws Exception {
 		final Descriptor desc = new EntityDescriptor();
 		desc.addAttributeDescriptor(OWLClassD.getOwlClassAField(), new EntityDescriptor(CONTEXT));
 		final AxiomDescriptor res = factory.createForFieldLoading(PK,

@@ -94,10 +94,11 @@ class EntityConstructor {
 		return val.equals(clsAnn.iri());
 	}
 
-	<T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et)
-			throws IllegalArgumentException, IllegalAccessException {
+	<T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,
+			Descriptor entityDescriptor) throws IllegalArgumentException, IllegalAccessException {
 		final FieldSpecification<?, ?> fieldSpec = getFieldSpecification(field, et);
-		final FieldStrategy<?> fs = FieldStrategy.createFieldStrategy(et, fieldSpec, null, mapper);
+		final FieldStrategy<?> fs = FieldStrategy.createFieldStrategy(et, fieldSpec,
+				entityDescriptor.getAttributeDescriptor(fieldSpec), mapper);
 		for (Axiom<?> ax : axioms) {
 			fs.addValueFromAxiom(ax);
 		}

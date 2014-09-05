@@ -17,6 +17,9 @@ import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
@@ -24,6 +27,7 @@ import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassJ;
 
 public final class TestEnvironmentUtils {
 
@@ -97,6 +101,7 @@ public final class TestEnvironmentUtils {
 	public static void initOWLClassAMocks(EntityType<OWLClassA> etMock, Attribute strAttMock,
 			TypesSpecification typesMock) throws NoSuchFieldException, SecurityException {
 		when(etMock.getJavaType()).thenReturn(OWLClassA.class);
+		when(etMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
 		when(etMock.getAttribute(OWLClassA.getStrAttField().getName())).thenReturn(strAttMock);
 		when(etMock.getTypes()).thenReturn(typesMock);
 		when(etMock.getAttributes()).thenReturn(
@@ -115,6 +120,7 @@ public final class TestEnvironmentUtils {
 	public static void initOWLClassBMocks(EntityType<OWLClassB> etMock, Attribute strAttMock,
 			PropertiesSpecification propsMock) throws NoSuchFieldException, SecurityException {
 		when(etMock.getJavaType()).thenReturn(OWLClassB.class);
+		when(etMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
 		when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
 		when(etMock.getProperties()).thenReturn(propsMock);
 		when(etMock.getAttributes()).thenReturn(
@@ -133,6 +139,7 @@ public final class TestEnvironmentUtils {
 	public static void initOWLClassDMocks(EntityType<OWLClassD> etMock, Attribute clsAMock)
 			throws NoSuchFieldException, SecurityException {
 		when(etMock.getJavaType()).thenReturn(OWLClassD.class);
+		when(etMock.getIRI()).thenReturn(IRI.create(OWLClassD.getClassIri()));
 		when(etMock.getAttribute(OWLClassD.getOwlClassAField().getName())).thenReturn(clsAMock);
 		when(etMock.getAttributes()).thenReturn(
 				Collections.<Attribute<? super OWLClassD, ?>> singleton(clsAMock));
@@ -142,5 +149,25 @@ public final class TestEnvironmentUtils {
 				.iri();
 		when(clsAMock.getIRI()).thenReturn(IRI.create(clsAIri));
 		when(clsAMock.getJavaType()).thenReturn(OWLClassA.class);
+	}
+
+	public static void initOWLClassJMocks(EntityType<OWLClassJ> etMock, PluralAttribute setAMock,
+			Identifier idMock) throws NoSuchFieldException, SecurityException {
+		when(etMock.getJavaType()).thenReturn(OWLClassJ.class);
+		when(etMock.getIRI()).thenReturn(IRI.create(OWLClassJ.getClassIri()));
+		when(etMock.getAttribute(OWLClassJ.getOwlClassAField().getName())).thenReturn(setAMock);
+		when(etMock.getAttributes()).thenReturn(
+				Collections.<Attribute<? super OWLClassJ, ?>> singleton(setAMock));
+		when(setAMock.getJavaField()).thenReturn(OWLClassJ.getOwlClassAField());
+		when(setAMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
+		final String clsAIri = OWLClassJ.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
+				.iri();
+		when(setAMock.getIRI()).thenReturn(IRI.create(clsAIri));
+		when(setAMock.getJavaType()).thenReturn(Set.class);
+		when(setAMock.isCollection()).thenReturn(Boolean.TRUE);
+		when(setAMock.getCollectionType()).thenReturn(CollectionType.SET);
+		when(setAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
+		when(etMock.getIdentifier()).thenReturn(idMock);
+		when(idMock.getJavaField()).thenReturn(OWLClassJ.class.getDeclaredField("uri"));
 	}
 }

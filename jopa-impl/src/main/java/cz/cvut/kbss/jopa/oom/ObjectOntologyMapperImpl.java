@@ -86,7 +86,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 			if (axioms.isEmpty()) {
 				return;
 			}
-			entityBuilder.setFieldValue(entity, field, axioms, et);
+			entityBuilder.setFieldValue(entity, field, axioms, et, descriptor);
 		} catch (OntoDriverException e) {
 			throw new StorageAccessException(e);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
