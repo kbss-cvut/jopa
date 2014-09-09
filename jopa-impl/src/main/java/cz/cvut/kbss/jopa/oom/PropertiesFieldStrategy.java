@@ -1,16 +1,18 @@
 package cz.cvut.kbss.jopa.oom;
 
+import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.utils.CommonConstants;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -58,16 +60,40 @@ public class PropertiesFieldStrategy extends FieldStrategy<PropertiesSpecificati
 	}
 
 	@Override
-	Collection<Value<?>> extractAttributeValuesFromInstance(Object instance)
+	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
 			throws IllegalArgumentException, IllegalAccessException {
-		// TODO Auto-generated method stub
-		return null;
+		final Object val = extractFieldValueFromInstance(instance);
+		if (val == null) {
+			return Collections.emptyMap();
+		}
+		if (!(val instanceof Map)) {
+			throw new EntityDeconstructionException("The properties field has to be a map!");
+		}
+		final Map<?, ?> props = (Map<?, ?>) val;
+		final Map<Assertion, Collection<Value<?>>> result = new HashMap<>(props.size());
+		for (Entry<?, ?> e : props.entrySet()) {
+			if (e.getValue() == null) {
+				continue;
+			}
+			if (!(e.getValue() instanceof Set)) {
+				throw new EntityDeconstructionException(
+						"The properties map value element has to be a set!");
+			}
+			final Assertion assertion = Assertion.createPropertyAssertion(
+					URI.create(e.getKey().toString()), attribute.isInferred());
+			final Set<?> propertyValue = (Set<?>) e.getValue();
+			final Set<Value<?>> values = new HashSet<>(propertyValue.size());
+			for (Object v : propertyValue) {
+				values.add(new Value<>(v));
+			}
+			result.put(assertion, values);
+		}
+		return result;
 	}
 
 	@Override
 	Assertion createAssertion() {
-		return Assertion.createPropertyAssertion(CommonConstants.PROPERTIES_URI,
-				attribute.isInferred());
+		return Assertion.createUnspecifiedPropertyAssertion(attribute.isInferred());
 	}
 
 }

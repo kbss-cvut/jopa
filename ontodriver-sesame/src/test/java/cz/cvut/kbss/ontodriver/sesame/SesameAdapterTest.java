@@ -410,11 +410,12 @@ public class SesameAdapterTest {
 	@Test
 	public void testFindEntityWithProperties() throws Exception {
 		final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
+		desc.addAssertion(Assertion.createUnspecifiedPropertyAssertion(false));
 		final String propertyOne = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#objectProperty";
 		final String propertyTwo = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#dataProperty";
 		final Map<Assertion, List<Statement>> statements = new HashMap<>();
+		final Collection<Statement> stmts = new ArrayList<>();
 		final Assertion asOne = Assertion.createPropertyAssertion(URI.create(propertyOne), false);
-		desc.addAssertion(asOne);
 		statements.put(asOne, new ArrayList<Statement>());
 		statements.get(asOne).add(
 				vf.createStatement(subjectUri, vf.createURI(propertyOne),
@@ -423,21 +424,18 @@ public class SesameAdapterTest {
 				vf.createStatement(subjectUri, vf.createURI(propertyOne),
 						vf.createURI("http://krizik.felk.cvut.cz/ontologies/jopa#entityTwo")));
 		final Assertion asTwo = Assertion.createPropertyAssertion(URI.create(propertyTwo), false);
-		desc.addAssertion(asTwo);
 		statements.put(asTwo, new ArrayList<Statement>());
 		statements.get(asTwo).add(
 				vf.createStatement(subjectUri, vf.createURI(propertyTwo), vf.createLiteral(false)));
+		for (Assertion a : statements.keySet()) {
+			stmts.addAll(statements.get(a));
+		}
 		when(
-				connectorMock.findStatements(subjectUri, vf.createURI(propertyOne), null, false,
-						(org.openrdf.model.URI) null)).thenReturn(statements.get(asOne));
-		when(
-				connectorMock.findStatements(subjectUri, vf.createURI(propertyTwo), null, false,
-						(org.openrdf.model.URI) null)).thenReturn(statements.get(asTwo));
+				connectorMock.findStatements(subjectUri, null, null, false,
+						(org.openrdf.model.URI) null)).thenReturn(stmts);
 
 		final Collection<Axiom<?>> res = adapter.find(desc);
-		verify(connectorMock).findStatements(subjectUri, vf.createURI(propertyOne), null, false,
-				(org.openrdf.model.URI) null);
-		verify(connectorMock).findStatements(subjectUri, vf.createURI(propertyTwo), null, false,
+		verify(connectorMock).findStatements(subjectUri, null, null, false,
 				(org.openrdf.model.URI) null);
 		assertEquals(statements.get(asOne).size() + statements.get(asTwo).size(), res.size());
 		for (Axiom<?> ax : res) {

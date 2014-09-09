@@ -2,6 +2,8 @@ package cz.cvut.kbss.ontodriver_new.model;
 
 import java.net.URI;
 
+import cz.cvut.kbss.jopa.model.annotations.Properties;
+
 /**
  * Base assertion axiom class. </p>
  * 
@@ -89,6 +91,23 @@ public abstract class Assertion extends NamedResource {
 	 */
 	public static Assertion createClassAssertion(boolean isInferred) {
 		return new ClassAssertion(isInferred);
+	}
+
+	/**
+	 * Creates a property assertion without specifying the assertion identifier.
+	 * </p>
+	 * 
+	 * This is especially useful for {@link Properties} fields. </p>
+	 * 
+	 * Note that the returned instances are all equals as long as their inferred
+	 * status is the same.
+	 * 
+	 * @param isInferred
+	 *            Whether the assertion uses inferred values
+	 * @return Assertion
+	 */
+	public static Assertion createUnspecifiedPropertyAssertion(boolean isInferred) {
+		return new PropertyAssertion(isInferred);
 	}
 
 	/**

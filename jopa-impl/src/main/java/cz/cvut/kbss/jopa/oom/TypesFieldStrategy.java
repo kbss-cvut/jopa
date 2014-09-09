@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -51,28 +52,35 @@ public class TypesFieldStrategy extends FieldStrategy<TypesSpecification<?, ?>> 
 	}
 
 	@Override
-	Collection<Value<?>> extractAttributeValuesFromInstance(Object instance)
+	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
 			throws IllegalArgumentException, IllegalAccessException {
-		checkFieldTypeCompatibility();
 		final Field typesField = attribute.getJavaField();
 		if (!typesField.isAccessible()) {
 			typesField.setAccessible(true);
 		}
+		final Object val = extractFieldValueFromInstance(instance);
+		if (val == null) {
+			return Collections.emptyMap();
+		}
+		if (!(val instanceof Set)) {
+			throw new EntityDeconstructionException(
+					"The types field is not of a valid type. Expected Set<String>.");
+		}
 		// This cast is fine, it was checked by checkFieldCompatibility
-		@SuppressWarnings("unchecked")
-		final Set<String> types = (Set<String>) typesField.get(instance);
-		if (types == null || types.isEmpty()) {
-			return Collections.emptySet();
+		final Set<?> types = (Set<?>) typesField.get(instance);
+		if (types.isEmpty()) {
+			return Collections.emptyMap();
 		}
 		final Set<Value<?>> result = new HashSet<>(types.size());
-		for (String type : types) {
+		for (Object type : types) {
 			try {
-				result.add(new Value<URI>(URI.create(type)));
+				result.add(new Value<URI>(URI.create(type.toString())));
 			} catch (IllegalArgumentException e) {
 				throw new EntityDeconstructionException("Type " + type + " is not a valid URI.", e);
 			}
 		}
-		return result;
+		return Collections
+				.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(), result);
 	}
 
 	@Override

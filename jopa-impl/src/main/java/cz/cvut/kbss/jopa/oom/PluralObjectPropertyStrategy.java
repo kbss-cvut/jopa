@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -57,7 +58,7 @@ class PluralObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	}
 
 	@Override
-	Collection<Value<?>> extractAttributeValuesFromInstance(Object instance) {
+	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance) {
 		// TODO Auto-generated method stub
 		return null;
 	}

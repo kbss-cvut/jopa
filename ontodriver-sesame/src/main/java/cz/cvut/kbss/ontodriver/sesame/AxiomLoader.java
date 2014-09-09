@@ -27,6 +27,7 @@ class AxiomLoader {
 	private ValueFactory valueFactory;
 
 	private Map<URI, Assertion> propertyToAssertion;
+	private Assertion unspecifiedProperty;
 
 	public AxiomLoader(Connector connector, ValueFactory valueFactory) {
 		this.connector = connector;
@@ -46,14 +47,24 @@ class AxiomLoader {
 		final Resource subject = SesameUtils.toSesameUri(descriptor.getSubject().getIdentifier(),
 				valueFactory);
 		for (Assertion assertion : descriptor.getAssertions()) {
-			final URI property = SesameUtils.toSesameUri(assertion.getIdentifier(), valueFactory);
-			propertyToAssertion.put(property, assertion);
+			final URI property = getPropertyUri(assertion);
+
 			final URI context = SesameUtils.toSesameUri(descriptor.getAssertionContext(assertion),
 					valueFactory);
 			result.addAll(connector.findStatements(subject, property, null, assertion.isInferred(),
 					context));
 		}
 		return result;
+	}
+
+	private URI getPropertyUri(Assertion assertion) {
+		if (assertion.equals(Assertion.createUnspecifiedPropertyAssertion(assertion.isInferred()))) {
+			this.unspecifiedProperty = assertion;
+			return null;
+		}
+		final URI property = SesameUtils.toSesameUri(assertion.getIdentifier(), valueFactory);
+		propertyToAssertion.put(property, assertion);
+		return property;
 	}
 
 	private List<Axiom<?>> transformStatementsToAxioms(Collection<Statement> statements) {
@@ -75,7 +86,14 @@ class AxiomLoader {
 					NamedResource.create(SesameUtils.toJavaUri(stmt.getSubject())));
 		}
 		final NamedResource subject = knownSubjects.get(stmt.getSubject());
-		final Assertion assertion = propertyToAssertion.get(stmt.getPredicate());
+		Assertion assertion = propertyToAssertion.get(stmt.getPredicate());
+		if (assertion == null) {
+			if (unspecifiedProperty == null) {
+				return null;
+			} else {
+				assertion = unspecifiedProperty;
+			}
+		}
 		Value<?> val = null;
 		switch (assertion.getType()) {
 		case ANNOTATION_PROPERTY:
@@ -93,6 +111,8 @@ class AxiomLoader {
 			val = new Value<java.net.URI>(SesameUtils.toJavaUri((Resource) stmt.getObject()));
 			break;
 		case PROPERTY:
+			assertion = Assertion.createPropertyAssertion(
+					SesameUtils.toJavaUri(stmt.getPredicate()), assertion.isInferred());
 			val = resovelValue(stmt.getObject());
 			break;
 

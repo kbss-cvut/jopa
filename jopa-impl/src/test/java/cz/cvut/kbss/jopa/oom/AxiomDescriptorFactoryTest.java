@@ -31,7 +31,6 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
-import cz.cvut.kbss.jopa.utils.CommonConstants;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
@@ -218,8 +217,6 @@ public class AxiomDescriptorFactoryTest {
 				OWLClassB.getPropertiesField(), desc, etBMock);
 		assertEquals(1, res.getAssertions().size());
 		final Assertion as = res.getAssertions().iterator().next();
-		assertEquals(
-				Assertion.createPropertyAssertion(CommonConstants.PROPERTIES_URI,
-						propsSpecMock.isInferred()), as);
+		assertEquals(Assertion.createUnspecifiedPropertyAssertion(propsSpecMock.isInferred()), as);
 	}
 }

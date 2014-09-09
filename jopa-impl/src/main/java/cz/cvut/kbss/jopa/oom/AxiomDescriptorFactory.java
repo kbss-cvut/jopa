@@ -1,7 +1,5 @@
 package cz.cvut.kbss.jopa.oom;
 
-import static cz.cvut.kbss.jopa.utils.CommonConstants.PROPERTIES_URI;
-
 import java.lang.reflect.Field;
 import java.net.URI;
 
@@ -26,7 +24,7 @@ class AxiomDescriptorFactory {
 			addAssertionToDescriptor(entityDescriptor, et.getTypes(), descriptor, typesAssertion);
 		}
 		if (et.getProperties() != null && et.getProperties().getFetchType() != FetchType.LAZY) {
-			final Assertion propsAssertion = Assertion.createPropertyAssertion(PROPERTIES_URI, et
+			final Assertion propsAssertion = Assertion.createUnspecifiedPropertyAssertion(et
 					.getProperties().isInferred());
 			addAssertionToDescriptor(entityDescriptor, et.getProperties(), descriptor,
 					propsAssertion);
@@ -74,7 +72,7 @@ class AxiomDescriptorFactory {
 		if (et.getTypes() != null && fieldSpec.equals(et.getTypes())) {
 			assertion = Assertion.createClassAssertion(et.getTypes().isInferred());
 		} else if (et.getProperties() != null && fieldSpec.equals(et.getProperties())) {
-			assertion = Assertion.createPropertyAssertion(PROPERTIES_URI, et.getProperties()
+			assertion = Assertion.createUnspecifiedPropertyAssertion(et.getProperties()
 					.isInferred());
 		} else {
 			assertion = createAssertion((Attribute<?, ?>) fieldSpec);

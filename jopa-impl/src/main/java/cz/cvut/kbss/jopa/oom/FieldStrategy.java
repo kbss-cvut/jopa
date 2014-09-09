@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -37,11 +38,25 @@ abstract class FieldStrategy<T extends FieldSpecification<?, ?>> {
 	 */
 	void setValueOnInstance(Object instance, Object value) throws IllegalArgumentException,
 			IllegalAccessException {
-		final Field f = attribute.getJavaField();
-		if (!f.isAccessible()) {
-			f.setAccessible(true);
+		final Field field = attribute.getJavaField();
+		if (!field.isAccessible()) {
+			field.setAccessible(true);
 		}
-		f.set(instance, value);
+		field.set(instance, value);
+	}
+
+	/**
+	 * Extracts the attribute value from the specified instance. </p>
+	 * 
+	 * @return Attribute value, possibly {@code null}
+	 */
+	Object extractFieldValueFromInstance(Object instance) throws IllegalArgumentException,
+			IllegalAccessException {
+		final Field field = attribute.getJavaField();
+		if (!field.isAccessible()) {
+			field.setAccessible(true);
+		}
+		return field.get(instance);
 	}
 
 	/**
@@ -74,13 +89,14 @@ abstract class FieldStrategy<T extends FieldSpecification<?, ?>> {
 	 * 
 	 * @param instance
 	 *            The instance to extract values from
-	 * @return Collection of values, empty collection if there are none
+	 * @return Map of values mapped by assertion, empty collection if there are
+	 *         no values
 	 * @throws IllegalArgumentException
 	 *             Access error
 	 * @throws IllegalAccessException
 	 *             Access error
 	 */
-	abstract Collection<Value<?>> extractAttributeValuesFromInstance(Object instance)
+	abstract Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
 			throws IllegalArgumentException, IllegalAccessException;
 
 	/**

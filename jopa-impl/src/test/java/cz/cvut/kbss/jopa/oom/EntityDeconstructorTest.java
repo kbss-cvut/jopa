@@ -272,9 +272,8 @@ public class EntityDeconstructorTest {
 					URI.create(e.getKey()), false));
 			assertEquals(expVals.size(), vals.size());
 			int i = 0;
-			for (String expVal : expVals) {
-				final Value<?> val = vals.get(i++);
-				assertEquals(expVal, val.getValue());
+			for (Value<?> val : vals) {
+				assertTrue(expVals.contains(val.getValue()));
 			}
 		}
 	}

@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -36,19 +37,15 @@ class SingularObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	}
 
 	@Override
-	Collection<Value<?>> extractAttributeValuesFromInstance(Object instance)
+	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
 			throws IllegalArgumentException, IllegalAccessException {
-		final Field field = attribute.getJavaField();
-		if (!field.isAccessible()) {
-			field.setAccessible(true);
-		}
-		final Object value = field.get(instance);
+		final Object value = extractFieldValueFromInstance(instance);
 		if (value == null) {
-			return Collections.emptySet();
+			return Collections.emptyMap();
 		}
 		final EntityType<?> valEt = mapper.getEntityType(value.getClass());
 		if (valEt == null) {
-			throw new EntityDeconstructionException("Value of field " + field
+			throw new EntityDeconstructionException("Value of field " + attribute.getJavaField()
 					+ " is not a recognized entity.");
 		}
 		final Field idField = valEt.getIdentifier().getJavaField();
@@ -56,7 +53,8 @@ class SingularObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 			idField.setAccessible(true);
 		}
 		final Object id = idField.get(value);
-		return Collections.<Value<?>> singleton(new Value<>(id));
+		return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
+				Collections.<Value<?>> singleton(new Value<>(id)));
 	}
 
 	@Override

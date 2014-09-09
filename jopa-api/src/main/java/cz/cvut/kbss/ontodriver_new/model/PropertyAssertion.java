@@ -1,12 +1,19 @@
 package cz.cvut.kbss.ontodriver_new.model;
 
 import java.net.URI;
+import java.util.Random;
 
 class PropertyAssertion extends Assertion {
 
+	static final URI UNSPECIFIED_PROPERTY = URI.create("http://" + new Random().nextInt());
+
 	private static final long serialVersionUID = 8288252700890646040L;
 
-	public PropertyAssertion(URI identifier, boolean isInferred) {
+	PropertyAssertion(boolean isInferred) {
+		super(UNSPECIFIED_PROPERTY, isInferred);
+	}
+
+	PropertyAssertion(URI identifier, boolean isInferred) {
 		super(identifier, isInferred);
 	}
 
