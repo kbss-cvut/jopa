@@ -90,6 +90,13 @@ public class TestRetrieveOperations {
 				properties);
 		runner.refreshNotManaged(em, context());
 	}
+	
+	@Test
+	public void testRetrieveDifferentType() {
+		em = TestEnvironment.getPersistenceConnector("OwldbRetrieveDiffentType", storage, false,
+				properties);
+		runner.retrieveDifferentType(em, context());
+	}
 
 	private URI context() {
 		return null;

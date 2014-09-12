@@ -134,4 +134,15 @@ public class RetrieveOperationsRunner extends BaseRunner {
 		em.refresh(newA);
 		fail("This line should not have been reached.");
 	}
+
+	public void retrieveDifferentType(EntityManager em, URI ctx) {
+		logger.config("Test: persist entity but try to retrieve it as a different type.");
+		final EntityDescriptor aDescriptor = new EntityDescriptor(ctx);
+		em.getTransaction().begin();
+		em.persist(entityA, aDescriptor);
+		em.getTransaction().commit();
+
+		final OWLClassB res = em.find(OWLClassB.class, entityA.getUri(), aDescriptor);
+		assertNull(res);
+	}
 }

@@ -94,7 +94,6 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		}
 		final T entity = loadEntity(cls, uri, descriptor);
 
-		assert entity != null;
 		return entity;
 	}
 
@@ -415,6 +414,22 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 	}
 
 	/**
+	 * Returns true if the individual belongs to class represented by the
+	 * {@code type} argument.
+	 * 
+	 * @param individual
+	 *            Individual
+	 * @param type
+	 *            Expected type
+	 * @param context
+	 *            Context to search in
+	 */
+	private boolean isIndividualOfCorrectType(URI individual, EntityType<?> et, URI context) {
+		final URI clsUri = SesameUtils.toSesameUri(et.getIRI().toURI(), valueFactory);
+		return (!storage.filter(individual, RDF.TYPE, clsUri, false, context).isEmpty());
+	}
+
+	/**
 	 * Loads an instance of the specified class with the specified primary key.
 	 * 
 	 * @param cls
@@ -435,6 +450,10 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 		final EntityType<T> type = getEntityType(cls);
 		if (type == null) {
 			throw new IllegalArgumentException("Class " + cls + " is not a registered entity type.");
+		}
+		if (!isIndividualOfCorrectType(uri, type,
+				SesameUtils.toSesameUri(descriptor.getContext(), valueFactory))) {
+			return null;
 		}
 
 		T instance = null;

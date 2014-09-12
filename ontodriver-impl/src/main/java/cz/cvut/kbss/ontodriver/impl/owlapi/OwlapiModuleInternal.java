@@ -365,6 +365,26 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 	}
 
 	/**
+	 * Returns false if the specified individual is does not belong to class
+	 * specified by the {@code type} argument.
+	 * 
+	 * @param individual
+	 *            OWLIndividual
+	 * @param type
+	 *            Expected type
+	 */
+	private boolean isIndividualOfCorrectType(OWLIndividual individual, Class<?> type) {
+		final EntityType<?> et = getEntityType(type);
+		final IRI typeIri = IRI.create(et.getIRI().toString());
+		for (OWLClassExpression col : individual.getTypes(workingOntology)) {
+			if (!col.isAnonymous() && typeIri.equals(col.asOWLClass().getIRI())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Checks whether the specified {@code cls} is a valid entity type defined
 	 * in this module's metamodel.
 	 * 
@@ -445,6 +465,10 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 		OWLNamedIndividual ind = dataFactory.getOWLNamedIndividual(primaryKey);
 		if (!isEntityClass(cls)) {
 			throw new IllegalArgumentException("Class " + cls + " is not a valid entity class.");
+		}
+
+		if (!isIndividualOfCorrectType(ind, cls)) {
+			return null;
 		}
 
 		if (LOG.isLoggable(Level.FINEST))

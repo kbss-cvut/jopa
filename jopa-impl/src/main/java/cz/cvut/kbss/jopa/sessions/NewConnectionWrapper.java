@@ -118,7 +118,12 @@ class NewConnectionWrapper extends ConnectionWrapper {
 	}
 
 	private URI getPrimaryKeyAsUri(Object primaryKey) {
-		// TODO
+		if (primaryKey == null) {
+			return null;
+		}
+		if (primaryKey instanceof URI) {
+			return (URI) primaryKey;
+		}
 		return URI.create(primaryKey.toString());
 	}
 }

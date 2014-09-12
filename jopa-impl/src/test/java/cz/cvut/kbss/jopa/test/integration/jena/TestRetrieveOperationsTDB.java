@@ -92,6 +92,13 @@ public class TestRetrieveOperationsTDB {
 				properties);
 		runner.refreshNotManaged(em, context());
 	}
+	
+	@Test
+	public void testRetrieveDifferentType() {
+		em = TestEnvironment.getPersistenceConnector("JenaTDBRetrieveDiffentType", storage, false,
+				properties);
+		runner.retrieveDifferentType(em, context());
+	}
 
 	private URI context() {
 		return null;

@@ -9,6 +9,8 @@ import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.IdentifierGenerationException;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
@@ -105,7 +107,11 @@ class SesameConnection implements Connection {
 	public URI generateIdentifier(URI classUri) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(classUri, ErrorUtils.constructNPXMessage("classUri"));
-		return adapter.generateIdentifier(classUri);
+		try {
+			return adapter.generateIdentifier(classUri);
+		} catch (IdentifierGenerationException e) {
+			throw new SesameDriverException(e);
+		}
 	}
 
 	@Override

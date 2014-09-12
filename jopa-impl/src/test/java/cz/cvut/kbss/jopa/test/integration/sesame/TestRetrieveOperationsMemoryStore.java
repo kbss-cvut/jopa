@@ -85,6 +85,13 @@ public class TestRetrieveOperationsMemoryStore {
 		em = TestEnvironment.getPersistenceConnector("SesameRefresh", storage, false, properties);
 		runner.refresh(em, context());
 	}
+	
+	@Test
+	public void testRetrieveDifferentType() {
+		em = TestEnvironment.getPersistenceConnector("SesameRetrieveDiffentType", storage, false,
+				properties);
+		runner.retrieveDifferentType(em, context());
+	}
 
 	private URI context() {
 		// Don't use contexts for now
