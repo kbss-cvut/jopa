@@ -2,11 +2,13 @@ package cz.cvut.kbss.ontodriver.sesame;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,11 +34,13 @@ import org.mockito.MockitoAnnotations;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
@@ -485,5 +489,59 @@ public class SesameAdapterTest {
 						(org.openrdf.model.URI) null)).thenReturn(statements);
 		final Collection<Axiom<?>> res = adapter.find(desc);
 		assertTrue(res.isEmpty());
+	}
+
+	@Test
+	public void testGenerateIdentifier_ClassWithHash() throws Exception {
+		final URI clsUri = URI.create("http://someClass.cz#class");
+		when(
+				connectorMock.findStatements(any(Resource.class), eq(RDF.TYPE),
+						eq(vf.createURI(clsUri.toString())), eq(true))).thenReturn(
+				Collections.<Statement> emptyList());
+		final URI res = adapter.generateIdentifier(clsUri);
+		assertNotNull(res);
+		assertTrue(res.toString().contains(clsUri.toString()));
+		verify(connectorMock).findStatements(vf.createURI(res.toString()), RDF.TYPE,
+				vf.createURI(clsUri.toString()), true);
+	}
+
+	@Test
+	public void testGenerateIdentifier_ClassWithoutHash() throws Exception {
+		final URI clsUri = URI.create("http://someClass.cz/class");
+		when(
+				connectorMock.findStatements(any(Resource.class), eq(RDF.TYPE),
+						eq(vf.createURI(clsUri.toString())), eq(true))).thenReturn(
+				Collections.<Statement> emptyList());
+		final URI res = adapter.generateIdentifier(clsUri);
+		assertNotNull(res);
+		assertTrue(res.toString().contains(clsUri.toString()));
+		assertTrue(res.toString().contains("#"));
+		verify(connectorMock).findStatements(vf.createURI(res.toString()), RDF.TYPE,
+				vf.createURI(clsUri.toString()), true);
+	}
+
+	@Test
+	public void testGenerateIdentifier_ClassEndsWithSlash() throws Exception {
+		final URI clsUri = URI.create("http://someClass.cz/class/");
+		when(
+				connectorMock.findStatements(any(Resource.class), eq(RDF.TYPE),
+						eq(vf.createURI(clsUri.toString())), eq(true))).thenReturn(
+				Collections.<Statement> emptyList());
+		final URI res = adapter.generateIdentifier(clsUri);
+		assertNotNull(res);
+		assertTrue(res.toString().contains(clsUri.toString()));
+		verify(connectorMock).findStatements(vf.createURI(res.toString()), RDF.TYPE,
+				vf.createURI(clsUri.toString()), true);
+	}
+
+	@Test(expected = IdentifierGenerationException.class)
+	public void testGenerateIdentifierNeverUnique() throws Exception {
+		final URI clsUri = URI.create("http://someClass.cz#class");
+		final Collection<Statement> stmts = Collections.singletonList(mock(Statement.class));
+		when(
+				connectorMock.findStatements(any(Resource.class), eq(RDF.TYPE),
+						eq(vf.createURI(clsUri.toString())), eq(true))).thenReturn(stmts);
+		final URI res = adapter.generateIdentifier(clsUri);
+		assert res == null;
 	}
 }

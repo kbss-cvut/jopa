@@ -33,6 +33,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -109,6 +110,7 @@ public class ObjectOntologyMapperTest {
 						aDescriptor, etAMock)).thenReturn(axiomDescriptor);
 		when(metamodelMock.entity(OWLClassA.class)).thenReturn(etAMock);
 		when(etAMock.getIdentifier()).thenReturn(idA);
+		when(etAMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
 		when(idA.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
 		entityA.setTypes(null);
 		this.mapper = new ObjectOntologyMapperImpl(uowMock, connectionMock);
@@ -227,6 +229,25 @@ public class ObjectOntologyMapperTest {
 		when(entityDeconstructorMock.mapEntityToAxioms(ENTITY_PK, entityA, etAMock, aDescriptor))
 				.thenReturn(madMock);
 		mapper.persistEntity(ENTITY_PK, entityA, aDescriptor);
+		verify(connectionMock).persist(madMock);
+	}
+
+	@Test
+	public void testPersistEntityWithGeneratedURI() throws Exception {
+		final Identifier id = mock(Identifier.class);
+		when(etAMock.getIdentifier()).thenReturn(id);
+		when(id.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
+		final OWLClassA a = new OWLClassA();
+		final MutationAxiomDescriptor madMock = mock(MutationAxiomDescriptor.class);
+		final URI generatedUri = URI.create("http://generatedUri" + System.currentTimeMillis());
+		when(entityDeconstructorMock.mapEntityToAxioms(generatedUri, a, etAMock, aDescriptor))
+				.thenReturn(madMock);
+		when(connectionMock.generateIdentifier(etAMock.getIRI().toURI())).thenReturn(generatedUri);
+
+		assertNull(a.getUri());
+		mapper.persistEntity(null, a, aDescriptor);
+		assertNotNull(a.getUri());
+		verify(connectionMock).generateIdentifier(etAMock.getIRI().toURI());
 		verify(connectionMock).persist(madMock);
 	}
 

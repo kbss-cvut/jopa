@@ -82,7 +82,7 @@ class SesameConnection implements Connection {
 	@Override
 	public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(sparql, "sparql");
+		Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
 		if (sparql.isEmpty()) {
 			throw new IllegalArgumentException("The value for prepared statement cannot be empty.");
 		}
@@ -99,6 +99,13 @@ class SesameConnection implements Connection {
 	public List<URI> getContexts() throws OntoDriverException {
 		ensureOpen();
 		return adapter.getContexts();
+	}
+
+	@Override
+	public URI generateIdentifier(URI classUri) throws OntoDriverException {
+		ensureOpen();
+		Objects.requireNonNull(classUri, ErrorUtils.constructNPXMessage("classUri"));
+		return adapter.generateIdentifier(classUri);
 	}
 
 	@Override

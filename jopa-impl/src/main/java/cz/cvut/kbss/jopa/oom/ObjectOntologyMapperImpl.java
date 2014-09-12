@@ -102,8 +102,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
 		try {
 			if (primaryKey == null) {
-				// TODO Request new primary key from the ontology (similar to
-				// SELECT FROM sequence in JPA)
+				primaryKey = storageConnection.generateIdentifier(et.getIRI().toURI());
+				assert primaryKey != null;
 				setIdentifier(primaryKey, entity, et);
 			}
 			final MutationAxiomDescriptor axiomDescriptor = entityBreaker.mapEntityToAxioms(
@@ -120,6 +120,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 			throws IllegalArgumentException, IllegalAccessException {
 		final Identifier id = et.getIdentifier();
 		final Field idField = id.getJavaField();
+		// TODO Figure out some strategy of assigning URI to other types of
+		// identifiers (e. g. OWLAPI's IRI, JOPA's IRI etc.)
 		if (!idField.getType().isAssignableFrom(identifier.getClass())) {
 			throw new UnassignableIdentifierException("Cannot assign identifier of type "
 					+ identifier + " to field of type " + idField.getType());

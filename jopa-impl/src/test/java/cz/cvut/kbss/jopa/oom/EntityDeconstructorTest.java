@@ -271,7 +271,6 @@ public class EntityDeconstructorTest {
 			final List<Value<?>> vals = res.getAssertionValues(Assertion.createPropertyAssertion(
 					URI.create(e.getKey()), false));
 			assertEquals(expVals.size(), vals.size());
-			int i = 0;
 			for (Value<?> val : vals) {
 				assertTrue(expVals.contains(val.getValue()));
 			}

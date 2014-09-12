@@ -5,15 +5,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.RDF;
 
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
@@ -24,6 +27,10 @@ import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
 class SesameAdapter implements Closeable {
+
+	/** Maximum number of attempts to generate a unique identifier */
+	private static final int ID_GENERATION_THRESHOLD = 64;
+	private static final Random RANDOM = new Random();
 
 	private final Connector connector;
 	private final ValueFactory valueFactory;
@@ -76,7 +83,8 @@ class SesameAdapter implements Closeable {
 	}
 
 	boolean isConsistent(URI context) {
-		// TODO Sesame currently doesn't support any consistency check function
+		// Sesame currently doesn't support any consistency checking
+		// functionality
 		return true;
 	}
 
@@ -91,6 +99,39 @@ class SesameAdapter implements Closeable {
 			}
 		}
 		return contexts;
+	}
+
+	URI generateIdentifier(URI classUri) throws SesameDriverException {
+		startTransactionIfNotActive();
+		boolean unique = false;
+		URI id = null;
+		int counter = 0;
+		while (!unique && counter++ < ID_GENERATION_THRESHOLD) {
+			if (classUri.getFragment() != null) {
+				id = URI.create(classUri.toString() + "_instance" + RANDOM.nextInt());
+			} else {
+				String base = classUri.toString();
+				if (base.endsWith("/")) {
+					id = URI.create(base + "_instance" + RANDOM.nextInt());
+				} else {
+					id = URI.create(base + "#instance" + RANDOM.nextInt());
+				}
+			}
+			unique = isIdentifierUnique(id, classUri);
+		}
+		if (!unique) {
+			throw new IdentifierGenerationException(
+					"Unable to generate a unique identifier.");
+		}
+		return id;
+
+	}
+
+	private boolean isIdentifierUnique(URI identifier, URI classUri) throws SesameDriverException {
+		final Collection<Statement> stmts = connector.findStatements(
+				SesameUtils.toSesameUri(identifier, valueFactory), RDF.TYPE,
+				SesameUtils.toSesameUri(classUri, valueFactory), true);
+		return stmts.isEmpty();
 	}
 
 	Collection<Axiom<?>> find(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
