@@ -12,6 +12,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
@@ -71,15 +72,19 @@ class SesameAdapter implements Closeable {
 	}
 
 	void commit() throws SesameDriverException {
-		transaction.commit();
-		connector.commit();
-		transaction.afterCommit();
+		if (transaction.isActive()) {
+			transaction.commit();
+			connector.commit();
+			transaction.afterCommit();
+		}
 	}
 
 	void rollback() throws SesameDriverException {
-		transaction.rollback();
-		connector.rollback();
-		transaction.afterRollback();
+		if (transaction.isActive()) {
+			transaction.rollback();
+			connector.rollback();
+			transaction.afterRollback();
+		}
 	}
 
 	boolean isConsistent(URI context) {
@@ -120,11 +125,17 @@ class SesameAdapter implements Closeable {
 			unique = isIdentifierUnique(id, classUri);
 		}
 		if (!unique) {
-			throw new IdentifierGenerationException(
-					"Unable to generate a unique identifier.");
+			throw new IdentifierGenerationException("Unable to generate a unique identifier.");
 		}
 		return id;
 
+	}
+
+	private void startTransactionIfNotActive() throws SesameDriverException {
+		if (!transaction.isActive()) {
+			connector.begin();
+			transaction.begin();
+		}
 	}
 
 	private boolean isIdentifierUnique(URI identifier, URI classUri) throws SesameDriverException {
@@ -141,6 +152,12 @@ class SesameAdapter implements Closeable {
 
 	void persist(MutationAxiomDescriptor axiomDescriptor) throws SesameDriverException {
 		startTransactionIfNotActive();
+		// TODO Refactor statement persist into a separate class
+		if (individualExists(axiomDescriptor.getSubject(), axiomDescriptor.getSubjectContext())) {
+			throw new OWLEntityExistsException("An individual with identifier "
+					+ axiomDescriptor.getSubject() + " already exists in context "
+					+ axiomDescriptor.getSubjectContext());
+		}
 		final List<Statement> statements = new ArrayList<>();
 		for (Assertion assertion : axiomDescriptor.getAssertions()) {
 			statements.addAll(createSesameStatements(axiomDescriptor.getSubject(), assertion,
@@ -150,11 +167,13 @@ class SesameAdapter implements Closeable {
 		connector.addStatements(statements);
 	}
 
-	private void startTransactionIfNotActive() throws SesameDriverException {
-		if (!transaction.isActive()) {
-			connector.begin();
-			transaction.begin();
-		}
+	private boolean individualExists(NamedResource subject, URI subjectContext)
+			throws SesameDriverException {
+		final org.openrdf.model.URI sesameSubject = SesameUtils.toSesameUri(
+				subject.getIdentifier(), valueFactory);
+		final Collection<Statement> result = connector.findStatements(sesameSubject, RDF.TYPE,
+				null, true, SesameUtils.toSesameUri(subjectContext, valueFactory));
+		return !result.isEmpty();
 	}
 
 	private Collection<? extends Statement> createSesameStatements(NamedResource subject,

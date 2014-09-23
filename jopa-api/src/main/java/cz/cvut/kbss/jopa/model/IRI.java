@@ -16,6 +16,7 @@
 package cz.cvut.kbss.jopa.model;
 
 import java.net.URI;
+import java.util.Objects;
 
 public class IRI implements AnnotationValue {
 
@@ -26,7 +27,7 @@ public class IRI implements AnnotationValue {
 	}
 
 	IRI(String iri) {
-		this.iri = iri;
+		this.iri = Objects.requireNonNull(iri);
 	}
 
 	public URI toURI() {
@@ -35,5 +36,27 @@ public class IRI implements AnnotationValue {
 
 	public String toString() {
 		return iri;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + iri.hashCode();
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IRI other = (IRI) obj;
+		if (!iri.equals(other.iri))
+			return false;
+		return true;
 	}
 }

@@ -120,7 +120,7 @@ class PoolingStorageConnector extends AbstractConnector {
 		try {
 			final Collection<Statement> statements = centralConnector.findStatements(subject,
 					property, value, includeInferred, contexts);
-			localModel.enhanceStatements(statements);
+			localModel.enhanceStatements(statements, subject, property, value, contexts);
 			return statements;
 		} catch (SesameDriverException e) {
 			centralConnector.rollback();

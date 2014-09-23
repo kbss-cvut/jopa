@@ -18,6 +18,9 @@ final class ConnectorFactoryImpl extends ConnectorFactory {
 
 	public Connector createStorageConnector(OntologyStorageProperties storageProperties,
 			Map<String, String> properties) throws SesameDriverException {
+		if (!open) {
+			throw new IllegalStateException("The factory is closed!");
+		}
 		if (centralConnector == null) {
 			synchronized (this) {
 				if (centralConnector == null) {
@@ -43,4 +46,7 @@ final class ConnectorFactoryImpl extends ConnectorFactory {
 		this.open = false;
 	}
 
+	public boolean isOpen() {
+		return open;
+	}
 }

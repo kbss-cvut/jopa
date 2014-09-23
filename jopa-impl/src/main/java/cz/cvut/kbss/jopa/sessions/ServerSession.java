@@ -162,6 +162,8 @@ public class ServerSession extends AbstractSession {
 			} catch (OntoDriverException e) {
 				throw new OWLPersistenceException(e);
 			}
+		} else if (newStorageAccessor != null && newStorageAccessor.isOpen()) {
+			newStorageAccessor.close();
 		}
 	}
 

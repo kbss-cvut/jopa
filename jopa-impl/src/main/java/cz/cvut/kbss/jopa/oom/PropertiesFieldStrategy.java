@@ -10,7 +10,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
@@ -30,8 +32,7 @@ public class PropertiesFieldStrategy extends FieldStrategy<PropertiesSpecificati
 	@Override
 	void addValueFromAxiom(Axiom<?> ax) {
 		final String property = ax.getAssertion().getIdentifier().toString();
-		if (property.equals(CommonVocabulary.RDF_TYPE)) {
-			// This is class assertion for entities without types
+		if (shouldSkipAxiom(ax)) {
 			return;
 		}
 		if (!values.containsKey(property)) {
@@ -39,7 +40,29 @@ public class PropertiesFieldStrategy extends FieldStrategy<PropertiesSpecificati
 		}
 		final String value = ax.getValue().stringValue();
 		values.get(property).add(value);
+	}
 
+	private boolean shouldSkipAxiom(Axiom<?> ax) {
+		final String property = ax.getAssertion().getIdentifier().toString();
+		if (property.equals(CommonVocabulary.RDF_TYPE)) {
+			// This is class assertion for entities without types
+			return true;
+		}
+		if (isMappedAttribute(ax.getAssertion().getIdentifier())) {
+			// Mapped attribute values don't belong into properties
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isMappedAttribute(URI property) {
+		final IRI propertyAsIri = IRI.create(property.toString());
+		for (Attribute<?, ?> att : et.getAttributes()) {
+			if (att.getIRI().equals(propertyAsIri)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

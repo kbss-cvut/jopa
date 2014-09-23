@@ -260,7 +260,7 @@ public class CreateOperationsRunner extends BaseRunner {
 				.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/SomeEntity"));
 		props.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyThree",
 				Collections.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
-		final Map<String, Set<String>> expected = new HashMap<>(3);
+		final Map<String, Set<String>> expected = new HashMap<>(4);
 		expected.putAll(props);
 		entityB.setProperties(props);
 		em.getTransaction().begin();

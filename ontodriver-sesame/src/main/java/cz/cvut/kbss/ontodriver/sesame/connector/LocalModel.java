@@ -3,7 +3,10 @@ package cz.cvut.kbss.ontodriver.sesame.connector;
 import java.util.Collection;
 
 import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.impl.LinkedHashModel;
 
 /**
@@ -22,9 +25,14 @@ class LocalModel {
 		this.removedStatements = new LinkedHashModel();
 	}
 
-	void enhanceStatements(Collection<Statement> statements) {
-		// TODO
-
+	void enhanceStatements(Collection<Statement> statements, Resource subject, URI property,
+			Value object, URI... contexts) {
+		final Collection<Statement> added = addedStatements.filter(subject, property, object,
+				contexts);
+		statements.addAll(added);
+		final Collection<Statement> removed = removedStatements.filter(subject, property, object,
+				contexts);
+		statements.removeAll(removed);
 	}
 
 	void addStatements(Collection<Statement> statements) {
@@ -33,7 +41,7 @@ class LocalModel {
 
 	void removeStatements(Collection<Statement> statements) {
 		addedStatements.removeAll(statements);
-		this.removedStatements.addAll(statements);
+		removedStatements.addAll(statements);
 	}
 
 	Collection<Statement> getAddedStatements() {

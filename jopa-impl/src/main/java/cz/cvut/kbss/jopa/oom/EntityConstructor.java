@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -26,6 +25,9 @@ class EntityConstructor {
 	<T> T reconstructEntity(Object primaryKey, EntityType<T> et, Descriptor descriptor,
 			Collection<Axiom<?>> axioms) throws InstantiationException, IllegalAccessException {
 		assert !axioms.isEmpty();
+		if (!axiomsContainEntityTypeAssertion(axioms, et)) {
+			return null;
+		}
 		final T instance = et.getJavaType().newInstance();
 		mapper.setIdentifier(primaryKey, instance, et);
 		mapper.registerInstance(primaryKey, instance, descriptor.getContext());
@@ -33,11 +35,11 @@ class EntityConstructor {
 		final Map<FieldSpecification<?, ?>, FieldStrategy<? extends FieldSpecification<?, ?>>> fieldLoaders = new HashMap<>(
 				et.getAttributes().size() + 2);
 		for (Axiom<?> ax : axioms) {
-			final FieldStrategy<? extends FieldSpecification<?, ?>> fs = getFieldLoader(ax,
-					attributes, fieldLoaders, et, descriptor);
-			if (fs == null && isEntityClassAssertion(ax, et.getJavaType())) {
+			if (isEntityClassAssertion(ax, et)) {
 				continue;
 			}
+			final FieldStrategy<? extends FieldSpecification<?, ?>> fs = getFieldLoader(ax,
+					attributes, fieldLoaders, et, descriptor);
 			assert fs != null;
 			fs.addValueFromAxiom(ax);
 		}
@@ -45,6 +47,15 @@ class EntityConstructor {
 			fs.buildInstanceFieldValue(instance);
 		}
 		return instance;
+	}
+
+	private boolean axiomsContainEntityTypeAssertion(Collection<Axiom<?>> axioms, EntityType<?> et) {
+		for (Axiom<?> ax : axioms) {
+			if (isEntityClassAssertion(ax, et)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private Map<URI, FieldSpecification<?, ?>> indexEntityAttributes(EntityType<?> et) {
@@ -79,19 +90,18 @@ class EntityConstructor {
 		return loaders.get(att);
 	}
 
-	private boolean isEntityClassAssertion(Axiom<?> ax, Class<?> cls) {
-		return isClassAssertion(ax) && isEntityClass(ax, cls);
+	private boolean isEntityClassAssertion(Axiom<?> ax, EntityType<?> et) {
+		return isClassAssertion(ax) && isEntityClass(ax, et);
 	}
 
 	private boolean isClassAssertion(Axiom<?> ax) {
 		return ax.getAssertion().getType() == AssertionType.CLASS;
 	}
 
-	private boolean isEntityClass(Axiom<?> ax, Class<?> cls) {
-		final OWLClass clsAnn = cls.getAnnotation(OWLClass.class);
-		assert clsAnn != null;
+	private boolean isEntityClass(Axiom<?> ax, EntityType<?> et) {
+		final String type = et.getIRI().toString();
 		final String val = ax.getValue().stringValue();
-		return val.equals(clsAnn.iri());
+		return val.equals(type);
 	}
 
 	<T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,
