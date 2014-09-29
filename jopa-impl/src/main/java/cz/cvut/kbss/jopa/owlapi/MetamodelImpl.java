@@ -182,7 +182,9 @@ public class MetamodelImpl implements Metamodel {
 			PersistentAttributeType t = null;
 			IRI iri = null;
 			CascadeType[] cascadeTypes = new CascadeType[] {};
-			FetchType fetchType = FetchType.LAZY;
+			// TODO This causes data properties to be lazily loaded, which does not seem to be the best strategy
+//			FetchType fetchType = FetchType.LAZY;
+			FetchType fetchType = FetchType.EAGER;
 			boolean inferred = false;
 
 			ParticipationConstraint[] ics = null;

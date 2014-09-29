@@ -1,6 +1,5 @@
 package cz.cvut.kbss.jopa.oom;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,6 +8,8 @@ import java.util.Map;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -18,7 +19,7 @@ class SingularObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	private Object value;
 
 	SingularObjectPropertyStrategy(EntityType<?> et, Attribute<?, ?> att, Descriptor descriptor,
-			ObjectOntologyMapperImpl mapper) {
+			EntityMappingHelper mapper) {
 		super(et, att, descriptor, mapper);
 	}
 
@@ -48,11 +49,9 @@ class SingularObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 			throw new EntityDeconstructionException("Value of field " + attribute.getJavaField()
 					+ " is not a recognized entity.");
 		}
-		final Field idField = valEt.getIdentifier().getJavaField();
-		if (!idField.isAccessible()) {
-			idField.setAccessible(true);
-		}
-		final Object id = idField.get(value);
+		cascadeResolver.resolveFieldCascading(attribute, value,
+				descriptor.getAttributeDescriptor(attribute).getContext());
+		final URI id = EntityPropertiesUtils.getPrimaryKey(value, valEt);
 		return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
 				Collections.<Value<?>> singleton(new Value<>(id)));
 	}

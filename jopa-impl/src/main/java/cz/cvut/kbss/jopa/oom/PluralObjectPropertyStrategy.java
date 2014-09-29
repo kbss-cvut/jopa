@@ -21,7 +21,7 @@ class PluralObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	private Collection<Object> values;
 
 	public PluralObjectPropertyStrategy(EntityType<?> et, Attribute<?, ?> att,
-			Descriptor descriptor, ObjectOntologyMapperImpl mapper) {
+			Descriptor descriptor, EntityMappingHelper mapper) {
 		super(et, att, descriptor, mapper);
 		this.pluralAtt = (PluralAttribute<?, ?, ?>) attribute;
 		initCollection();

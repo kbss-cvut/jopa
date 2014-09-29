@@ -15,6 +15,8 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
+import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -24,7 +26,7 @@ public class PropertiesFieldStrategy extends FieldStrategy<PropertiesSpecificati
 	private final Map<String, Set<String>> values;
 
 	PropertiesFieldStrategy(EntityType<?> et, PropertiesSpecification<?, ?> att,
-			Descriptor descriptor, ObjectOntologyMapperImpl mapper) {
+			Descriptor descriptor, EntityMappingHelper mapper) {
 		super(et, att, descriptor, mapper);
 		this.values = new HashMap<>();
 	}

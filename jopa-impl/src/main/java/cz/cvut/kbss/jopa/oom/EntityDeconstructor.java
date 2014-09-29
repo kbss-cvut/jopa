@@ -9,6 +9,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
@@ -16,10 +17,15 @@ import cz.cvut.kbss.ontodriver_new.model.Value;
 
 class EntityDeconstructor {
 
-	private final ObjectOntologyMapperImpl mapper;
+	private final EntityMappingHelper mapper;
+	private CascadeResolver cascadeResolver;
 
 	EntityDeconstructor(ObjectOntologyMapperImpl mapper) {
 		this.mapper = mapper;
+	}
+
+	public void setCascadeResolver(CascadeResolver cascadeResolver) {
+		this.cascadeResolver = cascadeResolver;
 	}
 
 	<T> MutationAxiomDescriptor mapEntityToAxioms(URI primaryKey, T entity, EntityType<T> et,
@@ -49,10 +55,11 @@ class EntityDeconstructor {
 	private <T> void addAssertions(T entity, EntityType<?> et, FieldSpecification<?, ?> fieldSpec,
 			Descriptor descriptor, final MutationAxiomDescriptor axiomDescriptor)
 			throws IllegalAccessException {
-		FieldStrategy<? extends FieldSpecification<?, ?>> fs;
-		Map<Assertion, Collection<Value<?>>> values;
-		fs = FieldStrategy.createFieldStrategy(et, fieldSpec, descriptor, mapper);
-		values = fs.extractAttributeValuesFromInstance(entity);
+		final FieldStrategy<? extends FieldSpecification<?, ?>> fs = FieldStrategy.createFieldStrategy(
+				et, fieldSpec, descriptor, mapper);
+		fs.setCascadeResolver(cascadeResolver);
+		final Map<Assertion, Collection<Value<?>>> values = fs
+				.extractAttributeValuesFromInstance(entity);
 		for (Assertion assertion : values.keySet()) {
 			axiomDescriptor.addAssertion(assertion);
 			for (Value<?> v : values.get(assertion)) {

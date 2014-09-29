@@ -8,6 +8,7 @@ import java.util.Map;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -17,7 +18,7 @@ class SingularDataPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	private Object value;
 
 	SingularDataPropertyStrategy(EntityType<?> et, Attribute<?, ?> att, Descriptor descriptor,
-			ObjectOntologyMapperImpl mapper) {
+			EntityMappingHelper mapper) {
 		super(et, att, descriptor, mapper);
 	}
 

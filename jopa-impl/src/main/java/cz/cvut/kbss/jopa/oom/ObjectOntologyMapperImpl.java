@@ -3,23 +3,32 @@ package cz.cvut.kbss.jopa.oom;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
+import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
+import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.exceptions.UnassignableIdentifierException;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
-public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
+public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMappingHelper {
+
+	private static final Logger LOG = Logger.getLogger(ObjectOntologyMapperImpl.class.getName());
 
 	private final UnitOfWorkImpl uow;
 	private final Connection storageConnection;
@@ -29,6 +38,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 	private final EntityConstructor entityBuilder;
 	private final EntityDeconstructor entityBreaker;
 	private final InstanceRegistry instanceRegistry;
+	private final PendingChangeRegistry pendingPersists;
 
 	public ObjectOntologyMapperImpl(UnitOfWorkImpl uow, Connection connection) {
 		this.uow = Objects.requireNonNull(uow);
@@ -36,6 +46,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		this.metamodel = uow.getMetamodel();
 		this.descriptorFactory = new AxiomDescriptorFactory();
 		this.instanceRegistry = new InstanceRegistry();
+		this.pendingPersists = new PendingChangeRegistry();
 		this.entityBuilder = new EntityConstructor(this);
 		this.entityBreaker = new EntityDeconstructor(this);
 	}
@@ -67,7 +78,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		}
 	}
 
-	<T> EntityType<T> getEntityType(Class<T> cls) {
+	public <T> EntityType<T> getEntityType(Class<T> cls) {
 		return (EntityType<T>) metamodel.entity(cls);
 	}
 
@@ -76,6 +87,10 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		assert entity != null;
 		assert field != null;
 		assert descriptor != null;
+
+		if (LOG.isLoggable(Level.FINER)) {
+			LOG.finer("Lazily loading value of field " + field + " of entity " + entity);
+		}
 
 		final URI primaryKey = EntityPropertiesUtils.getPrimaryKey(entity, metamodel).toURI();
 		final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
@@ -102,35 +117,31 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
 		try {
 			if (primaryKey == null) {
-				primaryKey = storageConnection.generateIdentifier(et.getIRI().toURI());
+				primaryKey = generateIdentifier(et);
 				assert primaryKey != null;
-				setIdentifier(primaryKey, entity, et);
+				EntityPropertiesUtils.setPrimaryKey(primaryKey, entity, et);
 			}
+			entityBreaker.setCascadeResolver(new PersistCascadeResolver(this));
 			final MutationAxiomDescriptor axiomDescriptor = entityBreaker.mapEntityToAxioms(
 					primaryKey, entity, et, descriptor);
 			storageConnection.persist(axiomDescriptor);
-		} catch (IllegalAccessException | IllegalArgumentException e) {
+			pendingPersists.removeInstance(primaryKey, descriptor.getContext());
+		} catch (IllegalArgumentException e) {
 			throw new EntityDeconstructionException("Unable to deconstruct entity " + entity, e);
 		} catch (OntoDriverException e) {
 			throw new StorageAccessException(e);
 		}
 	}
 
-	<T> void setIdentifier(Object identifier, T instance, EntityType<T> et)
-			throws IllegalArgumentException, IllegalAccessException {
-		final Identifier id = et.getIdentifier();
-		final Field idField = id.getJavaField();
-		// TODO Figure out some strategy of assigning URI to other types of
-		// identifiers (e. g. OWLAPI's IRI, JOPA's IRI etc.)
-		if (!idField.getType().isAssignableFrom(identifier.getClass())) {
-			throw new UnassignableIdentifierException("Cannot assign identifier of type "
-					+ identifier + " to field of type " + idField.getType());
+	public URI generateIdentifier(EntityType<?> et) {
+		try {
+			return storageConnection.generateIdentifier(et.getIRI().toURI());
+		} catch (OntoDriverException e) {
+			throw new StorageAccessException(e);
 		}
-		idField.setAccessible(true);
-		idField.set(instance, identifier);
 	}
 
-	<T> T getEntityFromCacheOrOntology(Class<T> cls, URI primaryKey, Descriptor descriptor) {
+	public <T> T getEntityFromCacheOrOntology(Class<T> cls, URI primaryKey, Descriptor descriptor) {
 		if (uow.getLiveObjectCache().contains(cls, primaryKey, descriptor.getContext())) {
 			return uow.getLiveObjectCache().get(cls, primaryKey, descriptor.getContext());
 		} else if (instanceRegistry.containsInstance(primaryKey, descriptor.getContext())) {
@@ -141,7 +152,55 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper {
 		}
 	}
 
-	<T> void registerInstance(Object primaryKey, T instance, URI context) {
+	<T> void registerInstance(URI primaryKey, T instance, URI context) {
 		instanceRegistry.registerInstance(primaryKey, instance, context);
+	}
+
+	@Override
+	public void checkForUnpersistedChanges() {
+		try {
+			final Map<URI, Map<URI, Object>> persists = pendingPersists.getInstances();
+			if (!persists.isEmpty()) {
+				for (URI ctx : persists.keySet()) {
+					for (Entry<URI, Object> e : persists.get(ctx).entrySet()) {
+						doesInstanceExistInOntology(ctx, e.getKey(), e.getValue());
+					}
+				}
+			}
+		} catch (OntoDriverException e) {
+			throw new StorageAccessException(e);
+		}
+	}
+
+	private void doesInstanceExistInOntology(URI ctx, URI primaryKey, Object instance)
+			throws OntoDriverException {
+		final AxiomDescriptor d = new AxiomDescriptor(NamedResource.create(primaryKey));
+		final Assertion typeAssertion = Assertion.createClassAssertion(false);
+		d.addAssertion(typeAssertion);
+		d.setAssertionContext(typeAssertion, ctx);
+		final Collection<Axiom<?>> res = storageConnection.find(d);
+		if (!containsClassAssertion(instance, res)) {
+			throw new UnpersistedChangeException(
+					"Encountered an instance that was neither persisted nor marked as cascade for persist. The instance: "
+							+ instance);
+		}
+	}
+
+	private boolean containsClassAssertion(Object value, Collection<Axiom<?>> res) {
+		final EntityType<?> et = getEntityType(value.getClass());
+		for (Axiom<?> ax : res) {
+			if (MappingUtils.isEntityClassAssertion(ax, et)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	boolean doesInstanceExist(Object entity) {
+		return uow.contains(entity);
+	}
+
+	<T> void registerPendingPersist(URI primaryKey, T entity, URI context) {
+		pendingPersists.registerInstance(primaryKey, entity, context);
 	}
 }

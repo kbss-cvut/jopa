@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 
 public interface ObjectOntologyMapper {
 
@@ -45,4 +46,11 @@ public interface ObjectOntologyMapper {
 	 *            Descriptor possibly specifying entity and attribute contexts
 	 */
 	public <T> void persistEntity(URI primaryKey, T entity, Descriptor descriptor);
+	
+	/**
+	 * Checks that there are no pending changes in the mapper. </p>
+	 * 
+	 * @throws UnpersistedChangeException
+	 */
+	public void checkForUnpersistedChanges();
 }

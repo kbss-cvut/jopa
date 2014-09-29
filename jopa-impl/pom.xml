@@ -170,10 +170,10 @@
         	<scope>runtime</scope>
         </dependency>
         <dependency>
-        	<groupId>cz.cvut.kbss.jopa</groupId>
-        	<artifactId>ontodriver-impl</artifactId>
-        	<version>${project.version}</version>
-        </dependency>
+			<groupId>cz.cvut.kbss.jopa</groupId>
+			<artifactId>ontodriver-impl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>

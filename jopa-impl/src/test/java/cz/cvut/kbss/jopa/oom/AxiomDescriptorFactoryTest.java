@@ -126,8 +126,8 @@ public class AxiomDescriptorFactoryTest {
 	public void testCreateForEntityLoadingWithPropertiesAndContext() throws Exception {
 		final Descriptor desc = new EntityDescriptor(CONTEXT);
 		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etBMock);
-		// Types specification and the string attribute
-		assertEquals(2, res.getAssertions().size());
+		// Class assertion, properties specification and the string attribute
+		assertEquals(3, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
 		assertEquals(CONTEXT, res.getSubjectContext());
 		assertTrue(res.getAssertions().contains(
@@ -139,10 +139,18 @@ public class AxiomDescriptorFactoryTest {
 		final Descriptor desc = new EntityDescriptor();
 		desc.addAttributeContext(OWLClassD.getOwlClassAField(), CONTEXT);
 		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etDMock);
-		assertEquals(1, res.getAssertions().size());
+		// Class assertion and the object property assertion
+		assertEquals(2, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
 		assertNull(res.getSubjectContext());
-		final Assertion ass = res.getAssertions().iterator().next();
+		Assertion ass = null;
+		for (Assertion a : res.getAssertions()) {
+			if (a.getIdentifier().equals(owlclassAAttUri)) {
+				ass = a;
+				break;
+			}
+		}
+		assertNotNull(ass);
 		assertEquals(CONTEXT, res.getAssertionContext(ass));
 		assertEquals(owlclassAAttUri, ass.getIdentifier());
 	}
@@ -154,7 +162,8 @@ public class AxiomDescriptorFactoryTest {
 		when(owlclassAAttMock.getPersistentAttributeType()).thenReturn(
 				PersistentAttributeType.ANNOTATION);
 		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etDMock);
-		assertEquals(1, res.getAssertions().size());
+		// Class assertion and the annotation property assertion
+		assertEquals(2, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
 		assertNull(res.getSubjectContext());
 		assertTrue(res.getAssertions().contains(
@@ -166,7 +175,7 @@ public class AxiomDescriptorFactoryTest {
 		final Descriptor desc = new EntityDescriptor();
 		when(strAttAMock.getFetchType()).thenReturn(FetchType.LAZY);
 		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etAMock);
-		// Types specification and the string attribute
+		// Types specification (class assertion)
 		assertEquals(1, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
 		assertNull(res.getSubjectContext());

@@ -39,6 +39,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
@@ -252,19 +253,6 @@ public class ObjectOntologyMapperTest {
 	}
 
 	@Test
-	public void testSetIdentifier() throws Exception {
-		final Identifier id = mock(Identifier.class);
-		when(etAMock.getIdentifier()).thenReturn(id);
-		when(id.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
-		final OWLClassA a = new OWLClassA();
-		final URI pk = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tempUri");
-		assertNull(a.getUri());
-		mapper.setIdentifier(pk, a, etAMock);
-		assertNotNull(a.getUri());
-		assertEquals(pk, a.getUri());
-	}
-
-	@Test
 	public void testGetEntityFromCacheOrOntologyFromCache() {
 		when(cacheMock.contains(OWLClassA.class, ENTITY_PK, null)).thenReturn(Boolean.TRUE);
 		when(cacheMock.get(OWLClassA.class, ENTITY_PK, null)).thenReturn(entityA);
@@ -309,5 +297,18 @@ public class ObjectOntologyMapperTest {
 		assertFalse(reg.containsInstance(ENTITY_PK, context));
 		mapper.registerInstance(ENTITY_PK, entityA, context);
 		assertTrue(reg.containsInstance(ENTITY_PK, context));
+	}
+
+	@Test
+	public void checksForUnpersistedChangesAndThereAreNone() {
+		mapper.checkForUnpersistedChanges();
+	}
+
+	@Test(expected = UnpersistedChangeException.class)
+	public void checksForUnpersistedChangesThrowsExceptionWhenThereAre() throws Exception {
+		mapper.registerPendingPersist(ENTITY_PK, entityA, null);
+		when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(
+				Collections.<Axiom<?>> emptyList());
+		mapper.checkForUnpersistedChanges();
 	}
 }

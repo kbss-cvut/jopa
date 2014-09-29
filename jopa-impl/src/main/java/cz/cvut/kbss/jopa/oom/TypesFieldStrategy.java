@@ -11,6 +11,8 @@ import java.util.Set;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
+import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -20,7 +22,7 @@ public class TypesFieldStrategy extends FieldStrategy<TypesSpecification<?, ?>> 
 	final Set<String> values;
 
 	public TypesFieldStrategy(EntityType<?> et, TypesSpecification<?, ?> att,
-			Descriptor descriptor, ObjectOntologyMapperImpl mapper) {
+			Descriptor descriptor, EntityMappingHelper mapper) {
 		super(et, att, descriptor, mapper);
 		this.values = new HashSet<>();
 	}

@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.oom;
+package cz.cvut.kbss.jopa.oom.exceptions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 

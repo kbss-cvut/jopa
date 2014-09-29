@@ -66,6 +66,7 @@ class NewConnectionWrapper extends ConnectionWrapper {
 	@Override
 	void commit() {
 		try {
+			mapper.checkForUnpersistedChanges();
 			connection.commit();
 		} catch (OntoDriverException e) {
 			throw new OWLPersistenceException(e);

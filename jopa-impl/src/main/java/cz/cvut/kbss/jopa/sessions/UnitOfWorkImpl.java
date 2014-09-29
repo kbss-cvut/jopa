@@ -31,7 +31,6 @@ import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory {
 
@@ -722,13 +721,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		assert entity != null;
 		IRI id = getIdentifier(entity);
 		if (id == null) {
-			// Check if the ID is generated
-			final Class<?> cls = entity.getClass();
-			final EntityType<?> eType = getMetamodel().entity(cls);
-			if (!eType.getIdentifier().isGenerated()) {
-				throw new PrimaryKeyNotSetException("The id for entity " + entity
-						+ " is null and it is not specified as \'generated\' ");
-			}
+			final EntityType<?> eType = getMetamodel().entity(entity.getClass());
+			EntityPropertiesUtils.verifyIdentifierIsGenerated(entity, eType);
 		}
 		if (doesEntityExist(entity, id, descriptor) && !entity.getClass().isEnum()) {
 			throw new OWLEntityExistsException("An entity with URI " + id

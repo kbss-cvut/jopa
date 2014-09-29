@@ -20,13 +20,18 @@ abstract class FieldStrategy<T extends FieldSpecification<?, ?>> {
 	final EntityType<?> et;
 	final T attribute;
 	final Descriptor descriptor;
-	final ObjectOntologyMapperImpl mapper;
+	final EntityMappingHelper mapper;
+	CascadeResolver cascadeResolver;
 
-	FieldStrategy(EntityType<?> et, T att, Descriptor descriptor, ObjectOntologyMapperImpl mapper) {
+	FieldStrategy(EntityType<?> et, T att, Descriptor descriptor, EntityMappingHelper mapper) {
 		this.et = et;
 		this.attribute = att;
 		this.descriptor = descriptor;
 		this.mapper = mapper;
+	}
+
+	void setCascadeResolver(CascadeResolver resolver) {
+		this.cascadeResolver = resolver;
 	}
 
 	/**
@@ -108,7 +113,7 @@ abstract class FieldStrategy<T extends FieldSpecification<?, ?>> {
 	abstract Assertion createAssertion();
 
 	static FieldStrategy<? extends FieldSpecification<?, ?>> createFieldStrategy(EntityType<?> et,
-			FieldSpecification<?, ?> att, Descriptor descriptor, ObjectOntologyMapperImpl mapper) {
+			FieldSpecification<?, ?> att, Descriptor descriptor, EntityMappingHelper mapper) {
 		if (att instanceof TypesSpecification<?, ?>) {
 			return new TypesFieldStrategy(et, (TypesSpecification<?, ?>) att, descriptor, mapper);
 		} else if (att instanceof PropertiesSpecification<?, ?>) {
