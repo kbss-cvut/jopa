@@ -19,6 +19,8 @@ class PersistCascadeResolver extends CascadeResolver {
 	@Override
 	protected void resolveFieldCascading(FieldSpecification<?, ?> fieldSpec, Object fieldValue, URI context) {
 		OWLObjectProperty ann = fieldSpec.getJavaField().getAnnotation(OWLObjectProperty.class);
+		assert ann != null;
+		
 		for (CascadeType c : ann.cascade()) {
 			if (c == CascadeType.ALL || c == CascadeType.PERSIST) {
 				return;
