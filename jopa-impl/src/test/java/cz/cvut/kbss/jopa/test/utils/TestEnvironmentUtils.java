@@ -27,7 +27,9 @@ import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassJ;
+import cz.cvut.kbss.jopa.test.OWLClassK;
 
 public final class TestEnvironmentUtils {
 
@@ -133,6 +135,22 @@ public final class TestEnvironmentUtils {
 		when(propsMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
 	}
 
+	public static void initOWLClassEMocks(EntityType<OWLClassE> etMock, Attribute strAttMock,
+			Identifier idMock) throws NoSuchFieldException, SecurityException {
+		when(etMock.getJavaType()).thenReturn(OWLClassE.class);
+		when(etMock.getIRI()).thenReturn(IRI.create(OWLClassE.getClassIri()));
+		when(etMock.getAttribute(OWLClassE.getStrAttField().getName())).thenReturn(strAttMock);
+		when(etMock.getAttributes()).thenReturn(
+				Collections.<Attribute<? super OWLClassE, ?>> singleton(strAttMock));
+		when(strAttMock.getJavaField()).thenReturn(OWLClassB.getStrAttField());
+		final String stringAttIri = OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class)
+				.iri();
+		when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
+		when(strAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
+		when(etMock.getIdentifier()).thenReturn(idMock);
+		when(idMock.getJavaField()).thenReturn(OWLClassE.class.getDeclaredField("uri"));
+	}
+
 	/**
 	 * Initializes the specified mock objects to return reasonable values.
 	 */
@@ -169,5 +187,22 @@ public final class TestEnvironmentUtils {
 		when(setAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
 		when(etMock.getIdentifier()).thenReturn(idMock);
 		when(idMock.getJavaField()).thenReturn(OWLClassJ.class.getDeclaredField("uri"));
+	}
+
+	public static void initOWLClassKMocks(EntityType<OWLClassK> etMock, Attribute clsEMock,
+			Identifier idMock) throws NoSuchFieldException, SecurityException {
+		when(etMock.getJavaType()).thenReturn(OWLClassK.class);
+		when(etMock.getIRI()).thenReturn(IRI.create(OWLClassD.getClassIri()));
+		when(etMock.getAttribute(OWLClassK.getOwlClassEField().getName())).thenReturn(clsEMock);
+		when(etMock.getAttributes()).thenReturn(
+				Collections.<Attribute<? super OWLClassK, ?>> singleton(clsEMock));
+		when(clsEMock.getJavaField()).thenReturn(OWLClassK.getOwlClassEField());
+		when(clsEMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
+		final String clsEIri = OWLClassK.getOwlClassEField().getAnnotation(OWLObjectProperty.class)
+				.iri();
+		when(clsEMock.getIRI()).thenReturn(IRI.create(clsEIri));
+		when(clsEMock.getJavaType()).thenReturn(OWLClassE.class);
+		when(etMock.getIdentifier()).thenReturn(idMock);
+		when(idMock.getJavaField()).thenReturn(OWLClassK.class.getDeclaredField("uri"));
 	}
 }

@@ -38,22 +38,31 @@ class SingularObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	}
 
 	@Override
-	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
+	<V> Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
 			throws IllegalArgumentException, IllegalAccessException {
-		final Object value = extractFieldValueFromInstance(instance);
+		final V value = (V) extractFieldValueFromInstance(instance);
 		if (value == null) {
 			return Collections.emptyMap();
 		}
-		final EntityType<?> valEt = mapper.getEntityType(value.getClass());
+		final EntityType<V> valEt = (EntityType<V>) mapper.getEntityType(value.getClass());
 		if (valEt == null) {
 			throw new EntityDeconstructionException("Value of field " + attribute.getJavaField()
 					+ " is not a recognized entity.");
 		}
+		final URI id = resolveValueIdentifier(value, valEt);
 		cascadeResolver.resolveFieldCascading(attribute, value,
 				descriptor.getAttributeDescriptor(attribute).getContext());
-		final URI id = EntityPropertiesUtils.getPrimaryKey(value, valEt);
 		return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
 				Collections.<Value<?>> singleton(new Value<>(id)));
+	}
+
+	private <T> URI resolveValueIdentifier(T instance, EntityType<T> valEt) {
+		URI id = EntityPropertiesUtils.getPrimaryKey(instance, valEt);
+		if (id == null) {
+			id = mapper.generateIdentifier(valEt);
+			EntityPropertiesUtils.setPrimaryKey(id, instance, valEt);
+		}
+		return id;
 	}
 
 	@Override

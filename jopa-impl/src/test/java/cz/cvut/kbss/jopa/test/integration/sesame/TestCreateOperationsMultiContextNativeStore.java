@@ -102,6 +102,15 @@ public class TestCreateOperationsMultiContextNativeStore {
 		runner.persistSetWithAttributeContexts(em);
 	}
 
+	@Test
+	public void testPersistEntityWithObjectPropertyWithGeneratedIdentifierAndPutTheReferenceIntoContext()
+			throws Exception {
+		em = TestEnvironment.getPersistenceConnector(
+				"SesameNativePersistEntityWithObjectPropertyWithGeneratedIdentifierContexts",
+				storage, true, properties);
+		runner.persistEntityWithObjectPropertyWithGeneratedIdentifierAndPutThePropertyIntoDifferentContext(em);
+	}
+
 	private static StorageConfig initStorage() {
 		return new SesameNativeStorageConfig();
 	}
@@ -111,6 +120,7 @@ public class TestCreateOperationsMultiContextNativeStore {
 		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
 		map.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
+		map.put("storage", "new");
 		return map;
 	}
 }

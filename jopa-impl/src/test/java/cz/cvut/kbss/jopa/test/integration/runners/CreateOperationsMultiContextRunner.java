@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.test.integration.runners;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -23,11 +24,13 @@ import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassF;
 import cz.cvut.kbss.jopa.test.OWLClassG;
 import cz.cvut.kbss.jopa.test.OWLClassH;
+import cz.cvut.kbss.jopa.test.OWLClassK;
 import cz.cvut.kbss.jopa.test.utils.Generators;
 
 public class CreateOperationsMultiContextRunner extends BaseRunner {
 
 	private OWLClassF entityF;
+	private OWLClassK entityK;
 
 	public CreateOperationsMultiContextRunner(Logger logger) {
 		super(logger);
@@ -37,6 +40,8 @@ public class CreateOperationsMultiContextRunner extends BaseRunner {
 	private void initialize() {
 		this.entityF = new OWLClassF();
 		entityF.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityF"));
+		this.entityK = new OWLClassK();
+		entityK.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityK"));
 	}
 
 	public void persistDataPropertyIntoContext(EntityManager em) throws Exception {
@@ -188,5 +193,28 @@ public class CreateOperationsMultiContextRunner extends BaseRunner {
 			assertEquals(a.getStringAttribute(), resA.getStringAttribute());
 			assertEquals(a.getTypes(), resA.getTypes());
 		}
+	}
+
+	public void persistEntityWithObjectPropertyWithGeneratedIdentifierAndPutThePropertyIntoDifferentContext(
+			EntityManager em) throws Exception {
+		logger.config("Test: persist entity with reference to an entity with generated identifier. "
+				+ "The identifier should be generated automatically before the referenced entity itself is persisted.");
+		entityK.setOwlClassE(entityE);
+		assertNull(entityE.getUri());
+		final Descriptor eDescriptor = new EntityDescriptor(CONTEXT_TWO);
+		final Descriptor kDescriptor = new EntityDescriptor(CONTEXT_ONE);
+		kDescriptor.addAttributeDescriptor(OWLClassK.getOwlClassEField(), eDescriptor);
+		em.getTransaction().begin();
+		em.persist(entityK, kDescriptor);
+		assertNotNull(entityE.getUri());
+		em.persist(entityE, eDescriptor);
+		em.getTransaction().commit();
+
+		final OWLClassE resE = em.find(OWLClassE.class, entityE.getUri(), eDescriptor);
+		assertNotNull(resE);
+		assertEquals(entityE.getStringAttribute(), resE.getStringAttribute());
+		final OWLClassK resK = em.find(OWLClassK.class, entityK.getUri(), kDescriptor);
+		assertNotNull(resK);
+		assertEquals(resE, resK.getOwlClassE());
 	}
 }

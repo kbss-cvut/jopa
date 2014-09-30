@@ -24,16 +24,16 @@ class EntityDeconstructor {
 		this.mapper = mapper;
 	}
 
-	public void setCascadeResolver(CascadeResolver cascadeResolver) {
+	void setCascadeResolver(CascadeResolver cascadeResolver) {
 		this.cascadeResolver = cascadeResolver;
 	}
 
 	<T> MutationAxiomDescriptor mapEntityToAxioms(URI primaryKey, T entity, EntityType<T> et,
 			Descriptor descriptor) {
 		assert primaryKey != null;
-		final MutationAxiomDescriptor axiomDescriptor = new MutationAxiomDescriptor(
-				NamedResource.create(primaryKey));
-		axiomDescriptor.setSubjectContext(descriptor.getContext());
+
+		final MutationAxiomDescriptor axiomDescriptor = createAxiomDescriptor(primaryKey,
+				descriptor.getContext());
 		try {
 			addEntityClassAssertion(axiomDescriptor, entity, descriptor);
 			if (et.getTypes() != null) {
@@ -52,21 +52,11 @@ class EntityDeconstructor {
 		return axiomDescriptor;
 	}
 
-	private <T> void addAssertions(T entity, EntityType<?> et, FieldSpecification<?, ?> fieldSpec,
-			Descriptor descriptor, final MutationAxiomDescriptor axiomDescriptor)
-			throws IllegalAccessException {
-		final FieldStrategy<? extends FieldSpecification<?, ?>> fs = FieldStrategy.createFieldStrategy(
-				et, fieldSpec, descriptor, mapper);
-		fs.setCascadeResolver(cascadeResolver);
-		final Map<Assertion, Collection<Value<?>>> values = fs
-				.extractAttributeValuesFromInstance(entity);
-		for (Assertion assertion : values.keySet()) {
-			axiomDescriptor.addAssertion(assertion);
-			for (Value<?> v : values.get(assertion)) {
-				axiomDescriptor.addAssertionValue(assertion, v);
-			}
-			setAssertionContext(axiomDescriptor, descriptor, fieldSpec, assertion);
-		}
+	private MutationAxiomDescriptor createAxiomDescriptor(URI primaryKey, URI context) {
+		final MutationAxiomDescriptor axiomDescriptor = new MutationAxiomDescriptor(
+				NamedResource.create(primaryKey));
+		axiomDescriptor.setSubjectContext(context);
+		return axiomDescriptor;
 	}
 
 	private <T> void addEntityClassAssertion(MutationAxiomDescriptor axiomDescriptor, T entity,
@@ -77,6 +67,23 @@ class EntityDeconstructor {
 		axiomDescriptor.addAssertionValue(entityClassAssertion,
 				new Value<URI>(URI.create(clsType.iri())));
 		axiomDescriptor.setAssertionContext(entityClassAssertion, descriptor.getContext());
+	}
+
+	private <T> void addAssertions(T entity, EntityType<?> et, FieldSpecification<?, ?> fieldSpec,
+			Descriptor descriptor, final MutationAxiomDescriptor axiomDescriptor)
+			throws IllegalAccessException {
+		final FieldStrategy<? extends FieldSpecification<?, ?>> fs = FieldStrategy
+				.createFieldStrategy(et, fieldSpec, descriptor, mapper);
+		fs.setCascadeResolver(cascadeResolver);
+		final Map<Assertion, Collection<Value<?>>> values = fs
+				.extractAttributeValuesFromInstance(entity);
+		for (Assertion assertion : values.keySet()) {
+			axiomDescriptor.addAssertion(assertion);
+			for (Value<?> v : values.get(assertion)) {
+				axiomDescriptor.addAssertionValue(assertion, v);
+			}
+			setAssertionContext(axiomDescriptor, descriptor, fieldSpec, assertion);
+		}
 	}
 
 	private void setAssertionContext(MutationAxiomDescriptor axiomDescriptor,

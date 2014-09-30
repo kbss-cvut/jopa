@@ -100,6 +100,13 @@ public class TestCreateOperationsMultiContextMemoryStore {
 				storage, false, properties);
 		runner.persistSetWithAttributeContexts(em);
 	}
+	
+	@Test
+	public void testPersistEntityWithObjectPropertyWithGeneratedIdentifierAndPutTheReferenceIntoContext() throws Exception {
+		em = TestEnvironment.getPersistenceConnector("SesamePersistEntityWithObjectPropertyWithGeneratedIdentifierContexts",
+				storage, true, properties);
+		runner.persistEntityWithObjectPropertyWithGeneratedIdentifierAndPutThePropertyIntoDifferentContext(em);
+	}
 
 	private static StorageConfig initStorage() {
 		return new SesameMemoryStorageConfig();
@@ -111,6 +118,7 @@ public class TestCreateOperationsMultiContextMemoryStore {
 		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
 		map.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
+		map.put("storage", "new");
 		return map;
 	}
 }

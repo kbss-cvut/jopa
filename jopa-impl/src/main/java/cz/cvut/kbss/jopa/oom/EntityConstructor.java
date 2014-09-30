@@ -25,37 +25,51 @@ class EntityConstructor {
 	<T> T reconstructEntity(URI primaryKey, EntityType<T> et, Descriptor descriptor,
 			Collection<Axiom<?>> axioms) throws InstantiationException, IllegalAccessException {
 		assert !axioms.isEmpty();
-		if (!axiomsContainEntityTypeAssertion(axioms, et)) {
+
+		if (!axiomsContainEntityClassAssertion(axioms, et)) {
 			return null;
 		}
-		final T instance = et.getJavaType().newInstance();
-		EntityPropertiesUtils.setPrimaryKey(primaryKey, instance, et);
-		mapper.registerInstance(primaryKey, instance, descriptor.getContext());
-		final Map<URI, FieldSpecification<?, ?>> attributes = indexEntityAttributes(et);
-		final Map<FieldSpecification<?, ?>, FieldStrategy<? extends FieldSpecification<?, ?>>> fieldLoaders = new HashMap<>(
-				et.getAttributes().size() + 2);
-		for (Axiom<?> ax : axioms) {
-			if (MappingUtils.isEntityClassAssertion(ax, et)) {
-				continue;
-			}
-			final FieldStrategy<? extends FieldSpecification<?, ?>> fs = getFieldLoader(ax,
-					attributes, fieldLoaders, et, descriptor);
-			assert fs != null;
-			fs.addValueFromAxiom(ax);
-		}
-		for (FieldStrategy<?> fs : fieldLoaders.values()) {
-			fs.buildInstanceFieldValue(instance);
-		}
+		final T instance = createEntityInstance(primaryKey, et, descriptor);
+		populateAttributes(instance, et, descriptor, axioms);
 		return instance;
 	}
 
-	private boolean axiomsContainEntityTypeAssertion(Collection<Axiom<?>> axioms, EntityType<?> et) {
+	private boolean axiomsContainEntityClassAssertion(Collection<Axiom<?>> axioms, EntityType<?> et) {
 		for (Axiom<?> ax : axioms) {
 			if (MappingUtils.isEntityClassAssertion(ax, et)) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	private <T> T createEntityInstance(URI primaryKey, EntityType<T> et, Descriptor descriptor)
+			throws InstantiationException, IllegalAccessException {
+		final T instance = et.getJavaType().newInstance();
+		EntityPropertiesUtils.setPrimaryKey(primaryKey, instance, et);
+		mapper.registerInstance(primaryKey, instance, descriptor.getContext());
+		return instance;
+	}
+
+	private <T> void populateAttributes(final T instance, EntityType<T> et,
+			Descriptor entityDescriptor, Collection<Axiom<?>> axioms) throws IllegalAccessException {
+		final Map<URI, FieldSpecification<?, ?>> attributes = indexEntityAttributes(et);
+		final Map<FieldSpecification<?, ?>, FieldStrategy<? extends FieldSpecification<?, ?>>> fieldLoaders = new HashMap<>(
+				et.getAttributes().size());
+		for (Axiom<?> ax : axioms) {
+			if (MappingUtils.isEntityClassAssertion(ax, et)) {
+				continue;
+			}
+			final FieldStrategy<? extends FieldSpecification<?, ?>> fs = getFieldLoader(ax,
+					attributes, fieldLoaders, et, entityDescriptor);
+			assert fs != null;
+			fs.addValueFromAxiom(ax);
+		}
+		// We need to build the field values separately because some may be
+		// plural so we have to wait until all values were prepared
+		for (FieldStrategy<?> fs : fieldLoaders.values()) {
+			fs.buildInstanceFieldValue(instance);
+		}
 	}
 
 	private Map<URI, FieldSpecification<?, ?>> indexEntityAttributes(EntityType<?> et) {

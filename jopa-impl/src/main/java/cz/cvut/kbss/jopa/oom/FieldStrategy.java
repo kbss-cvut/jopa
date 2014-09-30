@@ -94,6 +94,9 @@ abstract class FieldStrategy<T extends FieldSpecification<?, ?>> {
 	 * 
 	 * @param instance
 	 *            The instance to extract values from
+	 * @param V
+	 *            Specifies type of the attribute value. Mostly usable for
+	 *            object property values
 	 * @return Map of values mapped by assertion, empty collection if there are
 	 *         no values
 	 * @throws IllegalArgumentException
@@ -101,8 +104,8 @@ abstract class FieldStrategy<T extends FieldSpecification<?, ?>> {
 	 * @throws IllegalAccessException
 	 *             Access error
 	 */
-	abstract Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
-			throws IllegalArgumentException, IllegalAccessException;
+	abstract <V> Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(
+			Object instance) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * Creates property assertion appropriate for the attribute represented by

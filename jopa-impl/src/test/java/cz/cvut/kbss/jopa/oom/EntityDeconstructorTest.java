@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -31,6 +31,8 @@ import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.OWLClassK;
 import cz.cvut.kbss.jopa.test.utils.Generators;
 import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
@@ -46,7 +48,9 @@ public class EntityDeconstructorTest {
 	private static OWLClassA entityA;
 	private static URI strAttAIdentifier;
 	private static OWLClassB entityB;
+	private static OWLClassE entityE;
 	private static OWLClassD entityD;
+	private static OWLClassK entityK;
 
 	@Mock
 	private EntityType<OWLClassA> etAMock;
@@ -65,13 +69,27 @@ public class EntityDeconstructorTest {
 	private PropertiesSpecification propsMock;
 
 	@Mock
+	private EntityType<OWLClassE> etEMock;
+	@Mock
+	private Attribute strAttEMock;
+	@Mock
+	private Identifier idE;
+
+	@Mock
 	private EntityType<OWLClassD> etDMock;
 	@Mock
 	private Attribute clsAMock;
 
 	@Mock
+	private EntityType<OWLClassK> etKMock;
+	@Mock
+	private Attribute clsEMock;
+	@Mock
+	private Identifier idK;
+
+	@Mock
 	private ObjectOntologyMapperImpl oomMock;
-	
+
 	@Mock
 	private CascadeResolver cascadeResolverMock;
 
@@ -87,9 +105,14 @@ public class EntityDeconstructorTest {
 		entityB = new OWLClassB();
 		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/entityB"));
 		entityB.setStringAttribute("entityBStringAttribute");
+		entityE = new OWLClassE();
+		entityE.setStringAttribute("entityEStringAttribute");
 		entityD = new OWLClassD();
 		entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/entityD"));
 		entityD.setOwlClassA(entityA);
+		entityK = new OWLClassK();
+		entityK.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/entityD"));
+		entityK.setOwlClassE(entityE);
 	}
 
 	@Before
@@ -99,10 +122,13 @@ public class EntityDeconstructorTest {
 		when(etAMock.getIdentifier()).thenReturn(idA);
 		when(idA.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
 		TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsMock);
+		TestEnvironmentUtils.initOWLClassEMocks(etEMock, strAttEMock, idE);
 		TestEnvironmentUtils.initOWLClassDMocks(etDMock, clsAMock);
+		TestEnvironmentUtils.initOWLClassKMocks(etKMock, clsEMock, idK);
 		when(oomMock.getEntityType(OWLClassA.class)).thenReturn(etAMock);
 		entityA.setTypes(null);
 		entityB.setProperties(null);
+		entityE.setUri(null);
 		this.entityBreaker = new EntityDeconstructor(oomMock);
 		entityBreaker.setCascadeResolver(cascadeResolverMock);
 	}
@@ -292,5 +318,21 @@ public class EntityDeconstructorTest {
 			map.put(key, vals);
 		}
 		return map;
+	}
+
+	@Test
+	public void testMapEntityWithObjectPropertyWithGeneratedIdentifier() throws Exception {
+		final URI eUri = URI.create("http://eUri");
+		when(oomMock.generateIdentifier(etEMock)).thenReturn(eUri);
+		when(oomMock.getEntityType(OWLClassE.class)).thenReturn(etEMock);
+		final Descriptor eDescriptor = new EntityDescriptor(CONTEXT);
+		final Descriptor kDescriptor = new EntityDescriptor();
+		kDescriptor.addAttributeDescriptor(OWLClassK.getOwlClassEField(), eDescriptor);
+		assertNull(entityE.getUri());
+		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityK.getUri(),
+				entityK, etKMock, kDescriptor);
+		assertNotNull(res);
+		verify(oomMock).generateIdentifier(etEMock);
+		assertEquals(eUri, entityE.getUri());
 	}
 }
