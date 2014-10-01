@@ -9,7 +9,6 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
-import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -54,15 +53,6 @@ class SingularObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 				descriptor.getAttributeDescriptor(attribute).getContext());
 		return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
 				Collections.<Value<?>> singleton(new Value<>(id)));
-	}
-
-	private <T> URI resolveValueIdentifier(T instance, EntityType<T> valEt) {
-		URI id = EntityPropertiesUtils.getPrimaryKey(instance, valEt);
-		if (id == null) {
-			id = mapper.generateIdentifier(valEt);
-			EntityPropertiesUtils.setPrimaryKey(id, instance, valEt);
-		}
-		return id;
 	}
 
 	@Override

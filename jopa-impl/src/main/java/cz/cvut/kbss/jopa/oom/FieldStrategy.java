@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.oom;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -114,6 +116,15 @@ abstract class FieldStrategy<T extends FieldSpecification<?, ?>> {
 	 * @return Property assertion
 	 */
 	abstract Assertion createAssertion();
+
+	protected <E> URI resolveValueIdentifier(E instance, EntityType<E> valEt) {
+		URI id = EntityPropertiesUtils.getPrimaryKey(instance, valEt);
+		if (id == null) {
+			id = mapper.generateIdentifier(valEt);
+			EntityPropertiesUtils.setPrimaryKey(id, instance, valEt);
+		}
+		return id;
+	}
 
 	static FieldStrategy<? extends FieldSpecification<?, ?>> createFieldStrategy(EntityType<?> et,
 			FieldSpecification<?, ?> att, Descriptor descriptor, EntityMappingHelper mapper) {

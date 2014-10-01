@@ -58,9 +58,15 @@ class PluralObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	}
 
 	@Override
-	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance) {
-		// TODO Auto-generated method stub
-		return null;
+	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
+			throws IllegalArgumentException, IllegalAccessException {
+		final Object value = extractFieldValueFromInstance(instance);
+		assert value instanceof Collection;
+		final Collection<?> valueCollection = (Collection<?>) value;
+
+		final PluralAttributeValueExtractor extractor = PluralAttributeValueExtractor.create(this,
+				pluralAtt);
+		return extractor.extractValues(valueCollection, descriptor);
 	}
 
 	@Override

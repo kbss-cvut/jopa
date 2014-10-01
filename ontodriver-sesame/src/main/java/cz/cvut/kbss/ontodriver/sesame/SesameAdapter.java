@@ -22,10 +22,8 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
-import cz.cvut.kbss.ontodriver_new.model.Value;
 
 class SesameAdapter implements Closeable {
 
@@ -152,19 +150,12 @@ class SesameAdapter implements Closeable {
 
 	void persist(MutationAxiomDescriptor axiomDescriptor) throws SesameDriverException {
 		startTransactionIfNotActive();
-		// TODO Refactor statement persist into a separate class
 		if (individualExists(axiomDescriptor.getSubject(), axiomDescriptor.getSubjectContext())) {
 			throw new OWLEntityExistsException("An individual with identifier "
 					+ axiomDescriptor.getSubject() + " already exists in context "
 					+ axiomDescriptor.getSubjectContext());
 		}
-		final List<Statement> statements = new ArrayList<>();
-		for (Assertion assertion : axiomDescriptor.getAssertions()) {
-			statements.addAll(createSesameStatements(axiomDescriptor.getSubject(), assertion,
-					axiomDescriptor.getAssertionValues(assertion),
-					axiomDescriptor.getAssertionContext(assertion)));
-		}
-		connector.addStatements(statements);
+		new AxiomSaver(connector, valueFactory, language).persistAxioms(axiomDescriptor);
 	}
 
 	private boolean individualExists(NamedResource subject, URI subjectContext)
@@ -174,66 +165,6 @@ class SesameAdapter implements Closeable {
 		final Collection<Statement> result = connector.findStatements(sesameSubject, RDF.TYPE,
 				null, true, SesameUtils.toSesameUri(subjectContext, valueFactory));
 		return !result.isEmpty();
-	}
-
-	private Collection<? extends Statement> createSesameStatements(NamedResource subject,
-			Assertion assertion, List<Value<?>> assertionValues, URI assertionContext)
-			throws SesameDriverException {
-		final List<Statement> statements = new ArrayList<>(assertionValues.size());
-
-		final org.openrdf.model.Resource subjectUri = SesameUtils.toSesameUri(
-				subject.getIdentifier(), valueFactory);
-		final org.openrdf.model.URI property = SesameUtils.toSesameUri(assertion.getIdentifier(),
-				valueFactory);
-		final org.openrdf.model.URI context = assertionContext != null ? SesameUtils.toSesameUri(
-				assertionContext, valueFactory) : null;
-		for (Value<?> val : assertionValues) {
-			org.openrdf.model.Value value = toSesameValue(assertion, val);
-			statements.add(createStatement(subjectUri, property, value, context));
-		}
-		return statements;
-	}
-
-	private org.openrdf.model.Value toSesameValue(Assertion assertion, Value<?> val)
-			throws SesameDriverException {
-		switch (assertion.getType()) {
-		case ANNOTATION_PROPERTY:
-		case DATA_PROPERTY:
-			return SesameUtils.createDataPropertyLiteral(val.getValue(), language, valueFactory);
-		case CLASS:
-		case OBJECT_PROPERTY:
-			return getValueAsSesameUri(val);
-		case PROPERTY:
-			return resolvePropertyValue(assertion, val);
-		default:
-			// Failsafe
-			throw new IllegalArgumentException("Unsupported assertion type " + assertion.getType());
-		}
-	}
-
-	private org.openrdf.model.URI getValueAsSesameUri(Value<?> val) throws SesameDriverException {
-		try {
-			return valueFactory.createURI(val.getValue().toString());
-		} catch (IllegalArgumentException e) {
-			throw new SesameDriverException(e);
-		}
-	}
-
-	private org.openrdf.model.Value resolvePropertyValue(Assertion assertion, Value<?> val) {
-		try {
-			return getValueAsSesameUri(val);
-		} catch (SesameDriverException e) {
-			return SesameUtils.createDataPropertyLiteral(val.getValue(), language, valueFactory);
-		}
-	}
-
-	private Statement createStatement(Resource subject, org.openrdf.model.URI property,
-			org.openrdf.model.Value value, org.openrdf.model.URI context) {
-		if (context != null) {
-			return valueFactory.createStatement(subject, property, value, context);
-		} else {
-			return valueFactory.createStatement(subject, property, value);
-		}
 	}
 
 	void update(MutationAxiomDescriptor axiomDescriptor) throws SesameDriverException {

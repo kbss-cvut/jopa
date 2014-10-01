@@ -23,13 +23,13 @@ import cz.cvut.kbss.ontodriver_new.model.Value;
 
 class AxiomLoader {
 
-	private Connector connector;
-	private ValueFactory valueFactory;
+	private final Connector connector;
+	private final ValueFactory valueFactory;
 
 	private Map<URI, Assertion> propertyToAssertion;
 	private Assertion unspecifiedProperty;
 
-	public AxiomLoader(Connector connector, ValueFactory valueFactory) {
+	AxiomLoader(Connector connector, ValueFactory valueFactory) {
 		this.connector = connector;
 		this.valueFactory = valueFactory;
 		this.propertyToAssertion = new HashMap<>();
