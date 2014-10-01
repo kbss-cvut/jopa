@@ -174,7 +174,13 @@ class SesameAdapter implements Closeable {
 
 	void remove(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
 		startTransactionIfNotActive();
-		// TODO
+		// TODO Remove only axioms declared by the descriptor
+		final Resource individual = SesameUtils.toSesameUri(axiomDescriptor.getSubject()
+				.getIdentifier(), valueFactory);
+		final Collection<Statement> toRemove = connector.findStatements(individual, null, null,
+				false);
+		toRemove.addAll(connector.findStatements(null, null, individual, false));
+		connector.removeStatements(toRemove);
 	}
 
 	StatementExecutor getQueryExecutor() {

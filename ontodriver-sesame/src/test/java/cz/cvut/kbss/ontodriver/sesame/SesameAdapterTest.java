@@ -544,4 +544,17 @@ public class SesameAdapterTest {
 		final URI res = adapter.generateIdentifier(clsUri);
 		assert res == null;
 	}
+	
+	@Test
+	public void testRemove() throws Exception {
+		final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
+		desc.addAssertion(Assertion.createClassAssertion(false));
+		desc.addAssertion(Assertion.createDataPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/dataProperty"), false));
+		final Collection<Statement> statements = initStatementsForDescriptor(desc).values();
+		when(connectorMock.findStatements(eq(subjectUri), any(org.openrdf.model.URI.class), any(org.openrdf.model.Value.class), eq(false))).thenReturn(statements);
+		
+		adapter.remove(desc);
+		verify(connectorMock).findStatements(subjectUri, null, null, false);
+		verify(connectorMock).removeStatements(statements);
+	}
 }
