@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.oom;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
@@ -92,5 +93,18 @@ class EntityDeconstructor {
 		if (attContext != null) {
 			axiomDescriptor.setAssertionContext(propertyAssertion, attContext);
 		}
+	}
+
+	<T> MutationAxiomDescriptor mapFieldToAxioms(URI primaryKey, T entity, Field field,
+			EntityType<T> et, Descriptor descriptor) {
+		final MutationAxiomDescriptor axiomDescriptor = createAxiomDescriptor(primaryKey,
+				descriptor.getContext());
+		final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(field.getName());
+		try {
+			addAssertions(entity, et, fieldSpec, descriptor, axiomDescriptor);
+		} catch (IllegalAccessException e) {
+			throw new EntityDeconstructionException(e);
+		}
+		return axiomDescriptor;
 	}
 }

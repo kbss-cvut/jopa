@@ -62,7 +62,8 @@ public class TypesFieldStrategy extends FieldStrategy<TypesSpecification<?, ?>> 
 		}
 		final Object val = extractFieldValueFromInstance(instance);
 		if (val == null) {
-			return Collections.emptyMap();
+			return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
+					Collections.<Value<?>> singleton(Value.nullValue()));
 		}
 		if (!(val instanceof Set)) {
 			throw new EntityDeconstructionException(

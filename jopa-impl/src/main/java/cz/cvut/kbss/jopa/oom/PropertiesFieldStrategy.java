@@ -89,6 +89,7 @@ public class PropertiesFieldStrategy extends FieldStrategy<PropertiesSpecificati
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object val = extractFieldValueFromInstance(instance);
 		if (val == null) {
+			// TODO What shall we do here?
 			return Collections.emptyMap();
 		}
 		if (!(val instanceof Map)) {

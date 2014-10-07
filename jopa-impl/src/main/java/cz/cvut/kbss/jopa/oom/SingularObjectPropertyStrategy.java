@@ -40,9 +40,13 @@ class SingularObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	<V> Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
 			throws IllegalArgumentException, IllegalAccessException {
 		final V value = (V) extractFieldValueFromInstance(instance);
-		if (value == null) {
-			return Collections.emptyMap();
-		}
+		Value<?> val = value != null ? extractReferenceIdentifier(value) : Value.nullValue();
+		return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
+				Collections.<Value<?>> singleton(val));
+	}
+
+	private <V> Value<?> extractReferenceIdentifier(final V value) {
+		Value<?> val;
 		final EntityType<V> valEt = (EntityType<V>) mapper.getEntityType(value.getClass());
 		if (valEt == null) {
 			throw new EntityDeconstructionException("Value of field " + attribute.getJavaField()
@@ -51,8 +55,8 @@ class SingularObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 		final URI id = resolveValueIdentifier(value, valEt);
 		cascadeResolver.resolveFieldCascading(attribute, value,
 				descriptor.getAttributeDescriptor(attribute).getContext());
-		return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
-				Collections.<Value<?>> singleton(new Value<>(id)));
+		val = new Value<>(id);
+		return val;
 	}
 
 	@Override

@@ -325,4 +325,17 @@ public class ObjectOntologyMapperTest {
 		doThrow(OntoDriverException.class).when(connectionMock).remove(any(AxiomDescriptor.class));
 		mapper.removeEntity(ENTITY_PK, OWLClassA.class, aDescriptor);
 	}
+
+	@Test
+	public void updatesFieldValueInTheOntology() throws Exception {
+		final MutationAxiomDescriptor axiomDescMock = mock(MutationAxiomDescriptor.class);
+		when(
+				entityDeconstructorMock.mapFieldToAxioms(ENTITY_PK, entityA,
+						OWLClassA.getStrAttField(), etAMock, aDescriptor))
+				.thenReturn(axiomDescMock);
+		mapper.updateFieldValue(entityA, OWLClassA.getStrAttField(), aDescriptor);
+		verify(entityDeconstructorMock).mapFieldToAxioms(ENTITY_PK, entityA,
+				OWLClassA.getStrAttField(), etAMock, aDescriptor);
+		verify(connectionMock).update(axiomDescMock);
+	}
 }

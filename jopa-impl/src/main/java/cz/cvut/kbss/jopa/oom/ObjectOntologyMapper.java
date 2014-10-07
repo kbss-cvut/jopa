@@ -80,4 +80,17 @@ public interface ObjectOntologyMapper {
 	 * @throws UnpersistedChangeException
 	 */
 	public void checkForUnpersistedChanges();
+
+	/**
+	 * Sets value of property represented by the specified field to the field's
+	 * value.
+	 * 
+	 * @param entity
+	 *            Entity containing the field
+	 * @param field
+	 *            The field to update
+	 * @param descriptor
+	 *            Optionally specifies context
+	 */
+	public <T> void updateFieldValue(T entity, Field field, Descriptor descriptor);
 }

@@ -45,10 +45,8 @@ class SingularDataPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object value = extractFieldValueFromInstance(instance);
-		if (value == null) {
-			return Collections.emptyMap();
-		}
-		final Value<?> val = new Value<>(value);
+
+		final Value<?> val = value != null ? new Value<>(value) : Value.nullValue();
 		return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
 				Collections.<Value<?>> singleton(val));
 	}

@@ -41,9 +41,8 @@ class NewConnectionWrapper extends ConnectionWrapper {
 	}
 
 	@Override
-	<T> void merge(T entity, Field field, Descriptor repository) {
-		// TODO Auto-generated method stub
-
+	<T> void merge(T entity, Field field, Descriptor descriptor) {
+		mapper.updateFieldValue(entity, field, descriptor);
 	}
 
 	@Override

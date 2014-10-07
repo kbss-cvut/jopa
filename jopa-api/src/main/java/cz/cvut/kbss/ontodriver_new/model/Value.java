@@ -1,6 +1,9 @@
 package cz.cvut.kbss.ontodriver_new.model;
 
 import java.io.Serializable;
+import java.util.Objects;
+
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 /**
  * Represents assertion value. </p>
@@ -14,9 +17,17 @@ public class Value<T> implements Serializable {
 
 	private static final long serialVersionUID = -1220526093003250055L;
 
+	/** Represents a null value - empty value */
+	public static final Value<Void> NULL_VALUE = new NullValue();
+
 	private final T value;
 
+	private Value() {
+		this.value = null;
+	}
+
 	public Value(T value) {
+		Objects.requireNonNull(value, ErrorUtils.constructNPXMessage("value"));
 		this.value = value;
 	}
 
@@ -36,6 +47,19 @@ public class Value<T> implements Serializable {
 	 */
 	public String stringValue() {
 		return (value != null ? value.toString() : "");
+	}
+
+	/**
+	 * Returns a Null object for Value. </p>
+	 * 
+	 * Since Value requires a non-null value, this method returns a predefined
+	 * object which represents a null (empty) value.
+	 * 
+	 * @return Null value
+	 * @see {@link http://en.wikipedia.org/wiki/Null_Object_pattern}
+	 */
+	public static Value<Void> nullValue() {
+		return NULL_VALUE;
 	}
 
 	@Override
@@ -66,5 +90,19 @@ public class Value<T> implements Serializable {
 	@Override
 	public String toString() {
 		return value.toString();
+	}
+
+	private static final class NullValue extends Value<Void> {
+
+		private static final long serialVersionUID = -8829030856649294453L;
+
+		private NullValue() {
+			super();
+		}
+
+		@Override
+		public String stringValue() {
+			return "null";
+		}
 	}
 }

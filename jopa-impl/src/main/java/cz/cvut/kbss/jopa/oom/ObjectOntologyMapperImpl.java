@@ -111,6 +111,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 		}
 
 		final URI primaryKey = EntityPropertiesUtils.getPrimaryKey(entity, metamodel).toURI();
+		@SuppressWarnings("unchecked")
 		final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
 		final AxiomDescriptor axiomDescriptor = descriptorFactory.createForFieldLoading(primaryKey,
 				field, descriptor, et);
@@ -132,6 +133,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 		assert entity != null;
 		assert descriptor != null;
 
+		@SuppressWarnings("unchecked")
 		final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
 		try {
 			if (primaryKey == null) {
@@ -231,6 +233,21 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 			storageConnection.remove(axiomDescriptor);
 		} catch (OntoDriverException e) {
 			throw new StorageAccessException("Exception caught when removing entity.", e);
+		}
+	}
+
+	@Override
+	public <T> void updateFieldValue(T entity, Field field, Descriptor descriptor) {
+		@SuppressWarnings("unchecked")
+		final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
+		final URI pkUri = EntityPropertiesUtils.getPrimaryKey(entity, et);
+
+		final MutationAxiomDescriptor axiomDescriptor = entityBreaker.mapFieldToAxioms(pkUri,
+				entity, field, et, descriptor);
+		try {
+			storageConnection.update(axiomDescriptor);
+		} catch (OntoDriverException e) {
+			throw new StorageAccessException(e);
 		}
 	}
 }
