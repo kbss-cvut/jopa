@@ -152,6 +152,25 @@ public class SesameConnectionTest {
 	}
 
 	@Test
+	public void testContainsAxiom() throws Exception {
+		final Axiom<?> ax = mock(Axiom.class);
+		when(adapterMock.contains(ax, null)).thenReturn(Boolean.TRUE);
+		final boolean res = connection.contains(ax, null);
+		assertTrue(res);
+		verify(adapterMock).contains(ax, null);
+	}
+
+	@Test
+	public void testContainsAxiomInContext() throws Exception {
+		final Axiom<?> ax = mock(Axiom.class);
+		final URI context = URI.create("http://context.org");
+		when(adapterMock.contains(ax, context)).thenReturn(Boolean.TRUE);
+		final boolean res = connection.contains(ax, context);
+		assertTrue(res);
+		verify(adapterMock).contains(ax, context);
+	}
+
+	@Test
 	public void testFind() throws Exception {
 		final AxiomDescriptor axDesc = mock(AxiomDescriptor.class);
 		final List<Axiom<?>> axioms = new ArrayList<>();

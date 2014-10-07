@@ -9,6 +9,7 @@ import java.util.Random;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 
@@ -141,6 +142,21 @@ class SesameAdapter implements Closeable {
 				SesameUtils.toSesameUri(identifier, valueFactory), RDF.TYPE,
 				SesameUtils.toSesameUri(classUri, valueFactory), true);
 		return stmts.isEmpty();
+	}
+
+	boolean contains(Axiom<?> axiom, URI context) throws SesameDriverException {
+		startTransactionIfNotActive();
+		Value value = null;
+		if (SesameUtils.isResourceIdentifier(axiom.getValue().getValue())) {
+			value = valueFactory.createURI(axiom.getValue().stringValue());
+		} else {
+			value = SesameUtils.createDataPropertyLiteral(axiom.getValue().getValue(), language,
+					valueFactory);
+		}
+		return !(connector.findStatements(
+				SesameUtils.toSesameUri(axiom.getSubject().getIdentifier(), valueFactory),
+				SesameUtils.toSesameUri(axiom.getAssertion().getIdentifier(), valueFactory), value,
+				true, SesameUtils.toSesameUri(context, valueFactory)).isEmpty());
 	}
 
 	Collection<Axiom<?>> find(AxiomDescriptor axiomDescriptor) throws SesameDriverException {

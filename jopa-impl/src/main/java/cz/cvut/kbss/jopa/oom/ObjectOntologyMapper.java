@@ -9,6 +9,21 @@ import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 public interface ObjectOntologyMapper {
 
 	/**
+	 * Checks whether the storage contains individual with the specified
+	 * identifier and of the specified type. </p>
+	 * 
+	 * @param cls
+	 *            Class representing the individual type
+	 * @param primaryKey
+	 *            Identifier
+	 * @param descriptor
+	 *            Descriptor, can specify context
+	 * @return {@code true} if the ontology contains such individual,
+	 *         {@code false} otherwise
+	 */
+	public <T> boolean containsEntity(Class<T> cls, URI primaryKey, Descriptor descriptor);
+
+	/**
 	 * Loads and reconstructs the entity from the ontology. </p>
 	 * 
 	 * @param cls

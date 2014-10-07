@@ -121,6 +121,25 @@ public interface Connection extends AutoCloseable {
 	public List<URI> getContexts() throws OntoDriverException;
 
 	/**
+	 * Checks whether the storage contains the specified axiom. </p>
+	 * 
+	 * The context optionally specifies context in which to look for the axiom.
+	 * 
+	 * @param axiom
+	 *            The axiom to look for
+	 * @param context
+	 *            Optional search context, {@code null} means to look in the
+	 *            default storage context
+	 * @return {@code true} if the storage contains matching axiom,
+	 *         {@code false} otherwise
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @throws IllegalStateException
+	 *             If called on a closed connection
+	 */
+	public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException;
+
+	/**
 	 * Finds axioms with the corresponding subject and properties. </p>
 	 * 
 	 * @param descriptor

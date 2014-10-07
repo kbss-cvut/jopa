@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.Date;
 
@@ -103,6 +104,17 @@ final class SesameUtils {
 		} else {
 			throw new IllegalArgumentException("Unsupported literal type " + value.getClass());
 		}
+	}
+
+	/**
+	 * Resolves whether the specified value is a resource identifier. </p>
+	 * 
+	 * @param value
+	 *            The value to check
+	 * @return {@code true} if the value is either an URI or an URL
+	 */
+	static boolean isResourceIdentifier(Object value) {
+		return value instanceof java.net.URI || value instanceof URL || value instanceof URI;
 	}
 
 	/**

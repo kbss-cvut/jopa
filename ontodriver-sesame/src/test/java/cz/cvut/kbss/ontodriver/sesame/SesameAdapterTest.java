@@ -46,6 +46,7 @@ import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
@@ -565,5 +566,57 @@ public class SesameAdapterTest {
 					(org.openrdf.model.URI[]) null);
 		}
 		verify(connectorMock).removeStatements(statements);
+	}
+
+	@Test
+	public void testContainsClassAssertion() throws Exception {
+		final Axiom<URI> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
+				new Value<URI>(URI
+						.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
+		final Set<Statement> result = new HashSet<>();
+		result.add(mock(Statement.class));
+		when(
+				connectorMock.findStatements(eq(subjectUri), eq(RDF.TYPE),
+						eq(vf.createURI(ax.getValue().stringValue())), anyBoolean(),
+						eq((org.openrdf.model.URI[]) null))).thenReturn(result);
+
+		assertTrue(adapter.contains(ax, null));
+		verify(connectorMock).findStatements(subjectUri, RDF.TYPE,
+				vf.createURI(ax.getValue().stringValue()), true, (org.openrdf.model.URI[]) null);
+	}
+
+	@Test
+	public void testContainsClassAssertionInContext() throws Exception {
+		final URI context = URI.create("http://context");
+		final Axiom<URI> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
+				new Value<URI>(URI
+						.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
+		final Set<Statement> result = new HashSet<>();
+		result.add(mock(Statement.class));
+		when(
+				connectorMock.findStatements(eq(subjectUri), eq(RDF.TYPE),
+						eq(vf.createURI(ax.getValue().stringValue())), anyBoolean(),
+						any(org.openrdf.model.URI.class))).thenReturn(result);
+
+		assertTrue(adapter.contains(ax, context));
+		verify(connectorMock).findStatements(subjectUri, RDF.TYPE,
+				vf.createURI(ax.getValue().stringValue()), true, vf.createURI(context.toString()));
+	}
+
+	@Test
+	public void testContainsDataPropertyValue() throws Exception {
+		final URI context = URI.create("http://context");
+		final int val = 10;
+		final Axiom<Integer> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
+				new Value<Integer>(val));
+		final Set<Statement> result = new HashSet<>();
+		when(
+				connectorMock.findStatements(eq(subjectUri), eq(RDF.TYPE),
+						eq(vf.createLiteral(val)), anyBoolean(), any(org.openrdf.model.URI.class)))
+				.thenReturn(result);
+
+		assertFalse(adapter.contains(ax, context));
+		verify(connectorMock).findStatements(subjectUri, RDF.TYPE, vf.createLiteral(val), true,
+				vf.createURI(context.toString()));
 	}
 }

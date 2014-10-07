@@ -21,7 +21,7 @@ class LegacyConnectionWrapper extends ConnectionWrapper {
 	}
 
 	@Override
-	boolean contains(Object primaryKey, Descriptor descriptor) {
+	<T> boolean contains(Object primaryKey, Class<T> cls, Descriptor descriptor) {
 		assert primaryKey != null;
 		try {
 			return connection.contains(primaryKey, descriptor.getContext());

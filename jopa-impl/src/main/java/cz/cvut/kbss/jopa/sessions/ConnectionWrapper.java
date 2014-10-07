@@ -14,7 +14,7 @@ public abstract class ConnectionWrapper {
 
 	protected UnitOfWorkImpl uow;
 
-	abstract boolean contains(Object primaryKey, Descriptor descriptor);
+	abstract <T> boolean contains(Object primaryKey, Class<T> cls, Descriptor descriptor);
 
 	abstract <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor);
 

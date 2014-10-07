@@ -115,6 +115,13 @@ class SesameConnection implements Connection {
 	}
 
 	@Override
+	public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
+		ensureOpen();
+		Objects.requireNonNull(axiom, ErrorUtils.constructNPXMessage("axiom"));
+		return adapter.contains(axiom, context);
+	}
+
+	@Override
 	public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));

@@ -683,8 +683,8 @@ public class UnitOfWorkTest {
 
 	@SuppressWarnings("unchecked")
 	private void mergeDetachedTest() throws Exception {
-		when(storageMock.contains(IRI.create(entityA.getUri()), descriptor)).thenReturn(
-				Boolean.TRUE);
+		when(storageMock.contains(IRI.create(entityA.getUri()), entityA.getClass(), descriptor))
+				.thenReturn(Boolean.TRUE);
 		final Attribute<? super OWLClassA, ?> strAtt = mock(Attribute.class);
 		when(strAtt.getJavaField()).thenReturn(OWLClassA.getStrAttField());
 		@SuppressWarnings("rawtypes")
@@ -714,8 +714,8 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testMergeDetachedNew() throws Exception {
-		when(storageMock.contains(IRI.create(entityA.getUri()), descriptor)).thenReturn(
-				Boolean.FALSE);
+		when(storageMock.contains(IRI.create(entityA.getUri()), entityA.getClass(), descriptor))
+				.thenReturn(Boolean.FALSE);
 		final OWLClassA res = uow.mergeDetached(entityA, descriptor);
 		assertNotNull(res);
 		assertSame(entityA, res);

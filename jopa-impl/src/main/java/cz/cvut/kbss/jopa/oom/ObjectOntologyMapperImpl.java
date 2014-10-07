@@ -24,7 +24,9 @@ import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+import cz.cvut.kbss.ontodriver_new.model.Value;
 
 public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMappingHelper {
 
@@ -49,6 +51,22 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 		this.pendingPersists = new PendingChangeRegistry();
 		this.entityBuilder = new EntityConstructor(this);
 		this.entityBreaker = new EntityDeconstructor(this);
+	}
+
+	@Override
+	public <T> boolean containsEntity(Class<T> cls, URI primaryKey, Descriptor descriptor) {
+		assert cls != null;
+		assert primaryKey != null;
+
+		final EntityType<T> et = getEntityType(cls);
+		final URI classUri = et.getIRI().toURI();
+		final Axiom<URI> ax = new AxiomImpl<URI>(NamedResource.create(primaryKey),
+				Assertion.createClassAssertion(true), new Value<URI>(classUri));
+		try {
+			return storageConnection.contains(ax, descriptor.getContext());
+		} catch (OntoDriverException e) {
+			throw new StorageAccessException(e);
+		}
 	}
 
 	@Override

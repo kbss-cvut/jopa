@@ -29,9 +29,9 @@ class NewConnectionWrapper extends ConnectionWrapper {
 	}
 
 	@Override
-	boolean contains(Object primaryKey, Descriptor descriptor) {
-		// TODO
-		return false;
+	<T> boolean contains(Object primaryKey, Class<T> cls, Descriptor descriptor) {
+		final URI pkUri = getPrimaryKeyAsUri(primaryKey);
+		return mapper.containsEntity(cls, pkUri, descriptor);
 	}
 
 	@Override

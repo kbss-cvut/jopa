@@ -587,7 +587,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
 		final IRI pk = getIdentifier(entity);
-		if (!storage.contains(pk, descriptor)) {
+		if (!storage.contains(pk, entity.getClass(), descriptor)) {
 			registerNewObject(entity, descriptor);
 			return entity;
 		} else {
