@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.oom;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -61,6 +62,10 @@ class PluralObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object value = extractFieldValueFromInstance(instance);
+		if (value == null) {
+			return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
+					Collections.<Value<?>> singleton(Value.nullValue()));
+		}
 		assert value instanceof Collection;
 		final Collection<?> valueCollection = (Collection<?>) value;
 

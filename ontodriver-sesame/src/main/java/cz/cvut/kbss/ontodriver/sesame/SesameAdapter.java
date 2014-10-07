@@ -185,7 +185,9 @@ class SesameAdapter implements Closeable {
 
 	void update(MutationAxiomDescriptor axiomDescriptor) throws SesameDriverException {
 		startTransactionIfNotActive();
-		// TODO
+		// TODO This causes trouble for types, because it also removes the class assertion axiom that represents the entity
+		new EpistemicAxiomRemover(connector, valueFactory).remove(axiomDescriptor);
+		new AxiomSaver(connector, valueFactory, language).persistAxioms(axiomDescriptor);
 	}
 
 	void remove(AxiomDescriptor axiomDescriptor) throws SesameDriverException {

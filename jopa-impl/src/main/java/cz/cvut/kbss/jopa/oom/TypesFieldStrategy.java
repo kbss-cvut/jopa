@@ -72,7 +72,8 @@ public class TypesFieldStrategy extends FieldStrategy<TypesSpecification<?, ?>> 
 		// This cast is fine, it was checked by checkFieldCompatibility
 		final Set<?> types = (Set<?>) typesField.get(instance);
 		if (types.isEmpty()) {
-			return Collections.emptyMap();
+			return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
+					Collections.<Value<?>> singleton(Value.nullValue()));
 		}
 		final Set<Value<?>> result = new HashSet<>(types.size());
 		for (Object type : types) {

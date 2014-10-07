@@ -35,7 +35,9 @@ class AxiomSaver {
 					axiomDescriptor.getAssertionValues(assertion),
 					axiomDescriptor.getAssertionContext(assertion)));
 		}
-		connector.addStatements(statements);
+		if (!statements.isEmpty()) {
+			connector.addStatements(statements);
+		}
 	}
 
 	private Collection<? extends Statement> createSesameStatements(NamedResource subject,
@@ -50,6 +52,9 @@ class AxiomSaver {
 		final org.openrdf.model.URI context = assertionContext != null ? SesameUtils.toSesameUri(
 				assertionContext, valueFactory) : null;
 		for (Value<?> val : assertionValues) {
+			if (val == Value.nullValue()) {
+				continue;
+			}
 			org.openrdf.model.Value value = toSesameValue(assertion, val);
 			statements.add(createStatement(subjectUri, property, value, context));
 		}

@@ -75,6 +75,7 @@ class EntityDeconstructor {
 			throws IllegalAccessException {
 		final FieldStrategy<? extends FieldSpecification<?, ?>> fs = FieldStrategy
 				.createFieldStrategy(et, fieldSpec, descriptor, mapper);
+//		fs.verifyAttributeIsNotInferred();
 		fs.setCascadeResolver(cascadeResolver);
 		final Map<Assertion, Collection<Value<?>>> values = fs
 				.extractAttributeValuesFromInstance(entity);

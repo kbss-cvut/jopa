@@ -9,6 +9,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -618,5 +619,129 @@ public class SesameAdapterTest {
 		assertFalse(adapter.contains(ax, context));
 		verify(connectorMock).findStatements(subjectUri, RDF.TYPE, vf.createLiteral(val), true,
 				vf.createURI(context.toString()));
+	}
+
+	@Test
+	public void updatesDataPropertyToNewValue() throws Exception {
+		final MutationAxiomDescriptor desc = new MutationAxiomDescriptor(SUBJECT);
+		final URI property = URI.create("http://krizik.felk.cvut.cz/dataProperty");
+		final org.openrdf.model.URI sesameProperty = vf.createURI(property.toString());
+		final boolean inferred = false;
+		final Assertion assertion = Assertion.createDataPropertyAssertion(property, inferred);
+		final String oldValue = "oldValue";
+		final String newValue = "newValue";
+		desc.addAssertion(assertion);
+		desc.addAssertionValue(assertion, new Value<String>(newValue));
+		final Collection<Statement> statements = Collections.singleton(vf.createStatement(
+				subjectUri, sesameProperty, vf.createLiteral(oldValue, "en")));
+		when(
+				connectorMock.findStatements(eq(subjectUri), eq(sesameProperty),
+						any(org.openrdf.model.Value.class), eq(inferred),
+						any(org.openrdf.model.URI.class))).thenReturn(statements);
+
+		adapter.update(desc);
+		verify(connectorMock).findStatements(subjectUri, sesameProperty, null, inferred,
+				(org.openrdf.model.URI) null);
+		verify(connectorMock).removeStatements(statements);
+		final Collection<Statement> inserted = Collections.singletonList(vf.createStatement(
+				subjectUri, sesameProperty, vf.createLiteral(newValue, "en")));
+		verify(connectorMock).addStatements(inserted);
+	}
+
+	@Test
+	public void updatesObjectPropertyToNewValue() throws Exception {
+		final MutationAxiomDescriptor desc = new MutationAxiomDescriptor(SUBJECT);
+		final URI property = URI.create("http://krizik.felk.cvut.cz/objectProperty");
+		final org.openrdf.model.URI sesameProperty = vf.createURI(property.toString());
+		final boolean inferred = false;
+		final Assertion assertion = Assertion.createObjectPropertyAssertion(property, inferred);
+		final org.openrdf.model.URI oldValue = vf.createURI("http://www.old-value.org");
+		final org.openrdf.model.URI newValue = vf.createURI("http://www.new-value.org");
+		desc.addAssertion(assertion);
+		desc.addAssertionValue(assertion, new Value<URI>(URI.create(newValue.stringValue())));
+		final Collection<Statement> statements = Collections.singleton(vf.createStatement(
+				subjectUri, sesameProperty, oldValue));
+		when(
+				connectorMock.findStatements(eq(subjectUri), eq(sesameProperty),
+						any(org.openrdf.model.Value.class), eq(inferred),
+						any(org.openrdf.model.URI.class))).thenReturn(statements);
+
+		adapter.update(desc);
+		verify(connectorMock).findStatements(subjectUri, sesameProperty, null, inferred,
+				(org.openrdf.model.URI) null);
+		verify(connectorMock).removeStatements(statements);
+		final Collection<Statement> inserted = Collections.singletonList(vf.createStatement(
+				subjectUri, sesameProperty, newValue));
+		verify(connectorMock).addStatements(inserted);
+	}
+
+	@Test
+	public void updatesObjectPropertyToEmptyValue() throws Exception {
+		final MutationAxiomDescriptor desc = new MutationAxiomDescriptor(SUBJECT);
+		final URI property = URI.create("http://krizik.felk.cvut.cz/objectProperty");
+		final org.openrdf.model.URI sesameProperty = vf.createURI(property.toString());
+		final boolean inferred = false;
+		final Assertion assertion = Assertion.createObjectPropertyAssertion(property, inferred);
+		final org.openrdf.model.URI oldValue = vf.createURI("http://www.old-value.org");
+		desc.addAssertion(assertion);
+		desc.addAssertionValue(assertion, Value.nullValue());
+		final Collection<Statement> statements = Collections.singleton(vf.createStatement(
+				subjectUri, sesameProperty, oldValue));
+		when(
+				connectorMock.findStatements(eq(subjectUri), eq(sesameProperty),
+						any(org.openrdf.model.Value.class), eq(inferred),
+						any(org.openrdf.model.URI.class))).thenReturn(statements);
+
+		adapter.update(desc);
+		verify(connectorMock).findStatements(subjectUri, sesameProperty, null, inferred,
+				(org.openrdf.model.URI) null);
+		verify(connectorMock).removeStatements(statements);
+		verify(connectorMock, never()).addStatements(any(Collection.class));
+	}
+
+	@Test
+	public void updatesTypesInContext() throws Exception {
+		final MutationAxiomDescriptor desc = new MutationAxiomDescriptor(SUBJECT);
+		final boolean inferred = false;
+		final Assertion assertion = Assertion.createClassAssertion(inferred);
+		final String[] newTypes = { "http://krizik.felk.cvut.cz/ontologies/types#tOne",
+				"http://krizik.felk.cvut.cz/ontologies/types#tTwo",
+				"http://krizik.felk.cvut.cz/ontologies/types#tFour",
+				"http://krizik.felk.cvut.cz/ontologies/types#tFive" };
+		desc.addAssertion(assertion);
+		for (String t : newTypes) {
+			desc.addAssertionValue(assertion, new Value<URI>(URI.create(t)));
+		}
+		final Collection<Statement> statements = initOldTypes();
+		when(
+				connectorMock.findStatements(eq(subjectUri), eq(RDF.TYPE),
+						any(org.openrdf.model.Value.class), eq(inferred),
+						any(org.openrdf.model.URI.class))).thenReturn(statements);
+
+		adapter.update(desc);
+		verify(connectorMock).findStatements(subjectUri, RDF.TYPE, null, inferred,
+				(org.openrdf.model.URI) null);
+		verify(connectorMock).removeStatements(statements);
+		final Collection<Statement> inserted = initNewTypes(newTypes);
+		verify(connectorMock).addStatements(inserted);
+	}
+
+	private Collection<Statement> initOldTypes() {
+		final Collection<Statement> stmts = new HashSet<>();
+		stmts.add(vf.createStatement(subjectUri, RDF.TYPE,
+				vf.createURI("http://krizik.felk.cvut.cz/ontologies/types#tOne")));
+		stmts.add(vf.createStatement(subjectUri, RDF.TYPE,
+				vf.createURI("http://krizik.felk.cvut.cz/ontologies/types#tTwo")));
+		stmts.add(vf.createStatement(subjectUri, RDF.TYPE,
+				vf.createURI("http://krizik.felk.cvut.cz/ontologies/types#tThree")));
+		return stmts;
+	}
+
+	private Collection<Statement> initNewTypes(String[] newTypes) {
+		final Collection<Statement> stmts = new ArrayList<>();
+		for (String t : newTypes) {
+			stmts.add(vf.createStatement(subjectUri, RDF.TYPE, vf.createURI(t)));
+		}
+		return stmts;
 	}
 }

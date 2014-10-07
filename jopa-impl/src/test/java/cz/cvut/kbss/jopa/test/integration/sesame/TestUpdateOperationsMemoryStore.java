@@ -180,6 +180,7 @@ public class TestUpdateOperationsMemoryStore {
 		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
 		map.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
+		map.put("storage", "new");
 		return map;
 	}
 }

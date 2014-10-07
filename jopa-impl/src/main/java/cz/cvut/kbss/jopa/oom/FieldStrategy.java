@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 
+import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -66,6 +67,28 @@ abstract class FieldStrategy<T extends FieldSpecification<?, ?>> {
 		return field.get(instance);
 	}
 
+	protected <E> URI resolveValueIdentifier(E instance, EntityType<E> valEt) {
+		URI id = EntityPropertiesUtils.getPrimaryKey(instance, valEt);
+		if (id == null) {
+			id = mapper.generateIdentifier(valEt);
+			EntityPropertiesUtils.setPrimaryKey(id, instance, valEt);
+		}
+		return id;
+	}
+
+	/**
+	 * Checks that the field represented by this strategy is not inferred.
+	 * 
+	 * @throws OWLInferredAttributeModifiedException
+	 *             If the attribute is indeed inferred
+	 */
+	void verifyAttributeIsNotInferred() {
+		if (attribute.isInferred()) {
+			throw new OWLInferredAttributeModifiedException("Cannot modify inferred attribute "
+					+ attribute);
+		}
+	}
+
 	/**
 	 * Adds value from the specified axioms to this strategy. </p>
 	 * 
@@ -116,15 +139,6 @@ abstract class FieldStrategy<T extends FieldSpecification<?, ?>> {
 	 * @return Property assertion
 	 */
 	abstract Assertion createAssertion();
-
-	protected <E> URI resolveValueIdentifier(E instance, EntityType<E> valEt) {
-		URI id = EntityPropertiesUtils.getPrimaryKey(instance, valEt);
-		if (id == null) {
-			id = mapper.generateIdentifier(valEt);
-			EntityPropertiesUtils.setPrimaryKey(id, instance, valEt);
-		}
-		return id;
-	}
 
 	static FieldStrategy<? extends FieldSpecification<?, ?>> createFieldStrategy(EntityType<?> et,
 			FieldSpecification<?, ?> att, Descriptor descriptor, EntityMappingHelper mapper) {
