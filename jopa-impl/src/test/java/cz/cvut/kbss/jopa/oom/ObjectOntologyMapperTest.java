@@ -10,6 +10,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -310,5 +311,18 @@ public class ObjectOntologyMapperTest {
 		when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(
 				Collections.<Axiom<?>> emptyList());
 		mapper.checkForUnpersistedChanges();
+	}
+
+	@Test
+	public void removesEntityWithEmptyDescriptor() throws Exception {
+		mapper.removeEntity(ENTITY_PK, OWLClassA.class, aDescriptor);
+		verify(descriptorFactoryMock).createForEntityLoading(ENTITY_PK, aDescriptor, etAMock);
+		verify(connectionMock).remove(axiomDescriptor);
+	}
+
+	@Test(expected = StorageAccessException.class)
+	public void throwsStorageAccessWhenRemovingEntity() throws Exception {
+		doThrow(OntoDriverException.class).when(connectionMock).remove(any(AxiomDescriptor.class));
+		mapper.removeEntity(ENTITY_PK, OWLClassA.class, aDescriptor);
 	}
 }

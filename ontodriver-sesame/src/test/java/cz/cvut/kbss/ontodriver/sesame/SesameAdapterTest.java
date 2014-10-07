@@ -544,17 +544,26 @@ public class SesameAdapterTest {
 		final URI res = adapter.generateIdentifier(clsUri);
 		assert res == null;
 	}
-	
+
 	@Test
 	public void testRemove() throws Exception {
 		final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
 		desc.addAssertion(Assertion.createClassAssertion(false));
-		desc.addAssertion(Assertion.createDataPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/dataProperty"), false));
-		final Collection<Statement> statements = initStatementsForDescriptor(desc).values();
-		when(connectorMock.findStatements(eq(subjectUri), any(org.openrdf.model.URI.class), any(org.openrdf.model.Value.class), eq(false))).thenReturn(statements);
-		
+		desc.addAssertion(Assertion.createDataPropertyAssertion(
+				URI.create("http://krizik.felk.cvut.cz/dataProperty"), false));
+		final Collection<Statement> statements = new HashSet<>(initStatementsForDescriptor(desc)
+				.values());
+		when(
+				connectorMock.findStatements(eq(subjectUri), any(org.openrdf.model.URI.class),
+						any(org.openrdf.model.Value.class), eq(false),
+						any(org.openrdf.model.URI.class))).thenReturn(statements);
+
 		adapter.remove(desc);
-		verify(connectorMock).findStatements(subjectUri, null, null, false);
+		for (Assertion ass : desc.getAssertions()) {
+			verify(connectorMock).findStatements(subjectUri,
+					vf.createURI(ass.getIdentifier().toString()), null, false,
+					(org.openrdf.model.URI[]) null);
+		}
 		verify(connectorMock).removeStatements(statements);
 	}
 }

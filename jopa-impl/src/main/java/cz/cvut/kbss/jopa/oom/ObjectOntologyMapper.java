@@ -46,7 +46,19 @@ public interface ObjectOntologyMapper {
 	 *            Descriptor possibly specifying entity and attribute contexts
 	 */
 	public <T> void persistEntity(URI primaryKey, T entity, Descriptor descriptor);
-	
+
+	/**
+	 * Removes entity with specified identifier from the ontology.
+	 * 
+	 * @param primaryKey
+	 *            Entity identifier
+	 * @param cls
+	 *            Entity class
+	 * @param descriptor
+	 *            Descriptor specifying entity attribute contexts
+	 */
+	public <T> void removeEntity(URI primaryKey, Class<T> cls, Descriptor descriptor);
+
 	/**
 	 * Checks that there are no pending changes in the mapper. </p>
 	 * 

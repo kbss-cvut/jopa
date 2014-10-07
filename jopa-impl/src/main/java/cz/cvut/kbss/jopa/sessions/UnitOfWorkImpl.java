@@ -773,7 +773,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			getDeletedObjects().put(object, object);
 			this.hasDeleted = true;
 		}
-		storage.remove(primaryKey, repo);
+		storage.remove(primaryKey, object.getClass(), repo);
 	}
 
 	/**

@@ -74,7 +74,7 @@ class LegacyConnectionWrapper extends ConnectionWrapper {
 	}
 
 	@Override
-	<T> void remove(Object primaryKey, Descriptor descriptor) {
+	<T> void remove(Object primaryKey, Class<T> cls, Descriptor descriptor) {
 		assert primaryKey != null;
 		assert descriptor != null;
 		try {

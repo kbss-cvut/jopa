@@ -53,9 +53,9 @@ class NewConnectionWrapper extends ConnectionWrapper {
 	}
 
 	@Override
-	<T> void remove(Object primaryKey, Descriptor descriptor) {
-		// TODO Auto-generated method stub
-
+	<T> void remove(Object primaryKey, Class<T> cls, Descriptor descriptor) {
+		final URI pkUri = getPrimaryKeyAsUri(primaryKey);
+		mapper.removeEntity(pkUri, cls, descriptor);
 	}
 
 	@Override

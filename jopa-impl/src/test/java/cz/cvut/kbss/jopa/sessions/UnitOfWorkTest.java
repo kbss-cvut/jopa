@@ -251,7 +251,7 @@ public class UnitOfWorkTest {
 		uow.commit();
 
 		verify(cacheManagerMock).evict(OWLClassA.class, IRI.create(entityA.getUri()), CONTEXT_URI);
-		verify(storageMock).remove(IRI.create(entityA.getUri()), descriptor);
+		verify(storageMock).remove(IRI.create(entityA.getUri()), entityA.getClass(), descriptor);
 	}
 
 	@Test
@@ -461,7 +461,7 @@ public class UnitOfWorkTest {
 		uow.removeObject(toRemove);
 		assertTrue(uow.getDeletedObjects().containsKey(toRemove));
 		assertFalse(uow.contains(toRemove));
-		verify(storageMock).remove(IRI.create(entityB.getUri()), descriptor);
+		verify(storageMock).remove(IRI.create(entityB.getUri()), entityB.getClass(), descriptor);
 	}
 
 	@Test

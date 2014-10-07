@@ -22,7 +22,7 @@ public abstract class ConnectionWrapper {
 
 	abstract <T> void persist(Object primaryKey, T entity, Descriptor descriptor);
 
-	abstract <T> void remove(Object primaryKey, Descriptor descriptor);
+	abstract <T> void remove(Object primaryKey, Class<T> cls, Descriptor descriptor);
 
 	abstract <T> void loadFieldValue(T entity, Field field, Descriptor descriptor);
 

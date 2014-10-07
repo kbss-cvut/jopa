@@ -203,4 +203,16 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 	<T> void registerPendingPersist(URI primaryKey, T entity, URI context) {
 		pendingPersists.registerInstance(primaryKey, entity, context);
 	}
+
+	@Override
+	public <T> void removeEntity(URI primaryKey, Class<T> cls, Descriptor descriptor) {
+		final EntityType<T> et = getEntityType(cls);
+		final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(
+				primaryKey, descriptor, et);
+		try {
+			storageConnection.remove(axiomDescriptor);
+		} catch (OntoDriverException e) {
+			throw new StorageAccessException("Exception caught when removing entity.", e);
+		}
+	}
 }
