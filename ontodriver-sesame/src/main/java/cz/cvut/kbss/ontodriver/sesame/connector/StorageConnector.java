@@ -212,11 +212,9 @@ class StorageConnector extends AbstractConnector {
 		try {
 			connection = acquireConnection();
 			final TupleQuery tq = connection.prepareTupleQuery(QueryLanguage.SPARQL, query);
-			return tq.evaluate();
+			return new QueryResult(tq.evaluate(), connection);
 		} catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
 			throw new SesameDriverException(e);
-		} finally {
-			releaseConnection(connection);
 		}
 	}
 

@@ -12,7 +12,7 @@ class InstanceRegistry {
 
 	<T> void registerInstance(URI primaryKey, T instance, URI context) {
 		assert primaryKey != null;
-		context = checkForDefaultContext(context);
+//		context = checkForDefaultContext(context);
 
 		if (!instances.containsKey(context)) {
 			instances.put(context, new HashMap<URI, Object>());
@@ -21,12 +21,12 @@ class InstanceRegistry {
 	}
 
 	boolean containsInstance(URI primaryKey, URI context) {
-		context = checkForDefaultContext(context);
+//		context = checkForDefaultContext(context);
 		return instances.containsKey(context) && instances.get(context).containsKey(primaryKey);
 	}
 
 	<T> T getInstance(Object primaryKey, URI context) {
-		context = checkForDefaultContext(context);
+//		context = checkForDefaultContext(context);
 		if (instances.containsKey(context) && instances.get(context).containsKey(primaryKey)) {
 			return (T) instances.get(context).get(primaryKey);
 		}

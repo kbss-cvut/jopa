@@ -50,6 +50,7 @@ public aspect BeanListenerAspect {
 			while ((superCls = superCls.getSuperclass()) != null) {
 				try {
 					field = superCls.getDeclaredField(fieldName);
+					break;
 				} catch (NoSuchFieldException ex) {
 					// Do nothing, keep trying
 				}

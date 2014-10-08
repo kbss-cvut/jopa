@@ -8,7 +8,7 @@ import java.util.Map;
 class PendingChangeRegistry extends InstanceRegistry {
 
 	void removeInstance(URI primaryKey, URI context) {
-		context = checkForDefaultContext(context);
+//		context = checkForDefaultContext(context);
 		final Map<URI, Object> contextInstances = instances.get(context);
 		if (contextInstances != null) {
 			contextInstances.remove(primaryKey);

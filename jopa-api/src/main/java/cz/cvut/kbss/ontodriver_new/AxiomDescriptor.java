@@ -149,7 +149,7 @@ public class AxiomDescriptor {
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
-		sb.append(subject);
+		sb.append("[").append(subject);
 		if (subjectContext != null) {
 			sb.append(" - ").append(subjectContext);
 		}
@@ -158,6 +158,7 @@ public class AxiomDescriptor {
 		} else {
 			sb.append(", properties: ").append(assertions);
 		}
+		sb.append("]");
 		return sb.toString();
 	}
 }

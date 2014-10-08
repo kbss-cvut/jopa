@@ -57,6 +57,9 @@ class EntityConstructor {
 		final Map<FieldSpecification<?, ?>, FieldStrategy<? extends FieldSpecification<?, ?>>> fieldLoaders = new HashMap<>(
 				et.getAttributes().size());
 		for (Axiom<?> ax : axioms) {
+			if (MappingUtils.isEntityClassAssertion(ax, et)) {
+				continue;
+			}
 			final FieldStrategy<? extends FieldSpecification<?, ?>> fs = getFieldLoader(ax,
 					attributes, fieldLoaders, et, entityDescriptor);
 			assert fs != null;
