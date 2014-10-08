@@ -181,6 +181,7 @@ public class TestCreateOperationsNativeStore {
 		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
 		map.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
+		map.put("storage", "new");
 		return map;
 	}
 }

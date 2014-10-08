@@ -57,16 +57,13 @@ class EntityConstructor {
 		final Map<FieldSpecification<?, ?>, FieldStrategy<? extends FieldSpecification<?, ?>>> fieldLoaders = new HashMap<>(
 				et.getAttributes().size());
 		for (Axiom<?> ax : axioms) {
-			if (MappingUtils.isEntityClassAssertion(ax, et)) {
-				continue;
-			}
 			final FieldStrategy<? extends FieldSpecification<?, ?>> fs = getFieldLoader(ax,
 					attributes, fieldLoaders, et, entityDescriptor);
 			assert fs != null;
 			fs.addValueFromAxiom(ax);
 		}
 		// We need to build the field values separately because some may be
-		// plural so we have to wait until all values were prepared
+		// plural and we have to wait until all values are prepared
 		for (FieldStrategy<?> fs : fieldLoaders.values()) {
 			fs.buildInstanceFieldValue(instance);
 		}

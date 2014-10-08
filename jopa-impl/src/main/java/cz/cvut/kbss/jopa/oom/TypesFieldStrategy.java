@@ -29,7 +29,10 @@ public class TypesFieldStrategy extends FieldStrategy<TypesSpecification<?, ?>> 
 
 	@Override
 	void addValueFromAxiom(Axiom<?> ax) {
-		final String typeAsString = ax.getValue().getValue().toString();
+		if (MappingUtils.isEntityClassAssertion(ax, et)) {
+			return;
+		}
+		final String typeAsString = ax.getValue().stringValue();
 		if (et.getIRI().toString().equals(typeAsString)) {
 			return;
 		}

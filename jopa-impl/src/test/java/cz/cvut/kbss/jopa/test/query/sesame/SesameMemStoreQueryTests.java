@@ -166,6 +166,7 @@ public class SesameMemStoreQueryTests {
 		final Map<String, String> map = new HashMap<>();
 		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
 		map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
+		map.put("storage", "new");
 		return map;
 	}
 }

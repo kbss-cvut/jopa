@@ -165,6 +165,7 @@ public class SesameNativeStoreQueryTests {
 	private static Map<String, String> initProperties() {
 		final Map<String, String> map = new HashMap<>();
 		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
+		map.put("storage", "new");
 		return map;
 	}
 }

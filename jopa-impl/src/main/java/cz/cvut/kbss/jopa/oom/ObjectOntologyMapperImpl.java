@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
@@ -183,7 +184,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 			if (!persists.isEmpty()) {
 				for (URI ctx : persists.keySet()) {
 					for (Entry<URI, Object> e : persists.get(ctx).entrySet()) {
-						doesInstanceExistInOntology(ctx, e.getKey(), e.getValue());
+						verifyInstanceExistInOntology(ctx, e.getKey(), e.getValue());
 					}
 				}
 			}
@@ -192,14 +193,10 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 		}
 	}
 
-	private void doesInstanceExistInOntology(URI ctx, URI primaryKey, Object instance)
+	private void verifyInstanceExistInOntology(URI ctx, URI primaryKey, Object instance)
 			throws OntoDriverException {
-		final AxiomDescriptor d = new AxiomDescriptor(NamedResource.create(primaryKey));
-		final Assertion typeAssertion = Assertion.createClassAssertion(false);
-		d.addAssertion(typeAssertion);
-		d.setAssertionContext(typeAssertion, ctx);
-		final Collection<Axiom<?>> res = storageConnection.find(d);
-		if (!containsClassAssertion(instance, res)) {
+		boolean exists = containsEntity(instance.getClass(), primaryKey, new EntityDescriptor(ctx));
+		if (!exists) {
 			throw new UnpersistedChangeException(
 					"Encountered an instance that was neither persisted nor marked as cascade for persist. The instance: "
 							+ instance);
