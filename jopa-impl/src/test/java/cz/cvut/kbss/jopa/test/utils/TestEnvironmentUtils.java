@@ -139,11 +139,14 @@ public final class TestEnvironmentUtils {
 		when(strAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
 		when(propsMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
 	}
-	
-	public static void initOWLClassCMocks(EntityType<OWLClassC> etMock, ListAttribute simpleListMock, ListAttribute refListMock, Identifier idMock) throws NoSuchFieldException, SecurityException {
+
+	public static void initOWLClassCMocks(EntityType<OWLClassC> etMock,
+			ListAttribute simpleListMock, ListAttribute refListMock, Identifier idMock)
+			throws NoSuchFieldException, SecurityException {
 		when(etMock.getJavaType()).thenReturn(OWLClassC.class);
 		when(etMock.getIRI()).thenReturn(IRI.create(OWLClassC.getClassIri()));
-		when(etMock.getAttribute(OWLClassC.getSimpleListField().getName())).thenReturn(simpleListMock);
+		when(etMock.getAttribute(OWLClassC.getSimpleListField().getName())).thenReturn(
+				simpleListMock);
 		when(etMock.getAttribute(OWLClassC.getRefListField().getName())).thenReturn(refListMock);
 		final Set<Attribute<? super OWLClassC, ?>> atts = new HashSet<>();
 		atts.add(simpleListMock);
@@ -151,20 +154,32 @@ public final class TestEnvironmentUtils {
 		when(etMock.getAttributes()).thenReturn(atts);
 		when(simpleListMock.getJavaField()).thenReturn(OWLClassC.getSimpleListField());
 		when(refListMock.getJavaField()).thenReturn(OWLClassC.getRefListField());
-		String hasListAttIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class).ClassOWLListIRI();
+		String attIri = OWLClassC.getSimpleListField().getAnnotation(OWLObjectProperty.class).iri();
+		when(simpleListMock.getIRI()).thenReturn(IRI.create(attIri));
+		String hasListAttIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
+				.ClassOWLListIRI();
 		when(simpleListMock.getSequenceType()).thenReturn(SequenceType.simple);
+		when(simpleListMock.getCollectionType()).thenReturn(CollectionType.LIST);
 		when(simpleListMock.getOWLListClass()).thenReturn(IRI.create(hasListAttIri));
-		String hasNextIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class).ObjectPropertyHasNextIRI();
+		String hasNextIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
+				.ObjectPropertyHasNextIRI();
 		when(simpleListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
-		
+		when(simpleListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
+
 		hasListAttIri = OWLClassC.getRefListField().getAnnotation(Sequence.class).ClassOWLListIRI();
 		when(refListMock.getSequenceType()).thenReturn(SequenceType.referenced);
+		when(refListMock.getCollectionType()).thenReturn(CollectionType.LIST);
 		when(refListMock.getOWLListClass()).thenReturn(IRI.create(hasListAttIri));
-		hasNextIri = OWLClassC.getRefListField().getAnnotation(Sequence.class).ObjectPropertyHasNextIRI();
+		hasNextIri = OWLClassC.getRefListField().getAnnotation(Sequence.class)
+				.ObjectPropertyHasNextIRI();
 		when(refListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
-		final String contentIri = OWLClassC.getRefListField().getAnnotation(Sequence.class).ObjectPropertyHasContentsIRI();
+		final String contentIri = OWLClassC.getRefListField().getAnnotation(Sequence.class)
+				.ObjectPropertyHasContentsIRI();
 		when(refListMock.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(contentIri));
-		
+		attIri = OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).iri();
+		when(refListMock.getIRI()).thenReturn(IRI.create(attIri));
+		when(refListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
+
 		when(etMock.getIdentifier()).thenReturn(idMock);
 		when(idMock.getJavaField()).thenReturn(OWLClassC.class.getDeclaredField("uri"));
 	}

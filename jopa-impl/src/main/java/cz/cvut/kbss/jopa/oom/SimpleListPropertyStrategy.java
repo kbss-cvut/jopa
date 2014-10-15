@@ -32,7 +32,7 @@ class SimpleListPropertyStrategy extends PluralObjectPropertyStrategy {
 	private SimpleListDescriptor createListDescriptor(Axiom<?> ax) {
 		final NamedResource owner = ax.getSubject();
 		final Assertion listProperty = Assertion.createObjectPropertyAssertion(listAttribute
-				.getOWLListClass().toURI(), listAttribute.isInferred());
+				.getIRI().toURI(), listAttribute.isInferred());
 		final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(listAttribute
 				.getOWLObjectPropertyHasNextIRI().toURI(), listAttribute.isInferred());
 		final SimpleListDescriptor listDescriptor = new SimpleListDescriptor(owner, listProperty,
