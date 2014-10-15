@@ -18,8 +18,6 @@ class AxiomDescriptorFactory {
 			EntityType<?> et) {
 		final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(primaryKey));
 		descriptor.setSubjectContext(entityDescriptor.getContext());
-		// TODO We should add assertion that checks that the returned axioms
-		// correspond to individual of the correct class
 		descriptor.addAssertion(Assertion.createClassAssertion(false));
 		if (et.getTypes() != null && et.getTypes().getFetchType() != FetchType.LAZY) {
 			final Assertion typesAssertion = Assertion.createClassAssertion(et.getTypes()

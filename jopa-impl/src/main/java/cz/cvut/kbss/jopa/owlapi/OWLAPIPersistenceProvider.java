@@ -20,10 +20,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.LoadState;
 import cz.cvut.kbss.jopa.model.PersistenceProvider;
 import cz.cvut.kbss.jopa.model.ProviderUtil;
+import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
@@ -109,6 +111,16 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider, ProviderU
 		final UnitOfWorkImpl uow = getPersistenceContext(entity);
 		if (uow != null && uow.isInTransaction()) {
 			uow.attributeChanged(entity, f);
+		}
+	}
+
+	static void verifyInferredAttributeNotModified(Object entity, Field field) {
+		if (getPersistenceContext(entity) == null) {
+			return;
+		}
+		if (CloneBuilderImpl.isFieldInferred(field)) {
+			throw new OWLInferredAttributeModifiedException(
+					"Modifying inferred attributes is forbidden.");
 		}
 	}
 }

@@ -23,6 +23,8 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
@@ -243,6 +245,24 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 				entity, field, et, descriptor);
 		try {
 			storageConnection.update(axiomDescriptor);
+		} catch (OntoDriverException e) {
+			throw new StorageAccessException(e);
+		}
+	}
+
+	@Override
+	public Collection<Axiom<?>> loadSimpleList(SimpleListDescriptor listDescriptor) {
+		try {
+			return storageConnection.loadSimpleList(listDescriptor);
+		} catch (OntoDriverException e) {
+			throw new StorageAccessException(e);
+		}
+	}
+
+	@Override
+	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor listDescriptor) {
+		try {
+			return storageConnection.loadReferencedList(listDescriptor);
 		} catch (OntoDriverException e) {
 			throw new StorageAccessException(e);
 		}

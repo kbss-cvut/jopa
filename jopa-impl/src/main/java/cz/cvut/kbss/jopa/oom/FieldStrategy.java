@@ -10,6 +10,8 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -155,7 +157,8 @@ abstract class FieldStrategy<T extends FieldSpecification<?, ?>> {
 			case DATA:
 				throw new NotYetImplementedException();
 			case OBJECT:
-				return new PluralObjectPropertyStrategy(et, attribute, descriptor, mapper);
+				return createPluralObjectPropertyStrategy(et, (PluralAttribute<?, ?, ?>) attribute,
+						descriptor, mapper);
 			default:
 				break;
 			}
@@ -172,5 +175,28 @@ abstract class FieldStrategy<T extends FieldSpecification<?, ?>> {
 		}
 		// Shouldn't happen
 		throw new IllegalArgumentException();
+	}
+
+	private static FieldStrategy<? extends FieldSpecification<?, ?>> createPluralObjectPropertyStrategy(
+			EntityType<?> et, PluralAttribute<?, ?, ?> attribute, Descriptor descriptor,
+			EntityMappingHelper mapper) {
+		switch (attribute.getCollectionType()) {
+		case LIST:
+			final ListAttribute<?, ?> listAtt = (ListAttribute<?, ?>) attribute;
+			switch (listAtt.getSequenceType()) {
+			case referenced:
+				return new ReferencedListPropertyStrategy(et, listAtt, descriptor, mapper);
+			case simple:
+				return new SimpleListPropertyStrategy(et, listAtt, descriptor, mapper);
+			default:
+				throw new NotYetImplementedException("Unsupported list attribute sequence type "
+						+ listAtt.getSequenceType());
+			}
+		case SET:
+			return new PluralObjectPropertyStrategy(et, attribute, descriptor, mapper);
+		default:
+			throw new NotYetImplementedException("Unsupported plural attribute collection type "
+					+ attribute.getCollectionType());
+		}
 	}
 }

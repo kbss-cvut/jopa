@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -14,10 +15,13 @@ import java.util.Set;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.Sequence;
+import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute.CollectionType;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
@@ -26,6 +30,7 @@ import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassJ;
@@ -133,6 +138,35 @@ public final class TestEnvironmentUtils {
 		when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
 		when(strAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
 		when(propsMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
+	}
+	
+	public static void initOWLClassCMocks(EntityType<OWLClassC> etMock, ListAttribute simpleListMock, ListAttribute refListMock, Identifier idMock) throws NoSuchFieldException, SecurityException {
+		when(etMock.getJavaType()).thenReturn(OWLClassC.class);
+		when(etMock.getIRI()).thenReturn(IRI.create(OWLClassC.getClassIri()));
+		when(etMock.getAttribute(OWLClassC.getSimpleListField().getName())).thenReturn(simpleListMock);
+		when(etMock.getAttribute(OWLClassC.getRefListField().getName())).thenReturn(refListMock);
+		final Set<Attribute<? super OWLClassC, ?>> atts = new HashSet<>();
+		atts.add(simpleListMock);
+		atts.add(refListMock);
+		when(etMock.getAttributes()).thenReturn(atts);
+		when(simpleListMock.getJavaField()).thenReturn(OWLClassC.getSimpleListField());
+		when(refListMock.getJavaField()).thenReturn(OWLClassC.getRefListField());
+		String hasListAttIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class).ClassOWLListIRI();
+		when(simpleListMock.getSequenceType()).thenReturn(SequenceType.simple);
+		when(simpleListMock.getOWLListClass()).thenReturn(IRI.create(hasListAttIri));
+		String hasNextIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class).ObjectPropertyHasNextIRI();
+		when(simpleListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
+		
+		hasListAttIri = OWLClassC.getRefListField().getAnnotation(Sequence.class).ClassOWLListIRI();
+		when(refListMock.getSequenceType()).thenReturn(SequenceType.referenced);
+		when(refListMock.getOWLListClass()).thenReturn(IRI.create(hasListAttIri));
+		hasNextIri = OWLClassC.getRefListField().getAnnotation(Sequence.class).ObjectPropertyHasNextIRI();
+		when(refListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
+		final String contentIri = OWLClassC.getRefListField().getAnnotation(Sequence.class).ObjectPropertyHasContentsIRI();
+		when(refListMock.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(contentIri));
+		
+		when(etMock.getIdentifier()).thenReturn(idMock);
+		when(idMock.getJavaField()).thenReturn(OWLClassC.class.getDeclaredField("uri"));
 	}
 
 	public static void initOWLClassEMocks(EntityType<OWLClassE> etMock, Attribute strAttMock,

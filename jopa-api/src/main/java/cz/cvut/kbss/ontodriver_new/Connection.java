@@ -154,6 +154,42 @@ public interface Connection extends AutoCloseable {
 	public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException;
 
 	/**
+	 * Loads simple list specified by the descriptor. </p>
+	 * 
+	 * The returned axioms should be iterable in the same order as they were put
+	 * into the sequence in the ontology.
+	 * 
+	 * @param descriptor
+	 *            Describes the list's properties as well as the context from
+	 *            which the list should be loaded.
+	 * @return Axioms matching the specified list descriptor
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @throws IllegalStateException
+	 *             If called on a closed connection
+	 */
+	public Collection<Axiom<?>> loadSimpleList(SimpleListDescriptor descriptor)
+			throws OntoDriverException;
+
+	/**
+	 * Loads referenced list specified by the descriptor. </p>
+	 * 
+	 * The returned axioms should be iterable in the same order as they were put
+	 * into the sequence in the ontology.
+	 * 
+	 * @param descriptor
+	 *            Describes list's properties, including node content assertion.
+	 *            Also may specify context from which the list should be loaded
+	 * @return Axioms matching the specified list descriptor
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @throws IllegalStateException
+	 *             If called on a closed connection
+	 */
+	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
+			throws OntoDriverException;
+
+	/**
 	 * Persists new individual and its property values specified by the
 	 * descriptor.
 	 * 

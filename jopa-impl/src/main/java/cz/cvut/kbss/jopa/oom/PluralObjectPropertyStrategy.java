@@ -29,8 +29,7 @@ class PluralObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	}
 
 	private void initCollection() {
-		final PluralAttribute<?, ?, ?> plAtt = (PluralAttribute<?, ?, ?>) pluralAtt;
-		switch (plAtt.getCollectionType()) {
+		switch (pluralAtt.getCollectionType()) {
 		case COLLECTION:
 		case LIST:
 			this.values = new ArrayList<>();
