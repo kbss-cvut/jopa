@@ -23,6 +23,7 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver_new.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
@@ -196,5 +197,10 @@ class SesameAdapter implements Closeable {
 
 	StatementExecutor getQueryExecutor() {
 		return connector;
+	}
+
+	Collection<Axiom<?>> loadSimpleList(SimpleListDescriptor axiomDescriptor) {
+		// TODO
+		return null;
 	}
 }

@@ -91,7 +91,6 @@ public class EntityConstructorTest {
 
 	private EntityConstructor constructor;
 
-	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);

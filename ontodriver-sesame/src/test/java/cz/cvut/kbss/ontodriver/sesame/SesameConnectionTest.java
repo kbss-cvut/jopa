@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.sesame;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -26,6 +27,7 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 public class SesameConnectionTest {
@@ -240,5 +242,17 @@ public class SesameConnectionTest {
 		final AxiomDescriptor axDesc = mock(AxiomDescriptor.class);
 		connection.remove(axDesc);
 		verify(adapterMock).remove(axDesc);
+	}
+
+	@Test
+	public void testLoadSimpleList() throws Exception {
+		final SimpleListDescriptor axDesc = mock(SimpleListDescriptor.class);
+		final Collection<Axiom<?>> axioms = new ArrayList<>();
+		axioms.add(mock(Axiom.class));
+		when(adapterMock.loadSimpleList(axDesc)).thenReturn(axioms);
+
+		final Collection<Axiom<?>> res = connection.loadSimpleList(axDesc);
+		assertSame(axioms, res);
+		verify(adapterMock).loadSimpleList(axDesc);
 	}
 }

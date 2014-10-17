@@ -165,6 +165,9 @@ public final class TestEnvironmentUtils {
 				.ObjectPropertyHasNextIRI();
 		when(simpleListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
 		when(simpleListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
+		when(simpleListMock.getPersistentAttributeType())
+				.thenReturn(PersistentAttributeType.OBJECT);
+		when(simpleListMock.isCollection()).thenReturn(Boolean.TRUE);
 
 		hasListAttIri = OWLClassC.getRefListField().getAnnotation(Sequence.class).ClassOWLListIRI();
 		when(refListMock.getSequenceType()).thenReturn(SequenceType.referenced);
@@ -179,6 +182,8 @@ public final class TestEnvironmentUtils {
 		attIri = OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).iri();
 		when(refListMock.getIRI()).thenReturn(IRI.create(attIri));
 		when(refListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
+		when(refListMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
+		when(refListMock.isCollection()).thenReturn(Boolean.TRUE);
 
 		when(etMock.getIdentifier()).thenReturn(idMock);
 		when(idMock.getJavaField()).thenReturn(OWLClassC.class.getDeclaredField("uri"));

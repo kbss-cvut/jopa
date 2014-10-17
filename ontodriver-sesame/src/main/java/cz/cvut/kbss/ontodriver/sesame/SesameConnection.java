@@ -1,11 +1,12 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
+import static cz.cvut.kbss.jopa.utils.ErrorUtils.constructNPXMessage;
+
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -14,6 +15,8 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 class SesameConnection implements Connection {
@@ -84,7 +87,7 @@ class SesameConnection implements Connection {
 	@Override
 	public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
+		Objects.requireNonNull(sparql, constructNPXMessage("sparql"));
 		if (sparql.isEmpty()) {
 			throw new IllegalArgumentException("The value for prepared statement cannot be empty.");
 		}
@@ -106,7 +109,7 @@ class SesameConnection implements Connection {
 	@Override
 	public URI generateIdentifier(URI classUri) throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(classUri, ErrorUtils.constructNPXMessage("classUri"));
+		Objects.requireNonNull(classUri, constructNPXMessage("classUri"));
 		try {
 			return adapter.generateIdentifier(classUri);
 		} catch (IdentifierGenerationException e) {
@@ -117,21 +120,21 @@ class SesameConnection implements Connection {
 	@Override
 	public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(axiom, ErrorUtils.constructNPXMessage("axiom"));
+		Objects.requireNonNull(axiom, constructNPXMessage("axiom"));
 		return adapter.contains(axiom, context);
 	}
 
 	@Override
 	public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
 		return adapter.find(descriptor);
 	}
 
 	@Override
 	public void persist(MutationAxiomDescriptor descriptor) throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
 		adapter.persist(descriptor);
 		commitIfAuto();
 	}
@@ -139,7 +142,7 @@ class SesameConnection implements Connection {
 	@Override
 	public void update(MutationAxiomDescriptor descriptor) throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
 		adapter.update(descriptor);
 		commitIfAuto();
 	}
@@ -147,7 +150,7 @@ class SesameConnection implements Connection {
 	@Override
 	public void remove(AxiomDescriptor descriptor) throws OntoDriverException {
 		ensureOpen();
-		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
 		adapter.remove(descriptor);
 		commitIfAuto();
 	}
@@ -162,5 +165,20 @@ class SesameConnection implements Connection {
 		if (autoCommit) {
 			adapter.commit();
 		}
+	}
+
+	@Override
+	public Collection<Axiom<?>> loadSimpleList(SimpleListDescriptor descriptor)
+			throws OntoDriverException {
+		ensureOpen();
+		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+		return adapter.loadSimpleList(descriptor);
+	}
+
+	@Override
+	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
+			throws OntoDriverException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
