@@ -20,11 +20,12 @@ import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.Connection;
-import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver_new.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
@@ -145,7 +146,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 				EntityPropertiesUtils.setPrimaryKey(primaryKey, entity, et);
 			}
 			entityBreaker.setCascadeResolver(new PersistCascadeResolver(this));
-			final MutationAxiomDescriptor axiomDescriptor = entityBreaker.mapEntityToAxioms(
+			final AxiomValueDescriptor axiomDescriptor = entityBreaker.mapEntityToAxioms(
 					primaryKey, entity, et, descriptor);
 			storageConnection.persist(axiomDescriptor);
 			pendingPersists.removeInstance(primaryKey, descriptor.getContext());
@@ -205,16 +206,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 		}
 	}
 
-	private boolean containsClassAssertion(Object value, Collection<Axiom<?>> res) {
-		final EntityType<?> et = getEntityType(value.getClass());
-		for (Axiom<?> ax : res) {
-			if (MappingUtils.isEntityClassAssertion(ax, et)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	boolean doesInstanceExist(Object entity) {
 		return uow.contains(entity);
 	}
@@ -241,8 +232,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 		final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
 		final URI pkUri = EntityPropertiesUtils.getPrimaryKey(entity, et);
 
-		final MutationAxiomDescriptor axiomDescriptor = entityBreaker.mapFieldToAxioms(pkUri,
-				entity, field, et, descriptor);
+		final AxiomValueDescriptor axiomDescriptor = entityBreaker.mapFieldToAxioms(pkUri, entity,
+				field, et, descriptor);
 		try {
 			storageConnection.update(axiomDescriptor);
 		} catch (OntoDriverException e) {
@@ -253,7 +244,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 	@Override
 	public Collection<Axiom<?>> loadSimpleList(SimpleListDescriptor listDescriptor) {
 		try {
-			return storageConnection.loadSimpleList(listDescriptor);
+			return storageConnection.lists().loadSimpleList(listDescriptor);
 		} catch (OntoDriverException e) {
 			throw new StorageAccessException(e);
 		}
@@ -262,7 +253,16 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 	@Override
 	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor listDescriptor) {
 		try {
-			return storageConnection.loadReferencedList(listDescriptor);
+			return storageConnection.lists().loadReferencedList(listDescriptor);
+		} catch (OntoDriverException e) {
+			throw new StorageAccessException(e);
+		}
+	}
+
+	@Override
+	public void persistSimpleList(SimpleListValueDescriptor listDescriptor) {
+		try {
+			storageConnection.lists().persistSimpleList(listDescriptor);
 		} catch (OntoDriverException e) {
 			throw new StorageAccessException(e);
 		}

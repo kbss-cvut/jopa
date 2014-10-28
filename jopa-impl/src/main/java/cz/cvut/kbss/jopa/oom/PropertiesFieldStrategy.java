@@ -21,11 +21,11 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
-public class PropertiesFieldStrategy extends FieldStrategy<PropertiesSpecification<?, ?>> {
+public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<? super X, ?>, X> {
 
 	private final Map<String, Set<String>> values;
 
-	PropertiesFieldStrategy(EntityType<?> et, PropertiesSpecification<?, ?> att,
+	PropertiesFieldStrategy(EntityType<X> et, PropertiesSpecification<? super X, ?> att,
 			Descriptor descriptor, EntityMappingHelper mapper) {
 		super(et, att, descriptor, mapper);
 		this.values = new HashMap<>();

@@ -17,11 +17,11 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
-public class TypesFieldStrategy extends FieldStrategy<TypesSpecification<?, ?>> {
+public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, ?>, X> {
 
 	final Set<String> values;
 
-	public TypesFieldStrategy(EntityType<?> et, TypesSpecification<?, ?> att,
+	public TypesFieldStrategy(EntityType<X> et, TypesSpecification<? super X, ?> att,
 			Descriptor descriptor, EntityMappingHelper mapper) {
 		super(et, att, descriptor, mapper);
 		this.values = new HashSet<>();
@@ -54,7 +54,7 @@ public class TypesFieldStrategy extends FieldStrategy<TypesSpecification<?, ?>> 
 	}
 
 	@Override
-	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
+	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(X instance)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Field typesField = attribute.getJavaField();
 		if (!typesField.isAccessible()) {

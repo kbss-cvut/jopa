@@ -46,9 +46,9 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.Connection;
-import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
@@ -227,7 +227,7 @@ public class ObjectOntologyMapperTest {
 
 	@Test
 	public void testPersistEntity() throws Exception {
-		final MutationAxiomDescriptor madMock = mock(MutationAxiomDescriptor.class);
+		final AxiomValueDescriptor madMock = mock(AxiomValueDescriptor.class);
 		when(entityDeconstructorMock.mapEntityToAxioms(ENTITY_PK, entityA, etAMock, aDescriptor))
 				.thenReturn(madMock);
 		mapper.persistEntity(ENTITY_PK, entityA, aDescriptor);
@@ -240,7 +240,7 @@ public class ObjectOntologyMapperTest {
 		when(etAMock.getIdentifier()).thenReturn(id);
 		when(id.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
 		final OWLClassA a = new OWLClassA();
-		final MutationAxiomDescriptor madMock = mock(MutationAxiomDescriptor.class);
+		final AxiomValueDescriptor madMock = mock(AxiomValueDescriptor.class);
 		final URI generatedUri = URI.create("http://generatedUri" + System.currentTimeMillis());
 		when(entityDeconstructorMock.mapEntityToAxioms(generatedUri, a, etAMock, aDescriptor))
 				.thenReturn(madMock);
@@ -328,7 +328,7 @@ public class ObjectOntologyMapperTest {
 
 	@Test
 	public void updatesFieldValueInTheOntology() throws Exception {
-		final MutationAxiomDescriptor axiomDescMock = mock(MutationAxiomDescriptor.class);
+		final AxiomValueDescriptor axiomDescMock = mock(AxiomValueDescriptor.class);
 		when(
 				entityDeconstructorMock.mapFieldToAxioms(ENTITY_PK, entityA,
 						OWLClassA.getStrAttField(), etAMock, aDescriptor))

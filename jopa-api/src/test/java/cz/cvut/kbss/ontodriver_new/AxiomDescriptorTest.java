@@ -10,6 +10,7 @@ import java.net.URI;
 import org.junit.Before;
 import org.junit.Test;
 
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 

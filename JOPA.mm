@@ -1,6 +1,6 @@
 <map version="0.9.0">
 <!-- To view this file, download free mind mapping software FreeMind from http://freemind.sourceforge.net -->
-<node CREATED="1412753508303" ID="ID_810440979" MODIFIED="1413380465798" TEXT="JOPA">
+<node CREATED="1412753508303" ID="ID_810440979" MODIFIED="1413920391008" TEXT="JOPA">
 <node CREATED="1412753692348" ID="ID_296271803" MODIFIED="1412753697691" POSITION="right" TEXT="SesameDriver">
 <node CREATED="1412753698987" ID="ID_553770748" MODIFIED="1412753700923" TEXT="Update">
 <node CREATED="1412759214286" ID="ID_1466838461" MODIFIED="1412764189216" TEXT="Properties and currently inferred, allow modification in the future">
@@ -16,5 +16,10 @@
 </node>
 <node CREATED="1412758973998" ID="ID_616916095" MODIFIED="1412758991245" POSITION="left" TEXT="Types and properties should be handled separately in OntoDriver"/>
 <node CREATED="1413380466924" ID="ID_714031943" MODIFIED="1413380489113" POSITION="right" TEXT="What happens when someone uses the same property for multiple fields in the entity"/>
+<node CREATED="1413920392502" ID="ID_1382888775" MODIFIED="1413920449749" POSITION="left" TEXT="Lists">
+<node CREATED="1413920406619" ID="ID_239344121" MODIFIED="1413920479858" TEXT="Should we add removeSimple(Ref)List, persistSimple(Ref)List etc?">
+<node CREATED="1413920455161" ID="ID_1430539617" MODIFIED="1413920470596" TEXT="This would mean on update of a single element removal and persist of the whole list"/>
+</node>
+</node>
 </node>
 </map>

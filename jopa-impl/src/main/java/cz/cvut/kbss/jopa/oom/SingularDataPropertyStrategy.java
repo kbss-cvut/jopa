@@ -13,12 +13,12 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
-class SingularDataPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
+class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
 
 	private Object value;
 
-	SingularDataPropertyStrategy(EntityType<?> et, Attribute<?, ?> att, Descriptor descriptor,
-			EntityMappingHelper mapper) {
+	SingularDataPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att,
+			Descriptor descriptor, EntityMappingHelper mapper) {
 		super(et, att, descriptor, mapper);
 	}
 
@@ -32,7 +32,9 @@ class SingularDataPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	void buildInstanceFieldValue(Object entity) throws IllegalArgumentException,
 			IllegalAccessException {
 		final Field f = attribute.getJavaField();
-		f.setAccessible(true);
+		if (!f.isAccessible()) {
+			f.setAccessible(true);
+		}
 		if (!f.getType().isAssignableFrom(value.getClass())) {
 			throw new EntityReconstructionException("Incompatible types found. The field " + f
 					+ " requires type " + f.getType() + ", but the loaded value is of type "
@@ -42,7 +44,7 @@ class SingularDataPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	}
 
 	@Override
-	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
+	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(X instance)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object value = extractFieldValueFromInstance(instance);
 

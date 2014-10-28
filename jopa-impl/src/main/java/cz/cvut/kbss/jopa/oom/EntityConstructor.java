@@ -53,28 +53,29 @@ class EntityConstructor {
 
 	private <T> void populateAttributes(final T instance, EntityType<T> et,
 			Descriptor entityDescriptor, Collection<Axiom<?>> axioms) throws IllegalAccessException {
-		final Map<URI, FieldSpecification<?, ?>> attributes = indexEntityAttributes(et);
-		final Map<FieldSpecification<?, ?>, FieldStrategy<? extends FieldSpecification<?, ?>>> fieldLoaders = new HashMap<>(
+		final Map<URI, FieldSpecification<? super T, ?>> attributes = indexEntityAttributes(et);
+		final Map<FieldSpecification<? super T, ?>, FieldStrategy<? extends FieldSpecification<? super T, ?>, T>> fieldLoaders = new HashMap<>(
 				et.getAttributes().size());
 		for (Axiom<?> ax : axioms) {
 			if (MappingUtils.isEntityClassAssertion(ax, et)) {
 				continue;
 			}
-			final FieldStrategy<? extends FieldSpecification<?, ?>> fs = getFieldLoader(ax,
-					attributes, fieldLoaders, et, entityDescriptor);
+			final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = getFieldLoader(
+					ax, attributes, fieldLoaders, et, entityDescriptor);
 			assert fs != null;
 			fs.addValueFromAxiom(ax);
 		}
 		// We need to build the field values separately because some may be
 		// plural and we have to wait until all values are prepared
-		for (FieldStrategy<?> fs : fieldLoaders.values()) {
+		for (FieldStrategy<? extends FieldSpecification<?, ?>, ?> fs : fieldLoaders.values()) {
 			fs.buildInstanceFieldValue(instance);
 		}
 	}
 
-	private Map<URI, FieldSpecification<?, ?>> indexEntityAttributes(EntityType<?> et) {
-		final Map<URI, FieldSpecification<?, ?>> atts = new HashMap<>(et.getAttributes().size());
-		for (Attribute<?, ?> at : et.getAttributes()) {
+	private <T> Map<URI, FieldSpecification<? super T, ?>> indexEntityAttributes(EntityType<T> et) {
+		final Map<URI, FieldSpecification<? super T, ?>> atts = new HashMap<>(et.getAttributes()
+				.size());
+		for (Attribute<? super T, ?> at : et.getAttributes()) {
 			atts.put(at.getIRI().toURI(), at);
 		}
 		if (et.getTypes() != null) {
@@ -83,13 +84,13 @@ class EntityConstructor {
 		return atts;
 	}
 
-	private FieldStrategy<? extends FieldSpecification<?, ?>> getFieldLoader(
+	private <T> FieldStrategy<? extends FieldSpecification<? super T, ?>, T> getFieldLoader(
 			Axiom<?> ax,
-			Map<URI, FieldSpecification<?, ?>> attributes,
-			Map<FieldSpecification<?, ?>, FieldStrategy<? extends FieldSpecification<?, ?>>> loaders,
-			EntityType<?> et, Descriptor desc) {
+			Map<URI, FieldSpecification<? super T, ?>> attributes,
+			Map<FieldSpecification<? super T, ?>, FieldStrategy<? extends FieldSpecification<? super T, ?>, T>> loaders,
+			EntityType<T> et, Descriptor desc) {
 		final URI attId = ax.getAssertion().getIdentifier();
-		FieldSpecification<?, ?> att = attributes.get(attId);
+		FieldSpecification<? super T, ?> att = attributes.get(attId);
 		if (att == null) {
 			if (et.getProperties() != null) {
 				att = et.getProperties();
@@ -106,16 +107,17 @@ class EntityConstructor {
 
 	<T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,
 			Descriptor entityDescriptor) throws IllegalArgumentException, IllegalAccessException {
-		final FieldSpecification<?, ?> fieldSpec = getFieldSpecification(field, et);
-		final FieldStrategy<?> fs = FieldStrategy.createFieldStrategy(et, fieldSpec,
-				entityDescriptor.getAttributeDescriptor(fieldSpec), mapper);
+		final FieldSpecification<? super T, ?> fieldSpec = getFieldSpecification(field, et);
+		final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
+				.createFieldStrategy(et, fieldSpec,
+						entityDescriptor.getAttributeDescriptor(fieldSpec), mapper);
 		for (Axiom<?> ax : axioms) {
 			fs.addValueFromAxiom(ax);
 		}
 		fs.buildInstanceFieldValue(entity);
 	}
 
-	private FieldSpecification<?, ?> getFieldSpecification(Field field, EntityType<?> et) {
+	private <T> FieldSpecification<? super T, ?> getFieldSpecification(Field field, EntityType<T> et) {
 		if (et.getTypes() != null && et.getTypes().getJavaField().equals(field)) {
 			return et.getTypes();
 		} else if (et.getProperties() != null && et.getProperties().getJavaField().equals(field)) {

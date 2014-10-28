@@ -37,7 +37,7 @@ import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.OWLClassK;
 import cz.cvut.kbss.jopa.test.utils.Generators;
 import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
-import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Assertion.AssertionType;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -142,7 +142,7 @@ public class EntityDeconstructorTest {
 	@Test
 	public void testMapEntityWithDataProperty() {
 		final Descriptor aDescriptor = new EntityDescriptor();
-		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityA.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapEntityToAxioms(entityA.getUri(),
 				entityA, etAMock, aDescriptor);
 		assertNotNull(res);
 		assertEquals(entityA.getUri(), res.getSubject().getIdentifier());
@@ -158,7 +158,7 @@ public class EntityDeconstructorTest {
 		final OWLClassA entity = new OWLClassA();
 		entity.setUri(entityA.getUri());
 		final Descriptor aDescriptor = new EntityDescriptor();
-		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entity.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapEntityToAxioms(entity.getUri(),
 				entity, etAMock, aDescriptor);
 		assertNotNull(res);
 		assertEquals(entity.getUri(), res.getSubject().getIdentifier());
@@ -175,7 +175,7 @@ public class EntityDeconstructorTest {
 		final Descriptor aDescriptor = new EntityDescriptor();
 		final Set<String> types = createTypes();
 		entityA.setTypes(types);
-		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityA.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapEntityToAxioms(entityA.getUri(),
 				entityA, etAMock, aDescriptor);
 		assertNotNull(res);
 		assertEquals(entityA.getUri(), res.getSubject().getIdentifier());
@@ -210,7 +210,7 @@ public class EntityDeconstructorTest {
 		aDescriptor.addAttributeContext(OWLClassA.getStrAttField(), CONTEXT);
 		final Set<String> types = createTypes();
 		entityA.setTypes(types);
-		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityA.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapEntityToAxioms(entityA.getUri(),
 				entityA, etAMock, aDescriptor);
 		assertNotNull(res);
 		assertEquals(entityA.getUri(), res.getSubject().getIdentifier());
@@ -223,7 +223,7 @@ public class EntityDeconstructorTest {
 	@Test
 	public void testMapEntityWithObjectProperty() {
 		final Descriptor dDescriptor = new EntityDescriptor();
-		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityD.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapEntityToAxioms(entityD.getUri(),
 				entityD, etDMock, dDescriptor);
 		assertNotNull(res);
 		assertEquals(entityD.getUri(), res.getSubject().getIdentifier());
@@ -247,7 +247,7 @@ public class EntityDeconstructorTest {
 		final OWLClassD entity = new OWLClassD();
 		entity.setUri(entityD.getUri());
 		final Descriptor dDescriptor = new EntityDescriptor();
-		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entity.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapEntityToAxioms(entity.getUri(),
 				entity, etDMock, dDescriptor);
 		assertNotNull(res);
 		assertEquals(entity.getUri(), res.getSubject().getIdentifier());
@@ -263,7 +263,7 @@ public class EntityDeconstructorTest {
 	@Test
 	public void testMapEntityWithObjectPropertyAndContext() {
 		final Descriptor dDescriptor = new EntityDescriptor(CONTEXT);
-		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityD.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapEntityToAxioms(entityD.getUri(),
 				entityD, etDMock, dDescriptor);
 		assertNotNull(res);
 		assertEquals(entityD.getUri(), res.getSubject().getIdentifier());
@@ -278,7 +278,7 @@ public class EntityDeconstructorTest {
 		final Descriptor bDescriptor = new EntityDescriptor();
 		final Map<String, Set<String>> props = Generators.createProperties();
 		entityB.setProperties(props);
-		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityB.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapEntityToAxioms(entityB.getUri(),
 				entityB, etBMock, bDescriptor);
 		assertEquals(entityB.getUri(), res.getSubject().getIdentifier());
 		// Class assertion, data property assertion and the properties
@@ -293,7 +293,7 @@ public class EntityDeconstructorTest {
 	@Test
 	public void testMapEntityWithNullProperties() {
 		final Descriptor bDescriptor = new EntityDescriptor();
-		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityB.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapEntityToAxioms(entityB.getUri(),
 				entityB, etBMock, bDescriptor);
 		assertEquals(entityB.getUri(), res.getSubject().getIdentifier());
 		// Class assertion, data property assertion
@@ -305,7 +305,7 @@ public class EntityDeconstructorTest {
 		final Map<String, Set<String>> props = createProperties();
 		entityB.setProperties(props);
 		final Descriptor bDescriptor = new EntityDescriptor();
-		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityB.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapEntityToAxioms(entityB.getUri(),
 				entityB, etBMock, bDescriptor);
 		assertEquals(entityB.getUri(), res.getSubject().getIdentifier());
 		assertEquals(props.size() + 2, res.getAssertions().size());
@@ -342,7 +342,7 @@ public class EntityDeconstructorTest {
 		final Descriptor kDescriptor = new EntityDescriptor();
 		kDescriptor.addAttributeDescriptor(OWLClassK.getOwlClassEField(), eDescriptor);
 		assertNull(entityE.getUri());
-		final MutationAxiomDescriptor res = entityBreaker.mapEntityToAxioms(entityK.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapEntityToAxioms(entityK.getUri(),
 				entityK, etKMock, kDescriptor);
 		assertNotNull(res);
 		verify(oomMock).generateIdentifier(etEMock);
@@ -354,7 +354,7 @@ public class EntityDeconstructorTest {
 		final Descriptor aDescriptor = new EntityDescriptor();
 		when(etAMock.getFieldSpecification(OWLClassA.getStrAttField().getName())).thenReturn(
 				strAttAMock);
-		final MutationAxiomDescriptor res = entityBreaker.mapFieldToAxioms(entityA.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapFieldToAxioms(entityA.getUri(),
 				entityA, OWLClassA.getStrAttField(), etAMock, aDescriptor);
 		assertEquals(1, res.getAssertions().size());
 		assertTrue(res.getAssertions().contains(
@@ -370,7 +370,7 @@ public class EntityDeconstructorTest {
 		entityA.setStringAttribute(null);
 		when(etAMock.getFieldSpecification(OWLClassA.getStrAttField().getName())).thenReturn(
 				strAttAMock);
-		final MutationAxiomDescriptor res = entityBreaker.mapFieldToAxioms(entityA.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapFieldToAxioms(entityA.getUri(),
 				entityA, OWLClassA.getStrAttField(), etAMock, aDescriptor);
 		assertEquals(1, res.getAssertions().size());
 		assertTrue(res.getAssertions().contains(
@@ -387,7 +387,7 @@ public class EntityDeconstructorTest {
 		dDescriptor.addAttributeContext(OWLClassD.getOwlClassAField(), CONTEXT);
 		when(etDMock.getFieldSpecification(OWLClassD.getOwlClassAField().getName())).thenReturn(
 				clsAMock);
-		final MutationAxiomDescriptor res = entityBreaker.mapFieldToAxioms(entityD.getUri(),
+		final AxiomValueDescriptor res = entityBreaker.mapFieldToAxioms(entityD.getUri(),
 				entityD, OWLClassD.getOwlClassAField(), etDMock, dDescriptor);
 		assertEquals(1, res.getAssertions().size());
 		assertTrue(res.getAssertions().contains(

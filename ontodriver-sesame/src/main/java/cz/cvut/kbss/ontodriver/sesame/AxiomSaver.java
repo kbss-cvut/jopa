@@ -11,7 +11,7 @@ import org.openrdf.model.ValueFactory;
 
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -28,7 +28,7 @@ class AxiomSaver {
 		this.language = language;
 	}
 
-	void persistAxioms(MutationAxiomDescriptor axiomDescriptor) throws SesameDriverException {
+	void persistAxioms(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {
 		final List<Statement> statements = new ArrayList<>();
 		for (Assertion assertion : axiomDescriptor.getAssertions()) {
 			statements.addAll(createSesameStatements(axiomDescriptor.getSubject(), assertion,

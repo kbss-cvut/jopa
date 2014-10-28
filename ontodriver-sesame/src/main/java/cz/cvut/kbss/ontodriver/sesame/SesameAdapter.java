@@ -20,10 +20,11 @@ import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver_new.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
@@ -165,7 +166,7 @@ class SesameAdapter implements Closeable {
 		return new AxiomLoader(connector, valueFactory).loadAxioms(axiomDescriptor);
 	}
 
-	void persist(MutationAxiomDescriptor axiomDescriptor) throws SesameDriverException {
+	void persist(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {
 		startTransactionIfNotActive();
 		if (individualExists(axiomDescriptor.getSubject(), axiomDescriptor.getSubjectContext())) {
 			throw new OWLEntityExistsException("An individual with identifier "
@@ -184,7 +185,7 @@ class SesameAdapter implements Closeable {
 		return !result.isEmpty();
 	}
 
-	void update(MutationAxiomDescriptor axiomDescriptor) throws SesameDriverException {
+	void update(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {
 		startTransactionIfNotActive();
 		new EpistemicAxiomRemover(connector, valueFactory).remove(axiomDescriptor);
 		new AxiomSaver(connector, valueFactory, language).persistAxioms(axiomDescriptor);
@@ -202,5 +203,9 @@ class SesameAdapter implements Closeable {
 	Collection<Axiom<?>> loadSimpleList(SimpleListDescriptor axiomDescriptor) {
 		// TODO
 		return null;
+	}
+	
+	void persistSimpleList(SimpleListValueDescriptor axiomDescriptor) {
+		// TODO
 	}
 }

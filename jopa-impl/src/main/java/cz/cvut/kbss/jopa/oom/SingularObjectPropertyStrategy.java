@@ -13,11 +13,11 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
-class SingularObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
+class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
 
 	private Object value;
 
-	SingularObjectPropertyStrategy(EntityType<?> et, Attribute<?, ?> att, Descriptor descriptor,
+	SingularObjectPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att, Descriptor descriptor,
 			EntityMappingHelper mapper) {
 		super(et, att, descriptor, mapper);
 	}
@@ -37,9 +37,9 @@ class SingularObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	}
 
 	@Override
-	<V> Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
+	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(X instance)
 			throws IllegalArgumentException, IllegalAccessException {
-		final V value = (V) extractFieldValueFromInstance(instance);
+		final Object value = extractFieldValueFromInstance(instance);
 		Value<?> val = value != null ? extractReferenceIdentifier(value) : Value.nullValue();
 		return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
 				Collections.<Value<?>> singleton(val));

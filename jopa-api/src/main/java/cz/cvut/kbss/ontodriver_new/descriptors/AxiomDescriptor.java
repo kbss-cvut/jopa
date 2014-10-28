@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver_new;
+package cz.cvut.kbss.ontodriver_new.descriptors;
 
 import java.net.URI;
 import java.util.Collections;

@@ -42,9 +42,9 @@ import org.openrdf.sail.memory.MemoryStore;
 
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.IdentifierGenerationException;
-import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
@@ -138,7 +138,7 @@ public class SesameAdapterTest {
 
 	@Test
 	public void testPersistDataPropertiesNoContext() throws Exception {
-		final MutationAxiomDescriptor ad = new MutationAxiomDescriptor(SUBJECT);
+		final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
 		ad.addAssertionValue(
 				Assertion.createClassAssertion(false),
 				new Value<URI>(URI
@@ -154,7 +154,7 @@ public class SesameAdapterTest {
 		assertTrue(statementsCorrespondToAxiomDescriptor(ad, (Collection<Statement>) res));
 	}
 
-	private boolean statementsCorrespondToAxiomDescriptor(MutationAxiomDescriptor ad,
+	private boolean statementsCorrespondToAxiomDescriptor(AxiomValueDescriptor ad,
 			Collection<Statement> statements) {
 		for (Assertion as : ad.getAssertions()) {
 			final String strIdentifier = as.getIdentifier().toString();
@@ -187,7 +187,7 @@ public class SesameAdapterTest {
 
 	@Test
 	public void testPersistEntityWithTypesDataPropertyInContext() throws Exception {
-		final MutationAxiomDescriptor ad = new MutationAxiomDescriptor(SUBJECT);
+		final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
 		ad.addAssertionValue(
 				Assertion.createClassAssertion(false),
 				new Value<URI>(URI
@@ -216,7 +216,7 @@ public class SesameAdapterTest {
 
 	@Test
 	public void testPersistEntityWithObjectPropertyMultipleValues() throws Exception {
-		final MutationAxiomDescriptor ad = new MutationAxiomDescriptor(SUBJECT);
+		final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
 		ad.addAssertionValue(
 				Assertion.createClassAssertion(false),
 				new Value<URI>(URI
@@ -241,7 +241,7 @@ public class SesameAdapterTest {
 
 	@Test
 	public void testPersistEntityWithProperties() throws Exception {
-		final MutationAxiomDescriptor ad = new MutationAxiomDescriptor(SUBJECT);
+		final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
 		ad.addAssertionValue(
 				Assertion.createClassAssertion(false),
 				new Value<URI>(URI
@@ -268,7 +268,7 @@ public class SesameAdapterTest {
 			throws Exception {
 		final URI subjectCtx = URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne");
 		final URI propertyCtx = URI.create("http://krizik.felk.cvut.cz/ontologies/contextTwo");
-		final MutationAxiomDescriptor ad = new MutationAxiomDescriptor(SUBJECT);
+		final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
 		ad.setSubjectContext(subjectCtx);
 		ad.addAssertionValue(
 				Assertion.createClassAssertion(false),
@@ -623,7 +623,7 @@ public class SesameAdapterTest {
 
 	@Test
 	public void updatesDataPropertyToNewValue() throws Exception {
-		final MutationAxiomDescriptor desc = new MutationAxiomDescriptor(SUBJECT);
+		final AxiomValueDescriptor desc = new AxiomValueDescriptor(SUBJECT);
 		final URI property = URI.create("http://krizik.felk.cvut.cz/dataProperty");
 		final org.openrdf.model.URI sesameProperty = vf.createURI(property.toString());
 		final boolean inferred = false;
@@ -650,7 +650,7 @@ public class SesameAdapterTest {
 
 	@Test
 	public void updatesObjectPropertyToNewValue() throws Exception {
-		final MutationAxiomDescriptor desc = new MutationAxiomDescriptor(SUBJECT);
+		final AxiomValueDescriptor desc = new AxiomValueDescriptor(SUBJECT);
 		final URI property = URI.create("http://krizik.felk.cvut.cz/objectProperty");
 		final org.openrdf.model.URI sesameProperty = vf.createURI(property.toString());
 		final boolean inferred = false;
@@ -677,7 +677,7 @@ public class SesameAdapterTest {
 
 	@Test
 	public void updatesObjectPropertyToEmptyValue() throws Exception {
-		final MutationAxiomDescriptor desc = new MutationAxiomDescriptor(SUBJECT);
+		final AxiomValueDescriptor desc = new AxiomValueDescriptor(SUBJECT);
 		final URI property = URI.create("http://krizik.felk.cvut.cz/objectProperty");
 		final org.openrdf.model.URI sesameProperty = vf.createURI(property.toString());
 		final boolean inferred = false;
@@ -701,7 +701,7 @@ public class SesameAdapterTest {
 
 	@Test
 	public void updatesTypesInContext() throws Exception {
-		final MutationAxiomDescriptor desc = new MutationAxiomDescriptor(SUBJECT);
+		final AxiomValueDescriptor desc = new AxiomValueDescriptor(SUBJECT);
 		final boolean inferred = false;
 		final Assertion assertion = Assertion.createClassAssertion(inferred);
 		final String[] newTypes = { "http://krizik.felk.cvut.cz/ontologies/types#tOne",

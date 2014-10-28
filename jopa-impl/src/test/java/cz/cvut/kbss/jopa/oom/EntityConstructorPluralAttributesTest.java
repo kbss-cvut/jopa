@@ -31,7 +31,7 @@ import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
-import cz.cvut.kbss.ontodriver_new.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;

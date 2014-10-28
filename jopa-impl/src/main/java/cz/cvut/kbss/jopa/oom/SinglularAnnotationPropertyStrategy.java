@@ -5,9 +5,9 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 
-class SinglularAnnotationPropertyStrategy extends SingularDataPropertyStrategy {
+class SinglularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy<X> {
 
-	public SinglularAnnotationPropertyStrategy(EntityType<?> et, Attribute<?, ?> att,
+	public SinglularAnnotationPropertyStrategy(EntityType<X> et, Attribute<X, ?> att,
 			Descriptor descriptor, ObjectOntologyMapperImpl mapper) {
 		super(et, att, descriptor, mapper);
 	}

@@ -16,15 +16,15 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
-class PluralObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
+class PluralObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
 
-	private final PluralAttribute<?, ?, ?> pluralAtt;
+	private final PluralAttribute<? super X, ?, ?> pluralAtt;
 	private Collection<Object> values;
 
-	public PluralObjectPropertyStrategy(EntityType<?> et, Attribute<?, ?> att,
+	public PluralObjectPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att,
 			Descriptor descriptor, EntityMappingHelper mapper) {
 		super(et, att, descriptor, mapper);
-		this.pluralAtt = (PluralAttribute<?, ?, ?>) attribute;
+		this.pluralAtt = (PluralAttribute<? super X, ?, ?>) attribute;
 		initCollection();
 	}
 
@@ -58,7 +58,7 @@ class PluralObjectPropertyStrategy extends FieldStrategy<Attribute<?, ?>> {
 	}
 
 	@Override
-	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
+	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(X instance)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object value = extractFieldValueFromInstance(instance);
 		if (value == null) {

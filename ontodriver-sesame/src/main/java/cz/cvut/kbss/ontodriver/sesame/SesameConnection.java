@@ -12,11 +12,10 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.Connection;
-import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver_new.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.Lists;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 class SesameConnection implements Connection {
@@ -25,9 +24,12 @@ class SesameConnection implements Connection {
 	private boolean open;
 	private boolean autoCommit;
 
+	private SesameLists lists;
+
 	public SesameConnection(SesameAdapter adapter) {
 		assert adapter != null;
 		this.adapter = adapter;
+		this.lists = new SesameLists(this, adapter);
 		this.open = true;
 	}
 
@@ -132,7 +134,7 @@ class SesameConnection implements Connection {
 	}
 
 	@Override
-	public void persist(MutationAxiomDescriptor descriptor) throws OntoDriverException {
+	public void persist(AxiomValueDescriptor descriptor) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
 		adapter.persist(descriptor);
@@ -140,7 +142,7 @@ class SesameConnection implements Connection {
 	}
 
 	@Override
-	public void update(MutationAxiomDescriptor descriptor) throws OntoDriverException {
+	public void update(AxiomValueDescriptor descriptor) throws OntoDriverException {
 		ensureOpen();
 		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
 		adapter.update(descriptor);
@@ -155,30 +157,21 @@ class SesameConnection implements Connection {
 		commitIfAuto();
 	}
 
-	private void ensureOpen() {
+	@Override
+	public Lists lists() {
+		ensureOpen();
+		return lists;
+	}
+
+	void ensureOpen() {
 		if (!open) {
 			throw new IllegalStateException("This connection is closed.");
 		}
 	}
 
-	private void commitIfAuto() throws OntoDriverException {
+	void commitIfAuto() throws OntoDriverException {
 		if (autoCommit) {
 			adapter.commit();
 		}
-	}
-
-	@Override
-	public Collection<Axiom<?>> loadSimpleList(SimpleListDescriptor descriptor)
-			throws OntoDriverException {
-		ensureOpen();
-		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
-		return adapter.loadSimpleList(descriptor);
-	}
-
-	@Override
-	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
-			throws OntoDriverException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

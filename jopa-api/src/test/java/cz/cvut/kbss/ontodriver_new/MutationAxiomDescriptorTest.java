@@ -12,6 +12,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -20,21 +21,21 @@ public class MutationAxiomDescriptorTest {
 
 	private Assertion dpAssertion;
 
-	private MutationAxiomDescriptor descriptor;
+	private AxiomValueDescriptor descriptor;
 
 	@Before
 	public void setUp() throws Exception {
 		this.dpAssertion = Assertion.createDataPropertyAssertion(URI
 				.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute"),
 				false);
-		this.descriptor = new MutationAxiomDescriptor(
+		this.descriptor = new AxiomValueDescriptor(
 				NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
 
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testMutationAxiomDescriptorNullArg() {
-		this.descriptor = new MutationAxiomDescriptor(null);
+		this.descriptor = new AxiomValueDescriptor(null);
 		fail("This line should not have been reached.");
 	}
 

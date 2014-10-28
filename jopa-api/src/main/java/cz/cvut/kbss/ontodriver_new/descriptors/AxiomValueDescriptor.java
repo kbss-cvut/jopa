@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver_new;
+package cz.cvut.kbss.ontodriver_new.descriptors;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,11 +12,11 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
-public class MutationAxiomDescriptor extends AxiomDescriptor {
+public class AxiomValueDescriptor extends AxiomDescriptor {
 
 	private final Map<Assertion, List<Value<?>>> values;
 
-	public MutationAxiomDescriptor(NamedResource subject) {
+	public AxiomValueDescriptor(NamedResource subject) {
 		super(subject);
 		this.values = new HashMap<>();
 	}
@@ -32,7 +32,7 @@ public class MutationAxiomDescriptor extends AxiomDescriptor {
 	 * @throws NullPointerException
 	 *             if either of the arguments is {@code null}
 	 */
-	public MutationAxiomDescriptor addAssertionValue(Assertion assertion, Value<?> value) {
+	public AxiomValueDescriptor addAssertionValue(Assertion assertion, Value<?> value) {
 		Objects.requireNonNull(assertion, ErrorUtils.constructNPXMessage("assertion"));
 		Objects.requireNonNull(value, ErrorUtils.constructNPXMessage("value"));
 
@@ -83,7 +83,7 @@ public class MutationAxiomDescriptor extends AxiomDescriptor {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		MutationAxiomDescriptor other = (MutationAxiomDescriptor) obj;
+		AxiomValueDescriptor other = (AxiomValueDescriptor) obj;
 		if (!values.equals(other.values))
 			return false;
 		return true;

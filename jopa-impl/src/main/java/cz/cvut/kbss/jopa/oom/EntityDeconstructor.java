@@ -11,7 +11,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
-import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -29,11 +29,11 @@ class EntityDeconstructor {
 		this.cascadeResolver = cascadeResolver;
 	}
 
-	<T> MutationAxiomDescriptor mapEntityToAxioms(URI primaryKey, T entity, EntityType<T> et,
+	<T> AxiomValueDescriptor mapEntityToAxioms(URI primaryKey, T entity, EntityType<T> et,
 			Descriptor descriptor) {
 		assert primaryKey != null;
 
-		final MutationAxiomDescriptor axiomDescriptor = createAxiomDescriptor(primaryKey,
+		final AxiomValueDescriptor axiomDescriptor = createAxiomDescriptor(primaryKey,
 				descriptor.getContext());
 		try {
 			addEntityClassAssertion(axiomDescriptor, entity, descriptor);
@@ -43,7 +43,7 @@ class EntityDeconstructor {
 			if (et.getProperties() != null) {
 				addAssertions(entity, et, et.getProperties(), descriptor, axiomDescriptor);
 			}
-			for (Attribute<?, ?> att : et.getAttributes()) {
+			for (Attribute<? super T, ?> att : et.getAttributes()) {
 				addAssertions(entity, et, att, descriptor, axiomDescriptor);
 			}
 
@@ -53,14 +53,14 @@ class EntityDeconstructor {
 		return axiomDescriptor;
 	}
 
-	private MutationAxiomDescriptor createAxiomDescriptor(URI primaryKey, URI context) {
-		final MutationAxiomDescriptor axiomDescriptor = new MutationAxiomDescriptor(
+	private AxiomValueDescriptor createAxiomDescriptor(URI primaryKey, URI context) {
+		final AxiomValueDescriptor axiomDescriptor = new AxiomValueDescriptor(
 				NamedResource.create(primaryKey));
 		axiomDescriptor.setSubjectContext(context);
 		return axiomDescriptor;
 	}
 
-	private <T> void addEntityClassAssertion(MutationAxiomDescriptor axiomDescriptor, T entity,
+	private <T> void addEntityClassAssertion(AxiomValueDescriptor axiomDescriptor, T entity,
 			Descriptor descriptor) throws IllegalArgumentException, IllegalAccessException {
 		final OWLClass clsType = entity.getClass().getAnnotation(OWLClass.class);
 		assert clsType != null;
@@ -70,12 +70,12 @@ class EntityDeconstructor {
 		axiomDescriptor.setAssertionContext(entityClassAssertion, descriptor.getContext());
 	}
 
-	private <T> void addAssertions(T entity, EntityType<?> et, FieldSpecification<?, ?> fieldSpec,
-			Descriptor descriptor, final MutationAxiomDescriptor axiomDescriptor)
-			throws IllegalAccessException {
-		final FieldStrategy<? extends FieldSpecification<?, ?>> fs = FieldStrategy
+	private <T> void addAssertions(T entity, EntityType<T> et,
+			FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor,
+			final AxiomValueDescriptor axiomDescriptor) throws IllegalAccessException {
+		final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
 				.createFieldStrategy(et, fieldSpec, descriptor, mapper);
-//		fs.verifyAttributeIsNotInferred();
+		// fs.verifyAttributeIsNotInferred();
 		fs.setCascadeResolver(cascadeResolver);
 		final Map<Assertion, Collection<Value<?>>> values = fs
 				.extractAttributeValuesFromInstance(entity);
@@ -88,19 +88,20 @@ class EntityDeconstructor {
 		}
 	}
 
-	private void setAssertionContext(MutationAxiomDescriptor axiomDescriptor,
-			Descriptor descriptor, FieldSpecification<?, ?> att, final Assertion propertyAssertion) {
+	private void setAssertionContext(AxiomValueDescriptor axiomDescriptor, Descriptor descriptor,
+			FieldSpecification<?, ?> att, final Assertion propertyAssertion) {
 		final URI attContext = descriptor.getAttributeDescriptor(att).getContext();
 		if (attContext != null) {
 			axiomDescriptor.setAssertionContext(propertyAssertion, attContext);
 		}
 	}
 
-	<T> MutationAxiomDescriptor mapFieldToAxioms(URI primaryKey, T entity, Field field,
+	<T> AxiomValueDescriptor mapFieldToAxioms(URI primaryKey, T entity, Field field,
 			EntityType<T> et, Descriptor descriptor) {
-		final MutationAxiomDescriptor axiomDescriptor = createAxiomDescriptor(primaryKey,
+		final AxiomValueDescriptor axiomDescriptor = createAxiomDescriptor(primaryKey,
 				descriptor.getContext());
-		final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(field.getName());
+		final FieldSpecification<? super T, ?> fieldSpec = et
+				.getFieldSpecification(field.getName());
 		try {
 			addAssertions(entity, et, fieldSpec, descriptor, axiomDescriptor);
 		} catch (IllegalAccessException e) {

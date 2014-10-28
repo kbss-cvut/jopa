@@ -6,8 +6,9 @@ import org.openrdf.model.ValueFactory;
 
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver_new.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver_new.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 /**
@@ -20,7 +21,7 @@ import cz.cvut.kbss.ontodriver_new.model.Axiom;
  * @param <T>
  *            List descriptor type
  */
-abstract class ListHandler<T extends SimpleListDescriptor> {
+abstract class ListHandler<T extends ListDescriptor> {
 
 	protected final T listDescriptor;
 	protected final Connector connector;

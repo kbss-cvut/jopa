@@ -36,7 +36,8 @@ import org.openrdf.sail.memory.MemoryStore;
 
 import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver_new.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptorImpl;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
@@ -78,7 +79,7 @@ public class SimpleListHandlerTest {
 				java.net.URI.create(LIST_PROPERTY), false);
 		final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(
 				java.net.URI.create(NEXT_NODE_PROPERTY), false);
-		this.listDescriptor = new SimpleListDescriptor(OWNER, listProperty, nextNodeProperty);
+		this.listDescriptor = new SimpleListDescriptorImpl(OWNER, listProperty, nextNodeProperty);
 
 		this.handler = new SimpleListHandler(listDescriptor, connector, vf);
 	}

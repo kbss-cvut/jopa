@@ -7,6 +7,8 @@ import java.util.List;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
@@ -154,42 +156,6 @@ public interface Connection extends AutoCloseable {
 	public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException;
 
 	/**
-	 * Loads simple list specified by the descriptor. </p>
-	 * 
-	 * The returned axioms should be iterable in the same order as they were put
-	 * into the sequence in the ontology.
-	 * 
-	 * @param descriptor
-	 *            Describes the list's properties as well as the context from
-	 *            which the list should be loaded.
-	 * @return Axioms matching the specified list descriptor
-	 * @throws OntoDriverException
-	 *             If an ontology access error occurs
-	 * @throws IllegalStateException
-	 *             If called on a closed connection
-	 */
-	public Collection<Axiom<?>> loadSimpleList(SimpleListDescriptor descriptor)
-			throws OntoDriverException;
-
-	/**
-	 * Loads referenced list specified by the descriptor. </p>
-	 * 
-	 * The returned axioms should be iterable in the same order as they were put
-	 * into the sequence in the ontology.
-	 * 
-	 * @param descriptor
-	 *            Describes list's properties, including node content assertion.
-	 *            Also may specify context from which the list should be loaded
-	 * @return Axioms matching the specified list descriptor
-	 * @throws OntoDriverException
-	 *             If an ontology access error occurs
-	 * @throws IllegalStateException
-	 *             If called on a closed connection
-	 */
-	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
-			throws OntoDriverException;
-
-	/**
 	 * Persists new individual and its property values specified by the
 	 * descriptor.
 	 * 
@@ -200,7 +166,7 @@ public interface Connection extends AutoCloseable {
 	 * @throws IllegalStateException
 	 *             If called on a closed connection
 	 */
-	public void persist(MutationAxiomDescriptor descriptor) throws OntoDriverException;
+	public void persist(AxiomValueDescriptor descriptor) throws OntoDriverException;
 
 	/**
 	 * Generates a new unique identifier based on the specified type. </p>
@@ -229,7 +195,7 @@ public interface Connection extends AutoCloseable {
 	 * @throws IllegalStateException
 	 *             If called on a closed connection
 	 */
-	public void update(MutationAxiomDescriptor descriptor) throws OntoDriverException;
+	public void update(AxiomValueDescriptor descriptor) throws OntoDriverException;
 
 	/**
 	 * Removes all axioms related to subject specified by the descriptor. </p>
@@ -248,4 +214,11 @@ public interface Connection extends AutoCloseable {
 	 *             If called on a closed connection
 	 */
 	public void remove(AxiomDescriptor descriptor) throws OntoDriverException;
+
+	/**
+	 * Gets ontology lists handler.
+	 * 
+	 * @return Lists handler
+	 */
+	public Lists lists();
 }

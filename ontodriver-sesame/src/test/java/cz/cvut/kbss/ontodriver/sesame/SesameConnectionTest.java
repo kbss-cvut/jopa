@@ -3,7 +3,6 @@ package cz.cvut.kbss.ontodriver.sesame;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -24,10 +23,10 @@ import org.mockito.MockitoAnnotations;
 
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver_new.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.Connection;
-import cz.cvut.kbss.ontodriver_new.MutationAxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.Lists;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 public class SesameConnectionTest {
@@ -196,14 +195,14 @@ public class SesameConnectionTest {
 
 	@Test
 	public void testPersist() throws Exception {
-		final MutationAxiomDescriptor axDesc = mock(MutationAxiomDescriptor.class);
+		final AxiomValueDescriptor axDesc = mock(AxiomValueDescriptor.class);
 		connection.persist(axDesc);
 		verify(adapterMock).persist(axDesc);
 	}
 
 	@Test
 	public void testPersistAutoCommit() throws Exception {
-		final MutationAxiomDescriptor axDesc = mock(MutationAxiomDescriptor.class);
+		final AxiomValueDescriptor axDesc = mock(AxiomValueDescriptor.class);
 		connection.setAutoCommit(true);
 		connection.persist(axDesc);
 		verify(adapterMock).persist(axDesc);
@@ -213,7 +212,7 @@ public class SesameConnectionTest {
 	@Test(expected = IllegalStateException.class)
 	public void testPersistOnClosed() throws Exception {
 		connection.close();
-		final MutationAxiomDescriptor axDesc = mock(MutationAxiomDescriptor.class);
+		final AxiomValueDescriptor axDesc = mock(AxiomValueDescriptor.class);
 		try {
 			connection.persist(axDesc);
 		} finally {
@@ -223,14 +222,14 @@ public class SesameConnectionTest {
 
 	@Test
 	public void testUpdate() throws Exception {
-		final MutationAxiomDescriptor axDesc = mock(MutationAxiomDescriptor.class);
+		final AxiomValueDescriptor axDesc = mock(AxiomValueDescriptor.class);
 		connection.update(axDesc);
 		verify(adapterMock).update(axDesc);
 	}
 
 	@Test
 	public void testUpdateAutoCommit() throws Exception {
-		final MutationAxiomDescriptor axDesc = mock(MutationAxiomDescriptor.class);
+		final AxiomValueDescriptor axDesc = mock(AxiomValueDescriptor.class);
 		connection.setAutoCommit(true);
 		connection.update(axDesc);
 		verify(adapterMock).update(axDesc);
@@ -245,14 +244,8 @@ public class SesameConnectionTest {
 	}
 
 	@Test
-	public void testLoadSimpleList() throws Exception {
-		final SimpleListDescriptor axDesc = mock(SimpleListDescriptor.class);
-		final Collection<Axiom<?>> axioms = new ArrayList<>();
-		axioms.add(mock(Axiom.class));
-		when(adapterMock.loadSimpleList(axDesc)).thenReturn(axioms);
-
-		final Collection<Axiom<?>> res = connection.loadSimpleList(axDesc);
-		assertSame(axioms, res);
-		verify(adapterMock).loadSimpleList(axDesc);
+	public void testLists() throws Exception {
+		final Lists lsts = connection.lists();
+		assertNotNull(lsts);
 	}
 }

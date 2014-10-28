@@ -5,14 +5,15 @@ import java.util.Collection;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
-import cz.cvut.kbss.ontodriver_new.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptorImpl;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
-class ReferencedListPropertyStrategy extends SimpleListPropertyStrategy {
+class ReferencedListPropertyStrategy<X> extends SimpleListPropertyStrategy<X> {
 
-	public ReferencedListPropertyStrategy(EntityType<?> et, ListAttribute<?, ?> att,
+	public ReferencedListPropertyStrategy(EntityType<X> et, ListAttribute<? super X, ?> att,
 			Descriptor descriptor, EntityMappingHelper mapper) {
 		super(et, att, descriptor, mapper);
 	}
@@ -36,7 +37,7 @@ class ReferencedListPropertyStrategy extends SimpleListPropertyStrategy {
 				.getOWLObjectPropertyHasNextIRI().toURI(), inferred);
 		final Assertion nodeContentProperty = Assertion.createObjectPropertyAssertion(listAttribute
 				.getOWLPropertyHasContentsIRI().toURI(), inferred);
-		final ReferencedListDescriptor listDescriptor = new ReferencedListDescriptor(owner,
+		final ReferencedListDescriptor listDescriptor = new ReferencedListDescriptorImpl(owner,
 				listProperty, nextNodeProperty, nodeContentProperty);
 		return listDescriptor;
 	}
