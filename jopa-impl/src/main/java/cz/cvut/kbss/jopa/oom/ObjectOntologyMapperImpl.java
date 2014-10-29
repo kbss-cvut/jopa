@@ -22,10 +22,8 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
@@ -146,14 +144,12 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 				EntityPropertiesUtils.setPrimaryKey(primaryKey, entity, et);
 			}
 			entityBreaker.setCascadeResolver(new PersistCascadeResolver(this));
-			final AxiomValueDescriptor axiomDescriptor = entityBreaker.mapEntityToAxioms(
-					primaryKey, entity, et, descriptor);
-			storageConnection.persist(axiomDescriptor);
+			final AxiomValueGatherer axiomBuilder = entityBreaker.mapEntityToAxioms(primaryKey,
+					entity, et, descriptor);
+			axiomBuilder.persist(storageConnection);
 			pendingPersists.removeInstance(primaryKey, descriptor.getContext());
 		} catch (IllegalArgumentException e) {
 			throw new EntityDeconstructionException("Unable to deconstruct entity " + entity, e);
-		} catch (OntoDriverException e) {
-			throw new StorageAccessException(e);
 		}
 	}
 
@@ -170,7 +166,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 			return uow.getLiveObjectCache().get(cls, primaryKey, descriptor.getContext());
 		} else if (instanceRegistry.containsInstance(primaryKey, descriptor.getContext())) {
 			// This prevents endless cycles in bidirectional relationships
-			return instanceRegistry.getInstance(primaryKey, descriptor.getContext());
+			return cls.cast(instanceRegistry.getInstance(primaryKey, descriptor.getContext()));
 		} else {
 			return loadEntityInternal(cls, primaryKey, descriptor);
 		}
@@ -232,13 +228,9 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 		final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
 		final URI pkUri = EntityPropertiesUtils.getPrimaryKey(entity, et);
 
-		final AxiomValueDescriptor axiomDescriptor = entityBreaker.mapFieldToAxioms(pkUri, entity,
-				field, et, descriptor);
-		try {
-			storageConnection.update(axiomDescriptor);
-		} catch (OntoDriverException e) {
-			throw new StorageAccessException(e);
-		}
+		final AxiomValueGatherer axiomBuilder = entityBreaker.mapFieldToAxioms(pkUri, entity, field,
+				et, descriptor);
+		axiomBuilder.update(storageConnection);
 	}
 
 	@Override
@@ -254,15 +246,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor listDescriptor) {
 		try {
 			return storageConnection.lists().loadReferencedList(listDescriptor);
-		} catch (OntoDriverException e) {
-			throw new StorageAccessException(e);
-		}
-	}
-
-	@Override
-	public void persistSimpleList(SimpleListValueDescriptor listDescriptor) {
-		try {
-			storageConnection.lists().persistSimpleList(listDescriptor);
 		} catch (OntoDriverException e) {
 			throw new StorageAccessException(e);
 		}

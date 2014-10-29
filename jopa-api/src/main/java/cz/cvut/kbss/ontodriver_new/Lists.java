@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -73,5 +74,21 @@ public interface Lists {
 	 *             If called on a closed connection
 	 */
 	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
+			throws OntoDriverException;
+
+	/**
+	 * Persists referenced list values specified by the descriptor. </p>
+	 * 
+	 * The sequence is persisted in the order in which it appears in the
+	 * descriptor.
+	 * 
+	 * @param descriptor
+	 *            List values descriptor
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @throws IllegalStateException
+	 *             If called on a closed connection
+	 */
+	public void persistReferencedList(ReferencedListValueDescriptor descriptor)
 			throws OntoDriverException;
 }

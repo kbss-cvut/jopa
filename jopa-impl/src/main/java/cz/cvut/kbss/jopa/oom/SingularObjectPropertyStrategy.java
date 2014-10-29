@@ -1,9 +1,6 @@
 package cz.cvut.kbss.jopa.oom;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -17,8 +14,8 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
 
 	private Object value;
 
-	SingularObjectPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att, Descriptor descriptor,
-			EntityMappingHelper mapper) {
+	SingularObjectPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att,
+			Descriptor descriptor, EntityMappingHelper mapper) {
 		super(et, att, descriptor, mapper);
 	}
 
@@ -37,26 +34,22 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
 	}
 
 	@Override
-	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(X instance)
+	void extractAttributeValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object value = extractFieldValueFromInstance(instance);
 		Value<?> val = value != null ? extractReferenceIdentifier(value) : Value.nullValue();
-		return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
-				Collections.<Value<?>> singleton(val));
+		valueBuilder.addValue(createAssertion(), val, getAttributeContext());
 	}
 
-	private <V> Value<?> extractReferenceIdentifier(final V value) {
-		Value<?> val;
+	private <V> Value<URI> extractReferenceIdentifier(final V value) {
 		final EntityType<V> valEt = (EntityType<V>) mapper.getEntityType(value.getClass());
 		if (valEt == null) {
 			throw new EntityDeconstructionException("Value of field " + attribute.getJavaField()
 					+ " is not a recognized entity.");
 		}
 		final URI id = resolveValueIdentifier(value, valEt);
-		cascadeResolver.resolveFieldCascading(attribute, value,
-				descriptor.getAttributeDescriptor(attribute).getContext());
-		val = new Value<>(id);
-		return val;
+		cascadeResolver.resolveFieldCascading(attribute, value, getAttributeContext());
+		return new Value<>(id);
 	}
 
 	@Override

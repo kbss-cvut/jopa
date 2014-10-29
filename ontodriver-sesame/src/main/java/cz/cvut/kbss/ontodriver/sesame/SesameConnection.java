@@ -4,8 +4,10 @@ import static cz.cvut.kbss.jopa.utils.ErrorUtils.constructNPXMessage;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
@@ -24,13 +26,29 @@ class SesameConnection implements Connection {
 	private boolean open;
 	private boolean autoCommit;
 
-	private SesameLists lists;
+	private Lists lists;
+
+	private final Set<ConnectionListener> listeners;
 
 	public SesameConnection(SesameAdapter adapter) {
 		assert adapter != null;
 		this.adapter = adapter;
-		this.lists = new SesameLists(this, adapter);
+		this.listeners = new HashSet<>(4);
 		this.open = true;
+	}
+
+	void setLists(SesameLists lists) {
+		this.lists = lists;
+	}
+
+	void registerListener(ConnectionListener listener) {
+		assert listener != null;
+		listeners.add(listener);
+	}
+
+	void deregisterListener(ConnectionListener listener) {
+		assert listener != null;
+		listeners.remove(listener);
 	}
 
 	@Override
@@ -40,6 +58,9 @@ class SesameConnection implements Connection {
 		}
 		try {
 			adapter.close();
+			for (ConnectionListener listener : listeners) {
+				listener.connectionClosed(this);
+			}
 		} finally {
 			this.open = false;
 		}
@@ -160,6 +181,7 @@ class SesameConnection implements Connection {
 	@Override
 	public Lists lists() {
 		ensureOpen();
+		assert lists != null;
 		return lists;
 	}
 

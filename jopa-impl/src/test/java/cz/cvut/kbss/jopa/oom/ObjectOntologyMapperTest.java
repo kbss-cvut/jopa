@@ -48,7 +48,6 @@ import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
@@ -227,11 +226,11 @@ public class ObjectOntologyMapperTest {
 
 	@Test
 	public void testPersistEntity() throws Exception {
-		final AxiomValueDescriptor madMock = mock(AxiomValueDescriptor.class);
+		final AxiomValueGatherer madMock = mock(AxiomValueGatherer.class);
 		when(entityDeconstructorMock.mapEntityToAxioms(ENTITY_PK, entityA, etAMock, aDescriptor))
 				.thenReturn(madMock);
 		mapper.persistEntity(ENTITY_PK, entityA, aDescriptor);
-		verify(connectionMock).persist(madMock);
+		verify(madMock).persist(connectionMock);
 	}
 
 	@Test
@@ -240,7 +239,7 @@ public class ObjectOntologyMapperTest {
 		when(etAMock.getIdentifier()).thenReturn(id);
 		when(id.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
 		final OWLClassA a = new OWLClassA();
-		final AxiomValueDescriptor madMock = mock(AxiomValueDescriptor.class);
+		final AxiomValueGatherer madMock = mock(AxiomValueGatherer.class);
 		final URI generatedUri = URI.create("http://generatedUri" + System.currentTimeMillis());
 		when(entityDeconstructorMock.mapEntityToAxioms(generatedUri, a, etAMock, aDescriptor))
 				.thenReturn(madMock);
@@ -250,7 +249,7 @@ public class ObjectOntologyMapperTest {
 		mapper.persistEntity(null, a, aDescriptor);
 		assertNotNull(a.getUri());
 		verify(connectionMock).generateIdentifier(etAMock.getIRI().toURI());
-		verify(connectionMock).persist(madMock);
+		verify(madMock).persist(connectionMock);
 	}
 
 	@Test
@@ -328,14 +327,14 @@ public class ObjectOntologyMapperTest {
 
 	@Test
 	public void updatesFieldValueInTheOntology() throws Exception {
-		final AxiomValueDescriptor axiomDescMock = mock(AxiomValueDescriptor.class);
+		final AxiomValueGatherer axiomBuilderMock = mock(AxiomValueGatherer.class);
 		when(
 				entityDeconstructorMock.mapFieldToAxioms(ENTITY_PK, entityA,
-						OWLClassA.getStrAttField(), etAMock, aDescriptor))
-				.thenReturn(axiomDescMock);
+						OWLClassA.getStrAttField(), etAMock, aDescriptor)).thenReturn(
+				axiomBuilderMock);
 		mapper.updateFieldValue(entityA, OWLClassA.getStrAttField(), aDescriptor);
 		verify(entityDeconstructorMock).mapFieldToAxioms(ENTITY_PK, entityA,
 				OWLClassA.getStrAttField(), etAMock, aDescriptor);
-		verify(connectionMock).update(axiomDescMock);
+		verify(axiomBuilderMock).update(connectionMock);
 	}
 }

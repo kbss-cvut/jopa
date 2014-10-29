@@ -2,9 +2,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -15,7 +13,6 @@ import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
-import cz.cvut.kbss.ontodriver_new.model.Value;
 
 class SimpleListPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
 
@@ -48,26 +45,26 @@ class SimpleListPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
 	}
 
 	@Override
-	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(X instance)
+	void extractAttributeValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object value = extractFieldValueFromInstance(instance);
-		if (value == null) {
-			return Collections.emptyMap();
-		}
-		assert (value instanceof List);
-		persistSimpleListValues((List<?>) value, instance);
-		return Collections.emptyMap();
+		assert (value instanceof List || value == null);
+		extractSimpleListValues((List<?>) value, instance, valueBuilder);
 	}
-	
-	private <K> void persistSimpleListValues(List<K> list, X instance) {
+
+	private <K> void extractSimpleListValues(List<K> list, X instance,
+			AxiomValueGatherer valueBuilder) {
 		final SimpleListValueDescriptor listDescriptor = createListValueDescriptor(instance);
-		final Class<K> elemType = (Class<K>) listAttribute.getElementType().getJavaType();
+		final Class<K> elemType = (Class<K>) listAttribute.getBindableJavaType();
 		final EntityType<K> valueType = mapper.getEntityType(elemType);
-		for (K item : list) {
-			final URI id = resolveValueIdentifier(item, valueType);
-			listDescriptor.addValue(NamedResource.create(id));
+		if (list != null) {
+			for (K item : list) {
+				final URI id = resolveValueIdentifier(item, valueType);
+				cascadeResolver.resolveFieldCascading(listAttribute, item, getAttributeContext());
+				listDescriptor.addValue(NamedResource.create(id));
+			}
 		}
-		mapper.persistSimpleList(listDescriptor);
+		valueBuilder.addSimpleListValues(listDescriptor);
 	}
 
 	private SimpleListValueDescriptor createListValueDescriptor(X instance) {

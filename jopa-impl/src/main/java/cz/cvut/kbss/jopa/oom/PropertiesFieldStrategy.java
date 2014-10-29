@@ -1,8 +1,6 @@
 package cz.cvut.kbss.jopa.oom;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,7 +19,10 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
-public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<? super X, ?>, X> {
+// TODO Properties handling strategy has to be revisited. 
+// What shall we do when merging properties or when the properties have been completely removed?
+public class PropertiesFieldStrategy<X> extends
+		FieldStrategy<PropertiesSpecification<? super X, ?>, X> {
 
 	private final Map<String, Set<String>> values;
 
@@ -85,18 +86,21 @@ public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecific
 	}
 
 	@Override
-	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(Object instance)
+	void extractAttributeValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object val = extractFieldValueFromInstance(instance);
 		if (val == null) {
 			// TODO What shall we do here?
-			return Collections.emptyMap();
+			return;
 		}
 		if (!(val instanceof Map)) {
 			throw new EntityDeconstructionException("The properties field has to be a map!");
 		}
 		final Map<?, ?> props = (Map<?, ?>) val;
-		final Map<Assertion, Collection<Value<?>>> result = new HashMap<>(props.size());
+		if (props.isEmpty()) {
+			// TODO
+			return;
+		}
 		for (Entry<?, ?> e : props.entrySet()) {
 			if (e.getValue() == null) {
 				continue;
@@ -112,9 +116,8 @@ public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecific
 			for (Object v : propertyValue) {
 				values.add(new Value<>(v));
 			}
-			result.put(assertion, values);
+			valueBuilder.addValues(assertion, values, getAttributeContext());
 		}
-		return result;
 	}
 
 	@Override

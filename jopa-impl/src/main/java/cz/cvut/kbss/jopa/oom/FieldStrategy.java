@@ -2,10 +2,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Collection;
-import java.util.Map;
 
-import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -18,7 +15,6 @@ import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.Value;
 
 abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 
@@ -70,7 +66,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 		return field.get(instance);
 	}
 
-	protected <E> URI resolveValueIdentifier(E instance, EntityType<E> valEt) {
+	<E> URI resolveValueIdentifier(E instance, EntityType<E> valEt) {
 		URI id = EntityPropertiesUtils.getPrimaryKey(instance, valEt);
 		if (id == null) {
 			id = mapper.generateIdentifier(valEt);
@@ -79,17 +75,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 		return id;
 	}
 
-	/**
-	 * Checks that the field represented by this strategy is not inferred.
-	 * 
-	 * @throws OWLInferredAttributeModifiedException
-	 *             If the attribute is indeed inferred
-	 */
-	void verifyAttributeIsNotInferred() {
-		if (attribute.isInferred()) {
-			throw new OWLInferredAttributeModifiedException("Cannot modify inferred attribute "
-					+ attribute);
-		}
+	URI getAttributeContext() {
+		return descriptor.getAttributeDescriptor(attribute).getContext();
 	}
 
 	/**
@@ -122,15 +109,16 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 	 * 
 	 * @param instance
 	 *            The instance to extract values from
-	 * @return Map of values mapped by assertion, empty collection if there are
-	 *         no values
+	 * @param valueBuilder
+	 *            Builder into which the attribute value(s) are extracted
 	 * @throws IllegalArgumentException
 	 *             Access error
 	 * @throws IllegalAccessException
 	 *             Access error
 	 */
-	abstract Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(
-			X instance) throws IllegalArgumentException, IllegalAccessException;
+	// TODO Rename the method to something like buildAxiomsFromInstance
+	abstract void extractAttributeValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
+			throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * Creates property assertion appropriate for the attribute represented by
@@ -140,13 +128,15 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 	 */
 	abstract Assertion createAssertion();
 
-	static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createFieldStrategy(EntityType<X> et,
-			FieldSpecification<? super X, ?> att, Descriptor descriptor, EntityMappingHelper mapper) {
+	static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createFieldStrategy(
+			EntityType<X> et, FieldSpecification<? super X, ?> att, Descriptor descriptor,
+			EntityMappingHelper mapper) {
 		if (att instanceof TypesSpecification) {
-			return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, descriptor, mapper);
-		} else if (att instanceof PropertiesSpecification<?, ?>) {
-			return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?>) att, descriptor,
+			return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, descriptor,
 					mapper);
+		} else if (att instanceof PropertiesSpecification<?, ?>) {
+			return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?>) att,
+					descriptor, mapper);
 		}
 		final Attribute<? super X, ?> attribute = (Attribute<? super X, ?>) att;
 		if (attribute.isCollection()) {
@@ -155,8 +145,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 			case DATA:
 				throw new NotYetImplementedException();
 			case OBJECT:
-				return createPluralObjectPropertyStrategy(et, (PluralAttribute<? super X, ?, ?>) attribute,
-						descriptor, mapper);
+				return createPluralObjectPropertyStrategy(et,
+						(PluralAttribute<? super X, ?, ?>) attribute, descriptor, mapper);
 			default:
 				break;
 			}
@@ -191,7 +181,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 						+ listAtt.getSequenceType());
 			}
 		case SET:
-			return new PluralObjectPropertyStrategy<>(et, attribute, descriptor, mapper);
+			return new SimpleSetPropertyStrategy<>(et, attribute, descriptor, mapper);
 		default:
 			throw new NotYetImplementedException("Unsupported plural attribute collection type "
 					+ attribute.getCollectionType());

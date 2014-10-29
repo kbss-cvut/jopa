@@ -1,11 +1,7 @@
 package cz.cvut.kbss.jopa.oom;
 
-import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -17,6 +13,8 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
+// TODO The strategy for working with types has to be revisited. The problem is with updating types, 
+// when we might delete the entity type or re-persist it into the wrong context
 public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, ?>, X> {
 
 	final Set<String> values;
@@ -54,26 +52,21 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
 	}
 
 	@Override
-	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(X instance)
+	void extractAttributeValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
 			throws IllegalArgumentException, IllegalAccessException {
-		final Field typesField = attribute.getJavaField();
-		if (!typesField.isAccessible()) {
-			typesField.setAccessible(true);
-		}
 		final Object val = extractFieldValueFromInstance(instance);
 		if (val == null) {
-			return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
-					Collections.<Value<?>> singleton(Value.nullValue()));
+			valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
+			return;
 		}
 		if (!(val instanceof Set)) {
 			throw new EntityDeconstructionException(
 					"The types field is not of a valid type. Expected Set<String>.");
 		}
-		// This cast is fine, it was checked by checkFieldCompatibility
-		final Set<?> types = (Set<?>) typesField.get(instance);
+		final Set<?> types = (Set<?>) val;
 		if (types.isEmpty()) {
-			return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
-					Collections.<Value<?>> singleton(Value.nullValue()));
+			valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
+			return;
 		}
 		final Set<Value<?>> result = new HashSet<>(types.size());
 		for (Object type : types) {
@@ -83,8 +76,7 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
 				throw new EntityDeconstructionException("Type " + type + " is not a valid URI.", e);
 			}
 		}
-		return Collections
-				.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(), result);
+		valueBuilder.addValues(createAssertion(), result, getAttributeContext());
 	}
 
 	@Override

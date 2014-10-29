@@ -1,9 +1,6 @@
 package cz.cvut.kbss.jopa.oom;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -44,13 +41,12 @@ class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X,
 	}
 
 	@Override
-	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(X instance)
+	void extractAttributeValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object value = extractFieldValueFromInstance(instance);
 
 		final Value<?> val = value != null ? new Value<>(value) : Value.nullValue();
-		return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
-				Collections.<Value<?>> singleton(val));
+		valueBuilder.addValue(createAssertion(), val, getAttributeContext());
 	}
 
 	@Override

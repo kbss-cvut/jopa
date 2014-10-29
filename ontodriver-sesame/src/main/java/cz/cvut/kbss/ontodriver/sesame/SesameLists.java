@@ -8,6 +8,7 @@ import java.util.Objects;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver_new.Lists;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -27,14 +28,14 @@ class SesameLists implements Lists {
 			throws OntoDriverException {
 		connection.ensureOpen();
 		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
-		return adapter.loadSimpleList(descriptor);
+		return adapter.getSimpleListHandler(descriptor).loadList();
 	}
 
 	@Override
 	public void persistSimpleList(SimpleListValueDescriptor descriptor) throws OntoDriverException {
 		connection.ensureOpen();
 		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
-		adapter.persistSimpleList(descriptor);
+		// TODO
 		connection.commitIfAuto();
 	}
 
@@ -44,5 +45,14 @@ class SesameLists implements Lists {
 		connection.ensureOpen();
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void persistReferencedList(ReferencedListValueDescriptor descriptor)
+			throws OntoDriverException {
+		connection.ensureOpen();
+		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+		// TODO
+		connection.commitIfAuto();
 	}
 }

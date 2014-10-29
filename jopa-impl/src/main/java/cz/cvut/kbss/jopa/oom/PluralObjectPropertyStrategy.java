@@ -3,9 +3,7 @@ package cz.cvut.kbss.jopa.oom;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -14,11 +12,10 @@ import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.Value;
 
-class PluralObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
+abstract class PluralObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
 
-	private final PluralAttribute<? super X, ?, ?> pluralAtt;
+	final PluralAttribute<? super X, ?, ?> pluralAtt;
 	private Collection<Object> values;
 
 	public PluralObjectPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att,
@@ -55,22 +52,6 @@ class PluralObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X,
 	void buildInstanceFieldValue(Object instance) throws IllegalArgumentException,
 			IllegalAccessException {
 		setValueOnInstance(instance, values);
-	}
-
-	@Override
-	Map<Assertion, Collection<Value<?>>> extractAttributeValuesFromInstance(X instance)
-			throws IllegalArgumentException, IllegalAccessException {
-		final Object value = extractFieldValueFromInstance(instance);
-		if (value == null) {
-			return Collections.<Assertion, Collection<Value<?>>> singletonMap(createAssertion(),
-					Collections.<Value<?>> singleton(Value.nullValue()));
-		}
-		assert value instanceof Collection;
-		final Collection<?> valueCollection = (Collection<?>) value;
-
-		final PluralAttributeValueExtractor extractor = PluralAttributeValueExtractor.create(this,
-				pluralAtt);
-		return extractor.extractValues(valueCollection, descriptor);
 	}
 
 	@Override

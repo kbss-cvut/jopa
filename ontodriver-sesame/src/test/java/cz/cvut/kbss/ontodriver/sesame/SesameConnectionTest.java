@@ -24,7 +24,6 @@ import org.mockito.MockitoAnnotations;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver_new.Connection;
-import cz.cvut.kbss.ontodriver_new.Lists;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -241,11 +240,5 @@ public class SesameConnectionTest {
 		final AxiomDescriptor axDesc = mock(AxiomDescriptor.class);
 		connection.remove(axDesc);
 		verify(adapterMock).remove(axDesc);
-	}
-
-	@Test
-	public void testLists() throws Exception {
-		final Lists lsts = connection.lists();
-		assertNotNull(lsts);
 	}
 }
