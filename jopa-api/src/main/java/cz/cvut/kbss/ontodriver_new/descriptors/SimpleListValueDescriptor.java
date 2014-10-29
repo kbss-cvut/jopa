@@ -16,7 +16,8 @@ import cz.cvut.kbss.ontodriver_new.model.NamedResource;
  * @author kidney
  * 
  */
-public class SimpleListValueDescriptor extends SimpleListDescriptorImpl {
+public class SimpleListValueDescriptor extends SimpleListDescriptorImpl implements
+		ListValueDescriptor {
 
 	private final List<NamedResource> values;
 
@@ -26,6 +27,7 @@ public class SimpleListValueDescriptor extends SimpleListDescriptorImpl {
 		this.values = new ArrayList<>();
 	}
 
+	@Override
 	public List<NamedResource> getValues() {
 		return Collections.unmodifiableList(values);
 	}

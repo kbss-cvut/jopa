@@ -38,6 +38,7 @@ import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptorImpl;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
@@ -60,7 +61,7 @@ public class SimpleListHandlerTest {
 
 	private SimpleListDescriptor listDescriptor;
 
-	private ListHandler<SimpleListDescriptor> handler;
+	private ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> handler;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -81,7 +82,7 @@ public class SimpleListHandlerTest {
 				java.net.URI.create(NEXT_NODE_PROPERTY), false);
 		this.listDescriptor = new SimpleListDescriptorImpl(OWNER, listProperty, nextNodeProperty);
 
-		this.handler = new SimpleListHandler(listDescriptor, connector, vf);
+		this.handler = new SimpleListHandler(connector, vf);
 	}
 
 	@AfterClass
@@ -93,7 +94,7 @@ public class SimpleListHandlerTest {
 	public void loadsEmptyListAndReturnsEmptyCollection() throws Exception {
 		when(connector.findStatements(owner, hasListProperty, null, false, (URI[]) null))
 				.thenReturn(Collections.<Statement> emptyList());
-		final Collection<Axiom<?>> res = handler.loadList();
+		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
 		assertNotNull(res);
 		assertTrue(res.isEmpty());
 		verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
@@ -116,7 +117,7 @@ public class SimpleListHandlerTest {
 				connector.findStatements(vf.createURI(lastElem.toString()), nextNodeProperty, null,
 						false, (URI[]) null)).thenReturn(Collections.<Statement> emptySet());
 
-		final Collection<Axiom<?>> res = handler.loadList();
+		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
 		verify(connector).findStatements(owner, hasListProperty, null, false, (URI[]) null);
 		assertEquals(simpleList.size(), res.size());
 		int i = 0;
@@ -159,7 +160,7 @@ public class SimpleListHandlerTest {
 				.thenReturn(stmts);
 
 		try {
-			handler.loadList();
+			handler.loadList(listDescriptor);
 		} finally {
 			verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
 					any(Value.class), any(Boolean.class), any(URI[].class));
@@ -181,7 +182,7 @@ public class SimpleListHandlerTest {
 				.thenReturn(stmts);
 
 		try {
-			handler.loadList();
+			handler.loadList(listDescriptor);
 		} finally {
 			verify(connector).findStatements(owner, hasListProperty, null, false, (URI[]) null);
 		}
@@ -200,7 +201,7 @@ public class SimpleListHandlerTest {
 				.thenReturn(Collections.singleton(nextStmt));
 
 		try {
-			handler.loadList();
+			handler.loadList(listDescriptor);
 		} finally {
 			verify(connector).findStatements(owner, hasListProperty, null, false, (URI[]) null);
 			verify(connector)

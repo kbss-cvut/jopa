@@ -24,7 +24,9 @@ import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
@@ -200,16 +202,11 @@ class SesameAdapter implements Closeable {
 		return connector;
 	}
 
-	ListHandler<SimpleListDescriptor> getSimpleListHandler(SimpleListDescriptor listDescriptor) {
-		assert listDescriptor != null;
-
-		return ListHandler.createForSimpleList(listDescriptor, connector, valueFactory);
+	ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler() {
+		return ListHandler.createForSimpleList(connector, valueFactory);
 	}
 
-	ListHandler<ReferencedListDescriptor> getReferencedListHandler(
-			ReferencedListDescriptor listDescriptor) {
-		assert listDescriptor != null;
-
-		return ListHandler.createForReferencedList(listDescriptor, connector, valueFactory);
+	ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler() {
+		return ListHandler.createForReferencedList(connector, valueFactory);
 	}
 }

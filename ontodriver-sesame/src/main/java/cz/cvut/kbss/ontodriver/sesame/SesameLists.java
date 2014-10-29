@@ -28,14 +28,14 @@ class SesameLists implements Lists {
 			throws OntoDriverException {
 		connection.ensureOpen();
 		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
-		return adapter.getSimpleListHandler(descriptor).loadList();
+		return adapter.getSimpleListHandler().loadList(descriptor);
 	}
 
 	@Override
 	public void persistSimpleList(SimpleListValueDescriptor descriptor) throws OntoDriverException {
 		connection.ensureOpen();
 		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
-		// TODO
+		adapter.getSimpleListHandler().persistList(descriptor);
 		connection.commitIfAuto();
 	}
 

@@ -7,8 +7,11 @@ import org.openrdf.model.ValueFactory;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 /**
@@ -20,20 +23,38 @@ import cz.cvut.kbss.ontodriver_new.model.Axiom;
  * 
  * @param <T>
  *            List descriptor type
+ * @param <V>
+ *            List value descriptor type
  */
-abstract class ListHandler<T extends ListDescriptor> {
+abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescriptor> {
 
-	protected final T listDescriptor;
 	protected final Connector connector;
 	protected final ValueFactory vf;
 
-	ListHandler(T listDescriptor, Connector connector, ValueFactory vf) {
-		this.listDescriptor = listDescriptor;
+	ListHandler(Connector connector, ValueFactory vf) {
 		this.connector = connector;
 		this.vf = vf;
 	}
 
-	abstract Collection<Axiom<?>> loadList() throws SesameDriverException;
+	/**
+	 * Loads axioms representing list described by the specified list
+	 * descriptor.
+	 * 
+	 * @return Collection of axioms representing sequence values
+	 * @throws SesameDriverException
+	 */
+	abstract Collection<Axiom<?>> loadList(T listDescriptor) throws SesameDriverException;
+
+	/**
+	 * Persists list values specified by the descriptor. </p>
+	 * 
+	 * The values are saved in the order in which they appear in the descriptor.
+	 * 
+	 * @param listValueDescriptor
+	 *            Describes values to persist
+	 * @throws SesameDriverException
+	 */
+	abstract void persistList(V listValueDescriptor) throws SesameDriverException;
 
 	/**
 	 * Creates handler for simple lists.
@@ -42,17 +63,16 @@ abstract class ListHandler<T extends ListDescriptor> {
 	 *            List descriptor
 	 * @return List handler
 	 */
-	static ListHandler<SimpleListDescriptor> createForSimpleList(
-			SimpleListDescriptor listDescriptor, Connector connector, ValueFactory vf) {
-		assert listDescriptor != null;
+	static ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> createForSimpleList(
+			Connector connector, ValueFactory vf) {
 		assert connector != null;
 		assert vf != null;
 
-		return new SimpleListHandler(listDescriptor, connector, vf);
+		return new SimpleListHandler(connector, vf);
 	}
 
-	static ListHandler<ReferencedListDescriptor> createForReferencedList(
-			ReferencedListDescriptor listDescriptor, Connector connector, ValueFactory vf) {
+	static ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> createForReferencedList(
+			Connector connector, ValueFactory vf) {
 		// TODO
 		return null;
 	}

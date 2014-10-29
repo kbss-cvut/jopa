@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.sesame;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -14,18 +15,23 @@ import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
-class SimpleListHandler extends ListHandler<SimpleListDescriptor> {
+class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> {
 
-	SimpleListHandler(SimpleListDescriptor listDescriptor, Connector connector, ValueFactory vf) {
-		super(listDescriptor, connector, vf);
+	private SimpleListDescriptor listDescriptor;
+
+	SimpleListHandler(Connector connector, ValueFactory vf) {
+		super(connector, vf);
 	}
 
 	@Override
-	Collection<Axiom<?>> loadList() throws SesameDriverException {
+	Collection<Axiom<?>> loadList(SimpleListDescriptor listDescriptor) throws SesameDriverException {
 		final Collection<Axiom<?>> axioms = new ArrayList<>();
+		this.listDescriptor = listDescriptor;
 		final Axiom<java.net.URI> head = loadListHead();
 		if (head == null) {
 			return Collections.emptyList();
@@ -90,5 +96,45 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor> {
 			}
 		} while (!stmts.isEmpty());
 		return axioms;
+	}
+
+	@Override
+	void persistList(SimpleListValueDescriptor listValueDescriptor) throws SesameDriverException {
+		if (listValueDescriptor.getValues().isEmpty()) {
+			return;
+		}
+		final Collection<Statement> stmts = new ArrayList<>();
+		stmts.add(createListHead(listValueDescriptor));
+		stmts.addAll(createListRest(listValueDescriptor));
+		connector.addStatements(stmts);
+	}
+
+	private Statement createListHead(SimpleListValueDescriptor listValueDescriptor) {
+		final Resource owner = SesameUtils.toSesameUri(listValueDescriptor.getListOwner()
+				.getIdentifier(), vf);
+		final URI listProp = SesameUtils.toSesameUri(listValueDescriptor.getListProperty()
+				.getIdentifier(), vf);
+		final Resource firstNode = SesameUtils.toSesameUri(listValueDescriptor.getValues().get(0)
+				.getIdentifier(), vf);
+		return vf.createStatement(owner, listProp, firstNode,
+				SesameUtils.toSesameUri(listValueDescriptor.getContext(), vf));
+	}
+
+	private List<Statement> createListRest(SimpleListValueDescriptor listValueDescriptor) {
+		final List<Statement> stmts = new ArrayList<>(listValueDescriptor.getValues().size());
+		NamedResource previous = listValueDescriptor.getValues().get(0);
+		final URI nextNodeProp = SesameUtils.toSesameUri(listValueDescriptor.getNextNode()
+				.getIdentifier(), vf);
+		final URI context = SesameUtils.toSesameUri(listValueDescriptor.getContext(), vf);
+		for (NamedResource elem : listValueDescriptor.getValues()) {
+			if (elem == previous) {
+				continue;
+			}
+			final Resource subject = SesameUtils.toSesameUri(previous.getIdentifier(), vf);
+			final Resource object = SesameUtils.toSesameUri(elem.getIdentifier(), vf);
+			stmts.add(vf.createStatement(subject, nextNodeProp, object, context));
+			previous = elem;
+		}
+		return stmts;
 	}
 }

@@ -9,7 +9,8 @@ import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
-public class ReferencedListValueDescriptor extends ReferencedListDescriptorImpl {
+public class ReferencedListValueDescriptor extends ReferencedListDescriptorImpl implements
+		ListValueDescriptor {
 
 	private final List<NamedResource> values;
 
@@ -19,6 +20,7 @@ public class ReferencedListValueDescriptor extends ReferencedListDescriptorImpl 
 		this.values = new ArrayList<>();
 	}
 
+	@Override
 	public List<NamedResource> getValues() {
 		return Collections.unmodifiableList(values);
 	}
