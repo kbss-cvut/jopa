@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -8,13 +9,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver_new.Connection;
 
@@ -53,6 +57,21 @@ public class SesameDataSourceTest {
 				null);
 		fail("This line should not have been reached.");
 		assert ds == null;
+	}
+
+	@Test
+	public void testSesameDataSourceWithProperties() throws Exception {
+		final Map<String, String> properties = Collections.singletonMap(
+				OntoDriverProperties.CONNECTION_AUTO_COMMIT, "false");
+		final SesameDataSource ds = new SesameDataSource(mock(OntologyStorageProperties.class),
+				properties);
+		final Field driverField = SesameDataSource.class.getDeclaredField("driver");
+		driverField.setAccessible(true);
+		final SesameDriver driver = (SesameDriver) driverField.get(ds);
+		final Field propsField = SesameDriver.class.getDeclaredField("properties");
+		propsField.setAccessible(true);
+		final Map<String, String> res = (Map<String, String>) propsField.get(driver);
+		assertEquals(properties, res);
 	}
 
 	@Test

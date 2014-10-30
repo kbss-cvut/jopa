@@ -152,6 +152,17 @@ public class SesameConnectionTest {
 	}
 
 	@Test
+	public void testGenerateIdentifier() throws Exception {
+		final URI classUri = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/owlClassA");
+		final URI identifier = URI
+				.create("http://krizik.felk.cvut.cz/ontologies/jopa/owlClassA_instance_1");
+		when(adapterMock.generateIdentifier(classUri)).thenReturn(identifier);
+		final URI res = connection.generateIdentifier(classUri);
+		assertEquals(identifier, res);
+		verify(adapterMock).generateIdentifier(classUri);
+	}
+
+	@Test
 	public void testContainsAxiom() throws Exception {
 		final Axiom<?> ax = mock(Axiom.class);
 		when(adapterMock.contains(ax, null)).thenReturn(Boolean.TRUE);

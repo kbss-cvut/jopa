@@ -23,6 +23,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openrdf.model.Resource;
@@ -207,5 +208,43 @@ public class SimpleListHandlerTest {
 			verify(connector)
 					.findStatements(firstElem, nextNodeProperty, null, false, (URI[]) null);
 		}
+	}
+
+	@Test
+	public void persistsSimpleListWithSeveralValues() throws Exception {
+		final SimpleListValueDescriptor listDescriptor = initValues(5);
+
+		handler.persistList(listDescriptor);
+		final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
+		verify(connector).addStatements(captor.capture());
+		final Collection<?> args = captor.getValue();
+		for (Object elem : args) {
+			assert (elem instanceof Statement);
+			final Statement stmt = (Statement) elem;
+			final NamedResource subject = NamedResource.create(SesameUtils.toJavaUri(stmt
+					.getSubject()));
+			assertTrue(listDescriptor.getListOwner().equals(subject)
+					|| listDescriptor.getValues().contains(subject));
+		}
+	}
+
+	@Test
+	public void persistsEmptySimpleList() throws Exception {
+		final SimpleListValueDescriptor listDescriptor = initValues(0);
+
+		handler.persistList(listDescriptor);
+		verify(connector, never()).addStatements(any(Collection.class));
+	}
+
+	private static SimpleListValueDescriptor initValues(int count) {
+		final SimpleListValueDescriptor desc = new SimpleListValueDescriptor(OWNER,
+				Assertion.createObjectPropertyAssertion(java.net.URI.create(LIST_PROPERTY), false),
+				Assertion.createObjectPropertyAssertion(java.net.URI.create(NEXT_NODE_PROPERTY),
+						false));
+		for (int i = 0; i < count; i++) {
+			desc.addValue(NamedResource
+					.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA_" + i));
+		}
+		return desc;
 	}
 }
