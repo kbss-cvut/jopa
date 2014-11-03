@@ -18,4 +18,12 @@ public interface ListValueDescriptor {
 	 * @return List of value identifiers
 	 */
 	public List<NamedResource> getValues();
+
+	/**
+	 * Adds value to this list descriptor.
+	 * 
+	 * @param elem
+	 *            The value to add, i. e. identifier of the list element
+	 */
+	public void addValue(NamedResource elem);
 }

@@ -41,7 +41,7 @@ class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X,
 	}
 
 	@Override
-	void extractAttributeValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
+	void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object value = extractFieldValueFromInstance(instance);
 

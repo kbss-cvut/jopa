@@ -68,7 +68,7 @@ class EntityDeconstructor {
 		final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
 				.createFieldStrategy(et, fieldSpec, descriptor, mapper);
 		fs.setCascadeResolver(cascadeResolver);
-		fs.extractAttributeValuesFromInstance(entity, valueBuilder);
+		fs.buildAxiomValuesFromInstance(entity, valueBuilder);
 	}
 
 	<T> AxiomValueGatherer mapFieldToAxioms(URI primaryKey, T entity, Field field, EntityType<T> et,

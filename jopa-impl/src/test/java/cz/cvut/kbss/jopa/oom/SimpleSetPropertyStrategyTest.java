@@ -80,7 +80,7 @@ public class SimpleSetPropertyStrategyTest {
 		j.setUri(PK);
 		j.setOwlClassA(generateSet());
 		final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
-		strategy.extractAttributeValuesFromInstance(j, builder);
+		strategy.buildAxiomValuesFromInstance(j, builder);
 		final AxiomValueDescriptor res = OOMTestUtils.getAxiomValueDescriptor(builder);
 		assertEquals(NamedResource.create(PK), res.getSubject());
 		final OWLObjectProperty op = OWLClassJ.getOwlClassAField().getAnnotation(
@@ -111,7 +111,7 @@ public class SimpleSetPropertyStrategyTest {
 		j.setUri(PK);
 		j.setOwlClassA(null);
 		final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
-		strategy.extractAttributeValuesFromInstance(j, builder);
+		strategy.buildAxiomValuesFromInstance(j, builder);
 		final AxiomValueDescriptor res = OOMTestUtils.getAxiomValueDescriptor(builder);
 		assertEquals(NamedResource.create(PK), res.getSubject());
 		final OWLObjectProperty op = OWLClassJ.getOwlClassAField().getAnnotation(

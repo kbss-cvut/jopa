@@ -86,7 +86,7 @@ public class PropertiesFieldStrategy<X> extends
 	}
 
 	@Override
-	void extractAttributeValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
+	void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object val = extractFieldValueFromInstance(instance);
 		if (val == null) {

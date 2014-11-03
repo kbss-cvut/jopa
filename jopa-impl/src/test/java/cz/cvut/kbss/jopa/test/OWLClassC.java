@@ -43,6 +43,13 @@ public class OWLClassC {
 	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence")
 	private List<OWLClassA> simpleList;
 
+	public OWLClassC() {
+	}
+
+	public OWLClassC(URI uri) {
+		this.uri = uri;
+	}
+
 	public void setUri(URI uri) {
 		this.uri = uri;
 	}
@@ -71,11 +78,13 @@ public class OWLClassC {
 		return OWLClassC.class.getAnnotation(OWLClass.class).iri();
 	}
 
-	public static Field getRefListField() throws NoSuchFieldException, SecurityException {
+	public static Field getRefListField() throws NoSuchFieldException,
+			SecurityException {
 		return OWLClassC.class.getDeclaredField(REF_LIST_FIELD);
 	}
 
-	public static Field getSimpleListField() throws NoSuchFieldException, SecurityException {
+	public static Field getSimpleListField() throws NoSuchFieldException,
+			SecurityException {
 		return OWLClassC.class.getDeclaredField(SIMPLE_LIST_FIELD);
 	}
 

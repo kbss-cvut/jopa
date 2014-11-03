@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 
 final class OOMTestUtils {
@@ -12,9 +13,10 @@ final class OOMTestUtils {
 		throw new AssertionError();
 	}
 
-	public static AxiomValueDescriptor getAxiomValueDescriptor(AxiomValueGatherer builder)
-			throws Exception {
-		final Field descriptorField = AxiomValueGatherer.class.getDeclaredField("axiomDescriptor");
+	public static AxiomValueDescriptor getAxiomValueDescriptor(
+			AxiomValueGatherer builder) throws Exception {
+		final Field descriptorField = AxiomValueGatherer.class
+				.getDeclaredField("axiomDescriptor");
 		descriptorField.setAccessible(true);
 		return (AxiomValueDescriptor) descriptorField.get(builder);
 	}
@@ -26,5 +28,15 @@ final class OOMTestUtils {
 				.getDeclaredField("simpleListDescriptors");
 		descriptorField.setAccessible(true);
 		return (List<SimpleListValueDescriptor>) descriptorField.get(builder);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static List<ReferencedListValueDescriptor> getReferencedListValueDescriptors(
+			AxiomValueGatherer builder) throws Exception {
+		final Field descriptorsField = AxiomValueGatherer.class
+				.getDeclaredField("referencedListDescriptors");
+		descriptorsField.setAccessible(true);
+		return (List<ReferencedListValueDescriptor>) descriptorsField
+				.get(builder);
 	}
 }

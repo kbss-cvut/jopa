@@ -32,6 +32,7 @@ public class SimpleListValueDescriptor extends SimpleListDescriptorImpl implemen
 		return Collections.unmodifiableList(values);
 	}
 
+	@Override
 	public void addValue(NamedResource value) {
 		Objects.requireNonNull(value, ErrorUtils.constructNPXMessage("value"));
 		values.add(value);

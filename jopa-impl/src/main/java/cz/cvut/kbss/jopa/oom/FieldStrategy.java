@@ -18,14 +18,14 @@ import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 
-	// TODO Revisit the generics
 	final EntityType<X> et;
 	final T attribute;
 	final Descriptor descriptor;
 	final EntityMappingHelper mapper;
 	CascadeResolver cascadeResolver;
 
-	FieldStrategy(EntityType<X> et, T att, Descriptor descriptor, EntityMappingHelper mapper) {
+	FieldStrategy(EntityType<X> et, T att, Descriptor descriptor,
+			EntityMappingHelper mapper) {
 		this.et = et;
 		this.attribute = att;
 		this.descriptor = descriptor;
@@ -43,8 +43,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 	 * Note that this method assumes the value and the field are of compatible
 	 * types, no check is done here.
 	 */
-	void setValueOnInstance(Object instance, Object value) throws IllegalArgumentException,
-			IllegalAccessException {
+	void setValueOnInstance(Object instance, Object value)
+			throws IllegalArgumentException, IllegalAccessException {
 		final Field field = attribute.getJavaField();
 		if (!field.isAccessible()) {
 			field.setAccessible(true);
@@ -57,8 +57,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 	 * 
 	 * @return Attribute value, possibly {@code null}
 	 */
-	Object extractFieldValueFromInstance(Object instance) throws IllegalArgumentException,
-			IllegalAccessException {
+	Object extractFieldValueFromInstance(Object instance)
+			throws IllegalArgumentException, IllegalAccessException {
 		final Field field = attribute.getJavaField();
 		if (!field.isAccessible()) {
 			field.setAccessible(true);
@@ -100,8 +100,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 	 * @throws IllegalAccessException
 	 *             Access error
 	 */
-	abstract void buildInstanceFieldValue(Object instance) throws IllegalArgumentException,
-			IllegalAccessException;
+	abstract void buildInstanceFieldValue(Object instance)
+			throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * Extracts values of field represented by this strategy from the specified
@@ -116,9 +116,9 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 	 * @throws IllegalAccessException
 	 *             Access error
 	 */
-	// TODO Rename the method to something like buildAxiomsFromInstance
-	abstract void extractAttributeValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
-			throws IllegalArgumentException, IllegalAccessException;
+	abstract void buildAxiomValuesFromInstance(X instance,
+			AxiomValueGatherer valueBuilder) throws IllegalArgumentException,
+			IllegalAccessException;
 
 	/**
 	 * Creates property assertion appropriate for the attribute represented by
@@ -129,14 +129,15 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 	abstract Assertion createAssertion();
 
 	static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createFieldStrategy(
-			EntityType<X> et, FieldSpecification<? super X, ?> att, Descriptor descriptor,
-			EntityMappingHelper mapper) {
+			EntityType<X> et, FieldSpecification<? super X, ?> att,
+			Descriptor descriptor, EntityMappingHelper mapper) {
 		if (att instanceof TypesSpecification) {
-			return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, descriptor,
-					mapper);
+			return new TypesFieldStrategy<>(et,
+					(TypesSpecification<? super X, ?>) att, descriptor, mapper);
 		} else if (att instanceof PropertiesSpecification<?, ?>) {
-			return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?>) att,
-					descriptor, mapper);
+			return new PropertiesFieldStrategy<>(et,
+					(PropertiesSpecification<? super X, ?>) att, descriptor,
+					mapper);
 		}
 		final Attribute<? super X, ?> attribute = (Attribute<? super X, ?>) att;
 		if (attribute.isCollection()) {
@@ -146,7 +147,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 				throw new NotYetImplementedException();
 			case OBJECT:
 				return createPluralObjectPropertyStrategy(et,
-						(PluralAttribute<? super X, ?, ?>) attribute, descriptor, mapper);
+						(PluralAttribute<? super X, ?, ?>) attribute,
+						descriptor, mapper);
 			default:
 				break;
 			}
@@ -154,9 +156,11 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 			switch (attribute.getPersistentAttributeType()) {
 			case ANNOTATION:
 			case DATA:
-				return new SingularDataPropertyStrategy<>(et, attribute, descriptor, mapper);
+				return new SingularDataPropertyStrategy<>(et, attribute,
+						descriptor, mapper);
 			case OBJECT:
-				return new SingularObjectPropertyStrategy<>(et, attribute, descriptor, mapper);
+				return new SingularObjectPropertyStrategy<>(et, attribute,
+						descriptor, mapper);
 			default:
 				break;
 			}
@@ -166,25 +170,30 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 	}
 
 	private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createPluralObjectPropertyStrategy(
-			EntityType<Y> et, PluralAttribute<? super Y, ?, ?> attribute, Descriptor descriptor,
-			EntityMappingHelper mapper) {
+			EntityType<Y> et, PluralAttribute<? super Y, ?, ?> attribute,
+			Descriptor descriptor, EntityMappingHelper mapper) {
 		switch (attribute.getCollectionType()) {
 		case LIST:
 			final ListAttribute<? super Y, ?> listAtt = (ListAttribute<? super Y, ?>) attribute;
 			switch (listAtt.getSequenceType()) {
 			case referenced:
-				return new ReferencedListPropertyStrategy<>(et, listAtt, descriptor, mapper);
+				return new ReferencedListPropertyStrategy<>(et, listAtt,
+						descriptor, mapper);
 			case simple:
-				return new SimpleListPropertyStrategy<>(et, listAtt, descriptor, mapper);
+				return new SimpleListPropertyStrategy<>(et, listAtt,
+						descriptor, mapper);
 			default:
-				throw new NotYetImplementedException("Unsupported list attribute sequence type "
-						+ listAtt.getSequenceType());
+				throw new NotYetImplementedException(
+						"Unsupported list attribute sequence type "
+								+ listAtt.getSequenceType());
 			}
 		case SET:
-			return new SimpleSetPropertyStrategy<>(et, attribute, descriptor, mapper);
+			return new SimpleSetPropertyStrategy<>(et, attribute, descriptor,
+					mapper);
 		default:
-			throw new NotYetImplementedException("Unsupported plural attribute collection type "
-					+ attribute.getCollectionType());
+			throw new NotYetImplementedException(
+					"Unsupported plural attribute collection type "
+							+ attribute.getCollectionType());
 		}
 	}
 }

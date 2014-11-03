@@ -18,7 +18,7 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
 	}
 
 	@Override
-	void extractAttributeValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
+	void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object value = extractFieldValueFromInstance(instance);
 		assert value instanceof Collection || value == null;

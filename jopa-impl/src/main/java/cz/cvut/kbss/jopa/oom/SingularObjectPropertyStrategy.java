@@ -34,7 +34,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
 	}
 
 	@Override
-	void extractAttributeValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
+	void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
 			throws IllegalArgumentException, IllegalAccessException {
 		final Object value = extractFieldValueFromInstance(instance);
 		Value<?> val = value != null ? extractReferenceIdentifier(value) : Value.nullValue();

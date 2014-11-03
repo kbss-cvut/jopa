@@ -40,6 +40,13 @@ public class OWLClassA {
 	@OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
 	private String stringAttribute;
 
+	public OWLClassA() {
+	}
+
+	public OWLClassA(URI uri) {
+		this.uri = uri;
+	}
+
 	/**
 	 * @param uri
 	 *            the uri to set
@@ -75,11 +82,13 @@ public class OWLClassA {
 		return OWLClassA.class.getAnnotation(OWLClass.class).iri();
 	}
 
-	public static Field getStrAttField() throws NoSuchFieldException, SecurityException {
+	public static Field getStrAttField() throws NoSuchFieldException,
+			SecurityException {
 		return OWLClassA.class.getDeclaredField(STR_ATT_FIELD);
 	}
 
-	public static Field getTypesField() throws NoSuchFieldException, SecurityException {
+	public static Field getTypesField() throws NoSuchFieldException,
+			SecurityException {
 		return OWLClassA.class.getDeclaredField(TYPES_FIELD);
 	}
 
