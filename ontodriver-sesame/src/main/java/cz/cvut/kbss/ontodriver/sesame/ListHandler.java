@@ -2,8 +2,12 @@ package cz.cvut.kbss.ontodriver.sesame;
 
 import java.util.Collection;
 
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 
+import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
@@ -12,6 +16,7 @@ import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 /**
@@ -55,6 +60,21 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 	 * @throws SesameDriverException
 	 */
 	abstract void persistList(V listValueDescriptor) throws SesameDriverException;
+
+	protected Resource extractListNode(Collection<Statement> stmts, Assertion nodeAssertion)
+			throws SesameDriverException {
+		if (stmts.size() > 1) {
+			throw new IntegrityConstraintViolatedException(
+					"Invalid number of values found for assertion " + nodeAssertion
+							+ ". Expected 1, got " + stmts.size());
+		}
+		final Value val = stmts.iterator().next().getObject();
+		if (!(val instanceof Resource)) {
+			throw new IntegrityConstraintViolatedException(
+					"Invalid property value. Expected object property value, got literal.");
+		}
+		return (Resource) val;
+	}
 
 	/**
 	 * Creates handler for simple lists.

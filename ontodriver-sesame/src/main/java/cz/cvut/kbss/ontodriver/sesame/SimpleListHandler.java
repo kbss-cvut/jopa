@@ -8,10 +8,8 @@ import java.util.List;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 
-import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
@@ -19,6 +17,7 @@ import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+import cz.cvut.kbss.ontodriver_new.model.Value;
 
 class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> {
 
@@ -53,30 +52,14 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 		if (stmts.isEmpty()) {
 			return null;
 		}
-		final Resource head = getListNode(stmts);
+		final Resource head = extractListNode(stmts, listDescriptor.getListProperty());
 		final java.net.URI javaHead = SesameUtils.toJavaUri(head);
 		return createAxiom(javaHead);
 	}
 
-	private Resource getListNode(Collection<Statement> stmts) throws SesameDriverException {
-		if (stmts.size() > 1) {
-			throw new IntegrityConstraintViolatedException(
-					"Invalid number of values found for assertion "
-							+ listDescriptor.getListProperty() + ". Expected 1, got "
-							+ stmts.size());
-		}
-		final Value val = stmts.iterator().next().getObject();
-		if (!(val instanceof Resource)) {
-			throw new IntegrityConstraintViolatedException(
-					"Invalid property value. Expected object property value, got literal.");
-		}
-		return (Resource) val;
-	}
-
 	private Axiom<java.net.URI> createAxiom(final java.net.URI nodeValue) {
 		return new AxiomImpl<java.net.URI>(listDescriptor.getListOwner(),
-				listDescriptor.getListProperty(),
-				new cz.cvut.kbss.ontodriver_new.model.Value<java.net.URI>(nodeValue));
+				listDescriptor.getListProperty(), new Value<java.net.URI>(nodeValue));
 	}
 
 	private Collection<Axiom<?>> loadListRest(Resource firstElem) throws SesameDriverException {
@@ -90,7 +73,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 			stmts = connector.findStatements(subject, nextElemProperty, null, listDescriptor
 					.getNextNode().isInferred(), context);
 			if (!stmts.isEmpty()) {
-				final Resource listNode = getListNode(stmts);
+				final Resource listNode = extractListNode(stmts, listDescriptor.getNextNode());
 				axioms.add(createAxiom(SesameUtils.toJavaUri(listNode)));
 				subject = listNode;
 			}

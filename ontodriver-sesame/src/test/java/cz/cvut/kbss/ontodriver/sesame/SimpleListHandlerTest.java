@@ -10,7 +10,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,10 +29,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.memory.MemoryStore;
 
 import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
@@ -44,34 +39,18 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
-public class SimpleListHandlerTest {
-
-	private static final NamedResource OWNER = NamedResource
-			.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityC");
-	private static final String LIST_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";
-	private static final String NEXT_NODE_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleNext";
-
-	private static ValueFactory vf;
-	private static Repository repo;
-	private static Resource owner;
-	private static URI hasListProperty;
-	private static URI nextNodeProperty;
+public class SimpleListHandlerTest extends ListHandlerTestBase {
 
 	@Mock
 	private Connector connector;
 
 	private SimpleListDescriptor listDescriptor;
 
-	private ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> handler;
+	private SimpleListHandler handler;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		final MemoryStore mStore = new MemoryStore();
-		repo = new SailRepository(mStore);
-		vf = repo.getValueFactory();
-		owner = vf.createURI(OWNER.toString());
-		hasListProperty = vf.createURI(LIST_PROPERTY);
-		nextNodeProperty = vf.createURI(NEXT_NODE_PROPERTY);
+		init();
 	}
 
 	@Before
@@ -88,7 +67,7 @@ public class SimpleListHandlerTest {
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		repo.shutDown();
+		close();
 	}
 
 	@Test
@@ -104,7 +83,7 @@ public class SimpleListHandlerTest {
 
 	@Test
 	public void loadsSimpleList() throws Exception {
-		final List<java.net.URI> simpleList = initSimpleList();
+		final List<java.net.URI> simpleList = initList();
 		final Map<java.net.URI, Statement> statements = initStatementsForList(simpleList);
 		for (Entry<java.net.URI, Statement> e : statements.entrySet()) {
 			final URI property = e.getKey().equals(OWNER.getIdentifier()) ? hasListProperty
@@ -126,14 +105,6 @@ public class SimpleListHandlerTest {
 			assertEquals(simpleList.get(i), ax.getValue().getValue());
 			i++;
 		}
-	}
-
-	private List<java.net.URI> initSimpleList() {
-		final List<java.net.URI> lst = new ArrayList<>();
-		for (int i = 0; i < 5; i++) {
-			lst.add(java.net.URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/elem" + i));
-		}
-		return lst;
 	}
 
 	private Map<java.net.URI, Statement> initStatementsForList(List<java.net.URI> simpleList) {
