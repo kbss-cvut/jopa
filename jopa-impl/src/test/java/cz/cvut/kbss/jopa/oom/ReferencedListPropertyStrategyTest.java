@@ -48,9 +48,9 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 	}
 
 	@Test
-	public void buildsInstanceFieldFromAxions() throws Exception {
+	public void buildsInstanceFieldFromAxiomsIncludingNodes() throws Exception {
 		final OWLClassC c = new OWLClassC(PK);
-		final List<Axiom<?>> axioms = initRefListAxioms();
+		final List<Axiom<?>> axioms = initRefListAxioms(true);
 		when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(axioms);
 		strategy.addValueFromAxiom(axioms.iterator().next());
 		assertNull(c.getReferencedList());
@@ -60,36 +60,57 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 		assertEquals(list, c.getReferencedList());
 	}
 
-	private List<Axiom<?>> initRefListAxioms() throws Exception {
+	private List<Axiom<?>> initRefListAxioms(boolean includeNodes) throws Exception {
 		final List<Axiom<?>> axioms = new ArrayList<>();
 		NamedResource previous = NamedResource.create(PK);
 		int i = 0;
 		for (OWLClassA a : list) {
 			final URI nodeUri = URI
 					.create("http://krizik.felk.cvut.cz/ontologies/jopa/refListNode_" + i);
-			final Axiom<URI> node;
-			if (i == 0) {
-				node = new AxiomImpl<>(previous, Assertion.createObjectPropertyAssertion(
-						URI.create(OWLClassC.getRefListField()
-								.getAnnotation(OWLObjectProperty.class).iri()),
-						refList.isInferred()), new Value<>(nodeUri));
-			} else {
-				node = new AxiomImpl<>(previous, Assertion.createObjectPropertyAssertion(refList
-						.getOWLObjectPropertyHasNextIRI().toURI(), refList.isInferred()),
-						new Value<>(nodeUri));
+			if (includeNodes) {
+				final Axiom<URI> node;
+				if (i == 0) {
+					node = new AxiomImpl<>(previous, Assertion.createObjectPropertyAssertion(
+							URI.create(OWLClassC.getRefListField()
+									.getAnnotation(OWLObjectProperty.class).iri()),
+							refList.isInferred()), new Value<>(nodeUri));
+				} else {
+					node = new AxiomImpl<>(
+							previous,
+							Assertion.createObjectPropertyAssertion(refList
+									.getOWLObjectPropertyHasNextIRI().toURI(), refList.isInferred()),
+							new Value<>(nodeUri));
+				}
+				axioms.add(node);
 			}
 			final Axiom<URI> content = new AxiomImpl<>(NamedResource.create(nodeUri),
 					Assertion.createObjectPropertyAssertion(refList.getOWLPropertyHasContentsIRI()
 							.toURI(), refList.isInferred()), new Value<>(a.getUri()));
-			when(
-					mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, a.getUri(),
-							descriptor.getAttributeDescriptor(refList))).thenReturn(a);
-			axioms.add(node);
+			when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, a.getUri(), descriptor))
+					.thenReturn(a);
 			axioms.add(content);
 			previous = NamedResource.create(nodeUri);
 			i++;
 		}
 		return axioms;
+	}
+
+	/**
+	 * No node axioms, only content axioms.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void buildsInstanceFieldFromAxiomsWithoutNodes() throws Exception {
+		final OWLClassC c = new OWLClassC(PK);
+		final List<Axiom<?>> axioms = initRefListAxioms(false);
+		when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(axioms);
+		strategy.addValueFromAxiom(axioms.iterator().next());
+		assertNull(c.getReferencedList());
+		strategy.buildInstanceFieldValue(c);
+
+		assertNotNull(c.getReferencedList());
+		assertEquals(list, c.getReferencedList());
 	}
 
 	@Test
@@ -115,7 +136,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 				.getOWLObjectPropertyHasNextIRI().toURI(), refList.isInferred()));
 		assertEquals(res.getNodeContent(), Assertion.createObjectPropertyAssertion(refList
 				.getOWLPropertyHasContentsIRI().toURI(), refList.isInferred()));
-		assertEquals(list.size() * 2, res.getValues().size());
+		assertEquals(list.size(), res.getValues().size());
 		for (OWLClassA a : list) {
 			assertTrue(res.getValues().contains(NamedResource.create(a.getUri())));
 		}
