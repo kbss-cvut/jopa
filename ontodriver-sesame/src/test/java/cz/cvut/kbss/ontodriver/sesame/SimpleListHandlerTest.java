@@ -7,6 +7,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -39,7 +40,14 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class SimpleListHandlerTest extends ListHandlerTestBase {
+
+	protected static final String LIST_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";
+	protected static final String NEXT_NODE_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleNext";
+
+	protected static URI hasSimpleListProperty;
+	protected static URI nextNodeProperty;
 
 	@Mock
 	private Connector connector;
@@ -51,6 +59,8 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		init();
+		hasSimpleListProperty = vf.createURI(LIST_PROPERTY);
+		nextNodeProperty = vf.createURI(NEXT_NODE_PROPERTY);
 	}
 
 	@Before
@@ -71,8 +81,15 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 	}
 
 	@Test
+	public void staticFactoryMethodForSimpleLists() throws Exception {
+		final ListHandler<?, ?> h = ListHandler.createForSimpleList(connector, vf);
+		assertNotNull(h);
+		assertTrue(h instanceof SimpleListHandler);
+	}
+
+	@Test
 	public void loadsEmptyListAndReturnsEmptyCollection() throws Exception {
-		when(connector.findStatements(owner, hasListProperty, null, false, (URI[]) null))
+		when(connector.findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null))
 				.thenReturn(Collections.<Statement> emptyList());
 		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
 		assertNotNull(res);
@@ -86,7 +103,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 		final List<java.net.URI> simpleList = initList();
 		final Map<java.net.URI, Statement> statements = initStatementsForList(simpleList);
 		for (Entry<java.net.URI, Statement> e : statements.entrySet()) {
-			final URI property = e.getKey().equals(OWNER.getIdentifier()) ? hasListProperty
+			final URI property = e.getKey().equals(OWNER.getIdentifier()) ? hasSimpleListProperty
 					: nextNodeProperty;
 			when(
 					connector.findStatements(e.getValue().getSubject(), property, null, false,
@@ -98,7 +115,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 						false, (URI[]) null)).thenReturn(Collections.<Statement> emptySet());
 
 		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
-		verify(connector).findStatements(owner, hasListProperty, null, false, (URI[]) null);
+		verify(connector).findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null);
 		assertEquals(simpleList.size(), res.size());
 		int i = 0;
 		for (Axiom<?> ax : res) {
@@ -114,7 +131,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 		for (java.net.URI elem : simpleList) {
 			Statement stmt;
 			final Resource value = vf.createURI(elem.toString());
-			final URI property = subject.equals(owner) ? hasListProperty : nextNodeProperty;
+			final URI property = subject.equals(owner) ? hasSimpleListProperty : nextNodeProperty;
 			stmt = vf.createStatement(subject, property, value);
 			map.put(uriSubject, stmt);
 			subject = value;
@@ -128,7 +145,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 		final Collection<Statement> stmts = new HashSet<>();
 		stmts.add(mock(Statement.class));
 		stmts.add(mock(Statement.class));
-		when(connector.findStatements(owner, hasListProperty, null, false, (URI[]) null))
+		when(connector.findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null))
 				.thenReturn(stmts);
 
 		try {
@@ -146,9 +163,9 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 		stmts.add(mock(Statement.class));
 		final Resource firstElem = vf
 				.createURI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
-		final Statement firstStmt = vf.createStatement(owner, hasListProperty, firstElem);
+		final Statement firstStmt = vf.createStatement(owner, hasSimpleListProperty, firstElem);
 
-		when(connector.findStatements(owner, hasListProperty, null, false, (URI[]) null))
+		when(connector.findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null))
 				.thenReturn(Collections.singleton(firstStmt));
 		when(connector.findStatements(firstElem, nextNodeProperty, null, false, (URI[]) null))
 				.thenReturn(stmts);
@@ -156,7 +173,8 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 		try {
 			handler.loadList(listDescriptor);
 		} finally {
-			verify(connector).findStatements(owner, hasListProperty, null, false, (URI[]) null);
+			verify(connector).findStatements(owner, hasSimpleListProperty, null, false,
+					(URI[]) null);
 		}
 	}
 
@@ -164,8 +182,8 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 	public void throwsICViolationExceptionWhenLiteralIsFoundInList() throws Exception {
 		final Resource firstElem = vf
 				.createURI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
-		final Statement firstStmt = vf.createStatement(owner, hasListProperty, firstElem);
-		when(connector.findStatements(owner, hasListProperty, null, false, (URI[]) null))
+		final Statement firstStmt = vf.createStatement(owner, hasSimpleListProperty, firstElem);
+		when(connector.findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null))
 				.thenReturn(Collections.singleton(firstStmt));
 		final Statement nextStmt = vf.createStatement(firstElem, nextNodeProperty,
 				vf.createLiteral(System.currentTimeMillis()));
@@ -175,7 +193,8 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 		try {
 			handler.loadList(listDescriptor);
 		} finally {
-			verify(connector).findStatements(owner, hasListProperty, null, false, (URI[]) null);
+			verify(connector).findStatements(owner, hasSimpleListProperty, null, false,
+					(URI[]) null);
 			verify(connector)
 					.findStatements(firstElem, nextNodeProperty, null, false, (URI[]) null);
 		}
@@ -201,9 +220,10 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 
 	@Test
 	public void persistsEmptySimpleList() throws Exception {
-		final SimpleListValueDescriptor listDescriptor = initValues(0);
+		final SimpleListValueDescriptor listDescriptor = spy(initValues(0));
 
 		handler.persistList(listDescriptor);
+		verify(listDescriptor).getValues();
 		verify(connector, never()).addStatements(any(Collection.class));
 	}
 

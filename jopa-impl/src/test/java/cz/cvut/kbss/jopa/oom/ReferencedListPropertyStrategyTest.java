@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
@@ -15,6 +16,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
@@ -58,6 +60,16 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 
 		assertNotNull(c.getReferencedList());
 		assertEquals(list, c.getReferencedList());
+		final ArgumentCaptor<ReferencedListDescriptor> captor = ArgumentCaptor
+				.forClass(ReferencedListDescriptor.class);
+		verify(mapperMock).loadReferencedList(captor.capture());
+		final ReferencedListDescriptor listDescriptor = captor.getValue();
+		assertEquals(PK, listDescriptor.getListOwner().getIdentifier());
+		assertEquals(refList.getIRI().toURI(), listDescriptor.getListProperty().getIdentifier());
+		assertEquals(refList.getOWLObjectPropertyHasNextIRI().toURI(), listDescriptor.getNextNode()
+				.getIdentifier());
+		assertEquals(refList.getOWLPropertyHasContentsIRI().toURI(), listDescriptor
+				.getNodeContent().getIdentifier());
 	}
 
 	private List<Axiom<?>> initRefListAxioms(boolean includeNodes) throws Exception {

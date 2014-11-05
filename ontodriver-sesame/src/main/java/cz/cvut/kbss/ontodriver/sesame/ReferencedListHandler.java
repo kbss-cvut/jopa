@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.sesame;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.openrdf.model.Resource;
@@ -25,6 +26,7 @@ public class ReferencedListHandler extends
 		ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> {
 
 	private ReferencedListDescriptor listDescriptor;
+	private int sequenceCounter = 0;
 
 	ReferencedListHandler(Connector connector, ValueFactory vf) {
 		super(connector, vf);
@@ -44,22 +46,23 @@ public class ReferencedListHandler extends
 	}
 
 	private Resource loadListHead(List<Axiom<?>> axioms) throws SesameDriverException {
-		final URI owner = SesameUtils
-				.toSesameUri(listDescriptor.getListOwner().getIdentifier(), vf);
-		final URI hasList = SesameUtils.toSesameUri(listDescriptor.getListProperty()
-				.getIdentifier(), vf);
-		final URI context = SesameUtils.toSesameUri(listDescriptor.getContext(), vf);
+		final URI owner = owner(listDescriptor);
+		final URI hasList = hasList(listDescriptor);
+		final URI context = context(listDescriptor);
 		final Collection<Statement> heads = connector.findStatements(owner, hasList, null,
 				listDescriptor.getListProperty().isInferred(), context);
 		if (heads.isEmpty()) {
 			return null;
 		}
 		final Resource headNode = extractListNode(heads, listDescriptor.getListProperty());
-		final URI hasContent = SesameUtils.toSesameUri(listDescriptor.getNodeContent()
-				.getIdentifier(), vf);
+		final URI hasContent = hasContent(listDescriptor);
 		final Resource head = getNodeContent(headNode, hasContent, context);
 		axioms.add(createAxiom(owner, listDescriptor.getNodeContent(), head));
 		return headNode;
+	}
+
+	private URI hasContent(ReferencedListDescriptor listDescriptor) {
+		return sesameUri(listDescriptor.getNodeContent().getIdentifier());
 	}
 
 	private Resource getNodeContent(final Resource node, final URI hasContent, final URI context)
@@ -82,12 +85,10 @@ public class ReferencedListHandler extends
 	private Collection<Axiom<java.net.URI>> loadListRest(Resource previousNode)
 			throws SesameDriverException {
 		final List<Axiom<java.net.URI>> axioms = new ArrayList<>();
-		final URI context = SesameUtils.toSesameUri(listDescriptor.getContext(), vf);
+		final URI context = context(listDescriptor);
 		boolean includeInferred = listDescriptor.getNextNode().isInferred();
-		final URI nextNode = SesameUtils.toSesameUri(listDescriptor.getNextNode().getIdentifier(),
-				vf);
-		final URI hasContent = SesameUtils.toSesameUri(listDescriptor.getNodeContent()
-				.getIdentifier(), vf);
+		final URI nextNode = hasNext(listDescriptor);
+		final URI hasContent = hasContent(listDescriptor);
 		boolean hasNext = true;
 		do {
 			final Collection<Statement> nextNodes = connector.findStatements(previousNode,
@@ -107,8 +108,61 @@ public class ReferencedListHandler extends
 	@Override
 	void persistList(ReferencedListValueDescriptor listValueDescriptor)
 			throws SesameDriverException {
-		// TODO Auto-generated method stub
-
+		if (listValueDescriptor.getValues().isEmpty()) {
+			return;
+		}
+		final Collection<Statement> statements = new ArrayList<>(listValueDescriptor.getValues()
+				.size() * 2);
+		URI head = createListHead(listValueDescriptor, statements);
+		statements.addAll(createListRest(head, listValueDescriptor));
+		connector.addStatements(statements);
 	}
 
+	private URI createListHead(ReferencedListValueDescriptor listValueDescriptor,
+			Collection<Statement> statements) throws SesameDriverException {
+		final URI owner = owner(listValueDescriptor);
+		final URI hasList = hasList(listValueDescriptor);
+		final URI hasContent = hasContent(listValueDescriptor);
+		final URI context = context(listValueDescriptor);
+		final URI nodeUri = generateSequenceNode(owner, context);
+		statements.add(vf.createStatement(owner, hasList, nodeUri, context));
+		final URI nodeContent = sesameUri(listValueDescriptor.getValues().get(0).getIdentifier());
+		statements.add(vf.createStatement(nodeUri, hasContent, nodeContent, context));
+		return nodeUri;
+	}
+
+	private URI generateSequenceNode(URI owner, URI context) throws SesameDriverException {
+		final String uriBase = owner.stringValue();
+		boolean unique = true;
+		URI node = null;
+		do {
+			node = vf.createURI(uriBase + "-SEQ_" + sequenceCounter++);
+			final Collection<Statement> stmts = connector.findStatements(node, null, null, false,
+					context);
+			unique = stmts.isEmpty();
+		} while (!unique);
+		return node;
+	}
+
+	private Collection<Statement> createListRest(URI headNode,
+			ReferencedListValueDescriptor listValueDescriptor) throws SesameDriverException {
+		final URI owner = owner(listValueDescriptor);
+		final URI hasNext = hasNext(listValueDescriptor);
+		final URI hasContent = hasContent(listValueDescriptor);
+		final URI context = context(listValueDescriptor);
+		URI previous = headNode;
+		final Collection<Statement> stmts = new ArrayList<>(
+				listValueDescriptor.getValues().size() * 2);
+		final Iterator<NamedResource> it = listValueDescriptor.getValues().iterator();
+		// Skip the first element, it is already in the head
+		it.next();
+		while (it.hasNext()) {
+			final URI node = generateSequenceNode(owner, context);
+			stmts.add(vf.createStatement(previous, hasNext, node, context));
+			final URI content = sesameUri(it.next().getIdentifier());
+			stmts.add(vf.createStatement(node, hasContent, content, context));
+			previous = node;
+		}
+		return stmts;
+	}
 }

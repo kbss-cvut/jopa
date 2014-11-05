@@ -41,7 +41,7 @@ class ReferencedListPropertyStrategy<X> extends
 
 		final boolean inferred = listAttribute.isInferred();
 		final Assertion listProperty = Assertion.createObjectPropertyAssertion(listAttribute
-				.getOWLListClass().toURI(), inferred);
+				.getIRI().toURI(), inferred);
 		final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(listAttribute
 				.getOWLObjectPropertyHasNextIRI().toURI(), inferred);
 		final Assertion nodeContentProperty = Assertion.createObjectPropertyAssertion(listAttribute

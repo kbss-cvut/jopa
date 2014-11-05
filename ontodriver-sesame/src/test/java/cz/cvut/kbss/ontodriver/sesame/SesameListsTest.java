@@ -10,6 +10,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 
@@ -24,6 +26,9 @@ public class SesameListsTest {
 	@Mock
 	private SimpleListHandler simpleListHandlerMock;
 
+	@Mock
+	private ReferencedListHandler referencedListHandlerMock;
+
 	private SesameLists lists;
 
 	@BeforeClass
@@ -34,6 +39,7 @@ public class SesameListsTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		when(adapterMock.getSimpleListHandler()).thenReturn(simpleListHandlerMock);
+		when(adapterMock.getReferencedListHandler()).thenReturn(referencedListHandlerMock);
 
 		this.lists = new SesameLists(connectionMock, adapterMock);
 	}
@@ -58,6 +64,29 @@ public class SesameListsTest {
 		verify(connectionMock).ensureOpen();
 		verify(adapterMock).getSimpleListHandler();
 		verify(simpleListHandlerMock).persistList(descriptor);
+		verify(connectionMock).commitIfAuto();
+	}
+
+	@Test
+	public void testLoadReferencedList() throws Exception {
+		final ReferencedListDescriptor descriptor = mock(ReferencedListDescriptor.class);
+
+		lists.loadReferencedList(descriptor);
+
+		verify(connectionMock).ensureOpen();
+		verify(adapterMock).getReferencedListHandler();
+		verify(referencedListHandlerMock).loadList(descriptor);
+	}
+
+	@Test
+	public void testPersistReferencedList() throws Exception {
+		final ReferencedListValueDescriptor descriptor = mock(ReferencedListValueDescriptor.class);
+
+		lists.persistReferencedList(descriptor);
+
+		verify(connectionMock).ensureOpen();
+		verify(adapterMock).getReferencedListHandler();
+		verify(referencedListHandlerMock).persistList(descriptor);
 		verify(connectionMock).commitIfAuto();
 	}
 }

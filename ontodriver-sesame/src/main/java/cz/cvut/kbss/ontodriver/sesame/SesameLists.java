@@ -43,8 +43,8 @@ class SesameLists implements Lists {
 	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
 			throws OntoDriverException {
 		connection.ensureOpen();
-		// TODO Auto-generated method stub
-		return null;
+		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+		return adapter.getReferencedListHandler().loadList(descriptor);
 	}
 
 	@Override
@@ -52,7 +52,7 @@ class SesameLists implements Lists {
 			throws OntoDriverException {
 		connection.ensureOpen();
 		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
-		// TODO
+		adapter.getReferencedListHandler().persistList(descriptor);
 		connection.commitIfAuto();
 	}
 }

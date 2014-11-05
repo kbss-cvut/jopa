@@ -9,6 +9,7 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,6 +24,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openrdf.model.Resource;
@@ -30,19 +32,29 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptorImpl;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class ReferencedListHandlerTest extends ListHandlerTestBase {
 
-	private static final String NODE_CONTENT_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasContent";
+	private static final String LIST_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence";
+	private static final String NEXT_NODE_PROPERTY = SequencesVocabulary.s_p_hasNext;
+	private static final String NODE_CONTENT_PROPERTY = SequencesVocabulary.s_p_hasContents;
+
+	private static URI hasListProperty;
+	private static URI nextNodeProperty;
 	private static URI nodeContentProperty;
 
 	private ReferencedListDescriptor listDescriptor;
+	private ReferencedListValueDescriptor valueDescriptor;
 
 	private ReferencedListHandler handler;
 
@@ -52,6 +64,8 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		init();
+		hasListProperty = vf.createURI(LIST_PROPERTY);
+		nextNodeProperty = vf.createURI(NEXT_NODE_PROPERTY);
 		nodeContentProperty = vf.createURI(NODE_CONTENT_PROPERTY);
 	}
 
@@ -71,8 +85,17 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 				java.net.URI.create(NODE_CONTENT_PROPERTY), false);
 		this.listDescriptor = new ReferencedListDescriptorImpl(OWNER, listProperty,
 				nextNodeProperty, nodeContentProperty);
+		this.valueDescriptor = new ReferencedListValueDescriptor(OWNER, listProperty,
+				nextNodeProperty, nodeContentProperty);
 
 		this.handler = new ReferencedListHandler(connector, vf);
+	}
+
+	@Test
+	public void staticFactoryMethodForReferencedLists() throws Exception {
+		final ListHandler<?, ?> h = ListHandler.createForReferencedList(connector, vf);
+		assertNotNull(h);
+		assertTrue(h instanceof ReferencedListHandler);
 	}
 
 	@Test
@@ -188,5 +211,53 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 						anyBoolean(), eq((URI[]) null))).thenReturn(stmts);
 		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
 		assert res == null;
+	}
+
+	@Test(expected = IntegrityConstraintViolatedException.class)
+	public void throwsICViolationWhenThereAreMultipleReferencesInNode() throws Exception {
+		final List<java.net.URI> refList = initList();
+		final List<java.net.URI> listNodes = initListNodes(refList);
+		initStatementsForList(listNodes, refList);
+		final Resource node = selectRandomNode(listNodes);
+		final List<Statement> stmts = Arrays.asList(mock(Statement.class), mock(Statement.class));
+		when(
+				connector.findStatements(eq(node), eq(nodeContentProperty), eq((Value) null),
+						anyBoolean(), eq((URI[]) null))).thenReturn(stmts);
+		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
+		assert res == null;
+	}
+
+	@Test
+	public void persistsReferencedList() throws Exception {
+		final List<java.net.URI> values = initList();
+		for (java.net.URI val : values) {
+			valueDescriptor.addValue(NamedResource.create(val));
+		}
+		final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
+		handler.persistList(valueDescriptor);
+		verify(connector).addStatements(captor.capture());
+		final Collection<Statement> stmts = captor.getValue();
+		assertEquals(values.size() * 2, stmts.size());
+		int i = 0;
+		for (Statement stmt : stmts) {
+			if (i == 0) {
+				assertEquals(hasListProperty, stmt.getPredicate());
+			} else if (i % 2 == 1) {
+				assertEquals(nodeContentProperty, stmt.getPredicate());
+				assertTrue(values.contains(java.net.URI.create(stmt.getObject().stringValue())));
+			} else {
+				assertEquals(nextNodeProperty, stmt.getPredicate());
+			}
+			i++;
+		}
+	}
+
+	@Test
+	public void doesNothingWhenNoValuesArePassedToPersist() throws Exception {
+		assertTrue(valueDescriptor.getValues().isEmpty());
+		final ReferencedListValueDescriptor spiedValues = spy(valueDescriptor);
+		handler.persistList(spiedValues);
+		verify(spiedValues).getValues();
+		verify(connector, never()).addStatements(any(Collection.class));
 	}
 }

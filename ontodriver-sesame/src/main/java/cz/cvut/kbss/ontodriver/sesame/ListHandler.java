@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 
@@ -76,11 +77,33 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 		return (Resource) val;
 	}
 
+	protected URI context(ListDescriptor listDescriptor) {
+		return sesameUri(listDescriptor.getContext());
+	}
+
+	protected URI owner(ListDescriptor listDescriptor) {
+		return sesameUri(listDescriptor.getListOwner().getIdentifier());
+	}
+
+	protected URI hasList(ListDescriptor listDescriptor) {
+		return sesameUri(listDescriptor.getListProperty().getIdentifier());
+	}
+
+	protected URI hasNext(ListDescriptor listDescriptor) {
+		return sesameUri(listDescriptor.getNextNode().getIdentifier());
+	}
+
+	protected URI sesameUri(java.net.URI uri) {
+		return SesameUtils.toSesameUri(uri, vf);
+	}
+
 	/**
 	 * Creates handler for simple lists.
 	 * 
-	 * @param listDescriptor
-	 *            List descriptor
+	 * @param connector
+	 *            Storage connector
+	 * @param vf
+	 *            Sesame value factory
 	 * @return List handler
 	 */
 	static ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> createForSimpleList(
@@ -91,9 +114,20 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 		return new SimpleListHandler(connector, vf);
 	}
 
+	/**
+	 * Creates handler for referenced lists.
+	 * 
+	 * @param connector
+	 *            Storage connector
+	 * @param vf
+	 *            Sesame value factory
+	 * @return List handler
+	 */
 	static ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> createForReferencedList(
 			Connector connector, ValueFactory vf) {
-		// TODO
-		return null;
+		assert connector != null;
+		assert vf != null;
+
+		return new ReferencedListHandler(connector, vf);
 	}
 }

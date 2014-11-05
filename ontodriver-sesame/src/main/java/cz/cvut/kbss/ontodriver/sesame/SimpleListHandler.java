@@ -36,17 +36,15 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 			return Collections.emptyList();
 		}
 		axioms.add(head);
-		final Resource headElem = SesameUtils.toSesameUri(head.getValue().getValue(), vf);
+		final Resource headElem = sesameUri(head.getValue().getValue());
 		axioms.addAll(loadListRest(headElem));
 		return axioms;
 	}
 
 	private Axiom<java.net.URI> loadListHead() throws SesameDriverException {
-		final URI context = SesameUtils.toSesameUri(listDescriptor.getContext(), vf);
-		final URI hasListProperty = SesameUtils.toSesameUri(listDescriptor.getListProperty()
-				.getIdentifier(), vf);
-		final URI owner = SesameUtils
-				.toSesameUri(listDescriptor.getListOwner().getIdentifier(), vf);
+		final URI context = context(listDescriptor);
+		final URI hasListProperty = hasList(listDescriptor);
+		final URI owner = owner(listDescriptor);
 		Collection<Statement> stmts = connector.findStatements(owner, hasListProperty, null,
 				listDescriptor.getListProperty().isInferred(), context);
 		if (stmts.isEmpty()) {
@@ -64,10 +62,9 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 
 	private Collection<Axiom<?>> loadListRest(Resource firstElem) throws SesameDriverException {
 		final Collection<Axiom<?>> axioms = new ArrayList<>();
-		final URI context = SesameUtils.toSesameUri(listDescriptor.getContext(), vf);
+		final URI context = context(listDescriptor);
 		Resource subject = firstElem;
-		final URI nextElemProperty = SesameUtils.toSesameUri(listDescriptor.getNextNode()
-				.getIdentifier(), vf);
+		final URI nextElemProperty = hasNext(listDescriptor);
 		Collection<Statement> stmts = null;
 		do {
 			stmts = connector.findStatements(subject, nextElemProperty, null, listDescriptor
@@ -93,28 +90,22 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 	}
 
 	private Statement createListHead(SimpleListValueDescriptor listValueDescriptor) {
-		final Resource owner = SesameUtils.toSesameUri(listValueDescriptor.getListOwner()
-				.getIdentifier(), vf);
-		final URI listProp = SesameUtils.toSesameUri(listValueDescriptor.getListProperty()
-				.getIdentifier(), vf);
-		final Resource firstNode = SesameUtils.toSesameUri(listValueDescriptor.getValues().get(0)
-				.getIdentifier(), vf);
-		return vf.createStatement(owner, listProp, firstNode,
-				SesameUtils.toSesameUri(listValueDescriptor.getContext(), vf));
+		final Resource firstNode = sesameUri(listValueDescriptor.getValues().get(0).getIdentifier());
+		return vf.createStatement(owner(listValueDescriptor), hasList(listValueDescriptor),
+				firstNode, context(listValueDescriptor));
 	}
 
 	private List<Statement> createListRest(SimpleListValueDescriptor listValueDescriptor) {
 		final List<Statement> stmts = new ArrayList<>(listValueDescriptor.getValues().size());
 		NamedResource previous = listValueDescriptor.getValues().get(0);
-		final URI nextNodeProp = SesameUtils.toSesameUri(listValueDescriptor.getNextNode()
-				.getIdentifier(), vf);
-		final URI context = SesameUtils.toSesameUri(listValueDescriptor.getContext(), vf);
+		final URI nextNodeProp = hasNext(listValueDescriptor);
+		final URI context = context(listValueDescriptor);
 		for (NamedResource elem : listValueDescriptor.getValues()) {
 			if (elem == previous) {
 				continue;
 			}
-			final Resource subject = SesameUtils.toSesameUri(previous.getIdentifier(), vf);
-			final Resource object = SesameUtils.toSesameUri(elem.getIdentifier(), vf);
+			final Resource subject = sesameUri(previous.getIdentifier());
+			final Resource object = sesameUri(elem.getIdentifier());
 			stmts.add(vf.createStatement(subject, nextNodeProp, object, context));
 			previous = elem;
 		}
