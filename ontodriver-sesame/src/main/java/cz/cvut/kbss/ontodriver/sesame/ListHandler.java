@@ -62,6 +62,15 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 	 */
 	abstract void persistList(V listValueDescriptor) throws SesameDriverException;
 
+	/**
+	 * Updates list with values specified by the descriptor. </p>
+	 * 
+	 * @param listValueDescriptor
+	 *            Describes the updated values
+	 * @throws SesameDriverException
+	 */
+	abstract void updateList(V listValueDescriptor) throws SesameDriverException;
+
 	protected Resource extractListNode(Collection<Statement> stmts, Assertion nodeAssertion)
 			throws SesameDriverException {
 		if (stmts.size() > 1) {

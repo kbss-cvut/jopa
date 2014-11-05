@@ -73,7 +73,10 @@ class AxiomValueGatherer {
 	void update(Connection connection) {
 		try {
 			connection.update(axiomDescriptor);
-			// TODO Update lists
+			for (SimpleListValueDescriptor d : simpleListDescriptors) {
+				connection.lists().updateSimpleList(d);
+			}
+			// TODO Update referenced lists
 		} catch (OntoDriverException e) {
 			throw new StorageAccessException(e);
 		}

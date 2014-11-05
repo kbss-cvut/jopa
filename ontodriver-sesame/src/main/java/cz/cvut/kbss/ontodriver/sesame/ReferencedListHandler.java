@@ -165,4 +165,10 @@ public class ReferencedListHandler extends
 		}
 		return stmts;
 	}
+
+	@Override
+	void updateList(ReferencedListValueDescriptor listValueDescriptor) throws SesameDriverException {
+		// TODO Auto-generated method stub
+		
+	}
 }

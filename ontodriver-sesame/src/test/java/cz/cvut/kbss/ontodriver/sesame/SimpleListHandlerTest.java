@@ -11,13 +11,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -33,6 +32,7 @@ import org.openrdf.model.Value;
 
 import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptorImpl;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
@@ -101,18 +101,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 	@Test
 	public void loadsSimpleList() throws Exception {
 		final List<java.net.URI> simpleList = initList();
-		final Map<java.net.URI, Statement> statements = initStatementsForList(simpleList);
-		for (Entry<java.net.URI, Statement> e : statements.entrySet()) {
-			final URI property = e.getKey().equals(OWNER.getIdentifier()) ? hasSimpleListProperty
-					: nextNodeProperty;
-			when(
-					connector.findStatements(e.getValue().getSubject(), property, null, false,
-							(URI[]) null)).thenReturn(Collections.singleton(e.getValue()));
-		}
-		final java.net.URI lastElem = simpleList.get(simpleList.size() - 1);
-		when(
-				connector.findStatements(vf.createURI(lastElem.toString()), nextNodeProperty, null,
-						false, (URI[]) null)).thenReturn(Collections.<Statement> emptySet());
+		initStatementsForList(simpleList);
 
 		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
 		verify(connector).findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null);
@@ -124,20 +113,21 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 		}
 	}
 
-	private Map<java.net.URI, Statement> initStatementsForList(List<java.net.URI> simpleList) {
-		final Map<java.net.URI, Statement> map = new HashMap<>(simpleList.size());
-		java.net.URI uriSubject = OWNER.getIdentifier();
+	private List<Statement> initStatementsForList(List<java.net.URI> simpleList)
+			throws SesameDriverException {
 		Resource subject = owner;
+		final List<Statement> statements = new ArrayList<>(simpleList.size());
 		for (java.net.URI elem : simpleList) {
 			Statement stmt;
 			final Resource value = vf.createURI(elem.toString());
-			final URI property = subject.equals(owner) ? hasSimpleListProperty : nextNodeProperty;
+			final URI property = subject == owner ? hasSimpleListProperty : nextNodeProperty;
 			stmt = vf.createStatement(subject, property, value);
-			map.put(uriSubject, stmt);
+			when(connector.findStatements(subject, property, null, false, (URI[]) null))
+					.thenReturn(Collections.singleton(stmt));
+			statements.add(stmt);
 			subject = value;
-			uriSubject = elem;
 		}
-		return map;
+		return statements;
 	}
 
 	@Test(expected = IntegrityConstraintViolatedException.class)
@@ -237,5 +227,122 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 					.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA_" + i));
 		}
 		return desc;
+	}
+
+	@Test
+	public void clearsListOnUpdateWhenDescriptorHasNoValues() throws Exception {
+		final SimpleListValueDescriptor descriptor = initValues(0);
+		// old list
+		final List<java.net.URI> simpleList = initList();
+		final List<Statement> oldList = initStatementsForList(simpleList);
+
+		handler.updateList(descriptor);
+		verify(connector).removeStatements(oldList);
+		verify(connector, never()).addStatements(any(Collection.class));
+	}
+
+	@Test
+	public void insertsListOnUpdateWhenThereWereNoValuesBefore() throws Exception {
+		final SimpleListValueDescriptor descriptor = initValues(5);
+		when(
+				connector.findStatements(owner, hasSimpleListProperty, null, descriptor
+						.getListProperty().isInferred(), (URI[]) null)).thenReturn(
+				Collections.<Statement> emptyList());
+
+		handler.updateList(descriptor);
+		verify(connector, never()).removeStatements(any(Collection.class));
+		final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
+		verify(connector).addStatements(captor.capture());
+		int i = 0;
+		for (Object item : captor.getValue()) {
+			final Statement stmt = (Statement) item;
+			assertEquals(descriptor.getValues().get(i++).getIdentifier(),
+					java.net.URI.create(stmt.getObject().stringValue()));
+		}
+	}
+
+	@Test
+	public void updateListReplacesSeveralElements() throws Exception {
+		final SimpleListValueDescriptor descriptor = initValues(8);
+		final List<java.net.URI> simpleList = new ArrayList<>();
+		for (NamedResource item : descriptor.getValues()) {
+			simpleList.add(item.getIdentifier());
+		}
+		final int iOne = 0;
+		final java.net.URI diffOne = java.net.URI.create("http://krizik.felk.cvut.cz/modified#One");
+		simpleList.set(iOne, diffOne);
+		final java.net.URI diffTwo = java.net.URI.create("http://krizik.felk.cvut.cz/modified#Two");
+		final int iTwo = 7;
+		simpleList.set(iTwo, diffTwo);
+		final List<Statement> oldList = initStatementsForList(simpleList);
+
+		handler.updateList(descriptor);
+		final Collection<Statement> toRemove = Arrays.asList(oldList.get(iOne), oldList.get(iTwo));
+		final ArgumentCaptor<Collection> captorRemove = ArgumentCaptor.forClass(Collection.class);
+		verify(connector).removeStatements(captorRemove.capture());
+		assertEquals(toRemove, captorRemove.getValue());
+		final ArgumentCaptor<Collection> captorAdd = ArgumentCaptor.forClass(Collection.class);
+		verify(connector).addStatements(captorAdd.capture());
+		assertEquals(2, captorAdd.getValue().size());
+		for (Object item : captorAdd.getValue()) {
+			final Statement stmt = (Statement) item;
+			final java.net.URI u = java.net.URI.create(stmt.getObject().stringValue());
+			assertTrue(u.equals(diffOne) || u.equals(diffTwo));
+		}
+	}
+
+	@Test
+	public void updateListAddsNewValuesToTheEnd() throws Exception {
+		final SimpleListValueDescriptor descriptor = initValues(0);
+		final SimpleListValueDescriptor tempDesc = initValues(8);
+		final List<java.net.URI> simpleList = initList();
+		initStatementsForList(simpleList);
+		// The original items
+		for (java.net.URI item : simpleList) {
+			descriptor.addValue(NamedResource.create(item));
+		}
+		// Now add the new ones
+		for (NamedResource r : tempDesc.getValues()) {
+			descriptor.addValue(r);
+		}
+
+		handler.updateList(descriptor);
+		verify(connector, never()).removeStatements(any(Collection.class));
+		final ArgumentCaptor<Collection> captorAdd = ArgumentCaptor.forClass(Collection.class);
+		verify(connector).addStatements(captorAdd.capture());
+		assertEquals(tempDesc.getValues().size(), captorAdd.getValue().size());
+		for (Object item : captorAdd.getValue()) {
+			final Statement stmt = (Statement) item;
+			final java.net.URI u = java.net.URI.create(stmt.getObject().stringValue());
+			assertTrue(tempDesc.getValues().contains(NamedResource.create(u)));
+		}
+	}
+
+	@Test
+	public void updateListRemovesSeveralElements() throws Exception {
+		final SimpleListValueDescriptor descriptor = initValues(0);
+		final List<java.net.URI> simpleList = initList();
+		initStatementsForList(simpleList);
+		// Retain every even element, others will be removed
+		int i = 0;
+		final List<java.net.URI> toRemove = new ArrayList<>();
+		for (java.net.URI item : simpleList) {
+			if (i % 2 != 0) {
+				toRemove.add(item);
+			} else {
+				descriptor.addValue(NamedResource.create(item));
+			}
+		}
+
+		handler.updateList(descriptor);
+		verify(connector, never()).addStatements(any(Collection.class));
+		final ArgumentCaptor<Collection> captorRemove = ArgumentCaptor.forClass(Collection.class);
+		verify(connector).removeStatements(captorRemove.capture());
+		assertEquals(toRemove.size(), captorRemove.getValue().size());
+		for (Object item : captorRemove.getValue()) {
+			final Statement stmt = (Statement) item;
+			final java.net.URI u = java.net.URI.create(stmt.getObject().stringValue());
+			assertTrue(toRemove.contains(u));
+		}
 	}
 }

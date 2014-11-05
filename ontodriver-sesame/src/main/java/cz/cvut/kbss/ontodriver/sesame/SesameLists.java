@@ -40,6 +40,14 @@ class SesameLists implements Lists {
 	}
 
 	@Override
+	public void updateSimpleList(SimpleListValueDescriptor descriptor) throws OntoDriverException {
+		connection.ensureOpen();
+		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+		adapter.getSimpleListHandler().updateList(descriptor);
+		connection.commitIfAuto();
+	}
+
+	@Override
 	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
 			throws OntoDriverException {
 		connection.ensureOpen();

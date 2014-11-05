@@ -59,6 +59,22 @@ public interface Lists {
 	public void persistSimpleList(SimpleListValueDescriptor descriptor) throws OntoDriverException;
 
 	/**
+	 * Updates simple list based on values specified in the descriptor. </p>
+	 * 
+	 * It is up to the driver implementation to decide whether the old list will
+	 * be removed and the new values inserted or whether a merge will be
+	 * performed.
+	 * 
+	 * @param descriptor
+	 *            List values descriptor
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @throws IllegalStateException
+	 *             If called on a closed connection
+	 */
+	public void updateSimpleList(SimpleListValueDescriptor descriptor) throws OntoDriverException;
+
+	/**
 	 * Loads referenced list specified by the descriptor. </p>
 	 * 
 	 * The returned axioms should be iterable in the same order as they were put

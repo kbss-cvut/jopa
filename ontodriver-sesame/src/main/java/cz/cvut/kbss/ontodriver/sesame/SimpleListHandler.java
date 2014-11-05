@@ -31,6 +31,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 	Collection<Axiom<?>> loadList(SimpleListDescriptor listDescriptor) throws SesameDriverException {
 		final Collection<Axiom<?>> axioms = new ArrayList<>();
 		this.listDescriptor = listDescriptor;
+		// TODO Use the SimpleListIterator to load axioms
 		final Axiom<java.net.URI> head = loadListHead();
 		if (head == null) {
 			return Collections.emptyList();
@@ -110,5 +111,49 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 			previous = elem;
 		}
 		return stmts;
+	}
+
+	@Override
+	void updateList(SimpleListValueDescriptor listValueDescriptor) throws SesameDriverException {
+		if (listValueDescriptor.getValues().isEmpty()) {
+			clearList(listValueDescriptor);
+		}
+		if (isOldListEmpty(owner(listValueDescriptor), hasList(listValueDescriptor),
+				listValueDescriptor.getListProperty().isInferred(), context(listValueDescriptor))) {
+			persistList(listValueDescriptor);
+		}
+		// TODO
+	}
+
+	private void clearList(SimpleListValueDescriptor listValueDescriptor)
+			throws SesameDriverException {
+		final URI owner = owner(listValueDescriptor);
+		final URI hasList = hasList(listValueDescriptor);
+		final URI context = context(listValueDescriptor);
+		final Collection<Statement> toRemove = new ArrayList<>();
+		Collection<Statement> stmts = connector.findStatements(owner, hasList, null,
+				listValueDescriptor.getListProperty().isInferred(), context);
+		if (stmts.isEmpty()) {
+			return;
+		}
+		Resource subject = extractListNode(stmts, listValueDescriptor.getListProperty());
+		toRemove.addAll(stmts);
+		final URI hasNext = hasNext(listValueDescriptor);
+		final boolean includeInferred = listValueDescriptor.getNextNode().isInferred();
+		do {
+			stmts = connector.findStatements(subject, hasNext, null, includeInferred, context);
+			if (!stmts.isEmpty()) {
+				subject = extractListNode(stmts, listValueDescriptor.getNextNode());
+				toRemove.addAll(stmts);
+			}
+		} while (!stmts.isEmpty());
+		connector.removeStatements(toRemove);
+	}
+
+	private boolean isOldListEmpty(Resource owner, URI hasListProperty, boolean includeInferred,
+			URI context) throws SesameDriverException {
+		final Collection<Statement> stmts = connector.findStatements(owner, hasListProperty, null,
+				includeInferred, context);
+		return stmts.isEmpty();
 	}
 }
