@@ -765,5 +765,10 @@ public class UnitOfWorkTest {
 			// do nothing
 		}
 
+		@Override
+		protected void deregisterEntityFromPersistenceContext(Object entity, UnitOfWork uow) {
+			// do nothing
+		}
+
 	}
 }

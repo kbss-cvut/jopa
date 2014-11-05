@@ -28,8 +28,7 @@ class LocalModel {
 	void enhanceStatements(Collection<Statement> statements, Resource subject, URI property,
 			Value object, URI... contexts) {
 		final URI[] ctxs = contexts != null ? contexts : new URI[0];
-		final Collection<Statement> added = addedStatements.filter(subject, property, object,
-				ctxs);
+		final Collection<Statement> added = addedStatements.filter(subject, property, object, ctxs);
 		statements.addAll(added);
 		final Collection<Statement> removed = removedStatements.filter(subject, property, object,
 				ctxs);
@@ -37,6 +36,7 @@ class LocalModel {
 	}
 
 	void addStatements(Collection<Statement> statements) {
+		removedStatements.removeAll(statements);
 		addedStatements.addAll(statements);
 	}
 

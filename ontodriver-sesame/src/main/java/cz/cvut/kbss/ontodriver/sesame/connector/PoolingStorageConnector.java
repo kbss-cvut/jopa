@@ -77,8 +77,8 @@ class PoolingStorageConnector extends AbstractConnector {
 		WRITE.lock();
 		try {
 			centralConnector.begin();
-			centralConnector.addStatements(localModel.getAddedStatements());
 			centralConnector.removeStatements(localModel.getRemovedStatements());
+			centralConnector.addStatements(localModel.getAddedStatements());
 			centralConnector.commit();
 			transaction.afterCommit();
 		} catch (SesameDriverException e) {

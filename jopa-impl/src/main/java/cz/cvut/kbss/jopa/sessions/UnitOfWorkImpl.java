@@ -632,8 +632,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
 		parent.registerEntityWithPersistenceContext(entity, uow);
+	}
+
+	@Override
+	void deregisterEntityFromPersistenceContext(Object entity, UnitOfWork uow) {
+		parent.deregisterEntityFromPersistenceContext(entity, uow);
 	}
 
 	/**
@@ -797,6 +803,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			}
 		}
 		removeIndirectCollections(object);
+		deregisterEntityFromPersistenceContext(object, this);
 	}
 
 	public boolean shouldReleaseAfterCommit() {

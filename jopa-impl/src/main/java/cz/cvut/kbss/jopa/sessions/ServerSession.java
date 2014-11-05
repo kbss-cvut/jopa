@@ -206,6 +206,16 @@ public class ServerSession extends AbstractSession {
 		uowsToEntities.get(uow).add(entity);
 	}
 
+	@Override
+	synchronized void deregisterEntityFromPersistenceContext(Object entity, UnitOfWork uow) {
+		assert entity != null;
+		assert uow != null;
+		activePersistenceContexts.remove(entity);
+		if (uowsToEntities.containsKey(uow)) {
+			uowsToEntities.get(uow).remove(entity);
+		}
+	}
+
 	/**
 	 * Get persistence context for the specified entity. </p>
 	 * 

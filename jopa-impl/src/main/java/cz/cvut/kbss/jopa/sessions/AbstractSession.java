@@ -90,4 +90,14 @@ public abstract class AbstractSession implements Session {
 	 *            Persistence context of the specified entity
 	 */
 	abstract void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow);
+
+	/**
+	 * Detaches the specified entity from its persistence context.
+	 * 
+	 * @param entity
+	 *            The entity to deregister
+	 * @param uow
+	 *            Persistence context to which the entity belonged
+	 */
+	abstract void deregisterEntityFromPersistenceContext(Object entity, UnitOfWork uow);
 }

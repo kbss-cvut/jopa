@@ -40,6 +40,7 @@ class SimpleListPropertyStrategy<X> extends
 				.getOWLObjectPropertyHasNextIRI().toURI(), listAttribute.isInferred());
 		final SimpleListDescriptor listDescriptor = new SimpleListDescriptorImpl(owner,
 				listProperty, nextNodeProperty);
+		listDescriptor.setContext(getAttributeContext());
 		return listDescriptor;
 	}
 

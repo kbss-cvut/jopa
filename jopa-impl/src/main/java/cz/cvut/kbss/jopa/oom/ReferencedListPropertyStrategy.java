@@ -48,6 +48,7 @@ class ReferencedListPropertyStrategy<X> extends
 				.getOWLPropertyHasContentsIRI().toURI(), inferred);
 		final ReferencedListDescriptor listDescriptor = new ReferencedListDescriptorImpl(owner,
 				listProperty, nextNodeProperty, nodeContentProperty);
+		listDescriptor.setContext(getAttributeContext());
 		return listDescriptor;
 	}
 
