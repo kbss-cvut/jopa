@@ -216,8 +216,7 @@ public class ChangeManagerImpl implements ChangeManager {
 	 * @throws OWLInferredAttributeModifiedException
 	 */
 	protected boolean calculateChangesInternal(ObjectChangeSet changeSet)
-			throws IllegalArgumentException, IllegalAccessException,
-			OWLInferredAttributeModifiedException {
+			throws IllegalArgumentException, IllegalAccessException {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Calculating changes for change set " + changeSet);
 		}
@@ -273,12 +272,12 @@ public class ChangeManagerImpl implements ChangeManager {
 					}
 				}
 			}
-			if (changes && CloneBuilderImpl.isFieldInferred(f)) {
-				// This is a failsafe, since modification of inferred attributes
-				// should be caught by the setter aspect
-				throw new OWLInferredAttributeModifiedException(
-						"Modifying inferred attributes is forbidden.");
-			}
+			// if (changes && CloneBuilderImpl.isFieldInferred(f)) {
+			// // This is a failsafe, since modification of inferred attributes
+			// // should be caught by the setter aspect
+			// throw new OWLInferredAttributeModifiedException(
+			// "Modifying inferred attributes is forbidden.");
+			// }
 			changeSet.addChangeRecord(r);
 		}
 		return changes;

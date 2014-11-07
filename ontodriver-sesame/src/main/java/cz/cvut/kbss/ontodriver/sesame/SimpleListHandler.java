@@ -15,13 +15,9 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
-import cz.cvut.kbss.ontodriver_new.model.Value;
 
 class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> {
-
-	private SimpleListDescriptor listDescriptor;
 
 	SimpleListHandler(Connector connector, ValueFactory vf) {
 		super(connector, vf);
@@ -30,52 +26,10 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 	@Override
 	Collection<Axiom<?>> loadList(SimpleListDescriptor listDescriptor) throws SesameDriverException {
 		final Collection<Axiom<?>> axioms = new ArrayList<>();
-		this.listDescriptor = listDescriptor;
-		// TODO Use the SimpleListIterator to load axioms
-		final Axiom<java.net.URI> head = loadListHead();
-		if (head == null) {
-			return Collections.emptyList();
+		final SimpleListIterator it = new SimpleListIterator(listDescriptor, connector, vf);
+		while (it.hasNext()) {
+			axioms.add(it.nextAxiom());
 		}
-		axioms.add(head);
-		final Resource headElem = sesameUri(head.getValue().getValue());
-		axioms.addAll(loadListRest(headElem));
-		return axioms;
-	}
-
-	private Axiom<java.net.URI> loadListHead() throws SesameDriverException {
-		final URI context = context(listDescriptor);
-		final URI hasListProperty = hasList(listDescriptor);
-		final URI owner = owner(listDescriptor);
-		Collection<Statement> stmts = connector.findStatements(owner, hasListProperty, null,
-				listDescriptor.getListProperty().isInferred(), context);
-		if (stmts.isEmpty()) {
-			return null;
-		}
-		final Resource head = extractListNode(stmts, listDescriptor.getListProperty());
-		final java.net.URI javaHead = SesameUtils.toJavaUri(head);
-		return createAxiom(javaHead);
-	}
-
-	private Axiom<java.net.URI> createAxiom(final java.net.URI nodeValue) {
-		return new AxiomImpl<java.net.URI>(listDescriptor.getListOwner(),
-				listDescriptor.getListProperty(), new Value<java.net.URI>(nodeValue));
-	}
-
-	private Collection<Axiom<?>> loadListRest(Resource firstElem) throws SesameDriverException {
-		final Collection<Axiom<?>> axioms = new ArrayList<>();
-		final URI context = context(listDescriptor);
-		Resource subject = firstElem;
-		final URI nextElemProperty = hasNext(listDescriptor);
-		Collection<Statement> stmts = null;
-		do {
-			stmts = connector.findStatements(subject, nextElemProperty, null, listDescriptor
-					.getNextNode().isInferred(), context);
-			if (!stmts.isEmpty()) {
-				final Resource listNode = extractListNode(stmts, listDescriptor.getNextNode());
-				axioms.add(createAxiom(SesameUtils.toJavaUri(listNode)));
-				subject = listNode;
-			}
-		} while (!stmts.isEmpty());
 		return axioms;
 	}
 
@@ -117,14 +71,19 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 	void updateList(SimpleListValueDescriptor listValueDescriptor) throws SesameDriverException {
 		if (listValueDescriptor.getValues().isEmpty()) {
 			clearList(listValueDescriptor);
-		}
-		if (isOldListEmpty(owner(listValueDescriptor), hasList(listValueDescriptor),
+		} else if (isOldListEmpty(owner(listValueDescriptor), hasList(listValueDescriptor),
 				listValueDescriptor.getListProperty().isInferred(), context(listValueDescriptor))) {
 			persistList(listValueDescriptor);
+		} else {
+			mergeList(listValueDescriptor);
 		}
-		// TODO
 	}
 
+	/**
+	 * We are using this code instead of iterator.remove for performance
+	 * reasons. The iterator has to reconnect the list for each removed node,
+	 * which takes a lot of time.
+	 */
 	private void clearList(SimpleListValueDescriptor listValueDescriptor)
 			throws SesameDriverException {
 		final URI owner = owner(listValueDescriptor);
@@ -155,5 +114,33 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 		final Collection<Statement> stmts = connector.findStatements(owner, hasListProperty, null,
 				includeInferred, context);
 		return stmts.isEmpty();
+	}
+
+	private void mergeList(SimpleListValueDescriptor listDescriptor)
+			throws SesameDriverException {
+		final SimpleListIterator it = new SimpleListIterator(listDescriptor, connector, vf);
+		int i = 0;
+		while (it.hasNext() && i < listDescriptor.getValues().size()) {
+			final Resource node = it.next();
+			final NamedResource newNode = listDescriptor.getValues().get(i);
+			if (!node.stringValue().equals(newNode.getIdentifier().toString())) {
+				it.replaceCurrentWith(newNode);
+			}
+			i++;
+		}
+		while (it.hasNext()) {
+			it.next();
+			it.remove();
+		}
+		assert i > 0;
+		while (i < listDescriptor.getValues().size()) {
+			final NamedResource previous = listDescriptor.getValues().get(i - 1);
+			final NamedResource newNode = listDescriptor.getValues().get(i);
+			final Statement stmt = vf.createStatement(sesameUri(previous.getIdentifier()),
+					sesameUri(listDescriptor.getNextNode().getIdentifier()),
+					sesameUri(newNode.getIdentifier()), context(listDescriptor));
+			connector.addStatements(Collections.singleton(stmt));
+			i++;
+		}
 	}
 }

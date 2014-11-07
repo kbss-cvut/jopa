@@ -1,7 +1,5 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
-
 public interface ChangeManager {
 
 	/**
@@ -34,6 +32,6 @@ public interface ChangeManager {
 	 *             If {@code changeSet} is {@code null}
 	 */
 	public boolean calculateChanges(ObjectChangeSet changeSet) throws IllegalAccessException,
-			IllegalArgumentException, OWLInferredAttributeModifiedException;
+			IllegalArgumentException;
 
 }

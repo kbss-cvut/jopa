@@ -42,6 +42,7 @@ final class ConnectorFactoryImpl extends ConnectorFactory {
 		}
 		if (centralConnector != null) {
 			centralConnector.close();
+			this.centralConnector = null;
 		}
 		this.open = false;
 	}

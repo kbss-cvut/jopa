@@ -17,7 +17,6 @@ import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
@@ -221,11 +220,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			throw new OWLPersistenceException(e);
 		} catch (IllegalArgumentException e) {
 			throw new OWLPersistenceException(e);
-		} catch (OWLInferredAttributeModifiedException e) {
-			LOG.severe("Inferred attribute modified. This transaction won't be able to commit.");
-			if (entityManager != null) {
-				entityManager.getTransaction().setRollbackOnly();
-			}
 		}
 	}
 
@@ -701,8 +695,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		} catch (IllegalAccessException e) {
 			throw new OWLPersistenceException(e);
 		} catch (IllegalArgumentException e) {
-			throw new OWLPersistenceException(e);
-		} catch (OWLInferredAttributeModifiedException e) {
 			throw new OWLPersistenceException(e);
 		}
 	}

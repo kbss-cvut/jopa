@@ -3,8 +3,11 @@ package cz.cvut.kbss.ontodriver.sesame;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -12,7 +15,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -22,9 +24,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -40,7 +43,7 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
+@SuppressWarnings({ "unchecked" })
 public class SimpleListHandlerTest extends ListHandlerTestBase {
 
 	protected static final String LIST_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence";
@@ -55,6 +58,9 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 	private SimpleListDescriptor listDescriptor;
 
 	private SimpleListHandler handler;
+
+	private final Collection<Statement> added = new ArrayList<>();
+	private final Collection<Statement> removed = new ArrayList<>();
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -71,6 +77,24 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 		final Assertion nextNodeProperty = Assertion.createObjectPropertyAssertion(
 				java.net.URI.create(NEXT_NODE_PROPERTY), false);
 		this.listDescriptor = new SimpleListDescriptorImpl(OWNER, listProperty, nextNodeProperty);
+		doAnswer(new Answer<Void>() {
+
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				final Collection<Statement> arg = (Collection<Statement>) invocation.getArguments()[0];
+				added.addAll(arg);
+				return null;
+			}
+		}).when(connector).addStatements(any(Collection.class));
+		doAnswer(new Answer<Void>() {
+
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				final Collection<Statement> arg = (Collection<Statement>) invocation.getArguments()[0];
+				removed.addAll(arg);
+				return null;
+			}
+		}).when(connector).removeStatements(any(Collection.class));
 
 		this.handler = new SimpleListHandler(connector, vf);
 	}
@@ -195,13 +219,9 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 		final SimpleListValueDescriptor listDescriptor = initValues(5);
 
 		handler.persistList(listDescriptor);
-		final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
-		verify(connector).addStatements(captor.capture());
-		final Collection<?> args = captor.getValue();
-		for (Object elem : args) {
-			assert (elem instanceof Statement);
-			final Statement stmt = (Statement) elem;
-			final NamedResource subject = NamedResource.create(SesameUtils.toJavaUri(stmt
+		verify(connector).addStatements(any(Collection.class));
+		for (Statement elem : added) {
+			final NamedResource subject = NamedResource.create(SesameUtils.toJavaUri(elem
 					.getSubject()));
 			assertTrue(listDescriptor.getListOwner().equals(subject)
 					|| listDescriptor.getValues().contains(subject));
@@ -251,43 +271,10 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 
 		handler.updateList(descriptor);
 		verify(connector, never()).removeStatements(any(Collection.class));
-		final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
-		verify(connector).addStatements(captor.capture());
 		int i = 0;
-		for (Object item : captor.getValue()) {
-			final Statement stmt = (Statement) item;
+		for (Statement stmt : added) {
 			assertEquals(descriptor.getValues().get(i++).getIdentifier(),
 					java.net.URI.create(stmt.getObject().stringValue()));
-		}
-	}
-
-	@Test
-	public void updateListReplacesSeveralElements() throws Exception {
-		final SimpleListValueDescriptor descriptor = initValues(8);
-		final List<java.net.URI> simpleList = new ArrayList<>();
-		for (NamedResource item : descriptor.getValues()) {
-			simpleList.add(item.getIdentifier());
-		}
-		final int iOne = 0;
-		final java.net.URI diffOne = java.net.URI.create("http://krizik.felk.cvut.cz/modified#One");
-		simpleList.set(iOne, diffOne);
-		final java.net.URI diffTwo = java.net.URI.create("http://krizik.felk.cvut.cz/modified#Two");
-		final int iTwo = 7;
-		simpleList.set(iTwo, diffTwo);
-		final List<Statement> oldList = initStatementsForList(simpleList);
-
-		handler.updateList(descriptor);
-		final Collection<Statement> toRemove = Arrays.asList(oldList.get(iOne), oldList.get(iTwo));
-		final ArgumentCaptor<Collection> captorRemove = ArgumentCaptor.forClass(Collection.class);
-		verify(connector).removeStatements(captorRemove.capture());
-		assertEquals(toRemove, captorRemove.getValue());
-		final ArgumentCaptor<Collection> captorAdd = ArgumentCaptor.forClass(Collection.class);
-		verify(connector).addStatements(captorAdd.capture());
-		assertEquals(2, captorAdd.getValue().size());
-		for (Object item : captorAdd.getValue()) {
-			final Statement stmt = (Statement) item;
-			final java.net.URI u = java.net.URI.create(stmt.getObject().stringValue());
-			assertTrue(u.equals(diffOne) || u.equals(diffTwo));
 		}
 	}
 
@@ -308,11 +295,9 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 
 		handler.updateList(descriptor);
 		verify(connector, never()).removeStatements(any(Collection.class));
-		final ArgumentCaptor<Collection> captorAdd = ArgumentCaptor.forClass(Collection.class);
-		verify(connector).addStatements(captorAdd.capture());
-		assertEquals(tempDesc.getValues().size(), captorAdd.getValue().size());
-		for (Object item : captorAdd.getValue()) {
-			final Statement stmt = (Statement) item;
+		verify(connector, atLeast(1)).addStatements(any(Collection.class));
+		assertEquals(tempDesc.getValues().size(), added.size());
+		for (Statement stmt : added) {
 			final java.net.URI u = java.net.URI.create(stmt.getObject().stringValue());
 			assertTrue(tempDesc.getValues().contains(NamedResource.create(u)));
 		}
@@ -332,17 +317,41 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 			} else {
 				descriptor.addValue(NamedResource.create(item));
 			}
+			i++;
 		}
 
 		handler.updateList(descriptor);
-		verify(connector, never()).addStatements(any(Collection.class));
-		final ArgumentCaptor<Collection> captorRemove = ArgumentCaptor.forClass(Collection.class);
-		verify(connector).removeStatements(captorRemove.capture());
-		assertEquals(toRemove.size(), captorRemove.getValue().size());
-		for (Object item : captorRemove.getValue()) {
-			final Statement stmt = (Statement) item;
-			final java.net.URI u = java.net.URI.create(stmt.getObject().stringValue());
-			assertTrue(toRemove.contains(u));
+		for (java.net.URI uri : toRemove) {
+			boolean foundAsObject = false;
+			boolean foundAsSubject = false;
+			for (Statement rem : removed) {
+				if (rem.getObject().stringValue().equals(uri.toString())) {
+					foundAsObject = true;
+				} else if (rem.getSubject().stringValue().equals(uri.toString())) {
+					foundAsSubject = true;
+				}
+			}
+			assertTrue(foundAsObject);
+			assertTrue(foundAsSubject);
+			for (Statement add : added) {
+				if (add.getObject().stringValue().equals(uri.toString())) {
+					fail("Found uri which shouln't have been added. " + uri);
+				}
+			}
+			// Make sure that all the retained nodes were added
+			for (int j = 1; j < descriptor.getValues().size(); j++) {
+				final java.net.URI subject = descriptor.getValues().get(j - 1).getIdentifier();
+				final java.net.URI object = descriptor.getValues().get(j).getIdentifier();
+				boolean found = false;
+				for (Statement add : added) {
+					if (add.getSubject().stringValue().equals(subject.toString())
+							&& add.getObject().stringValue().equals(object.toString())) {
+						found = true;
+						break;
+					}
+				}
+				assertTrue(found);
+			}
 		}
 	}
 }
