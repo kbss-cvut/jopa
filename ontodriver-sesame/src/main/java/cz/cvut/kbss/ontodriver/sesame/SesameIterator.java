@@ -10,7 +10,9 @@ interface SesameIterator {
 
 	boolean hasNext() throws SesameDriverException;
 
-	Resource next() throws SesameDriverException;
+	Resource nextNode() throws SesameDriverException;
+
+	Resource nextContent() throws SesameDriverException;
 
 	Axiom<java.net.URI> nextAxiom() throws SesameDriverException;
 

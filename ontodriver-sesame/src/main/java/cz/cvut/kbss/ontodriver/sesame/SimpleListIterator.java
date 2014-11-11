@@ -10,46 +10,26 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 
-import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
-import cz.cvut.kbss.ontodriver_new.model.Value;
 
-class SimpleListIterator implements SesameIterator {
+class SimpleListIterator extends AbstractSesameIterator {
 
 	private final SimpleListDescriptor listDescriptor;
 
-	private final Resource listOwner;
-	private final URI hasListProperty;
-	private final URI hasNextProperty;
-	private final URI context;
-	private final boolean includeInferred;
-
 	private URI currentProperty;
-
-	private final Connector connector;
-	private final ValueFactory vf;
 
 	private Statement current;
 	private Collection<Statement> next;
 
 	public SimpleListIterator(SimpleListDescriptor listDescriptor, Connector connector,
 			ValueFactory vf) throws SesameDriverException {
+		super(listDescriptor, connector, vf);
 		this.listDescriptor = listDescriptor;
-		this.listOwner = SesameUtils.toSesameUri(listDescriptor.getListOwner().getIdentifier(), vf);
-		this.hasListProperty = SesameUtils.toSesameUri(listDescriptor.getListProperty()
-				.getIdentifier(), vf);
-		this.hasNextProperty = SesameUtils.toSesameUri(
-				listDescriptor.getNextNode().getIdentifier(), vf);
-		this.context = SesameUtils.toSesameUri(listDescriptor.getContext(), vf);
-		this.includeInferred = listDescriptor.getListProperty().isInferred();
-		this.connector = connector;
-		this.vf = vf;
 		this.currentProperty = hasListProperty;
 		init();
 	}
@@ -65,8 +45,10 @@ class SimpleListIterator implements SesameIterator {
 	}
 
 	@Override
-	public Resource next() throws SesameDriverException {
+	public Resource nextNode() throws SesameDriverException {
 		nextInternal();
+		assert current.getObject() instanceof Resource;
+
 		return (Resource) current.getObject();
 	}
 
@@ -74,7 +56,7 @@ class SimpleListIterator implements SesameIterator {
 		if (!hasNext()) {
 			throw new IllegalStateException();
 		}
-		checkSuccessorCount(next, currentProperty);
+		checkSuccessorMax(next, currentProperty);
 		this.current = next.iterator().next();
 		this.currentProperty = current.getPredicate();
 		checkNodeIsResource(current);
@@ -83,17 +65,18 @@ class SimpleListIterator implements SesameIterator {
 	}
 
 	@Override
+	public Resource nextContent() throws SesameDriverException {
+		return nextNode();
+	}
+
+	@Override
 	public Axiom<java.net.URI> nextAxiom() throws SesameDriverException {
 		nextInternal();
 		assert current.getObject() instanceof Resource;
 
-		final Resource subject = current.getSubject();
-		final NamedResource subjectRes = NamedResource.create(subject.stringValue());
-		final Resource node = (Resource) current.getObject();
-		final java.net.URI nodeUri = java.net.URI.create(node.stringValue());
 		final Assertion assertion = current.getPredicate() == hasListProperty ? listDescriptor
 				.getListProperty() : listDescriptor.getNextNode();
-		return new AxiomImpl<java.net.URI>(subjectRes, assertion, new Value<java.net.URI>(nodeUri));
+		return createAxiom(current.getSubject(), assertion, (Resource) current.getObject());
 	}
 
 	@Override
@@ -148,21 +131,6 @@ class SimpleListIterator implements SesameIterator {
 			connector.addStatements(next);
 		} else {
 			this.next = Collections.emptyList();
-		}
-	}
-
-	private void checkSuccessorCount(Collection<Statement> stmts, URI property) {
-		if (stmts.size() > 1) {
-			throw new IntegrityConstraintViolatedException(
-					"Invalid number of values found for assertion " + property
-							+ ". Expected 1, got " + next.size());
-		}
-	}
-
-	private void checkNodeIsResource(Statement stmt) {
-		if (!(stmt.getObject() instanceof Resource)) {
-			throw new IntegrityConstraintViolatedException(
-					"Invalid property value. Expected object property value, got literal.");
 		}
 	}
 }

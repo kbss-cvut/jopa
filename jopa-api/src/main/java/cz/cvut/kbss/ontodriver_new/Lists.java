@@ -107,4 +107,22 @@ public interface Lists {
 	 */
 	public void persistReferencedList(ReferencedListValueDescriptor descriptor)
 			throws OntoDriverException;
+
+	/**
+	 * Updates referenced list based on the values in the specified list
+	 * descriptor. </p>
+	 * 
+	 * It is up to the driver implementation whether the update will be realized
+	 * by removing the old list and persisting the new values, or by merging the
+	 * new list into the old one.
+	 * 
+	 * @param descriptor
+	 *            List values descriptor
+	 * @throws OntoDriverException
+	 *             If an ontology access error occurs
+	 * @throws IllegalStateException
+	 *             If called on a closed connection
+	 */
+	public void updateReferencedList(ReferencedListValueDescriptor descriptor)
+			throws OntoDriverException;
 }

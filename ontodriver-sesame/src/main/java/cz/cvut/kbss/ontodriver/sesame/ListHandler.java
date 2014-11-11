@@ -69,7 +69,27 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 	 *            Describes the updated values
 	 * @throws SesameDriverException
 	 */
-	abstract void updateList(V listValueDescriptor) throws SesameDriverException;
+	void updateList(V listValueDescriptor) throws SesameDriverException {
+		if (listValueDescriptor.getValues().isEmpty()) {
+			clearList(listValueDescriptor);
+		} else if (isOldListEmpty(owner(listValueDescriptor), hasList(listValueDescriptor),
+				listValueDescriptor.getListProperty().isInferred(), context(listValueDescriptor))) {
+			persistList(listValueDescriptor);
+		} else {
+			mergeList(listValueDescriptor);
+		}
+	}
+
+	private boolean isOldListEmpty(Resource owner, URI hasListProperty, boolean includeInferred,
+			URI context) throws SesameDriverException {
+		final Collection<Statement> stmts = connector.findStatements(owner, hasListProperty, null,
+				includeInferred, context);
+		return stmts.isEmpty();
+	}
+
+	abstract void clearList(V listDescriptor) throws SesameDriverException;
+
+	abstract void mergeList(V listDescriptor) throws SesameDriverException;
 
 	protected Resource extractListNode(Collection<Statement> stmts, Assertion nodeAssertion)
 			throws SesameDriverException {

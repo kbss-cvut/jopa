@@ -10,7 +10,7 @@ import cz.cvut.kbss.ontodriver_new.model.NamedResource;
  * @author ledvima1
  * 
  */
-public interface ListValueDescriptor {
+public interface ListValueDescriptor extends ListDescriptor {
 
 	/**
 	 * Gets values from the list described by this descriptor.

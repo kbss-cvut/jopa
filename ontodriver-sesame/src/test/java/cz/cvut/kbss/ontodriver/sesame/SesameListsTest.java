@@ -68,6 +68,18 @@ public class SesameListsTest {
 	}
 
 	@Test
+	public void testUpdateSimpleList() throws Exception {
+		final SimpleListValueDescriptor descriptor = mock(SimpleListValueDescriptor.class);
+
+		lists.updateSimpleList(descriptor);
+
+		verify(connectionMock).ensureOpen();
+		verify(adapterMock).getSimpleListHandler();
+		verify(simpleListHandlerMock).updateList(descriptor);
+		verify(connectionMock).commitIfAuto();
+	}
+
+	@Test
 	public void testLoadReferencedList() throws Exception {
 		final ReferencedListDescriptor descriptor = mock(ReferencedListDescriptor.class);
 
@@ -87,6 +99,18 @@ public class SesameListsTest {
 		verify(connectionMock).ensureOpen();
 		verify(adapterMock).getReferencedListHandler();
 		verify(referencedListHandlerMock).persistList(descriptor);
+		verify(connectionMock).commitIfAuto();
+	}
+
+	@Test
+	public void testUpdateReferencedList() throws Exception {
+		final ReferencedListValueDescriptor descriptor = mock(ReferencedListValueDescriptor.class);
+
+		lists.updateReferencedList(descriptor);
+
+		verify(connectionMock).ensureOpen();
+		verify(adapterMock).getReferencedListHandler();
+		verify(referencedListHandlerMock).updateList(descriptor);
 		verify(connectionMock).commitIfAuto();
 	}
 }

@@ -67,25 +67,13 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 		return stmts;
 	}
 
-	@Override
-	void updateList(SimpleListValueDescriptor listValueDescriptor) throws SesameDriverException {
-		if (listValueDescriptor.getValues().isEmpty()) {
-			clearList(listValueDescriptor);
-		} else if (isOldListEmpty(owner(listValueDescriptor), hasList(listValueDescriptor),
-				listValueDescriptor.getListProperty().isInferred(), context(listValueDescriptor))) {
-			persistList(listValueDescriptor);
-		} else {
-			mergeList(listValueDescriptor);
-		}
-	}
-
 	/**
 	 * We are using this code instead of iterator.remove for performance
 	 * reasons. The iterator has to reconnect the list for each removed node,
 	 * which takes a lot of time.
 	 */
-	private void clearList(SimpleListValueDescriptor listValueDescriptor)
-			throws SesameDriverException {
+	@Override
+	void clearList(SimpleListValueDescriptor listValueDescriptor) throws SesameDriverException {
 		final URI owner = owner(listValueDescriptor);
 		final URI hasList = hasList(listValueDescriptor);
 		final URI context = context(listValueDescriptor);
@@ -109,19 +97,12 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 		connector.removeStatements(toRemove);
 	}
 
-	private boolean isOldListEmpty(Resource owner, URI hasListProperty, boolean includeInferred,
-			URI context) throws SesameDriverException {
-		final Collection<Statement> stmts = connector.findStatements(owner, hasListProperty, null,
-				includeInferred, context);
-		return stmts.isEmpty();
-	}
-
-	private void mergeList(SimpleListValueDescriptor listDescriptor)
-			throws SesameDriverException {
+	@Override
+	void mergeList(SimpleListValueDescriptor listDescriptor) throws SesameDriverException {
 		final SimpleListIterator it = new SimpleListIterator(listDescriptor, connector, vf);
 		int i = 0;
 		while (it.hasNext() && i < listDescriptor.getValues().size()) {
-			final Resource node = it.next();
+			final Resource node = it.nextNode();
 			final NamedResource newNode = listDescriptor.getValues().get(i);
 			if (!node.stringValue().equals(newNode.getIdentifier().toString())) {
 				it.replaceCurrentWith(newNode);
@@ -129,7 +110,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 			i++;
 		}
 		while (it.hasNext()) {
-			it.next();
+			it.nextNode();
 			it.remove();
 		}
 		assert i > 0;

@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver_new.Lists;
+import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
@@ -26,23 +27,25 @@ class SesameLists implements Lists {
 	@Override
 	public Collection<Axiom<?>> loadSimpleList(SimpleListDescriptor descriptor)
 			throws OntoDriverException {
-		connection.ensureOpen();
-		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+		verifyArgs(descriptor, "descriptor");
 		return adapter.getSimpleListHandler().loadList(descriptor);
+	}
+
+	private void verifyArgs(ListDescriptor descriptor, String argName) {
+		connection.ensureOpen();
+		Objects.requireNonNull(descriptor, constructNPXMessage(argName));
 	}
 
 	@Override
 	public void persistSimpleList(SimpleListValueDescriptor descriptor) throws OntoDriverException {
-		connection.ensureOpen();
-		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+		verifyArgs(descriptor, "descriptor");
 		adapter.getSimpleListHandler().persistList(descriptor);
 		connection.commitIfAuto();
 	}
 
 	@Override
 	public void updateSimpleList(SimpleListValueDescriptor descriptor) throws OntoDriverException {
-		connection.ensureOpen();
-		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+		verifyArgs(descriptor, "descriptor");
 		adapter.getSimpleListHandler().updateList(descriptor);
 		connection.commitIfAuto();
 	}
@@ -50,17 +53,23 @@ class SesameLists implements Lists {
 	@Override
 	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
 			throws OntoDriverException {
-		connection.ensureOpen();
-		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+		verifyArgs(descriptor, "descriptor");
 		return adapter.getReferencedListHandler().loadList(descriptor);
 	}
 
 	@Override
 	public void persistReferencedList(ReferencedListValueDescriptor descriptor)
 			throws OntoDriverException {
-		connection.ensureOpen();
-		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+		verifyArgs(descriptor, "descriptor");
 		adapter.getReferencedListHandler().persistList(descriptor);
+		connection.commitIfAuto();
+	}
+
+	@Override
+	public void updateReferencedList(ReferencedListValueDescriptor descriptor)
+			throws OntoDriverException {
+		verifyArgs(descriptor, "descriptor");
+		adapter.getReferencedListHandler().updateList(descriptor);
 		connection.commitIfAuto();
 	}
 }

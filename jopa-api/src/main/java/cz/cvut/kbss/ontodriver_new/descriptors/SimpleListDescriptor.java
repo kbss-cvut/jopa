@@ -10,7 +10,7 @@ package cz.cvut.kbss.ontodriver_new.descriptors;
  */
 public interface SimpleListDescriptor extends ListDescriptor {
 	
-	// We are just exporting the API from BaseListDesciptor, as ReferencedListDescriptor is not a SimpleListDescriptor,
+	// We are just exporting the API from ListDesciptor, as ReferencedListDescriptor is not a SimpleListDescriptor,
 	// but they share the basic common methods.
 	// This way, we can declare the methods only once, but the list descriptor have each their own hierarchy.
 

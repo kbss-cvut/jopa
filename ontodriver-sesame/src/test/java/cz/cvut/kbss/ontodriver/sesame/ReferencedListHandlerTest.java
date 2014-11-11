@@ -1,12 +1,15 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -27,6 +30,8 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -55,6 +60,9 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 
 	private ReferencedListDescriptor listDescriptor;
 	private ReferencedListValueDescriptor valueDescriptor;
+
+	private List<Statement> added = new ArrayList<>();
+	private List<Statement> removed = new ArrayList<>();
 
 	private ReferencedListHandler handler;
 
@@ -89,6 +97,24 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 				nextNodeProperty, nodeContentProperty);
 
 		this.handler = new ReferencedListHandler(connector, vf);
+		doAnswer(new Answer<Void>() {
+
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				final Collection<Statement> arg = (Collection<Statement>) invocation.getArguments()[0];
+				added.addAll(arg);
+				return null;
+			}
+		}).when(connector).addStatements(any(Collection.class));
+		doAnswer(new Answer<Void>() {
+
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				final Collection<Statement> arg = (Collection<Statement>) invocation.getArguments()[0];
+				removed.addAll(arg);
+				return null;
+			}
+		}).when(connector).removeStatements(any(Collection.class));
 	}
 
 	@Test
@@ -129,31 +155,39 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 		return nodes;
 	}
 
-	private void initStatementsForList(List<java.net.URI> nodes, List<java.net.URI> values)
-			throws Exception {
+	private List<Statement> initStatementsForList(List<java.net.URI> nodes,
+			List<java.net.URI> values) throws Exception {
 		int i = 0;
 		Resource prev = owner;
+		final List<Statement> stmts = new ArrayList<>();
 		for (java.net.URI item : nodes) {
 			final URI itemUri = vf.createURI(item.toString());
+			Statement node;
 			if (i == 0) {
+				node = vf.createStatement(prev, hasListProperty, itemUri);
 				when(
 						connector.findStatements(eq(prev), eq(hasListProperty), eq((Value) null),
 								anyBoolean(), eq((URI[]) null))).thenReturn(
-						Collections.singleton(vf.createStatement(prev, hasListProperty, itemUri)));
+						Collections.singleton(node));
 			} else {
+				node = vf.createStatement(prev, nextNodeProperty, itemUri);
 				when(
 						connector.findStatements(eq(prev), eq(nextNodeProperty), eq((Value) null),
 								anyBoolean(), eq((URI[]) null))).thenReturn(
-						Collections.singleton(vf.createStatement(prev, nextNodeProperty, itemUri)));
+						Collections.singleton(node));
 			}
+			stmts.add(node);
+			final Statement content = vf.createStatement(owner, nodeContentProperty,
+					vf.createURI(values.get(i).toString()));
 			when(
 					connector.findStatements(eq(itemUri), eq(nodeContentProperty),
 							eq((Value) null), anyBoolean(), eq((URI[]) null))).thenReturn(
-					Collections.singleton(vf.createStatement(owner, nodeContentProperty,
-							vf.createURI(values.get(i).toString()))));
+					Collections.singleton(content));
+			stmts.add(content);
 			prev = itemUri;
 			i++;
 		}
+		return stmts;
 	}
 
 	@Test(expected = IntegrityConstraintViolatedException.class)
@@ -259,5 +293,127 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 		handler.persistList(spiedValues);
 		verify(spiedValues).getValues();
 		verify(connector, never()).addStatements(any(Collection.class));
+	}
+
+	@Test
+	public void clearsListOnUpdateWhenDescriptorHasNoValues() throws Exception {
+		final ReferencedListValueDescriptor descriptor = initValues(0);
+		// old list
+		final List<java.net.URI> refList = initList();
+		final List<Statement> oldList = initStatementsForList(initListNodes(refList), refList);
+
+		handler.updateList(descriptor);
+		verify(connector).removeStatements(oldList);
+		verify(connector, never()).addStatements(any(Collection.class));
+	}
+
+	private static ReferencedListValueDescriptor initValues(int count) {
+		final ReferencedListValueDescriptor desc = new ReferencedListValueDescriptor(OWNER,
+				Assertion.createObjectPropertyAssertion(java.net.URI.create(LIST_PROPERTY), false),
+				Assertion.createObjectPropertyAssertion(java.net.URI.create(NEXT_NODE_PROPERTY),
+						false), Assertion.createObjectPropertyAssertion(
+						java.net.URI.create(NODE_CONTENT_PROPERTY), false));
+		for (int i = 0; i < count; i++) {
+			desc.addValue(NamedResource
+					.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA_" + i));
+		}
+		return desc;
+	}
+
+	@Test
+	public void insertsListOnUpdateWhenThereWereNoValuesBefore() throws Exception {
+		final ReferencedListValueDescriptor descriptor = initValues(5);
+		when(
+				connector.findStatements(owner, hasListProperty, null, descriptor.getListProperty()
+						.isInferred(), (URI[]) null)).thenReturn(
+				Collections.<Statement> emptyList());
+
+		handler.updateList(descriptor);
+		verify(connector, never()).removeStatements(any(Collection.class));
+		int i = 0;
+		assertFalse(added.isEmpty());
+		for (Statement stmt : added) {
+			if (stmt.getPredicate().equals(nodeContentProperty)) {
+				assertEquals(descriptor.getValues().get(i++).getIdentifier(),
+						java.net.URI.create(stmt.getObject().stringValue()));
+			}
+		}
+	}
+
+	@Test
+	public void updateListAddsNewValuesToTheEnd() throws Exception {
+		final ReferencedListValueDescriptor descriptor = initValues(0);
+		final ReferencedListValueDescriptor tempDesc = initValues(8);
+		final List<java.net.URI> refList = initList();
+		initStatementsForList(initListNodes(refList), refList);
+		// The original items
+		for (java.net.URI item : refList) {
+			descriptor.addValue(NamedResource.create(item));
+		}
+		// Now add the new ones
+		for (NamedResource r : tempDesc.getValues()) {
+			descriptor.addValue(r);
+		}
+
+		handler.updateList(descriptor);
+		verify(connector, never()).removeStatements(any(Collection.class));
+		verify(connector, atLeast(1)).addStatements(any(Collection.class));
+		assertEquals(tempDesc.getValues().size(), added.size());
+		for (Statement stmt : added) {
+			final java.net.URI u = java.net.URI.create(stmt.getObject().stringValue());
+			assertTrue(tempDesc.getValues().contains(NamedResource.create(u)));
+		}
+	}
+
+	@Test
+	public void updateListRemovesSeveralElements() throws Exception {
+		final ReferencedListValueDescriptor descriptor = initValues(0);
+		final List<java.net.URI> refList = initList();
+		initStatementsForList(initListNodes(refList), refList);
+		// Retain every even element, others will be removed
+		int i = 0;
+		final List<java.net.URI> toRemove = new ArrayList<>();
+		for (java.net.URI item : refList) {
+			if (i % 2 != 0) {
+				toRemove.add(item);
+			} else {
+				descriptor.addValue(NamedResource.create(item));
+			}
+			i++;
+		}
+
+		handler.updateList(descriptor);
+		for (java.net.URI uri : toRemove) {
+			boolean foundAsObject = false;
+			boolean foundAsSubject = false;
+			for (Statement rem : removed) {
+				if (rem.getObject().stringValue().equals(uri.toString())) {
+					foundAsObject = true;
+				} else if (rem.getSubject().stringValue().equals(uri.toString())) {
+					foundAsSubject = true;
+				}
+			}
+			assertTrue(foundAsObject);
+			assertTrue(foundAsSubject);
+			for (Statement add : added) {
+				if (add.getObject().stringValue().equals(uri.toString())) {
+					fail("Found uri which shouln't have been added. " + uri);
+				}
+			}
+			// Make sure that all the retained nodes were added
+			for (int j = 1; j < descriptor.getValues().size(); j++) {
+				final java.net.URI subject = descriptor.getValues().get(j - 1).getIdentifier();
+				final java.net.URI object = descriptor.getValues().get(j).getIdentifier();
+				boolean found = false;
+				for (Statement add : added) {
+					if (add.getSubject().stringValue().equals(subject.toString())
+							&& add.getObject().stringValue().equals(object.toString())) {
+						found = true;
+						break;
+					}
+				}
+				assertTrue(found);
+			}
+		}
 	}
 }

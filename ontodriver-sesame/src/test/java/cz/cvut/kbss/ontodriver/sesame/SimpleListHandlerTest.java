@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -272,6 +273,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 		handler.updateList(descriptor);
 		verify(connector, never()).removeStatements(any(Collection.class));
 		int i = 0;
+		assertFalse(added.isEmpty());
 		for (Statement stmt : added) {
 			assertEquals(descriptor.getValues().get(i++).getIdentifier(),
 					java.net.URI.create(stmt.getObject().stringValue()));
