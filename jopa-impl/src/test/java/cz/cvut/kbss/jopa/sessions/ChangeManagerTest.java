@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,13 +22,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.sessions.ChangeManager;
-import cz.cvut.kbss.jopa.sessions.ChangeManagerImpl;
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassC;
@@ -418,20 +412,6 @@ public class ChangeManagerTest {
 		assertTrue(res);
 		assertEquals(1, chSet.getChanges().size());
 		assertTrue(chSet.getAttributesToChange().containsKey("properties"));
-	}
-
-	@Test(expected = OWLInferredAttributeModifiedException.class)
-	public void testCalculateChangesSetInferred() throws Exception {
-		final OWLClassF fClone = new OWLClassF();
-		fClone.setUri(testF.getUri());
-		// Use the field to set the value, because using setter would trigger
-		// the aspect
-		final Field inferredField = OWLClassF.getStrAttField();
-		inferredField.setAccessible(true);
-		inferredField.set(fClone, "inferredOne");
-		final ObjectChangeSet chSet = createChangeSet(testF, fClone);
-		manager.calculateChanges(chSet);
-		fail("This line should not have been reached.");
 	}
 
 	private ObjectChangeSet createChangeSet(Object orig, Object clone) {

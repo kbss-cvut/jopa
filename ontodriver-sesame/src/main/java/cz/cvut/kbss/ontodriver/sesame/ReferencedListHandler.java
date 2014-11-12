@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
@@ -16,6 +17,8 @@ import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
+// TODO Refactor list clear, persist and merge into separate classes, 
+// which can share some logic for Simple and Referenced list, the procedure is almost the same
 public class ReferencedListHandler extends
 		ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> {
 
@@ -103,13 +106,66 @@ public class ReferencedListHandler extends
 
 	@Override
 	void clearList(ReferencedListValueDescriptor listDescriptor) throws SesameDriverException {
-		// TODO Auto-generated method stub
-
+		final URI hasNext = hasNext(listDescriptor);
+		final URI hasContent = hasContent(listDescriptor);
+		final boolean includeInferred = listDescriptor.getListProperty().isInferred();
+		final URI context = context(listDescriptor);
+		Resource previous = owner(listDescriptor);
+		URI currentProperty = hasList(listDescriptor);
+		final Collection<Statement> toRemove = new ArrayList<>();
+		Collection<Statement> next;
+		do {
+			next = connector.findStatements(previous, currentProperty, null, includeInferred,
+					context);
+			if (!next.isEmpty()) {
+				final Resource node = extractListNode(next, currentProperty);
+				toRemove.addAll(next);
+				toRemove.addAll(connector.findStatements(node, hasContent, null, includeInferred,
+						context));
+				previous = node;
+			}
+			currentProperty = hasNext;
+		} while (!next.isEmpty());
+		connector.removeStatements(toRemove);
 	}
 
 	@Override
 	void mergeList(ReferencedListValueDescriptor listDescriptor) throws SesameDriverException {
-		// TODO Auto-generated method stub
-
+		final ReferencedListIterator it = new ReferencedListIterator(listDescriptor, connector, vf);
+		Resource node = null;
+		int i = 0;
+		while (it.hasNext() && i < listDescriptor.getValues().size()) {
+			node = it.nextNode();
+			final Resource content = it.currentContent();
+			final NamedResource newNode = listDescriptor.getValues().get(i);
+			if (!content.stringValue().equals(newNode.getIdentifier().toString())) {
+				it.replaceCurrentWith(newNode);
+			}
+			i++;
+		}
+		while (it.hasNext()) {
+			it.nextNode();
+			it.remove();
+		}
+		assert node != null;
+		Resource previous = node;
+		final URI owner = owner(listDescriptor);
+		final URI hasNext = hasNext(listDescriptor);
+		final URI hasContent = hasContent(listDescriptor);
+		final URI context = context(listDescriptor);
+		assert i > 0;
+		final Collection<Statement> toAdd = new ArrayList<>(
+				(listDescriptor.getValues().size() - i) * 2);
+		while (i < listDescriptor.getValues().size()) {
+			final Resource nextNode = generateSequenceNode(owner, context);
+			final Statement nextStmt = vf.createStatement(previous, hasNext, nextNode, context);
+			toAdd.add(nextStmt);
+			final Statement nextContent = vf.createStatement(nextNode, hasContent,
+					sesameUri(listDescriptor.getValues().get(i).getIdentifier()), context);
+			toAdd.add(nextContent);
+			previous = nextNode;
+			i++;
+		}
+		connector.addStatements(toAdd);
 	}
 }

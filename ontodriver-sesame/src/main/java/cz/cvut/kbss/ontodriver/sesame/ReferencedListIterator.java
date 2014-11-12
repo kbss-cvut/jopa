@@ -1,6 +1,8 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -78,8 +80,8 @@ class ReferencedListIterator extends AbstractSesameIterator {
 	}
 
 	@Override
-	public Resource nextContent() throws SesameDriverException {
-		nextInternal();
+	public Resource currentContent() throws SesameDriverException {
+		assert currentContent.getObject() instanceof Resource;
 		return (Resource) currentContent.getObject();
 	}
 
@@ -94,14 +96,37 @@ class ReferencedListIterator extends AbstractSesameIterator {
 
 	@Override
 	public void remove() throws SesameDriverException {
-		// TODO Auto-generated method stub
+		assert currentNode.getObject() instanceof Resource;
+		final Collection<Statement> toRemove = new ArrayList<>();
+		toRemove.add(currentNode);
+		toRemove.add(currentContent);
+		if (!next.isEmpty()) {
+			toRemove.addAll(next);
+			final Statement stmt = next.iterator().next();
+			checkNodeIsResource(stmt);
+			final Resource nextNode = (Resource) stmt.getObject();
+			final Statement connectNext = vf.createStatement(currentNode.getSubject(),
+					currentProperty, nextNode, context);
+			this.next = Collections.singleton(connectNext);
 
+			this.currentNode = null;
+			this.currentContent = null;
+			connector.addStatements(next);
+		} else {
+			next = Collections.emptyList();
+		}
+		connector.removeStatements(toRemove);
 	}
 
 	@Override
-	public void replaceCurrentWith(NamedResource newNode) throws SesameDriverException {
-		// TODO Auto-generated method stub
-
+	public void replaceCurrentWith(NamedResource newContent) throws SesameDriverException {
+		assert currentNode.getObject() instanceof Resource;
+		// We just replace the original content statement with new one
+		connector.removeStatements(Collections.singleton(currentContent));
+		final Resource node = (Resource) currentNode.getObject();
+		final Statement stmt = vf.createStatement(node, hasContentProperty,
+				SesameUtils.toSesameUri(newContent.getIdentifier(), vf), context);
+		connector.addStatements(Collections.singleton(stmt));
 	}
 
 }

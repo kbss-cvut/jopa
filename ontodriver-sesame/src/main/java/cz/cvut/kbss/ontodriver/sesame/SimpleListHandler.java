@@ -2,7 +2,6 @@ package cz.cvut.kbss.ontodriver.sesame;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.openrdf.model.Resource;
@@ -74,25 +73,21 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 	 */
 	@Override
 	void clearList(SimpleListValueDescriptor listValueDescriptor) throws SesameDriverException {
-		final URI owner = owner(listValueDescriptor);
-		final URI hasList = hasList(listValueDescriptor);
 		final URI context = context(listValueDescriptor);
 		final Collection<Statement> toRemove = new ArrayList<>();
-		Collection<Statement> stmts = connector.findStatements(owner, hasList, null,
-				listValueDescriptor.getListProperty().isInferred(), context);
-		if (stmts.isEmpty()) {
-			return;
-		}
-		Resource subject = extractListNode(stmts, listValueDescriptor.getListProperty());
-		toRemove.addAll(stmts);
+		URI currentProperty = hasList(listValueDescriptor);
 		final URI hasNext = hasNext(listValueDescriptor);
 		final boolean includeInferred = listValueDescriptor.getNextNode().isInferred();
+		Collection<Statement> stmts;
+		Resource subject = owner(listValueDescriptor);
 		do {
-			stmts = connector.findStatements(subject, hasNext, null, includeInferred, context);
+			stmts = connector.findStatements(subject, currentProperty, null, includeInferred,
+					context);
 			if (!stmts.isEmpty()) {
-				subject = extractListNode(stmts, listValueDescriptor.getNextNode());
+				subject = extractListNode(stmts, hasNext);
 				toRemove.addAll(stmts);
 			}
+			currentProperty = hasNext;
 		} while (!stmts.isEmpty());
 		connector.removeStatements(toRemove);
 	}
@@ -114,14 +109,17 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 			it.remove();
 		}
 		assert i > 0;
+		final Collection<Statement> toAdd = new ArrayList<>(listDescriptor.getValues().size() - i);
+		final URI context = context(listDescriptor);
 		while (i < listDescriptor.getValues().size()) {
 			final NamedResource previous = listDescriptor.getValues().get(i - 1);
 			final NamedResource newNode = listDescriptor.getValues().get(i);
 			final Statement stmt = vf.createStatement(sesameUri(previous.getIdentifier()),
 					sesameUri(listDescriptor.getNextNode().getIdentifier()),
-					sesameUri(newNode.getIdentifier()), context(listDescriptor));
-			connector.addStatements(Collections.singleton(stmt));
+					sesameUri(newNode.getIdentifier()), context);
+			toAdd.add(stmt);
 			i++;
 		}
+		connector.addStatements(toAdd);
 	}
 }

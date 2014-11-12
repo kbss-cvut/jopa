@@ -65,8 +65,10 @@ class SimpleListIterator extends AbstractSesameIterator {
 	}
 
 	@Override
-	public Resource nextContent() throws SesameDriverException {
-		return nextNode();
+	public Resource currentContent() throws SesameDriverException {
+		assert current.getObject() instanceof Resource;
+
+		return (Resource) current.getObject();
 	}
 
 	@Override
@@ -90,7 +92,7 @@ class SimpleListIterator extends AbstractSesameIterator {
 				newNodeSesame, context);
 		// From the current subject to the new node
 		toAdd.add(newCurrent);
-		if (!next.isEmpty()) {
+		if (hasNext()) {
 			toRemove.addAll(next);
 			final Statement stmt = next.iterator().next();
 			checkNodeIsResource(stmt);
@@ -116,8 +118,10 @@ class SimpleListIterator extends AbstractSesameIterator {
 	@Override
 	public void remove() throws SesameDriverException {
 		assert current.getObject() instanceof Resource;
-		connector.removeStatements(Collections.singleton(current));
+		final Collection<Statement> toRemove = new ArrayList<>(next.size() + 1);
+		toRemove.add(current);
 		if (hasNext()) {
+			toRemove.addAll(next);
 			final Statement stmt = next.iterator().next();
 			checkNodeIsResource(stmt);
 			final Resource nextNode = (Resource) stmt.getObject();
@@ -132,5 +136,6 @@ class SimpleListIterator extends AbstractSesameIterator {
 		} else {
 			this.next = Collections.emptyList();
 		}
+		connector.removeStatements(toRemove);
 	}
 }

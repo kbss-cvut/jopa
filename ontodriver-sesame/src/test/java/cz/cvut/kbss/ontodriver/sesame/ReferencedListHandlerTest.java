@@ -177,7 +177,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 						Collections.singleton(node));
 			}
 			stmts.add(node);
-			final Statement content = vf.createStatement(owner, nodeContentProperty,
+			final Statement content = vf.createStatement(itemUri, nodeContentProperty,
 					vf.createURI(values.get(i).toString()));
 			when(
 					connector.findStatements(eq(itemUri), eq(nodeContentProperty),
@@ -303,8 +303,10 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 		final List<Statement> oldList = initStatementsForList(initListNodes(refList), refList);
 
 		handler.updateList(descriptor);
-		verify(connector).removeStatements(oldList);
+		verify(connector).removeStatements(any(Collection.class));
 		verify(connector, never()).addStatements(any(Collection.class));
+		assertEquals(oldList.size(), removed.size());
+		assertTrue(removed.containsAll(oldList));
 	}
 
 	private static ReferencedListValueDescriptor initValues(int count) {
@@ -358,61 +360,11 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 		handler.updateList(descriptor);
 		verify(connector, never()).removeStatements(any(Collection.class));
 		verify(connector, atLeast(1)).addStatements(any(Collection.class));
-		assertEquals(tempDesc.getValues().size(), added.size());
+		assertEquals(tempDesc.getValues().size() * 2, added.size());
 		for (Statement stmt : added) {
-			final java.net.URI u = java.net.URI.create(stmt.getObject().stringValue());
-			assertTrue(tempDesc.getValues().contains(NamedResource.create(u)));
-		}
-	}
-
-	@Test
-	public void updateListRemovesSeveralElements() throws Exception {
-		final ReferencedListValueDescriptor descriptor = initValues(0);
-		final List<java.net.URI> refList = initList();
-		initStatementsForList(initListNodes(refList), refList);
-		// Retain every even element, others will be removed
-		int i = 0;
-		final List<java.net.URI> toRemove = new ArrayList<>();
-		for (java.net.URI item : refList) {
-			if (i % 2 != 0) {
-				toRemove.add(item);
-			} else {
-				descriptor.addValue(NamedResource.create(item));
-			}
-			i++;
-		}
-
-		handler.updateList(descriptor);
-		for (java.net.URI uri : toRemove) {
-			boolean foundAsObject = false;
-			boolean foundAsSubject = false;
-			for (Statement rem : removed) {
-				if (rem.getObject().stringValue().equals(uri.toString())) {
-					foundAsObject = true;
-				} else if (rem.getSubject().stringValue().equals(uri.toString())) {
-					foundAsSubject = true;
-				}
-			}
-			assertTrue(foundAsObject);
-			assertTrue(foundAsSubject);
-			for (Statement add : added) {
-				if (add.getObject().stringValue().equals(uri.toString())) {
-					fail("Found uri which shouln't have been added. " + uri);
-				}
-			}
-			// Make sure that all the retained nodes were added
-			for (int j = 1; j < descriptor.getValues().size(); j++) {
-				final java.net.URI subject = descriptor.getValues().get(j - 1).getIdentifier();
-				final java.net.URI object = descriptor.getValues().get(j).getIdentifier();
-				boolean found = false;
-				for (Statement add : added) {
-					if (add.getSubject().stringValue().equals(subject.toString())
-							&& add.getObject().stringValue().equals(object.toString())) {
-						found = true;
-						break;
-					}
-				}
-				assertTrue(found);
+			if (stmt.getPredicate().equals(nodeContentProperty)) {
+				final java.net.URI u = java.net.URI.create(stmt.getObject().stringValue());
+				assertTrue(tempDesc.getValues().contains(NamedResource.create(u)));
 			}
 		}
 	}

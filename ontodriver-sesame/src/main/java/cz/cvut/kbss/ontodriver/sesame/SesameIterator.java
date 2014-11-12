@@ -12,7 +12,7 @@ interface SesameIterator {
 
 	Resource nextNode() throws SesameDriverException;
 
-	Resource nextContent() throws SesameDriverException;
+	Resource currentContent() throws SesameDriverException;
 
 	Axiom<java.net.URI> nextAxiom() throws SesameDriverException;
 

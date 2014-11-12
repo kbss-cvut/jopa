@@ -17,7 +17,6 @@ import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 /**
@@ -91,7 +90,7 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 
 	abstract void mergeList(V listDescriptor) throws SesameDriverException;
 
-	protected Resource extractListNode(Collection<Statement> stmts, Assertion nodeAssertion)
+	protected Resource extractListNode(Collection<Statement> stmts, URI nodeAssertion)
 			throws SesameDriverException {
 		if (stmts.size() > 1) {
 			throw new IntegrityConstraintViolatedException(
