@@ -39,7 +39,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private Map<Object, Object> newObjectsCloneToOriginal;
 	private Map<Object, Object> newObjectsOriginalToClone;
 	private Map<IRI, Object> newObjectsKeyToClone;
-	private final RepositoryMap repoMap;
+	private RepositoryMap repoMap;
 
 	private boolean hasChanges;
 	private boolean hasNew;
@@ -138,9 +138,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * This method calculates the changes that were to the registered entities
 	 * and adds these changes into the given change set for future commit to the
 	 * ontology.
-	 * 
-	 * @param changeSet
-	 * @param registeredObjects
 	 */
 	private void calculateChanges() {
 		final UnitOfWorkChangeSet changeSet = getUowChangeSet();
@@ -163,17 +160,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 *            UnitOfWorkChangeSet
 	 */
 	private void calculateNewObjects(UnitOfWorkChangeSet changeSet) {
-		Iterator<?> it = getNewObjectsCloneToOriginal().keySet().iterator();
-		while (it.hasNext()) {
-			Object clone = it.next();
+		for (Object clone : getNewObjectsCloneToOriginal().keySet()) {
 			final Descriptor c = getDescriptor(clone);
 			Object original = getNewObjectsCloneToOriginal().get(clone);
 			if (original == null) {
 				original = this.cloneBuilder.buildClone(clone, c);
 			}
-			if (original == null || clone == null) {
+			if (original == null) {
 				throw new OWLPersistenceException(
-						"Error while calculating changes for new objects. Original or clone not found.");
+						"Error while calculating changes for new objects. Original not found.");
 			}
 			getNewObjectsCloneToOriginal().put(clone, original);
 			getNewObjectsOriginalToClone().put(original, clone);
@@ -216,9 +211,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 					changeSet.addObjectChangeSet(chSet);
 				}
 			}
-		} catch (IllegalAccessException e) {
-			throw new OWLPersistenceException(e);
-		} catch (IllegalArgumentException e) {
+		} catch (IllegalAccessException | IllegalArgumentException e) {
 			throw new OWLPersistenceException(e);
 		}
 	}
@@ -295,6 +288,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		this.hasNew = false;
 		this.inCommit = false;
 		this.cloneBuilder.reset();
+		this.repoMap = new RepositoryMap();
+		repoMap.initDescriptors();
 		this.uowChangeSet = null;
 		if (shouldClearCacheAfterCommit) {
 			cacheManager.evictAll();
@@ -318,7 +313,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * @return Map<Object, Object>
 	 */
 	private Map<Object, Object> createMap() {
-		return new IdentityHashMap<Object, Object>();
+		return new IdentityHashMap<>();
 	}
 
 	/**
@@ -326,7 +321,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * 
 	 * Note that since no repository is specified we can only determine if the
 	 * entity is managed or removed. Therefore if the case is different this
-	 * method returns {@value State#NEW}.
+	 * method returns State#NOT_MANAGED.
 	 * 
 	 * @param entity
 	 *            The entity to check
@@ -418,9 +413,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * @return The clone or null, if there is none.
 	 */
 	Object getCloneForOriginal(Object original) {
-		Iterator<Entry<Object, Object>> it = cloneToOriginals.entrySet().iterator();
-		while (it.hasNext()) {
-			Entry<Object, Object> entry = it.next();
+		for (Entry<Object, Object> entry : cloneToOriginals.entrySet()) {
 			// We use IdentityMap, so we can use ==
 			if (entry.getValue() == original) {
 				return entry.getKey();
@@ -692,9 +685,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			if (anyChanges) {
 				mergeManager.mergeChangesOnObject(original, chSet);
 			}
-		} catch (IllegalAccessException e) {
-			throw new OWLPersistenceException(e);
-		} catch (IllegalArgumentException e) {
+		} catch (IllegalAccessException | IllegalArgumentException e) {
 			throw new OWLPersistenceException(e);
 		}
 	}
@@ -712,8 +703,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * 
 	 * @param entity
 	 *            The entity to register
-	 * @param context
-	 *            URI of context. Optional
+	 * @param descriptor
+	 *            Entity descriptor, specifying optionally contexts into which the entity will be persisted
 	 */
 	private void registerNewObjectInternal(Object entity, Descriptor descriptor) {
 		assert entity != null;
@@ -732,46 +723,46 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			// It is present now
 			id = getIdentifier(entity);
 		}
-		Object clone = entity;
 		// Original is null until commit
 		Object original = null;
-		cloneMapping.put(clone, clone);
-		getNewObjectsCloneToOriginal().put(clone, original);
-		registerEntityWithPersistenceContext(clone, this);
+		cloneMapping.put(entity, entity);
+		getNewObjectsCloneToOriginal().put(entity, original);
+		registerEntityWithPersistenceContext(entity, this);
 		registerEntityWithOntologyContext(descriptor, entity);
-		getNewObjectsKeyToClone().put(id, clone);
-		checkForCollections(clone);
+		getNewObjectsKeyToClone().put(id, entity);
+		checkForCollections(entity);
 		this.hasNew = true;
 	}
 
 	/**
 	 * Remove the specified entity from the ontology.
 	 * 
-	 * @param object
-	 *            Clone of the object to delete
+	 * @param entity
+	 *            Managed entity to delete
 	 */
-	public void removeObject(Object object) {
-		if (object == null) {
+	public void removeObject(Object entity) {
+		if (entity == null) {
 			return;
 		}
-		if (!isObjectManaged(object)) {
+		if (!isObjectManaged(entity)) {
 			throw new IllegalArgumentException(
 					"Cannot remove entity which is not managed in the current persistence context.");
 		}
-		if (getDeletedObjects().containsKey(object)) {
+		if (getDeletedObjects().containsKey(entity)) {
 			return;
 		}
-		final Object primaryKey = getIdentifier(object);
-		final Descriptor repo = getDescriptor(object);
+		final IRI primaryKey = getIdentifier(entity);
+		final Descriptor descriptor = getDescriptor(entity);
 
-		if (hasNew() && getNewObjectsCloneToOriginal().containsKey(object)) {
-			unregisterObject(object);
+		if (hasNew() && getNewObjectsCloneToOriginal().containsKey(entity)) {
+			unregisterObject(entity);
 			getNewObjectsKeyToClone().remove(primaryKey);
 		} else {
-			getDeletedObjects().put(object, object);
+			getDeletedObjects().put(entity, entity);
 			this.hasDeleted = true;
 		}
-		storage.remove(primaryKey, object.getClass(), repo);
+		unregisterEntityFromOntologyContext(entity);
+		storage.remove(primaryKey, entity.getClass(), descriptor);
 	}
 
 	/**
@@ -796,6 +787,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 		removeIndirectCollections(object);
 		deregisterEntityFromPersistenceContext(object, this);
+		unregisterEntityFromOntologyContext(object);
 	}
 
 	public boolean shouldReleaseAfterCommit() {
@@ -826,10 +818,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * {@inheritDoc}
 	 */
 	public boolean isInTransaction() {
-		if (entityManager == null) {
-			return false;
-		}
-		return entityManager.getTransaction().isActive();
+		return entityManager != null && entityManager.getTransaction().isActive();
 	}
 
 	/**
@@ -850,10 +839,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 *         otherwise
 	 */
 	public boolean isManagedType(Class<?> cls) {
-		if (cls == null) {
-			return false;
-		}
-		return getManagedTypes().contains(cls);
+		return cls != null && getManagedTypes().contains(cls);
 	}
 
 	@Override
@@ -878,6 +864,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			if (entityOriginal != null) {
 				field.set(entityOriginal, orig);
 			}
+			// TODO The problem is that we are working with the entity descriptor instead of the attribute descriptors
 			final Object clone = cloneLoadedFieldValue(entity, field, descriptor, orig);
 			field.set(entity, clone);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
@@ -991,8 +978,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 *            The field to set
 	 * @throws IllegalArgumentException
 	 *             Reflection
-	 * @throws IllegalAccessException
-	 *             Reflection
 	 */
 	public void setIndirectCollectionIfPresent(Object entity, Field field) {
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
@@ -1003,12 +988,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 		try {
 			Object value = field.get(entity);
-			Object indirectCollection = null;
 			if (value == null || value instanceof IndirectCollection) {
 				return;
 			}
 			if (value instanceof Collection || value instanceof Map) {
-				indirectCollection = ((CloneBuilderImpl) cloneBuilder).createIndirectCollection(
+				final Object indirectCollection = ((CloneBuilderImpl) cloneBuilder).createIndirectCollection(
 						value, entity, field);
 				field.set(entity, indirectCollection);
 			}
@@ -1053,10 +1037,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 * If the cache does not contain any object with the specified primary key
 	 * and class, null is returned. This method is just a delegate for the cache
 	 * methods, it handles locks.
-	 * 
-	 * @param contextUri
+	 *
 	 * @param cls
 	 * @param primaryKey
+	 * @param context
 	 * @return Cached object or null
 	 */
 	private <T> T getObjectFromCache(Class<T> cls, Object primaryKey, URI context) {
@@ -1072,6 +1056,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private IRI getIdentifier(Object entity) {
 		assert entity != null;
 		return EntityPropertiesUtils.getPrimaryKey(entity, getMetamodel());
+	}
+
+	private void unregisterEntityFromOntologyContext(Object entity) {
+		assert entity != null;
+
+		final Descriptor descriptor = repoMap.getEntityDescriptor(entity);
+		if (descriptor == null) {
+			throw new OWLPersistenceException("Fatal error, unable to find descriptor for entity " + entity);
+		}
+
+		repoMap.remove(descriptor, entity);
+		repoMap.removeEntityToRepository(entity);
 	}
 
 	private void registerEntityWithOntologyContext(Descriptor repository, Object entity) {

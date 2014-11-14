@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,6 +29,8 @@ public class SesameDriverTest {
 
 	private static OntologyStorageProperties storageProperties;
 	private static Map<String, String> properties;
+
+	private ConnectorFactory originalFactory;
 
 	@Mock
 	private ConnectorFactory connectorFactoryMock;
@@ -53,9 +56,17 @@ public class SesameDriverTest {
 				.thenReturn(connectorMock);
 		final Field instanceField = ConnectorFactory.class.getDeclaredField("instance");
 		instanceField.setAccessible(true);
+		this.originalFactory = (ConnectorFactory) instanceField.get(null);
 		instanceField.set(null, connectorFactoryMock);
 
 		this.driver = new SesameDriver(storageProperties, properties);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		final Field instanceField = ConnectorFactory.class.getDeclaredField("instance");
+		instanceField.setAccessible(true);
+		instanceField.set(null, originalFactory);
 	}
 
 	@Test
