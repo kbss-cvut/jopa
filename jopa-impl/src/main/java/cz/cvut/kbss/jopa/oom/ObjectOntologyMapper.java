@@ -38,9 +38,7 @@ public interface ObjectOntologyMapper {
 
 	/**
 	 * Loads entity field value and sets it on the specified entity. </p>
-	 * 
-	 * @param primaryKey
-	 *            Entity primary key, i. e. individual URI
+	 *
 	 * @param entity
 	 *            The entity on which the field value will be set
 	 * @param field

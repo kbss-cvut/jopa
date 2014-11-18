@@ -761,7 +761,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 			getDeletedObjects().put(entity, entity);
 			this.hasDeleted = true;
 		}
-		unregisterEntityFromOntologyContext(entity);
+//		unregisterEntityFromOntologyContext(entity);
 		storage.remove(primaryKey, entity.getClass(), descriptor);
 	}
 
@@ -848,45 +848,51 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
 
 		try {
-			field.setAccessible(true);
+			if (!field.isAccessible()) {
+				field.setAccessible(true);
+			}
 			if (field.get(entity) != null) {
 				return;
 			}
-			final Descriptor descriptor = getDescriptor(entity);
-			if (descriptor == null) {
+			final Descriptor entityDescriptor = getDescriptor(entity);
+			if (entityDescriptor == null) {
 				throw new OWLPersistenceException(
 						"Unable to find repository identifier for entity " + entity
 								+ ". Is it managed by this UoW?");
 			}
-			storage.loadFieldValue(entity, field, descriptor);
+			storage.loadFieldValue(entity, field, entityDescriptor);
 			final Object orig = field.get(entity);
 			final Object entityOriginal = getOriginal(entity);
 			if (entityOriginal != null) {
 				field.set(entityOriginal, orig);
 			}
-			// TODO The problem is that we are working with the entity descriptor instead of the attribute descriptors
-			final Object clone = cloneLoadedFieldValue(entity, field, descriptor, orig);
+			final Descriptor fieldDescriptor = getFieldDescriptor(entity, field, entityDescriptor);
+			final Object clone = cloneLoadedFieldValue(entity, field, fieldDescriptor, orig);
 			field.set(entity, clone);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new OWLPersistenceException(e);
 		}
 	}
 
-	private <T> Object cloneLoadedFieldValue(T entity, Field field, final Descriptor descriptor,
+	private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
+		final EntityType<?> et = getMetamodel().entity(entity.getClass());
+		final FieldSpecification<?, ?> fieldSpec = et
+				.getFieldSpecification(field.getName());
+		return entityDescriptor.getAttributeDescriptor(fieldSpec);
+	}
+
+	private <T> Object cloneLoadedFieldValue(T entity, Field field, final Descriptor fieldDescriptor,
 			final Object fieldValueOrig) {
 		Object clone;
 		if (fieldValueOrig == null) {
 			clone = null;
 		} else {
 			if (isManagedType(field.getType())) {
-				clone = registerExistingObject(fieldValueOrig, descriptor);
-				final EntityType<?> et = getMetamodel().entity(entity.getClass());
-				final FieldSpecification<?, ?> fieldSpec = et
-						.getFieldSpecification(field.getName());
-				final URI fieldContext = descriptor.getAttributeDescriptor(fieldSpec).getContext();
+				clone = registerExistingObject(fieldValueOrig, fieldDescriptor);
+				final URI fieldContext = fieldDescriptor.getContext();
 				putObjectIntoCache(getIdentifier(clone), fieldValueOrig, fieldContext);
 			} else {
-				clone = cloneBuilder.buildClone(entity, field, fieldValueOrig, descriptor);
+				clone = cloneBuilder.buildClone(entity, field, fieldValueOrig, fieldDescriptor);
 			}
 		}
 		return clone;

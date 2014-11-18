@@ -64,7 +64,7 @@ public aspect BeanListenerAspect {
 	}
 
 	after() returning : setter() {
-		// Persist changes done druing transaction
+		// Persist changes done during transaction
 		final Object entity = thisJoinPoint.getTarget();
 		Field f;
 		try {

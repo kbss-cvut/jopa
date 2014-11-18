@@ -197,11 +197,10 @@ public class CloneBuilderImpl implements CloneBuilder {
 	 * 
 	 * @param array
 	 *            The array to clone.
-	 * @param URI
-	 *            of the ontology context the original belongs to
+	 * @param descriptor Context descriptor
 	 * @return Deep copy of the specified array.
 	 */
-	Object[] cloneArray(final Object array, Descriptor repository) {
+	Object[] cloneArray(final Object array, Descriptor descriptor) {
 		if (array == null) {
 			return null;
 		}
@@ -227,7 +226,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 		} else {
 			for (int i = 0; i < clonedArr.length; i++) {
 				clonedArr[i] = originalArr[i] == null ? null : buildClone(originalArr[i],
-						repository);
+						descriptor);
 			}
 		}
 		return clonedArr;

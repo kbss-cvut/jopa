@@ -59,7 +59,7 @@ abstract class AbstractInstanceBuilder {
 	 * 
 	 * @param field
 	 *            The field we are merging
-	 * @param The
+	 * @param target
 	 *            target object on which the values are merged
 	 * @param originalValue
 	 *            The original value
