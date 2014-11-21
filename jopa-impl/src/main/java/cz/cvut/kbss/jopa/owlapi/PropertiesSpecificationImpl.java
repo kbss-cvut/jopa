@@ -64,4 +64,15 @@ public class PropertiesSpecificationImpl<X, Y> implements
 		return inferred;
 	}
 
+	@Override
+	public boolean includeExplicit() {
+		// TODO
+		return true;
+	}
+
+	@Override
+	public boolean isReadOnly() {
+		// TODO
+		return false;
+	}
 }

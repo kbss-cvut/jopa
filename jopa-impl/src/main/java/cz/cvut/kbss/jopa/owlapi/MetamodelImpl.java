@@ -34,17 +34,7 @@ import java.util.logging.Logger;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.annotations.CascadeType;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
-import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
-import cz.cvut.kbss.jopa.model.annotations.Sequence;
-import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.EmbeddableType;
@@ -145,6 +135,9 @@ public class MetamodelImpl implements Metamodel {
 				cxx = field.getType();
 			}
 			field.setAccessible(true);
+			final Inferred inferred = field.getAnnotation(Inferred.class);
+			final boolean isInferred = inferred != null;
+			final boolean includeExplicit = inferred == null || inferred.includeExplicit();
 
 			Types tt = field.getAnnotation(Types.class);
 			if (tt != null) {
@@ -153,7 +146,7 @@ public class MetamodelImpl implements Metamodel {
 							"The Types element must be a set of Strings.");
 				}
 				c2.addDirectTypes(new TypesSpecificationImpl(c2,
-						tt.fetchType(), field, cxx, tt.inferred()));
+						tt.fetchType(), field, cxx, isInferred));
 				continue;
 			}
 
@@ -165,10 +158,7 @@ public class MetamodelImpl implements Metamodel {
 							"The Types element must be a Map<String,Set<String>>.");
 				}
 				c2.addOtherProperties(new PropertiesSpecificationImpl(c2,
-						properties.fetchType(), field, cxx, true)); // only
-																	// inferred
-				// @Properties annotation is supported to preserve Domain/Range
-				// constraints
+						properties.fetchType(), field, cxx, isInferred));
 				continue;
 			}
 
@@ -184,7 +174,6 @@ public class MetamodelImpl implements Metamodel {
 			CascadeType[] cascadeTypes = new CascadeType[] {};
 			// TODO Figure out some strategy for blobs etc., they can't be loaded eagerly
 			FetchType fetchType = FetchType.EAGER;
-			boolean inferred = false;
 
 			ParticipationConstraint[] ics = null;
 			ParticipationConstraints cons = field
@@ -209,7 +198,6 @@ public class MetamodelImpl implements Metamodel {
 				fetchType = oop.fetch();
 				processOWLClass(cxx);
 				type = typeMap.get(cxx);
-				inferred = oop.inferred();
 			} else if (odp != null) {
 				if (LOG.isLoggable(Level.FINE)) {
 					LOG.fine("     Data property: " + odp);
@@ -217,7 +205,6 @@ public class MetamodelImpl implements Metamodel {
 				t = PersistentAttributeType.DATA;
 				iri = IRI.create(odp.iri());
 				type = BasicTypeImpl.get(cxx);
-				inferred = odp.inferred();
 			} else if (oap != null) {
 				if (LOG.isLoggable(Level.FINE)) {
 					LOG.fine("     Annotation property: " + oap);
@@ -225,10 +212,9 @@ public class MetamodelImpl implements Metamodel {
 				t = PersistentAttributeType.ANNOTATION;
 				iri = IRI.create(oap.iri());
 				type = BasicTypeImpl.get(cxx);
-				inferred = oap.inferred();
 			}
 
-			if (inferred) {
+			if (isInferred) {
 				inferredClasses.add(cls);
 			}
 
@@ -248,20 +234,20 @@ public class MetamodelImpl implements Metamodel {
 							IRI.create(os.ClassOWLListIRI()), IRI.create(os
 									.ObjectPropertyHasNextIRI()), IRI.create(os
 									.ObjectPropertyHasContentsIRI()),
-							os.type(), fetchType, inferred, ics);
+							os.type(), fetchType, isInferred, ics);
 				} else if (field.getType().isAssignableFrom(Set.class)) {
 					if (oop != null) {
 						processOWLClass(cxx);
 					}
 					a = new SetAttributeImpl(c2, field.getName(), iri,
 							Set.class, type, field, t, cascadeTypes, fetchType,
-							inferred, ics);
+							isInferred, ics);
 				} else if (field.getType().isAssignableFrom(Map.class)) {
 					throw new IllegalArgumentException("NOT YET SUPPORTED");
 				} else {
-					a = new SingularAttributeImpl(c2, false, field.getName(),
-							iri, type, field, t, cascadeTypes, fetchType,
-							inferred, ics);
+					a = SingularAttributeImpl.name(field.getName()).identifier(false).declaringType(c2).type(type)
+							.iri(iri).field(field).cascadeTypes(cascadeTypes).attributeType(t).fetchType(fetchType).inferred(isInferred)
+							.includeExplicit(includeExplicit).constraints(ics).build();
 				}
 				c2.addDeclaredAttribute(field.getName(), a);
 

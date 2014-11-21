@@ -36,4 +36,7 @@ public interface FieldSpecification<X, E> {
 
 	public boolean isInferred();
 
+	public boolean includeExplicit();
+
+	public  boolean isReadOnly();
 }

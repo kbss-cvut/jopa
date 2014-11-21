@@ -34,11 +34,11 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
 
 	private final Type<T> type;
 
-	private final Field m;
+	private final Field field;
 
-	private final ManagedType<X> dt;
+	private final ManagedType<X> declaringType;
 
-	private final PersistentAttributeType pat;
+	private final PersistentAttributeType attributeType;
 
 	private final IRI iri;
 
@@ -46,128 +46,229 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
 
 	private final FetchType fetchType;
 
-	private boolean inferred;
+	private final boolean inferred;
+
+	private boolean includeExplicit;
+
+	private boolean readOnly;
 
 	private ParticipationConstraint[] constraints;
 
-	SingularAttributeImpl(ManagedType<X> declaringType, boolean id,
-			String name, IRI iri, Type<T> type, Field m,
-			final PersistentAttributeType pat,
-			final CascadeType[] cascadeTypes, final FetchType fetchType,
-			final boolean inferred, final ParticipationConstraint[] constraints) {
-		this.id = id;
-		this.name = name;
-		this.type = type;
-		this.pat = pat;
-		this.m = m;
-		this.dt = declaringType;
-		this.iri = iri;
-		this.cascadeTypes = cascadeTypes;
-		this.fetchType = fetchType;
-		this.inferred = inferred;
-		this.constraints = constraints;
+	private SingularAttributeImpl(SingularAttributeBuilder builder) {
+		this.id = builder.id;
+		this.name = builder.name;
+		this.type = builder.type;
+		this.field = builder.field;
+		this.declaringType = builder.declaringType;
+		this.attributeType = builder.attributeType;
+		this.iri = builder.iri;
+		this.cascadeTypes = builder.cascadeTypes;
+		this.fetchType = builder.fetchType;
+		this.inferred = builder.inferred;
+		this.includeExplicit = builder.includeExplicit;
+		this.readOnly = builder.readOnly;
+		this.constraints = builder.constraints;
 	}
 
-	
+	@Override
 	public Type<T> getType() {
 		return type;
 	}
 
-	
+	@Override
 	public boolean isId() {
 		return id;
 	}
 
-	
+	@Override
 	public boolean isOptional() {
 		throw new UnsupportedOperationException();
 	}
 
-	
+	@Override
 	public boolean isVersion() {
 		throw new UnsupportedOperationException();
 	}
 
-	
+	@Override
 	public ManagedType<X> getDeclaringType() {
-		return dt;
+		return declaringType;
 	}
 
-	
+	@Override
 	public Member getJavaMember() {
-		return m;
+		return field;
 	}
 
-	
+	@Override
 	public Class<T> getJavaType() {
 		return type.getJavaType();
 	}
 
-	
+	@Override
 	public String getName() {
 		return name;
 	}
 
-	
-	public cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType getPersistentAttributeType() {
-		return pat;
+	@Override
+	public PersistentAttributeType getPersistentAttributeType() {
+		return attributeType;
 	}
 
-	
+	@Override
 	public boolean isAssociation() {
 		return getPersistentAttributeType().equals(
 				PersistentAttributeType.OBJECT);
 	}
 
-	
+	@Override
 	public boolean isCollection() {
 		return false;
 	}
 
-	
+	@Override
 	public Class<T> getBindableJavaType() {
 		return type.getJavaType();
 	}
 
-	
+	@Override
 	public cz.cvut.kbss.jopa.model.metamodel.Bindable.BindableType getBindableType() {
 		return BindableType.SINGULAR_ATTRIBUTE;
 	}
 
-	
+	@Override
 	public Field getJavaField() {
-		return m;
+		return field;
 	}
 
-	
+	@Override
 	public IRI getIRI() {
 		return iri;
 	}
 
-	
+	@Override
 	public CascadeType[] getCascadeTypes() {
 		return cascadeTypes;
 	}
 
-	
+
+	@Override
 	public FetchType getFetchType() {
 		return fetchType;
 	}
 
-	
+
+	@Override
 	public String toString() {
 		return "SingularAttribute[" + name + "]";
 	}
 
-	public void setInferred(boolean inferred) {
-		this.inferred = inferred;
-	}
-
+	@Override
 	public boolean isInferred() {
 		return inferred;
 	}
 
+	@Override
 	public ParticipationConstraint[] getConstraints() {
 		return constraints;
+	}
+
+	@Override
+	public boolean includeExplicit() {
+		return includeExplicit;
+	}
+
+	@Override
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public static SingularAttributeBuilder name(String name) {
+		return new SingularAttributeBuilder().name(name);
+	}
+
+	public static final class SingularAttributeBuilder<X, T> {
+		private boolean id;
+		private String name;
+		private Type<T> type;
+		private Field field;
+		private ManagedType<X> declaringType;
+		private PersistentAttributeType attributeType;
+		private IRI iri;
+		private CascadeType[] cascadeTypes;
+		private FetchType fetchType;
+		private boolean inferred;
+		private boolean includeExplicit;
+		private boolean readOnly;
+		private ParticipationConstraint[] constraints;
+
+		public SingularAttributeBuilder identifier(boolean isId) {
+			this.id = isId;
+			return this;
+		}
+
+		public SingularAttributeBuilder name(String name) {
+			this.name = name;
+			return this;
+		}
+
+		public SingularAttributeBuilder type(Type<T> type) {
+			this.type = type;
+			return this;
+		}
+
+		public SingularAttributeBuilder field(Field field) {
+			this.field = field;
+			return this;
+		}
+
+		public SingularAttributeBuilder declaringType(ManagedType<X> declaringType) {
+			this.declaringType = declaringType;
+			return this;
+		}
+
+		public SingularAttributeBuilder attributeType(PersistentAttributeType attributeType) {
+			this.attributeType = attributeType;
+			return this;
+		}
+
+		public SingularAttributeBuilder iri(IRI iri) {
+			this.iri = iri;
+			return this;
+		}
+
+		public SingularAttributeBuilder<X, T> cascadeTypes(CascadeType[] cascadeTypes) {
+			this.cascadeTypes = cascadeTypes;
+			return this;
+		}
+
+		public SingularAttributeBuilder<X, T> fetchType(FetchType fetchType) {
+			this.fetchType = fetchType;
+			return this;
+		}
+
+		public SingularAttributeBuilder<X, T> inferred(boolean inferred) {
+			this.inferred = inferred;
+			return this;
+		}
+
+		public SingularAttributeBuilder<X, T> includeExplicit(boolean includeExplicit) {
+			this.includeExplicit = includeExplicit;
+			return this;
+		}
+
+		public SingularAttributeBuilder<X, T> readOnly(boolean readOnly) {
+			this.readOnly = readOnly;
+			return this;
+		}
+
+		public SingularAttributeBuilder<X, T> constraints(ParticipationConstraint[] constraints) {
+			this.constraints = constraints;
+			return this;
+		}
+
+		public SingularAttribute<X, T> build() {
+			return new SingularAttributeImpl<>(this);
+		}
 	}
 }

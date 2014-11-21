@@ -13,6 +13,7 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
+import cz.cvut.kbss.jopa.model.annotations.Inferred;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -86,7 +87,7 @@ public class SimpleSetPropertyStrategyTest {
 		final OWLObjectProperty op = OWLClassJ.getOwlClassAField().getAnnotation(
 				OWLObjectProperty.class);
 		final Assertion ass = Assertion.createObjectPropertyAssertion(URI.create(op.iri()),
-				op.inferred());
+				OWLClassJ.getOwlClassAField().getAnnotation(Inferred.class) != null);
 		assertEquals(j.getOwlClassA().size(), res.getAssertionValues(ass).size());
 		for (OWLClassA aa : j.getOwlClassA()) {
 			assertTrue(res.getAssertionValues(ass).contains(new Value<URI>(aa.getUri())));
@@ -117,7 +118,7 @@ public class SimpleSetPropertyStrategyTest {
 		final OWLObjectProperty op = OWLClassJ.getOwlClassAField().getAnnotation(
 				OWLObjectProperty.class);
 		final Assertion ass = Assertion.createObjectPropertyAssertion(URI.create(op.iri()),
-				op.inferred());
+				OWLClassJ.getOwlClassAField().getAnnotation(Inferred.class) != null);
 		assertEquals(1, res.getAssertionValues(ass).size());
 		assertSame(Value.nullValue(), res.getAssertionValues(ass).get(0));
 	}

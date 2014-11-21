@@ -21,7 +21,7 @@ import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 public class LegacyVsNewStorageAccess {
 
 	private static final int SIZE = 10000;
-	private static final boolean legacy = true;
+	private static final boolean legacy = false;
 	private static final StorageConfig storage = initStorage();
 	private static final Map<String, String> properties = initProperties();
 

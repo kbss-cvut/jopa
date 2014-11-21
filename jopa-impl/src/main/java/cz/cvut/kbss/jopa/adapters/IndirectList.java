@@ -173,7 +173,13 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 
 	@Override
 	public boolean equals(Object o) {
-		return internalList.equals(o);
+		if (o instanceof List) {
+			if (o instanceof IndirectList) {
+				return internalList.equals(((IndirectList ) o).internalList);
+			}
+			return internalList.equals(o);
+		}
+		return false;
 	}
 
 	@Override

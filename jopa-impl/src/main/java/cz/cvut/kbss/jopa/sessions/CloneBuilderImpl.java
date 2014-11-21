@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.jopa.model.annotations.Inferred;
 import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
@@ -338,22 +339,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	}
 
 	public static synchronized boolean isFieldInferred(final Field f) {
-		Annotation[] annots = f.getAnnotations();
-		try {
-			for (Annotation a : annots) {
-				Method m = a.getClass().getDeclaredMethod("inferred", (Class<?>[]) null);
-				return (Boolean) m.invoke(a, (Object[]) null);
-			}
-		} catch (NoSuchMethodException e) {
-			return false;
-		} catch (IllegalAccessException e) {
-			return false;
-		} catch (IllegalArgumentException e) {
-			return false;
-		} catch (InvocationTargetException e) {
-			return false;
-		}
-		return false;
+		return f.getAnnotation(Inferred.class) != null;
 	}
 
 	private static Set<Class<?>> getWrapperTypes() {

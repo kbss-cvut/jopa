@@ -166,6 +166,18 @@ public class PluralAttributeImpl<X, C, E> implements PluralAttribute<X, C, E> {
 		return inferred;
 	}
 
+	@Override
+	public boolean includeExplicit() {
+		// TODO
+		return true;
+	}
+
+	@Override
+	public boolean isReadOnly() {
+		// TODO
+		return false;
+	}
+
 	public ParticipationConstraint[] getConstraints() {
 		return constraints;
 	}

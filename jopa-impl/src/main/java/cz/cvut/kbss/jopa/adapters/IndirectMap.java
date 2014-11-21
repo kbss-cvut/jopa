@@ -106,7 +106,13 @@ public class IndirectMap<K, V> extends IndirectCollection<Map<K, V>> implements 
 
 	@Override
 	public boolean equals(Object o) {
-		return internalMap.equals(o);
+		if (o instanceof Map) {
+			if (o instanceof IndirectMap) {
+				return internalMap.equals(((IndirectMap) o).internalMap);
+			}
+			return internalMap.equals(o);
+		}
+		return false;
 	}
 
 	@Override

@@ -130,7 +130,13 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
 
 	@Override
 	public boolean equals(Object o) {
-		return internalSet.equals(o);
+		if (o instanceof Set) {
+			if (o instanceof IndirectSet) {
+				return internalSet.equals(((IndirectSet) o).internalSet);
+			}
+			return internalSet.equals(o);
+		}
+		return false;
 	}
 
 	@Override
