@@ -35,12 +35,8 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.*;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
-import cz.cvut.kbss.jopa.model.metamodel.EmbeddableType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
 public class MetamodelImpl implements Metamodel {
@@ -96,6 +92,8 @@ public class MetamodelImpl implements Metamodel {
 			.asList(new Class<?>[] { String.class, URI.class });
 
 	<X> void processOWLClass(final Class<X> cls) {
+		// TODO Refactor this method
+		// TODO Create tests for MetamodelImpl, especially this method
 		if (typeMap.containsKey(cls)) {
 			return;
 		}
@@ -229,24 +227,23 @@ public class MetamodelImpl implements Metamodel {
 								"Expected OWLSequence annotation.");
 					}
 
-					a = new ListAttributeImpl(c2, field.getName(), iri,
-							List.class, type, field, t, cascadeTypes,
-							IRI.create(os.ClassOWLListIRI()), IRI.create(os
-									.ObjectPropertyHasNextIRI()), IRI.create(os
-									.ObjectPropertyHasContentsIRI()),
-							os.type(), fetchType, isInferred, ics);
+					a = ListAttributeImpl.iri(iri).declaringType(c2).field(field).elementType(type).attributeType(t)
+							.cascadeTypes(cascadeTypes).fetchType(fetchType).inferred(isInferred).includeExplicit(includeExplicit)
+							.owlListClass(IRI.create(os.ClassOWLListIRI())).hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
+							.hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI())).sequenceType(os.type())
+							.participationConstraints(ics).build();
 				} else if (field.getType().isAssignableFrom(Set.class)) {
 					if (oop != null) {
 						processOWLClass(cxx);
 					}
-					a = new SetAttributeImpl(c2, field.getName(), iri,
-							Set.class, type, field, t, cascadeTypes, fetchType,
-							isInferred, ics);
+					a = SetAttributeImpl.iri(iri).declaringType(c2).field(field).elementType(type).attributeType(t)
+							.fetchType(fetchType).cascadeTypes(cascadeTypes).inferred(isInferred).includeExplicit(includeExplicit)
+							.participationConstraints(ics).build();
 				} else if (field.getType().isAssignableFrom(Map.class)) {
 					throw new IllegalArgumentException("NOT YET SUPPORTED");
 				} else {
-					a = SingularAttributeImpl.name(field.getName()).identifier(false).declaringType(c2).type(type)
-							.iri(iri).field(field).cascadeTypes(cascadeTypes).attributeType(t).fetchType(fetchType).inferred(isInferred)
+					a = SingularAttributeImpl.iri(iri).name(field.getName()).identifier(false).declaringType(c2).type(type)
+							.field(field).cascadeTypes(cascadeTypes).attributeType(t).fetchType(fetchType).inferred(isInferred)
 							.includeExplicit(includeExplicit).constraints(ics).build();
 				}
 				c2.addDeclaredAttribute(field.getName(), a);

@@ -15,9 +15,6 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import java.lang.reflect.Field;
-import java.util.List;
-
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -26,6 +23,9 @@ import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
+
+import java.lang.reflect.Field;
+import java.util.List;
 
 public class ListAttributeImpl<X, V> extends PluralAttributeImpl<X, List<V>, V>
 		implements ListAttribute<X, V> {
@@ -38,23 +38,14 @@ public class ListAttributeImpl<X, V> extends PluralAttributeImpl<X, List<V>, V>
 
 	private final SequenceType owlSequenceType;
 
-	ListAttributeImpl(ManagedType<X> declaringType, String name, IRI iri,
-			Class<List<V>> collectionType, Type<V> elementType, Field member,
-			PersistentAttributeType pat, CascadeType[] cascadetypes,
-			final IRI owlListClass, final IRI owlObjectPropertyHasNext,
-			final IRI owlPropertyHasContent, final SequenceType sequenceType,
-			final FetchType fetchType, boolean inferred,
-			ParticipationConstraint[] constraints) {
-		super(declaringType, name, iri, collectionType, elementType, member,
-				pat, cascadetypes, fetchType, inferred, constraints);
-
-		this.owlListClass = owlListClass;
-		this.owlObjectPropertyHasNext = owlObjectPropertyHasNext;
-		this.owlPropertyHasContents = owlPropertyHasContent;
-		this.owlSequenceType = sequenceType;
+	public ListAttributeImpl(ListAttributeBuilder<X, V> builder) {
+		super(builder);
+		this.owlListClass = builder.owlListClass;
+		this.owlObjectPropertyHasNext = builder.owlObjectPropertyHasNext;
+		this.owlPropertyHasContents = builder.owlPropertyHasContents;
+		this.owlSequenceType = builder.owlSequenceType;
 	}
 
-	
 	public CollectionType getCollectionType() {
 		return CollectionType.LIST;
 	}
@@ -84,4 +75,110 @@ public class ListAttributeImpl<X, V> extends PluralAttributeImpl<X, List<V>, V>
 		return "ListAttribute[" + getName() + "]";
 	}
 
+	public static ListAttributeBuilder iri(IRI iri) {
+		return new ListAttributeBuilder().collectionType(List.class).iri(iri);
+	}
+
+	public static class ListAttributeBuilder<X, V> extends PluralAttributeBuilder<X, List<V>, V> {
+		private IRI owlListClass;
+		private IRI owlObjectPropertyHasNext;
+		private IRI owlPropertyHasContents;
+		private SequenceType owlSequenceType;
+
+		@Override
+		public ListAttributeBuilder elementType(Type<V> elementType) {
+			super.elementType(elementType);
+			return this;
+		}
+
+		@Override
+		public ListAttributeBuilder collectionType(Class<List<V>> collectionType) {
+			super.collectionType(collectionType);
+			return this;
+		}
+
+		@Override
+		public ListAttributeBuilder field(Field field) {
+			super.field(field);
+			return this;
+		}
+
+		@Override
+		public ListAttributeBuilder declaringType(ManagedType<X> declaringType) {
+			super.declaringType(declaringType);
+			return this;
+		}
+
+		@Override
+		public ListAttributeBuilder attributeType(PersistentAttributeType attributeType) {
+			super.attributeType(attributeType);
+			return this;
+		}
+
+		@Override
+		public ListAttributeBuilder iri(IRI iri) {
+			super.iri(iri);
+			return this;
+		}
+
+		@Override
+		public ListAttributeBuilder cascadeTypes(CascadeType[] cascadeTypes) {
+			super.cascadeTypes(cascadeTypes);
+			return this;
+		}
+
+		@Override
+		public ListAttributeBuilder fetchType(FetchType fetchType) {
+			super.fetchType(fetchType);
+			return this;
+		}
+
+		@Override
+		public ListAttributeBuilder inferred(boolean inferred) {
+			super.inferred(inferred);
+			return this;
+		}
+
+		@Override
+		public ListAttributeBuilder includeExplicit(boolean includeExplicit) {
+			super.includeExplicit(includeExplicit);
+			return this;
+		}
+
+		@Override
+		public ListAttributeBuilder readOnly(boolean readOnly) {
+			super.readOnly(readOnly);
+			return this;
+		}
+
+		@Override
+		public ListAttributeBuilder participationConstraints(ParticipationConstraint[] constraints) {
+			super.participationConstraints(constraints);
+			return this;
+		}
+
+		public ListAttributeBuilder owlListClass(IRI owlListClass) {
+			this.owlListClass = owlListClass;
+			return this;
+		}
+
+		public ListAttributeBuilder hasNextProperty(IRI hasNextProperty) {
+			this.owlObjectPropertyHasNext = hasNextProperty;
+			return this;
+		}
+
+		public ListAttributeBuilder hasContentsProperty(IRI hasContentsProperty) {
+			this.owlPropertyHasContents = hasContentsProperty;
+			return this;
+		}
+
+		public ListAttributeBuilder sequenceType(SequenceType sequenceType) {
+			this.owlSequenceType = sequenceType;
+			return this;
+		}
+
+		public ListAttributeImpl<X, V> build() {
+			return new ListAttributeImpl<>(this);
+		}
+	}
 }

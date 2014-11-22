@@ -52,26 +52,28 @@ public class PluralAttributeImpl<X, C, E> implements PluralAttribute<X, C, E> {
 
 	private boolean inferred;
 
+	private boolean includeExplicit;
+
+	private boolean readOnly;
+
 	private ParticipationConstraint[] constraints;
 
-	PluralAttributeImpl(ManagedType<X> declaringType, String name, IRI iri,
-			Class<C> collectionType, Type<E> elementType, Field member,
-			PersistentAttributeType pat, CascadeType[] cascadeTypes,
-			FetchType fetchType, boolean inferred,
-			ParticipationConstraint[] constraints) {
-		this.name = name;
-		this.elementType = elementType;
-		this.member = member;
-		this.pat = pat;
-		this.collectionType = collectionType;
-		this.declaringType = declaringType;
-		this.iri = iri;
-		this.cascadeTypes = cascadeTypes;
-		this.fetchType = fetchType;
-		this.inferred = inferred;
-		this.constraints = constraints;
+	protected PluralAttributeImpl(PluralAttributeBuilder<X, C, E> builder) {
+		this.elementType = builder.elementType;
+		this.member = builder.field;
+		assert member != null;
+		this.name = member.getName();
+		this.pat = builder.attributeType;
+		this.collectionType = builder.collectionType;
+		this.declaringType = builder.declaringType;
+		this.iri = builder.iri;
+		this.cascadeTypes = builder.cascadeTypes;
+		this.fetchType = builder.fetchType;
+		this.inferred = builder.inferred;
+		this.includeExplicit = builder.includeExplicit;
+		this.readOnly = builder.readOnly;
+		this.constraints = builder.constraints;
 	}
-
 	
 	public ManagedType<X> getDeclaringType() {
 		return declaringType;
@@ -115,14 +117,10 @@ public class PluralAttributeImpl<X, C, E> implements PluralAttribute<X, C, E> {
 
 	
 	public cz.cvut.kbss.jopa.model.metamodel.PluralAttribute.CollectionType getCollectionType() {
-		if (getJavaType().isAssignableFrom(List.class)) {
-			return CollectionType.LIST;
-		} else if (getJavaType().isAssignableFrom(Set.class)) {
-			return CollectionType.SET;
+		if (getJavaType().isAssignableFrom(Collection.class)) {
+			return CollectionType.COLLECTION;
 		} else if (getJavaType().isAssignableFrom(Map.class)) {
 			return CollectionType.MAP;
-		} else if (getJavaType().isAssignableFrom(Collection.class)) {
-			return CollectionType.COLLECTION;
 		} else {
 			throw new IllegalArgumentException();
 		}
@@ -168,17 +166,99 @@ public class PluralAttributeImpl<X, C, E> implements PluralAttribute<X, C, E> {
 
 	@Override
 	public boolean includeExplicit() {
-		// TODO
-		return true;
+		return includeExplicit;
 	}
 
 	@Override
 	public boolean isReadOnly() {
-		// TODO
-		return false;
+		return readOnly;
 	}
 
 	public ParticipationConstraint[] getConstraints() {
 		return constraints;
+	}
+
+	public static PluralAttributeBuilder iri(IRI iri) {
+		return new PluralAttributeBuilder().iri(iri);
+	}
+
+
+	public static class PluralAttributeBuilder<X, C, E> {
+		private Type<E> elementType;
+		private Class<C> collectionType;
+		private Field field;
+		private ManagedType<X> declaringType;
+		private PersistentAttributeType attributeType;
+		private IRI iri;
+		private CascadeType[] cascadeTypes;
+		private FetchType fetchType;
+		private boolean inferred;
+		private boolean includeExplicit;
+		private boolean readOnly;
+		private ParticipationConstraint[] constraints;
+
+		public PluralAttributeBuilder elementType(Type<E> elementType) {
+			this.elementType = elementType;
+			return this;
+		}
+
+		public PluralAttributeBuilder collectionType(Class<C> collectionType) {
+			this.collectionType = collectionType;
+			return this;
+		}
+
+		public PluralAttributeBuilder field(Field field) {
+			this.field = field;
+			return this;
+		}
+
+		public PluralAttributeBuilder declaringType(ManagedType<X> declaringType) {
+			this.declaringType = declaringType;
+			return this;
+		}
+
+		public PluralAttributeBuilder attributeType(PersistentAttributeType attributeType) {
+			this.attributeType = attributeType;
+			return this;
+		}
+
+		public PluralAttributeBuilder iri(IRI iri) {
+			this.iri = iri;
+			return this;
+		}
+
+		public PluralAttributeBuilder cascadeTypes(CascadeType[] cascadeTypes) {
+			this.cascadeTypes = cascadeTypes;
+			return this;
+		}
+
+		public PluralAttributeBuilder fetchType(FetchType fetchType) {
+			this.fetchType = fetchType;
+			return this;
+		}
+
+		public PluralAttributeBuilder inferred(boolean inferred) {
+			this.inferred = inferred;
+			return this;
+		}
+
+		public PluralAttributeBuilder includeExplicit(boolean includeExplicit) {
+			this.includeExplicit = includeExplicit;
+			return this;
+		}
+
+		public PluralAttributeBuilder readOnly(boolean readOnly) {
+			this.readOnly = readOnly;
+			return this;
+		}
+
+		public PluralAttributeBuilder participationConstraints(ParticipationConstraint[] constraints) {
+			this.constraints = constraints;
+			return this;
+		}
+
+		public PluralAttributeImpl<X, C, E> build() {
+			return new PluralAttributeImpl<>(this);
+		}
 	}
 }

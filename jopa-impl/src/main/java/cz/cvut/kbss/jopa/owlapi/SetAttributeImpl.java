@@ -29,13 +29,8 @@ import cz.cvut.kbss.jopa.model.metamodel.Type;
 public class SetAttributeImpl<X, V> extends PluralAttributeImpl<X, Set<V>, V>
 		implements SetAttribute<X, V> {
 
-	SetAttributeImpl(ManagedType<X> declaringType, String name, IRI iri,
-			Class<Set<V>> collectionType, Type<V> elementType, Field member,
-			PersistentAttributeType pat, final CascadeType[] cascadeTypes,
-			final FetchType fetchType, boolean inferred,
-			ParticipationConstraint[] constraints) {
-		super(declaringType, name, iri, collectionType, elementType, member,
-				pat, cascadeTypes, fetchType, inferred, constraints);
+	private SetAttributeImpl(SetAttributeBuilder<X, V> builder) {
+		super(builder);
 	}
 
 	@Override
@@ -46,6 +41,17 @@ public class SetAttributeImpl<X, V> extends PluralAttributeImpl<X, Set<V>, V>
 	@Override
 	public String toString() {
 		return "SetAttribute[" + getName() + "]";
+	}
+
+	public static PluralAttributeBuilder iri(IRI iri) {
+		return new SetAttributeBuilder().collectionType(Set.class).iri(iri);
+	}
+
+	public static class SetAttributeBuilder<X, V> extends PluralAttributeBuilder<X, Set<V>, V> {
+
+		public SetAttributeImpl<X, V> build() {
+			return new SetAttributeImpl<>(this);
+		}
 	}
 
 }

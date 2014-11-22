@@ -183,8 +183,8 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
 		return readOnly;
 	}
 
-	public static SingularAttributeBuilder name(String name) {
-		return new SingularAttributeBuilder().name(name);
+	public static SingularAttributeBuilder iri(IRI iri) {
+		return new SingularAttributeBuilder().iri(iri);
 	}
 
 	public static final class SingularAttributeBuilder<X, T> {
