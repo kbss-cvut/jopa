@@ -91,8 +91,6 @@ public class AxiomValueDescriptor extends AxiomDescriptor {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder(super.toString());
-		sb.append("property values: ").append(values);
-		return sb.toString();
+		return super.toString() + ", property values: " + values;
 	}
 }

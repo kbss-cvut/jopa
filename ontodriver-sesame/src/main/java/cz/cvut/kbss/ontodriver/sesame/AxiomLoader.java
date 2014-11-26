@@ -104,11 +104,15 @@ class AxiomLoader {
 			val = new Value<>(SesameUtils.getDataPropertyValue((Literal) stmt.getObject()));
 			break;
 		case CLASS:
-		case OBJECT_PROPERTY:
 			if (!(stmt.getObject() instanceof Resource)) {
 				return null;
 			}
 			val = new Value<java.net.URI>(SesameUtils.toJavaUri((Resource) stmt.getObject()));
+		case OBJECT_PROPERTY:
+			if (!(stmt.getObject() instanceof Resource)) {
+				return null;
+			}
+			val = new Value<NamedResource>(NamedResource.create(stmt.getObject().stringValue()));
 			break;
 		case PROPERTY:
 			assertion = Assertion.createPropertyAssertion(

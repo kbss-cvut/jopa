@@ -52,7 +52,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 	@Test
 	public void buildsInstanceFieldFromAxiomsIncludingNodes() throws Exception {
 		final OWLClassC c = new OWLClassC(PK);
-		final List<Axiom<?>> axioms = initRefListAxioms(true);
+		final List<Axiom<NamedResource>> axioms = initRefListAxioms(true);
 		when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(axioms);
 		strategy.addValueFromAxiom(axioms.iterator().next());
 		assertNull(c.getReferencedList());
@@ -72,15 +72,15 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 				.getNodeContent().getIdentifier());
 	}
 
-	private List<Axiom<?>> initRefListAxioms(boolean includeNodes) throws Exception {
-		final List<Axiom<?>> axioms = new ArrayList<>();
+	private List<Axiom<NamedResource>> initRefListAxioms(boolean includeNodes) throws Exception {
+		final List<Axiom<NamedResource>> axioms = new ArrayList<>();
 		NamedResource previous = NamedResource.create(PK);
 		int i = 0;
 		for (OWLClassA a : list) {
-			final URI nodeUri = URI
+			final NamedResource nodeUri = NamedResource
 					.create("http://krizik.felk.cvut.cz/ontologies/jopa/refListNode_" + i);
 			if (includeNodes) {
-				final Axiom<URI> node;
+				final Axiom<NamedResource> node;
 				if (i == 0) {
 					node = new AxiomImpl<>(previous, Assertion.createObjectPropertyAssertion(
 							URI.create(OWLClassC.getRefListField()
@@ -95,13 +95,13 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 				}
 				axioms.add(node);
 			}
-			final Axiom<URI> content = new AxiomImpl<>(NamedResource.create(nodeUri),
+			final Axiom<NamedResource> content = new AxiomImpl<>(nodeUri,
 					Assertion.createObjectPropertyAssertion(refList.getOWLPropertyHasContentsIRI()
-							.toURI(), refList.isInferred()), new Value<>(a.getUri()));
+							.toURI(), refList.isInferred()), new Value<>(NamedResource.create(a.getUri())));
 			when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, a.getUri(), descriptor))
 					.thenReturn(a);
 			axioms.add(content);
-			previous = NamedResource.create(nodeUri);
+			previous = nodeUri;
 			i++;
 		}
 		return axioms;
@@ -115,7 +115,7 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
 	@Test
 	public void buildsInstanceFieldFromAxiomsWithoutNodes() throws Exception {
 		final OWLClassC c = new OWLClassC(PK);
-		final List<Axiom<?>> axioms = initRefListAxioms(false);
+		final List<Axiom<NamedResource>> axioms = initRefListAxioms(false);
 		when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(axioms);
 		strategy.addValueFromAxiom(axioms.iterator().next());
 		assertNull(c.getReferencedList());

@@ -8,6 +8,7 @@ import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
 /**
  * This interface is used to work with ontology sequences. </p>
@@ -40,7 +41,7 @@ public interface Lists {
 	 * @throws IllegalStateException
 	 *             If called on a closed connection
 	 */
-	public Collection<Axiom<?>> loadSimpleList(SimpleListDescriptor descriptor)
+	public Collection<Axiom<NamedResource>> loadSimpleList(SimpleListDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**
@@ -89,7 +90,7 @@ public interface Lists {
 	 * @throws IllegalStateException
 	 *             If called on a closed connection
 	 */
-	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
+	public Collection<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor descriptor)
 			throws OntoDriverException;
 
 	/**

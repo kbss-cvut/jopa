@@ -32,10 +32,10 @@ class ListHandlerTestBase {
 		repo.shutDown();
 	}
 
-	protected List<java.net.URI> initList() {
-		final List<java.net.URI> lst = new ArrayList<>();
+	protected List<NamedResource> initList() {
+		final List<NamedResource> lst = new ArrayList<>();
 		for (int i = 0; i < 5; i++) {
-			lst.add(java.net.URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/elem" + i));
+			lst.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/elem" + i));
 		}
 		return lst;
 	}

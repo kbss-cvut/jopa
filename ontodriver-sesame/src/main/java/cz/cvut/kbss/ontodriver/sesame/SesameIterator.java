@@ -14,7 +14,7 @@ interface SesameIterator {
 
 	Resource currentContent() throws SesameDriverException;
 
-	Axiom<java.net.URI> nextAxiom() throws SesameDriverException;
+	Axiom<NamedResource> nextAxiom() throws SesameDriverException;
 
 	void remove() throws SesameDriverException;
 

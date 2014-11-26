@@ -149,7 +149,7 @@ public class ChangeManagerImpl implements ChangeManager {
 		}
 		Iterator<?> itOrig = origCol.iterator();
 		Iterator<?> itClone = cloneCol.iterator();
-		while (itOrig.hasNext() && itClone.hasNext() && hasChanged == false) {
+		while (itOrig.hasNext() && itClone.hasNext() && !hasChanged) {
 			Object cl = itClone.next();
 			Object orig = itOrig.next();
 			final Changed ch = valueChanged(orig, cl);

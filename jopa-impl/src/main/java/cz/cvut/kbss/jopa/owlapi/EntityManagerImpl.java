@@ -303,9 +303,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		}
 		final IRI uri = IRI.create(primaryKey.toString());
 
-		T ob = getCurrentPersistenceContext().readObject(cls, uri, descriptor);
-
-		return ob;
+		return getCurrentPersistenceContext().readObject(cls, uri, descriptor);
 	}
 
 	public void flush() {

@@ -68,10 +68,6 @@ public final class AxiomImpl<T> implements Axiom<T> {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder();
-		sb.append("[ ").append(subject).append(" ");
-		sb.append(assertion).append(" ");
-		sb.append(value).append(" ]");
-		return sb.toString();
+		return "[" + subject + " " + assertion + " " + value + "]";
 	}
 }

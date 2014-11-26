@@ -90,7 +90,7 @@ public class SimpleSetPropertyStrategyTest {
 				OWLClassJ.getOwlClassAField().getAnnotation(Inferred.class) != null);
 		assertEquals(j.getOwlClassA().size(), res.getAssertionValues(ass).size());
 		for (OWLClassA aa : j.getOwlClassA()) {
-			assertTrue(res.getAssertionValues(ass).contains(new Value<URI>(aa.getUri())));
+			assertTrue(res.getAssertionValues(ass).contains(new Value<>(NamedResource.create(aa.getUri()))));
 		}
 		verify(cascadeResolverMock, times(j.getOwlClassA().size())).resolveFieldCascading(
 				eq(simpleSet), any(Object.class), eq((URI) null));

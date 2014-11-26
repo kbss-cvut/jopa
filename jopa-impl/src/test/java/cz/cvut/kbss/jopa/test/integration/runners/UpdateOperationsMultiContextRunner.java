@@ -182,7 +182,6 @@ public class UpdateOperationsMultiContextRunner extends BaseRunner {
 	}
 
 	public void updateRemoveFromSimpleListInContext(EntityManager em) throws Exception {
-		// TODO The entity is loaded or removed from incorrect context. FIX THIS.
 		logger.config("Test: remove element from simple list stored in a different context than its owner.");
 		entityC.setSimpleList(Generators.createSimpleList(15));
 		final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);

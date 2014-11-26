@@ -32,7 +32,7 @@ public class OwlapiStatement extends AbstractStatement {
 
 		final OWLAPIv3OWL2Ontology ont = new OWLAPIv3OWL2Ontology(manager, ontology, reasoner);
 
-		final QueryResult<OWLObject> res = OWL2QueryEngine.<OWLObject> exec(query, ont);
+		final QueryResult<OWLObject> res = OWL2QueryEngine.exec(query, ont);
 		if (res == null) {
 			throw new QueryExecutionException("Unable to execute query " + query);
 		}

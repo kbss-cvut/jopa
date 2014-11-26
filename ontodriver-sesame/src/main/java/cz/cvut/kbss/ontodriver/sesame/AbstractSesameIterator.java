@@ -55,9 +55,8 @@ abstract class AbstractSesameIterator implements SesameIterator {
 		}
 	}
 
-	protected Axiom<java.net.URI> createAxiom(Resource subject, Assertion assertion, Resource value) {
+	protected Axiom<NamedResource> createAxiom(Resource subject, Assertion assertion, Resource value) {
 		final NamedResource subjectRes = NamedResource.create(subject.stringValue());
-		final java.net.URI valueUri = java.net.URI.create(value.stringValue());
-		return new AxiomImpl<java.net.URI>(subjectRes, assertion, new Value<java.net.URI>(valueUri));
+		return new AxiomImpl<>(subjectRes, assertion, new Value<>(NamedResource.create(value.stringValue())));
 	}
 }

@@ -78,7 +78,7 @@ public class SesameAdapterTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		when(connectorMock.getValueFactory()).thenReturn(vf);
-		this.adapter = new SesameAdapter(connectorMock, Collections.<String, String> singletonMap(
+		this.adapter = new SesameAdapter(connectorMock, Collections.singletonMap(
 				OntoDriverProperties.ONTOLOGY_LANGUAGE, LANGUAGE));
 
 	}

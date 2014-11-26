@@ -17,7 +17,10 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
 
-public class TestChangePersist extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+public class TestChangePersist {
 
 	private static EntityManager pc;
 
@@ -41,9 +44,9 @@ public class TestChangePersist extends TestCase {
 	@BeforeClass
 	public static void setStatics() {
 		strTypes = new HashSet<String>();
-		strTypes.add("typeOne");
-		strTypes.add("typeTwo");
-		strTypes.add("typeThree");
+		strTypes.add("http://typeOne");
+		strTypes.add("http://typeTwo");
+		strTypes.add("http://typeThree");
 	}
 
 	@Before

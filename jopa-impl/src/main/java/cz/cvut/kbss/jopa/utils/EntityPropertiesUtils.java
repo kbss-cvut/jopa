@@ -173,7 +173,7 @@ public class EntityPropertiesUtils {
 		} else if (value instanceof URI) {
 			return IRI.create((URI) value);
 		} else if (value instanceof cz.cvut.kbss.jopa.model.IRI) {
-			return IRI.create(((cz.cvut.kbss.jopa.model.IRI) value).toString());
+			return IRI.create(value.toString());
 		} else if (value instanceof URL) {
 			try {
 				return IRI.create((URL) value);

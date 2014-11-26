@@ -1,7 +1,9 @@
 package cz.cvut.kbss.jopa.oom;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
@@ -38,5 +40,12 @@ final class OOMTestUtils {
 		descriptorsField.setAccessible(true);
 		return (List<ReferencedListValueDescriptor>) descriptorsField
 				.get(builder);
+	}
+
+	public static Set<URI> getTypes(AxiomValueGatherer builder) throws Exception {
+		final Field typesField = AxiomValueGatherer.class
+				.getDeclaredField("types");
+		typesField.setAccessible(true);
+		return (Set<URI>) typesField.get(builder);
 	}
 }

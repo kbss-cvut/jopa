@@ -150,7 +150,7 @@ class SesameAdapter implements Closeable {
 
 	boolean contains(Axiom<?> axiom, URI context) throws SesameDriverException {
 		startTransactionIfNotActive();
-		Value value = null;
+		Value value;
 		if (SesameUtils.isResourceIdentifier(axiom.getValue().getValue())) {
 			value = valueFactory.createURI(axiom.getValue().stringValue());
 		} else {
@@ -208,5 +208,9 @@ class SesameAdapter implements Closeable {
 
 	ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler() {
 		return ListHandler.createForReferencedList(connector, valueFactory);
+	}
+
+	TypesHandler getTypesHandler() {
+		return new TypesHandler(connector, valueFactory);
 	}
 }

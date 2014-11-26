@@ -20,15 +20,15 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 
 	final EntityType<X> et;
 	final T attribute;
-	final Descriptor descriptor;
+	final Descriptor attributeDescriptor;
 	final EntityMappingHelper mapper;
 	CascadeResolver cascadeResolver;
 
-	FieldStrategy(EntityType<X> et, T att, Descriptor descriptor,
+	FieldStrategy(EntityType<X> et, T att, Descriptor attributeDescriptor,
 			EntityMappingHelper mapper) {
 		this.et = et;
 		this.attribute = att;
-		this.descriptor = descriptor;
+		this.attributeDescriptor = attributeDescriptor;
 		this.mapper = mapper;
 	}
 
@@ -76,7 +76,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 	}
 
 	URI getAttributeContext() {
-		return descriptor.getAttributeDescriptor(attribute).getContext();
+//		return attributeDescriptor.getAttributeDescriptor(attribute).getContext();
+		return attributeDescriptor.getContext();
 	}
 
 	/**
@@ -130,13 +131,13 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 
 	static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createFieldStrategy(
 			EntityType<X> et, FieldSpecification<? super X, ?> att,
-			Descriptor descriptor, EntityMappingHelper mapper) {
+			Descriptor fieldDescriptor, EntityMappingHelper mapper) {
 		if (att instanceof TypesSpecification) {
 			return new TypesFieldStrategy<>(et,
-					(TypesSpecification<? super X, ?>) att, descriptor, mapper);
+					(TypesSpecification<? super X, ?>) att, fieldDescriptor, mapper);
 		} else if (att instanceof PropertiesSpecification<?, ?>) {
 			return new PropertiesFieldStrategy<>(et,
-					(PropertiesSpecification<? super X, ?>) att, descriptor,
+					(PropertiesSpecification<? super X, ?>) att, fieldDescriptor,
 					mapper);
 		}
 		final Attribute<? super X, ?> attribute = (Attribute<? super X, ?>) att;
@@ -148,7 +149,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 			case OBJECT:
 				return createPluralObjectPropertyStrategy(et,
 						(PluralAttribute<? super X, ?, ?>) attribute,
-						descriptor, mapper);
+						fieldDescriptor, mapper);
 			default:
 				break;
 			}
@@ -157,10 +158,10 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 			case ANNOTATION:
 			case DATA:
 				return new SingularDataPropertyStrategy<>(et, attribute,
-						descriptor, mapper);
+						fieldDescriptor, mapper);
 			case OBJECT:
 				return new SingularObjectPropertyStrategy<>(et, attribute,
-						descriptor, mapper);
+						fieldDescriptor, mapper);
 			default:
 				break;
 			}

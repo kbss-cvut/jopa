@@ -70,8 +70,7 @@ public final class TestEnv {
 		final OntologyStorageProperties storageProperties = storage.createStorageProperties(0);
 		properties.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS,
 				TestEnvironment.REASONER_FACTORY_CLASS);
-		final DataSource dataSource = new SimpleDataSource(storageProperties, properties);
-		return dataSource;
+		return new SimpleDataSource(storageProperties, properties);
 	}
 
 	/**

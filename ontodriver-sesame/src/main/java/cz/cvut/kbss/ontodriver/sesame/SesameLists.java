@@ -13,6 +13,7 @@ import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
 class SesameLists implements Lists {
 
@@ -25,7 +26,7 @@ class SesameLists implements Lists {
 	}
 
 	@Override
-	public Collection<Axiom<?>> loadSimpleList(SimpleListDescriptor descriptor)
+	public Collection<Axiom<NamedResource>> loadSimpleList(SimpleListDescriptor descriptor)
 			throws OntoDriverException {
 		verifyArgs(descriptor, "descriptor");
 		return adapter.getSimpleListHandler().loadList(descriptor);
@@ -51,7 +52,7 @@ class SesameLists implements Lists {
 	}
 
 	@Override
-	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor descriptor)
+	public Collection<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor descriptor)
 			throws OntoDriverException {
 		verifyArgs(descriptor, "descriptor");
 		return adapter.getReferencedListHandler().loadList(descriptor);

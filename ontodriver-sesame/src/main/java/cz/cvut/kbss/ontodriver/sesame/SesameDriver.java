@@ -63,6 +63,7 @@ class SesameDriver implements Closeable, ConnectionListener {
 				storageProperties, properties), properties);
 		final SesameConnection c = new SesameConnection(adapter);
 		c.setLists(new SesameLists(c, adapter));
+		c.setTypes(new SesameTypes(c, adapter));
 		openedConnections.add(c);
 		c.registerListener(this);
 		return c;

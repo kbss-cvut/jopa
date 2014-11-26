@@ -86,7 +86,7 @@ class ReferencedListIterator extends AbstractSesameIterator {
 	}
 
 	@Override
-	public Axiom<java.net.URI> nextAxiom() throws SesameDriverException {
+	public Axiom<NamedResource> nextAxiom() throws SesameDriverException {
 		nextInternal();
 		assert currentContent.getObject() instanceof Resource;
 

@@ -12,6 +12,7 @@ import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
 abstract class PluralObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
 
@@ -41,9 +42,9 @@ abstract class PluralObjectPropertyStrategy<X> extends FieldStrategy<Attribute<?
 
 	@Override
 	void addValueFromAxiom(Axiom<?> ax) {
-		final URI valueIdentifier = (URI) ax.getValue().getValue();
+		final NamedResource valueIdentifier = (NamedResource) ax.getValue().getValue();
 		final Object value = mapper.getEntityFromCacheOrOntology(pluralAtt.getBindableJavaType(),
-				valueIdentifier, descriptor);
+				valueIdentifier.getIdentifier(), attributeDescriptor);
 		values.add(value);
 
 	}

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -191,12 +192,14 @@ public class EntityDeconstructorTest {
 			if (a.getType() == AssertionType.CLASS) {
 				final List<Value<?>> clss = res.getAssertionValues(a);
 				// The entity class + the declared types
-				assertEquals(types.size() + 1, clss.size());
-				for (Value<?> v : clss) {
-					final String strVal = v.toString();
-					assertTrue(OWLClassA.getClassIri().equals(strVal) || types.contains(strVal));
-				}
+				assertEquals(1, clss.size());
+				assertEquals(OWLClassA.getClassIri(), clss.get(0).stringValue());
 			}
+		}
+		final Set<URI> typesRes = OOMTestUtils.getTypes(builder);
+		assertEquals(types.size(), typesRes.size());
+		for (URI u : typesRes) {
+			assertTrue(types.contains(u.toString()));
 		}
 	}
 
@@ -242,7 +245,7 @@ public class EntityDeconstructorTest {
 			} else {
 				assertTrue(AssertionType.OBJECT_PROPERTY == a.getType());
 				assertEquals(1, vals.size());
-				assertEquals(entityA.getUri(), vals.get(0).getValue());
+				assertEquals(NamedResource.create(entityA.getUri()), vals.get(0).getValue());
 			}
 		}
 	}
@@ -411,7 +414,7 @@ public class EntityDeconstructorTest {
 		final List<Value<?>> val = res.getAssertionValues(ass);
 		assertEquals(1, val.size());
 		assertEquals(CONTEXT, res.getAssertionContext(ass));
-		assertEquals(entityA.getUri(), val.get(0).getValue());
+		assertEquals(NamedResource.create(entityA.getUri()), val.get(0).getValue());
 	}
 
 	private static AxiomValueDescriptor getAxiomValueDescriptor(AxiomValueGatherer builder)

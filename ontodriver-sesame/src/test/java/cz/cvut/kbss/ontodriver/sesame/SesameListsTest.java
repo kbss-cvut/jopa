@@ -1,19 +1,15 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import static org.mockito.Mockito.*;
 
 public class SesameListsTest {
 
@@ -30,10 +26,6 @@ public class SesameListsTest {
 	private ReferencedListHandler referencedListHandlerMock;
 
 	private SesameLists lists;
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
 
 	@Before
 	public void setUp() throws Exception {

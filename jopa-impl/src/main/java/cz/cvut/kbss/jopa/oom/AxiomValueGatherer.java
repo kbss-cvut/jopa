@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -12,6 +13,7 @@ import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
+import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
@@ -26,12 +28,14 @@ class AxiomValueGatherer {
 	private final AxiomValueDescriptor axiomDescriptor;
 	private final Collection<SimpleListValueDescriptor> simpleListDescriptors;
 	private final Collection<ReferencedListValueDescriptor> referencedListDescriptors;
+	private Set<URI> types;
+	private URI typesContext;
 
 	AxiomValueGatherer(NamedResource subject, URI subjectContext) {
 		this.axiomDescriptor = new AxiomValueDescriptor(subject);
 		axiomDescriptor.setSubjectContext(subjectContext);
-		this.simpleListDescriptors = new ArrayList<>(5);
-		this.referencedListDescriptors = new ArrayList<>(5);
+		this.simpleListDescriptors = new ArrayList<>();
+		this.referencedListDescriptors = new ArrayList<>();
 	}
 
 	void addValue(Assertion assertion, Value<?> value, URI context) {
@@ -56,9 +60,17 @@ class AxiomValueGatherer {
 		referencedListDescriptors.add(listDescriptor);
 	}
 
+	void addTypes(Set<URI> types, URI context) {
+		this.types = types;
+		this.typesContext = context;
+	}
+
 	void persist(Connection connection) {
 		try {
 			connection.persist(axiomDescriptor);
+			if (types != null) {
+				connection.types().persistTypes(axiomDescriptor.getSubject(), typesContext, types);
+			}
 			for (SimpleListValueDescriptor d : simpleListDescriptors) {
 				connection.lists().persistSimpleList(d);
 			}
@@ -73,6 +85,9 @@ class AxiomValueGatherer {
 	void update(Connection connection) {
 		try {
 			connection.update(axiomDescriptor);
+			if (types != null) {
+				connection.types().updateTypes(axiomDescriptor.getSubject(), typesContext, types);
+			}
 			for (SimpleListValueDescriptor d : simpleListDescriptors) {
 				connection.lists().updateSimpleList(d);
 			}

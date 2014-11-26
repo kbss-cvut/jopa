@@ -128,7 +128,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 	public void loadsEmptyListAndReturnsEmptyCollection() throws Exception {
 		when(connector.findStatements(owner, hasListProperty, null, false, (URI[]) null))
 				.thenReturn(Collections.<Statement> emptyList());
-		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
+		final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
 		assertNotNull(res);
 		assertTrue(res.isEmpty());
 		verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
@@ -137,12 +137,12 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 
 	@Test
 	public void loadsReferencedList() throws Exception {
-		final List<java.net.URI> refList = initList();
+		final List<NamedResource> refList = initList();
 		final List<java.net.URI> listNodes = initListNodes(refList);
 		initStatementsForList(listNodes, refList);
-		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
+		final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
 		assertEquals(refList.size(), res.size());
-		for (Axiom<?> a : res) {
+		for (Axiom<NamedResource> a : res) {
 			assertTrue(refList.contains(a.getValue().getValue()));
 		}
 	}
@@ -156,7 +156,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 	}
 
 	private List<Statement> initStatementsForList(List<java.net.URI> nodes,
-			List<java.net.URI> values) throws Exception {
+			List<NamedResource> values) throws Exception {
 		int i = 0;
 		Resource prev = owner;
 		final List<Statement> stmts = new ArrayList<>();
@@ -202,7 +202,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 						anyBoolean(), eq((URI[]) null))).thenReturn(
 				Collections.<Statement> emptyList());
 		try {
-			final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
+			final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
 			assert res == null;
 			fail("This line should not have been reached.");
 		} finally {
@@ -213,7 +213,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 
 	@Test(expected = IntegrityConstraintViolatedException.class)
 	public void throwsICViolationWhenThereIsNoContentInSomeListNode() throws Exception {
-		final List<java.net.URI> refList = initList();
+		final List<NamedResource> refList = initList();
 		final List<java.net.URI> listNodes = initListNodes(refList);
 		initStatementsForList(listNodes, refList);
 		final Resource elem = selectRandomNode(listNodes);
@@ -221,7 +221,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 				connector.findStatements(eq(elem), eq(nodeContentProperty), eq((Value) null),
 						anyBoolean(), eq((URI[]) null))).thenReturn(
 				Collections.<Statement> emptyList());
-		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
+		final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
 		assert res == null;
 	}
 
@@ -229,13 +229,12 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 		// Select a random index, but it shouldn't be 0 (it would be the head),
 		// so add 1
 		final int rand = new Random().nextInt(nodes.size() - 1) + 1;
-		final Resource elem = vf.createURI(nodes.get(rand).toString());
-		return elem;
+		return vf.createURI(nodes.get(rand).toString());
 	}
 
 	@Test(expected = IntegrityConstraintViolatedException.class)
 	public void throwsICViolationWhenThereAreMutlipleSuccessorsForNode() throws Exception {
-		final List<java.net.URI> refList = initList();
+		final List<NamedResource> refList = initList();
 		final List<java.net.URI> listNodes = initListNodes(refList);
 		initStatementsForList(listNodes, refList);
 		final Resource node = selectRandomNode(listNodes);
@@ -243,13 +242,13 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 		when(
 				connector.findStatements(eq(node), eq(nextNodeProperty), eq((Value) null),
 						anyBoolean(), eq((URI[]) null))).thenReturn(stmts);
-		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
+		final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
 		assert res == null;
 	}
 
 	@Test(expected = IntegrityConstraintViolatedException.class)
 	public void throwsICViolationWhenThereAreMultipleReferencesInNode() throws Exception {
-		final List<java.net.URI> refList = initList();
+		final List<NamedResource> refList = initList();
 		final List<java.net.URI> listNodes = initListNodes(refList);
 		initStatementsForList(listNodes, refList);
 		final Resource node = selectRandomNode(listNodes);
@@ -257,15 +256,15 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 		when(
 				connector.findStatements(eq(node), eq(nodeContentProperty), eq((Value) null),
 						anyBoolean(), eq((URI[]) null))).thenReturn(stmts);
-		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
+		final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
 		assert res == null;
 	}
 
 	@Test
 	public void persistsReferencedList() throws Exception {
-		final List<java.net.URI> values = initList();
-		for (java.net.URI val : values) {
-			valueDescriptor.addValue(NamedResource.create(val));
+		final List<NamedResource> values = initList();
+		for (NamedResource val : values) {
+			valueDescriptor.addValue(val);
 		}
 		final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
 		handler.persistList(valueDescriptor);
@@ -278,7 +277,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 				assertEquals(hasListProperty, stmt.getPredicate());
 			} else if (i % 2 == 1) {
 				assertEquals(nodeContentProperty, stmt.getPredicate());
-				assertTrue(values.contains(java.net.URI.create(stmt.getObject().stringValue())));
+				assertTrue(values.contains(NamedResource.create(stmt.getObject().stringValue())));
 			} else {
 				assertEquals(nextNodeProperty, stmt.getPredicate());
 			}
@@ -299,7 +298,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 	public void clearsListOnUpdateWhenDescriptorHasNoValues() throws Exception {
 		final ReferencedListValueDescriptor descriptor = initValues(0);
 		// old list
-		final List<java.net.URI> refList = initList();
+		final List<NamedResource> refList = initList();
 		final List<Statement> oldList = initStatementsForList(initListNodes(refList), refList);
 
 		handler.updateList(descriptor);
@@ -346,11 +345,11 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 	public void updateListAddsNewValuesToTheEnd() throws Exception {
 		final ReferencedListValueDescriptor descriptor = initValues(0);
 		final ReferencedListValueDescriptor tempDesc = initValues(8);
-		final List<java.net.URI> refList = initList();
+		final List<NamedResource> refList = initList();
 		initStatementsForList(initListNodes(refList), refList);
 		// The original items
-		for (java.net.URI item : refList) {
-			descriptor.addValue(NamedResource.create(item));
+		for (NamedResource item : refList) {
+			descriptor.addValue(item);
 		}
 		// Now add the new ones
 		for (NamedResource r : tempDesc.getValues()) {

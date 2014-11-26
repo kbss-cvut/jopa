@@ -101,7 +101,7 @@ public class EntityConstructorPluralAttributesTest {
 							descriptor.getAttributeDescriptor(simpleListMock))).thenReturn(
 					e.getValue());
 		}
-		final Collection<Axiom<?>> listAxioms = initSimpleListAxioms();
+		final Collection<Axiom<NamedResource>> listAxioms = initSimpleListAxioms();
 		when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class))).thenReturn(listAxioms);
 	}
 
@@ -113,21 +113,21 @@ public class EntityConstructorPluralAttributesTest {
 		return axioms;
 	}
 
-	private Collection<Axiom<?>> initSimpleListAxioms() throws Exception {
+	private Collection<Axiom<NamedResource>> initSimpleListAxioms() throws Exception {
 		final URI nextElemProperty = simpleListMock.getOWLObjectPropertyHasNextIRI().toURI();
-		final Collection<Axiom<?>> axioms = new ArrayList<>(listContent.size());
+		final Collection<Axiom<NamedResource>> axioms = new ArrayList<>(listContent.size());
 		boolean first = true;
 		URI previous = null;
 		for (URI key : listContent.keySet()) {
-			final Axiom<?> ax;
+			final Axiom<NamedResource> ax;
 			if (first) {
 				ax = new AxiomImpl<>(NamedResource.create(PK), hasSimpleListAssertion,
-						new Value<URI>(key));
+						new Value<NamedResource>(NamedResource.create(key)));
 				first = false;
 			} else {
 				ax = new AxiomImpl<>(NamedResource.create(previous),
 						Assertion.createObjectPropertyAssertion(nextElemProperty,
-								simpleListMock.isInferred()), new Value<URI>(key));
+								simpleListMock.isInferred()), new Value<NamedResource>(NamedResource.create(key)));
 			}
 			previous = key;
 			axioms.add(ax);

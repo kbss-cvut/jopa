@@ -23,8 +23,8 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 	}
 
 	@Override
-	Collection<Axiom<?>> loadList(SimpleListDescriptor listDescriptor) throws SesameDriverException {
-		final Collection<Axiom<?>> axioms = new ArrayList<>();
+	Collection<Axiom<NamedResource>> loadList(SimpleListDescriptor listDescriptor) throws SesameDriverException {
+		final Collection<Axiom<NamedResource>> axioms = new ArrayList<>();
 		final SimpleListIterator it = new SimpleListIterator(listDescriptor, connector, vf);
 		while (it.hasNext()) {
 			axioms.add(it.nextAxiom());

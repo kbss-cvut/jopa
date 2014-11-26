@@ -116,7 +116,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 	public void loadsEmptyListAndReturnsEmptyCollection() throws Exception {
 		when(connector.findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null))
 				.thenReturn(Collections.<Statement> emptyList());
-		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
+		final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
 		assertNotNull(res);
 		assertTrue(res.isEmpty());
 		verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
@@ -125,10 +125,10 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 
 	@Test
 	public void loadsSimpleList() throws Exception {
-		final List<java.net.URI> simpleList = initList();
+		final List<NamedResource> simpleList = initList();
 		initStatementsForList(simpleList);
 
-		final Collection<Axiom<?>> res = handler.loadList(listDescriptor);
+		final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
 		verify(connector).findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null);
 		assertEquals(simpleList.size(), res.size());
 		int i = 0;
@@ -138,11 +138,11 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 		}
 	}
 
-	private List<Statement> initStatementsForList(List<java.net.URI> simpleList)
+	private List<Statement> initStatementsForList(List<NamedResource> simpleList)
 			throws SesameDriverException {
 		Resource subject = owner;
 		final List<Statement> statements = new ArrayList<>(simpleList.size());
-		for (java.net.URI elem : simpleList) {
+		for (NamedResource elem : simpleList) {
 			Statement stmt;
 			final Resource value = vf.createURI(elem.toString());
 			final URI property = subject == owner ? hasSimpleListProperty : nextNodeProperty;
@@ -254,7 +254,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 	public void clearsListOnUpdateWhenDescriptorHasNoValues() throws Exception {
 		final SimpleListValueDescriptor descriptor = initValues(0);
 		// old list
-		final List<java.net.URI> simpleList = initList();
+		final List<NamedResource> simpleList = initList();
 		final List<Statement> oldList = initStatementsForList(simpleList);
 
 		handler.updateList(descriptor);
@@ -284,11 +284,11 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 	public void updateListAddsNewValuesToTheEnd() throws Exception {
 		final SimpleListValueDescriptor descriptor = initValues(0);
 		final SimpleListValueDescriptor tempDesc = initValues(8);
-		final List<java.net.URI> simpleList = initList();
+		final List<NamedResource> simpleList = initList();
 		initStatementsForList(simpleList);
 		// The original items
-		for (java.net.URI item : simpleList) {
-			descriptor.addValue(NamedResource.create(item));
+		for (NamedResource item : simpleList) {
+			descriptor.addValue(item);
 		}
 		// Now add the new ones
 		for (NamedResource r : tempDesc.getValues()) {
@@ -308,22 +308,22 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 	@Test
 	public void updateListRemovesSeveralElements() throws Exception {
 		final SimpleListValueDescriptor descriptor = initValues(0);
-		final List<java.net.URI> simpleList = initList();
+		final List<NamedResource> simpleList = initList();
 		initStatementsForList(simpleList);
 		// Retain every even element, others will be removed
 		int i = 0;
-		final List<java.net.URI> toRemove = new ArrayList<>();
-		for (java.net.URI item : simpleList) {
+		final List<NamedResource> toRemove = new ArrayList<>();
+		for (NamedResource item : simpleList) {
 			if (i % 2 != 0) {
 				toRemove.add(item);
 			} else {
-				descriptor.addValue(NamedResource.create(item));
+				descriptor.addValue(item);
 			}
 			i++;
 		}
 
 		handler.updateList(descriptor);
-		for (java.net.URI uri : toRemove) {
+		for (NamedResource uri : toRemove) {
 			boolean foundAsObject = false;
 			boolean foundAsSubject = false;
 			for (Statement rem : removed) {

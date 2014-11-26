@@ -81,8 +81,7 @@ public class ConnectionImpl implements Connection {
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		final T result = storageModule.find(cls, primaryKey, descriptor);
-		return result;
+		return storageModule.find(cls, primaryKey, descriptor);
 	}
 
 	@Override

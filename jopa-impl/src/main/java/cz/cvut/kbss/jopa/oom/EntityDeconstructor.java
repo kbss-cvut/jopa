@@ -63,19 +63,19 @@ class EntityDeconstructor {
 	}
 
 	private <T> void addAssertions(T entity, EntityType<T> et,
-			FieldSpecification<? super T, ?> fieldSpec, Descriptor descriptor,
+			FieldSpecification<? super T, ?> fieldSpec, Descriptor entityDescriptor,
 			final AxiomValueGatherer valueBuilder) throws IllegalAccessException {
 		final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
-				.createFieldStrategy(et, fieldSpec, descriptor, mapper);
+				.createFieldStrategy(et, fieldSpec, entityDescriptor.getAttributeDescriptor(fieldSpec), mapper);
 		fs.setCascadeResolver(cascadeResolver);
 		fs.buildAxiomValuesFromInstance(entity, valueBuilder);
 	}
 
 	<T> AxiomValueGatherer mapFieldToAxioms(URI primaryKey, T entity, Field field, EntityType<T> et,
 			Descriptor descriptor) {
-		final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(primaryKey, descriptor);
 		final FieldSpecification<? super T, ?> fieldSpec = et
 				.getFieldSpecification(field.getName());
+		final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(primaryKey, descriptor.getAttributeDescriptor(fieldSpec));
 		try {
 			addAssertions(entity, et, fieldSpec, descriptor, valueBuilder);
 		} catch (IllegalAccessException e) {

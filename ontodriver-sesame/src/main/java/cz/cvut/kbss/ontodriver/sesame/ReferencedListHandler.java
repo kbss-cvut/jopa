@@ -29,9 +29,9 @@ public class ReferencedListHandler extends
 	}
 
 	@Override
-	Collection<Axiom<?>> loadList(ReferencedListDescriptor listDescriptor)
+	Collection<Axiom<NamedResource>> loadList(ReferencedListDescriptor listDescriptor)
 			throws SesameDriverException {
-		final List<Axiom<?>> axioms = new ArrayList<>();
+		final List<Axiom<NamedResource>> axioms = new ArrayList<>();
 		final SesameIterator it = new ReferencedListIterator(listDescriptor, connector, vf);
 		while (it.hasNext()) {
 			axioms.add(it.nextAxiom());
@@ -71,8 +71,8 @@ public class ReferencedListHandler extends
 
 	private URI generateSequenceNode(URI owner, URI context) throws SesameDriverException {
 		final String uriBase = owner.stringValue();
-		boolean unique = true;
-		URI node = null;
+		boolean unique;
+		URI node;
 		do {
 			node = vf.createURI(uriBase + "-SEQ_" + sequenceCounter++);
 			final Collection<Statement> stmts = connector.findStatements(node, null, null, false,

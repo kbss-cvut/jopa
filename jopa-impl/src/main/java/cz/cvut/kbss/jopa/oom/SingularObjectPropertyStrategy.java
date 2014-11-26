@@ -8,6 +8,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
 class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
@@ -21,10 +22,10 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
 
 	@Override
 	void addValueFromAxiom(Axiom<?> ax) {
-		// TODO Check that this cast is OK
-		final URI valueIdentifier = (URI) ax.getValue().getValue();
-		this.value = mapper.getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier,
-				descriptor);
+		assert ax.getValue().getValue() instanceof NamedResource;
+		final NamedResource valueIdentifier = (NamedResource) ax.getValue().getValue();
+		this.value = mapper.getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier.getIdentifier(),
+				attributeDescriptor);
 	}
 
 	@Override
@@ -41,7 +42,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
 		valueBuilder.addValue(createAssertion(), val, getAttributeContext());
 	}
 
-	private <V> Value<URI> extractReferenceIdentifier(final V value) {
+	private <V> Value<NamedResource> extractReferenceIdentifier(final V value) {
 		final EntityType<V> valEt = (EntityType<V>) mapper.getEntityType(value.getClass());
 		if (valEt == null) {
 			throw new EntityDeconstructionException("Value of field " + attribute.getJavaField()
@@ -49,7 +50,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
 		}
 		final URI id = resolveValueIdentifier(value, valEt);
 		cascadeResolver.resolveFieldCascading(attribute, value, getAttributeContext());
-		return new Value<>(id);
+		return new Value<>(NamedResource.create(id));
 	}
 
 	@Override

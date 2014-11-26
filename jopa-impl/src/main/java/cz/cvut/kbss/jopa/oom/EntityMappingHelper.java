@@ -1,13 +1,14 @@
 package cz.cvut.kbss.jopa.oom;
 
-import java.net.URI;
-import java.util.Collection;
-
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+
+import java.net.URI;
+import java.util.Collection;
 
 interface EntityMappingHelper {
 
@@ -17,7 +18,7 @@ interface EntityMappingHelper {
 
 	URI generateIdentifier(EntityType<?> et);
 
-	public Collection<Axiom<?>> loadSimpleList(SimpleListDescriptor listDescriptor);
+	public Collection<Axiom<NamedResource>> loadSimpleList(SimpleListDescriptor listDescriptor);
 
-	public Collection<Axiom<?>> loadReferencedList(ReferencedListDescriptor listDescriptor);
+	public Collection<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor listDescriptor);
 }

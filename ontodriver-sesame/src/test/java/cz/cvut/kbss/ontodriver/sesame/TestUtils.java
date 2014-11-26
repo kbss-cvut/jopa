@@ -14,7 +14,7 @@ public final class TestUtils {
 	}
 
 	private static void setFieldValue(Object target, Object mock, final Field field)
-			throws Exception, IllegalAccessException {
+			throws Exception {
 		field.setAccessible(true);
 		removeFinalModifier(field);
 		field.set(target, mock);

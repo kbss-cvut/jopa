@@ -16,6 +16,7 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.Lists;
+import cz.cvut.kbss.ontodriver_new.Types;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -27,6 +28,7 @@ class SesameConnection implements Connection {
 	private boolean autoCommit;
 
 	private Lists lists;
+	private Types types;
 
 	private final Set<ConnectionListener> listeners;
 
@@ -39,6 +41,10 @@ class SesameConnection implements Connection {
 
 	void setLists(SesameLists lists) {
 		this.lists = lists;
+	}
+
+	void setTypes(SesameTypes types) {
+		this.types = types;
 	}
 
 	void registerListener(ConnectionListener listener) {
@@ -183,6 +189,13 @@ class SesameConnection implements Connection {
 		ensureOpen();
 		assert lists != null;
 		return lists;
+	}
+
+	@Override
+	public Types types() {
+		ensureOpen();
+		assert types != null;
+		return types;
 	}
 
 	void ensureOpen() {

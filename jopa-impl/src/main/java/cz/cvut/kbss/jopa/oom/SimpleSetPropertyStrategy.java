@@ -8,6 +8,7 @@ import java.util.Set;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
 class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
@@ -37,7 +38,7 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
 			final EntityType<T> et = (EntityType<T>) mapper.getEntityType(val.getClass());
 			final URI id = resolveValueIdentifier(val, et);
 			cascadeResolver.resolveFieldCascading(attribute, val, getAttributeContext());
-			assertionValues.add(new Value<>(id));
+			assertionValues.add(new Value<>(NamedResource.create(id)));
 		}
 		valueBuilder.addValues(createAssertion(), assertionValues, getAttributeContext());
 	}

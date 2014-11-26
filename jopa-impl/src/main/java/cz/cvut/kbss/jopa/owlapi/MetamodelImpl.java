@@ -247,8 +247,6 @@ public class MetamodelImpl implements Metamodel {
 							.includeExplicit(includeExplicit).constraints(ics).build();
 				}
 				c2.addDeclaredAttribute(field.getName(), a);
-
-				continue;
 			} else {
 				final Id id = field.getAnnotation(Id.class);
 

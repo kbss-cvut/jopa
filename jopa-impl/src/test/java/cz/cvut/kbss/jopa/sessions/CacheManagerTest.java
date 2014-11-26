@@ -148,7 +148,7 @@ public class CacheManagerTest {
 		duplicate.setStringAttribute(newStr);
 		duplicate.setUri(testA.getUri());
 		mngr.add(duplicate.getUri(), duplicate, CONTEXT_ONE);
-		final OWLClassA res = (OWLClassA) mngr.get(testA.getClass(), testA.getUri(), CONTEXT_ONE);
+		final OWLClassA res = mngr.get(testA.getClass(), testA.getUri(), CONTEXT_ONE);
 		assertNotNull(res);
 		assertFalse(testA.getStringAttribute().equals(res.getStringAttribute()));
 		assertEquals(newStr, res.getStringAttribute());
