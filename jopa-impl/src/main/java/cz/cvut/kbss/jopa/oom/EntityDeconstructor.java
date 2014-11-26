@@ -75,7 +75,7 @@ class EntityDeconstructor {
 			Descriptor descriptor) {
 		final FieldSpecification<? super T, ?> fieldSpec = et
 				.getFieldSpecification(field.getName());
-		final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(primaryKey, descriptor.getAttributeDescriptor(fieldSpec));
+		final AxiomValueGatherer valueBuilder = createAxiomValueBuilder(primaryKey, descriptor);
 		try {
 			addAssertions(entity, et, fieldSpec, descriptor, valueBuilder);
 		} catch (IllegalAccessException e) {

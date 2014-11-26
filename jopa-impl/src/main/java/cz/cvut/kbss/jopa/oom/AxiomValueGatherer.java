@@ -38,6 +38,14 @@ class AxiomValueGatherer {
 		this.referencedListDescriptors = new ArrayList<>();
 	}
 
+	URI getEntityContext() {
+		return axiomDescriptor.getSubjectContext();
+	}
+
+	AxiomValueDescriptor getAxiomDescriptor() {
+		return axiomDescriptor;
+	}
+
 	void addValue(Assertion assertion, Value<?> value, URI context) {
 		addValues(assertion, Collections.<Value<?>> singleton(value), context);
 	}
