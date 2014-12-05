@@ -62,6 +62,10 @@ class EntityConstructor {
             }
             final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = getFieldLoader(
                     ax, attributes, fieldLoaders, et, entityDescriptor);
+            if (fs == null && MappingUtils.isClassAssertion(ax)) {
+                // This means the axiom is class assertion but the entity contains no types field
+                continue;
+            }
             assert fs != null;
             fs.addValueFromAxiom(ax);
         }

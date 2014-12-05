@@ -1,20 +1,18 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> {
 
@@ -23,13 +21,8 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 	}
 
 	@Override
-	Collection<Axiom<NamedResource>> loadList(SimpleListDescriptor listDescriptor) throws SesameDriverException {
-		final Collection<Axiom<NamedResource>> axioms = new ArrayList<>();
-		final SimpleListIterator it = new SimpleListIterator(listDescriptor, connector, vf);
-		while (it.hasNext()) {
-			axioms.add(it.nextAxiom());
-		}
-		return axioms;
+	SesameIterator createIterator(SimpleListDescriptor listDescriptor) throws SesameDriverException {
+		return new SimpleListIterator(listDescriptor, connector, vf);
 	}
 
 	@Override

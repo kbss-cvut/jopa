@@ -1,21 +1,18 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 // TODO Refactor list clear, persist and merge into separate classes, 
 // which can share some logic for Simple and Referenced list, the procedure is almost the same
@@ -29,14 +26,8 @@ public class ReferencedListHandler extends
 	}
 
 	@Override
-	Collection<Axiom<NamedResource>> loadList(ReferencedListDescriptor listDescriptor)
-			throws SesameDriverException {
-		final List<Axiom<NamedResource>> axioms = new ArrayList<>();
-		final SesameIterator it = new ReferencedListIterator(listDescriptor, connector, vf);
-		while (it.hasNext()) {
-			axioms.add(it.nextAxiom());
-		}
-		return axioms;
+	SesameIterator createIterator(ReferencedListDescriptor listDescriptor) throws SesameDriverException {
+		return new ReferencedListIterator(listDescriptor, connector, vf);
 	}
 
 	@Override

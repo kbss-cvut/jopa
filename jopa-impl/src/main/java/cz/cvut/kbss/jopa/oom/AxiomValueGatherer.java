@@ -42,8 +42,8 @@ class AxiomValueGatherer {
 		return axiomDescriptor.getSubjectContext();
 	}
 
-	AxiomValueDescriptor getAxiomDescriptor() {
-		return axiomDescriptor;
+	boolean containsClassAssertion() {
+		return axiomDescriptor.getAssertions().contains(Assertion.createClassAssertion(false));
 	}
 
 	void addValue(Assertion assertion, Value<?> value, URI context) {

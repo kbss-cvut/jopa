@@ -12,7 +12,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openrdf.model.ValueFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -20,12 +19,6 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
-/**
- * We'll want to use the same test code for referenced list as well. TODO
- * Refactoring
- *
- * @author ledvima1
- */
 public class SimpleListHandlerTestWithStorage {
 
     private static NamedResource OWNER = NamedResource

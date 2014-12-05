@@ -306,14 +306,12 @@ public class SesameAdapterTest {
 		for (Assertion as : statements.keySet()) {
 			final org.openrdf.model.URI predicate = vf.createURI(as.getIdentifier().toString());
 			when(
-					connectorMock.findStatements(subjectUri, predicate, null, as.isInferred(),
-							(org.openrdf.model.URI) null)).thenReturn(
+					connectorMock.findStatements(subjectUri, predicate, null, as.isInferred())).thenReturn(
 					Collections.singletonList(statements.get(as)));
 		}
 		final Collection<Axiom<?>> res = adapter.find(desc);
 		verify(connectorMock, times(2)).findStatements(any(Resource.class),
-				any(org.openrdf.model.URI.class), any(org.openrdf.model.Value.class), anyBoolean(),
-				(org.openrdf.model.URI[]) eq(null));
+				any(org.openrdf.model.URI.class), any(org.openrdf.model.Value.class), anyBoolean());
 		assertEquals(statements.size(), res.size());
 		for (Axiom<?> ax : res) {
 			assertTrue(statements.containsKey(ax.getAssertion()));
@@ -367,17 +365,14 @@ public class SesameAdapterTest {
 		for (Assertion as : statements.keySet()) {
 			final org.openrdf.model.URI predicate = vf.createURI(as.getIdentifier().toString());
 			when(
-					connectorMock.findStatements(subjectUri, predicate, null, as.isInferred(),
-							(org.openrdf.model.URI) null)).thenReturn(
+					connectorMock.findStatements(subjectUri, predicate, null, as.isInferred())).thenReturn(
 					Collections.singletonList(statements.get(as)));
 		}
 		final Collection<Axiom<?>> res = adapter.find(desc);
 		verify(connectorMock, times(3)).findStatements(any(Resource.class),
-				any(org.openrdf.model.URI.class), any(org.openrdf.model.Value.class), anyBoolean(),
-				(org.openrdf.model.URI[]) eq(null));
+				any(org.openrdf.model.URI.class), any(org.openrdf.model.Value.class), anyBoolean());
 		verify(connectorMock, times(1)).findStatements(eq(subjectUri),
-				eq(vf.createURI(anProperty)), (org.openrdf.model.Value) eq(null), eq(true),
-				(org.openrdf.model.URI[]) eq(null));
+				eq(vf.createURI(anProperty)), (org.openrdf.model.Value) eq(null), eq(true));
 		assertEquals(statements.size(), res.size());
 		for (Axiom<?> ax : res) {
 			assertTrue(statements.containsKey(ax.getAssertion()));
@@ -437,12 +432,10 @@ public class SesameAdapterTest {
 			stmts.addAll(statements.get(a));
 		}
 		when(
-				connectorMock.findStatements(subjectUri, null, null, false,
-						(org.openrdf.model.URI) null)).thenReturn(stmts);
+				connectorMock.findStatements(subjectUri, null, null, false)).thenReturn(stmts);
 
 		final Collection<Axiom<?>> res = adapter.find(desc);
-		verify(connectorMock).findStatements(subjectUri, null, null, false,
-				(org.openrdf.model.URI) null);
+		verify(connectorMock).findStatements(subjectUri, null, null, false);
 		assertEquals(statements.get(asOne).size() + statements.get(asTwo).size(), res.size());
 		for (Axiom<?> ax : res) {
 			if (ax.getAssertion().equals(asOne)) {
@@ -468,8 +461,7 @@ public class SesameAdapterTest {
 		statements.add(vf.createStatement(subjectUri, vf.createURI(propertyOne),
 				vf.createLiteral("someNonUriValue")));
 		when(
-				connectorMock.findStatements(subjectUri, vf.createURI(propertyOne), null, false,
-						(org.openrdf.model.URI) null)).thenReturn(statements);
+				connectorMock.findStatements(subjectUri, vf.createURI(propertyOne), null, false)).thenReturn(statements);
 		final Collection<Axiom<?>> res = adapter.find(desc);
 		assertEquals(1, res.size());
 		assertEquals(expected, res.iterator().next().getValue().toString());
@@ -491,6 +483,23 @@ public class SesameAdapterTest {
 						(org.openrdf.model.URI) null)).thenReturn(statements);
 		final Collection<Axiom<?>> res = adapter.find(desc);
 		assertTrue(res.isEmpty());
+	}
+
+	@Test
+	public void testFindEntityWithBlankNodeInTypes() throws Exception {
+		final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
+		final List<Statement> statements = new ArrayList<>();
+		final Assertion clsAssertion = Assertion.createClassAssertion(false);
+		desc.addAssertion(clsAssertion);
+		statements.add(vf.createStatement(subjectUri, RDF.TYPE, vf.createBNode()));
+		final String type = "http://krizik.felk.cvutcz/ontologies/jopa#entityA";
+		statements.add(vf.createStatement(subjectUri, RDF.TYPE, vf.createURI(type)));
+		when(connectorMock.findStatements(subjectUri, RDF.TYPE, null, false)).thenReturn(statements);
+
+		final Collection<Axiom<?>> res = adapter.find(desc);
+		assertEquals(1, res.size());
+		final Axiom<?> ax = res.iterator().next();
+		assertEquals(type, ax.getValue().stringValue());
 	}
 
 	@Test

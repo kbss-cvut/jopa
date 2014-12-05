@@ -14,7 +14,6 @@ public abstract class ConnectorFactory {
 	}
 
 	public static synchronized ConnectorFactory getInstance() {
-		// TODO Is this the correct way?
 		if (!instance.isOpen()) {
 			instance = new ConnectorFactoryImpl();
 		}

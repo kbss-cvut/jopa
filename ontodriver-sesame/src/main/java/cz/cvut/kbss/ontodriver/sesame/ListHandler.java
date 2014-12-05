@@ -1,6 +1,8 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.openrdf.model.Resource;
@@ -49,7 +51,16 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 	 * @return Collection of axioms representing sequence values
 	 * @throws SesameDriverException
 	 */
-	abstract Collection<Axiom<NamedResource>> loadList(T listDescriptor) throws SesameDriverException;
+	Collection<Axiom<NamedResource>> loadList(T listDescriptor) throws SesameDriverException {
+		final List<Axiom<NamedResource>> axioms = new ArrayList<>();
+		final SesameIterator it = createIterator(listDescriptor);
+		while (it.hasNext()) {
+			axioms.add(it.nextAxiom());
+		}
+		return axioms;
+	}
+
+	abstract SesameIterator createIterator(T listDescriptor) throws SesameDriverException;
 
 	/**
 	 * Persists list values specified by the descriptor. </p>

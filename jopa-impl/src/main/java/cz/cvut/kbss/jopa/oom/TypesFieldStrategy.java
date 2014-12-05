@@ -66,7 +66,6 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
             }
 
         }
-        // TODO
         // If we're updating types in the same context as the individual, we must make sure that the entity class assertion stays there
         if (shouldAddEntityClassAssertion(valueBuilder)) {
             values.add(et.getIRI().toURI());
@@ -75,7 +74,7 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
     }
 
     private boolean shouldAddEntityClassAssertion(AxiomValueGatherer valueBuilder) {
-        return !valueBuilder.getAxiomDescriptor().getAssertions().contains(Assertion.createClassAssertion(false)) && areTypesInSubjectContext(valueBuilder.getEntityContext(), getAttributeContext());
+        return !valueBuilder.containsClassAssertion() && areTypesInSubjectContext(valueBuilder.getEntityContext(), getAttributeContext());
     }
 
     private boolean areTypesInSubjectContext(URI subjectContext, URI typesContext) {
