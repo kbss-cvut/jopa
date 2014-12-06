@@ -71,7 +71,20 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 	 *            Describes values to persist
 	 * @throws SesameDriverException
 	 */
-	abstract void persistList(V listValueDescriptor) throws SesameDriverException;
+	void persistList(V listValueDescriptor) throws SesameDriverException {
+		if (listValueDescriptor.getValues().isEmpty()) {
+			return;
+		}
+		final Collection<Statement> statements = new ArrayList<>(listValueDescriptor.getValues()
+				.size());
+		final URI head = createListHead(listValueDescriptor, statements);
+		statements.addAll(createListRest(head, listValueDescriptor));
+		connector.addStatements(statements);
+	}
+
+	abstract URI createListHead(V valueDescriptor, Collection<Statement> listStatements) throws SesameDriverException;
+
+	abstract Collection<Statement> createListRest(URI head, V valueDescriptor) throws SesameDriverException;
 
 	/**
 	 * Updates list with values specified by the descriptor. </p>
@@ -100,9 +113,31 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 
 	abstract void clearList(V listDescriptor) throws SesameDriverException;
 
-	abstract void mergeList(V listDescriptor) throws SesameDriverException;
+	private void mergeList(V listDescriptor) throws SesameDriverException {
+		final SesameIterator it = iterator(listDescriptor);
+		final MergeResult mergeResult = mergeWithOriginalList(listDescriptor, it);
+		removeObsoletes(it);
+		assert mergeResult.i > 0;
+		assert mergeResult.previous != null;
+		if (mergeResult.i < listDescriptor.getValues().size()) {
+			appendNewNodes(listDescriptor, mergeResult);
+		}
+	}
 
-	protected Resource extractListNode(Collection<Statement> stmts, URI nodeAssertion)
+	abstract SesameIterator iterator(V listDescriptor) throws SesameDriverException;
+
+	abstract MergeResult mergeWithOriginalList(V listDescriptor, SesameIterator it) throws SesameDriverException;
+
+	abstract void appendNewNodes(V listDescriptor, MergeResult mergeResult) throws SesameDriverException;
+
+	void removeObsoletes(SesameIterator it) throws SesameDriverException {
+		while (it.hasNext()) {
+			it.nextNode();
+			it.remove();
+		}
+	}
+
+	Resource extractListNode(Collection<Statement> stmts, URI nodeAssertion)
 			throws SesameDriverException {
 		if (stmts.size() > 1) {
 			throw new IntegrityConstraintViolatedException(
@@ -117,23 +152,23 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 		return (Resource) val;
 	}
 
-	protected URI context(ListDescriptor listDescriptor) {
+	URI context(ListDescriptor listDescriptor) {
 		return sesameUri(listDescriptor.getContext());
 	}
 
-	protected URI owner(ListDescriptor listDescriptor) {
+	URI owner(ListDescriptor listDescriptor) {
 		return sesameUri(listDescriptor.getListOwner().getIdentifier());
 	}
 
-	protected URI hasList(ListDescriptor listDescriptor) {
+	URI hasList(ListDescriptor listDescriptor) {
 		return sesameUri(listDescriptor.getListProperty().getIdentifier());
 	}
 
-	protected URI hasNext(ListDescriptor listDescriptor) {
+	URI hasNext(ListDescriptor listDescriptor) {
 		return sesameUri(listDescriptor.getNextNode().getIdentifier());
 	}
 
-	protected URI sesameUri(java.net.URI uri) {
+	URI sesameUri(java.net.URI uri) {
 		return SesameUtils.toSesameUri(uri, vf);
 	}
 
@@ -170,4 +205,13 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 
 		return new ReferencedListHandler(connector, vf);
 	}
+
+	static final class MergeResult {
+        protected int i;
+        protected Resource previous;
+        protected MergeResult(int i, Resource node) {
+            this.i = i;
+            this.previous = node;
+        }
+    }
 }

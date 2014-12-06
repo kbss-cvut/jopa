@@ -14,8 +14,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-// TODO Refactor list clear, persist and merge into separate classes, 
-// which can share some logic for Simple and Referenced list, the procedure is almost the same
 public class ReferencedListHandler extends
 		ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> {
 
@@ -30,20 +28,7 @@ public class ReferencedListHandler extends
 		return new ReferencedListIterator(listDescriptor, connector, vf);
 	}
 
-	@Override
-	void persistList(ReferencedListValueDescriptor listValueDescriptor)
-			throws SesameDriverException {
-		if (listValueDescriptor.getValues().isEmpty()) {
-			return;
-		}
-		final Collection<Statement> statements = new ArrayList<>(listValueDescriptor.getValues()
-				.size() * 2);
-		URI head = createListHead(listValueDescriptor, statements);
-		statements.addAll(createListRest(head, listValueDescriptor));
-		connector.addStatements(statements);
-	}
-
-	private URI createListHead(ReferencedListValueDescriptor listValueDescriptor,
+	URI createListHead(ReferencedListValueDescriptor listValueDescriptor,
 			Collection<Statement> statements) throws SesameDriverException {
 		final URI owner = owner(listValueDescriptor);
 		final URI hasList = hasList(listValueDescriptor);
@@ -73,26 +58,30 @@ public class ReferencedListHandler extends
 		return node;
 	}
 
-	private Collection<Statement> createListRest(URI headNode,
+	Collection<Statement> createListRest(URI headNode,
 			ReferencedListValueDescriptor listValueDescriptor) throws SesameDriverException {
 		final URI owner = owner(listValueDescriptor);
 		final URI hasNext = hasNext(listValueDescriptor);
 		final URI hasContent = hasContent(listValueDescriptor);
 		final URI context = context(listValueDescriptor);
 		URI previous = headNode;
-		final Collection<Statement> stmts = new ArrayList<>(
+		final Collection<Statement> statements = new ArrayList<>(
 				listValueDescriptor.getValues().size() * 2);
 		final Iterator<NamedResource> it = listValueDescriptor.getValues().iterator();
 		// Skip the first element, it is already in the head
 		it.next();
 		while (it.hasNext()) {
-			final URI node = generateSequenceNode(owner, context);
-			stmts.add(vf.createStatement(previous, hasNext, node, context));
 			final URI content = sesameUri(it.next().getIdentifier());
-			stmts.add(vf.createStatement(node, hasContent, content, context));
-			previous = node;
+			previous = createListNode(owner, hasNext, hasContent, content, context, previous, statements);
 		}
-		return stmts;
+		return statements;
+	}
+
+	private URI createListNode(URI owner, URI hasNext, URI hasContent, URI content, URI context, Resource previous, Collection<Statement> statements) throws SesameDriverException {
+		final URI node = generateSequenceNode(owner, context);
+		statements.add(vf.createStatement(previous, hasNext, node, context));
+		statements.add(vf.createStatement(node, hasContent, content, context));
+		return node;
 	}
 
 	@Override
@@ -121,10 +110,14 @@ public class ReferencedListHandler extends
 	}
 
 	@Override
-	void mergeList(ReferencedListValueDescriptor listDescriptor) throws SesameDriverException {
-		final ReferencedListIterator it = new ReferencedListIterator(listDescriptor, connector, vf);
-		Resource node = null;
+	SesameIterator iterator(ReferencedListValueDescriptor listDescriptor) throws SesameDriverException {
+		return new ReferencedListIterator(listDescriptor, connector, vf);
+	}
+
+	@Override
+	MergeResult mergeWithOriginalList(ReferencedListValueDescriptor listDescriptor, SesameIterator it) throws SesameDriverException {
 		int i = 0;
+		Resource node = null;
 		while (it.hasNext() && i < listDescriptor.getValues().size()) {
 			node = it.nextNode();
 			final Resource content = it.currentContent();
@@ -134,12 +127,13 @@ public class ReferencedListHandler extends
 			}
 			i++;
 		}
-		while (it.hasNext()) {
-			it.nextNode();
-			it.remove();
-		}
-		assert node != null;
-		Resource previous = node;
+		return new MergeResult(i, node);
+	}
+
+	@Override
+	void appendNewNodes(ReferencedListValueDescriptor listDescriptor, MergeResult mergeResult) throws SesameDriverException {
+		int i = mergeResult.i;
+		Resource previous = mergeResult.previous;
 		final URI owner = owner(listDescriptor);
 		final URI hasNext = hasNext(listDescriptor);
 		final URI hasContent = hasContent(listDescriptor);
@@ -148,13 +142,8 @@ public class ReferencedListHandler extends
 		final Collection<Statement> toAdd = new ArrayList<>(
 				(listDescriptor.getValues().size() - i) * 2);
 		while (i < listDescriptor.getValues().size()) {
-			final Resource nextNode = generateSequenceNode(owner, context);
-			final Statement nextStmt = vf.createStatement(previous, hasNext, nextNode, context);
-			toAdd.add(nextStmt);
-			final Statement nextContent = vf.createStatement(nextNode, hasContent,
-					sesameUri(listDescriptor.getValues().get(i).getIdentifier()), context);
-			toAdd.add(nextContent);
-			previous = nextNode;
+			final URI content = sesameUri(listDescriptor.getValues().get(i).getIdentifier());
+			previous = createListNode(owner, hasNext, hasContent, content, context, previous, toAdd);
 			i++;
 		}
 		connector.addStatements(toAdd);
