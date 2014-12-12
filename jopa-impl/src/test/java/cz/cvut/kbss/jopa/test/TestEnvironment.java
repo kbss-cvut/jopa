@@ -79,7 +79,7 @@ public class TestEnvironment {
 	 * Creates persistence connector, with enabled second level cache, for
 	 * OWLAPI accessed ontology stored in a file.
 	 * 
-	 * @param baseName
+	 * @param name
 	 *            Base name used for ontology URI and physical storage path/URI
 	 * @return Persistence context
 	 */
@@ -91,7 +91,7 @@ public class TestEnvironment {
 	 * Creates persistence connector for OWLAPI accessed ontology stored in a
 	 * file.
 	 * 
-	 * @param baseName
+	 * @param name
 	 *            Base name used for ontology URI and physical storage path/URI
 	 * @param cache
 	 *            Whether second level cache should be enabled

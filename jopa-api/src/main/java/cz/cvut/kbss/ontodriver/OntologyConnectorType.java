@@ -4,23 +4,26 @@ public enum OntologyConnectorType {
 	/**
 	 * OWL API ontology connector. Name: owlapi
 	 */
-	OWLAPI("owlapi", OntoDriverProperties.OWLAPI_DRIVER_FACTORY),
+	OWLAPI("owlapi", OntoDriverProperties.OWLAPI_DRIVER_FACTORY, ""),
 	/**
 	 * Jena ontology connector. Name: jena
 	 */
-	JENA("jena", OntoDriverProperties.JENA_DRIVER_FACTORY),
+	JENA("jena", OntoDriverProperties.JENA_DRIVER_FACTORY, ""),
 	/**
 	 * Sesame ontology connector. Name: sesame
 	 */
-	SESAME("sesame", OntoDriverProperties.SESAME_DRIVER_FACTORY);
+	SESAME("sesame", OntoDriverProperties.SESAME_DRIVER_FACTORY, "cz.cvut.kbss.ontodriver.sesame.SesameDataSource");
 
 	private final String name;
 
 	private final String property;
 
-	private OntologyConnectorType(String name, String property) {
+	private final String dataSource;
+
+	private OntologyConnectorType(String name, String property, String dataSource) {
 		this.name = name;
 		this.property = property;
+		this.dataSource = dataSource;
 	}
 
 	public String getProperty() {
@@ -29,6 +32,10 @@ public enum OntologyConnectorType {
 
 	public String getName() {
 		return name;
+	}
+
+	public String getDataSource() {
+		return dataSource;
 	}
 
 	/**

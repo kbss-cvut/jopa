@@ -1,1 +1,5 @@
-- Verify domain when loading entity attributes
+- Verify cardinality when loading entity plural attributes (ParticipationConstraints)
+- Define schema for persistence.xml for JOPA
+- Revisit entity classes discovery
+- @Properties updating
+- Consider adding support for JNDI data source lookup

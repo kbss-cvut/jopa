@@ -13,6 +13,7 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Map;
 
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -32,46 +33,16 @@ public class SesameDataSourceTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		this.dataSource = new SesameDataSource(mock(OntologyStorageProperties.class));
+		this.dataSource = new SesameDataSource();
 		TestUtils.setMock("driver", dataSource, driverMock);
 	}
 
 	@Test(expected = NullPointerException.class)
-	public void testSesameDataSourceNullStorageProperties() {
-		final SesameDataSource ds = new SesameDataSource(null);
+	public void testSesameDataSourceSetNullStorageProperties() throws OntoDriverException {
+		final SesameDataSource ds = new SesameDataSource();
+		ds.setStorageProperties(null);
 		fail("This line should not have been reached.");
 		assert ds == null;
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testSesameDataSourceTwoArgConstructorNullStorageProperties() {
-		final SesameDataSource ds = new SesameDataSource(null,
-				Collections.<String, String> emptyMap());
-		fail("This line should not have been reached.");
-		assert ds == null;
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testSesameDataSourceTwoArgConstructorNullProperties() {
-		final SesameDataSource ds = new SesameDataSource(mock(OntologyStorageProperties.class),
-				null);
-		fail("This line should not have been reached.");
-		assert ds == null;
-	}
-
-	@Test
-	public void testSesameDataSourceWithProperties() throws Exception {
-		final Map<String, String> properties = Collections.singletonMap(
-				OntoDriverProperties.CONNECTION_AUTO_COMMIT, "false");
-		final SesameDataSource ds = new SesameDataSource(mock(OntologyStorageProperties.class),
-				properties);
-		final Field driverField = SesameDataSource.class.getDeclaredField("driver");
-		driverField.setAccessible(true);
-		final SesameDriver driver = (SesameDriver) driverField.get(ds);
-		final Field propsField = SesameDriver.class.getDeclaredField("properties");
-		propsField.setAccessible(true);
-		final Map<String, String> res = (Map<String, String>) propsField.get(driver);
-		assertEquals(properties, res);
 	}
 
 	@Test
@@ -85,9 +56,19 @@ public class SesameDataSourceTest {
 
 	@Test
 	public void testGetConnection() throws Exception {
+		Field connected = dataSource.getClass().getDeclaredField("connected");
+		connected.setAccessible(true);
+		connected.set(dataSource, true);
 		final Connection res = dataSource.getConnection();
 		verify(driverMock).acquireConnection();
 		assertNull(res);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testGetConnectionWithoutInitialization() throws Exception {
+		final Connection res = dataSource.getConnection();
+		// This shouldn't be reached
+		assert res == null;
 	}
 
 	@Test(expected = IllegalStateException.class)

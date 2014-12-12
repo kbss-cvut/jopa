@@ -27,8 +27,11 @@ public class OntologyStorageProperties {
 	private final URI ontologyUri;
 	/** URI of the physical storage, e. g. OWLDB database, OWLIM storage, file */
 	private final URI physicalUri;
+	// TODO This will be removed, only dataSource class will be used
 	/** Type of the storage connector. */
 	private final OntologyConnectorType connectorType;
+	/** Fully qualified OntoDriver data source class name */
+	private final String dataSource;
 	/** User name for the storage, if necessary */
 	private final String username;
 	/** Password for the storage, if neccessary */
@@ -53,6 +56,7 @@ public class OntologyStorageProperties {
 				ErrorUtils.constructNPXMessage("physicalUri"));
 		this.connectorType = Objects.requireNonNull(connectorType,
 				ErrorUtils.constructNPXMessage("connectorType"));
+		this.dataSource = connectorType.getDataSource();
 		this.ontologyUri = ontologyUri;
 		this.username = null;
 		this.password = null;
@@ -83,6 +87,7 @@ public class OntologyStorageProperties {
 				ErrorUtils.constructNPXMessage("physicalUri"));
 		this.connectorType = Objects.requireNonNull(connectorType,
 				ErrorUtils.constructNPXMessage("connectorType"));
+		this.dataSource = connectorType.getDataSource();
 		this.ontologyUri = ontologyUri;
 		this.username = username;
 		this.password = password;
@@ -103,6 +108,10 @@ public class OntologyStorageProperties {
 
 	public OntologyConnectorType getConnectorType() {
 		return connectorType;
+	}
+
+	public String getDataSource() {
+		return dataSource;
 	}
 
 	public String getUsername() {

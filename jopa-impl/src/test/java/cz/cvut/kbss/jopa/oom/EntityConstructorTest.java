@@ -1,47 +1,31 @@
 package cz.cvut.kbss.jopa.oom;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.util.*;
-import java.util.Map.Entry;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
+import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassJ;
 import cz.cvut.kbss.jopa.test.utils.Generators;
 import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
-import cz.cvut.kbss.ontodriver_new.model.Assertion;
-import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
-import cz.cvut.kbss.ontodriver_new.model.NamedResource;
-import cz.cvut.kbss.ontodriver_new.model.Value;
+import cz.cvut.kbss.ontodriver_new.model.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.*;
+import java.util.Map.Entry;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class EntityConstructorTest {
 
@@ -226,7 +210,7 @@ public class EntityConstructorTest {
     @Test
     public void testReconstructEntityWithObjectProperty() throws Exception {
         final Set<Axiom<?>> axiomsD = getAxiomsForD();
-        final Descriptor fieldDesc = mock(Descriptor.class);
+        final Descriptor fieldDesc = new EntityDescriptor();
         descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), fieldDesc);
         final OWLClassA entityA = new OWLClassA();
         entityA.setUri(PK_TWO);
@@ -253,12 +237,85 @@ public class EntityConstructorTest {
     }
 
     private Axiom<NamedResource> createObjectPropertyAxiomForD() throws NoSuchFieldException {
+        final Axiom<NamedResource> opAssertion =
+                new AxiomImpl<>(NamedResource.create(PK), getClassDObjectPropertyAssertion(),
+                        new Value<>(NamedResource.create(PK_TWO)));
+        return opAssertion;
+    }
+
+    private Assertion getClassDObjectPropertyAssertion() throws NoSuchFieldException {
         final URI assertionUri = URI.create(OWLClassD.getOwlClassAField()
                 .getAnnotation(OWLObjectProperty.class).iri());
-        final Assertion assertion = Assertion.createObjectPropertyAssertion(assertionUri, false);
-        final Axiom<NamedResource> opAssertion =
-                new AxiomImpl<>(NamedResource.create(PK), assertion, new Value<>(NamedResource.create(PK_TWO)));
-        return opAssertion;
+        return Assertion.createObjectPropertyAssertion(assertionUri, false);
+    }
+
+    @Test
+    public void reconstructsEntityWithDataPropertyWhereRangeDoesNotMatch() throws Exception {
+        final List<Axiom<?>> axioms = new ArrayList<>();
+        axioms.add(getClassAssertionAxiomForType(OWLClassA.getClassIri()));
+        // Using a list and adding the incorrect range value before the right value will cause it to be processed first
+        axioms.add(createDataPropertyAxiomWithWrongRange(OWLClassA.getStrAttField()));
+        axioms.add(getStringAttAssertionAxiom(OWLClassA.getStrAttField()));
+        OWLClassA entityA = constructor.reconstructEntity(PK, etAMock, descriptor, axioms);
+        assertNotNull(entityA);
+        assertEquals(STRING_ATT, entityA.getStringAttribute());
+
+        axioms.clear();
+        axioms.add(getClassAssertionAxiomForType(OWLClassA.getClassIri()));
+        // Now reverse it
+        axioms.add(getStringAttAssertionAxiom(OWLClassA.getStrAttField()));
+        axioms.add(createDataPropertyAxiomWithWrongRange(OWLClassA.getStrAttField()));
+        entityA = constructor.reconstructEntity(PK, etAMock, descriptor, axioms);
+        assertNotNull(entityA);
+        assertEquals(STRING_ATT, entityA.getStringAttribute());
+    }
+
+    @Test(expected = CardinalityConstraintViolatedException.class)
+    public void throwsExceptionWhenDataPropertyCardinalityRestrictionIsNotMet() throws Exception {
+        final List<Axiom<?>> axioms = new ArrayList<>();
+        axioms.add(getClassAssertionAxiomForType(OWLClassA.getClassIri()));
+        axioms.add(getStringAttAssertionAxiom(OWLClassA.getStrAttField()));
+        axioms.add(getStringAttAssertionAxiom(OWLClassA.getStrAttField()));
+        OWLClassA entityA = constructor.reconstructEntity(PK, etAMock, descriptor, axioms);
+        // This shouldn't be reached
+        assert entityA == null;
+    }
+
+    private Axiom<?> createDataPropertyAxiomWithWrongRange(Field valueField) throws Exception {
+        final OWLDataProperty prop = valueField.getAnnotation(OWLDataProperty.class);
+        assert prop != null;
+        final Assertion assertion = Assertion.createDataPropertyAssertion(URI.create(prop.iri()), false);
+        return new AxiomImpl<>(NamedResource.create(PK), assertion, new Value<Long>(System.currentTimeMillis()));
+    }
+
+    @Test
+    public void reconstructsEntityWithObjectPropertyWhereRangeDoesNotMatch() throws Exception {
+        final Set<Axiom<?>> axioms = getAxiomsForD();
+        final Descriptor fieldDescriptor = new EntityDescriptor();
+        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), fieldDescriptor);
+        // The property value hasn't the corresponding type, so it cannot be returned by mapper
+        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, PK_TWO, fieldDescriptor)).thenReturn(null);
+        final OWLClassD res = constructor.reconstructEntity(PK, etDMock, descriptor, axioms);
+        assertNotNull(res);
+        assertNull(res.getOwlClassA());
+    }
+
+    @Test(expected = CardinalityConstraintViolatedException.class)
+    public void throwsExceptionWhenObjectPropertyCardinalityRestrictionIsNotMet() throws Exception {
+        final Set<Axiom<?>> axioms = getAxiomsForD();
+        final OWLClassA entityA = new OWLClassA();
+        entityA.setUri(PK_TWO);
+        final URI pkThree = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entity3");
+        axioms.add(new AxiomImpl<NamedResource>(NamedResource.create(PK), getClassDObjectPropertyAssertion(), new Value<>(NamedResource.create(pkThree))));
+        final OWLClassA entityThree = new OWLClassA();
+        entityThree.setUri(pkThree);
+        final Descriptor fieldDescriptor = new EntityDescriptor();
+        descriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), fieldDescriptor);
+        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, PK_TWO, fieldDescriptor)).thenReturn(entityA);
+        when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, pkThree, fieldDescriptor)).thenReturn(entityThree);
+        final OWLClassD res = constructor.reconstructEntity(PK, etDMock, descriptor, axioms);
+        // This shouldn't be reached
+        assert res == null;
     }
 
     @Test

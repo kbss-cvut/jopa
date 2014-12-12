@@ -1,7 +1,6 @@
 package cz.cvut.kbss.jopa.oom;
 
-import java.net.URI;
-
+import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -10,6 +9,8 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
+
+import java.net.URI;
 
 class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
 
@@ -24,8 +25,12 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
 	void addValueFromAxiom(Axiom<?> ax) {
 		assert ax.getValue().getValue() instanceof NamedResource;
 		final NamedResource valueIdentifier = (NamedResource) ax.getValue().getValue();
-		this.value = mapper.getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier.getIdentifier(),
+		final Object newValue = mapper.getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier.getIdentifier(),
 				attributeDescriptor);
+		if (value != null) {
+			throw new CardinalityConstraintViolatedException("Expected single value of attribute " + attribute.getName() + " but got multiple.");
+		}
+		this.value = newValue;
 	}
 
 	@Override

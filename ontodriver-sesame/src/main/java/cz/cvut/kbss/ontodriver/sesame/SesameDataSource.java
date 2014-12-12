@@ -12,50 +12,61 @@ import cz.cvut.kbss.ontodriver_new.DataSource;
 
 public class SesameDataSource implements DataSource {
 
-	private final SesameDriver driver;
-	private boolean open;
+    private SesameDriver driver;
+    private volatile boolean open = true;
+    private boolean connected;
 
-	public SesameDataSource(OntologyStorageProperties storageProperties) {
-		Objects.requireNonNull(storageProperties,
-				ErrorUtils.constructNPXMessage("storageProperties"));
+    private OntologyStorageProperties storageProperties;
+    private Map<String, String> properties;
 
-		this.driver = new SesameDriver(storageProperties, Collections.<String, String> emptyMap());
-		this.open = true;
-	}
+    @Override
+    public synchronized void close() throws OntoDriverException {
+        if (!open) {
+            return;
+        }
+        try {
+            if (connected) {
+                driver.close();
+            }
+        } finally {
+            this.open = false;
+        }
+    }
 
-	public SesameDataSource(OntologyStorageProperties storageProperties,
-			Map<String, String> properties) {
-		Objects.requireNonNull(storageProperties,
-				ErrorUtils.constructNPXMessage("storageProperties"));
-		Objects.requireNonNull(properties, ErrorUtils.constructNPXMessage("properties"));
+    @Override
+    public boolean isOpen() {
+        return open;
+    }
 
-		this.driver = new SesameDriver(storageProperties, properties);
-		this.open = true;
-	}
+    @Override
+    public synchronized Connection getConnection() throws OntoDriverException {
+        if (!open) {
+            throw new IllegalStateException("The data source is closed.");
+        }
+        if (!connected) {
+            connect();
+        }
+        return driver.acquireConnection();
+    }
 
-	@Override
-	public void close() throws OntoDriverException {
-		if (!open) {
-			return;
-		}
-		try {
-			driver.close();
-		} finally {
-			this.open = false;
-		}
-	}
+    @Override
+    public void setStorageProperties(OntologyStorageProperties storageProperties) throws OntoDriverException {
+        this.storageProperties = Objects.requireNonNull(storageProperties, ErrorUtils.constructNPXMessage("storageProperties"));
+    }
 
-	@Override
-	public boolean isOpen() {
-		return open;
-	}
+    @Override
+    public void setProperties(Map<String, String> properties) throws OntoDriverException {
+        this.properties = Objects.requireNonNull(properties, ErrorUtils.constructNPXMessage("properties"));
+    }
 
-	@Override
-	public Connection getConnection() throws OntoDriverException {
-		if (!open) {
-			throw new IllegalStateException("The data source is closed.");
-		}
-		return driver.acquireConnection();
-	}
-
+    private void connect() {
+        if (storageProperties == null) {
+            throw new IllegalStateException("Cannot initialize OntoDriver without storageProperties configuration.");
+        }
+        if (properties == null) {
+            this.properties = Collections.emptyMap();
+        }
+        this.driver = new SesameDriver(storageProperties, properties);
+        this.connected = true;
+    }
 }
