@@ -75,4 +75,9 @@ public class TypesSpecificationImpl<X, Y> implements
 		// TODO
 		return false;
 	}
+
+	@Override
+	public String getName() {
+		return javaField.getName();
+	}
 }

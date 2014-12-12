@@ -1,5 +1,8 @@
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -25,95 +28,6 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         this.attributeDescriptor = attributeDescriptor;
         this.mapper = mapper;
     }
-
-    void setCascadeResolver(CascadeResolver resolver) {
-        this.cascadeResolver = resolver;
-    }
-
-    /**
-     * Sets the specified value on the specified instance, the field is taken
-     * from the attribute represented by this strategy. </p>
-     * <p/>
-     * Note that this method assumes the value and the field are of compatible
-     * types, no check is done here.
-     */
-    void setValueOnInstance(Object instance, Object value)
-            throws IllegalArgumentException, IllegalAccessException {
-        final Field field = attribute.getJavaField();
-        if (!field.isAccessible()) {
-            field.setAccessible(true);
-        }
-        field.set(instance, value);
-    }
-
-    /**
-     * Extracts the attribute value from the specified instance. </p>
-     *
-     * @return Attribute value, possibly {@code null}
-     */
-    Object extractFieldValueFromInstance(Object instance)
-            throws IllegalArgumentException, IllegalAccessException {
-        final Field field = attribute.getJavaField();
-        if (!field.isAccessible()) {
-            field.setAccessible(true);
-        }
-        return field.get(instance);
-    }
-
-    <E> URI resolveValueIdentifier(E instance, EntityType<E> valEt) {
-        URI id = EntityPropertiesUtils.getPrimaryKey(instance, valEt);
-        if (id == null) {
-            id = mapper.generateIdentifier(valEt);
-            EntityPropertiesUtils.setPrimaryKey(id, instance, valEt);
-        }
-        return id;
-    }
-
-    URI getAttributeContext() {
-//		return attributeDescriptor.getAttributeDescriptor(attribute).getContext();
-        return attributeDescriptor.getContext();
-    }
-
-    /**
-     * Adds value from the specified axioms to this strategy. </p>
-     * <p/>
-     * The value(s) is/are then set on entity field using
-     * {@link #buildInstanceFieldValue(Object)}.
-     *
-     * @param ax Axiom to extract value from
-     */
-    abstract void addValueFromAxiom(Axiom<?> ax);
-
-    /**
-     * Sets instance field from values gathered in this strategy.
-     *
-     * @param instance The instance to receive the field value
-     * @throws IllegalArgumentException Access error
-     * @throws IllegalAccessException   Access error
-     */
-    abstract void buildInstanceFieldValue(Object instance)
-            throws IllegalArgumentException, IllegalAccessException;
-
-    /**
-     * Extracts values of field represented by this strategy from the specified
-     * instance.
-     *
-     * @param instance     The instance to extract values from
-     * @param valueBuilder Builder into which the attribute value(s) are extracted
-     * @throws IllegalArgumentException Access error
-     * @throws IllegalAccessException   Access error
-     */
-    abstract void buildAxiomValuesFromInstance(X instance,
-                                               AxiomValueGatherer valueBuilder) throws IllegalArgumentException,
-            IllegalAccessException;
-
-    /**
-     * Creates property assertion appropriate for the attribute represented by
-     * this strategy.
-     *
-     * @return Property assertion
-     */
-    abstract Assertion createAssertion();
 
     static <X> FieldStrategy<? extends FieldSpecification<? super X, ?>, X> createFieldStrategy(
             EntityType<X> et, FieldSpecification<? super X, ?> att,
@@ -184,4 +98,109 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
                                 + attribute.getCollectionType());
         }
     }
+
+    void setCascadeResolver(CascadeResolver resolver) {
+        this.cascadeResolver = resolver;
+    }
+
+    /**
+     * Sets the specified value on the specified instance, the field is taken
+     * from the attribute represented by this strategy. </p>
+     * <p/>
+     * Note that this method assumes the value and the field are of compatible
+     * types, no check is done here.
+     */
+    void setValueOnInstance(Object instance, Object value)
+            throws IllegalArgumentException, IllegalAccessException {
+        final Field field = attribute.getJavaField();
+        if (!field.isAccessible()) {
+            field.setAccessible(true);
+        }
+        field.set(instance, value);
+    }
+
+    /**
+     * Extracts the attribute value from the specified instance. </p>
+     *
+     * @return Attribute value, possibly {@code null}
+     */
+    Object extractFieldValueFromInstance(Object instance)
+            throws IllegalArgumentException, IllegalAccessException {
+        final Field field = attribute.getJavaField();
+        if (!field.isAccessible()) {
+            field.setAccessible(true);
+        }
+        return field.get(instance);
+    }
+
+    <E> URI resolveValueIdentifier(E instance, EntityType<E> valEt) {
+        URI id = EntityPropertiesUtils.getPrimaryKey(instance, valEt);
+        if (id == null) {
+            id = mapper.generateIdentifier(valEt);
+            EntityPropertiesUtils.setPrimaryKey(id, instance, valEt);
+        }
+        return id;
+    }
+
+    URI getAttributeContext() {
+        return attributeDescriptor.getContext();
+    }
+
+    void validateCardinalityConstraints(int valueCount) {
+        final ParticipationConstraint[] constraints = attribute.getJavaField().getAnnotation(ParticipationConstraints.class).value();
+        if (constraints.length == 0) {
+            return;
+        }
+        for (ParticipationConstraint pc : constraints) {
+            if (valueCount < pc.min()) {
+                throw new CardinalityConstraintViolatedException("At least " + pc.min() +
+                        " values of attribute " + attribute.getName() + " expected, but got only " + valueCount);
+            }
+            if (pc.max() >= 0 && pc.max() < valueCount) {
+                throw new CardinalityConstraintViolatedException("At most " + pc.max() +
+                        " values of attribute " + attribute.getName() + " expected, but got " + valueCount);
+            }
+        }
+    }
+
+    /**
+     * Adds value from the specified axioms to this strategy. </p>
+     * <p/>
+     * The value(s) is/are then set on entity field using
+     * {@link #buildInstanceFieldValue(Object)}.
+     *
+     * @param ax Axiom to extract value from
+     */
+    abstract void addValueFromAxiom(Axiom<?> ax);
+
+    /**
+     * Sets instance field from values gathered in this strategy.
+     *
+     * @param instance The instance to receive the field value
+     * @throws IllegalArgumentException Access error
+     * @throws IllegalAccessException   Access error
+     */
+    abstract void buildInstanceFieldValue(Object instance)
+            throws IllegalArgumentException, IllegalAccessException;
+
+    /**
+     * Extracts values of field represented by this strategy from the specified
+     * instance.
+     *
+     * @param instance     The instance to extract values from
+     * @param valueBuilder Builder into which the attribute value(s) are extracted
+     * @throws IllegalArgumentException Access error
+     * @throws IllegalAccessException   Access error
+     */
+    abstract void buildAxiomValuesFromInstance(X instance,
+                                               AxiomValueGatherer valueBuilder) throws IllegalArgumentException,
+            IllegalAccessException;
+
+    /**
+     * Creates property assertion appropriate for the attribute represented by
+     * this strategy.
+     *
+     * @return Property assertion
+     */
+    abstract Assertion createAssertion();
 }

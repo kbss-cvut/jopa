@@ -286,6 +286,7 @@ public final class TestEnvironmentUtils {
         when(setMock.getIRI()).thenReturn(IRI.create(OWLClassL.getSetField().getAnnotation(OWLObjectProperty.class).iri()));
         when(setMock.getConstraints()).thenReturn(OWLClassL.getSetField().getAnnotation(ParticipationConstraints.class).value());
         when(setMock.getCollectionType()).thenReturn(CollectionType.SET);
+        when(setMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(setMock.isCollection()).thenReturn(true);
     }
 }

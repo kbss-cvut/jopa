@@ -31,7 +31,7 @@ public class OWLClassL {
 
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA")
     @ParticipationConstraints({
-            @ParticipationConstraint(min = 1, max = 2, owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
+            @ParticipationConstraint(min = 1, max = 5, owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
     })
     private Set<OWLClassA> set;
 

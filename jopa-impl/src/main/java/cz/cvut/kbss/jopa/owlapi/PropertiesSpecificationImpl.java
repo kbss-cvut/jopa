@@ -75,4 +75,9 @@ public class PropertiesSpecificationImpl<X, Y> implements
 		// TODO
 		return false;
 	}
+
+	@Override
+	public String getName() {
+		return javaField.getName();
+	}
 }

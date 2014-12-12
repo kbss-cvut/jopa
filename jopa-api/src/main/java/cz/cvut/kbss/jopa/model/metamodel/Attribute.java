@@ -82,13 +82,6 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
 	}
 
 	/**
-	 * Return the name of the attribute.
-	 * 
-	 * @return name
-	 */
-	String getName();
-
-	/**
 	 * Return the persistent attribute type for the attribute.
 	 * 
 	 * @return persistent attribute type

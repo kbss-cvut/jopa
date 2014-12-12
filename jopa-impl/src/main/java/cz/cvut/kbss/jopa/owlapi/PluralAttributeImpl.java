@@ -15,13 +15,6 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -29,6 +22,11 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.util.Collection;
+import java.util.Map;
 
 public class PluralAttributeImpl<X, C, E> implements PluralAttribute<X, C, E> {
 

@@ -39,4 +39,11 @@ public interface FieldSpecification<X, E> {
 	public boolean includeExplicit();
 
 	public  boolean isReadOnly();
+
+	/**
+	 * Return the name of the attribute.
+	 *
+	 * @return name
+	 */
+	String getName();
 }
