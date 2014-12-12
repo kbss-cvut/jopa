@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.model.annotations.Inferred;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -121,5 +122,11 @@ public class SimpleSetPropertyStrategyTest {
 				OWLClassJ.getOwlClassAField().getAnnotation(Inferred.class) != null);
 		assertEquals(1, res.getAssertionValues(ass).size());
 		assertSame(Value.nullValue(), res.getAssertionValues(ass).get(0));
+	}
+
+	@Test
+	public void throwsExceptionWhenMinimumCardinalityConstraintIsViolated() throws Exception {
+		final Set<OWLClassA> set = generateSet();
+
 	}
 }
