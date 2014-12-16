@@ -3,10 +3,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.oom.model.OWLClassL;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
@@ -46,6 +43,9 @@ public class ParticipationConstraintsTest {
     private PluralAttribute setMock;
 
     @Mock
+    private Attribute singleAMock;
+
+    @Mock
     private Identifier idLMock;
 
     @Mock
@@ -56,7 +56,7 @@ public class ParticipationConstraintsTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        TestEnvironmentUtils.initOWLClassLMocks(etLMock, refListMock, simpleListMock, setMock, idLMock);
+        TestEnvironmentUtils.initOWLClassLMocks(etLMock, refListMock, simpleListMock, setMock, singleAMock, idLMock);
         this.descriptor = new EntityDescriptor();
     }
 
@@ -107,6 +107,13 @@ public class ParticipationConstraintsTest {
         assertFalse(res.getSet().isEmpty());
         assertEquals(count, res.getSet().size());
         assertTrue(res.getSet().containsAll(as));
+    }
+
+    @Test(expected = CardinalityConstraintViolatedException.class)
+    public void throwsExceptionWhenMinimumCardinalityIsNotMetForSingleValueField() throws Exception {
+        final FieldStrategy fs = FieldStrategy.createFieldStrategy(etLMock, singleAMock, descriptor, mapperMock);
+        final OWLClassL res = new OWLClassL();
+        fs.buildInstanceFieldValue(res);
     }
 
     // TODO Test also when data are being merge into ontology

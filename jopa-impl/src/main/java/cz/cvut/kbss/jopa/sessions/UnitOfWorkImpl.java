@@ -264,7 +264,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 */
 	protected void commitUnitOfWork() {
 		commitToOntology();
-		storageCommit();
 		mergeChangesIntoParent();
 		postCommit();
 	}
@@ -305,6 +304,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		if (hasChanges) {
 			calculateChanges();
 		}
+		storageCommit();
 	}
 
 	/**

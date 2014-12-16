@@ -252,7 +252,7 @@ public final class TestEnvironmentUtils {
     }
 
     public static void initOWLClassLMocks(EntityType<OWLClassL> etMock, ListAttribute refListMock,
-                                          ListAttribute simpleListMock, PluralAttribute setMock, Identifier idMock)
+                                          ListAttribute simpleListMock, PluralAttribute setMock, Attribute singleAMock, Identifier idMock)
             throws NoSuchFieldException {
         when(etMock.getJavaType()).thenReturn(OWLClassL.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassL.getClassIri()));
@@ -288,5 +288,11 @@ public final class TestEnvironmentUtils {
         when(setMock.getCollectionType()).thenReturn(CollectionType.SET);
         when(setMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(setMock.isCollection()).thenReturn(true);
+
+        when(singleAMock.getJavaField()).thenReturn(OWLClassL.getSingleAField());
+        when(singleAMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
+        when(singleAMock.getIRI()).thenReturn(IRI.create(OWLClassL.getSingleAField().getAnnotation(OWLObjectProperty.class).iri()));
+        when(singleAMock.getConstraints()).thenReturn(OWLClassL.getSingleAField().getAnnotation(ParticipationConstraints.class).value());
+        when(singleAMock.isCollection()).thenReturn(false);
     }
 }

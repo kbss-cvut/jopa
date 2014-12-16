@@ -35,6 +35,12 @@ public class OWLClassL {
     })
     private Set<OWLClassA> set;
 
+    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasAExtra")
+    @ParticipationConstraints({
+            @ParticipationConstraint(min = 1, owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
+    })
+    private OWLClassA singleA;
+
     public URI getUri() {
         return uri;
     }
@@ -67,6 +73,14 @@ public class OWLClassL {
         this.set = set;
     }
 
+    public OWLClassA getSingleA() {
+        return singleA;
+    }
+
+    public void setSingleA(OWLClassA singleA) {
+        this.singleA = singleA;
+    }
+
     @Override
     public String toString() {
         return "OWLClassL{" +
@@ -91,5 +105,9 @@ public class OWLClassL {
 
     public static Field getSetField() throws NoSuchFieldException {
         return OWLClassL.class.getDeclaredField("set");
+    }
+
+    public static Field getSingleAField() throws NoSuchFieldException {
+        return OWLClassL.class.getDeclaredField("singleA");
     }
 }

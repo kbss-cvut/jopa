@@ -5,6 +5,7 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.utils.CardinalityConstraintsValidation;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
@@ -146,21 +147,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         return attributeDescriptor.getContext();
     }
 
-    void validateCardinalityConstraints(int valueCount) {
-        final ParticipationConstraint[] constraints = attribute.getJavaField().getAnnotation(ParticipationConstraints.class).value();
-        if (constraints.length == 0) {
-            return;
-        }
-        for (ParticipationConstraint pc : constraints) {
-            if (valueCount < pc.min()) {
-                throw new CardinalityConstraintViolatedException("At least " + pc.min() +
-                        " values of attribute " + attribute.getName() + " expected, but got only " + valueCount);
-            }
-            if (pc.max() >= 0 && pc.max() < valueCount) {
-                throw new CardinalityConstraintViolatedException("At most " + pc.max() +
-                        " values of attribute " + attribute.getName() + " expected, but got " + valueCount);
-            }
-        }
+    void validateCardinalityConstraints(Object values) {
+        CardinalityConstraintsValidation.validateCardinalityConstraints(attribute.getJavaField(), values);
     }
 
     /**
