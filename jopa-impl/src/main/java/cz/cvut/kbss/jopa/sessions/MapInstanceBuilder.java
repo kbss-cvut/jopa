@@ -32,7 +32,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 			orig = ((IndirectCollection<Map<?, ?>>) original).getReferencedCollection();
 		}
 		final Class<?> origCls = orig.getClass();
-		Map<?, ?> clone = null;
+		Map<?, ?> clone;
 		clone = cloneUsingDefaultConstructor(cloneOwner, field, origCls, orig, repository);
 		if (clone == null) {
 			if (singletonMapClass.isInstance(orig)) {
@@ -58,17 +58,17 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 	private Map<?, ?> createNewInstance(Class<?> type, int size) {
 		Map<?, ?> result = null;
 		final Class<?>[] types = { int.class };
-		Object[] params = null;
+		Object[] params;
 		Constructor<?> c = getDeclaredConstructorFor(type, types);
 		if (c != null) {
 			params = new Object[1];
-			params[0] = Integer.valueOf(size);
+			params[0] = size;
 		} else {
 			c = getDeclaredConstructorFor(type, null);
 			params = null;
 		}
 		if (c == null) {
-			return result;
+			return null;
 		}
 		try {
 			result = (Map<?, ?>) c.newInstance(params);
@@ -125,8 +125,8 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 		boolean keyPrimitive = CloneBuilderImpl.isPrimitiveOrString(tmp.getKey().getClass());
 		boolean valuePrimitive = CloneBuilderImpl.isPrimitiveOrString(tmp.getValue().getClass());
 		for (Entry<?, ?> e : source.entrySet()) {
-			Object key = null;
-			Object value = null;
+			Object key;
+			Object value;
 			if (keyPrimitive) {
 				if (valuePrimitive) {
 					m.putAll(source);

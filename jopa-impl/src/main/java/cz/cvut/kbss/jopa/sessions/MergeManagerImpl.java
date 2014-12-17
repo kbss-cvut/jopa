@@ -1,8 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.net.URI;
-import java.util.Iterator;
-import java.util.Map;
 
 import org.semanticweb.owlapi.model.IRI;
 
@@ -33,7 +31,7 @@ public class MergeManagerImpl implements MergeManager {
 			throw new OWLPersistenceException("Change Set in Merge Manager null.");
 		}
 		if (clone == null) {
-			return clone;
+			return null;
 		}
 
 		Object original = changeSet.getChangedObject();

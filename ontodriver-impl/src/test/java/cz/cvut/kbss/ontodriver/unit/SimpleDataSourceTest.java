@@ -76,8 +76,6 @@ public class SimpleDataSourceTest {
 	@Test(expected = NullPointerException.class)
 	public void testSimpleDataSourceSingleArgEmpty() {
 		final DataSource res = new SimpleDataSource(null);
-		// This shouldn't be reached
-		assert res == null;
 	}
 
 	@Test
@@ -97,8 +95,6 @@ public class SimpleDataSourceTest {
 	@Test(expected = NullPointerException.class)
 	public void testSimpleDataSourceTwoArgsNullStorages() throws Exception {
 		final DataSource res = new SimpleDataSource(null, properties);
-		// This shouldn't be reached
-		assert res == null;
 	}
 
 	@Test(expected = UnsupportedOperationException.class)

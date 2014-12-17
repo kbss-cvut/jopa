@@ -60,9 +60,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 							Object[] params = new Object[1];
 							params[0] = original.getClass().getDeclaredField(f.getName());
 							newInstance = c.newInstance(params);
-							if (newInstance != null) {
-								return newInstance;
-							}
+							return newInstance;
 						} catch (SecurityException e) {
 							try {
 								newInstance = AccessController
@@ -78,34 +76,26 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 						}
 					}
 				}
-				if (newInstance == null) {
-					Class<?>[] args = new Class<?>[fieldClasses.size()];
-					args = fieldClasses.toArray(args);
-					c = getDeclaredConstructorFor(javaClass, args);
-					if (c != null) {
-						Object[] params = new Object[args.length];
-						for (int i = 0; i < params.length; i++) {
-							params[i] = null;
-						}
-						try {
-							newInstance = c.newInstance(params);
-						} catch (SecurityException e) {
-							try {
-								newInstance = AccessController
-										.doPrivileged(new PrivilegedInstanceCreator(c));
-							} catch (PrivilegedActionException ex) {
-								throw new OWLPersistenceException(ex);
-							}
-						}
-					}
-				}
-			} catch (InstantiationException e) {
-				throw new OWLPersistenceException(e);
-			} catch (IllegalAccessException e) {
-				throw new OWLPersistenceException(e);
-			} catch (IllegalArgumentException e) {
-				throw new OWLPersistenceException(e);
-			} catch (InvocationTargetException e) {
+				Class<?>[] args = new Class<?>[fieldClasses.size()];
+				args = fieldClasses.toArray(args);
+				c = getDeclaredConstructorFor(javaClass, args);
+				if (c != null) {
+                    Object[] params = new Object[args.length];
+                    for (int i = 0; i < params.length; i++) {
+                        params[i] = null;
+                    }
+                    try {
+                        newInstance = c.newInstance(params);
+                    } catch (SecurityException e) {
+                        try {
+                            newInstance = AccessController
+                                    .doPrivileged(new PrivilegedInstanceCreator(c));
+                        } catch (PrivilegedActionException ex) {
+                            throw new OWLPersistenceException(ex);
+                        }
+                    }
+                }
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				throw new OWLPersistenceException(e);
 			}
 		}

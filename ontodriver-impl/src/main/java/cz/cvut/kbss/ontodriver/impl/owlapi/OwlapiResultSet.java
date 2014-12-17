@@ -261,7 +261,6 @@ public class OwlapiResultSet extends AbstractResultSet {
 			throw new IllegalArgumentException("Unknown column name " + column);
 		}
 		final GroundTerm<OWLObject> gt = current.get(v);
-		assert v != null;
 		return gt.getWrappedObject();
 	}
 
@@ -275,7 +274,6 @@ public class OwlapiResultSet extends AbstractResultSet {
 			throw new IllegalArgumentException("Column index out of bounds: " + colIndex);
 		}
 		final GroundTerm<OWLObject> gt = current.get(v);
-		assert v != null;
 		return gt.getWrappedObject();
 	}
 

@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.model.annotations.Inferred;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

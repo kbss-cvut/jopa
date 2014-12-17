@@ -1,8 +1,5 @@
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.CardinalityConstraintsValidation;

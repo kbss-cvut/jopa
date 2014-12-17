@@ -80,9 +80,6 @@ public class ConnectionImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testConnectionImplNull() throws Exception {
 		final Connection c = new ConnectionImpl(null);
-		// This won't be reached, it's here just to suppress the unused
-		// warning
-		assert c == null;
 	}
 
 	@Test

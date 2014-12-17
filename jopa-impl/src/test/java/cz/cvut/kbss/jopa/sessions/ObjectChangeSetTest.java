@@ -1,20 +1,13 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
-import cz.cvut.kbss.jopa.sessions.ChangeRecordImpl;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
-import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
+import static org.junit.Assert.*;
 
 public class ObjectChangeSetTest {
 
@@ -42,7 +35,7 @@ public class ObjectChangeSetTest {
 		ObjectChangeSet chs = new ObjectChangeSetImpl(testObject, testClone, CONTEXT);
 		chs.addChangeRecord(record);
 		assertNotNull(chs.getAttributesToChange().get(attName));
-		Object res = ((ChangeRecord) chs.getAttributesToChange().get(attName)).getNewValue();
+		Object res = chs.getAttributesToChange().get(attName).getNewValue();
 		assertEquals(testObject, res);
 	}
 
@@ -87,7 +80,7 @@ public class ObjectChangeSetTest {
 	@Test
 	public void testSetChanges() {
 		ObjectChangeSet chs = new ObjectChangeSetImpl(testObject, testClone, CONTEXT);
-		List<ChangeRecord> changes = new ArrayList<ChangeRecord>();
+		List<ChangeRecord> changes = new ArrayList<>();
 		chs.setChanges(changes);
 		assertEquals(changes, chs.getChanges());
 	}

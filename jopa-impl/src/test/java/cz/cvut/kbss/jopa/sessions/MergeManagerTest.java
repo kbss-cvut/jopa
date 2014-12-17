@@ -106,7 +106,7 @@ public class MergeManagerTest {
 		uowChangeSet.addObjectChangeSet(ochs);
 		mm.mergeChangesFromChangeSet(uowChangeSet);
 		verify(uow).removeObjectFromCache(objTwo, defaultDescriptor.getContext());
-		assertEquals(((OWLClassB) cloneOne).getStringAttribute(), objOne.getStringAttribute());
+		assertEquals(cloneOne.getStringAttribute(), objOne.getStringAttribute());
 	}
 
 	@Test

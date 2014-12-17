@@ -1,6 +1,5 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.util.Map;
 import java.util.Set;
 
 public interface UnitOfWorkChangeSet {

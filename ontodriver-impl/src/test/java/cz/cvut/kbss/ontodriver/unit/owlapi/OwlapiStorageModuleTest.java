@@ -101,15 +101,11 @@ public class OwlapiStorageModuleTest {
 	@Test(expected = NullPointerException.class)
 	public void testOwlapiStorageModuleNullProvider() throws Exception {
 		final OwlapiStorageModule m = new OwlapiStorageModule(null, factory);
-		// shouldn't be reached
-		assert m == null;
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testOwlapiStorageModuleNullFactory() throws Exception {
 		final OwlapiStorageModule m = new OwlapiStorageModule(provider, null);
-		// shouldn't be reached
-		assert m == null;
 	}
 
 	@Test

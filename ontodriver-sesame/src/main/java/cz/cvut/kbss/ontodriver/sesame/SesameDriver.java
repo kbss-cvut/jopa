@@ -42,7 +42,7 @@ class SesameDriver implements Closeable, ConnectionListener {
 			}
 			connectorFactory.close();
 		} catch (Exception e) {
-			if (e instanceof OntoDriverException || e instanceof SesameDriverException) {
+			if (e instanceof OntoDriverException) {
 				throw (OntoDriverException) e;
 			} else {
 				throw new SesameDriverException(e);

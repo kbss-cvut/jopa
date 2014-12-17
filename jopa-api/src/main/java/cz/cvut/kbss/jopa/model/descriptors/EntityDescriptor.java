@@ -107,7 +107,7 @@ public class EntityDescriptor extends Descriptor {
 		for (Descriptor fd : fieldDescriptors.values()) {
 			contexts = fd.getContextsInternal(contexts, visited);
 			if (contexts == null) {
-				return contexts;
+				return null;
 			}
 		}
 		return contexts;

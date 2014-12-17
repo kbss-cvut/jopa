@@ -1,9 +1,5 @@
 package cz.cvut.kbss.jopa.oom;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;

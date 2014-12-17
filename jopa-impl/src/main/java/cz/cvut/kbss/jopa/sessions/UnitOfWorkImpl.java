@@ -739,7 +739,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		// Original is null until commit
 		Object original = null;
 		cloneMapping.put(entity, entity);
-		getNewObjectsCloneToOriginal().put(entity, original);
+		getNewObjectsCloneToOriginal().put(entity, null);
 		registerEntityWithPersistenceContext(entity, this);
 		registerEntityWithOntologyContext(descriptor, entity);
 		getNewObjectsKeyToClone().put(id, entity);

@@ -45,7 +45,7 @@ abstract class AttributeStrategyFactory {
 
 	private static AttributeStrategy createImpl(Attribute<?, ?> att, SesameModuleInternal internal,
 			SubjectModels<?> models) {
-		AttributeStrategy s = null;
+		AttributeStrategy s;
 		if (att.isCollection()) {
 			switch (att.getPersistentAttributeType()) {
 			case ANNOTATION:
@@ -77,7 +77,6 @@ abstract class AttributeStrategyFactory {
 						+ att.getPersistentAttributeType());
 			}
 		}
-		assert s != null;
 		return s;
 	}
 }

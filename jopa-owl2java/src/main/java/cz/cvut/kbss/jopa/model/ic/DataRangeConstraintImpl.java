@@ -43,7 +43,7 @@ class DataRangeConstraintImpl implements
 
 	
 	public void accept(IntegrityConstraintVisitor visitor) {
-		visitor.visit((DataRangeConstraint) this);
+		visitor.visit(this);
 	}
 
 	

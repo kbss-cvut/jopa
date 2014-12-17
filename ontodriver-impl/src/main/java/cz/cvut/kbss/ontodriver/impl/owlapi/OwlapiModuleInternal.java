@@ -476,7 +476,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 
 		T cc = null;
 		try {
-			cc = (T) cls.newInstance();
+			cc = cls.newInstance();
 		} catch (Exception e) {
 			throw new OntoDriverException(e);
 		}

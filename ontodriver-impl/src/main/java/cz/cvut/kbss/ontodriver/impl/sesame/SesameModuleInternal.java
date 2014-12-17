@@ -379,7 +379,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 			} else if (idValue instanceof String) {
 				return valueFactory.createURI((String) idValue);
 			} else if (idValue instanceof java.net.URI) {
-				return valueFactory.createURI(((java.net.URI) idValue).toString());
+				return valueFactory.createURI(idValue.toString());
 			} else {
 				throw new OwlModuleException("Unknown identifier type: " + idValue.getClass());
 			}

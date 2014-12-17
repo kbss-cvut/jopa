@@ -31,8 +31,8 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 		}
 
 		this.storageProperties = storageProperties;
-		this.openedConnectors = new ConcurrentHashMap<StorageConnector, StorageConnector>();
-		this.openedModules = new ConcurrentHashMap<StorageModule, StorageModule>();
+		this.openedConnectors = new ConcurrentHashMap<>();
+		this.openedModules = new ConcurrentHashMap<>();
 		this.open = true;
 		this.properties = properties;
 	}
@@ -116,7 +116,7 @@ public abstract class DriverAbstractFactory implements DriverFactory {
 	 */
 	protected void ensureOpen() {
 		if (!open) {
-			new IllegalStateException("The factory is closed.");
+			throw new IllegalStateException("The factory is closed.");
 		}
 	}
 

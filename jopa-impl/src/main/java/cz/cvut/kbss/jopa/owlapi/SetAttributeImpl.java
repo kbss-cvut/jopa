@@ -15,16 +15,10 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import java.lang.reflect.Field;
 import java.util.Set;
 
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.annotations.CascadeType;
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
-import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.metamodel.SetAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.Type;
 
 public class SetAttributeImpl<X, V> extends PluralAttributeImpl<X, Set<V>, V>
 		implements SetAttribute<X, V> {

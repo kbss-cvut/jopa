@@ -61,7 +61,6 @@ public class OntoDriverImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testOntoDriverImplNull() {
 		final OntoDriverImpl d = new OntoDriverImpl(null);
-		assert d == null;
 	}
 
 	@Test
@@ -92,8 +91,6 @@ public class OntoDriverImplTest {
 				.connectorType(OntologyConnectorType.JENA)
 				.physicalUri(URI.create("http://localhost:8080/store")).build();
 		final OntoDriver d = new OntoDriverImpl(props, m);
-		// This shouldn't be reached
-		assert d == null;
 	}
 
 	@Test(expected = OntoDriverInitializationException.class)
@@ -104,8 +101,6 @@ public class OntoDriverImplTest {
 				.connectorType(OntologyConnectorType.JENA)
 				.physicalUri(URI.create("http://localhost:8080/store")).build();
 		final OntoDriver d = new OntoDriverImpl(props, m);
-		// This shouldn't be reached
-		assert d == null;
 	}
 
 	@Test(expected = OntoDriverInitializationException.class)
@@ -116,8 +111,6 @@ public class OntoDriverImplTest {
 				.connectorType(OntologyConnectorType.JENA)
 				.physicalUri(URI.create("http://localhost:8080/store")).build();
 		final OntoDriver d = new OntoDriverImpl(props, m);
-		// This shouldn't be reached
-		assert d == null;
 	}
 
 	@Test

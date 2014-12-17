@@ -28,7 +28,7 @@ public class ChangeManagerImpl implements ChangeManager {
 	}
 
 	public ChangeManagerImpl() {
-		visitedObjects = new IdentityHashMap<Object, Object>();
+		visitedObjects = new IdentityHashMap<>();
 	}
 
 	public boolean hasChanges(Object original, Object clone) {
@@ -55,7 +55,7 @@ public class ChangeManagerImpl implements ChangeManager {
 		if (clone == null && original == null) {
 			return false;
 		}
-		if (clone == null && original != null || clone != null && original == null) {
+		if (clone == null || original == null) {
 			return true;
 		}
 		if (visitedObjects.containsKey(clone)) {
@@ -64,7 +64,7 @@ public class ChangeManagerImpl implements ChangeManager {
 		boolean changes = false;
 		final Class<?> cls = clone.getClass();
 		List<Field> fields = EntityPropertiesUtils.getAllFields(cls);
-		Map<Object, Object> composedObjects = new HashMap<Object, Object>();
+		Map<Object, Object> composedObjects = new HashMap<>();
 		Iterator<Field> it = fields.iterator();
 		try {
 			while (it.hasNext()) {
@@ -78,7 +78,7 @@ public class ChangeManagerImpl implements ChangeManager {
 					changes = true;
 					break;
 				}
-				if (clVal == null && origVal == null) {
+				if (clVal == null) {
 					continue;
 				}
 				final Changed ch = valueChanged(origVal, clVal);
@@ -111,7 +111,7 @@ public class ChangeManagerImpl implements ChangeManager {
 	}
 
 	private Changed valueChanged(Object orig, Object clone) {
-		boolean changes = false;
+		boolean changes;
 		if (CloneBuilderImpl.isPrimitiveOrString(clone.getClass())) {
 			if (!clone.equals(orig)) {
 				return Changed.TRUE;
@@ -230,7 +230,7 @@ public class ChangeManagerImpl implements ChangeManager {
 			}
 			Object clVal = f.get(clone);
 			Object origVal = f.get(original);
-			ChangeRecord r = null;
+			ChangeRecord r;
 			if (clVal == null && origVal == null) {
 				continue;
 			}

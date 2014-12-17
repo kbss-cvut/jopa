@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -43,7 +41,7 @@ public class TestChangePersist {
 
 	@BeforeClass
 	public static void setStatics() {
-		strTypes = new HashSet<String>();
+		strTypes = new HashSet<>();
 		strTypes.add("http://typeOne");
 		strTypes.add("http://typeTwo");
 		strTypes.add("http://typeThree");
@@ -98,7 +96,7 @@ public class TestChangePersist {
 		pc.getTransaction().begin();
 		final OWLClassA toChange = pc.find(OWLClassA.class, testEntityOne.getUri());
 		assertNotNull(toChange);
-		Set<String> newTypes = new HashSet<String>();
+		Set<String> newTypes = new HashSet<>();
 		newTypes.add("NewTypeOne");
 		newTypes.add("NewTypeTwo");
 		toChange.setTypes(newTypes);

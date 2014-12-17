@@ -601,6 +601,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		if (isOpen()) {
 			close();
 		}
+		super.finalize();
 	}
 
 	public UnitOfWorkImpl getCurrentPersistenceContext() {

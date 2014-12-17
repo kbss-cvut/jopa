@@ -1,33 +1,23 @@
 package cz.cvut.kbss.jopa.test.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.net.URI;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.TestEnvironment;
+import org.junit.After;
+import org.junit.Test;
+
+import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import static org.junit.Assert.*;
 
 public class TestEntityTransactionsWithoutCache {
 
 	private static final Logger LOG = Logger.getLogger(TestEntityTransactionsWithoutCache.class
 			.getName());
-
-	private static final Map<String, String> properties = new HashMap<String, String>();
 
 	private OWLClassA testEntity;
 	private OWLClassD composedEntity;
@@ -42,11 +32,6 @@ public class TestEntityTransactionsWithoutCache {
 		final URI pkTwo = URI.create("http://composedTestEntity");
 		this.composedEntity.setUri(pkTwo);
 		this.composedEntity.setOwlClassA(testEntity);
-	}
-
-	@BeforeClass
-	public static void setup() {
-		properties.put("cache", "off");
 	}
 
 	@After
@@ -177,7 +162,7 @@ public class TestEntityTransactionsWithoutCache {
 		pc.getTransaction().begin();
 		final OWLClassA toChange = pc.find(OWLClassA.class, testEntity.getUri());
 		assertNotNull(toChange);
-		Set<String> col = new HashSet<String>();
+		Set<String> col = new HashSet<>();
 		col.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberOne");
 		col.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberTwo");
 		col.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#NumberThree");
@@ -195,7 +180,7 @@ public class TestEntityTransactionsWithoutCache {
 		LOG.config("TestAddObjectToCollection - added element into collection managed by entity.");
 		EntityManager pc = TestEnvironment.getPersistenceConnector(
 				"TestPersistenceConnectorLogic-testAddObjectToCollectionWithoutCache", false);
-		final Set<String> types = new HashSet<String>();
+		final Set<String> types = new HashSet<>();
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeOne");
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeTwo");
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeThree");
@@ -221,7 +206,7 @@ public class TestEntityTransactionsWithoutCache {
 		EntityManager pc = TestEnvironment.getPersistenceConnector(
 				"TestPersistenceConnectorLogic-testPersistCollectionChangeWithoutCacheII", false);
 		pc.getTransaction().begin();
-		final Set<String> orSet = new HashSet<String>();
+		final Set<String> orSet = new HashSet<>();
 		orSet.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#One");
 		orSet.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Two");
 		orSet.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#Three");
