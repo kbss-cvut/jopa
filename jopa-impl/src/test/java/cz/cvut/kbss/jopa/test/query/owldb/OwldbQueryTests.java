@@ -4,10 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
@@ -20,6 +17,8 @@ import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
+// OWLDB is highly unreliable as a driver and will be removed in the future
+@Ignore
 public class OwldbQueryTests {
 
 	private static final Logger LOG = Logger.getLogger(OwldbQueryTests.class.getName());

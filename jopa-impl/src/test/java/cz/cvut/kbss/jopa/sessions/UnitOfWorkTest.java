@@ -1,32 +1,21 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
+import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl;
+import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassB;
+import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.OWLClassL;
+import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.transactions.EntityTransaction;
+import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,35 +26,29 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.semanticweb.owlapi.model.IRI;
 
-import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
-import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl;
-import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.transactions.EntityTransaction;
-import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 public class UnitOfWorkTest {
 
 	private static final URI CONTEXT_URI = URI.create("http://testContext");
 
 	private static Set<Class<?>> managedTypes;
-	private static Descriptor descriptor;
+	private Descriptor descriptor;
 
 	private static OWLClassA entityA;
 	private static OWLClassB entityB;
 	private static OWLClassD entityD;
+	private OWLClassL entityL;
 
 	private ServerSessionStub serverSessionMock;
 
@@ -83,11 +66,15 @@ public class UnitOfWorkTest {
 	@Mock
 	private EntityType<OWLClassD> typeD;
 	@Mock
+	private EntityType<OWLClassL> typeL;
+	@Mock
 	private Identifier idA;
 	@Mock
 	private Identifier idB;
 	@Mock
 	private Identifier idD;
+	@Mock
+	private Identifier idL;
 	@Mock
 	private Attribute strAttMock;
 	@Mock
@@ -98,6 +85,14 @@ public class UnitOfWorkTest {
 	private PropertiesSpecification propertiesMock;
 	@Mock
 	private Attribute strAttBMock;
+	@Mock
+	private ListAttribute refListMock;
+	@Mock
+	private ListAttribute simpleListMock;
+	@Mock
+	private PluralAttribute setAttrMock;
+	@Mock
+	private Attribute singleAMock;
 	@Mock
 	EntityManagerImpl emMock;
 	@Mock
@@ -119,16 +114,19 @@ public class UnitOfWorkTest {
 		entityD = new OWLClassD();
 		entityD.setUri(pkThree);
 		entityD.setOwlClassA(entityA);
-		descriptor = new EntityDescriptor(CONTEXT_URI);
 		managedTypes = new HashSet<>();
 		managedTypes.add(OWLClassA.class);
 		managedTypes.add(OWLClassB.class);
 		managedTypes.add(OWLClassD.class);
+		managedTypes.add(OWLClassL.class);
 	}
 
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
+		this.entityL = new OWLClassL();
+		this.descriptor = new EntityDescriptor(CONTEXT_URI);
+		entityL.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityL"));
 		final ServerSessionStub ssStub = new ServerSessionStub(mock(ConnectionWrapper.class));
 		this.serverSessionMock = spy(ssStub);
 		when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
@@ -137,6 +135,8 @@ public class UnitOfWorkTest {
 		when(metamodelMock.entity(OWLClassA.class)).thenReturn(typeA);
 		when(metamodelMock.entity(OWLClassB.class)).thenReturn(typeB);
 		when(metamodelMock.entity(OWLClassD.class)).thenReturn(typeD);
+		when(metamodelMock.entity(OWLClassL.class)).thenReturn(typeL);
+		TestEnvironmentUtils.initOWLClassLMocks(typeL, refListMock, simpleListMock, setAttrMock, singleAMock, idL);
 		when(typeA.getIdentifier()).thenReturn(idA);
 		when(typeB.getIdentifier()).thenReturn(idB);
 		when(typeD.getIdentifier()).thenReturn(idD);
@@ -739,6 +739,42 @@ public class UnitOfWorkTest {
 		assertSame(contexts, res);
 		assertEquals(contexts, res);
 		verify(storageMock).getContexts();
+	}
+
+	@Test(expected = CardinalityConstraintViolatedException.class)
+	public void throwsCardinalityViolationWhenMaximumCardinalityIsViolatedOnCommit() throws Exception {
+		final List<OWLClassA> lst = new ArrayList<>();
+		for (int i = 0; i < 5; i++) {
+			final OWLClassA a = new OWLClassA();
+			a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#a" + i));
+			lst.add(a);
+		}
+		entityL.setReferencedList(lst);
+		uow.registerNewObject(entityL, descriptor);
+		try {
+			uow.commit();
+		} finally {
+			verify(storageMock, never()).commit();
+		}
+	}
+
+	@Test(expected = CardinalityConstraintViolatedException.class)
+	public void throwsCardinalityViolationExceptionWhenMinimumCardinalityIsViolatedOnCommit() throws Exception {
+		final List<OWLClassA> lst = new ArrayList<>();
+		for (int i = 0; i < 5; i++) {
+			final OWLClassA a = new OWLClassA();
+			a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#a" + i));
+			lst.add(a);
+		}
+		entityL.setSimpleList(lst);
+		final OWLClassL clone = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
+		clone.getSimpleList().clear();
+		uow.setHasChanges();
+		try {
+			uow.commit();
+		} finally {
+			verify(storageMock, never()).commit();
+		}
 	}
 
 	private static class ServerSessionStub extends ServerSession {

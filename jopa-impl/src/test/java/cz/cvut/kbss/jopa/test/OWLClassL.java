@@ -1,7 +1,6 @@
-package cz.cvut.kbss.jopa.oom.model;
+package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
-import cz.cvut.kbss.jopa.test.OWLClassA;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -13,6 +12,8 @@ import java.util.Set;
  */
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassL")
 public class OWLClassL {
+
+    @Id
     private URI uri;
 
     @Sequence(type = SequenceType.simple)

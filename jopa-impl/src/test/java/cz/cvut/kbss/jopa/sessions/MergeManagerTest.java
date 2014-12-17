@@ -99,7 +99,7 @@ public class MergeManagerTest {
 		OWLClassB cloneOne = (OWLClassB) cloneBuilder.buildClone(objOne, defaultDescriptor);
 		OWLClassB cloneTwo = (OWLClassB) cloneBuilder.buildClone(objTwo, defaultDescriptor);
 		cloneOne.setStringAttribute("testAtt");
-		uowChangeSet.addDeletedObject(createChangeSet(objTwo, cloneTwo));
+		uowChangeSet.addDeletedObjectChangeSet(createChangeSet(objTwo, cloneTwo));
 		final ObjectChangeSet ochs = createChangeSet(objOne, cloneOne);
 		ochs.addChangeRecord(new ChangeRecordImpl(OWLClassB.getStrAttField().getName(), cloneOne
 				.getStringAttribute()));

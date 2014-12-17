@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -17,6 +18,8 @@ import cz.cvut.kbss.jopa.test.utils.OwldbStorageConfig;
 import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
+// OWLDB is highly unreliable as a driver and will be removed in the future
+@Ignore
 public class TestDeleteOperations {
 
 	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());

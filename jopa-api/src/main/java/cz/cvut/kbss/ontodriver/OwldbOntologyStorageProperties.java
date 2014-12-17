@@ -11,8 +11,11 @@ import java.net.URI;
  * driver has to be present on classpath before initializing the storage
  * connection.
  *
+ * Note that support for OWLDB will be removed in the future because of its unreliability
+ *
  * @author kidney
  */
+@Deprecated
 public final class OwldbOntologyStorageProperties extends OntologyStorageProperties {
 
     /**

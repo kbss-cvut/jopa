@@ -4,9 +4,13 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
-import cz.cvut.kbss.jopa.oom.model.OWLClassL;
+import cz.cvut.kbss.jopa.test.OWLClassL;
+import cz.cvut.kbss.jopa.sessions.ChangeRecordImpl;
+import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.utils.CardinalityConstraintsValidation;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.*;
 import org.junit.Before;
@@ -52,24 +56,30 @@ public class ParticipationConstraintsTest {
     private EntityMappingHelper mapperMock;
 
     private Descriptor descriptor;
+    private OWLClassL original;
+    private OWLClassL clone;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         TestEnvironmentUtils.initOWLClassLMocks(etLMock, refListMock, simpleListMock, setMock, singleAMock, idLMock);
         this.descriptor = new EntityDescriptor();
+        this.original = new OWLClassL();
+        original.setUri(PK);
+        this.clone = new OWLClassL();
+        clone.setUri(PK);
     }
 
     @Test(expected = CardinalityConstraintViolatedException.class)
     public void throwsExceptionWhenMinimumCardinalityIsViolatedOnAttributeLoad() throws Exception {
-        final FieldStrategy fs = FieldStrategy.createFieldStrategy(etLMock, simpleListMock, descriptor, mapperMock);
+        final FieldStrategy<?, ?> fs = FieldStrategy.createFieldStrategy(etLMock, simpleListMock, descriptor, mapperMock);
         final OWLClassL res = new OWLClassL();
         fs.buildInstanceFieldValue(res);
     }
 
     @Test(expected = CardinalityConstraintViolatedException.class)
     public void throwsExceptionWhenMaximumCardinalityIsViolatedOnAttributeLoad() throws Exception {
-        final FieldStrategy fs = FieldStrategy.createFieldStrategy(etLMock, refListMock, descriptor, mapperMock);
+        final FieldStrategy<?, ?> fs = FieldStrategy.createFieldStrategy(etLMock, refListMock, descriptor, mapperMock);
         final List<Axiom<NamedResource>> axioms = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             final OWLClassA a = new OWLClassA();
@@ -88,7 +98,7 @@ public class ParticipationConstraintsTest {
 
     @Test
     public void loadsFieldWhenCardinalityConstraintsAreMet() throws Exception {
-        final FieldStrategy fs = FieldStrategy.createFieldStrategy(etLMock, setMock, descriptor, mapperMock);
+        final FieldStrategy<?, ?> fs = FieldStrategy.createFieldStrategy(etLMock, setMock, descriptor, mapperMock);
         final int count = 3;
         final List<OWLClassA> as = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -97,7 +107,7 @@ public class ParticipationConstraintsTest {
             as.add(a);
             final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(PK),
                     Assertion.createObjectPropertyAssertion(setMock.getIRI().toURI(), false),
-                    new Value<NamedResource>(NamedResource.create(a.getUri())));
+                    new Value<>(NamedResource.create(a.getUri())));
             when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, a.getUri(), descriptor)).thenReturn(a);
             fs.addValueFromAxiom(ax);
         }
@@ -111,10 +121,16 @@ public class ParticipationConstraintsTest {
 
     @Test(expected = CardinalityConstraintViolatedException.class)
     public void throwsExceptionWhenMinimumCardinalityIsNotMetForSingleValueField() throws Exception {
-        final FieldStrategy fs = FieldStrategy.createFieldStrategy(etLMock, singleAMock, descriptor, mapperMock);
+        final FieldStrategy<?, ?> fs = FieldStrategy.createFieldStrategy(etLMock, singleAMock, descriptor, mapperMock);
         final OWLClassL res = new OWLClassL();
         fs.buildInstanceFieldValue(res);
     }
 
-    // TODO Test also when data are being merge into ontology
+    @Test(expected = CardinalityConstraintViolatedException.class)
+    public void throwsExceptionWhenMinimumCardinalityIsViolatedInChangeSet() throws Exception {
+        final ObjectChangeSet changeSet = new ObjectChangeSetImpl(original, clone, null);
+        final List<OWLClassA> newValue = new ArrayList<>();
+        changeSet.addChangeRecord(new ChangeRecordImpl(simpleListMock.getName(), newValue));
+        CardinalityConstraintsValidation.validateCardinalityConstraints(changeSet);
+    }
 }

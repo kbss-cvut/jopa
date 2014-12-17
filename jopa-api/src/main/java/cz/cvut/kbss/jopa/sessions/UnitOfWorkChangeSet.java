@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.util.Map;
+import java.util.Set;
 
 public interface UnitOfWorkChangeSet {
 	/**
@@ -27,44 +28,37 @@ public interface UnitOfWorkChangeSet {
 	 * @param deletedObject
 	 *            The change set to add
 	 */
-	public void addDeletedObject(ObjectChangeSet deletedObject);
+	public void addDeletedObjectChangeSet(ObjectChangeSet deletedObject);
 
 	/**
-	 * Returns the collection of all ObjectChangeSets excluding change sets for
-	 * new objects and deleted objects.
+	 * Returns change sets for existing modified objects.
+	 *
+	 * I. e. new object and deleted object change sets are not included.
 	 * 
-	 * @return java.util.Map
+	 * @return Set of change sets
 	 */
-	public Map<?, ?> getObjectChanges();
+	public Set<ObjectChangeSet> getObjectChanges();
 
 	/**
 	 * Returns the collection of deleted objects.
 	 * 
-	 * @return java.util.Map
+	 * @return Set of change sets
 	 */
-	public Map<?, ?> getDeletedObjects();
+	public Set<ObjectChangeSet> getDeletedObjects();
 
 	/**
-	 * Returns the collection of change set for newly created objects.
+	 * Returns the collection of change sets for newly created objects.
 	 * 
-	 * @return java.util.Map
+	 * @return Set of change sets
 	 */
-	public Map<?, ?> getNewObjectChangeSets();
-
-	/**
-	 * Remove the specified object change set.
-	 * 
-	 * @param changeSet
-	 *            ObjectChangeSet
-	 */
-	public void removeObjectChangeSet(ObjectChangeSet changeSet);
+	public Set<ObjectChangeSet> getNewObjects();
 
 	/**
 	 * Returns true if there are deleted objects in this change set.
 	 * 
 	 * @return boolean
 	 */
-	public boolean hasDeletedObjects();
+	public boolean hasDeleted();
 
 	/**
 	 * Returns true if this changeSet has any changes.

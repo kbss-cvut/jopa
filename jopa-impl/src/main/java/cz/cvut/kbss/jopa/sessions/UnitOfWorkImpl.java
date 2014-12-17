@@ -5,7 +5,6 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 
+import cz.cvut.kbss.jopa.utils.CardinalityConstraintsValidation;
 import org.semanticweb.owlapi.model.IRI;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
@@ -184,7 +184,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 				throw new OWLPersistenceException("Cannot find an original for clone!");
 			}
 			Descriptor descriptor = getDescriptor(clone);
-			changeSet.addDeletedObject(ChangeSetFactory.createObjectChangeSet(original, clone,
+			changeSet.addDeletedObjectChangeSet(ChangeSetFactory.createObjectChangeSet(original, clone,
 					descriptor));
 		}
 	}
@@ -304,7 +304,20 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		if (hasChanges) {
 			calculateChanges();
 		}
+		validateIntegrityConstraints();
 		storageCommit();
+	}
+
+	private void validateIntegrityConstraints() {
+		if (uowChangeSet == null) {
+			return;
+		}
+		for (ObjectChangeSet changeSet : uowChangeSet.getNewObjects()) {
+			CardinalityConstraintsValidation.validateCardinalityConstraints(changeSet.getCloneObject());
+		}
+		for (ObjectChangeSet changeSet : uowChangeSet.getObjectChanges()) {
+			CardinalityConstraintsValidation.validateCardinalityConstraints(changeSet);
+		}
 	}
 
 	/**

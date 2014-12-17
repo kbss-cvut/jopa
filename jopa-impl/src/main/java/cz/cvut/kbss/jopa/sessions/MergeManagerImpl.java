@@ -53,34 +53,15 @@ public class MergeManagerImpl implements MergeManager {
 	}
 
 	public void mergeChangesFromChangeSet(UnitOfWorkChangeSet changeSet) {
-		Iterator<?> objectChangeIterator = changeSet.getObjectChanges().keySet().iterator();
-		while (objectChangeIterator.hasNext()) {
-			Map<?, ?> changeSets = (Map<?, ?>) changeSet.getObjectChanges().get(
-					objectChangeIterator.next());
-			Iterator<?> mapIterator = changeSets.keySet().iterator();
-			while (mapIterator.hasNext()) {
-				ObjectChangeSet objectChangeSet = (ObjectChangeSet) mapIterator.next();
+		for (ObjectChangeSet objectChangeSet : changeSet.getObjectChanges()) {
 				Object clone = objectChangeSet.getCloneObject();
 				mergeChangesOnObject(clone, objectChangeSet);
-			}
 		}
-		Iterator<?> newObjectsIterator = changeSet.getNewObjectChangeSets().keySet().iterator();
-		while (newObjectsIterator.hasNext()) {
-			Map<?, ?> changeSetsForCls = (Map<?, ?>) changeSet.getNewObjectChangeSets().get(
-					newObjectsIterator.next());
-			Iterator<?> chsIterator = changeSetsForCls.keySet().iterator();
-			while (chsIterator.hasNext()) {
-				ObjectChangeSet objectChangeSet = (ObjectChangeSet) changeSetsForCls
-						.get(chsIterator.next());
+		for (ObjectChangeSet objectChangeSet : changeSet.getNewObjects()) {
 				mergeNewObject(objectChangeSet);
-			}
 		}
-		if (changeSet.hasDeletedObjects()) {
-			Iterator<?> deletedObjectsIterator = changeSet.getDeletedObjects().keySet().iterator();
-			while (deletedObjectsIterator.hasNext()) {
-				ObjectChangeSet deletedChangeSet = (ObjectChangeSet) deletedObjectsIterator.next();
-				deleteObjectFromCache(deletedChangeSet);
-			}
+		for (ObjectChangeSet deletedChangeSet : changeSet.getDeletedObjects()) {
+			deleteObjectFromCache(deletedChangeSet);
 		}
 
 	}

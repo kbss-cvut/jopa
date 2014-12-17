@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
@@ -20,6 +21,8 @@ import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 
+// OWLDB is highly unreliable as a driver and will be removed in the future
+@Ignore
 public class TestCreateOperations {
 
 	private static final Logger LOG = Logger.getLogger(TestCreateOperations.class.getName());

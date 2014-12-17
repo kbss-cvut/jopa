@@ -1,5 +1,5 @@
-- Verify cardinality when loading entity plural attributes (ParticipationConstraints)
+- Rewrite Types API in OntoDriver to addTypes and removeTypes, the difference will be determined by comparison to original in UoW
+- The same will hold for @Properties
 - Define schema for persistence.xml for JOPA
 - Revisit entity classes discovery
-- @Properties updating
 - Consider adding support for JNDI data source lookup
