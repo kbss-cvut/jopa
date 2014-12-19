@@ -1,4 +1,5 @@
 - Rewrite Types API in OntoDriver to addTypes and removeTypes, the difference will be determined by comparison to original in UoW
+        - What to do when merging a detached entity
 - The same will hold for @Properties
 - Define schema for persistence.xml for JOPA
 - Revisit entity classes discovery

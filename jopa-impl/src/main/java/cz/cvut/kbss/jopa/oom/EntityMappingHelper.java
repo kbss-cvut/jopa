@@ -18,6 +18,8 @@ interface EntityMappingHelper {
 
 	URI generateIdentifier(EntityType<?> et);
 
+	<T> T getOriginalInstance(T clone);
+
 	public Collection<Axiom<NamedResource>> loadSimpleList(SimpleListDescriptor listDescriptor);
 
 	public Collection<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor listDescriptor);

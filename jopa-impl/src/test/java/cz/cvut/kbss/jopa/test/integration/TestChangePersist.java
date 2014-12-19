@@ -136,7 +136,7 @@ public class TestChangePersist {
 	}
 
 	@Test
-	public void testComitChangeInReference() {
+	public void testCommitChangeInReference() {
 		final String changedAttribute = "changedString";
 		pc = TestEnvironment
 				.getPersistenceConnector("TestPersistenceConnectorLogic-testCommitChangeInReference");

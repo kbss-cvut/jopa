@@ -50,50 +50,23 @@ class TypesHandler {
         return types;
     }
 
-    void persistTypes(NamedResource individual, URI context, Set<URI> types) throws SesameDriverException {
+    void addTypes(NamedResource individual, URI context, Set<URI> types) throws SesameDriverException {
+        final Collection<Statement> statements = prepareSesameStatements(individual, context, types);
+        connector.addStatements(statements);
+    }
+
+    private Collection<Statement> prepareSesameStatements(NamedResource individual, URI context, Set<URI> types) {
         final org.openrdf.model.URI subject = SesameUtils.toSesameUri(individual.getIdentifier(), valueFactory);
         final org.openrdf.model.URI contextUri = SesameUtils.toSesameUri(context, valueFactory);
         final Collection<Statement> statements = new ArrayList<>(types.size());
         for (URI type : types) {
             statements.add(valueFactory.createStatement(subject, RDF.TYPE, valueFactory.createURI(type.toString()), contextUri));
         }
-        connector.addStatements(statements);
+        return statements;
     }
 
-    void updateTypes(NamedResource individual, URI context, Set<URI> types) throws SesameDriverException {
-        final Collection<Statement> origTypes = getTypesStatements(individual, context, false);
-        if (origTypes.isEmpty()) {
-            persistTypes(individual, context, types);
-            return;
-        }
-        if (types.isEmpty()) {
-            connector.removeStatements(origTypes);
-            return;
-        }
-        mergeTypes(individual, context, types, origTypes);
-    }
-
-    private void mergeTypes(NamedResource individual, URI context, Set<URI> updated, Collection<Statement> original) throws SesameDriverException {
-        final Set<URI> toAdd = new HashSet<>(updated);
-        final Set<Statement> toRemove = new HashSet<>(original.size());
-        for (Statement stmt : original) {
-            assert stmt.getObject() instanceof Resource;
-            final URI type = SesameUtils.toJavaUri((Resource) stmt.getObject());
-            if (type == null) {
-                // It was a blank node
-                continue;
-            }
-            if (toAdd.contains(type)) {
-                toAdd.remove(type);
-            } else {
-                toRemove.add(stmt);
-            }
-        }
-        if (!toAdd.isEmpty()) {
-            persistTypes(individual, context, toAdd);
-        }
-        if (!toRemove.isEmpty()) {
-            connector.removeStatements(toRemove);
-        }
+    void removeTypes(NamedResource individual, URI context, Set<URI> types) throws SesameDriverException {
+        final Collection<Statement> statements = prepareSesameStatements(individual, context, types);
+        connector.removeStatements(statements);
     }
 }

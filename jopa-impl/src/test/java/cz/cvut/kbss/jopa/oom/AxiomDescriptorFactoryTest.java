@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.net.URI;
 import java.util.Collections;
 
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -22,11 +23,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
@@ -51,6 +48,8 @@ public class AxiomDescriptorFactoryTest {
 	private Attribute strAttAMock;
 	@Mock
 	private TypesSpecification typesSpecMock;
+	@Mock
+	private Identifier idAMock;
 
 	@Mock
 	private EntityType<OWLClassB> etBMock;
@@ -79,7 +78,7 @@ public class AxiomDescriptorFactoryTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		TestEnvironmentUtils.initOWLClassAMocks(etAMock, strAttAMock, typesSpecMock);
+		TestEnvironmentUtils.initOWLClassAMocks(etAMock, strAttAMock, typesSpecMock, idAMock);
 		TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsSpecMock);
 		when(etDMock.getAttributes()).thenReturn(
 				Collections.<Attribute<? super OWLClassD, ?>> singleton(owlclassAAttMock));

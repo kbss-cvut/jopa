@@ -3,10 +3,8 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
-import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.Value;
 
 import java.net.URI;
 import java.util.HashSet;
@@ -45,44 +43,55 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
     void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
             throws IllegalArgumentException, IllegalAccessException {
         final Object val = extractFieldValueFromInstance(instance);
+        final X original = mapper.getOriginalInstance(instance);
         if (val == null) {
-            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
-            return;
-        }
-        if (!(val instanceof Set)) {
-            throw new EntityDeconstructionException(
-                    "The types field is not of a valid type. Expected Set<String>.");
-        }
-        final Set<?> types = (Set<?>) val;
-        if (types.isEmpty()) {
-            return;
-        }
-        final Set<URI> values = new HashSet<>();
-        for (Object type : types) {
-            try {
-                values.add(URI.create(type.toString()));
-            } catch (IllegalArgumentException e) {
-                throw new EntityDeconstructionException("Type " + type + " is not a valid URI.", e);
+            if (original == null) {
+                return;
             }
-
-        }
-        // If we're updating types in the same context as the individual, we must make sure that the entity class assertion stays there
-        if (shouldAddEntityClassAssertion(valueBuilder)) {
-            values.add(et.getIRI().toURI());
-        }
-        valueBuilder.addTypes(values, getAttributeContext());
-    }
-
-    private boolean shouldAddEntityClassAssertion(AxiomValueGatherer valueBuilder) {
-        return !valueBuilder.containsClassAssertion() && areTypesInSubjectContext(valueBuilder.getEntityContext(), getAttributeContext());
-    }
-
-    private boolean areTypesInSubjectContext(URI subjectContext, URI typesContext) {
-        if (subjectContext == null) {
-            return typesContext == null;
+            final Set<?> origTypes = (Set<?>) extractFieldValueFromInstance(original);
+            if (origTypes == null) {
+                return;
+            }
+            valueBuilder.removeTypes(prepareTypes(origTypes), getAttributeContext());
         } else {
-            return typesContext != null && subjectContext.equals(typesContext);
+            assert val instanceof Set;  // This is verified when the metamodel is built
+            final Set<?> types = (Set<?>) val;
+            if (original == null) {
+                valueBuilder.addTypes(prepareTypes(types), getAttributeContext());
+            } else {
+                final Set<?> origTypes = (Set<?>) extractFieldValueFromInstance(original);
+                extractTypesToAdd(valueBuilder, types, origTypes);
+                extractTypesToRemove(valueBuilder, types, origTypes);
+            }
         }
+    }
+
+    private void extractTypesToAdd(AxiomValueGatherer valueBuilder, Set<?> types, Set<?> origTypes) {
+        final Set<URI> toAdd = new HashSet<>(types.size());
+        for (Object t : types) {
+            if (!origTypes.contains(t)) {
+                toAdd.add(URI.create(t.toString()));
+            }
+        }
+        valueBuilder.addTypes(toAdd, getAttributeContext());
+    }
+
+    private void extractTypesToRemove(AxiomValueGatherer valueBuilder, Set<?> types, Set<?> origTypes) {
+        final Set<URI> toRemove = new HashSet<>(types.size());
+        for (Object t : origTypes) {
+            if (!types.contains(t)) {
+                toRemove.add(URI.create(t.toString()));
+            }
+        }
+        valueBuilder.removeTypes(toRemove, getAttributeContext());
+    }
+
+    private Set<URI> prepareTypes(Set<?> types) {
+        final Set<URI> toAdd = new HashSet<>(types.size());
+        for (Object t : types) {
+            toAdd.add(URI.create(t.toString()));
+        }
+        return toAdd;
     }
 
     @Override

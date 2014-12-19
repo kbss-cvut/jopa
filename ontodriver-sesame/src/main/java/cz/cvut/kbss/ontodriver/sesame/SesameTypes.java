@@ -31,10 +31,10 @@ public class SesameTypes implements Types {
     }
 
     @Override
-    public void persistTypes(NamedResource individual, URI context, Set<URI> types) throws OntoDriverException {
+    public void addTypes(NamedResource individual, URI context, Set<URI> types) throws OntoDriverException {
         verifyValidity(individual, types);
         if (!types.isEmpty()) {
-            adapter.getTypesHandler().persistTypes(individual, context, types);
+            adapter.getTypesHandler().addTypes(individual, context, types);
         }
         connection.commitIfAuto();
     }
@@ -46,11 +46,11 @@ public class SesameTypes implements Types {
     }
 
     @Override
-    public void updateTypes(NamedResource individual, URI context, Set<URI> types) throws OntoDriverException {
+    public void removeTypes(NamedResource individual, URI context, Set<URI> types) throws OntoDriverException {
         verifyValidity(individual, types);
         if (!types.isEmpty()) {
-            adapter.getTypesHandler().updateTypes(individual, context, types);
+            adapter.getTypesHandler().removeTypes(individual, context, types);
         }
-        connection.commitIfAuto();;
+        connection.commitIfAuto();
     }
 }

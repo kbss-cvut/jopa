@@ -26,24 +26,22 @@ public interface Types {
     public Set<Axiom<URI>> getTypes(NamedResource individual, URI context, boolean includeInferred) throws OntoDriverException;
 
     /**
-     * Persists the specified types of the specified individual.
+     * Adds the specified types to the named individual in the ontology.
      *
-     * @param individual Individual whose types are being persisted
-     * @param context    Context into which the types will be added
-     * @param types      The types to persist
+     * @param individual The types subject
+     * @param context    Context into which the type statements will be added
+     * @param types      The types to add
      * @throws OntoDriverException When an ontology access error occurs
      */
-    public void persistTypes(NamedResource individual, URI context, Set<URI> types) throws OntoDriverException;
+    public void addTypes(NamedResource individual, URI context, Set<URI> types) throws OntoDriverException;
 
     /**
-     * Updates types of the specified individual with the new values.
-     * <p/>
-     * It is up to the driver implementation whether this operation removes the previous types and replaces them with the new ones or whether it will perform a merge.
+     * Removes the specified types of the named individual in the ontology.
      *
-     * @param individual Individual whose types are being updated
-     * @param context    Context in which the types are being updated
-     * @param types      The new types
+     * @param individual The types subject
+     * @param context    Context into which the type statements will be added
+     * @param types      The types to add
      * @throws OntoDriverException When an ontology access error occurs
      */
-    public void updateTypes(NamedResource individual, URI context, Set<URI> types) throws OntoDriverException;
+    public void removeTypes(NamedResource individual, URI context, Set<URI> types) throws OntoDriverException;
 }

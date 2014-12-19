@@ -121,9 +121,7 @@ public class EntityDeconstructorTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		TestEnvironmentUtils.initOWLClassAMocks(etAMock, strAttAMock, typesMock);
-		when(etAMock.getIdentifier()).thenReturn(idA);
-		when(idA.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
+		TestEnvironmentUtils.initOWLClassAMocks(etAMock, strAttAMock, typesMock, idA);
 		TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsMock);
 		TestEnvironmentUtils.initOWLClassEMocks(etEMock, strAttEMock, idE);
 		TestEnvironmentUtils.initOWLClassDMocks(etDMock, clsAMock);
@@ -193,7 +191,7 @@ public class EntityDeconstructorTest {
 				assertEquals(OWLClassA.getClassIri(), clss.get(0).stringValue());
 			}
 		}
-		final Set<URI> typesRes = OOMTestUtils.getTypes(builder);
+		final Set<URI> typesRes = OOMTestUtils.getTypesToAdd(builder);
 		assertEquals(types.size(), typesRes.size());
 		for (URI u : typesRes) {
 			assertTrue(types.contains(u.toString()));

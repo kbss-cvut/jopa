@@ -168,6 +168,12 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         }
     }
 
+    @Override
+    public <T> T getOriginalInstance(T clone) {
+        assert clone != null;
+        return (T) uow.getOriginal(clone);
+    }
+
     <T> void registerInstance(URI primaryKey, T instance, URI context) {
         instanceRegistry.registerInstance(primaryKey, instance, context);
     }

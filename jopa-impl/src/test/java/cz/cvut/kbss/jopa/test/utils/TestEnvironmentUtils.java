@@ -97,7 +97,7 @@ public final class TestEnvironmentUtils {
      * Initializes the specified mock objects to return reasonable values.
      */
     public static void initOWLClassAMocks(EntityType<OWLClassA> etMock, Attribute strAttMock,
-                                          TypesSpecification typesMock) throws NoSuchFieldException, SecurityException {
+                                          TypesSpecification typesMock, Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
         when(etMock.getAttribute(OWLClassA.getStrAttField().getName())).thenReturn(strAttMock);
@@ -110,6 +110,10 @@ public final class TestEnvironmentUtils {
         when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
         when(strAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
         when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
+        when(typesMock.getName()).thenReturn(OWLClassA.getTypesField().getName());
+
+        when(etMock.getIdentifier()).thenReturn(idMock);
+        when(idMock.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
     }
 
     /**
@@ -302,5 +306,13 @@ public final class TestEnvironmentUtils {
         when(singleAMock.getConstraints()).thenReturn(OWLClassL.getSingleAField().getAnnotation(ParticipationConstraints.class).value());
         when(singleAMock.isCollection()).thenReturn(false);
         when(etMock.getFieldSpecification(OWLClassL.getSingleAField().getName())).thenReturn(singleAMock);
+    }
+
+    public static Set<String> generateTypes(int count) {
+        final Set<String> types = new HashSet<>(count);
+        for (int i = 0; i < count; i++) {
+            types.add("http://krizik.felk.cvut.cz/ontologies/jopa#type_" + i);
+        }
+        return types;
     }
 }

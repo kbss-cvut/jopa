@@ -42,10 +42,17 @@ final class OOMTestUtils {
 				.get(builder);
 	}
 
-	public static Set<URI> getTypes(AxiomValueGatherer builder) throws Exception {
-		final Field typesField = AxiomValueGatherer.class
-				.getDeclaredField("types");
-		typesField.setAccessible(true);
-		return (Set<URI>) typesField.get(builder);
+	public static Set<URI> getTypesToAdd(AxiomValueGatherer builder) throws Exception {
+		final Field typesToAddField = AxiomValueGatherer.class
+				.getDeclaredField("typesToAdd");
+		typesToAddField.setAccessible(true);
+		return (Set<URI>) typesToAddField.get(builder);
+	}
+
+	public static Set<URI> getTypesToRemove(AxiomValueGatherer builder) throws Exception {
+		final Field typesToRemoveField = AxiomValueGatherer.class
+				.getDeclaredField("typesToRemove");
+		typesToRemoveField.setAccessible(true);
+		return (Set<URI>) typesToRemoveField.get(builder);
 	}
 }
