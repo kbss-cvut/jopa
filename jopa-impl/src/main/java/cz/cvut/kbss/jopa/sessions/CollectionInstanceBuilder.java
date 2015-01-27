@@ -185,6 +185,10 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 		}
 		Collection<Object> tg = (Collection<Object>) target;
 		for (Object obj : source) {
+			if (obj == null) {
+				tg.add(obj);
+				continue;
+			}
 			if (CloneBuilderImpl.isPrimitiveOrString(obj.getClass())) {
 				tg.addAll(source);
 				break;

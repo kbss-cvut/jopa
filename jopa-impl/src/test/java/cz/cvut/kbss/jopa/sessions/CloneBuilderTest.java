@@ -413,6 +413,23 @@ public class CloneBuilderTest {
 	}
 
 	@Test
+	public void testCloneReferencedListWithNulls() {
+		final List<OWLClassA> nulls = new ArrayList<>();
+		for (int i = 0; i < 5; i++) {
+			nulls.add(null);
+		}
+		entityC.setReferencedList(nulls);
+		final OWLClassC res = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
+		assertNotSame(entityC, res);
+		int size = entityC.getReferencedList().size();
+		assertEquals(size, res.getReferencedList().size());
+		assertTrue(res.getReferencedList() instanceof IndirectCollection);
+		for (OWLClassA a : res.getReferencedList()) {
+			assertNull(a);
+		}
+	}
+
+	@Test
 	public void testReset() throws Exception {
 		final Field visitedObjectsField = builder.getClass().getDeclaredField("visitedObjects");
 		visitedObjectsField.setAccessible(true);
