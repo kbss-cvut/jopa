@@ -230,6 +230,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI pkUri = EntityPropertiesUtils.getPrimaryKey(entity, et);
 
+        entityBreaker.setCascadeResolver(new PersistCascadeResolver(this));
         final AxiomValueGatherer axiomBuilder = entityBreaker.mapFieldToAxioms(pkUri, entity, field,
                 et, descriptor);
         axiomBuilder.update(storageConnection);

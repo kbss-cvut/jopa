@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.test.OWLClassJ;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -147,5 +149,46 @@ public class TestCollectionOperations {
 		final Set<String> resSet = res.getTypes();
 		assertEquals(newSet.size(), resSet.size());
 		assertTrue(newSet.containsAll(resSet));
+	}
+
+	@Test
+	public void testAddIntoSimpleSet() {
+		LOG.config("Test: update entity by adding an instance into simple set.");
+		this.em = TestEnvironment.getPersistenceConnector(
+				"TestCollectionOperations-addInstanceIntoSimpleSet", true);
+		final OWLClassJ j = new OWLClassJ();
+		j.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityJ"));
+		final Set<OWLClassA> as = new HashSet<>();
+		for (int i = 0; i < 5; i++) {
+			final OWLClassA a = new OWLClassA();
+			a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityA" + i));
+			a.setStringAttribute("aaa");
+			as.add(a);
+		}
+		j.setOwlClassA(as);
+		final OWLClassA toAdd = new OWLClassA();
+		toAdd.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityAAdded"));
+		em.getTransaction().begin();
+		em.persist(j);
+		em.persist(toAdd);
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		final OWLClassJ toUpdate = em.find(OWLClassJ.class, j.getUri());
+		toUpdate.getOwlClassA();
+		assertEquals(j.getOwlClassA().size(), toUpdate.getOwlClassA().size());
+		toUpdate.getOwlClassA().add(toAdd);
+		em.getTransaction().commit();
+
+		final OWLClassJ res = em.find(OWLClassJ.class, j.getUri());
+		assertEquals(j.getOwlClassA().size() + 1, res.getOwlClassA().size());
+		boolean found = false;
+		for (OWLClassA a : res.getOwlClassA()) {
+			if (a.getUri().equals(toAdd.getUri())) {
+				found = true;
+				break;
+			}
+		}
+		assertTrue(found);
 	}
 }

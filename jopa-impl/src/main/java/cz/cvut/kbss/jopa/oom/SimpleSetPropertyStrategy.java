@@ -35,6 +35,9 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
 		}
 		final Set<Value<?>> assertionValues = new HashSet<>(valueCollection.size());
 		for (T val : valueCollection) {
+			if (val == null) {
+				continue;
+			}
 			final EntityType<T> et = (EntityType<T>) mapper.getEntityType(val.getClass());
 			final URI id = resolveValueIdentifier(val, et);
 			cascadeResolver.resolveFieldCascading(attribute, val, getAttributeContext());
