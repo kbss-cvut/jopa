@@ -549,7 +549,9 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 				set.add(col.asOWLClass().getIRI().toString());
 			}
 		}
-		types.getJavaField().set(entity, set);
+        if (!set.isEmpty()) {
+            types.getJavaField().set(entity, set);
+        }
 	}
 
 	/**
@@ -910,8 +912,9 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 				return loadAndReconstructEntity(cls, individual.getIRI());
 			}
 		} else if (cls.isEnum()) {
-			// TODO Is the asSubclass call necessary?
-			return cls.cast(getEnum(cls.asSubclass(Enum.class), individual));
+            // It is an enum value
+            final Object en = getEnum((Class<? extends Enum>)cls.asSubclass(Enum.class), individual);
+            return cls.cast(en);
 		} else {
 			return loadAndReconstructEntity(cls, individual.getIRI());
 		}
