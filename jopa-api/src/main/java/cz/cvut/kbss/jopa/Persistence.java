@@ -128,7 +128,7 @@ class PersistenceUtilImpl implements PersistenceUtil {
 			case NOT_LOADED:
 				return false;
 			default:
-				;
+
 			}
 		}
 
@@ -141,7 +141,7 @@ class PersistenceUtilImpl implements PersistenceUtil {
 			case NOT_LOADED:
 				return false;
 			default:
-				;
+
 			}
 		}
 		return true;
@@ -157,7 +157,7 @@ class PersistenceUtilImpl implements PersistenceUtil {
 			case NOT_LOADED:
 				return false;
 			default:
-				;
+
 			}
 		}
 

@@ -122,7 +122,7 @@ abstract class AttributeStrategy {
 			return cls.cast(ob);
 		} else if (cls.isEnum()) {
 			// It is an enum value
-            final Object en = getEnum((Class<? extends Enum>)cls.asSubclass(Enum.class), subjectUri);
+            final Object en = getEnum(cls.asSubclass(Enum.class), subjectUri);
 			return cls.cast(en);
 		} else {
 			// Otherwise load the entity
@@ -211,8 +211,7 @@ abstract class AttributeStrategy {
 			throw new IntegrityConstraintViolatedException("Expected only one value of property "
 					+ propertyUri + ", but got multiple.");
 		}
-		final Value ob = res.iterator().next().getObject();
-		return ob;
+		return res.iterator().next().getObject();
 	}
 
 	protected boolean isUri(Value value) {

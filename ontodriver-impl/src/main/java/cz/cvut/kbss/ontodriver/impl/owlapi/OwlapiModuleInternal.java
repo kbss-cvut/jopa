@@ -913,7 +913,7 @@ class OwlapiModuleInternal implements ModuleInternal<OWLOntologyChange, OwlapiSt
 			}
 		} else if (cls.isEnum()) {
             // It is an enum value
-            final Object en = getEnum((Class<? extends Enum>)cls.asSubclass(Enum.class), individual);
+            final Object en = getEnum(cls.asSubclass(Enum.class), individual);
             return cls.cast(en);
 		} else {
 			return loadAndReconstructEntity(cls, individual.getIRI());

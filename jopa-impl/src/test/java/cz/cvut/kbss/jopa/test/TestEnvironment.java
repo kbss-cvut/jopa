@@ -214,7 +214,7 @@ public class TestEnvironment {
             if (file.isDirectory()) {
                 for (File c : file.listFiles())
                     removeOldTestFiles(c);
-                file.delete();
+                assert file.delete();
             } else {
                 if (!file.delete()) {
                     throw new RuntimeException("Unable to delete file " + file);

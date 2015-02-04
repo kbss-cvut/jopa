@@ -1,9 +1,8 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.lang.reflect.Field;
-import java.net.URI;
-
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+
+import java.lang.reflect.Field;
 
 /**
  * Objects of this interface are responsible for building clones for UnitOfWork
@@ -30,7 +29,7 @@ public interface CloneBuilder {
 	/**
 	 * Builds clone of the given object. </p>
 	 * 
-	 * This method differs from {@link #buildClone(Object, URI)} in that it
+	 * This method differs from {@link #buildClone(Object, cz.cvut.kbss.jopa.model.descriptors.Descriptor)} in that it
 	 * accepts another argument which represents the owner of the built clone.
 	 * This is useful in situations when we are cloning attributes directly, e.
 	 * g. when lazily loading a field value.
@@ -65,7 +64,6 @@ public interface CloneBuilder {
 	 *            The original object
 	 * @param changeSet
 	 *            Contains changes to merge
-	 * @return
 	 */
-	public Object mergeChanges(Object original, ObjectChangeSet changeSet);
+	public void mergeChanges(Object original, ObjectChangeSet changeSet);
 }

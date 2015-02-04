@@ -106,7 +106,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	public enum State {
-		MANAGED, MANAGED_NEW, NOT_MANAGED, REMOVED;
+		MANAGED, MANAGED_NEW, NOT_MANAGED, REMOVED
 	}
 
 	@Override

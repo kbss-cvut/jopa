@@ -70,7 +70,7 @@ public class OWL2Java {
 	}
 
 	private enum COMMAND {
-		help, list, transform, version;
+		help, list, transform, version
 	}
 
 	private static void printHelp(COMMAND cc) {

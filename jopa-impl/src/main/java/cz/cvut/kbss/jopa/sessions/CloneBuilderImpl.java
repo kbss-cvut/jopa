@@ -232,7 +232,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	}
 
 	@Override
-	public Object mergeChanges(Object original, ObjectChangeSet changeSet) {
+	public void mergeChanges(Object original, ObjectChangeSet changeSet) {
 		Map<String, ChangeRecord> changes = changeSet.getChanges();
 		try {
 			for (String att : changes.keySet()) {
@@ -257,7 +257,6 @@ public class CloneBuilderImpl implements CloneBuilder {
                 | IllegalAccessException | IllegalArgumentException e) {
 			throw new OWLPersistenceException(e);
 		}
-        return original;
 	}
 
 	private Object getVisitedEntity(Descriptor descriptor, Object primaryKey) {

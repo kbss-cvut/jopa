@@ -121,7 +121,7 @@ public class OWL2JavaTransformer {
 		public void visit(OWLLiteral literal) {
 			name = literal.getLiteral();
 		}
-	};
+	}
 
 	private final ValidContextAnnotationValueVisitor v = new ValidContextAnnotationValueVisitor();
 
@@ -756,7 +756,7 @@ public class OWL2JavaTransformer {
 	}
 
 	enum Card {
-		NO, ONE, MULTIPLE, LIST, SIMPLELIST, REFERENCEDLIST;
+		NO, ONE, MULTIPLE, LIST, SIMPLELIST, REFERENCEDLIST
 	}
 
 	public void transform(String context, String p, String dir, Boolean withOWLAPI) {

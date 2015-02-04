@@ -145,7 +145,7 @@ public class MergeManagerTest {
 		/**
 		 * Does no merge, just assigns the clone to the original
 		 */
-		public Object mergeChanges(Object original, ObjectChangeSet changeSet) {
+		public void mergeChanges(Object original, ObjectChangeSet changeSet) {
 			OWLClassB or = (OWLClassB) original;
 			ChangeRecord change;
 			try {
@@ -157,7 +157,6 @@ public class MergeManagerTest {
 			} catch (NoSuchFieldException | SecurityException e) {
 				throw new OWLPersistenceException(e);
 			}
-			return or;
 		}
 	}
 }

@@ -15,4 +15,4 @@
 
 package cz.cvut.kbss.jopa;
 
-public @interface UnusedJPA {};
+public @interface UnusedJPA {}

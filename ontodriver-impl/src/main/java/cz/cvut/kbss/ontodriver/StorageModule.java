@@ -31,7 +31,7 @@ public abstract class StorageModule implements Transactional {
 	 */
 	public static enum TransactionState {
 		NO, ACTIVE, COMMIT
-	};
+	}
 
 	/**
 	 * Counters that increment with each inserted entity so that newly generated

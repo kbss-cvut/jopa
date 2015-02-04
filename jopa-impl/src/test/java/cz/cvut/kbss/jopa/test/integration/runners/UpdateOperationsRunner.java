@@ -546,9 +546,7 @@ public class UpdateOperationsRunner extends BaseRunner {
 		logger.config("Test: add another value to an existing property.");
 		final EntityDescriptor bDescriptor = new EntityDescriptor(ctx);
 		entityB.setProperties(Generators.createProperties());
-		final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
 		final String prop = entityB.getProperties().keySet().iterator().next();
-		expected.putAll(entityB.getProperties());
 		final String newPropertyValue = "http://krizik.felk.cvut.cz/ontologies/jopa#newPropertyValue";
 		em.getTransaction().begin();
 		em.persist(entityB, bDescriptor);
@@ -557,8 +555,6 @@ public class UpdateOperationsRunner extends BaseRunner {
 
 		final OWLClassB b = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
 		b.getProperties().get(prop).add(newPropertyValue);
-		// TODO Should we be able to load lazily-loaded fields of detached
-		// entities?
 		em.detach(b);
 		em.getTransaction().begin();
 		em.merge(b, bDescriptor);

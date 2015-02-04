@@ -60,7 +60,7 @@ class SesameModuleInternal implements ModuleInternal<SesameChange, SesameStateme
 
 	static enum ObjectType {
 		LITERAL, OBJECT
-	};
+	}
 
 	SesameModuleInternal(SesameOntologyDataHolder data, SesameStorageModule storageModule) {
 		assert data != null : "argument data is null";

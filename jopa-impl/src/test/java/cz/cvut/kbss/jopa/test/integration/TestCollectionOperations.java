@@ -1,9 +1,13 @@
 package cz.cvut.kbss.jopa.test.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import cz.cvut.kbss.jopa.adapters.IndirectSet;
+import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.test.OWLClassA;
+import cz.cvut.kbss.jopa.test.OWLClassJ;
+import cz.cvut.kbss.jopa.test.TestEnvironment;
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.net.URI;
 import java.util.HashSet;
@@ -11,16 +15,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.test.OWLClassJ;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import cz.cvut.kbss.jopa.adapters.IndirectSet;
-import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.TestEnvironment;
+import static org.junit.Assert.*;
 
 public class TestCollectionOperations {
 
@@ -38,7 +33,7 @@ public class TestCollectionOperations {
 		final URI pk = URI.create("http://testA");
 		testA.setUri(pk);
 		testA.setStringAttribute("someStringAttribute");
-		types = new HashSet<String>();
+		types = new HashSet<>();
 		for (int i = 0; i < 10; i++) {
 			types.add("Type_" + i);
 		}
@@ -137,7 +132,7 @@ public class TestCollectionOperations {
 		em.getTransaction().commit();
 		OWLClassA res = em.find(OWLClassA.class, testA.getUri());
 		assertNotNull(res);
-		final Set<String> newSet = new HashSet<String>();
+		final Set<String> newSet = new HashSet<>();
 		newSet.add("NewStringOne");
 		newSet.add("NewStringTwo");
 		em.getTransaction().begin();

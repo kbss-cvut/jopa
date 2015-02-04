@@ -6,8 +6,6 @@ import java.util.Map;
 
 class InstanceRegistry {
 
-	private static final URI defaultContext = URI.create("http://defaultContext");
-
 	protected Map<URI, Map<URI, Object>> instances = new HashMap<>();
 
 	<T> void registerInstance(URI primaryKey, T instance, URI context) {
@@ -25,7 +23,7 @@ class InstanceRegistry {
 		return instances.containsKey(context) && instances.get(context).containsKey(primaryKey);
 	}
 
-	Object getInstance(Object primaryKey, URI context) {
+	Object getInstance(URI primaryKey, URI context) {
 		// context = checkForDefaultContext(context);
 		if (instances.containsKey(context) && instances.get(context).containsKey(primaryKey)) {
 			return instances.get(context).get(primaryKey);
@@ -35,12 +33,5 @@ class InstanceRegistry {
 
 	void reset() {
 		this.instances = new HashMap<>();
-	}
-
-	protected URI checkForDefaultContext(URI context) {
-		if (context == null) {
-			context = defaultContext;
-		}
-		return context;
 	}
 }

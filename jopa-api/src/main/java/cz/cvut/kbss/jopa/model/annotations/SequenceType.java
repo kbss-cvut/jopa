@@ -40,5 +40,5 @@ public enum SequenceType {
 	 * 
 	 * TODO example
 	 */
-	referenced;
+	referenced
 }

@@ -93,7 +93,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 			throw new IllegalStateException("The OWLEntityManager has been closed.");
 		}
 
-		final Map<String, String> newMap = new HashMap<String, String>(map);
+		final Map<String, String> newMap = new HashMap<>(map);
 
 		newMap.putAll(properties);
 		newMap.putAll(map);
@@ -167,22 +167,17 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 		try {
 			return getMetamodel().entity(entity.getClass()).getIdentifier().getJavaField()
 					.get(entity);
-		} catch (IllegalArgumentException e) {
-			throw new OWLPersistenceException();
-		} catch (IllegalAccessException e) {
+		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new OWLPersistenceException();
 		}
-	}
+    }
 
 	public boolean isLoaded(Object entity, String attributeName) {
 		for (final AbstractEntityManager emi : em) {
 			if (emi.contains(entity)) {
-				if (attributeName == null) {
-					return true;
-				}
+                return attributeName == null || emi.isLoaded(entity, attributeName);
 
-				return emi.isLoaded(entity, attributeName);
-			}
+            }
 		}
 
 		return false;
