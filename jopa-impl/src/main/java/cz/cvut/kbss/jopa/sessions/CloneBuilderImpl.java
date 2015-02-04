@@ -1,31 +1,22 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import cz.cvut.kbss.jopa.model.annotations.Inferred;
-import org.semanticweb.owlapi.model.IRI;
-
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.adapters.IndirectList;
 import cz.cvut.kbss.jopa.adapters.IndirectMap;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.annotations.Inferred;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CloneBuilderImpl implements CloneBuilder {
 
@@ -84,7 +75,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 		final Class<?> cls = original.getClass();
 		final boolean managed = isTypeManaged(cls);
 		if (managed) {
-			final IRI pk = getIdentifier(original);
+			final Object pk = getIdentifier(original);
 			final Object visitedClone = getVisitedEntity(descriptor, pk);
 			if (visitedClone != null) {
 				return visitedClone;
@@ -97,7 +88,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 			populateAttributes(original, clone, descriptor);
 		}
 		if (managed) {
-			final IRI pk = getIdentifier(clone);
+			final Object pk = getIdentifier(clone);
 			putVisitedEntity(descriptor, pk, clone);
 		}
 		return clone;
@@ -163,7 +154,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 					if (isTypeManaged(origClass)) {
 						final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass,
 								descriptor);
-						final IRI pk = getIdentifier(origVal);
+						final Object pk = getIdentifier(origVal);
 						toAssign = getVisitedEntity(descriptor, pk);
 						if (toAssign == null) {
 							toAssign = uow.registerExistingObject(origVal, fieldDescriptor);
@@ -232,7 +223,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	/**
 	 * Check if the given class is of primitive, String or Enum type. This is
-	 * used by the {@link #populateAttributes(Object, Object)} method. If this
+	 * used by the {@link #populateAttributes(Object, Object, Descriptor)} method. If this
 	 * returns true, the populateAttributes can simply assign the value.
 	 * 
 	 * @param cls
@@ -289,7 +280,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 		visitedEntities.add(descriptor, primaryKey, entity);
 	}
 
-	private IRI getIdentifier(Object entity) {
+	private Object getIdentifier(Object entity) {
 		assert entity != null;
 		assert uow.isManagedType(entity.getClass());
 		return EntityPropertiesUtils.getPrimaryKey(entity, uow.getMetamodel());

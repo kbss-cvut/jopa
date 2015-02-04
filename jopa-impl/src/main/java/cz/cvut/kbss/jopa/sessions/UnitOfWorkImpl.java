@@ -1,35 +1,23 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.logging.Level;
-
-import cz.cvut.kbss.jopa.utils.CardinalityConstraintsValidation;
-import org.semanticweb.owlapi.model.IRI;
-
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.utils.CardinalityConstraintsValidation;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
+
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Level;
 
 public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory {
 
@@ -38,7 +26,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	private Map<Object, Object> deletedObjects;
 	private Map<Object, Object> newObjectsCloneToOriginal;
 	private Map<Object, Object> newObjectsOriginalToClone;
-	private Map<IRI, Object> newObjectsKeyToClone;
+	private Map<Object, Object> newObjectsKeyToClone;
 	private RepositoryMap repoMap;
 
 	private boolean hasChanges;
@@ -113,8 +101,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		assert primaryKey != null;
 		assert descriptor != null;
 		// First try to find the object among new uncommitted objects
-		Object result = getNewObjectsKeyToClone().get(
-				EntityPropertiesUtils.getValueAsIRI(primaryKey));
+		Object result = getNewObjectsKeyToClone().get(primaryKey);
 		if (result != null && (isInRepository(descriptor, result))) {
 			// The result can be returned, since it is already registered in
 			// this UOW
@@ -472,7 +459,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		return newObjectsOriginalToClone;
 	}
 
-	public Map<IRI, Object> getNewObjectsKeyToClone() {
+	public Map<Object, Object> getNewObjectsKeyToClone() {
 		if (newObjectsKeyToClone == null) {
 			// Cannot use identity map, since it compares the key references
 			// which may not be the same
@@ -567,7 +554,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 		storage.merge(entity, f, repo);
 		setHasChanges();
-		// Let's see how this works
 		setIndirectCollectionIfPresent(entity, f);
 	}
 
@@ -586,7 +572,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 		Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-		final IRI pk = getIdentifier(entity);
+		final Object pk = getIdentifier(entity);
 		if (!storage.contains(pk, entity.getClass(), descriptor)) {
 			registerNewObject(entity, descriptor);
 			return entity;
@@ -597,36 +583,43 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
 	private <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
 		assert entity != null;
-		final IRI iri = getIdentifier(entity);
-		// This cast is OK, we just clone the entity instance
-		final T clone = (T) registerExistingObject(entity, descriptor);
-
+		final Object iri = getIdentifier(entity);
+        final Class<T> entityCls = (Class<T>) entity.getClass();
+        // Search the cache
+        T original = getObjectFromCache(entityCls, iri, descriptor.getContext());
+        if (original == null) {
+            // The object is not in the session cache, so search the ontology
+            original =  storage.find(entityCls, iri, descriptor);
+        }
+        assert original != null;
+		registerClone(entity, original, descriptor);
+        // TODO Now we need to go through the fields and determine which need to be merged
 		try {
 			// Propagate the entity's state into storage
-			final EntityType<?> et = getMetamodel().entity(entity.getClass());
+			final EntityType<?> et = getMetamodel().entity(entityCls);
 			for (Attribute<?, ?> att : et.getAttributes()) {
-				storage.merge(clone, att.getJavaField(), descriptor);
-				setIndirectCollectionIfPresent(clone, att.getJavaField());
+				storage.merge(entity, att.getJavaField(), descriptor);
+				setIndirectCollectionIfPresent(entity, att.getJavaField());
 			}
 			final FieldSpecification<?, ?> ts = et.getTypes();
 			if (ts != null) {
-				storage.merge(clone, ts.getJavaField(), descriptor);
-				setIndirectCollectionIfPresent(clone, ts.getJavaField());
+				storage.merge(entity, ts.getJavaField(), descriptor);
+				setIndirectCollectionIfPresent(entity, ts.getJavaField());
 			}
 			final PropertiesSpecification<?, ?> ps = et.getProperties();
 			if (ps != null) {
-				storage.merge(clone, ps.getJavaField(), descriptor);
-				setIndirectCollectionIfPresent(clone, ps.getJavaField());
+				storage.merge(entity, ps.getJavaField(), descriptor);
+				setIndirectCollectionIfPresent(entity, ps.getJavaField());
 			}
 		} catch (OWLEntityExistsException e) {
-			unregisterObject(clone);
+			unregisterObject(entity);
 			throw e;
 		}
-		if (cacheManager.contains(clone.getClass(), iri, descriptor.getContext())) {
-			cacheManager.evict(entity.getClass(), iri, descriptor.getContext());
+		if (cacheManager.contains(entityCls, iri, descriptor.getContext())) {
+			cacheManager.evict(entityCls, iri, descriptor.getContext());
 		}
 		setHasChanges();
-		return clone;
+		return entity;
 	}
 
 	/**
@@ -654,14 +647,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		}
 		Object clone = this.cloneBuilder.buildClone(object, descriptor);
 		assert clone != null;
-		cloneMapping.put(clone, clone);
-		cloneToOriginals.put(clone, object);
-		registerEntityWithPersistenceContext(clone, this);
-		registerEntityWithOntologyContext(descriptor, clone);
+        registerClone(clone, object, descriptor);
 		return clone;
 	}
 
-	/**
+    private void registerClone(Object clone, Object original, Descriptor descriptor) {
+        cloneMapping.put(clone, clone);
+        cloneToOriginals.put(clone, original);
+        registerEntityWithPersistenceContext(clone, this);
+        registerEntityWithOntologyContext(descriptor, clone);
+    }
+
+    /**
 	 * Release this Unit of Work. Releasing an active Unit of Work with
 	 * uncommitted changes causes all pending changes to be discarded.
 	 */
@@ -721,7 +718,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 	 */
 	private void registerNewObjectInternal(Object entity, Descriptor descriptor) {
 		assert entity != null;
-		IRI id = getIdentifier(entity);
+		Object id = getIdentifier(entity);
 		if (id == null) {
 			final EntityType<?> eType = getMetamodel().entity(entity.getClass());
 			EntityPropertiesUtils.verifyIdentifierIsGenerated(entity, eType);
@@ -763,7 +760,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		if (getDeletedObjects().containsKey(entity)) {
 			return;
 		}
-		final IRI primaryKey = getIdentifier(entity);
+		final Object primaryKey = getIdentifier(entity);
 		final Descriptor descriptor = getDescriptor(entity);
 
 		if (hasNew() && getNewObjectsCloneToOriginal().containsKey(entity)) {
@@ -1071,7 +1068,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 		cacheManager.add(primaryKey, entity, context);
 	}
 
-	private IRI getIdentifier(Object entity) {
+	private Object getIdentifier(Object entity) {
 		assert entity != null;
 		return EntityPropertiesUtils.getPrimaryKey(entity, getMetamodel());
 	}

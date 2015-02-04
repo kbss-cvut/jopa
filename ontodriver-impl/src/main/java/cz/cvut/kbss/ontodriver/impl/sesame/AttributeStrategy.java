@@ -122,7 +122,8 @@ abstract class AttributeStrategy {
 			return cls.cast(ob);
 		} else if (cls.isEnum()) {
 			// It is an enum value
-			return cls.cast(getEnum(cls.asSubclass(Enum.class), subjectUri));
+            final Object en = getEnum((Class<? extends Enum>)cls.asSubclass(Enum.class), subjectUri);
+			return cls.cast(en);
 		} else {
 			// Otherwise load the entity
 			return internal.loadEntity(cls, subjectUri, descriptor);

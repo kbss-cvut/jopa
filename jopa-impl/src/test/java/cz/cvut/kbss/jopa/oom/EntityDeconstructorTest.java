@@ -68,6 +68,8 @@ public class EntityDeconstructorTest {
 	private Attribute strAttBMock;
 	@Mock
 	private PropertiesSpecification propsMock;
+    @Mock
+    private Identifier idB;
 
 	@Mock
 	private EntityType<OWLClassE> etEMock;
@@ -122,7 +124,7 @@ public class EntityDeconstructorTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		TestEnvironmentUtils.initOWLClassAMocks(etAMock, strAttAMock, typesMock, idA);
-		TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsMock);
+		TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsMock, idB);
 		TestEnvironmentUtils.initOWLClassEMocks(etEMock, strAttEMock, idE);
 		TestEnvironmentUtils.initOWLClassDMocks(etDMock, clsAMock);
 		TestEnvironmentUtils.initOWLClassKMocks(etKMock, clsEMock, idK);

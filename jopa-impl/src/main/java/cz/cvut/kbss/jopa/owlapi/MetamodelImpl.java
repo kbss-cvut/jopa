@@ -309,7 +309,7 @@ public class MetamodelImpl implements Metamodel {
 	}
 
 	private void loadEntities() {
-		Set<Class<?>> ents = EntityLoader.discoverEntityClasses();
+		Set<Class<?>> ents = EntityLoader.discoverEntityClasses(emf.getProperties());
 		entities.addAll(ents);
 	}
 

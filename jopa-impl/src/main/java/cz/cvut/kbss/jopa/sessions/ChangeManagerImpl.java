@@ -74,18 +74,10 @@ public class ChangeManagerImpl implements ChangeManager {
 				}
 				Object clVal = f.get(clone);
 				Object origVal = f.get(original);
-				if ((clVal == null && origVal != null) || (clVal != null && origVal == null)) {
-					changes = true;
-					break;
-				}
-				if (clVal == null) {
-					continue;
-				}
 				final Changed ch = valueChanged(origVal, clVal);
 				switch (ch) {
 				case TRUE:
-					changes = true;
-					break;
+					return true;
 				case FALSE:
 					changes = false;
 					// continue the while cycle
@@ -99,8 +91,7 @@ public class ChangeManagerImpl implements ChangeManager {
 			// First check all primitive values - performance, then do composed
 			for (Object cl : composedObjects.keySet()) {
 				if (hasChangesInternal(cl, composedObjects.get(cl))) {
-					changes = true;
-					break;
+					return true;
 				}
 			}
 		} catch (IllegalAccessException e) {
@@ -111,6 +102,12 @@ public class ChangeManagerImpl implements ChangeManager {
 	}
 
 	private Changed valueChanged(Object orig, Object clone) {
+        if ((clone == null && orig != null) || (clone != null && orig == null)) {
+            return Changed.TRUE;
+        }
+        if (clone == null) {
+            return Changed.FALSE;
+        }
 		boolean changes;
 		if (CloneBuilderImpl.isPrimitiveOrString(clone.getClass())) {
 			if (!clone.equals(orig)) {

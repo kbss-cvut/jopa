@@ -53,6 +53,8 @@ public class AxiomDescriptorFactoryTest {
 
 	@Mock
 	private EntityType<OWLClassB> etBMock;
+    @Mock
+    private Identifier idBMock;
 	@Mock
 	private Attribute strAttBMock;
 	@Mock
@@ -79,7 +81,7 @@ public class AxiomDescriptorFactoryTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		TestEnvironmentUtils.initOWLClassAMocks(etAMock, strAttAMock, typesSpecMock, idAMock);
-		TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsSpecMock);
+		TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsSpecMock, idBMock);
 		when(etDMock.getAttributes()).thenReturn(
 				Collections.<Attribute<? super OWLClassD, ?>> singleton(owlclassAAttMock));
 		when(etDMock.getAttribute(OWLClassD.getOwlClassAField().getName())).thenReturn(

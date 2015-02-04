@@ -27,6 +27,9 @@ public interface OWLAPIPersistenceProperties extends PersistenceProperties {
 	public static final String REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
 	public static final String LANG = "cz.cvut.jopa.lang";
 	public static final String CACHE_PROPERTY = "cz.cvut.jopa.cache";
+
+	public static final String SCAN_PACKAGE = "cz.cvut.jopa.scanPackage";
+
 	/**
 	 * Cached entity time to live. In seconds.
 	 */

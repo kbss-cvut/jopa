@@ -1,6 +1,7 @@
-- Rewrite Types API in OntoDriver to addTypes and removeTypes, the difference will be determined by comparison to original in UoW
-        - What to do when merging a detached entity
-- The same will hold for @Properties
+- Create change records on field change, not on commit
+- Compute change of @Properties by comparing with the original on change notification. Similar to @Types
+- Add support for EntityManager.getReference
 - Define schema for persistence.xml for JOPA
 - Revisit entity classes discovery
 - Consider adding support for JNDI data source lookup
+- Research whether we could replace aspectj with cglib-generated proxies

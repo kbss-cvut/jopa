@@ -48,9 +48,7 @@ public class UnitOfWorkTest {
 	private static OWLClassD entityD;
 	private OWLClassL entityL;
 
-	private ServerSessionStub serverSessionMock;
-
-	@Mock
+    @Mock
 	private Metamodel metamodelMock;
 
 	@Mock
@@ -126,7 +124,7 @@ public class UnitOfWorkTest {
 		this.descriptor = new EntityDescriptor(CONTEXT_URI);
 		entityL.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityL"));
 		final ServerSessionStub ssStub = new ServerSessionStub(mock(ConnectionWrapper.class));
-		this.serverSessionMock = spy(ssStub);
+        ServerSessionStub serverSessionMock = spy(ssStub);
 		when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
 		when(serverSessionMock.getManagedTypes()).thenReturn(managedTypes);
 		when(serverSessionMock.getLiveObjectCache()).thenReturn(cacheManagerMock);
@@ -134,27 +132,15 @@ public class UnitOfWorkTest {
 		when(metamodelMock.entity(OWLClassB.class)).thenReturn(typeB);
 		when(metamodelMock.entity(OWLClassD.class)).thenReturn(typeD);
 		when(metamodelMock.entity(OWLClassL.class)).thenReturn(typeL);
+        TestEnvironmentUtils.initOWLClassAMocks(typeA, strAttMock, typesMock, idA);
+        TestEnvironmentUtils.initOWLClassBMocks(typeB, strAttBMock, propertiesMock, idB);
 		TestEnvironmentUtils.initOWLClassLMocks(typeL, refListMock, simpleListMock, setAttrMock, singleAMock, idL);
-		when(typeA.getIdentifier()).thenReturn(idA);
-		when(typeB.getIdentifier()).thenReturn(idB);
 		when(typeD.getIdentifier()).thenReturn(idD);
-		when(idA.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
-		when(idB.getJavaField()).thenReturn(OWLClassB.class.getDeclaredField("uri"));
 		when(idD.getJavaField()).thenReturn(OWLClassD.class.getDeclaredField("uri"));
-		when(typeA.getFieldSpecification(OWLClassA.getTypesField().getName()))
-				.thenReturn(typesMock);
 		when(typeD.getFieldSpecification(OWLClassD.getOwlClassAField().getName())).thenReturn(
 				classAAttMock);
-		when(typeB.getFieldSpecification(OWLClassB.getPropertiesField().getName())).thenReturn(
-				propertiesMock);
-		when(typeB.getFieldSpecification(OWLClassB.getStrAttField().getName())).thenReturn(
-				strAttBMock);
-		when(strAttMock.getJavaField()).thenReturn(OWLClassA.getStrAttField());
-		when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
 		when(classAAttMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
 		when(classAAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
-		when(strAttBMock.getJavaField()).thenReturn(OWLClassB.getStrAttField());
-		when(propertiesMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
 		when(emMock.getTransaction()).thenReturn(transactionMock);
 		uow = new UnitOfWorkImpl(serverSessionMock);
 		uow.setEntityManager(emMock);
@@ -174,7 +160,7 @@ public class UnitOfWorkTest {
 
 	@SuppressWarnings("unchecked")
 	@Test(expected = NullPointerException.class)
-	public void testReadObectNullPrimaryKey() {
+	public void testReadObjectNullPrimaryKey() {
 		try {
 			uow.readObject(entityA.getClass(), null, descriptor);
 		} finally {
@@ -248,8 +234,8 @@ public class UnitOfWorkTest {
 		uow.removeObject(toRemove);
 		uow.commit();
 
-		verify(cacheManagerMock).evict(OWLClassA.class, IRI.create(entityA.getUri()), CONTEXT_URI);
-		verify(storageMock).remove(IRI.create(entityA.getUri()), entityA.getClass(), descriptor);
+		verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
+		verify(storageMock).remove(entityA.getUri(), entityA.getClass(), descriptor);
 	}
 
 	@Test
@@ -272,7 +258,8 @@ public class UnitOfWorkTest {
 		uow.commit();
 
 		assertEquals(d.getOwlClassA().getUri(), newA.getUri());
-		verify(cacheManagerMock).add(eq(IRI.create(newA.getUri())), any(Object.class),
+        System.out.println(newA.getUri());
+        verify(cacheManagerMock).add(eq(newA.getUri()), any(Object.class),
 				eq(CONTEXT_URI));
 	}
 
@@ -351,7 +338,7 @@ public class UnitOfWorkTest {
 		testNew.setUri(pk);
 		uow.registerNewObject(testNew, descriptor);
 		assertTrue(uow.isObjectNew(testNew));
-		verify(storageMock).persist(IRI.create(pk), testNew, descriptor);
+		verify(storageMock).persist(pk, testNew, descriptor);
 	}
 
 	@Test
@@ -399,7 +386,7 @@ public class UnitOfWorkTest {
 	@Test
 	public void testRemoveObjectFromCache() {
 		uow.removeObjectFromCache(entityB, descriptor.getContext());
-		verify(cacheManagerMock).evict(OWLClassB.class, IRI.create(entityB.getUri()),
+		verify(cacheManagerMock).evict(OWLClassB.class, entityB.getUri(),
 				descriptor.getContext());
 	}
 
@@ -411,7 +398,7 @@ public class UnitOfWorkTest {
 		newOne.setStringAttribute("stringAttributeOne");
 		uow.registerNewObject(newOne, descriptor);
 		assertTrue(uow.getNewObjectsCloneToOriginal().containsKey(newOne));
-		verify(storageMock).persist(IRI.create(pk), newOne, descriptor);
+		verify(storageMock).persist(pk, newOne, descriptor);
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -459,7 +446,7 @@ public class UnitOfWorkTest {
 		uow.removeObject(toRemove);
 		assertTrue(uow.getDeletedObjects().containsKey(toRemove));
 		assertFalse(uow.contains(toRemove));
-		verify(storageMock).remove(IRI.create(entityB.getUri()), entityB.getClass(), descriptor);
+		verify(storageMock).remove(entityB.getUri(), entityB.getClass(), descriptor);
 	}
 
 	@Test
@@ -540,7 +527,7 @@ public class UnitOfWorkTest {
 	public void testRollback() throws Exception {
 		uow.registerNewObject(entityA, descriptor);
 		final Object clone = uow.registerExistingObject(entityB, descriptor);
-		verify(storageMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
+		verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
 		assertTrue(uow.contains(entityA));
 		assertTrue(uow.contains(clone));
 
@@ -571,7 +558,7 @@ public class UnitOfWorkTest {
 	public void testClearCacheAfterCommit() throws Exception {
 		uow.registerNewObject(entityA, descriptor);
 		final Object clone = uow.registerExistingObject(entityB, descriptor);
-		verify(storageMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
+		verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
 		assertTrue(uow.contains(entityA));
 		assertTrue(uow.contains(clone));
 		uow.setShouldClearAfterCommit(true);
@@ -681,8 +668,13 @@ public class UnitOfWorkTest {
 
 	@SuppressWarnings("unchecked")
 	private void mergeDetachedTest() throws Exception {
-		when(storageMock.contains(IRI.create(entityA.getUri()), entityA.getClass(), descriptor))
+		when(storageMock.contains(entityA.getUri(), entityA.getClass(), descriptor))
 				.thenReturn(Boolean.TRUE);
+        final OWLClassA orig = new OWLClassA();
+        orig.setUri(entityA.getUri());
+        orig.setStringAttribute("oldStringAttribute");
+        orig.setTypes(new HashSet<>(entityA.getTypes()));
+        when(storageMock.find(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(orig);
 		final Attribute<? super OWLClassA, ?> strAtt = mock(Attribute.class);
 		when(strAtt.getJavaField()).thenReturn(OWLClassA.getStrAttField());
 		@SuppressWarnings("rawtypes")
@@ -692,6 +684,7 @@ public class UnitOfWorkTest {
 		atts.add(strAtt);
 		when(typeA.getAttributes()).thenReturn(atts);
 		when(typeA.getTypes()).thenReturn(typesAtt);
+
 		final OWLClassA res = uow.mergeDetached(entityA, descriptor);
 		assertNotNull(res);
 		assertEquals(entityA.getUri(), res.getUri());
@@ -704,10 +697,10 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testMergeDetachedEvictFromCache() throws Exception {
-		when(cacheManagerMock.contains(OWLClassA.class, IRI.create(entityA.getUri()), CONTEXT_URI))
+		when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), CONTEXT_URI))
 				.thenReturn(Boolean.TRUE);
 		mergeDetachedTest();
-		verify(cacheManagerMock).evict(OWLClassA.class, IRI.create(entityA.getUri()), CONTEXT_URI);
+		verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
 	}
 
 	@Test
@@ -717,7 +710,7 @@ public class UnitOfWorkTest {
 		final OWLClassA res = uow.mergeDetached(entityA, descriptor);
 		assertNotNull(res);
 		assertSame(entityA, res);
-		verify(storageMock).persist(IRI.create(entityA.getUri()), entityA, descriptor);
+		verify(storageMock).persist(entityA.getUri(), entityA, descriptor);
 	}
 
 	@Test

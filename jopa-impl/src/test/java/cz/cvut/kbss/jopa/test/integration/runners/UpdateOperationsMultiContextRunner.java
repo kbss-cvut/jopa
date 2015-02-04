@@ -97,8 +97,9 @@ public class UpdateOperationsMultiContextRunner extends BaseRunner {
 		final String newKey = "http://krizik.felk.cvut.cz/jopa/ontologies/properties/newPropertyKey";
 		final String newValue = "http://krizik.felk.cvut.cz/jopa/ontologies/newPropertyValue";
 		final String newPropertyValue = "http://krizik.felk.cvut.cz/jopa/ontologies/NewValueOfAnOldProperty";
+        final String propertyToChange = b.getProperties().keySet().iterator().next();
 		b.getProperties().put(newKey, Collections.singleton(newValue));
-		b.getProperties().get(b.getProperties().keySet().iterator().next()).add(newPropertyValue);
+		b.getProperties().get(propertyToChange).add(newPropertyValue);
 		em.getTransaction().commit();
 
 		final OWLClassB res = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);

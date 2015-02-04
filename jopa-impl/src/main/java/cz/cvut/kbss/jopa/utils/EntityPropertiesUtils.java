@@ -49,7 +49,7 @@ public class EntityPropertiesUtils {
 	 *             If {@code entity} is not an entity or if the identifier is of
 	 *             an unknown type
 	 */
-	public static IRI getPrimaryKey(Object entity, Metamodel metamodel) {
+	public static Object getPrimaryKey(Object entity, Metamodel metamodel) {
 		if (entity == null || metamodel == null) {
 			throw new NullPointerException();
 		}
@@ -59,20 +59,21 @@ public class EntityPropertiesUtils {
 			final Field idField = type.getIdentifier().getJavaField();
 			idField.setAccessible(true);
 			fieldValue = idField.get(entity);
+            return fieldValue;
 		} catch (IllegalAccessException e) {
 			throw new OWLPersistenceException();
 		}
-		if (fieldValue == null) {
-			return null;
-		}
+//		if (fieldValue == null) {
+//			return null;
+//		}
 
-		if (fieldValue instanceof String) {
-			return IRI.create((String) fieldValue);
-		} else if (fieldValue instanceof URI) {
-			return IRI.create((URI) fieldValue);
-		} else {
-			throw new OWLPersistenceException("Unknown identifier type: " + fieldValue.getClass());
-		}
+//		if (fieldValue instanceof String) {
+//			return IRI.create((String) fieldValue);
+//		} else if (fieldValue instanceof URI) {
+//			return IRI.create((URI) fieldValue);
+//		} else {
+//			throw new OWLPersistenceException("Unknown identifier type: " + fieldValue.getClass());
+//		}
 	}
 
 	/**

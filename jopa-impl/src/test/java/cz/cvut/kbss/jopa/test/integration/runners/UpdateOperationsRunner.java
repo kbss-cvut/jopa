@@ -282,7 +282,7 @@ public class UpdateOperationsRunner extends BaseRunner {
 
 		final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
 		assertNotNull(resC);
-		assertTrue(resC.getSimpleList().isEmpty());
+		assertNull(resC.getSimpleList());
 		for (OWLClassA a : entityC.getSimpleList()) {
 			assertNotNull(em.find(OWLClassA.class, a.getUri(), cDescriptor));
 		}

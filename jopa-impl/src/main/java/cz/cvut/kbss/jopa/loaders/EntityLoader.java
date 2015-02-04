@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import org.reflections.Reflections;
 
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
@@ -23,10 +25,12 @@ public class EntityLoader {
 	 * 
 	 * @return Set of entity classes
 	 */
-	public static Set<Class<?>> discoverEntityClasses() {
+	public static Set<Class<?>> discoverEntityClasses(Map<String, String> properties) {
 		// TODO Add our custom implementation here
 		// return new EntityLoader().discoverEntities();
-		final Reflections r = new Reflections("");
+		String toScan = properties != null && properties.containsKey(OWLAPIPersistenceProperties.SCAN_PACKAGE)
+				? properties.get(OWLAPIPersistenceProperties.SCAN_PACKAGE) : "";
+		final Reflections r = new Reflections(toScan);
 		return r.getTypesAnnotatedWith(OWLClass.class);
 	}
 

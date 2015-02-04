@@ -78,9 +78,8 @@ public class EntityConstructorTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         TestEnvironmentUtils.initOWLClassAMocks(etAMock, strAttAMock, typesSpecMock, idAMock);
-        TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsSpecMock);
+        TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsSpecMock, idBMock);
         when(etBMock.getIdentifier()).thenReturn(idBMock);
-        when(idBMock.getJavaField()).thenReturn(OWLClassB.class.getDeclaredField("uri"));
         TestEnvironmentUtils.initOWLClassDMocks(etDMock, clsAAttMock);
         when(etDMock.getIdentifier()).thenReturn(idDMock);
         when(idDMock.getJavaField()).thenReturn(OWLClassD.class.getDeclaredField("uri"));

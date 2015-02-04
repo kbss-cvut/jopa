@@ -10,15 +10,9 @@ import java.util.Map.Entry;
 
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.*;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute.CollectionType;
-import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.test.OWLClassL;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
@@ -111,6 +105,8 @@ public final class TestEnvironmentUtils {
         when(strAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
         when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
         when(typesMock.getName()).thenReturn(OWLClassA.getTypesField().getName());
+        when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
+        when(etMock.getFieldSpecification(typesMock.getName())).thenReturn(typesMock);
 
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
@@ -120,7 +116,7 @@ public final class TestEnvironmentUtils {
      * Initializes the specified mock objects to return reasonable values.
      */
     public static void initOWLClassBMocks(EntityType<OWLClassB> etMock, Attribute strAttMock,
-                                          PropertiesSpecification propsMock) throws NoSuchFieldException, SecurityException {
+                                          PropertiesSpecification propsMock, Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassB.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
         when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
@@ -132,7 +128,12 @@ public final class TestEnvironmentUtils {
                 .iri();
         when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
         when(strAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
+        when(strAttMock.getName()).thenReturn(OWLClassB.getStrAttField().getName());
+        when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(propsMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
+        when(etMock.getFieldSpecification(propsMock.getName())).thenReturn(propsMock);
+        when(etMock.getIdentifier()).thenReturn(idMock);
+        when(idMock.getJavaField()).thenReturn(OWLClassB.class.getDeclaredField("uri"));
     }
 
     public static void initOWLClassCMocks(EntityType<OWLClassC> etMock,

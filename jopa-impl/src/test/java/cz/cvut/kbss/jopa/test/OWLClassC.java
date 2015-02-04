@@ -15,16 +15,11 @@
 
 package cz.cvut.kbss.jopa.test;
 
+import cz.cvut.kbss.jopa.model.annotations.*;
+
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
-
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
-import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.jopa.model.annotations.Sequence;
-import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC")
 public class OWLClassC {

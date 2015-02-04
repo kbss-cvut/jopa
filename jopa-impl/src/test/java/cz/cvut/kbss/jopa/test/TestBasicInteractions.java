@@ -62,7 +62,8 @@ public class TestBasicInteractions {
 
 		final OWLClassA a = em.find(OWLClassA.class, pk);
 
-		assertEquals(a, t);
+		assertEquals(pk, a.getUri());
+        assertEquals(t.getStringAttribute(), a.getStringAttribute());
 	}
 
 	@Test

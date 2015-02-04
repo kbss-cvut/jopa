@@ -1,20 +1,5 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Field;
-import java.net.URI;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.semanticweb.owlapi.model.IRI;
-
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -23,6 +8,19 @@ import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.lang.reflect.Field;
+import java.net.URI;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class MergeManagerTest {
 
@@ -119,7 +117,7 @@ public class MergeManagerTest {
 		final ObjectChangeSet ochs = createChangeSet(objOne, clone);
 		uowChangeSet.addNewObjectChangeSet(ochs);
 		mm.mergeChangesFromChangeSet(uowChangeSet);
-		verify(uow).putObjectIntoCache(IRI.create(pk), objOne, defaultDescriptor.getContext());
+		verify(uow).putObjectIntoCache(pk, objOne, defaultDescriptor.getContext());
 	}
 
 	@Test
@@ -130,7 +128,7 @@ public class MergeManagerTest {
 		final OWLClassB clone = (OWLClassB) cloneBuilder.buildClone(newOne, defaultDescriptor);
 		final ObjectChangeSet ochs = createChangeSet(newOne, clone);
 		mm.mergeNewObject(ochs);
-		verify(uow).putObjectIntoCache(IRI.create(pk), newOne, defaultDescriptor.getContext());
+		verify(uow).putObjectIntoCache(pk, newOne, defaultDescriptor.getContext());
 	}
 
 	private static ObjectChangeSet createChangeSet(OWLClassB orig, OWLClassB clone) {
