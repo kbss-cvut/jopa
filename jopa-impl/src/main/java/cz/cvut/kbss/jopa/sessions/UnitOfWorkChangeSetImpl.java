@@ -1,20 +1,19 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSet {
 
 	private static final long serialVersionUID = 7834438138173201896L;
 
 	private Set<ObjectChangeSet> deletedObjects;
-	private Set<ObjectChangeSet> objectChanges;
+	private Map<Object, ObjectChangeSet> objectChanges;
 	private Set<ObjectChangeSet> newObjectChanges;
 
 	public UnitOfWorkChangeSetImpl() {
 		super();
-		this.objectChanges = new HashSet<>();
+		this.objectChanges = new HashMap<>();
 		this.deletedObjects = new HashSet<>();
 		this.newObjectChanges = new HashSet<>();
 	}
@@ -24,7 +23,7 @@ public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSe
 		if (objectChangeSet.isNew()) {
 			addNewObjectChangeSet(objectChangeSet);
 		} else {
-			objectChanges.add(objectChangeSet);
+			objectChanges.put(objectChangeSet.getChangedObject(), objectChangeSet);
 		}
 	}
 
@@ -40,11 +39,16 @@ public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSe
 	}
 
 	@Override
-	public Set<ObjectChangeSet> getObjectChanges() {
-		return this.objectChanges;
-	}
+	public Collection<ObjectChangeSet> getExistingObjectsChanges() {
+		return Collections.unmodifiableCollection(objectChanges.values());
+    }
 
-	@Override
+    @Override
+    public ObjectChangeSet getExistingObjectChanges(Object original) {
+        return null;
+    }
+
+    @Override
 	public Set<ObjectChangeSet> getDeletedObjects() {
 		return this.deletedObjects;
 	}

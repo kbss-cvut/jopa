@@ -49,7 +49,7 @@ public class MergeManagerImpl implements MergeManager {
 	}
 
 	public void mergeChangesFromChangeSet(UnitOfWorkChangeSet changeSet) {
-		for (ObjectChangeSet objectChangeSet : changeSet.getObjectChanges()) {
+		for (ObjectChangeSet objectChangeSet : changeSet.getExistingObjectsChanges()) {
 				Object clone = objectChangeSet.getCloneObject();
 				mergeChangesOnObject(clone, objectChangeSet);
 		}

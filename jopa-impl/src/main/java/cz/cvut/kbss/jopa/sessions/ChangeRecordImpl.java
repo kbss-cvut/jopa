@@ -1,7 +1,5 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
-
 public class ChangeRecordImpl implements ChangeRecord {
 	
 	protected String attributeName;

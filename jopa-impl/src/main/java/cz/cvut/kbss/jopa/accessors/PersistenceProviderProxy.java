@@ -31,10 +31,8 @@ class PersistenceProviderProxy implements PersistenceProviderFacade {
 		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 
-		T entity = null;
-		CacheManager cache = serverSession.getLiveObjectCache();
-		entity = cache.get(cls, primaryKey, context);
-		return entity;
+		final CacheManager cache = serverSession.getLiveObjectCache();
+		return cache.get(cls, primaryKey, context);
 	}
 
 }

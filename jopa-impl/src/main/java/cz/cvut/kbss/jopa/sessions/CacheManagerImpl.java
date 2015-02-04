@@ -293,7 +293,7 @@ public class CacheManagerImpl implements CacheManager {
 				// Mark the objects for eviction (can't evict them now, it would
 				// cause ConcurrentModificationException)
 				for (Entry<URI, Long> e : cache.ttls.entrySet()) {
-					final long lm = e.getValue().longValue();
+					final long lm = e.getValue();
 					if (lm + timeToLive < currentTime) {
 						toEvict.add(e.getKey());
 					}
@@ -375,8 +375,7 @@ public class CacheManagerImpl implements CacheManager {
 				return contains(cls, primaryKey);
 			}
 
-			final URI ctx = context;
-			final Map<Object, Object> m = getMapForClass(ctx, cls);
+			final Map<Object, Object> m = getMapForClass(context, cls);
 			return m.containsKey(primaryKey);
 		}
 

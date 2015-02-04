@@ -149,7 +149,7 @@ public class MergeManagerTest {
 			OWLClassB or = (OWLClassB) original;
 			ChangeRecord change;
 			try {
-				change = changeSet.getAttributesToChange()
+				change = changeSet.getChanges()
 						.get(OWLClassB.getStrAttField().getName());
 				if (change != null) {
 					or.setStringAttribute((String) change.getNewValue());

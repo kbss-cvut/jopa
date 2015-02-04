@@ -8,11 +8,13 @@ import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
 
+import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute.CollectionType;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.OWLClassL;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
@@ -27,6 +29,8 @@ import cz.cvut.kbss.jopa.test.OWLClassK;
 public final class TestEnvironmentUtils {
 
     private static Random random;
+
+    private static Set<Class<?>> managedTypes;
 
     private TestEnvironmentUtils() {
         throw new AssertionError();
@@ -102,6 +106,7 @@ public final class TestEnvironmentUtils {
         final String stringAttIri = OWLClassA.getStrAttField().getAnnotation(OWLDataProperty.class)
                 .iri();
         when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
+        when(strAttMock.getName()).thenReturn(OWLClassA.getStrAttField().getName());
         when(strAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
         when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
         when(typesMock.getName()).thenReturn(OWLClassA.getTypesField().getName());
@@ -315,5 +320,17 @@ public final class TestEnvironmentUtils {
             types.add("http://krizik.felk.cvut.cz/ontologies/jopa#type_" + i);
         }
         return types;
+    }
+
+    public static Set<Class<?>> getManagedTypes() {
+        if (managedTypes == null) {
+            initManagedTypes();
+        }
+        return Collections.unmodifiableSet(managedTypes);
+    }
+
+    private static void initManagedTypes() {
+        managedTypes = EntityLoader.discoverEntityClasses(
+                Collections.singletonMap(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa"));
     }
 }

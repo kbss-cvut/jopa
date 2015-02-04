@@ -1,4 +1,3 @@
-- Create change records on field change, not on commit
 - Compute change of @Properties by comparing with the original on change notification. Similar to @Types
 - Add support for EntityManager.getReference
 - Define schema for persistence.xml for JOPA

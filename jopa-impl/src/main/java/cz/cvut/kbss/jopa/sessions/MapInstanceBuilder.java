@@ -72,7 +72,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 		}
 		try {
 			result = (Map<?, ?>) c.newInstance(params);
-		} catch (InstantiationException e) {
+		} catch (InstantiationException | IllegalArgumentException | InvocationTargetException e) {
 			throw new OWLPersistenceException(e);
 		} catch (IllegalAccessException e) {
 			try {
@@ -81,10 +81,8 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
 			} catch (PrivilegedActionException ex) {
 				// Do nothing
 			}
-		} catch (IllegalArgumentException | InvocationTargetException e) {
-			throw new OWLPersistenceException(e);
 		}
-		return result;
+        return result;
 	}
 
 	private Map<?, ?> buildSingletonClone(Object cloneOwner, Field field, Map<?, ?> orig,

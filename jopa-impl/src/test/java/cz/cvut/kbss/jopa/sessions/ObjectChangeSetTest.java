@@ -4,8 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -34,21 +32,15 @@ public class ObjectChangeSetTest {
 		ChangeRecord record = new ChangeRecordImpl(attName, testObject);
 		ObjectChangeSet chs = new ObjectChangeSetImpl(testObject, testClone, CONTEXT);
 		chs.addChangeRecord(record);
-		assertNotNull(chs.getAttributesToChange().get(attName));
-		Object res = chs.getAttributesToChange().get(attName).getNewValue();
+		assertNotNull(chs.getChanges().get(attName));
+		Object res = chs.getChanges().get(attName).getNewValue();
 		assertEquals(testObject, res);
-	}
-
-	@Test
-	public void testGetChanges() {
-		ObjectChangeSet chs = new ObjectChangeSetImpl(testObject, testClone, CONTEXT);
-		assertNotNull(chs.getChanges());
 	}
 
 	@Test
 	public void testGetAttributesToChange() {
 		ObjectChangeSet chs = new ObjectChangeSetImpl(testObject, testClone, CONTEXT);
-		assertNotNull(chs.getAttributesToChange());
+		assertNotNull(chs.getChanges());
 	}
 
 	@Test
@@ -75,13 +67,5 @@ public class ObjectChangeSetTest {
 		String newClone = "newClone";
 		chs.setCloneObject(newClone);
 		assertNotSame(testClone, chs.getCloneObject());
-	}
-
-	@Test
-	public void testSetChanges() {
-		ObjectChangeSet chs = new ObjectChangeSetImpl(testObject, testClone, CONTEXT);
-		List<ChangeRecord> changes = new ArrayList<>();
-		chs.setChanges(changes);
-		assertEquals(changes, chs.getChanges());
 	}
 }

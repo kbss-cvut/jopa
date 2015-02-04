@@ -86,6 +86,13 @@ public class TestUpdateOperations {
 		runner.mergeDetachedCascade(em, context());
 	}
 
+    @Test
+    public void testMergeDetachedWithObjectPropertyChange() {
+        em = TestEnvironment.getPersistenceConnector("OwlapiUpdateDetachedWithOPChange", storage, true,
+                properties);
+        runner.mergeDetachedWithUpdatedObjectProperty(em, context());
+    }
+
 	@Test
 	public void testRemoveFromSimpleList() {
 		em = TestEnvironment.getPersistenceConnector("OwlapiUpdateRemoveFromSimpleList", storage,

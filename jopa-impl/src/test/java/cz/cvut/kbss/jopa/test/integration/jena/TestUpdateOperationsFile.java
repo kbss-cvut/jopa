@@ -88,6 +88,13 @@ public class TestUpdateOperationsFile {
 		runner.mergeDetachedCascade(em, context());
 	}
 
+    @Test
+    public void testMergeDetachedWithObjectPropertyChange() {
+        em = TestEnvironment.getPersistenceConnector("JenaFileUpdateDetachedWithOPChange", storage, true,
+                properties);
+        runner.mergeDetachedWithUpdatedObjectProperty(em, context());
+    }
+
 	@Test
 	public void testRemoveFromSimpleList() {
 		em = TestEnvironment.getPersistenceConnector("JenaFileUpdateRemoveFromSimpleList", storage,

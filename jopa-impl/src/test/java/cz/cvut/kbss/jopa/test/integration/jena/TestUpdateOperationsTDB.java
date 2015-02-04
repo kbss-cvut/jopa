@@ -87,6 +87,13 @@ public class TestUpdateOperationsTDB {
 		runner.mergeDetachedCascade(em, context());
 	}
 
+    @Test
+    public void testMergeDetachedWithObjectPropertyChange() {
+        em = TestEnvironment.getPersistenceConnector("JenaTDBUpdateDetachedWithOPChange", storage, true,
+                properties);
+        runner.mergeDetachedWithUpdatedObjectProperty(em, context());
+    }
+
 	@Test
 	public void testRemoveFromSimpleList() {
 		em = TestEnvironment.getPersistenceConnector("JenaTDBUpdateRemoveFromSimpleList", storage,

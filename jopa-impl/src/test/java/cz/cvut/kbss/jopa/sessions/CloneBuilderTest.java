@@ -125,7 +125,7 @@ public class CloneBuilderTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		when(uow.isManagedType((Class<?>) any())).thenAnswer(new Answer<Boolean>() {
+		when(uow.isTypeManaged((Class<?>) any())).thenAnswer(new Answer<Boolean>() {
 			public Boolean answer(InvocationOnMock invocation) {
 				Class<?> cls = (Class<?>) invocation.getArguments()[0];
 				return managedTypes.contains(cls);

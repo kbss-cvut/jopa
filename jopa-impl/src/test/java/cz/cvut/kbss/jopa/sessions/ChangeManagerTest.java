@@ -1,35 +1,24 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassC;
-import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.OWLClassF;
-import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
+import java.net.URI;
+import java.util.*;
+import java.util.Map.Entry;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 
 public class ChangeManagerTest {
 
@@ -40,13 +29,15 @@ public class ChangeManagerTest {
 	private static OWLClassC testC;
 	private static OWLClassA testAClone;
 	private static OWLClassD testDClone;
-	private static OWLClassF testF;
-	private OWLClassC testCClone;
+    private OWLClassC testCClone;
 	private static OWLClassB testB;
 	private static OWLClassB testBClone;
 	private static Set<String> typesCollection;
 	private static TestEntity primitivesTest;
 	private static Descriptor defaultDescriptor;
+
+    @Mock
+    private MetamodelProvider providerMock;
 
 	private ChangeManager manager;
 
@@ -56,11 +47,11 @@ public class ChangeManagerTest {
 		initBs();
 		initC();
 		initDs();
-		typesCollection = new HashSet<String>();
+		typesCollection = new HashSet<>();
 		for (int i = 0; i < 10; i++) {
 			typesCollection.add(Integer.toString(i));
 		}
-		testF = new OWLClassF();
+        OWLClassF testF = new OWLClassF();
 		testF.setUri(URI.create("http://testF"));
 		primitivesTest = new TestEntity();
 		primitivesTest.setId(0);
@@ -97,7 +88,7 @@ public class ChangeManagerTest {
 		testC = new OWLClassC();
 		final URI pkC = URI.create("http://testC");
 		testC.setUri(pkC);
-		List<OWLClassA> refList = new ArrayList<OWLClassA>(10);
+		List<OWLClassA> refList = new ArrayList<>(10);
 		for (int i = 0; i < 10; i++) {
 			OWLClassA a = new OWLClassA();
 			URI pkA = URI.create("http://testARef" + (i + 1));
@@ -123,7 +114,16 @@ public class ChangeManagerTest {
 
 	@Before
 	public void setup() {
-		manager = new ChangeManagerImpl();
+        MockitoAnnotations.initMocks(this);
+		manager = new ChangeManagerImpl(providerMock);
+        when(providerMock.isTypeManaged(any(Class.class))).thenAnswer(new Answer<Boolean>() {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                final Class<?> cls = (Class<?>) invocation.getArguments()[0];
+                return TestEnvironmentUtils.getManagedTypes().contains(cls);
+            }
+        });
+        when(providerMock.getManagedTypes()).thenReturn(TestEnvironmentUtils.getManagedTypes());
 		testAClone.setStringAttribute(null);
 		testAClone.setTypes(null);
 		testA.setTypes(null);
@@ -185,7 +185,7 @@ public class ChangeManagerTest {
 	@Test
 	public void testCollectionHasChange() {
 		testA.setTypes(typesCollection);
-		Set<String> changed = new HashSet<String>();
+		Set<String> changed = new HashSet<>();
 		Iterator<String> it = typesCollection.iterator();
 		it.next();
 		changed.add("111");
@@ -240,11 +240,11 @@ public class ChangeManagerTest {
 		final boolean res = manager.calculateChanges(chSet);
 		assertTrue(res);
 		assertFalse(chSet.getChanges().isEmpty());
-		assertTrue(chSet.getAttributesToChange().containsKey("stringAttribute"));
+		assertTrue(chSet.getChanges().containsKey("stringAttribute"));
 	}
 
 	@Test
-	public void testCalcuateChangesPrimitives() throws Exception {
+	public void testCalculateChangesPrimitives() throws Exception {
 		final TestEntity primClone = new TestEntity();
 		primClone.setId(primitivesTest.getId() + 10);
 		ObjectChangeSet chSet = createChangeSet(primitivesTest, primClone);
@@ -252,7 +252,7 @@ public class ChangeManagerTest {
 		final boolean res = manager.calculateChanges(chSet);
 		assertTrue(res);
 		assertFalse(chSet.getChanges().isEmpty());
-		assertTrue(chSet.getAttributesToChange().containsKey("id"));
+		assertTrue(chSet.getChanges().containsKey("id"));
 	}
 
 	@Test
@@ -262,16 +262,15 @@ public class ChangeManagerTest {
 		assertTrue(chSet.getChanges().isEmpty());
 		final boolean res = manager.calculateChanges(chSet);
 		assertTrue(res);
-		List<ChangeRecord> records = chSet.getChanges();
-		assertEquals(1, records.size());
-		assertEquals(testAClone, records.get(0).getNewValue());
+		assertEquals(1, chSet.getChanges().size());
+		assertEquals(testAClone, chSet.getChanges().get(OWLClassD.getOwlClassAField().getName()).getNewValue());
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testCalculateCollectionChanges() throws Exception {
 		testA.setTypes(typesCollection);
-		Set<String> newCollection = new HashSet<String>(typesCollection);
+		Set<String> newCollection = new HashSet<>(typesCollection);
 		newCollection.remove("8");
 		newCollection.add("String");
 		testAClone.setTypes(newCollection);
@@ -280,15 +279,15 @@ public class ChangeManagerTest {
 		assertTrue(chSet.getChanges().isEmpty());
 		final boolean res = manager.calculateChanges(chSet);
 		assertTrue(res);
-		List<ChangeRecord> records = chSet.getChanges();
-		assertEquals(1, records.size());
-		assertTrue(((Set<String>) records.get(0).getNewValue()).contains("String"));
+		assertEquals(1, chSet.getChanges().size());
+		assertTrue(((Set<String>) chSet.getChanges().
+                get(OWLClassA.getTypesField().getName()).getNewValue()).contains("String"));
 	}
 
 	@Test
 	public void testCalculateMultipleChanges() throws Exception {
 		testA.setTypes(typesCollection);
-		Set<String> newCollection = new HashSet<String>(typesCollection);
+		Set<String> newCollection = new HashSet<>(typesCollection);
 		newCollection.remove("8");
 		newCollection.add("String");
 		testAClone.setTypes(newCollection);
@@ -299,11 +298,10 @@ public class ChangeManagerTest {
 		assertTrue(chSet.getChanges().isEmpty());
 		final boolean res = manager.calculateChanges(chSet);
 		assertTrue(res);
-		List<ChangeRecord> records = chSet.getChanges();
-		assertEquals(3, records.size());
-		assertTrue(chSet.getAttributesToChange().containsKey("stringAttribute"));
-		assertTrue(chSet.getAttributesToChange().containsKey("types"));
-		assertTrue(chSet.getAttributesToChange().containsKey("uri"));
+		assertEquals(3, chSet.getChanges().size());
+		assertTrue(chSet.getChanges().containsKey("stringAttribute"));
+		assertTrue(chSet.getChanges().containsKey("types"));
+		assertTrue(chSet.getChanges().containsKey("uri"));
 	}
 
 	@Test
@@ -314,7 +312,7 @@ public class ChangeManagerTest {
 		assertTrue(res);
 		assertFalse(chSet.getChanges().isEmpty());
 		assertNotNull(chSet);
-		assertNull(chSet.getAttributesToChange().get("stringAttribute").getNewValue());
+		assertNull(chSet.getChanges().get("stringAttribute").getNewValue());
 	}
 
 	@Test
@@ -326,9 +324,9 @@ public class ChangeManagerTest {
 		final ObjectChangeSet chSet = createChangeSet(a, testAClone);
 		final boolean res = manager.calculateChanges(chSet);
 		assertTrue(res);
-		assertEquals(1, chSet.getAttributesToChange().size());
 		assertEquals(1, chSet.getChanges().size());
-		final ChangeRecord rec = chSet.getChanges().get(0);
+		assertEquals(1, chSet.getChanges().size());
+		final ChangeRecord rec = chSet.getChanges().get(OWLClassA.getStrAttField().getName());
 		assertNotNull(rec.getNewValue());
 	}
 
@@ -339,13 +337,13 @@ public class ChangeManagerTest {
 		assertTrue(chSet.getChanges().isEmpty());
 		final boolean res = manager.calculateChanges(chSet);
 		assertTrue(res);
-		assertTrue(chSet.getAttributesToChange().containsKey("referencedList"));
+		assertTrue(chSet.getChanges().containsKey("referencedList"));
 		assertEquals(1, chSet.getChanges().size());
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testCalculateChangesAddItemtoReferenceList() throws Exception {
+	public void testCalculateChangesAddItemToReferenceList() throws Exception {
 		OWLClassA add = new OWLClassA();
 		final URI pk = URI.create("http://addedA");
 		add.setUri(pk);
@@ -356,7 +354,7 @@ public class ChangeManagerTest {
 		final boolean res = manager.calculateChanges(chSet);
 		assertTrue(res);
 		assertEquals(1, chSet.getChanges().size());
-		final ChangeRecord r = chSet.getChanges().get(0);
+		final ChangeRecord r = chSet.getChanges().get(OWLClassC.getRefListField().getName());
 		List<OWLClassA> refs = (List<OWLClassA>) r.getNewValue();
 		assertEquals(add.getUri(), refs.get(10).getUri());
 		assertEquals(add.getStringAttribute(), refs.get(10).getStringAttribute());
@@ -375,9 +373,9 @@ public class ChangeManagerTest {
 		assertTrue(chSet.getChanges().isEmpty());
 		final boolean res = manager.calculateChanges(chSet);
 		assertTrue(res);
-		assertTrue(chSet.getAttributesToChange().containsKey("referencedList"));
+		assertTrue(chSet.getChanges().containsKey("referencedList"));
 		assertEquals(1, chSet.getChanges().size());
-		final ChangeRecord r = chSet.getChanges().get(0);
+		final ChangeRecord r = chSet.getChanges().get(OWLClassC.getRefListField().getName());
 		List<OWLClassA> refs = (List<OWLClassA>) r.getNewValue();
 		assertTrue(refs.contains(newOne));
 	}
@@ -389,7 +387,7 @@ public class ChangeManagerTest {
 		final boolean res = manager.calculateChanges(chSet);
 		assertTrue(res);
 		assertEquals(1, chSet.getChanges().size());
-		assertTrue(chSet.getAttributesToChange().containsKey("properties"));
+		assertTrue(chSet.getChanges().containsKey("properties"));
 	}
 
 	@Test
@@ -400,7 +398,7 @@ public class ChangeManagerTest {
 		final boolean res = manager.calculateChanges(chSet);
 		assertTrue(res);
 		assertEquals(1, chSet.getChanges().size());
-		assertTrue(chSet.getAttributesToChange().containsKey("properties"));
+		assertTrue(chSet.getChanges().containsKey("properties"));
 	}
 
 	@Test
@@ -411,7 +409,7 @@ public class ChangeManagerTest {
 		final boolean res = manager.calculateChanges(chSet);
 		assertTrue(res);
 		assertEquals(1, chSet.getChanges().size());
-		assertTrue(chSet.getAttributesToChange().containsKey("properties"));
+		assertTrue(chSet.getChanges().containsKey("properties"));
 	}
 
 	private ObjectChangeSet createChangeSet(Object orig, Object clone) {

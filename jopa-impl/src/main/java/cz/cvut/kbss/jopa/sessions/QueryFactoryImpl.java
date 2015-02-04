@@ -35,7 +35,7 @@ class QueryFactoryImpl implements QueryFactory {
 		Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
 		Objects.requireNonNull(resultClass, ErrorUtils.constructNPXMessage("resultClass"));
 
-		final TypedQueryImpl<T> tq = new TypedQueryImpl<T>(sparql, resultClass, true, uow,
+		final TypedQueryImpl<T> tq = new TypedQueryImpl<>(sparql, resultClass, true, uow,
 				connection);
 		tq.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
 		return tq;
@@ -57,7 +57,7 @@ class QueryFactoryImpl implements QueryFactory {
 		Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
 		Objects.requireNonNull(resultClass, ErrorUtils.constructNPXMessage("resultClass"));
 
-		final TypedQueryImpl<T> tq = new TypedQueryImpl<T>(query, resultClass, false, uow,
+		final TypedQueryImpl<T> tq = new TypedQueryImpl<>(query, resultClass, false, uow,
 				connection);
 		tq.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
 		return tq;

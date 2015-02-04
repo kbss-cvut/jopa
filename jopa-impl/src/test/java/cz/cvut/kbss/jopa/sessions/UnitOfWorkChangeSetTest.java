@@ -31,8 +31,8 @@ public class UnitOfWorkChangeSetTest {
 	@Test
 	public void testAddObjectChangeSet() {
 		chs.addObjectChangeSet(changeSet);
-		assertEquals(1, chs.getObjectChanges().size());
-		ObjectChangeSet res = chs.getObjectChanges().iterator().next();
+		assertEquals(1, chs.getExistingObjectsChanges().size());
+		ObjectChangeSet res = chs.getExistingObjectsChanges().iterator().next();
 		assertSame(changeSet, res);
 		assertTrue(chs.hasChanges());
 	}

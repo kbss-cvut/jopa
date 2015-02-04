@@ -28,8 +28,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 
 	/**
 	 * Builds a new instance of the specified class.
-	 * 
-	 * @param javaClass
+	 *
 	 * @return New object of the given class.
 	 */
 	@Override
@@ -44,8 +43,8 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 		Object newInstance = buildNewInstanceUsingDefaultConstructor(javaClass);
 		if (newInstance == null) {
 			final Field[] fields = javaClass.getDeclaredFields();
-			List<Class<?>> fieldClasses = new ArrayList<Class<?>>();
-			Constructor<?> c = null;
+			List<Class<?>> fieldClasses = new ArrayList<>();
+			Constructor<?> c;
 			try {
 				for (Field f : fields) {
 					if (isFieldStatic(f)) {
@@ -137,8 +136,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
 	/**
 	 * Builds a new instance of the specified class, using its no-argument
 	 * constructor.
-	 * 
-	 * @param javaClass
+	 *
 	 * @return New object of the given class, or null if the class has no
 	 *         no-argument constructor.
 	 */

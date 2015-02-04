@@ -10,6 +10,7 @@ import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -46,12 +47,12 @@ public abstract class CardinalityConstraintsValidation {
      */
     public static void validateCardinalityConstraints(ObjectChangeSet changeSet) {
         Objects.requireNonNull(changeSet, ErrorUtils.constructNPXMessage("changeSet"));
-        for (ChangeRecord record : changeSet.getChanges()) {
+        for (Map.Entry<String, ChangeRecord> entry: changeSet.getChanges().entrySet()) {
             try {
-                final Field field = changeSet.getObjectClass().getDeclaredField(record.getAttributeName());
-                validateCardinalityConstraints(field, record.getNewValue());
+                final Field field = changeSet.getObjectClass().getDeclaredField(entry.getKey());
+                validateCardinalityConstraints(field, entry.getValue().getNewValue());
             } catch (NoSuchFieldException e) {
-                throw new OWLPersistenceException("Fatal error: field " + record.getAttributeName() + " not found in entity "
+                throw new OWLPersistenceException("Fatal error: field " + entry.getKey() + " not found in entity "
                         + changeSet.getObjectClass());
             }
         }

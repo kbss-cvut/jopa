@@ -67,6 +67,12 @@ public class TestUpdateOperationsNativeStore {
 		runner.updateReference(em, context());
 	}
 
+    @Test
+    public void testMergeSet() throws Exception {
+        em = TestEnvironment.getPersistenceConnector("SesameNativeMergeSet", storage, false, properties);
+        runner.mergeSet(em, context());
+    }
+
 	@Test
 	public void testMergeDetachedWithChanges() {
 		em = TestEnvironment.getPersistenceConnector("SesameNativeUpdateDetached", storage, true,
@@ -80,6 +86,13 @@ public class TestUpdateOperationsNativeStore {
 				properties);
 		runner.mergeDetachedCascade(em, context());
 	}
+
+    @Test
+    public void testMergeDetachedWithObjectPropertyChange() {
+        em = TestEnvironment.getPersistenceConnector("SesameNativeUpdateDetachedWithOPChange", storage, true,
+                properties);
+        runner.mergeDetachedWithUpdatedObjectProperty(em, context());
+    }
 
 	@Test
 	public void testRemoveFromSimpleList() {

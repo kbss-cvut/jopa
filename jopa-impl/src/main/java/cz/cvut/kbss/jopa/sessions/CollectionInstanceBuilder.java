@@ -1,26 +1,18 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.adapters.IndirectCollection;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.annotations.Types;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import java.util.*;
 
 /**
  * Special class for cloning collections. Introduced because some Java
@@ -62,8 +54,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 			container = (Collection<?>) ((IndirectCollection<?>) container)
 					.getReferencedCollection();
 		}
-		Collection<?> clone = null;
-		clone = cloneUsingDefaultConstructor(cloneOwner, field, container, repository);
+        Collection<?> clone = cloneUsingDefaultConstructor(cloneOwner, field, container, repository);
 		if (clone == null) {
 			if (Collections.EMPTY_LIST == container) {
 				return Collections.EMPTY_LIST;
@@ -71,7 +62,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 			if (Collections.EMPTY_SET == container) {
 				return Collections.EMPTY_SET;
 			}
-			Constructor<?> c = null;
+			Constructor<?> c;
 			Object element = container.iterator().next();
 			Object[] params = new Object[1];
 			if (!CloneBuilderImpl.isPrimitiveOrString(element.getClass())) {
@@ -97,7 +88,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 					c.setAccessible(true);
 				}
 				clone = (Collection<?>) c.newInstance(params);
-			} catch (InstantiationException e) {
+			} catch (InstantiationException | IllegalArgumentException | InvocationTargetException e) {
 				throw new OWLPersistenceException(e);
 			} catch (IllegalAccessException e) {
 				try {
@@ -106,12 +97,8 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 				} catch (PrivilegedActionException ex) {
 					throw new OWLPersistenceException(ex);
 				}
-			} catch (IllegalArgumentException e) {
-				throw new OWLPersistenceException(e);
-			} catch (InvocationTargetException e) {
-				throw new OWLPersistenceException(e);
 			}
-		}
+        }
 		clone = (Collection<?>) builder.createIndirectCollection(clone, cloneOwner, field);
 		return clone;
 	}
@@ -123,7 +110,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	 * 
 	 * @param container
 	 *            The collection to clone.
-	 * @return
+	 * @return cloned collection
 	 */
 	private Collection<?> cloneUsingDefaultConstructor(Object cloneOwner, Field field,
 			Collection<?> container, Descriptor repository) {
@@ -137,14 +124,13 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 	}
 
 	private Collection<?> createNewInstance(Class<?> type, int size) {
-		Constructor<?> ctor = null;
 		Object[] params = null;
 		Class<?>[] types = { int.class };
 		// Look for constructor taking initial size as parameter
-		ctor = getDeclaredConstructorFor(type, types);
+        Constructor<?> ctor = getDeclaredConstructorFor(type, types);
 		if (ctor != null) {
 			params = new Object[1];
-			params[0] = Integer.valueOf(size);
+			params[0] = size;
 		} else {
 			ctor = DefaultInstanceBuilder.getDeclaredConstructorFor(type, null);
 		}
@@ -154,7 +140,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 		Collection<?> result = null;
 		try {
 			result = (Collection<?>) ctor.newInstance(params);
-		} catch (InstantiationException e) {
+		} catch (InstantiationException | InvocationTargetException | IllegalArgumentException e) {
 			throw new OWLPersistenceException(e);
 		} catch (IllegalAccessException e) {
 			try {
@@ -163,12 +149,8 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 			} catch (PrivilegedActionException ex) {
 				// Do nothing
 			}
-		} catch (IllegalArgumentException e) {
-			throw new OWLPersistenceException(e);
-		} catch (InvocationTargetException e) {
-			throw new OWLPersistenceException(e);
 		}
-		return result;
+        return result;
 	}
 
 	/**
@@ -186,14 +168,14 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 		Collection<Object> tg = (Collection<Object>) target;
 		for (Object obj : source) {
 			if (obj == null) {
-				tg.add(obj);
+				tg.add(null);
 				continue;
 			}
 			if (CloneBuilderImpl.isPrimitiveOrString(obj.getClass())) {
 				tg.addAll(source);
 				break;
 			}
-			Object clone = null;
+			final Object clone;
 			if (builder.isTypeManaged(obj.getClass())) {
 				clone = uow.registerExistingObject(obj, repository);
 			} else {
@@ -225,11 +207,9 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 		if (clone.isEmpty()) {
 			return;
 		}
-		final Iterator<Object> it = clone.iterator();
-		while (it.hasNext()) {
-			final Object cl = it.next();
-			orig.add(uow.contains(cl) ? builder.getOriginal(cl) : cl);
-		}
+        for (Object cl : clone) {
+            orig.add(uow.contains(cl) ? builder.getOriginal(cl) : cl);
+        }
 		final Types types = field.getAnnotation(Types.class);
 		if (types != null) {
 			checkForNewTypes(orig);

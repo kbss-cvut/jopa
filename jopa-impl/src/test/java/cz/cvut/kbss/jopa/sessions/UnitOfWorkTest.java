@@ -28,10 +28,7 @@ import org.semanticweb.owlapi.model.IRI;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -40,7 +37,6 @@ public class UnitOfWorkTest {
 
 	private static final URI CONTEXT_URI = URI.create("http://testContext");
 
-	private static Set<Class<?>> managedTypes;
 	private Descriptor descriptor;
 
 	private static OWLClassA entityA;
@@ -103,6 +99,9 @@ public class UnitOfWorkTest {
 		entityA.setUri(pkOne);
 		entityA.setStringAttribute("attribute");
 		entityA.setTypes(new HashSet<String>());
+        entityA.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa#entityQ");
+        entityA.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa#entityX");
+        entityA.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa#entityW");
 		final URI pkTwo = URI.create("http://testTwo");
 		entityB = new OWLClassB();
 		entityB.setUri(pkTwo);
@@ -110,11 +109,6 @@ public class UnitOfWorkTest {
 		entityD = new OWLClassD();
 		entityD.setUri(pkThree);
 		entityD.setOwlClassA(entityA);
-		managedTypes = new HashSet<>();
-		managedTypes.add(OWLClassA.class);
-		managedTypes.add(OWLClassB.class);
-		managedTypes.add(OWLClassD.class);
-		managedTypes.add(OWLClassL.class);
 	}
 
 	@Before
@@ -126,7 +120,6 @@ public class UnitOfWorkTest {
 		final ServerSessionStub ssStub = new ServerSessionStub(mock(ConnectionWrapper.class));
         ServerSessionStub serverSessionMock = spy(ssStub);
 		when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
-		when(serverSessionMock.getManagedTypes()).thenReturn(managedTypes);
 		when(serverSessionMock.getLiveObjectCache()).thenReturn(cacheManagerMock);
 		when(metamodelMock.entity(OWLClassA.class)).thenReturn(typeA);
 		when(metamodelMock.entity(OWLClassB.class)).thenReturn(typeB);
@@ -240,6 +233,7 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testCalculateModificationsObjectProperty() throws Exception {
+        when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
 		final Attribute attMock = mock(Attribute.class);
 		when(typeD.getFieldSpecification(OWLClassD.getOwlClassAField().getName())).thenReturn(
 				attMock);
@@ -254,6 +248,7 @@ public class UnitOfWorkTest {
 		newA.setUri(URI.create("http://newA"));
 		newA.setStringAttribute("somestring");
 		clone.setOwlClassA(newA);
+        uow.attributeChanged(clone, OWLClassD.getOwlClassAField());
 		uow.registerNewObject(newA, descriptor);
 		uow.commit();
 
@@ -275,6 +270,7 @@ public class UnitOfWorkTest {
 		uow.setHasChanges();
 		final String newStr = "newStr";
 		clone.setStringAttribute(newStr);
+        uow.attributeChanged(clone, OWLClassA.getStrAttField());
 		uow.commit();
 
 		assertEquals(newStr, newA.getStringAttribute());
@@ -674,6 +670,9 @@ public class UnitOfWorkTest {
         orig.setUri(entityA.getUri());
         orig.setStringAttribute("oldStringAttribute");
         orig.setTypes(new HashSet<>(entityA.getTypes()));
+        final Iterator<String> it = orig.getTypes().iterator();
+        it.next();
+        it.remove();
         when(storageMock.find(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(orig);
 		final Attribute<? super OWLClassA, ?> strAtt = mock(Attribute.class);
 		when(strAtt.getJavaField()).thenReturn(OWLClassA.getStrAttField());
@@ -751,6 +750,7 @@ public class UnitOfWorkTest {
 
 	@Test(expected = CardinalityConstraintViolatedException.class)
 	public void throwsCardinalityViolationExceptionWhenMinimumCardinalityIsViolatedOnCommit() throws Exception {
+        when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
 		final List<OWLClassA> lst = new ArrayList<>();
 		for (int i = 0; i < 5; i++) {
 			final OWLClassA a = new OWLClassA();
@@ -760,7 +760,7 @@ public class UnitOfWorkTest {
 		entityL.setSimpleList(lst);
 		final OWLClassL clone = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
 		clone.getSimpleList().clear();
-		uow.setHasChanges();
+        uow.attributeChanged(clone, OWLClassL.getSimpleListField());
 		try {
 			uow.commit();
 		} finally {
@@ -797,5 +797,14 @@ public class UnitOfWorkTest {
 			// do nothing
 		}
 
-	}
+        @Override
+        public Set<Class<?>> getManagedTypes() {
+            return TestEnvironmentUtils.getManagedTypes();
+        }
+
+        @Override
+        public boolean isTypeManaged(Class<?> cls) {
+            return getManagedTypes().contains(cls);
+        }
+    }
 }

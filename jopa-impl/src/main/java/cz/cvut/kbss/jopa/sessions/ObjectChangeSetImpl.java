@@ -2,9 +2,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
@@ -23,12 +21,9 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 	// Reference to the clone
 	private transient Object cloneObject;
 
-	// Set of changes
-	private List<ChangeRecord> changes;
-
 	// A map of attributeName-changeRecord pairs to easily find the attributes
 	// to change
-	private transient Map<String, ChangeRecord> attributesToChange;
+	private transient Map<String, ChangeRecord> attributesToChange = new HashMap<>();
 
 	// Does this change set represent a new object
 	private boolean isNew;
@@ -52,44 +47,24 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 		if (record == null)
 			return;
 		String attributeName = record.getAttributeName();
-		ChangeRecord existing = getAttributesToChange().get(attributeName);
-		if (existing != null) {
-			getChanges().remove(existing);
-		}
-		getChanges().add(record);
-		getAttributesToChange().put(attributeName, record);
-	}
-
-	/**
-	 * Returns the change records collections.
-	 * 
-	 * @return java.util.List<ChangeRecord>
-	 */
-	public List<ChangeRecord> getChanges() {
-		if (this.changes == null) {
-			this.changes = new ArrayList<ChangeRecord>();
-		}
-		return this.changes;
+		attributesToChange.put(attributeName, record);
 	}
 
 	/**
 	 * Returns the map with attribute names and changes made to them.
 	 * 
-	 * @return java.util.Map<String, ChangeRecord>
+	 * @return java.util.Map
 	 */
-	public Map<String, ChangeRecord> getAttributesToChange() {
-		if (this.attributesToChange == null) {
-			this.attributesToChange = new HashMap<String, ChangeRecord>();
-		}
+	public Map<String, ChangeRecord> getChanges() {
 		return this.attributesToChange;
 	}
 
 	public Class<?> getObjectClass() {
-		return this.objectClass;
+		return objectClass;
 	}
 
 	public Object getChangedObject() {
-		return this.changedObject;
+		return changedObject;
 	}
 
 	public Object getCloneObject() {
@@ -98,16 +73,6 @@ public class ObjectChangeSetImpl implements Serializable, ObjectChangeSet {
 
 	public void setCloneObject(Object cloneObject) {
 		this.cloneObject = cloneObject;
-	}
-
-	/**
-	 * Set the change record list.
-	 * 
-	 * @param changes
-	 *            List<ChangeRecord>
-	 */
-	public void setChanges(List<ChangeRecord> changes) {
-		this.changes = changes;
 	}
 
 	public void setNew(boolean isNew) {

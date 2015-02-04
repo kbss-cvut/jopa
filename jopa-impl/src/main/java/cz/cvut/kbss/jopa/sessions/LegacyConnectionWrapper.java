@@ -53,12 +53,10 @@ class LegacyConnectionWrapper extends ConnectionWrapper {
 		assert repository != null;
 		try {
 			connection.merge(entity, field, repository);
-		} catch (MetamodelNotSetException e) {
-			throw new OWLPersistenceException(e);
-		} catch (OntoDriverException e) {
+		} catch (MetamodelNotSetException | OntoDriverException e) {
 			throw new OWLPersistenceException(e);
 		}
-	}
+    }
 
 	@Override
 	<T> void persist(Object primaryKey, T entity, Descriptor descriptor) {
@@ -66,12 +64,10 @@ class LegacyConnectionWrapper extends ConnectionWrapper {
 		assert descriptor != null;
 		try {
 			connection.persist(primaryKey, entity, descriptor);
-		} catch (MetamodelNotSetException e) {
-			throw new OWLPersistenceException(e);
-		} catch (OntoDriverException e) {
+		} catch (MetamodelNotSetException | OntoDriverException e) {
 			throw new OWLPersistenceException(e);
 		}
-	}
+    }
 
 	@Override
 	<T> void remove(Object primaryKey, Class<T> cls, Descriptor descriptor) {
@@ -79,12 +75,10 @@ class LegacyConnectionWrapper extends ConnectionWrapper {
 		assert descriptor != null;
 		try {
 			connection.remove(primaryKey, descriptor);
-		} catch (MetamodelNotSetException e) {
-			throw new OWLPersistenceException(e);
-		} catch (OntoDriverException e) {
+		} catch (MetamodelNotSetException | OntoDriverException e) {
 			throw new OWLPersistenceException(e);
 		}
-	}
+    }
 
 	@Override
 	<T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {

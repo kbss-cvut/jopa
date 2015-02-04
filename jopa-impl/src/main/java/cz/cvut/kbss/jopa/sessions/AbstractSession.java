@@ -1,10 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 
 /**
  * This is the implementation of the basic Session operations. Other more
@@ -13,7 +10,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
  * @author kidney
  * 
  */
-public abstract class AbstractSession implements Session {
+public abstract class AbstractSession implements Session, MetamodelProvider {
 	protected static final Logger LOG = Logger.getLogger(AbstractSession.class.getName());
 
 	public AbstractSession() {
@@ -60,21 +57,6 @@ public abstract class AbstractSession implements Session {
 	 * @return Connection
 	 */
 	protected abstract ConnectionWrapper acquireConnection();
-
-	/**
-	 * Get a set of all classes managed in this persistence unit - i. e. get all
-	 * entity classes.
-	 * 
-	 * @return Set of managed types.
-	 */
-	public abstract Set<Class<?>> getManagedTypes();
-
-	/**
-	 * Get the metamodel. This is part of the internal API.
-	 * 
-	 * @return
-	 */
-	abstract Metamodel getMetamodel();
 
 	/**
 	 * Register the specified entity as managed in the specified

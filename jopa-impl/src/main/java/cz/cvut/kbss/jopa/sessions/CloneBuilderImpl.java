@@ -35,7 +35,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	public CloneBuilderImpl(UnitOfWorkImpl uow) {
 		this.uow = uow;
-		this.visitedObjects = new IdentityHashMap<Object, Object>();
+		this.visitedObjects = new IdentityHashMap<>();
 		this.visitedEntities = new RepositoryMap();
 		this.builders = new Builders();
 	}
@@ -105,7 +105,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	 */
 	private void populateAttributes(final Object original, Object clone, final Descriptor descriptor) {
 		Class<?> theClass = original.getClass();
-		List<Field> fields = new ArrayList<Field>();
+		List<Field> fields = new ArrayList<>();
 		fields.addAll(Arrays.asList(theClass.getDeclaredFields()));
 		Class<?> tmp = theClass.getSuperclass();
 		while (tmp != null) {
@@ -150,7 +150,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 						f.set(clone, uow.getCloneForOriginal(origVal));
 						continue;
 					}
-					Object toAssign = null;
+					Object toAssign;
 					if (isTypeManaged(origClass)) {
 						final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass,
 								descriptor);
@@ -165,14 +165,10 @@ public class CloneBuilderImpl implements CloneBuilder {
 					f.set(clone, toAssign);
 				}
 			}
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-			throw new OWLPersistenceException("Error while cloning object.", e);
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
+		} catch (IllegalAccessException | IllegalArgumentException e) {
 			throw new OWLPersistenceException("Error while cloning object.", e);
 		}
-	}
+    }
 
 	private Descriptor getFieldDescriptor(Field field, Class<?> entityClass,
 			Descriptor entityDescriptor) {
@@ -237,7 +233,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	@Override
 	public Object mergeChanges(Object original, ObjectChangeSet changeSet) {
-		Map<String, ChangeRecord> changes = changeSet.getAttributesToChange();
+		Map<String, ChangeRecord> changes = changeSet.getChanges();
 		try {
 			for (String att : changes.keySet()) {
 				ChangeRecord change = changes.get(att);
@@ -257,16 +253,11 @@ public class CloneBuilderImpl implements CloneBuilder {
 				}
 				getInstanceBuilder(newVal).mergeChanges(f, original, origVal, newVal);
 			}
-		} catch (NoSuchFieldException e) {
-			throw new OWLPersistenceException(e);
-		} catch (SecurityException e) {
-			throw new OWLPersistenceException(e);
-		} catch (IllegalArgumentException e) {
-			throw new OWLPersistenceException(e);
-		} catch (IllegalAccessException e) {
+		} catch (NoSuchFieldException | SecurityException
+                | IllegalAccessException | IllegalArgumentException e) {
 			throw new OWLPersistenceException(e);
 		}
-		return original;
+        return original;
 	}
 
 	private Object getVisitedEntity(Descriptor descriptor, Object primaryKey) {
@@ -282,7 +273,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	private Object getIdentifier(Object entity) {
 		assert entity != null;
-		assert uow.isManagedType(entity.getClass());
+		assert isTypeManaged(entity.getClass());
 		return EntityPropertiesUtils.getPrimaryKey(entity, uow.getMetamodel());
 	}
 
@@ -291,7 +282,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	}
 
 	boolean isTypeManaged(Class<?> cls) {
-		return uow.isManagedType(cls);
+		return uow.isTypeManaged(cls);
 	}
 
 	boolean isOriginalInUoW(Object original) {
@@ -313,7 +304,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	}
 
 	IndirectCollection<?> createIndirectCollection(Object c, Object owner, Field f) {
-		IndirectCollection<?> res = null;
+		final IndirectCollection<?> res;
 		if (c instanceof List) {
 			res = new IndirectList<>(owner, f, uow, (List<?>) c);
 		} else if (c instanceof Set) {
@@ -331,7 +322,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 	}
 
 	private static Set<Class<?>> getWrapperTypes() {
-		HashSet<Class<?>> ret = new HashSet<Class<?>>();
+		HashSet<Class<?>> ret = new HashSet<>();
 		ret.add(Boolean.class);
 		ret.add(Character.class);
 		ret.add(Byte.class);

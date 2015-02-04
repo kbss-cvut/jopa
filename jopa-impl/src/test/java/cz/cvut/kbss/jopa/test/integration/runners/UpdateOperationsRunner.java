@@ -204,6 +204,32 @@ public class UpdateOperationsRunner extends BaseRunner {
 		assertEquals(newStr, res.getStringAttribute());
 	}
 
+    public void mergeDetachedWithUpdatedObjectProperty(EntityManager em, URI ctx) {
+        logger.config("Test: merge detached with object property change.");
+        final EntityDescriptor dDescriptor = new EntityDescriptor(ctx);
+        em.getTransaction().begin();
+        em.persist(entityD, dDescriptor);
+        em.persist(entityA, dDescriptor);
+        em.getTransaction().commit();
+
+        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
+        em.detach(d);
+        d.setOwlClassA(entityA2);
+        em.getTransaction().begin();
+        em.merge(d, dDescriptor);
+        em.persist(entityA2, dDescriptor);
+        em.getTransaction().commit();
+
+        final OWLClassD res = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
+        assertNotNull(res);
+        assertEquals(entityA2.getUri(), res.getOwlClassA().getUri());
+        assertEquals(entityA2.getStringAttribute(), res.getOwlClassA().getStringAttribute());
+        final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), dDescriptor);
+        assertNotNull(resA);
+        assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
+        assertEquals(entityA.getTypes(), resA.getTypes());
+    }
+
 	public void removeFromSimpleList(EntityManager em, URI ctx) {
 		logger.config("Test: remove entity from simple list. (But keep it in the ontology.)");
 		final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
