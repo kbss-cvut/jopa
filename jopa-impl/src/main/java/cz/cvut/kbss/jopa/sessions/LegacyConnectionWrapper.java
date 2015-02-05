@@ -31,7 +31,7 @@ class LegacyConnectionWrapper extends ConnectionWrapper {
 	}
 
 	@Override
-	<T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor) {
+	<T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor, boolean forceLoad) {
 		assert cls != null;
 		assert primaryKey != null;
 		try {

@@ -322,6 +322,24 @@ public final class TestEnvironmentUtils {
         return types;
     }
 
+    public static Map<String, Set<String>> generateProperties(int propCount, int valCount) {
+        int valueCounter = 0;
+        final Map<String, Set<String>> properties = new HashMap<>(propCount);
+        for (int i = 0; i < propCount; i++) {
+            final Set<String> values = new HashSet<>(valCount);
+            properties.put("http://krizik.felk.cvut.cz/ontologies/jopa#property_" + i, values);
+            boolean objectProperty = i % 2 != 0;
+            for (int j = 0; j < valCount; j++) {
+                if (objectProperty) {
+                    values.add("http://krizik.felk.cvut.cz/ontologies/jopa#value_" + valueCounter++);
+                } else {
+                    values.add(j % 2 != 0 ? "value" + valueCounter++ : Integer.toString(valueCounter++));
+                }
+            }
+        }
+        return properties;
+    }
+
     public static Set<Class<?>> getManagedTypes() {
         if (managedTypes == null) {
             initManagedTypes();

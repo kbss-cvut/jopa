@@ -16,7 +16,8 @@ public abstract class ConnectionWrapper {
 
 	abstract <T> boolean contains(Object primaryKey, Class<T> cls, Descriptor descriptor);
 
-	abstract <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor);
+    // TODO Replace the force load parameter with something neater
+	abstract <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor, boolean forceLoad);
 
 	abstract <T> void merge(T entity, Field field, Descriptor repository);
 

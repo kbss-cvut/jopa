@@ -56,7 +56,7 @@ public class Value<T> implements Serializable {
 	 * object which represents a null (empty) value.
 	 * 
 	 * @return Null value
-	 * @see {@link http://en.wikipedia.org/wiki/Null_Object_pattern}
+	 * @see <a href="http://en.wikipedia.org/wiki/Null_Object_pattern">http://en.wikipedia.org/wiki/Null_Object_pattern</a>
 	 */
 	public static Value<Void> nullValue() {
 		return NULL_VALUE;

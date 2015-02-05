@@ -104,7 +104,7 @@ public class ObjectOntologyMapperTest {
 		MockitoAnnotations.initMocks(this);
 		when(uowMock.getMetamodel()).thenReturn(metamodelMock);
 		when(uowMock.getLiveObjectCache()).thenReturn(cacheMock);
-		when(descriptorFactoryMock.createForEntityLoading(ENTITY_PK, aDescriptor, etAMock))
+		when(descriptorFactoryMock.createForEntityLoading(ENTITY_PK, aDescriptor, etAMock, false))
 				.thenReturn(axiomDescriptor);
 		when(
 				descriptorFactoryMock.createForFieldLoading(ENTITY_PK, OWLClassA.getTypesField(),
@@ -134,7 +134,7 @@ public class ObjectOntologyMapperTest {
 		when(
 				entityConstructorMock.reconstructEntity(ENTITY_PK, etAMock, aDescriptor,
 						entityAAxioms)).thenReturn(entityA);
-		final OWLClassA res = mapper.loadEntity(OWLClassA.class, ENTITY_PK, aDescriptor);
+		final OWLClassA res = mapper.loadEntity(OWLClassA.class, ENTITY_PK, aDescriptor, false);
 
 		assertNotNull(res);
 		assertEquals(entityA.getUri(), res.getUri());
@@ -154,7 +154,7 @@ public class ObjectOntologyMapperTest {
 	@Test
 	public void testLoadEntityUnknown() throws Exception {
 		when(connectionMock.find(axiomDescriptor)).thenReturn(Collections.<Axiom<?>> emptyList());
-		final OWLClassA res = mapper.loadEntity(OWLClassA.class, ENTITY_PK, aDescriptor);
+		final OWLClassA res = mapper.loadEntity(OWLClassA.class, ENTITY_PK, aDescriptor, false);
 		assertNull(res);
 		verify(connectionMock).find(axiomDescriptor);
 	}
@@ -162,7 +162,7 @@ public class ObjectOntologyMapperTest {
 	@Test(expected = StorageAccessException.class)
 	public void testLoadEntityDriverException() throws Exception {
 		when(connectionMock.find(axiomDescriptor)).thenThrow(new OntoDriverException());
-		final OWLClassA res = mapper.loadEntity(OWLClassA.class, ENTITY_PK, aDescriptor);
+		final OWLClassA res = mapper.loadEntity(OWLClassA.class, ENTITY_PK, aDescriptor, false);
 
 		fail("This line should not have been reached.");
 		assertNotNull(res);
@@ -315,7 +315,7 @@ public class ObjectOntologyMapperTest {
 	@Test
 	public void removesEntityWithEmptyDescriptor() throws Exception {
 		mapper.removeEntity(ENTITY_PK, OWLClassA.class, aDescriptor);
-		verify(descriptorFactoryMock).createForEntityLoading(ENTITY_PK, aDescriptor, etAMock);
+		verify(descriptorFactoryMock).createForEntityLoading(ENTITY_PK, aDescriptor, etAMock, false);
 		verify(connectionMock).remove(axiomDescriptor);
 	}
 

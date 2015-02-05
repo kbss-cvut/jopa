@@ -1,44 +1,30 @@
 package cz.cvut.kbss.jopa.oom;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.net.URI;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.utils.Generators;
+import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.model.Assertion;
+import cz.cvut.kbss.ontodriver_new.model.Assertion.AssertionType;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+import cz.cvut.kbss.ontodriver_new.model.Value;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
-import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.OWLClassE;
-import cz.cvut.kbss.jopa.test.OWLClassK;
-import cz.cvut.kbss.jopa.test.utils.Generators;
-import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.model.Assertion;
-import cz.cvut.kbss.ontodriver_new.model.Assertion.AssertionType;
-import cz.cvut.kbss.ontodriver_new.model.Value;
+import java.net.URI;
+import java.util.*;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class EntityDeconstructorTest {
 
@@ -291,14 +277,22 @@ public class EntityDeconstructorTest {
 		assertEquals(entityB.getUri(), res.getSubject().getIdentifier());
 		// Class assertion, data property assertion and the properties
 		// assertions
-		assertEquals(props.size() + 2, res.getAssertions().size());
-		for (String p : props.keySet()) {
-			assertTrue(res.getAssertions().contains(
-					Assertion.createPropertyAssertion(URI.create(p), false)));
-		}
+		assertEquals(2, res.getAssertions().size());
+        verifyPropertiesForSave(props, builder);
 	}
 
-	@Test
+    private void verifyPropertiesForSave(Map<String, Set<String>> props, AxiomValueGatherer builder) throws Exception {
+        final Map<Assertion, Set<Value<?>>> resultProperties = OOMTestUtils.getPropertiesToAdd(builder);
+        for (Assertion a : resultProperties.keySet()) {
+            assertTrue(props.containsKey(a.getIdentifier().toString()));
+            final Set<String> propValues = props.get(a.getIdentifier().toString());
+            for (Value<?> v : resultProperties.get(a)) {
+                assertTrue(propValues.contains(v.stringValue()));
+            }
+        }
+    }
+
+    @Test
 	public void testMapEntityWithNullProperties() throws Exception {
 		final Descriptor bDescriptor = new EntityDescriptor();
 		final AxiomValueGatherer builder = entityBreaker.mapEntityToAxioms(entityB.getUri(),
@@ -318,17 +312,8 @@ public class EntityDeconstructorTest {
 				entityB, etBMock, bDescriptor);
 		final AxiomValueDescriptor res = getAxiomValueDescriptor(builder);
 		assertEquals(entityB.getUri(), res.getSubject().getIdentifier());
-		assertEquals(props.size() + 2, res.getAssertions().size());
-		for (Entry<String, Set<String>> e : props.entrySet()) {
-			final Set<String> expVals = e.getValue();
-			final List<Value<?>> vals = res.getAssertionValues(Assertion.createPropertyAssertion(
-					URI.create(e.getKey()), false));
-			assertEquals(expVals.size(), vals.size());
-			for (Value<?> val : vals) {
-                String strVal = (String) val.getValue();
-				assertTrue(expVals.contains(strVal));
-			}
-		}
+		assertEquals(2, res.getAssertions().size());
+		verifyPropertiesForSave(props, builder);
 	}
 
 	private Map<String, Set<String>> createProperties() {

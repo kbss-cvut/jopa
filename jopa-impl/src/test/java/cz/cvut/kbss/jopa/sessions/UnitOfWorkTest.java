@@ -186,7 +186,7 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testReadObjectFromOntology() throws Exception {
-		when(storageMock.find(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(entityA);
+		when(storageMock.find(OWLClassA.class, entityA.getUri(), descriptor, false)).thenReturn(entityA);
 		OWLClassA res = this.uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
 		assertNotNull(res);
 		assertEquals(entityA.getUri(), res.getUri());
@@ -313,7 +313,7 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testGetOriginal() throws Exception {
-		when(storageMock.find(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(entityA);
+		when(storageMock.find(OWLClassA.class, entityA.getUri(), descriptor, false)).thenReturn(entityA);
 		OWLClassA tO = this.uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
 		assertNotNull(tO);
 		OWLClassA origOne = (OWLClassA) uow.getOriginal(tO);
@@ -673,7 +673,7 @@ public class UnitOfWorkTest {
         final Iterator<String> it = orig.getTypes().iterator();
         it.next();
         it.remove();
-        when(storageMock.find(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(orig);
+        when(storageMock.find(OWLClassA.class, entityA.getUri(), descriptor, true)).thenReturn(orig);
 		final Attribute<? super OWLClassA, ?> strAtt = mock(Attribute.class);
 		when(strAtt.getJavaField()).thenReturn(OWLClassA.getStrAttField());
 		@SuppressWarnings("rawtypes")

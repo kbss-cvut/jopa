@@ -47,17 +47,29 @@ class SesameAdapter implements Closeable {
 
 		this.connector = connector;
 		this.valueFactory = connector.getValueFactory();
-		this.language = getLanguage(properties);
+		this.language = resolveLanguage(properties);
 		this.open = true;
 		this.transaction = new Transaction();
 	}
 
-	private String getLanguage(Map<String, String> properties) {
+	private String resolveLanguage(Map<String, String> properties) {
 		return properties.containsKey(OntoDriverProperties.ONTOLOGY_LANGUAGE) ? properties
 				.get(OntoDriverProperties.ONTOLOGY_LANGUAGE) : null;
 	}
 
-	@Override
+    Connector getConnector() {
+        return connector;
+    }
+
+    ValueFactory getValueFactory() {
+        return valueFactory;
+    }
+
+    String getLanguage() {
+        return language;
+    }
+
+    @Override
 	public void close() throws OntoDriverException {
 		if (!open) {
 			return;
@@ -189,13 +201,13 @@ class SesameAdapter implements Closeable {
 
 	void update(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {
 		startTransactionIfNotActive();
-		new EpistemicAxiomRemover(connector, valueFactory).remove(axiomDescriptor);
+		new EpistemicAxiomRemover(connector, valueFactory, language).remove(axiomDescriptor);
 		new AxiomSaver(connector, valueFactory, language).persistAxioms(axiomDescriptor);
 	}
 
 	void remove(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
 		startTransactionIfNotActive();
-		new EpistemicAxiomRemover(connector, valueFactory).remove(axiomDescriptor);
+		new EpistemicAxiomRemover(connector, valueFactory, language).remove(axiomDescriptor);
 	}
 
 	StatementExecutor getQueryExecutor() {

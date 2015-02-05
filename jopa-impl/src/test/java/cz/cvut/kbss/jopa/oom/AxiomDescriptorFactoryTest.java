@@ -98,7 +98,7 @@ public class AxiomDescriptorFactoryTest {
 	@Test
 	public void testCreateForEntityLoadingWithTypes() throws Exception {
 		final Descriptor desc = new EntityDescriptor();
-		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etAMock);
+		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etAMock, false);
 		// Types specification and the string attribute
 		assertEquals(2, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
@@ -112,7 +112,7 @@ public class AxiomDescriptorFactoryTest {
 	public void testCreateForEntityLoadingWithTypesInContext() throws Exception {
 		final Descriptor desc = new EntityDescriptor();
 		desc.addAttributeContext(OWLClassA.getTypesField(), CONTEXT);
-		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etAMock);
+		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etAMock, false);
 		// Types specification and the string attribute
 		assertEquals(2, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
@@ -126,7 +126,7 @@ public class AxiomDescriptorFactoryTest {
 	@Test
 	public void testCreateForEntityLoadingWithPropertiesAndContext() throws Exception {
 		final Descriptor desc = new EntityDescriptor(CONTEXT);
-		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etBMock);
+		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etBMock, false);
 		// Class assertion, properties specification and the string attribute
 		assertEquals(3, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
@@ -139,7 +139,7 @@ public class AxiomDescriptorFactoryTest {
 	public void testCreateForEntityLoadingWithObjectPropertyInContext() throws Exception {
 		final Descriptor desc = new EntityDescriptor();
 		desc.addAttributeContext(OWLClassD.getOwlClassAField(), CONTEXT);
-		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etDMock);
+		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etDMock, false);
 		// Class assertion and the object property assertion
 		assertEquals(2, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
@@ -162,7 +162,7 @@ public class AxiomDescriptorFactoryTest {
 		// Artificially change the attribute type to annotation
 		when(owlclassAAttMock.getPersistentAttributeType()).thenReturn(
 				PersistentAttributeType.ANNOTATION);
-		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etDMock);
+		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etDMock, false);
 		// Class assertion and the annotation property assertion
 		assertEquals(2, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
@@ -175,7 +175,7 @@ public class AxiomDescriptorFactoryTest {
 	public void createForEntityLoadingWithLazilyLoadedAttribute() throws Exception {
 		final Descriptor desc = new EntityDescriptor();
 		when(strAttAMock.getFetchType()).thenReturn(FetchType.LAZY);
-		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etAMock);
+		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etAMock, false);
 		// Types specification (class assertion)
 		assertEquals(1, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());

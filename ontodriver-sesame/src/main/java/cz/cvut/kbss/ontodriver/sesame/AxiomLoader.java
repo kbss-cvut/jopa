@@ -149,4 +149,18 @@ class AxiomLoader {
             return new Value<>(SesameUtils.toJavaUri((Resource) object));
         }
     }
+
+    public Collection<Axiom<?>> loadAxioms(NamedResource individual, boolean includeInferred, java.net.URI context)
+            throws SesameDriverException {
+        final URI sesameContext = SesameUtils.toSesameUri(context, valueFactory);
+        final URI subject = SesameUtils.toSesameUri(individual.getIdentifier(), valueFactory);
+        this.unspecifiedProperty = Assertion.createUnspecifiedPropertyAssertion(includeInferred);
+        final Collection<Statement> statements;
+        if (sesameContext != null) {
+            statements = connector.findStatements(subject, null, null, includeInferred, sesameContext);
+        } else {
+            statements = connector.findStatements(subject, null, null, includeInferred);
+        }
+        return transformStatementsToAxioms(statements);
+    }
 }

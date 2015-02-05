@@ -16,6 +16,7 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.Lists;
+import cz.cvut.kbss.ontodriver_new.Properties;
 import cz.cvut.kbss.ontodriver_new.Types;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
@@ -27,8 +28,10 @@ class SesameConnection implements Connection {
 	private boolean open;
 	private boolean autoCommit;
 
+    // TODO Remove coupling between lists, types and properties and connection by introducing callbacks
 	private Lists lists;
 	private Types types;
+    private Properties properties;
 
 	private final Set<ConnectionListener> listeners;
 
@@ -47,7 +50,11 @@ class SesameConnection implements Connection {
 		this.types = types;
 	}
 
-	void registerListener(ConnectionListener listener) {
+    public void setProperties(Properties properties) {
+        this.properties = properties;
+    }
+
+    void registerListener(ConnectionListener listener) {
 		assert listener != null;
 		listeners.add(listener);
 	}
@@ -198,7 +205,14 @@ class SesameConnection implements Connection {
 		return types;
 	}
 
-	void ensureOpen() {
+    @Override
+    public Properties properties() {
+        ensureOpen();
+        assert properties != null;
+        return properties;
+    }
+
+    void ensureOpen() {
 		if (!open) {
 			throw new IllegalStateException("This connection is closed.");
 		}

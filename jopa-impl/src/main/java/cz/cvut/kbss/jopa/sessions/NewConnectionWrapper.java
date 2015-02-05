@@ -35,9 +35,9 @@ class NewConnectionWrapper extends ConnectionWrapper {
 	}
 
 	@Override
-	<T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor) {
+	<T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor, boolean forceLoad) {
 		final URI pkUri = getPrimaryKeyAsUri(primaryKey);
-		return mapper.loadEntity(cls, pkUri, descriptor);
+		return mapper.loadEntity(cls, pkUri, descriptor, forceLoad);
 	}
 
 	@Override

@@ -49,7 +49,7 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
                 return;
             }
             final Set<?> origTypes = (Set<?>) extractFieldValueFromInstance(original);
-            if (origTypes == null) {
+            if (origTypes == null || origTypes.isEmpty()) {
                 return;
             }
             valueBuilder.removeTypes(prepareTypes(origTypes), getAttributeContext());

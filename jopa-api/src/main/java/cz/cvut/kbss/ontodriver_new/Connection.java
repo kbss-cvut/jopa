@@ -193,4 +193,11 @@ public interface Connection extends AutoCloseable {
      * @return Types handler
      */
     public Types types();
+
+    /**
+     * Gets handler for unmapped properties.
+     *
+     * @return Properties handler
+     */
+    public Properties properties();
 }

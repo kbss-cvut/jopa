@@ -4,10 +4,7 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver_new.Connection;
-import cz.cvut.kbss.ontodriver_new.DataSource;
-import cz.cvut.kbss.ontodriver_new.Lists;
-import cz.cvut.kbss.ontodriver_new.Types;
+import cz.cvut.kbss.ontodriver_new.*;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -133,6 +130,11 @@ public class DataSourceStub implements DataSource {
 
         @Override
         public Types types() {
+            return null;
+        }
+
+        @Override
+        public Properties properties() {
             return null;
         }
 

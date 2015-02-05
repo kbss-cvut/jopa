@@ -68,19 +68,19 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> T loadEntity(Class<T> cls, URI primaryKey, Descriptor descriptor) {
+    public <T> T loadEntity(Class<T> cls, URI primaryKey, Descriptor descriptor, boolean forceLoad) {
         assert cls != null;
         assert primaryKey != null;
         assert descriptor != null;
 
         instanceRegistry.reset();
-        return loadEntityInternal(cls, primaryKey, descriptor);
+        return loadEntityInternal(cls, primaryKey, descriptor, forceLoad);
     }
 
-    private <T> T loadEntityInternal(Class<T> cls, URI primaryKey, Descriptor descriptor) {
+    private <T> T loadEntityInternal(Class<T> cls, URI primaryKey, Descriptor descriptor, boolean forceLoad) {
         final EntityType<T> et = getEntityType(cls);
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(
-                primaryKey, descriptor, et);
+                primaryKey, descriptor, et, forceLoad);
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
             if (axioms.isEmpty()) {
@@ -164,7 +164,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             // This prevents endless cycles in bidirectional relationships
             return cls.cast(instanceRegistry.getInstance(primaryKey, descriptor.getContext()));
         } else {
-            return loadEntityInternal(cls, primaryKey, descriptor);
+            return loadEntityInternal(cls, primaryKey, descriptor, false);
         }
     }
 
@@ -216,7 +216,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public <T> void removeEntity(URI primaryKey, Class<T> cls, Descriptor descriptor) {
         final EntityType<T> et = getEntityType(cls);
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(
-                primaryKey, descriptor, et);
+                primaryKey, descriptor, et, false);
         try {
             storageConnection.remove(axiomDescriptor);
         } catch (OntoDriverException e) {

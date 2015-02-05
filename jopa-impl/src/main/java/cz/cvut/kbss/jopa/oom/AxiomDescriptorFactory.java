@@ -15,23 +15,23 @@ import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 class AxiomDescriptorFactory {
 
 	AxiomDescriptor createForEntityLoading(URI primaryKey, Descriptor entityDescriptor,
-			EntityType<?> et) {
+			EntityType<?> et, boolean forceLoad) {
 		final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(primaryKey));
 		descriptor.setSubjectContext(entityDescriptor.getContext());
 		descriptor.addAssertion(Assertion.createClassAssertion(false));
-		if (et.getTypes() != null && et.getTypes().getFetchType() != FetchType.LAZY) {
+		if (et.getTypes() != null && shouldLoad(et.getTypes().getFetchType(), forceLoad)) {
 			final Assertion typesAssertion = Assertion.createClassAssertion(et.getTypes()
 					.isInferred());
 			addAssertionToDescriptor(entityDescriptor, et.getTypes(), descriptor, typesAssertion);
 		}
-		if (et.getProperties() != null && et.getProperties().getFetchType() != FetchType.LAZY) {
+		if (et.getProperties() != null && shouldLoad(et.getProperties().getFetchType(), forceLoad)) {
 			final Assertion propsAssertion = Assertion.createUnspecifiedPropertyAssertion(et
 					.getProperties().isInferred());
 			addAssertionToDescriptor(entityDescriptor, et.getProperties(), descriptor,
 					propsAssertion);
 		}
 		for (Attribute<?, ?> att : et.getAttributes()) {
-			if (att.getFetchType() == FetchType.LAZY) {
+			if (!shouldLoad(att.getFetchType(), forceLoad)) {
 				continue;
 			}
 			final Assertion a = createAssertion(att);
@@ -39,6 +39,10 @@ class AxiomDescriptorFactory {
 		}
 		return descriptor;
 	}
+
+    private boolean shouldLoad(FetchType fetchType, boolean forceLoad) {
+        return fetchType != FetchType.LAZY || forceLoad;
+    }
 
 	private void addAssertionToDescriptor(Descriptor entityDescriptor,
 			FieldSpecification<?, ?> att, final AxiomDescriptor descriptor,
