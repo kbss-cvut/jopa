@@ -171,7 +171,7 @@ public class ChangeManagerImpl implements ChangeManager {
                 case TRUE:
                     return true;
                 case FALSE:
-                    return false;
+                    break;
                 case UNDETERMINED:
                     return hasChangesInternal(origVal, clVal);
             }

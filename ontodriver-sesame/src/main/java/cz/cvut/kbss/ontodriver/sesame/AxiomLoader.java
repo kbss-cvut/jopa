@@ -1,10 +1,6 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -43,14 +39,17 @@ class AxiomLoader {
 
     private Collection<Statement> findStatements(AxiomDescriptor descriptor)
             throws SesameDriverException {
-        final Collection<Statement> result = new ArrayList<>();
+        final Collection<Statement> result = new HashSet<>();
         final Resource subject = SesameUtils.toSesameUri(descriptor.getSubject().getIdentifier(),
                 valueFactory);
         for (Assertion assertion : descriptor.getAssertions()) {
-            final URI property = getPropertyUri(assertion);
-
             final URI context = SesameUtils.toSesameUri(descriptor.getAssertionContext(assertion),
                     valueFactory);
+            if (!shouldLoad(assertion, descriptor)) {
+                continue;
+            }
+            final URI property = getPropertyUri(assertion);
+
             if (context != null) {
                 result.addAll(connector.findStatements(subject, property, null, assertion.isInferred(),
                         context));
@@ -59,6 +58,18 @@ class AxiomLoader {
             }
         }
         return result;
+    }
+
+    private boolean shouldLoad(Assertion assertion, AxiomDescriptor descriptor) {
+        return unspecifiedProperty == null || assertion.getType() == AssertionType.CLASS
+                || !sameContext(unspecifiedProperty, assertion, descriptor)
+                || (!unspecifiedProperty.isInferred() && assertion.isInferred());
+    }
+
+    private boolean sameContext(Assertion assertionOne, Assertion assertionTwo, AxiomDescriptor descriptor) {
+        final java.net.URI cOne = descriptor.getAssertionContext(assertionOne);
+        final java.net.URI cTwo = descriptor.getAssertionContext(assertionTwo);
+        return cOne == cTwo || (cOne != null && cOne.equals(cTwo));
     }
 
     private URI getPropertyUri(Assertion assertion) {

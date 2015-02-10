@@ -414,37 +414,92 @@ public class SesameAdapterTest {
 		desc.addAssertion(Assertion.createUnspecifiedPropertyAssertion(false));
 		final String propertyOne = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#objectProperty";
 		final String propertyTwo = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#dataProperty";
+        desc.addAssertion(Assertion.createDataPropertyAssertion(URI.create(propertyTwo), false));
 		final Map<Assertion, List<Statement>> statements = new HashMap<>();
 		final Collection<Statement> stmts = new ArrayList<>();
 		final Assertion asOne = Assertion.createPropertyAssertion(URI.create(propertyOne), false);
-		statements.put(asOne, new ArrayList<Statement>());
-		statements.get(asOne).add(
-				vf.createStatement(subjectUri, vf.createURI(propertyOne),
-						vf.createURI("http://krizik.felk.cvut.cz/ontologies/jopa#entityOne")));
-		statements.get(asOne).add(
-				vf.createStatement(subjectUri, vf.createURI(propertyOne),
-						vf.createURI("http://krizik.felk.cvut.cz/ontologies/jopa#entityTwo")));
+		statements.put(asOne, createStatementsForProperty(propertyOne, true));
 		final Assertion asTwo = Assertion.createPropertyAssertion(URI.create(propertyTwo), false);
-		statements.put(asTwo, new ArrayList<Statement>());
-		statements.get(asTwo).add(
-				vf.createStatement(subjectUri, vf.createURI(propertyTwo), vf.createLiteral(false)));
+		statements.put(asTwo, createStatementsForProperty(propertyTwo, false));
 		for (Assertion a : statements.keySet()) {
 			stmts.addAll(statements.get(a));
 		}
 		when(
 				connectorMock.findStatements(subjectUri, null, null, false)).thenReturn(stmts);
+        when(connectorMock.findStatements(subjectUri, vf.createURI(propertyOne), null, false)).thenReturn(statements.get(asOne));
+        when(connectorMock.findStatements(subjectUri, vf.createURI(propertyTwo), null, false)).thenReturn(statements.get(asTwo));
 
 		final Collection<Axiom<?>> res = adapter.find(desc);
 		verify(connectorMock).findStatements(subjectUri, null, null, false);
-		assertEquals(statements.get(asOne).size() + statements.get(asTwo).size(), res.size());
-		for (Axiom<?> ax : res) {
-			if (ax.getAssertion().equals(asOne)) {
-				assertTrue(ax.getValue().getValue() instanceof URI);
-			} else {
-				assertTrue(ax.getValue().getValue() instanceof Boolean);
-			}
-		}
+        verify(connectorMock, never()).findStatements(eq(subjectUri), eq(vf.createURI(propertyOne)),
+                any(org.openrdf.model.Value.class), anyBoolean());
+		verifyReturnedAxioms(stmts, res);
 	}
+
+    private List<Statement> createStatementsForProperty(String property, boolean objectProperty) {
+        final List<Statement> res = new ArrayList<>();
+        int cnt = 3;
+        if (objectProperty) {
+            for (int i = 0; i < cnt; i++) {
+                res.add(vf.createStatement(subjectUri, vf.createURI(property), vf.createURI("http://krizik.felk.cvut.cz/jopa#entity" + i)));
+            }
+        } else {
+            for (int i = 0; i < cnt; i++) {
+                res.add(vf.createStatement(subjectUri, vf.createURI(property), vf.createLiteral(i)));
+            }
+        }
+        return res;
+    }
+
+    private void verifyReturnedAxioms(Collection<Statement> expected, Collection<Axiom<?>> actual) {
+        assertEquals(expected.size(), actual.size());
+        boolean found;
+        for (Axiom<?> ax : actual) {
+            found = false;
+            for (Statement s : expected) {
+                if (s.getPredicate().toString().equals(ax.getAssertion().getIdentifier().toString())
+                        && s.getObject().stringValue().equals(ax.getValue().stringValue())) {
+                    found = true;
+                    break;
+                }
+            }
+            assertTrue(found);
+        }
+    }
+
+    @Test
+    public void testFindEntityWithPropertiesAndInferredDataProperty() throws Exception {
+        final AxiomDescriptor desc = new AxiomDescriptor(SUBJECT);
+        desc.addAssertion(Assertion.createUnspecifiedPropertyAssertion(false));
+        final String propertyOne = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#objectProperty";
+        final String propertyTwo = "http://krizik.felk.cvut.cz/ontologies/jopa/properties#dataProperty";
+        desc.addAssertion(Assertion.createDataPropertyAssertion(URI.create(propertyTwo), true));
+        final Map<Assertion, List<Statement>> statements = new HashMap<>();
+        final Collection<Statement> stmts = new ArrayList<>();
+        final Assertion asOne = Assertion.createPropertyAssertion(URI.create(propertyOne), false);
+        statements.put(asOne, createStatementsForProperty(propertyOne, true));
+        final Assertion asTwo = Assertion.createDataPropertyAssertion(URI.create(propertyTwo), false);
+        statements.put(asTwo, createStatementsForProperty(propertyTwo, false));
+        for (Assertion a : statements.keySet()) {
+            stmts.addAll(statements.get(a));
+        }
+        final Collection<Statement> inferred = new ArrayList<>();
+        inferred.add(vf.createStatement(subjectUri, vf.createURI(propertyTwo), vf.createLiteral(true)));
+        statements.get(asTwo).addAll(inferred);
+        when(
+                connectorMock.findStatements(subjectUri, null, null, false)).thenReturn(stmts);
+        when(connectorMock.findStatements(subjectUri, vf.createURI(propertyOne), null, false)).thenReturn(statements.get(asOne));
+        when(connectorMock.findStatements(subjectUri, vf.createURI(propertyTwo), null, true)).thenReturn(statements.get(asTwo));
+
+        final Collection<Axiom<?>> res = adapter.find(desc);
+        verify(connectorMock).findStatements(subjectUri, null, null, false);
+        verify(connectorMock).findStatements(subjectUri, vf.createURI(propertyTwo), null, true);
+        verify(connectorMock, never()).findStatements(eq(subjectUri), eq(vf.createURI(propertyOne)),
+                any(org.openrdf.model.Value.class), anyBoolean());
+        final Collection<Statement> allStatements = new ArrayList<>(stmts);
+        allStatements.addAll(inferred);
+        verifyReturnedAxioms(allStatements, res);
+    }
 
 	@Test
 	public void testFindEntityReturnDataPropertyValueForObjectProperty() throws Exception {
