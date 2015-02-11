@@ -1,11 +1,10 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import java.net.URL;
-import java.util.Collection;
-import java.util.Date;
-
 import org.openrdf.model.*;
 import org.openrdf.model.vocabulary.XMLSchema;
+
+import java.net.URL;
+import java.util.Date;
 
 /**
  * Utility methods for the Sesame driver.
@@ -35,7 +34,7 @@ final class SesameUtils {
                 || datatype.equals(XMLSchema.NORMALIZEDSTRING)) {
             return literal.stringValue();
         } else if (datatype.equals(XMLSchema.INT) || datatype.equals(XMLSchema.UNSIGNED_INT)) {
-            return Integer.valueOf(literal.intValue());
+            return literal.intValue();
         } else if (datatype.equals(XMLSchema.INTEGER)
                 || datatype.equals(XMLSchema.POSITIVE_INTEGER)
                 || datatype.equals(XMLSchema.NON_NEGATIVE_INTEGER)
@@ -45,15 +44,15 @@ final class SesameUtils {
         } else if (datatype.equals(XMLSchema.BOOLEAN)) {
             return literal.booleanValue();
         } else if (datatype.equals(XMLSchema.LONG) || datatype.equals(XMLSchema.UNSIGNED_LONG)) {
-            return Long.valueOf(literal.longValue());
+            return literal.longValue();
         } else if (datatype.equals(XMLSchema.DECIMAL)) {
             return literal.decimalValue();
         } else if (datatype.equals(XMLSchema.DOUBLE)) {
-            return Double.valueOf(literal.doubleValue());
+            return literal.doubleValue();
         } else if (datatype.equals(XMLSchema.SHORT) || datatype.equals(XMLSchema.UNSIGNED_SHORT)) {
-            return Short.valueOf(literal.shortValue());
+            return literal.shortValue();
         } else if (datatype.equals(XMLSchema.BYTE) || datatype.equals(XMLSchema.UNSIGNED_BYTE)) {
-            return Byte.valueOf(literal.byteValue());
+            return literal.byteValue();
         } else if (datatype.equals(XMLSchema.DATE) || datatype.equals(XMLSchema.DATETIME)) {
             return literal.calendarValue().toGregorianCalendar().getTime();
         } else {
@@ -114,19 +113,6 @@ final class SesameUtils {
      */
     static boolean isResourceIdentifier(Object value) {
         return value instanceof java.net.URI || value instanceof URL || value instanceof URI;
-    }
-
-    /**
-     * Returns the specified collection as an array so that it can be used as
-     * varargs.
-     *
-     * @param col The collection to transform
-     * @return Array representing the collection
-     */
-    static URI[] varargs(Collection<URI> col) {
-        assert col != null;
-
-        return col.toArray(new URI[col.size()]);
     }
 
     /**

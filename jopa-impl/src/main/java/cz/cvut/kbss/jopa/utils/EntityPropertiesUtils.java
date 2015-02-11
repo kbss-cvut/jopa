@@ -1,24 +1,16 @@
 package cz.cvut.kbss.jopa.utils;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-
-import org.semanticweb.owlapi.model.IRI;
-
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.UnassignableIdentifierException;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.net.URI;
+import java.util.*;
 
 /**
  * Utility class for entity properties.
@@ -136,41 +128,6 @@ public class EntityPropertiesUtils {
 			return (URI) value;
 		} else {
 			return URI.create(value.toString());
-		}
-	}
-
-	/**
-	 * Gets the specified value as IRI. </p>
-	 * 
-	 * This method will try to transform the specified value to an IRI.
-	 * 
-	 * @param value
-	 *            The value to get as IRI
-	 * @return IRI
-	 * @throws NullPointerException
-	 * @throws IllegalArgumentException
-	 *             If {@code value} cannot be transformed to IRI
-	 */
-	public static IRI getValueAsIRI(Object value) {
-		Objects.requireNonNull(value, ErrorUtils.constructNPXMessage("value"));
-
-		if (value instanceof IRI) {
-			return (IRI) value;
-		} else if (value instanceof String) {
-			return IRI.create((String) value);
-		} else if (value instanceof URI) {
-			return IRI.create((URI) value);
-		} else if (value instanceof cz.cvut.kbss.jopa.model.IRI) {
-			return IRI.create(value.toString());
-		} else if (value instanceof URL) {
-			try {
-				return IRI.create((URL) value);
-			} catch (URISyntaxException e) {
-				throw new IllegalArgumentException(e);
-			}
-		} else {
-			throw new IllegalArgumentException("The specified value " + value
-					+ " cannot be transformed to IRI.");
 		}
 	}
 

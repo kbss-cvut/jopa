@@ -58,7 +58,7 @@ class EntityDeconstructor {
 		final OWLClass clsType = entity.getClass().getAnnotation(OWLClass.class);
 		assert clsType != null;
 		final Assertion entityClassAssertion = Assertion.createClassAssertion(false);
-		valueBuilder.addValue(entityClassAssertion, new Value<URI>(URI.create(clsType.iri())),
+		valueBuilder.addValue(entityClassAssertion, new Value<>(URI.create(clsType.iri())),
 				descriptor.getContext());
 	}
 

@@ -12,12 +12,6 @@ abstract class AbstractInstanceBuilder {
 	protected final CloneBuilderImpl builder;
 	protected final UnitOfWork uow;
 
-	AbstractInstanceBuilder() {
-		this.builder = null;
-		this.uow = null;
-		this.populates = false;
-	}
-
 	AbstractInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
 		super();
 		this.builder = builder;
@@ -49,7 +43,7 @@ abstract class AbstractInstanceBuilder {
 	 *            The original object
 	 * @param descriptor
 	 *            Entity origin
-	 * @return
+	 * @return The clone
 	 */
 	abstract Object buildClone(Object cloneOwner, Field field, Object original,
 			Descriptor descriptor);
@@ -82,13 +76,13 @@ abstract class AbstractInstanceBuilder {
 	 * @param args
 	 *            An Array of classes, which should take the constructor as
 	 *            parameters.
-	 * @return Constructor<?>
+	 * @return Constructor
 	 * @throws SecurityException
 	 *             If the security check denies access to the constructor.
 	 */
 	protected static Constructor<?> getDeclaredConstructorFor(final Class<?> javaClass,
 			Class<?>[] args) throws SecurityException {
-		Constructor<?> c = null;
+		Constructor<?> c;
 		try {
 			c = javaClass.getDeclaredConstructor(args);
 			if (c == null) {

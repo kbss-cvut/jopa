@@ -1,7 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 /**
- * Objects of clasess implementing this interface represent a change of
+ * Objects of classes implementing this interface represent a change of
  * one attribute of an entity class.
  * Objects store only the new value, old value is in the original and it
  * is not needed.
@@ -15,12 +15,6 @@ public interface ChangeRecord {
 	 * @return Object
 	 */
 	public Object getNewValue();
-	
-	/**
-	 * Set the new value.
-	 * @param Object The new value.
-	 */
-	public void setNewValue(Object newValue);
 	
 	/**
 	 * Returns the name of the attribute the change is bound to.

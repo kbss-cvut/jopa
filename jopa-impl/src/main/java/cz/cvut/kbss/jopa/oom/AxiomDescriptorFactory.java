@@ -2,9 +2,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
@@ -19,17 +17,8 @@ class AxiomDescriptorFactory {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(loadingParams.getIdentifier()));
         descriptor.setSubjectContext(loadingParams.getDescriptor().getContext());
         descriptor.addAssertion(Assertion.createClassAssertion(false));
-        if (et.getTypes() != null && shouldLoad(et.getTypes().getFetchType(), loadingParams.isForceLoad())) {
-            final Assertion typesAssertion = Assertion.createClassAssertion(et.getTypes()
-                    .isInferred());
-            addAssertionToDescriptor(loadingParams.getDescriptor(), et.getTypes(), descriptor, typesAssertion);
-        }
-        if (et.getProperties() != null && shouldLoad(et.getProperties().getFetchType(), loadingParams.isForceLoad())) {
-            final Assertion propsAssertion = Assertion.createUnspecifiedPropertyAssertion(et
-                    .getProperties().isInferred());
-            addAssertionToDescriptor(loadingParams.getDescriptor(), et.getProperties(), descriptor,
-                    propsAssertion);
-        }
+        addForTypes(loadingParams, et, descriptor);
+        addForProperties(loadingParams, et, descriptor);
         for (Attribute<?, ?> att : et.getAttributes()) {
             if (!shouldLoad(att.getFetchType(), loadingParams.isForceLoad())) {
                 continue;
@@ -38,6 +27,14 @@ class AxiomDescriptorFactory {
             addAssertionToDescriptor(loadingParams.getDescriptor(), att, descriptor, a);
         }
         return descriptor;
+    }
+
+    private void addForTypes(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
+        final TypesSpecification<?, ?> types = et.getTypes();
+        if (types != null && shouldLoad(types.getFetchType(), loadingParams.isForceLoad())) {
+            final Assertion typesAssertion = Assertion.createClassAssertion(types.isInferred());
+            addAssertionToDescriptor(loadingParams.getDescriptor(), types, descriptor, typesAssertion);
+        }
     }
 
     private boolean shouldLoad(FetchType fetchType, boolean forceLoad) {
@@ -51,6 +48,15 @@ class AxiomDescriptorFactory {
         final URI attContext = entityDescriptor.getAttributeDescriptor(att).getContext();
         if (attContext != null) {
             descriptor.setAssertionContext(assertion, attContext);
+        }
+    }
+
+    private void addForProperties(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
+        final PropertiesSpecification<?, ?> props = et.getProperties();
+        if (props != null && shouldLoad(props.getFetchType(), loadingParams.isForceLoad())) {
+            final Assertion propsAssertion = Assertion.createUnspecifiedPropertyAssertion(props.isInferred());
+            addAssertionToDescriptor(loadingParams.getDescriptor(), props, descriptor,
+                    propsAssertion);
         }
     }
 

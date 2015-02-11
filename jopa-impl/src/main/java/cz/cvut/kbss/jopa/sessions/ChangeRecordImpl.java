@@ -1,27 +1,23 @@
 package cz.cvut.kbss.jopa.sessions;
 
 public class ChangeRecordImpl implements ChangeRecord {
-	
-	protected String attributeName;
-	
-	protected Object newValue;
-	
-	public ChangeRecordImpl(String attributeName, Object attValue) {
-		this.attributeName = attributeName;
-		this.newValue = attValue;
-	}
 
-	public Object getNewValue() {
-		return this.newValue;
-	}
+    private final String attributeName;
 
-	public void setNewValue(Object newValue) {
-		this.newValue = newValue;
+    private final Object newValue;
 
-	}
+    public ChangeRecordImpl(String attributeName, Object attValue) {
+        assert attributeName != null;
+        this.attributeName = attributeName;
+        this.newValue = attValue;
+    }
 
-	public String getAttributeName() {
-		return this.attributeName;
-	}
+    public Object getNewValue() {
+        return this.newValue;
+    }
+
+    public String getAttributeName() {
+        return this.attributeName;
+    }
 
 }

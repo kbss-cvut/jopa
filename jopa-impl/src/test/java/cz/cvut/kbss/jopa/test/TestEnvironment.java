@@ -15,22 +15,6 @@
 
 package cz.cvut.kbss.jopa.test;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.sql.DriverManager;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
-
-import org.junit.Ignore;
-
 import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
@@ -40,6 +24,16 @@ import cz.cvut.kbss.jopa.test.utils.StorageConfig;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import de.fraunhofer.iitb.owldb.OWLDBManager;
 import de.fraunhofer.iitb.owldb.util.HibernateProvider;
+import org.junit.Ignore;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.util.*;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 @Ignore
 public class TestEnvironment {
@@ -67,9 +61,7 @@ public class TestEnvironment {
     static {
         try {
             // Load java.util.logging configuration
-            LogManager.getLogManager().readConfiguration(
-                    new FileInputStream(
-                            "src/test/java/cz/cvut/kbss/jopa/test/resources/logging.properties"));
+            LogManager.getLogManager().readConfiguration(TestEnvironment.class.getResourceAsStream("/logging.properties"));
         } catch (SecurityException | IOException e) {
             e.printStackTrace();
         }
@@ -189,16 +181,12 @@ public class TestEnvironment {
      * @throws Exception
      */
     public static void clearDatabase() throws Exception {
-        java.sql.Connection conn = null;
-        conn = DriverManager.getConnection(DB_URI, DB_USERNAME, DB_PASSWORD);
-        Statement stmt = conn.createStatement();
-        try {
-            stmt.execute("TRUNCATE SCHEMA PUBLIC RESTART IDENTITY AND COMMIT NO CHECK");
-            conn.commit();
-        } finally {
-            stmt.close();
+        try (java.sql.Connection conn = DriverManager.getConnection(DB_URI, DB_USERNAME, DB_PASSWORD)) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("TRUNCATE SCHEMA PUBLIC RESTART IDENTITY AND COMMIT NO CHECK");
+                conn.commit();
+            }
         }
-        conn.close();
     }
 
     /**
