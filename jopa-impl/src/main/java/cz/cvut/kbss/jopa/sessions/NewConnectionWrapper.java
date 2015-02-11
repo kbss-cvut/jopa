@@ -8,6 +8,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapper;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapperImpl;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver_new.Connection;
@@ -35,9 +36,8 @@ class NewConnectionWrapper extends ConnectionWrapper {
 	}
 
 	@Override
-	<T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor, boolean forceLoad) {
-		final URI pkUri = getPrimaryKeyAsUri(primaryKey);
-		return mapper.loadEntity(cls, pkUri, descriptor, forceLoad);
+	<T> T find(LoadingParameters<T> loadingParameters) {
+		return mapper.loadEntity(loadingParameters);
 	}
 
 	@Override
@@ -118,12 +118,6 @@ class NewConnectionWrapper extends ConnectionWrapper {
 	}
 
 	private URI getPrimaryKeyAsUri(Object primaryKey) {
-		if (primaryKey == null) {
-			return null;
-		}
-		if (primaryKey instanceof URI) {
-			return (URI) primaryKey;
-		}
-		return URI.create(primaryKey.toString());
+		return primaryKey == null ? null : EntityPropertiesUtils.getValueAsURI(primaryKey);
 	}
 }

@@ -5,6 +5,7 @@ import java.net.URI;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 
 public interface ObjectOntologyMapper {
 
@@ -23,13 +24,10 @@ public interface ObjectOntologyMapper {
     /**
      * Loads and reconstructs the entity from the ontology. </p>
      *
-     * @param cls        Entity type
-     * @param primaryKey Entity primary key, i. e. individual URI
-     * @param descriptor Descriptor possibly specifying entity and attribute contexts
-     * @param forceLoad  Force loading of lazily loaded attributes
+     * @param loadingParameters Entity loading parameters
      * @return Reconstructed entity or {@code null} if there is none such
      */
-    public <T> T loadEntity(Class<T> cls, URI primaryKey, Descriptor descriptor, boolean forceLoad);
+    public <T> T loadEntity(LoadingParameters<T> loadingParameters);
 
     /**
      * Loads entity field value and sets it on the specified entity. </p>

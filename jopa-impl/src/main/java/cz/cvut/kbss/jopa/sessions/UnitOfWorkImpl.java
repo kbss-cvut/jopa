@@ -113,7 +113,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         result = getObjectFromCache(cls, primaryKey, descriptor.getContext());
         if (result == null) {
             // The object is not in the session cache, so search the ontology
-            result = storage.find(cls, primaryKey, descriptor, false);
+            final URI pkUri = EntityPropertiesUtils.getValueAsURI(primaryKey);
+            result = storage.find(new LoadingParameters<>(cls, pkUri, descriptor));
         }
         if (result == null) {
             return null;
@@ -590,7 +591,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         T original = getObjectFromCache(entityCls, iri, descriptor.getContext());
         if (original == null) {
             // The object is not in the session cache, so search the ontology
-            original = storage.find(entityCls, iri, descriptor, true);
+            final URI idUri = EntityPropertiesUtils.getValueAsURI(iri);
+            original = storage.find(new LoadingParameters<>(entityCls, idUri, descriptor, true));
         }
         assert original != null;
         registerClone(entity, original, descriptor);

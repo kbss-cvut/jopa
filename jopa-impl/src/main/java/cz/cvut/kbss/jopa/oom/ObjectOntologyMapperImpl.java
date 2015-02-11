@@ -8,6 +8,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -58,8 +59,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
         final EntityType<T> et = getEntityType(cls);
         final URI classUri = et.getIRI().toURI();
-        final Axiom<URI> ax = new AxiomImpl<URI>(NamedResource.create(primaryKey),
-                Assertion.createClassAssertion(true), new Value<URI>(classUri));
+        final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(primaryKey),
+                Assertion.createClassAssertion(true), new Value<>(classUri));
         try {
             return storageConnection.contains(ax, descriptor.getContext());
         } catch (OntoDriverException e) {
@@ -68,25 +69,22 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     @Override
-    public <T> T loadEntity(Class<T> cls, URI primaryKey, Descriptor descriptor, boolean forceLoad) {
-        assert cls != null;
-        assert primaryKey != null;
-        assert descriptor != null;
+    public <T> T loadEntity(LoadingParameters<T> loadingParameters) {
+        assert loadingParameters != null;
 
         instanceRegistry.reset();
-        return loadEntityInternal(cls, primaryKey, descriptor, forceLoad);
+        return loadEntityInternal(loadingParameters);
     }
 
-    private <T> T loadEntityInternal(Class<T> cls, URI primaryKey, Descriptor descriptor, boolean forceLoad) {
-        final EntityType<T> et = getEntityType(cls);
-        final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(
-                primaryKey, descriptor, et, forceLoad);
+    private <T> T loadEntityInternal(LoadingParameters<T> loadingParameters) {
+        final EntityType<T> et = getEntityType(loadingParameters.getEntityType());
+        final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
             if (axioms.isEmpty()) {
                 return null;
             }
-            return entityBuilder.reconstructEntity(primaryKey, et, descriptor, axioms);
+            return entityBuilder.reconstructEntity(loadingParameters.getIdentifier(), et, loadingParameters.getDescriptor(), axioms);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         } catch (InstantiationException | IllegalAccessException e) {
@@ -164,7 +162,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             // This prevents endless cycles in bidirectional relationships
             return cls.cast(instanceRegistry.getInstance(primaryKey, descriptor.getContext()));
         } else {
-            return loadEntityInternal(cls, primaryKey, descriptor, false);
+            return loadEntityInternal(new LoadingParameters<>(cls, primaryKey, descriptor));
         }
     }
 
@@ -204,10 +202,6 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         }
     }
 
-    boolean doesInstanceExist(Object entity) {
-        return uow.contains(entity);
-    }
-
     <T> void registerPendingPersist(URI primaryKey, T entity, URI context) {
         pendingPersists.registerInstance(primaryKey, entity, context);
     }
@@ -216,7 +210,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public <T> void removeEntity(URI primaryKey, Class<T> cls, Descriptor descriptor) {
         final EntityType<T> et = getEntityType(cls);
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(
-                primaryKey, descriptor, et, false);
+                new LoadingParameters<>(cls, primaryKey, descriptor), et);
         try {
             storageConnection.remove(axiomDescriptor);
         } catch (OntoDriverException e) {

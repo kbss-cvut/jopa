@@ -11,6 +11,7 @@ import java.net.URI;
 import java.util.Collections;
 
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -63,7 +64,10 @@ public class AxiomDescriptorFactoryTest {
 	@Mock
 	private EntityType<OWLClassD> etDMock;
 	@Mock
-	private Attribute owlclassAAttMock;
+	private Attribute owlClassAAttMock;
+
+    private Descriptor descriptor;
+    private Descriptor descriptorInContext;
 
 	private AxiomDescriptorFactory factory;
 
@@ -83,22 +87,24 @@ public class AxiomDescriptorFactoryTest {
 		TestEnvironmentUtils.initOWLClassAMocks(etAMock, strAttAMock, typesSpecMock, idAMock);
 		TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsSpecMock, idBMock);
 		when(etDMock.getAttributes()).thenReturn(
-				Collections.<Attribute<? super OWLClassD, ?>> singleton(owlclassAAttMock));
+				Collections.<Attribute<? super OWLClassD, ?>> singleton(owlClassAAttMock));
 		when(etDMock.getAttribute(OWLClassD.getOwlClassAField().getName())).thenReturn(
-				owlclassAAttMock);
-		when(owlclassAAttMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
-		when(owlclassAAttMock.getIRI()).thenReturn(IRI.create(owlclassAAttUri.toString()));
-		when(owlclassAAttMock.getPersistentAttributeType()).thenReturn(
-				PersistentAttributeType.OBJECT);
-		when(owlclassAAttMock.getFetchType()).thenReturn(FetchType.EAGER);
+                owlClassAAttMock);
+		when(owlClassAAttMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
+		when(owlClassAAttMock.getIRI()).thenReturn(IRI.create(owlclassAAttUri.toString()));
+		when(owlClassAAttMock.getPersistentAttributeType()).thenReturn(
+                PersistentAttributeType.OBJECT);
+		when(owlClassAAttMock.getFetchType()).thenReturn(FetchType.EAGER);
+
+        this.descriptor = new EntityDescriptor();
+        this.descriptorInContext= new EntityDescriptor(CONTEXT);
 
 		factory = new AxiomDescriptorFactory();
 	}
 
 	@Test
 	public void testCreateForEntityLoadingWithTypes() throws Exception {
-		final Descriptor desc = new EntityDescriptor();
-		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etAMock, false);
+		final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor), etAMock);
 		// Types specification and the string attribute
 		assertEquals(2, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
@@ -110,9 +116,8 @@ public class AxiomDescriptorFactoryTest {
 
 	@Test
 	public void testCreateForEntityLoadingWithTypesInContext() throws Exception {
-		final Descriptor desc = new EntityDescriptor();
-		desc.addAttributeContext(OWLClassA.getTypesField(), CONTEXT);
-		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etAMock, false);
+		descriptor.addAttributeContext(OWLClassA.getTypesField(), CONTEXT);
+		final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor), etAMock);
 		// Types specification and the string attribute
 		assertEquals(2, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
@@ -125,8 +130,7 @@ public class AxiomDescriptorFactoryTest {
 
 	@Test
 	public void testCreateForEntityLoadingWithPropertiesAndContext() throws Exception {
-		final Descriptor desc = new EntityDescriptor(CONTEXT);
-		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etBMock, false);
+		final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassB.class, PK, descriptorInContext), etBMock);
 		// Class assertion, properties specification and the string attribute
 		assertEquals(3, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
@@ -137,9 +141,8 @@ public class AxiomDescriptorFactoryTest {
 
 	@Test
 	public void testCreateForEntityLoadingWithObjectPropertyInContext() throws Exception {
-		final Descriptor desc = new EntityDescriptor();
-		desc.addAttributeContext(OWLClassD.getOwlClassAField(), CONTEXT);
-		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etDMock, false);
+		descriptor.addAttributeContext(OWLClassD.getOwlClassAField(), CONTEXT);
+		final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassD.class, PK, descriptor), etDMock);
 		// Class assertion and the object property assertion
 		assertEquals(2, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
@@ -158,11 +161,10 @@ public class AxiomDescriptorFactoryTest {
 
 	@Test
 	public void testCreateForEntityLoadingWithAnnotationProperty() throws Exception {
-		final Descriptor desc = new EntityDescriptor();
 		// Artificially change the attribute type to annotation
-		when(owlclassAAttMock.getPersistentAttributeType()).thenReturn(
-				PersistentAttributeType.ANNOTATION);
-		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etDMock, false);
+		when(owlClassAAttMock.getPersistentAttributeType()).thenReturn(
+                PersistentAttributeType.ANNOTATION);
+		final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassD.class, PK, descriptor), etDMock);
 		// Class assertion and the annotation property assertion
 		assertEquals(2, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());
@@ -173,9 +175,8 @@ public class AxiomDescriptorFactoryTest {
 
 	@Test
 	public void createForEntityLoadingWithLazilyLoadedAttribute() throws Exception {
-		final Descriptor desc = new EntityDescriptor();
 		when(strAttAMock.getFetchType()).thenReturn(FetchType.LAZY);
-		final AxiomDescriptor res = factory.createForEntityLoading(PK, desc, etAMock, false);
+		final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor), etAMock);
 		// Types specification (class assertion)
 		assertEquals(1, res.getAssertions().size());
 		assertEquals(NamedResource.create(PK), res.getSubject());

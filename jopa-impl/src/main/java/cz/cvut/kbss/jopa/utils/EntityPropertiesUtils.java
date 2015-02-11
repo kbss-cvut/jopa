@@ -134,21 +134,8 @@ public class EntityPropertiesUtils {
 
 		if (value instanceof URI) {
 			return (URI) value;
-		} else if (value instanceof String) {
-			return URI.create((String) value);
-		} else if (value instanceof IRI) {
-			return ((IRI) value).toURI();
-		} else if (value instanceof cz.cvut.kbss.jopa.model.IRI) {
-			return ((cz.cvut.kbss.jopa.model.IRI) value).toURI();
-		} else if (value instanceof URL) {
-			try {
-				return ((URL) value).toURI();
-			} catch (URISyntaxException e) {
-				throw new IllegalArgumentException(e);
-			}
 		} else {
-			throw new IllegalArgumentException("The specified " + value
-					+ " cannot be tranformed to URI.");
+			return URI.create(value.toString());
 		}
 	}
 
@@ -196,7 +183,7 @@ public class EntityPropertiesUtils {
 	 * @return List of declared fields
 	 */
 	public static List<Field> getAllFields(Class<?> cls) {
-		final List<Field> fields = new ArrayList<Field>();
+		final List<Field> fields = new ArrayList<>();
 		fields.addAll(Arrays.asList(cls.getDeclaredFields()));
 		Class<?> tmp = cls.getSuperclass();
 		while (tmp != null) {
