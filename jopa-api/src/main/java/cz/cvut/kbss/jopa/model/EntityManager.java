@@ -15,19 +15,18 @@
 
 package cz.cvut.kbss.jopa.model;
 
-import java.net.URI;
-import java.util.List;
-
 import cz.cvut.kbss.jopa.NonJPA;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
+
+import java.net.URI;
+import java.util.List;
 
 public interface EntityManager {
 
@@ -51,7 +50,7 @@ public interface EntityManager {
 	 *             if invoked on a container-managed entity manager of type
 	 *             PersistenceContextType.TRANSACTION and there is no
 	 *             transaction.
-	 * @see #persist(Object, EntityDescriptor)
+	 * @see {@link #persist(Object, cz.cvut.kbss.jopa.model.descriptors.Descriptor)}
 	 */
 	public void persist(final Object entity);
 
@@ -120,7 +119,7 @@ public interface EntityManager {
 	/**
 	 * Remove the entity instance.
 	 * 
-	 * @param entity
+	 * @param entity The instance to remove
 	 * @throws IllegalArgumentException
 	 *             if not an entity or if a detached entity
 	 * @throws TransactionRequiredException
@@ -177,7 +176,7 @@ public interface EntityManager {
 	 * @throws NullPointerException
 	 *             If {@code entityClass}, {@code primaryKey} or
 	 *             {@code contextUri} is {@code null}
-	 * @see #getAvailableContexts()
+	 * @see #getContexts()
 	 */
 	public <T> T find(final Class<T> entityClass, final Object primaryKey,
 			final Descriptor descriptor);
@@ -252,7 +251,7 @@ public interface EntityManager {
 	 * Refresh the state of the instance from the data source, overwriting
 	 * changes made to the entity, if any. </p>
 	 * 
-	 * @param entity
+	 * @param entity The entity instance to refresh
 	 * @throws IllegalArgumentException
 	 *             if not an entity or entity is not managed
 	 * @throws TransactionRequiredException
@@ -280,7 +279,7 @@ public interface EntityManager {
 	 * database. Entities which previously referenced the detached entity will
 	 * continue to reference it.
 	 * 
-	 * @param entity
+	 * @param entity The instance to detach
 	 * @throws IllegalArgumentException
 	 *             if the instance is not an entity
 	 */
@@ -289,8 +288,8 @@ public interface EntityManager {
 	/**
 	 * Check if the instance belongs to the current persistence context.
 	 * 
-	 * @param entity
-	 * @return
+	 * @param entity The instance to check
+	 * @return True if the instance is managed, false otherwise
 	 * @throws IllegalArgumentException
 	 *             if not an entity
 	 */
@@ -445,16 +444,16 @@ public interface EntityManager {
 	 */
 	public EntityManagerFactory getEntityManagerFactory();
 
-	/**
-	 * Returns a label for the given IRI. The label is returned with the
-	 * following preference: 1) label in the language specified for the entity
-	 * manager 2) label without language tag 3) any (unspecified) label
-	 * 
-	 * @param iri
-	 * @return
-	 */
-	@NonJPA
-	public String getLabel(final String iri);
+//	/**
+//	 * Returns a label for the given IRI. The label is returned with the
+//	 * following preference: 1) label in the language specified for the entity
+//	 * manager 2) label without language tag 3) any (unspecified) label
+//	 *
+//	 * @param iri
+//	 * @return
+//	 */
+//	@NonJPA
+//	public String getLabel(final String iri);
 
 	/**
 	 * Returns a list of repository contexts available to this entity manager.

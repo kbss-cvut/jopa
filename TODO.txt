@@ -1,5 +1,6 @@
-- Compute change of @Properties by comparing with the original on change notification. Similar to @Types
 - Add support for EntityManager.getReference
+- Add support for namespace definition - on class and package level
+- Design a strategy for supporting bidirectional relationships. Will probably require modifications of the OntoDriver API
 - Define schema for persistence.xml for JOPA
 - Revisit entity classes discovery
 - Consider adding support for JNDI data source lookup

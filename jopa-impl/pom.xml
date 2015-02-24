@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
@@ -10,153 +10,83 @@
     </parent>
 
     <name>JOPA - implementation</name>
-	<artifactId>jopa-impl</artifactId>
-	<packaging>jar</packaging>
+    <artifactId>jopa-impl</artifactId>
+    <packaging>jar</packaging>
 
     <properties>
         <aspectj.version>1.7.4</aspectj.version>
         <pellet.version>2.3.0</pellet.version>
+        <junit.version>4.12</junit.version>
     </properties>
 
-	<repositories>
-		<repository>
-			<id>krizik</id>
-			<name>KBSS Maven 2 Repository</name>
-			<url>http://krizik.felk.cvut.cz/m2repo</url>
-		</repository>
-		<repository>
-			<id>berkeley</id>
-			<name>Berkeley Maven 2 Repository</name>
-			<url>http://code.berkeleybop.org/maven/repository</url>
-		</repository>
-		<repository>
-			<id>jena</id>
-			<url>http://repo1.maven.org/maven2/com/hp/hpl/</url>
-		</repository>
-		<repository>
-			<id>repository.jboss.org-public</id>
-			<name>JBoss.org Maven repository</name>
-			<url>https://repository.jboss.org/nexus/content/groups/public</url>
-		</repository>
-	</repositories>
+    <repositories>
+        <repository>
+            <id>krizik</id>
+            <name>KBSS Maven 2 Repository</name>
+            <url>http://krizik.felk.cvut.cz/m2repo</url>
+        </repository>
+        <repository>
+            <id>berkeley</id>
+            <name>Berkeley Maven 2 Repository</name>
+            <url>http://code.berkeleybop.org/maven/repository</url>
+        </repository>
+        <repository>
+            <id>jena</id>
+            <url>http://repo1.maven.org/maven2/com/hp/hpl/</url>
+        </repository>
+        <repository>
+            <id>repository.jboss.org-public</id>
+            <name>JBoss.org Maven repository</name>
+            <url>https://repository.jboss.org/nexus/content/groups/public</url>
+        </repository>
+    </repositories>
 
-	<dependencies>
-		<dependency>
-			<groupId>aterm</groupId>
-			<artifactId>aterm</artifactId>
-			<version>1.6</version>
-			<type>jar</type>
-			<scope>test</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.mindswap.pellet</groupId>
-			<artifactId>pellet-core</artifactId>
-			<version>${pellet.version}</version>
-			<type>jar</type>
-			<scope>test</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.mindswap.pellet</groupId>
-			<artifactId>pellet-datatypes</artifactId>
-			<version>${pellet.version}</version>
-			<type>jar</type>
-			<scope>test</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.mindswap.pellet</groupId>
-			<artifactId>pellet-el</artifactId>
-			<version>${pellet.version}</version>
-			<type>jar</type>
-			<scope>test</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.mindswap.pellet</groupId>
-			<artifactId>pellet-explanation</artifactId>
-			<version>${pellet.version}</version>
-			<type>jar</type>
-			<scope>test</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.mindswap.pellet</groupId>
-			<artifactId>pellet-modularity</artifactId>
-			<version>${pellet.version}</version>
-			<type>jar</type>
-			<scope>test</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.mindswap.pellet</groupId>
-			<artifactId>pellet-owlapiv3</artifactId>
-			<version>${pellet.version}</version>
-			<type>jar</type>
-			<scope>test</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.mindswap.pellet</groupId>
-			<artifactId>pellet-query</artifactId>
-			<version>${pellet.version}</version>
-			<type>jar</type>
-			<scope>test</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.mindswap.pellet</groupId>
-			<artifactId>pellet-rules</artifactId>
-			<version>${pellet.version}</version>
-			<type>jar</type>
-			<scope>test</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.semanticweb</groupId>
-			<artifactId>owlapi</artifactId>
-			<version>${owlapi.version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
-			<groupId>cz.cvut.kbss.jopa</groupId>
-			<artifactId>jopa-api</artifactId>
-			<version>${project.version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
-			<groupId>cz.cvut.kbss.jopa</groupId>
-			<artifactId>jopa-owl2java</artifactId>
-			<version>${project.version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
-			<optional>false</optional>
-		</dependency>
-                    <dependency>
-                        <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjrt</artifactId>
-                        <version>${aspectj.version}</version>
-                    </dependency>
-		<!--<dependency>-->
-			<!--<groupId>org.aspectj</groupId>-->
-			<!--<artifactId>aspectjrt</artifactId>-->
-			<!--<version>1.6.2</version>-->
-			<!--<type>jar</type>-->
-			<!--<optional>false</optional>-->
-		<!--</dependency>-->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.5</version>
-			<type>jar</type>
-			<scope>test</scope>
-			<optional>false</optional>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-query</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>false</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-rules</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>false</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.semanticweb</groupId>
+            <artifactId>owlapi</artifactId>
+            <version>${owlapi.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+            <optional>false</optional>
+        </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-api</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+            <optional>false</optional>
+        </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-owl2java</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+            <optional>false</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>${aspectj.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
@@ -164,63 +94,127 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-        	<groupId>org.jgrapht</groupId>
-        	<artifactId>jgrapht-jdk1.5</artifactId>
-        	<version>0.7.3</version>
-        	<scope>runtime</scope>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-jdk1.5</artifactId>
+            <version>0.7.3</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
-			<groupId>cz.cvut.kbss.jopa</groupId>
-			<artifactId>ontodriver-impl</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>ontodriver-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>0.9.5</version>
         </dependency>
-        <dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>1.9.5</version>
-			<scope>test</scope>
-		</dependency>
-        <dependency>
-        	<groupId>org.hsqldb</groupId>
-        	<artifactId>hsqldb</artifactId>
-        	<version>2.3.2</version>
-        	<scope>test</scope>
-        </dependency>
-        <dependency>
-        	<groupId>cz.cvut.kbss.jopa</groupId>
-        	<artifactId>ontodriver-sesame</artifactId>
-        	<version>${project.version}</version>
-			<scope>test</scope>
-        </dependency>
-	</dependencies>
 
 
-	<build>
-		<!--<sourceDirectory>src</sourceDirectory>-->
-		<!--<resources>-->
-			<!--<resource>-->
-				<!--<directory>resources</directory>-->
-			<!--</resource>-->
-		<!--</resources>-->
-		<!--<testSourceDirectory>test</testSourceDirectory>-->
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.8</version>
-				<configuration>
-					<testFailureIgnore>true</testFailureIgnore>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>aspectj-maven-plugin</artifactId>
-				<version>1.5</version>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.9.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.3.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>ontodriver-sesame</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>aterm</groupId>
+            <artifactId>aterm</artifactId>
+            <version>1.6</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>false</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-core</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>false</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-datatypes</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>false</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-el</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>false</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-explanation</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>false</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-modularity</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>false</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-owlapiv3</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>false</optional>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <!--<sourceDirectory>src</sourceDirectory>-->
+        <!--<resources>-->
+        <!--<resource>-->
+        <!--<directory>resources</directory>-->
+        <!--</resource>-->
+        <!--</resources>-->
+        <!--<testSourceDirectory>test</testSourceDirectory>-->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    <testFailureIgnore>true</testFailureIgnore>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.5</version>
                 <configuration>
                     <complianceLevel>1.7</complianceLevel>
                     <sources>
@@ -232,7 +226,7 @@
                             </includes>
                         </source>
                     </sources>
-				</configuration>
+                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.aspectj</groupId>
@@ -240,23 +234,25 @@
                         <version>${aspectj.version}</version>
                     </dependency>
                 </dependencies>
-				<executions>
+                <executions>
                     <execution>
                         <phase>process-classes</phase>
                         <goals>
-							<goal>compile</goal>       <!-- use this goal to weave all your main classes -->
-							<goal>test-compile</goal>  <!-- use this goal to weave all your test classes -->
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>1.0-beta-6</version>
-			</extension>
-		</extensions>
-	</build>
+                            <goal>compile</goal>
+                            <!-- use this goal to weave all your main classes -->
+                            <goal>test-compile</goal>
+                            <!-- use this goal to weave all your test classes -->
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>1.0-beta-6</version>
+            </extension>
+        </extensions>
+    </build>
 </project>

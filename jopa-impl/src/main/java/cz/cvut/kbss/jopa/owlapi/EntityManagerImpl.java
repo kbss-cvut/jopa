@@ -15,40 +15,6 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.semanticweb.owlapi.model.AddAxiom;
-import org.semanticweb.owlapi.model.AddImport;
-import org.semanticweb.owlapi.model.AddOntologyAnnotation;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAnnotation;
-import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
-import org.semanticweb.owlapi.model.OWLAnnotationValueVisitor;
-import org.semanticweb.owlapi.model.OWLAnonymousIndividual;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLLiteral;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyChangeVisitor;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.model.RemoveAxiom;
-import org.semanticweb.owlapi.model.RemoveImport;
-import org.semanticweb.owlapi.model.RemoveOntologyAnnotation;
-import org.semanticweb.owlapi.model.SetOntologyID;
-import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
-
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
@@ -65,37 +31,26 @@ import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import org.semanticweb.owlapi.model.IRI;
+
+import java.net.URI;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EntityManagerImpl extends AbstractEntityManager {
 
 	private static final Logger LOG = Logger.getLogger(EntityManagerImpl.class.getName());
-	// private OWLReasoner r;
-	private OWLDataFactory f;
-	private OWLOntology workingOnt;
-	private OWLOntology reasoningOnt;
-	private OWLOntologyManager m;
+
 	private EntityManagerFactoryImpl emf;
-	/**
-	 * A collection of all entities that are currently managed by the
-	 * persistence context. This collection includes also newly added entities
-	 * that are not persistent yet.
-	 */
-	private final Map<Object, OWLNamedIndividual> managed = new HashMap<Object, OWLNamedIndividual>();
-	/**
-	 * A collection of all entities that are currently removed from the
-	 * persistence context.
-	 */
-	private final Map<Object, OWLNamedIndividual> removed = new HashMap<Object, OWLNamedIndividual>();
-	private final List<OWLOntologyChange> allChanges = Collections
-			.synchronizedList(new ArrayList<OWLOntologyChange>());
+
 	private boolean open;
-	private String lang = "en";
 
 	private TransactionWrapper transaction;
 	private UnitOfWorkImpl persistenceContext;
 	private ServerSession serverSession;
 
-	public EntityManagerImpl(EntityManagerFactoryImpl emf, Map<String, String> map,
+	public EntityManagerImpl(EntityManagerFactoryImpl emf, Map<String, String> properties,
 			ServerSession serverSession) {
 		this.emf = emf;
 		this.serverSession = serverSession;
@@ -333,8 +288,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	}
 
 	public void clear() {
-		managed.clear();
-		removed.clear();
 		getCurrentPersistenceContext().clear();
 	}
 
@@ -452,12 +405,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 	public <T> T unwrap(Class<T> cls) {
 		if (cls.equals(this.getClass())) {
 			return cls.cast(this);
-		} else if (OWLOntologyManager.class.isAssignableFrom(cls)) {
-			return cls.cast(m);
-		} else if (OWLDataFactory.class.isAssignableFrom(cls)) {
-			return cls.cast(m.getOWLDataFactory());
-		} else if (OWLOntology.class.isAssignableFrom(cls)) {
-			return cls.cast(workingOnt);
 		}
 
 		throw new OWLPersistenceException();
@@ -465,121 +412,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
 	public Object getDelegate() {
 		return unwrap(EntityManagerImpl.class);
-	}
-
-	public String getLabel(String iri) {
-		String label = null;
-
-		for (final OWLAnnotationAssertionAxiom ax : reasoningOnt.getAnnotationAssertionAxioms(IRI
-				.create(iri))) {
-
-			OWLAnnotation a = ax.getAnnotation();
-			if (a.getProperty().equals(
-					f.getOWLAnnotationProperty(OWLRDFVocabulary.RDFS_LABEL.getIRI()))) {
-				final LanguageResolverVisitor v = new LanguageResolverVisitor();
-				a.getValue().accept(v);
-
-				if (v.getLang().equals(lang)) {
-					return v.getValue();
-				}
-
-				if (v.getLang().isEmpty() || (v.getLang() == null) || (label == null)) {
-					label = v.getValue();
-				}
-			}
-		}
-
-		if (LOG.isLoggable(Level.WARNING)) {
-			LOG.warning("No label found for " + iri + ", using IRI itself.");
-		}
-
-		return iri;
-	}
-
-	class LanguageResolverVisitor implements OWLAnnotationValueVisitor {
-
-		String value = null;
-		String lang = null;
-
-		public void visit(OWLAnonymousIndividual arg0) {
-			// not supported - silently ignore
-		}
-
-		public void visit(IRI arg0) {
-			// not supported - silently ignore
-		}
-
-		public String getValue() {
-			return value;
-		}
-
-		public String getLang() {
-			return lang;
-		}
-
-		public void visit(OWLLiteral sl) {
-			value = sl.getLiteral();
-			lang = sl.getLang();
-		}
-	}
-
-	synchronized void addChanges(final Collection<OWLOntologyChange> c) {
-		for (final OWLOntologyChange cc : c) {
-			if (allChanges.contains(cc)) {
-				continue;
-			}
-
-			cc.accept(new OWLOntologyChangeVisitor() {
-
-				public void visit(AddAxiom arg0) {
-					final RemoveAxiom ax = new RemoveAxiom(workingOnt, arg0.getAxiom());
-					if (allChanges.contains(ax)) {
-						allChanges.remove(ax);
-					} else {
-						allChanges.add(arg0);
-					}
-				}
-
-				public void visit(RemoveAxiom arg0) {
-					final AddAxiom ax = new AddAxiom(workingOnt, arg0.getAxiom());
-					if (allChanges.contains(ax)) {
-						allChanges.remove(ax);
-					} else {
-						allChanges.add(arg0);
-					}
-				}
-
-				public void visit(SetOntologyID arg0) {
-					throw new UnsupportedOperationException(
-							"Changing ontology URI is not supported.");
-				}
-
-				public void visit(AddImport arg0) {
-					throw new UnsupportedOperationException(
-							"Adding ontology Import is not supported.");
-				}
-
-				public void visit(RemoveImport arg0) {
-					throw new UnsupportedOperationException(
-							"Removing ontology Import is not supported.");
-				}
-
-				public void visit(AddOntologyAnnotation arg0) {
-					throw new UnsupportedOperationException(
-							"Adding ontology annotation is not supported.");
-				}
-
-				public void visit(RemoveOntologyAnnotation arg0) {
-					throw new UnsupportedOperationException(
-							"Removing ontology annotation is not supported.");
-				}
-
-			});
-		}
-	}
-
-	synchronized void addChange(final OWLOntologyChange c) {
-		addChanges(Collections.singleton(c));
 	}
 
 	private void ensureOpen() {
@@ -610,12 +442,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
 			persistenceContext.setEntityManager(this);
 		}
 		return this.persistenceContext;
-	}
-
-	public ServerSession getServerSession() {
-		ServerSession ss = emf.getServerSession();
-		assert ss != null;
-		return ss;
 	}
 
 	/**

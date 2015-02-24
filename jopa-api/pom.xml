@@ -1,33 +1,37 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>cz.cvut.kbss.jopa</groupId>
-		<artifactId>jopa-parent</artifactId>
-		<version>0.4-SNAPSHOT</version>
-		<relativePath>../jopa-parent/pom.xml</relativePath>
-	</parent>
+    <parent>
+        <groupId>cz.cvut.kbss.jopa</groupId>
+        <artifactId>jopa-parent</artifactId>
+        <version>0.4-SNAPSHOT</version>
+        <relativePath>../jopa-parent/pom.xml</relativePath>
+    </parent>
 
-	<name>JOPA - API</name>
-	<artifactId>jopa-api</artifactId>
-	<packaging>jar</packaging>
+    <name>JOPA - API</name>
+    <artifactId>jopa-api</artifactId>
+    <packaging>jar</packaging>
 
-	<repositories>
-		<repository>
-			<id>krizik</id>
-			<name>KBSS Maven 2 Repository</name>
-			<url>http://krizik.felk.cvut.cz/m2repo</url>
-		</repository>
-	</repositories>
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.5</version>
-			<type>jar</type>
-			<scope>test</scope>
-			<optional>false</optional>
-		</dependency>
-	</dependencies>
+    <properties>
+        <junit.version>4.12</junit.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>krizik</id>
+            <name>KBSS Maven 2 Repository</name>
+            <url>http://krizik.felk.cvut.cz/m2repo</url>
+        </repository>
+    </repositories>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>false</optional>
+        </dependency>
+    </dependencies>
 </project>
