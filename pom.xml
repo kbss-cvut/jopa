@@ -18,7 +18,8 @@
 		<module>ontodriver-sesame</module>
 		<module>jopa-impl</module>
 		<module>ontodriver-impl</module>
-	</modules>
+        <module>ontodriver-jena</module>
+    </modules>
 
 	<properties>
 		<jacoco.version>0.7.2.201409121644</jacoco.version>
