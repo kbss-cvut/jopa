@@ -19,6 +19,7 @@
 		<module>jopa-impl</module>
 		<module>ontodriver-impl</module>
         <module>ontodriver-jena</module>
+        <module>../jopa-refactoring/ontodriver-owlapi</module>
     </modules>
 
 	<properties>
