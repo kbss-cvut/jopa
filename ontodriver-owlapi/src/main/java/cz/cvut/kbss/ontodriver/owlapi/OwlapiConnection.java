@@ -12,6 +12,7 @@ import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -20,9 +21,25 @@ import java.util.List;
  */
 public class OwlapiConnection implements Connection {
 
+    private boolean open;
+
+    private final OwlapiAdapter adapter;
+
+    private final List<ConnectionListener> listeners = new ArrayList<>(4);
+
+    public OwlapiConnection(OwlapiAdapter adapter) {
+        this.adapter = adapter;
+        this.open = true;
+    }
+
+    void addListener(ConnectionListener listener) {
+        assert listener != null;
+        listeners.add(listener);
+    }
+
     @Override
     public boolean isOpen() {
-        return false;
+        return open;
     }
 
     @Override
@@ -112,6 +129,9 @@ public class OwlapiConnection implements Connection {
 
     @Override
     public void close() throws Exception {
-
+        if (!open) {
+            return;
+        }
+        this.open = false;
     }
 }
