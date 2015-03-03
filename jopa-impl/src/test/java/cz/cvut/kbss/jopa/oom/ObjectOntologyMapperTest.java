@@ -190,8 +190,8 @@ public class ObjectOntologyMapperTest {
         when(connectionMock.find(axiomDescriptor)).thenReturn(Collections.<Axiom<?>>emptyList());
         mapper.loadFieldValue(entityA, typesField, aDescriptor);
         assertNull(typesField.get(entityA));
-        verify(entityConstructorMock, never()).setFieldValue(any(OWLClassA.class), eq(typesField),
-                any(Collection.class), any(EntityType.class), eq(aDescriptor));
+        verify(entityConstructorMock, never()).setFieldValue(any(), eq(typesField),
+                any(), any(), eq(aDescriptor));
     }
 
     @Test(expected = StorageAccessException.class)
@@ -204,9 +204,9 @@ public class ObjectOntologyMapperTest {
             mapper.loadFieldValue(entityA, typesField, aDescriptor);
             fail("This line should not have been reached.");
         } finally {
-            verify(entityConstructorMock, never()).setFieldValue(any(OWLClassA.class),
-                    eq(typesField), any(Collection.class), any(EntityType.class),
-                    any(Descriptor.class));
+            verify(entityConstructorMock, never()).setFieldValue(any(),
+                    eq(typesField), any(), any(),
+                    any());
         }
     }
 

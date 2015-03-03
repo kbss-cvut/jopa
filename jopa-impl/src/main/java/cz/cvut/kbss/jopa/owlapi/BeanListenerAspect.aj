@@ -73,14 +73,11 @@ public aspect BeanListenerAspect {
 				return;
 			}
 			OWLAPIPersistenceProvider.persistEntityChanges(entity, f);
-		} catch (NoSuchFieldException e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-			throw new OWLPersistenceException(e.getMessage());
-		} catch (SecurityException e) {
+		} catch (NoSuchFieldException | SecurityException e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
 			throw new OWLPersistenceException(e.getMessage());
 		}
-	}
+    }
 
 	before() : getter()  {
 		// Load lazy loaded entity field
@@ -100,15 +97,9 @@ public aspect BeanListenerAspect {
 			}
 
 			OWLAPIPersistenceProvider.loadReference(object, field);
-		} catch (NoSuchFieldException e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-			throw new OWLPersistenceException();
-		} catch (IllegalArgumentException e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-			throw new OWLPersistenceException();
-		} catch (IllegalAccessException e) {
+		} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
 			LOG.log(Level.SEVERE, e.getMessage(), e);
 			throw new OWLPersistenceException();
 		}
-	}
+    }
 }

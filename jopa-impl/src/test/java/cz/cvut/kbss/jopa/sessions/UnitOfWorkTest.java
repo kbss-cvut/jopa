@@ -29,6 +29,7 @@ import org.semanticweb.owlapi.model.IRI;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -157,7 +158,7 @@ public class UnitOfWorkTest {
 		try {
 			uow.readObject(entityA.getClass(), null, descriptor);
 		} finally {
-			verify(cacheManagerMock, never()).get(any(Class.class), any(), any(URI.class));
+			verify(cacheManagerMock, never()).get(any(), any(), any());
 		}
 		fail("This line should not have been reached.");
 	}
@@ -168,7 +169,7 @@ public class UnitOfWorkTest {
 		try {
 			uow.readObject(null, entityB.getUri(), descriptor);
 		} finally {
-			verify(cacheManagerMock, never()).get(any(Class.class), any(), any(URI.class));
+			verify(cacheManagerMock, never()).get(any(), any(), any());
 		}
 		fail("This line should not have been reached.");
 	}
@@ -179,7 +180,7 @@ public class UnitOfWorkTest {
 		try {
 			uow.readObject(entityA.getClass(), entityA.getUri(), null);
 		} finally {
-			verify(cacheManagerMock, never()).get(any(Class.class), any(), any(URI.class));
+			verify(cacheManagerMock, never()).get(any(), any(), any());
 		}
 		fail("This line should not have been reached.");
 	}
@@ -211,11 +212,9 @@ public class UnitOfWorkTest {
 
 		ArgumentCaptor<Object> pks = ArgumentCaptor.forClass(Object.class);
 		verify(cacheManagerMock, times(3)).add(pks.capture(), any(Object.class), eq(CONTEXT_URI));
-		final Set<URI> uris = new HashSet<>();
-		for (Object pk : pks.getAllValues()) {
-			uris.add(URI.create(pk.toString()));
-		}
-		assertTrue(uris.contains(entityA.getUri()));
+		final Set<URI> uris = pks.getAllValues().stream().map(pk -> URI.create(pk.toString())).collect(
+                Collectors.toSet());
+        assertTrue(uris.contains(entityA.getUri()));
 		assertTrue(uris.contains(entityB.getUri()));
 		assertTrue(uris.contains(entityD.getUri()));
 	}
