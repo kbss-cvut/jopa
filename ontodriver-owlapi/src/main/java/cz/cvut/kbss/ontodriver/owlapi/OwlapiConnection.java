@@ -22,6 +22,7 @@ import java.util.List;
 public class OwlapiConnection implements Connection {
 
     private boolean open;
+    private boolean autoCommit;
 
     private final OwlapiAdapter adapter;
 
@@ -30,6 +31,7 @@ public class OwlapiConnection implements Connection {
     public OwlapiConnection(OwlapiAdapter adapter) {
         this.adapter = adapter;
         this.open = true;
+        this.autoCommit = false;
     }
 
     void addListener(ConnectionListener listener) {
@@ -44,22 +46,30 @@ public class OwlapiConnection implements Connection {
 
     @Override
     public void commit() throws OntoDriverException {
+        ensureOpen();
+        adapter.commit();
+    }
 
+    private void ensureOpen() {
+        if (!open) {
+            throw new IllegalStateException("Connection is closed.");
+        }
     }
 
     @Override
     public void rollback() throws OntoDriverException {
-
+        ensureOpen();
+        adapter.rollback();
     }
 
     @Override
     public void setAutoCommit(boolean autoCommit) {
-
+        this.autoCommit = autoCommit;
     }
 
     @Override
     public boolean isAutoCommit() {
-        return false;
+        return autoCommit;
     }
 
     @Override
@@ -132,6 +142,7 @@ public class OwlapiConnection implements Connection {
         if (!open) {
             return;
         }
+        listeners.stream().forEach(listener -> listener.connectionClosed(this));
         this.open = false;
     }
 }
