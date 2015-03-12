@@ -5,15 +5,13 @@ import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver.owlapi.exceptions.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by ledvima1 on 26.2.15.
@@ -155,5 +153,10 @@ class OwlapiAdapter {
                 break;
         }
         return owlAxiom;
+    }
+
+    Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
+        // TODO
+        return null;
     }
 }

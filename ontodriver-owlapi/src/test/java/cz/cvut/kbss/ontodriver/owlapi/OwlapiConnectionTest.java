@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -7,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -87,5 +89,25 @@ public class OwlapiConnectionTest {
                 Assertion.createClassAssertion(false), new Value<>(URI.create("http://class")));
         connection.contains(axiom, null);
         verify(adapterMock).containsAxiom(axiom, null);
+    }
+
+    @Test
+    public void testFind() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(
+                NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa#instance"));
+        final Collection<Axiom<?>> axioms = Collections.emptyList();
+        when(adapterMock.find(descriptor)).thenReturn(axioms);
+
+        final Collection<Axiom<?>> res = connection.find(descriptor);
+        assertSame(axioms, res);
+        verify(adapterMock).find(descriptor);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void findOnCloseThrowsIllegalState() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(
+                NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa#instance"));
+        connection.close();
+        connection.find(descriptor);
     }
 }

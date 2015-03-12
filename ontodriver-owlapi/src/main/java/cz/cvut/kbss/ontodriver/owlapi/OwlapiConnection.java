@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Created by ledvima1 on 26.2.15.
+ * Default implementation of the {@link cz.cvut.kbss.ontodriver_new.Connection} interface for OWLAPI driver.
  */
 public class OwlapiConnection implements Connection {
 
@@ -105,7 +105,9 @@ public class OwlapiConnection implements Connection {
 
     @Override
     public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
-        return null;
+        ensureOpen();
+        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        return adapter.find(descriptor);
     }
 
     @Override

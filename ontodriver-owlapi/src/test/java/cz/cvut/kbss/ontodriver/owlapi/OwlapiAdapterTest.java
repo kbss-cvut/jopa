@@ -4,13 +4,14 @@ import com.google.common.base.Optional;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver.owlapi.exceptions.InvalidOntologyIriException;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.*;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
@@ -19,16 +20,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class OwlapiAdapterTest {
+
+    private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#EntityA");
 
     @Mock
     private Connector connectorMock;
@@ -38,6 +37,8 @@ public class OwlapiAdapterTest {
     private OWLOntology ontologyMock;
 
     private OWLDataFactory factory;
+
+    private OntologyStructures realSnapshot;
 
     private OwlapiAdapter adapter;
 
@@ -242,5 +243,33 @@ public class OwlapiAdapterTest {
         final OWLAnnotationAssertionAxiom assertionAxiom = (OWLAnnotationAssertionAxiom) ax;
         assertEquals(axiom.getValue().stringValue(),
                 assertionAxiom.getAnnotation().getValue().asLiteral().get().getLiteral());
+    }
+
+    @Test
+    public void testFindClassAssertions() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(PK));
+        descriptor.addAssertion(Assertion.createClassAssertion(false));
+        final Set<URI> classes = new HashSet<>();
+        for (int i = 0; i < 5; i++) {
+            classes.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Class" + i));
+        }
+        initRealOntology();
+        // TODO
+
+
+        final Collection<Axiom<?>> res = adapter.find(descriptor);
+        assertEquals(classes.size(), res.size());
+        res.stream().forEach(axiom -> {
+            final Object val = axiom.getValue().getValue();
+            assertTrue(val instanceof URI);
+            assertTrue(classes.contains((URI) val));
+        });
+    }
+
+    private void initRealOntology() throws Exception {
+        final OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+        final OWLOntology ontology = manager.createOntology(IRI.create("http://krizik.felk.cvut.cz/ontologies/adapterTest"));
+        this.realSnapshot = new OntologyStructures(ontology, manager, manager.getOWLDataFactory(), null);
+        when(connectorMock.getOntologySnapshot()).thenReturn(realSnapshot);
     }
 }
