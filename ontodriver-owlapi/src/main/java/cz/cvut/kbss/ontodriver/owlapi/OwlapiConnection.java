@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -15,6 +16,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by ledvima1 on 26.2.15.
@@ -84,17 +86,21 @@ public class OwlapiConnection implements Connection {
 
     @Override
     public boolean isConsistent(URI context) throws OntoDriverException {
-        return false;
+        ensureOpen();
+        return adapter.isConsistent(context);
     }
 
     @Override
     public List<URI> getContexts() throws OntoDriverException {
-        return null;
+        ensureOpen();
+        return adapter.getContexts();
     }
 
     @Override
     public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
-        return false;
+        ensureOpen();
+        Objects.requireNonNull(axiom, ErrorUtils.constructNPXMessage("axiom"));
+        return adapter.containsAxiom(axiom, context);
     }
 
     @Override

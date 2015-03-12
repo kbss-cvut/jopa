@@ -55,7 +55,7 @@ class OwlapiDriver implements Closeable, ConnectionListener {
     Connection acquireConnection() throws OntoDriverException {
         assert open;
         final OwlapiAdapter adapter = new OwlapiAdapter(
-                ConnectorFactory.getInstance(storageProperties, properties).getConnector());
+                ConnectorFactory.getInstance(storageProperties, properties).getConnector(), properties);
         final OwlapiConnection c = new OwlapiConnection(adapter);
         openConnections.add(c);
         c.addListener(this);
