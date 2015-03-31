@@ -527,6 +527,7 @@ public class OwlapiAdapterTest {
         when(reasonerMock.getObjectPropertyValues(factory.getOWLNamedIndividual(IRI.create(PK)),
                 factory.getOWLObjectProperty(IRI.create(property)))).thenReturn(
                 prepareIndividualsFromUris(values));
+        when(reasonerMock.getTypes(factory.getOWLNamedIndividual(IRI.create(PK)), false)).thenReturn(new OWLClassNodeSet());
 
         final Collection<Axiom<?>> res = adapter.find(descriptor);
         verifyUriAxioms(values, res);

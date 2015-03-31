@@ -7,6 +7,7 @@ import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
@@ -27,7 +28,7 @@ class OwlapiAdapter {
     private TransactionState transactionState = TransactionState.INITIAL;
     private List<OWLOntologyChange> pendingChanges = new ArrayList<>();
 
-    private static enum TransactionState {
+    private enum TransactionState {
         INITIAL, RUNNING
     }
 
@@ -111,50 +112,80 @@ class OwlapiAdapter {
         if (!isContextValid(context)) {
             return false;
         }
-        final OWLAxiom owlAxiom = getOwlAxiom(axiom);
-        if (axiom.getAssertion().isInferred()) {
-            return reasoner().isEntailed(owlAxiom);
-        } else {
-            return ontology().containsAxiom(owlAxiom);
+        final Collection<OWLAxiom> owlAxiom = asOwlAxioms(axiom);
+        boolean contains;
+        for (OWLAxiom ax : owlAxiom) {
+            if (axiom.getAssertion().isInferred()) {
+                contains = reasoner().isEntailed(ax);
+            } else {
+                contains = ontology().containsAxiom(ax);
+            }
+            if (contains) {
+                return true;
+            }
         }
+        return false;
     }
 
-    private OWLAxiom getOwlAxiom(Axiom<?> axiom) {
-        final OWLNamedIndividual individual = dataFactory().getOWLNamedIndividual(
-                IRI.create(axiom.getSubject().getIdentifier()));
-        OWLAxiom owlAxiom = null;
+    private Collection<OWLAxiom> asOwlAxioms(Axiom<?> axiom) {
+        final Collection<OWLAxiom> owlAxioms = new ArrayList<>(3);
         switch (axiom.getAssertion().getType()) {
             case CLASS:
-                final OWLClass owlClass = dataFactory().getOWLClass(IRI.create(axiom.getValue().stringValue()));
-                owlAxiom = dataFactory().getOWLClassAssertionAxiom(owlClass, individual);
+                owlAxioms.add(asClassAssertionAxiom(axiom));
                 break;
             case PROPERTY:
-                // TODO
+                owlAxioms.add(asClassAssertionAxiom(axiom));
+                owlAxioms.add(asObjectAxiom(axiom));
+                owlAxioms.add(asDataAxiom(axiom));
+                owlAxioms.add(asAnnotationAxiom(axiom));
                 break;
             case OBJECT_PROPERTY:
-                final OWLObjectProperty objectProperty = dataFactory().getOWLObjectProperty(
-                        IRI.create(axiom.getAssertion().getIdentifier()));
-                final OWLNamedIndividual objectValue = dataFactory().getOWLNamedIndividual(
-                        IRI.create(axiom.getValue().stringValue()));
-                owlAxiom = dataFactory().getOWLObjectPropertyAssertionAxiom(objectProperty, individual, objectValue);
+                owlAxioms.add(asObjectAxiom(axiom));
                 break;
             case DATA_PROPERTY:
-                final OWLDataProperty dataProperty = dataFactory().getOWLDataProperty(
-                        IRI.create(axiom.getAssertion().getIdentifier()));
-                final OWLLiteral dataValue = OwlapiUtils.createOWLLiteralFromValue(axiom.getValue().getValue(),
-                        dataFactory(), language);
-                owlAxiom = dataFactory().getOWLDataPropertyAssertionAxiom(dataProperty, individual, dataValue);
+                owlAxioms.add(asDataAxiom(axiom));
                 break;
             case ANNOTATION_PROPERTY:
-                final OWLAnnotationProperty annotationProperty = dataFactory().getOWLAnnotationProperty(IRI.create(
-                        axiom.getAssertion().getIdentifier()));
-                final OWLAnnotationValue annotationValue = OwlapiUtils.createOWLLiteralFromValue(
-                        axiom.getValue().getValue(), dataFactory(), language);
-                owlAxiom = dataFactory().getOWLAnnotationAssertionAxiom(annotationProperty, individual.getIRI(),
-                        annotationValue);
+                owlAxioms.add(asAnnotationAxiom(axiom));
                 break;
         }
-        return owlAxiom;
+        return owlAxioms;
+    }
+
+    private OWLAxiom asClassAssertionAxiom(Axiom<?> axiom) {
+        final OWLClass owlClass = dataFactory().getOWLClass(IRI.create(axiom.getValue().stringValue()));
+        return dataFactory().getOWLClassAssertionAxiom(owlClass, individual(axiom.getSubject()));
+    }
+
+    private OWLAxiom asObjectAxiom(Axiom<?> axiom) {
+        final OWLObjectProperty objectProperty = dataFactory().getOWLObjectProperty(
+                IRI.create(axiom.getAssertion().getIdentifier()));
+        final OWLNamedIndividual objectValue = dataFactory().getOWLNamedIndividual(
+                IRI.create(axiom.getValue().stringValue()));
+        return dataFactory().getOWLObjectPropertyAssertionAxiom(objectProperty, individual(axiom.getSubject()),
+                objectValue);
+    }
+
+    private OWLAxiom asDataAxiom(Axiom<?> axiom) {
+        final OWLDataProperty dataProperty = dataFactory().getOWLDataProperty(
+                IRI.create(axiom.getAssertion().getIdentifier()));
+        final OWLLiteral dataValue = OwlapiUtils.createOWLLiteralFromValue(axiom.getValue().getValue(),
+                dataFactory(), language);
+        return dataFactory().getOWLDataPropertyAssertionAxiom(dataProperty, individual(axiom.getSubject()), dataValue);
+    }
+
+    private OWLAxiom asAnnotationAxiom(Axiom<?> axiom) {
+        final OWLAnnotationProperty annotationProperty = dataFactory().getOWLAnnotationProperty(IRI.create(
+                axiom.getAssertion().getIdentifier()));
+        final OWLAnnotationValue annotationValue = OwlapiUtils.createOWLLiteralFromValue(
+                axiom.getValue().getValue(), dataFactory(), language);
+        return dataFactory().getOWLAnnotationAssertionAxiom(annotationProperty, individual(axiom.getSubject()).getIRI(),
+                annotationValue);
+    }
+
+    private OWLNamedIndividual individual(NamedResource subject) {
+        return dataFactory().getOWLNamedIndividual(
+                IRI.create(subject.getIdentifier()));
     }
 
     Collection<Axiom<?>> find(AxiomDescriptor descriptor) {

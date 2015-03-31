@@ -72,7 +72,8 @@ class AxiomLoader {
                     axioms.addAll(inferObjectPropertyValues(individual, a));
                     break;
                 case PROPERTY:
-                    // When we don't know, try both
+                    // When we don't know, try all
+                    axioms.addAll(owlClassesToAxioms(subject, inferTypes(individual)));
                     axioms.addAll(inferDataPropertyValues(individual, a));
                     axioms.addAll(inferObjectPropertyValues(individual, a));
                     break;
