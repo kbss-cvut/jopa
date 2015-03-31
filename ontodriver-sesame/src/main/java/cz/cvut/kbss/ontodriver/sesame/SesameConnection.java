@@ -54,12 +54,12 @@ class SesameConnection implements Connection {
         this.properties = properties;
     }
 
-    void registerListener(ConnectionListener listener) {
+    void addListener(ConnectionListener listener) {
 		assert listener != null;
 		listeners.add(listener);
 	}
 
-	void deregisterListener(ConnectionListener listener) {
+	void removeListener(ConnectionListener listener) {
 		assert listener != null;
 		listeners.remove(listener);
 	}

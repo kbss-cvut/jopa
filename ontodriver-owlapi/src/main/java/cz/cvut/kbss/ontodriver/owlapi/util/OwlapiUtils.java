@@ -4,6 +4,8 @@ import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
+import java.net.URI;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -15,15 +17,11 @@ public class OwlapiUtils {
     /**
      * Creates OWLLiteral from the specified Java instance.
      *
-     * @param value
-     *            The value to transform
-     * @param dataFactory
-     *            Data factory
-     * @param lang
-     *            Ontology language
+     * @param value       The value to transform
+     * @param dataFactory Data factory
+     * @param lang        Ontology language
      * @return OWLLiteral representing the value
-     * @throws IllegalArgumentException
-     *             If {@code value} is of unsupported type
+     * @throws IllegalArgumentException If {@code value} is of unsupported type
      */
     public static OWLLiteral createOWLLiteralFromValue(Object value, OWLDataFactory dataFactory,
                                                        String lang) {
@@ -42,5 +40,51 @@ public class OwlapiUtils {
         } else {
             throw new IllegalArgumentException();
         }
+    }
+
+    /**
+     * Transforms OWLLiteral to a plain Java object (boxed primitive or date/time).
+     *
+     * @param literal The literal to transform
+     * @return Transformed value
+     * @throws IllegalArgumentException If the literal is of unsupported type
+     */
+    public static Object owlLiteralToValue(final OWLLiteral literal) {
+        if (literal.isRDFPlainLiteral()) {
+            return literal.getLiteral();
+        } else if (literal.getDatatype().isBuiltIn())
+            switch (literal.getDatatype().getBuiltInDatatype()) {
+                case XSD_SHORT:
+                    return Short.parseShort(literal.getLiteral());
+                case XSD_LONG:
+                    return Long.parseLong(literal.getLiteral());
+                case XSD_INT:
+                case XSD_INTEGER:
+                    return Integer.parseInt(literal.getLiteral());
+                case XSD_DOUBLE:
+                case XSD_DECIMAL:
+                    return Double.parseDouble(literal.getLiteral());
+                case XSD_FLOAT:
+                    return Float.parseFloat(literal.getLiteral());
+                case XSD_STRING:
+                case RDF_XML_LITERAL:
+                    return literal.getLiteral();
+                case XSD_BOOLEAN:
+                    return Boolean.parseBoolean(literal.getLiteral());
+                case XSD_ANY_URI:
+                    return URI.create(literal.getLiteral());
+                case XSD_DATE_TIME_STAMP:
+                case XSD_DATE_TIME:
+                    try {
+                        return new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss")
+                                .parse(literal.getLiteral());
+                    } catch (ParseException e) {
+                        throw new IllegalArgumentException("The date time '"
+                                + literal.getLiteral() + "' cannot be parsed");
+                    }
+            }
+
+        throw new IllegalArgumentException("Unsupported datatype: "
+                + literal.getDatatype());
     }
 }

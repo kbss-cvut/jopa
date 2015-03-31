@@ -13,10 +13,7 @@ import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Default implementation of the {@link cz.cvut.kbss.ontodriver_new.Connection} interface for OWLAPI driver.
@@ -28,7 +25,7 @@ public class OwlapiConnection implements Connection {
 
     private final OwlapiAdapter adapter;
 
-    private final List<ConnectionListener> listeners = new ArrayList<>(4);
+    private final Set<ConnectionListener> listeners = new HashSet<>(4);
 
     public OwlapiConnection(OwlapiAdapter adapter) {
         this.adapter = adapter;
@@ -39,6 +36,11 @@ public class OwlapiConnection implements Connection {
     void addListener(ConnectionListener listener) {
         assert listener != null;
         listeners.add(listener);
+    }
+
+    void removeListener(ConnectionListener listener) {
+        assert listener != null;
+        listeners.remove(listener);
     }
 
     @Override

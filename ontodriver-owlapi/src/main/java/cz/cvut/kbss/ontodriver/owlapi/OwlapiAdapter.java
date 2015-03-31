@@ -14,7 +14,9 @@ import java.net.URI;
 import java.util.*;
 
 /**
- * Created by ledvima1 on 26.2.15.
+ * Adapter between OntoDriver API and OWLAPI.
+ *
+ * @author ledvima1
  */
 class OwlapiAdapter {
 
@@ -156,7 +158,7 @@ class OwlapiAdapter {
     }
 
     Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
-        // TODO
-        return null;
+        startTransactionIfNotActive();
+        return new AxiomLoader(ontologySnapshot).findAxioms(descriptor);
     }
 }

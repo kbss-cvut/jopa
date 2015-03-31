@@ -78,7 +78,6 @@ public class OntologyStorageProperties {
 	 * @throws NullPointerException
 	 *             If {@code physicalUri} or {@code connectorType} is
 	 *             {@code null}
-	 * @see #OntologyStorageProperties(URI, URI)
 	 */
 	public OntologyStorageProperties(URI ontologyUri, URI physicalUri,
 			OntologyConnectorType connectorType, String username, String password) {

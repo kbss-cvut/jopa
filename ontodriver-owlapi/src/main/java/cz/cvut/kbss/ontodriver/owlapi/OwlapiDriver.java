@@ -20,7 +20,7 @@ class OwlapiDriver implements Closeable, ConnectionListener {
     private final Map<String, String> properties;
     private boolean open = true;
 
-    private final Set<Connection> openConnections = new HashSet<>();
+    private final Set<OwlapiConnection> openConnections = new HashSet<>();
 
     OwlapiDriver(OntologyStorageProperties storageProperties, Map<String, String> properties) {
         this.storageProperties = storageProperties;
@@ -32,8 +32,9 @@ class OwlapiDriver implements Closeable, ConnectionListener {
         if (!open) {
             return;
         }
-        for (Connection c : openConnections) {
+        for (OwlapiConnection c : openConnections) {
             try {
+                c.removeListener(this);
                 c.close();
             } catch (Exception e) {
                 if (e instanceof OntoDriverException) {

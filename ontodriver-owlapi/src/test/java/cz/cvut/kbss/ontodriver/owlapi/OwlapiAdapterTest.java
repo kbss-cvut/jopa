@@ -7,13 +7,24 @@ import cz.cvut.kbss.ontodriver.owlapi.exceptions.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.reasoner.Node;
+import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.reasoner.impl.OWLClassNode;
+import org.semanticweb.owlapi.reasoner.impl.OWLClassNodeSet;
+import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNode;
+import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNodeSet;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
 import java.lang.reflect.Field;
@@ -21,6 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -35,6 +47,8 @@ public class OwlapiAdapterTest {
     private OntologyStructures snapshotMock;
     @Mock
     private OWLOntology ontologyMock;
+    @Mock
+    private OWLReasoner reasonerMock;
 
     private OWLDataFactory factory;
 
@@ -49,6 +63,7 @@ public class OwlapiAdapterTest {
         when(snapshotMock.getOntology()).thenReturn(ontologyMock);
         this.factory = new OWLDataFactoryImpl();
         when(snapshotMock.getDataFactory()).thenReturn(factory);
+        when(snapshotMock.getReasoner()).thenReturn(reasonerMock);
 
         this.adapter = new OwlapiAdapter(connectorMock, Collections.emptyMap());
     }
@@ -246,6 +261,15 @@ public class OwlapiAdapterTest {
     }
 
     @Test
+    public void findReturnsEmptyCollectionWhenIndividualIsNotInOntologySignature() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(PK));
+        descriptor.addAssertion(Assertion.createClassAssertion(false));
+        initRealOntology();
+        final Collection<Axiom<?>> res = adapter.find(descriptor);
+        assertTrue(res.isEmpty());
+    }
+
+    @Test
     public void testFindClassAssertions() throws Exception {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(PK));
         descriptor.addAssertion(Assertion.createClassAssertion(false));
@@ -254,22 +278,257 @@ public class OwlapiAdapterTest {
             classes.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Class" + i));
         }
         initRealOntology();
-        // TODO
-
+        addClassAssertionsToOntology(PK, classes);
 
         final Collection<Axiom<?>> res = adapter.find(descriptor);
-        assertEquals(classes.size(), res.size());
+        verifyUriAxioms(classes, res);
+    }
+
+    private void verifyUriAxioms(Set<URI> uris, Collection<Axiom<?>> res) {
+        assertEquals(uris.size(), res.size());
         res.stream().forEach(axiom -> {
             final Object val = axiom.getValue().getValue();
             assertTrue(val instanceof URI);
-            assertTrue(classes.contains((URI) val));
+            assertTrue(uris.contains((URI) val));
         });
     }
 
     private void initRealOntology() throws Exception {
         final OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        final OWLOntology ontology = manager.createOntology(IRI.create("http://krizik.felk.cvut.cz/ontologies/adapterTest"));
-        this.realSnapshot = new OntologyStructures(ontology, manager, manager.getOWLDataFactory(), null);
+        final OWLOntology ontology = manager.createOntology(
+                IRI.create("http://krizik.felk.cvut.cz/ontologies/adapterTest"));
+        this.realSnapshot = new OntologyStructures(ontology, manager, manager.getOWLDataFactory(), reasonerMock);
         when(connectorMock.getOntologySnapshot()).thenReturn(realSnapshot);
+    }
+
+    private void addClassAssertionsToOntology(URI subject, Collection<URI> classes) {
+        final OWLNamedIndividual individual = realSnapshot.getDataFactory().getOWLNamedIndividual(IRI.create(subject));
+        classes.stream().forEach(uri -> {
+            final OWLClass cls = realSnapshot.getDataFactory().getOWLClass(IRI.create(uri));
+            final OWLClassAssertionAxiom a = realSnapshot.getDataFactory().getOWLClassAssertionAxiom(cls, individual);
+            realSnapshot.getOntologyManager().applyChange(new AddAxiom(realSnapshot.getOntology(), a));
+        });
+    }
+
+    @Test
+    public void testFindDataPropertyAssertions() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(PK));
+        initRealOntology();
+        final URI dataProperty = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute");
+        descriptor.addAssertion(Assertion.createDataPropertyAssertion(dataProperty, false));
+        final Set<String> values = new HashSet<>(Arrays.asList("stringOne", "stringTwo"));
+        addDataPropertyAssertionsToOntology(PK, Collections.singletonMap(dataProperty, values));
+
+        final Collection<Axiom<?>> res = adapter.find(descriptor);
+        verifyDataPropertyAxioms(values, res);
+    }
+
+    private void verifyDataPropertyAxioms(Set<String> values, Collection<Axiom<?>> res) {
+        assertEquals(values.size(), res.size());
+        res.stream().forEach(ax -> {
+            final Object val = ax.getValue().getValue();
+            assertTrue(values.contains(val.toString()));
+        });
+    }
+
+    private void addDataPropertyAssertionsToOntology(URI subject, Map<URI, Collection<?>> values) {
+        final OWLNamedIndividual individual = realSnapshot.getDataFactory().getOWLNamedIndividual(IRI.create(subject));
+        for (Map.Entry<URI, Collection<?>> e : values.entrySet()) {
+            final OWLDataProperty dp = realSnapshot.getDataFactory().getOWLDataProperty(IRI.create(e.getKey()));
+            e.getValue().stream().forEach(value -> {
+                final OWLDataPropertyAssertionAxiom a = realSnapshot.getDataFactory().getOWLDataPropertyAssertionAxiom(
+                        dp, individual, value.toString());
+                realSnapshot.getOntologyManager().applyChange(new AddAxiom(realSnapshot.getOntology(), a));
+            });
+        }
+    }
+
+    @Test
+    public void testFindObjectPropertyAssertions() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(PK));
+        initRealOntology();
+        final URI objectProperty = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA");
+        descriptor.addAssertion(Assertion.createObjectPropertyAssertion(objectProperty, false));
+        final Set<URI> values = new HashSet<>();
+        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
+        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
+        addObjectPropertyAssertionsToOntology(PK, Collections.singletonMap(objectProperty, values));
+
+        final Collection<Axiom<?>> res = adapter.find(descriptor);
+        verifyUriAxioms(values, res);
+    }
+
+    private void addObjectPropertyAssertionsToOntology(URI subject, Map<URI, Collection<URI>> values) {
+        final OWLNamedIndividual individual = realSnapshot.getDataFactory().getOWLNamedIndividual(IRI.create(subject));
+        for (Map.Entry<URI, Collection<URI>> e : values.entrySet()) {
+            final OWLObjectProperty op = realSnapshot.getDataFactory().getOWLObjectProperty(IRI.create(e.getKey()));
+            e.getValue().stream().forEach(value -> {
+                final OWLNamedIndividual target = realSnapshot.getDataFactory().getOWLNamedIndividual(
+                        IRI.create(value));
+                final OWLObjectPropertyAssertionAxiom a = realSnapshot.getDataFactory().getOWLObjectPropertyAssertionAxiom(
+                        op, individual, target);
+                realSnapshot.getOntologyManager().applyChange(new AddAxiom(realSnapshot.getOntology(), a));
+            });
+        }
+    }
+
+    @Test
+    public void testFindAnnotationPropertyAssertions() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(PK));
+        initRealOntology();
+        final URI annotationProperty = URI.create(
+                "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationLabel");
+        descriptor.addAssertion(Assertion.createAnnotationPropertyAssertion(annotationProperty, false));
+        final Set<Object> values = new HashSet<>(Arrays.asList("labelOne", "labelTwo"));
+        addAnnotationPropertyAssertionsToOntology(PK, Collections.singletonMap(annotationProperty, values));
+        // This just makes sure that the individual exists in the ontology
+        addClassAssertionsToOntology(PK,
+                Collections.singleton(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
+
+        final Collection<Axiom<?>> res = adapter.find(descriptor);
+        assertEquals(values.size() + 1, res.size());
+        res.stream().filter(ax -> ax.getAssertion().getType() == Assertion.AssertionType.ANNOTATION_PROPERTY)
+                .forEach(
+                        ax -> {
+                            final Object val = ax.getValue().getValue();
+                            assertTrue(values.contains(val.toString()));
+                        });
+    }
+
+    private void addAnnotationPropertyAssertionsToOntology(URI subject, Map<URI, Collection<Object>> values) {
+        final OWLNamedIndividual individual = realSnapshot.getDataFactory().getOWLNamedIndividual(IRI.create(subject));
+        for (Map.Entry<URI, Collection<Object>> e : values.entrySet()) {
+            final OWLAnnotationProperty ap = realSnapshot.getDataFactory().getOWLAnnotationProperty(IRI.create(
+                    e.getKey()));
+            e.getValue().stream().forEach(value -> {
+                OWLAnnotationValue annotationValue;
+                if (value instanceof URI) {
+                    annotationValue = IRI.create((URI) value);
+                } else {
+                    annotationValue = realSnapshot.getDataFactory().getOWLLiteral(value.toString());
+                }
+                final OWLAnnotationAssertionAxiom a = realSnapshot.getDataFactory().getOWLAnnotationAssertionAxiom(ap,
+                        individual.getIRI(), annotationValue);
+                realSnapshot.getOntologyManager().applyChange(new AddAxiom(realSnapshot.getOntology(), a));
+            });
+        }
+    }
+
+    @Test
+    public void testFindMultipleAssertions() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(PK));
+        initRealOntology();
+        descriptor.addAssertion(Assertion.createClassAssertion(false));
+        final Set<URI> classes = new HashSet<>();
+        classes.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"));
+        addClassAssertionsToOntology(PK, classes);
+        final URI dataProperty = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute");
+        descriptor.addAssertion(Assertion.createDataPropertyAssertion(dataProperty, false));
+        final Set<String> dpValues = new HashSet<>(Arrays.asList("stringOne", "stringTwo"));
+        addDataPropertyAssertionsToOntology(PK, Collections.singletonMap(dataProperty, dpValues));
+        final URI objectProperty = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA");
+        descriptor.addAssertion(Assertion.createObjectPropertyAssertion(objectProperty, false));
+        final Set<URI> opValues = new HashSet<>();
+        opValues.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
+        opValues.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
+        addObjectPropertyAssertionsToOntology(PK, Collections.singletonMap(objectProperty, opValues));
+        final URI annotationProperty = URI.create(
+                "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationLabel");
+        descriptor.addAssertion(Assertion.createAnnotationPropertyAssertion(annotationProperty, false));
+        final Set<Object> apValues = new HashSet<>(Arrays.asList("labelOne", "labelTwo"));
+        addAnnotationPropertyAssertionsToOntology(PK, Collections.singletonMap(annotationProperty, apValues));
+
+        final Collection<Axiom<?>> res = adapter.find(descriptor);
+        assertEquals(classes.size() + dpValues.size() + opValues.size() + apValues.size(), res.size());
+    }
+
+    @Test
+    public void testFindClassAssertionsWithInferred() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(PK));
+        initRealOntology();
+        descriptor.addAssertion(Assertion.createClassAssertion(false));
+        descriptor.addAssertion(Assertion.createClassAssertion(true));
+        final Set<URI> classes = new HashSet<>();
+        classes.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"));
+        addClassAssertionsToOntology(PK, classes);
+        classes.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX"));
+        classes.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassY"));
+        when(reasonerMock.getTypes(factory.getOWLNamedIndividual(IRI.create(PK)), false)).thenReturn(
+                typesFromClasses(classes));
+
+        final Collection<Axiom<?>> res = adapter.find(descriptor);
+        verifyUriAxioms(classes, res);
+    }
+
+    private NodeSet<OWLClass> typesFromClasses(Set<URI> classes) {
+        final Set<Node<OWLClass>> owlClasses = new HashSet<>(classes.size());
+        classes.stream().forEach(cls -> owlClasses.add(new OWLClassNode(factory.getOWLClass(IRI.create(cls)))));
+        return new OWLClassNodeSet(owlClasses);
+    }
+
+    @Test
+    public void testFindDataPropertyAssertionsWithInferred() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(PK));
+        initRealOntology();
+        final URI dataProperty = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute");
+        descriptor.addAssertion(Assertion.createDataPropertyAssertion(dataProperty, true));
+        final Set<String> values = new HashSet<>(Arrays.asList("stringOne", "stringTwo"));
+        addDataPropertyAssertionsToOntology(PK, Collections.singletonMap(dataProperty, values));
+        values.add("stringThree");
+        when(reasonerMock.getDataPropertyValues(factory.getOWLNamedIndividual(IRI.create(PK)),
+                factory.getOWLDataProperty(IRI.create(dataProperty)))).thenReturn(prepareLiteralsFromValues(values));
+
+        final Collection<Axiom<?>> res = adapter.find(descriptor);
+        verifyDataPropertyAxioms(values, res);
+    }
+
+    private Set<OWLLiteral> prepareLiteralsFromValues(Set<String> values) {
+        return values.stream().map(factory::getOWLLiteral).collect(Collectors.toSet());
+    }
+
+    @Test
+    public void testFindObjectPropertyAssertionsWithInferred() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(PK));
+        initRealOntology();
+        final URI objectProperty = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA");
+        descriptor.addAssertion(Assertion.createObjectPropertyAssertion(objectProperty, true));
+        final Set<URI> values = new HashSet<>();
+        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
+        addObjectPropertyAssertionsToOntology(PK, Collections.singletonMap(objectProperty, values));
+        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
+        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA3"));
+        when(reasonerMock.getObjectPropertyValues(factory.getOWLNamedIndividual(IRI.create(PK)),
+                factory.getOWLObjectProperty(IRI.create(objectProperty)))).thenReturn(
+                prepareIndividualsFromUris(values));
+
+        final Collection<Axiom<?>> res = adapter.find(descriptor);
+        verifyUriAxioms(values, res);
+    }
+
+    private NodeSet<OWLNamedIndividual> prepareIndividualsFromUris(Set<URI> uris) {
+        final Set<Node<OWLNamedIndividual>> nodes = uris.stream().map(
+                uri -> new OWLNamedIndividualNode(factory.getOWLNamedIndividual(IRI.create(uri)))).collect(
+                Collectors.toSet());
+        return new OWLNamedIndividualNodeSet(nodes);
+    }
+
+    @Test
+    public void testFindUntypedPropertyAssertionWithInferred() throws Exception {
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(PK));
+        initRealOntology();
+        final URI property = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA");
+        // The property is object property, but the descriptor does not specify that so it will be treated as unspecified type
+        descriptor.addAssertion(Assertion.createPropertyAssertion(property, true));
+        final Set<URI> values = new HashSet<>();
+        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
+        addObjectPropertyAssertionsToOntology(PK, Collections.singletonMap(property, values));
+        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
+        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA3"));
+        when(reasonerMock.getObjectPropertyValues(factory.getOWLNamedIndividual(IRI.create(PK)),
+                factory.getOWLObjectProperty(IRI.create(property)))).thenReturn(
+                prepareIndividualsFromUris(values));
+
+        final Collection<Axiom<?>> res = adapter.find(descriptor);
+        verifyUriAxioms(values, res);
     }
 }
