@@ -136,7 +136,8 @@ class AxiomLoader {
         final Set<OWLNamedIndividual> individuals = reasoner.getObjectPropertyValues(individual,
                 objectProperty(opAssertion)).getFlattened();
         return individuals.stream().map(
-                target -> new AxiomImpl<>(subject, opAssertion, new Value<>(target.getIRI().toURI()))).collect(
+                target -> new AxiomImpl<>(subject, opAssertion,
+                        new Value<>(NamedResource.create(target.getIRI().toURI())))).collect(
                 Collectors.toSet());
     }
 
@@ -152,8 +153,9 @@ class AxiomLoader {
             if (skipAssertion(ass)) {
                 continue;
             }
+            final IRI target = assertion.getObject().asOWLNamedIndividual().getIRI();
             axioms.add(new AxiomImpl<>(descriptor.getSubject(), ass,
-                    new Value<>(assertion.getObject().asOWLNamedIndividual().getIRI().toURI())));
+                    new Value<>(NamedResource.create(target.toURI()))));
         }
         return axioms;
     }

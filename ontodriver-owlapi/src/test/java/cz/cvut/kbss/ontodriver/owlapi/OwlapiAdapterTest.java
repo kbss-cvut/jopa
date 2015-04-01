@@ -4,8 +4,11 @@ import com.google.common.base.Optional;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver.owlapi.exceptions.InvalidOntologyIriException;
+import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.*;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -14,10 +17,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
-import org.semanticweb.owlapi.model.OWLAnnotationProperty;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.reasoner.Node;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
@@ -25,6 +24,7 @@ import org.semanticweb.owlapi.reasoner.impl.OWLClassNode;
 import org.semanticweb.owlapi.reasoner.impl.OWLClassNodeSet;
 import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNode;
 import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNodeSet;
+import org.semanticweb.owlapi.search.EntitySearcher;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
 import java.lang.reflect.Field;
@@ -349,27 +349,36 @@ public class OwlapiAdapterTest {
         initRealOntology();
         final URI objectProperty = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA");
         descriptor.addAssertion(Assertion.createObjectPropertyAssertion(objectProperty, false));
-        final Set<URI> values = new HashSet<>();
-        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
-        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
+        final Set<NamedResource> values = new HashSet<>();
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
         addObjectPropertyAssertionsToOntology(PK, Collections.singletonMap(objectProperty, values));
 
         final Collection<Axiom<?>> res = adapter.find(descriptor);
-        verifyUriAxioms(values, res);
+        verifyObjectPropertyAxioms(values, res);
     }
 
-    private void addObjectPropertyAssertionsToOntology(URI subject, Map<URI, Collection<URI>> values) {
+    private void addObjectPropertyAssertionsToOntology(URI subject, Map<URI, Collection<NamedResource>> values) {
         final OWLNamedIndividual individual = realSnapshot.getDataFactory().getOWLNamedIndividual(IRI.create(subject));
-        for (Map.Entry<URI, Collection<URI>> e : values.entrySet()) {
+        for (Map.Entry<URI, Collection<NamedResource>> e : values.entrySet()) {
             final OWLObjectProperty op = realSnapshot.getDataFactory().getOWLObjectProperty(IRI.create(e.getKey()));
             e.getValue().stream().forEach(value -> {
                 final OWLNamedIndividual target = realSnapshot.getDataFactory().getOWLNamedIndividual(
-                        IRI.create(value));
+                        IRI.create(value.getIdentifier()));
                 final OWLObjectPropertyAssertionAxiom a = realSnapshot.getDataFactory().getOWLObjectPropertyAssertionAxiom(
                         op, individual, target);
                 realSnapshot.getOntologyManager().applyChange(new AddAxiom(realSnapshot.getOntology(), a));
             });
         }
+    }
+
+    private void verifyObjectPropertyAxioms(Set<NamedResource> values, Collection<Axiom<?>> axioms) {
+        assertEquals(values.size(), axioms.size());
+        axioms.stream().forEach(axiom -> {
+            final Object val = axiom.getValue().getValue();
+            assertTrue(val instanceof NamedResource);
+            assertTrue(values.contains((NamedResource) val));
+        });
     }
 
     @Test
@@ -428,9 +437,9 @@ public class OwlapiAdapterTest {
         addDataPropertyAssertionsToOntology(PK, Collections.singletonMap(dataProperty, dpValues));
         final URI objectProperty = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA");
         descriptor.addAssertion(Assertion.createObjectPropertyAssertion(objectProperty, false));
-        final Set<URI> opValues = new HashSet<>();
-        opValues.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
-        opValues.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
+        final Set<NamedResource> opValues = new HashSet<>();
+        opValues.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
+        opValues.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
         addObjectPropertyAssertionsToOntology(PK, Collections.singletonMap(objectProperty, opValues));
         final URI annotationProperty = URI.create(
                 "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationLabel");
@@ -492,22 +501,23 @@ public class OwlapiAdapterTest {
         initRealOntology();
         final URI objectProperty = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA");
         descriptor.addAssertion(Assertion.createObjectPropertyAssertion(objectProperty, true));
-        final Set<URI> values = new HashSet<>();
-        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
+        final Set<NamedResource> values = new HashSet<>();
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
         addObjectPropertyAssertionsToOntology(PK, Collections.singletonMap(objectProperty, values));
-        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
-        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA3"));
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA3"));
         when(reasonerMock.getObjectPropertyValues(factory.getOWLNamedIndividual(IRI.create(PK)),
                 factory.getOWLObjectProperty(IRI.create(objectProperty)))).thenReturn(
                 prepareIndividualsFromUris(values));
 
         final Collection<Axiom<?>> res = adapter.find(descriptor);
-        verifyUriAxioms(values, res);
+        verifyObjectPropertyAxioms(values, res);
     }
 
-    private NodeSet<OWLNamedIndividual> prepareIndividualsFromUris(Set<URI> uris) {
+    private NodeSet<OWLNamedIndividual> prepareIndividualsFromUris(Set<NamedResource> uris) {
         final Set<Node<OWLNamedIndividual>> nodes = uris.stream().map(
-                uri -> new OWLNamedIndividualNode(factory.getOWLNamedIndividual(IRI.create(uri)))).collect(
+                resource -> new OWLNamedIndividualNode(
+                        factory.getOWLNamedIndividual(IRI.create(resource.getIdentifier())))).collect(
                 Collectors.toSet());
         return new OWLNamedIndividualNodeSet(nodes);
     }
@@ -519,17 +529,152 @@ public class OwlapiAdapterTest {
         final URI property = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA");
         // The property is object property, but the descriptor does not specify that so it will be treated as unspecified type
         descriptor.addAssertion(Assertion.createPropertyAssertion(property, true));
-        final Set<URI> values = new HashSet<>();
-        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
+        final Set<NamedResource> values = new HashSet<>();
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
         addObjectPropertyAssertionsToOntology(PK, Collections.singletonMap(property, values));
-        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
-        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA3"));
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA3"));
         when(reasonerMock.getObjectPropertyValues(factory.getOWLNamedIndividual(IRI.create(PK)),
                 factory.getOWLObjectProperty(IRI.create(property)))).thenReturn(
                 prepareIndividualsFromUris(values));
-        when(reasonerMock.getTypes(factory.getOWLNamedIndividual(IRI.create(PK)), false)).thenReturn(new OWLClassNodeSet());
+        when(reasonerMock.getTypes(factory.getOWLNamedIndividual(IRI.create(PK)), false)).thenReturn(
+                new OWLClassNodeSet());
 
         final Collection<Axiom<?>> res = adapter.find(descriptor);
-        verifyUriAxioms(values, res);
+        verifyObjectPropertyAxioms(values, res);
+    }
+
+    @Test
+    public void testPersistIndividualWithTypes() throws Exception {
+        initRealOntology();
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(NamedResource.create(PK));
+        final Assertion typesAssertion = Assertion.createClassAssertion(false);
+        descriptor.addAssertion(typesAssertion);
+        final Set<URI> types = new HashSet<>();
+        types.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA"));
+        types.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX"));
+        types.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassY"));
+        types.stream().forEach(type -> descriptor.addAssertionValue(typesAssertion, new Value<>(type)));
+
+        adapter.persist(descriptor);
+        verifyTypesInOntology(types);
+    }
+
+    private void verifyTypesInOntology(Set<URI> types) {
+        final Collection<OWLClassExpression> ontoTypes = EntitySearcher.getTypes(
+                individual(), realSnapshot.getOntology());
+        assertEquals(types.size(), ontoTypes.size());
+        ontoTypes.forEach(owlClass -> {
+            final URI uri = owlClass.asOWLClass().getIRI().toURI();
+            assertTrue(types.contains(uri));
+        });
+    }
+
+    private OWLNamedIndividual individual() {
+        return factory.getOWLNamedIndividual(IRI.create(PK));
+    }
+
+    @Test
+    public void testPersistIndividualWithDataProperty() throws Exception {
+        initRealOntology();
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(NamedResource.create(PK));
+        final Assertion dpAssertion = Assertion.createDataPropertyAssertion(
+                URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-dataAttribute"), false);
+        final Set<Object> values = new HashSet<>();
+        values.add("StringValue");
+        values.add(1111);
+        values.add(3.14159D);
+        descriptor.addAssertion(dpAssertion);
+        values.forEach(value -> descriptor.addAssertionValue(dpAssertion, new Value<>(value)));
+
+        adapter.persist(descriptor);
+        verifyDataPropertyValuesInOntology(dpAssertion, values);
+    }
+
+    private void verifyDataPropertyValuesInOntology(Assertion assertion, Set<Object> values) {
+        final Set<OWLDataPropertyAssertionAxiom> dpAxioms = realSnapshot.getOntology().getDataPropertyAssertionAxioms(
+                individual());
+        assertEquals(values.size(), dpAxioms.size());
+        for (OWLDataPropertyAssertionAxiom axiom : dpAxioms) {
+            assertEquals(assertion.getIdentifier(), axiom.getProperty().asOWLDataProperty().getIRI().toURI());
+            final Object value = OwlapiUtils.owlLiteralToValue(axiom.getObject());
+            assertTrue(values.contains(value));
+        }
+    }
+
+    @Test
+    public void testPersistIndividualWithAnnotationProperty() throws Exception {
+        initRealOntology();
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(NamedResource.create(PK));
+        // This just makes sure that the individual explicitly exists in the ontology
+        descriptor.addAssertionValue(Assertion.createClassAssertion(false),
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
+        final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(
+                URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-annotationAttribute"), false);
+        final Set<Object> values = new HashSet<>();
+        values.add("StringLabel");
+        values.add(1111);
+        values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/apValue"));
+        descriptor.addAssertion(apAssertion);
+        values.forEach(value -> descriptor.addAssertionValue(apAssertion, new Value<>(value)));
+
+        adapter.persist(descriptor);
+        verifyAnnotationPropertyValuesInOntology(apAssertion, values);
+    }
+
+    private void verifyAnnotationPropertyValuesInOntology(Assertion assertion, Set<Object> values) {
+        final Set<OWLAnnotationAssertionAxiom> apAxioms = realSnapshot.getOntology().getAnnotationAssertionAxioms(individual().getIRI());
+        assertEquals(values.size(), apAxioms.size());
+        for (OWLAnnotationAssertionAxiom axiom : apAxioms) {
+            assertEquals(assertion.getIdentifier(), axiom.getProperty().getIRI().toURI());
+            final OWLAnnotationValue value = axiom.getValue();
+            if (value.asIRI().isPresent()) {
+                assertTrue(values.contains(value.asIRI().get().toURI()));
+            } else {
+                final Object v = OwlapiUtils.owlLiteralToValue(value.asLiteral().get());
+                assertTrue(values.contains(v));
+            }
+        }
+    }
+
+    @Test
+    public void testPersistIndividualWithObjectProperty() throws Exception {
+        initRealOntology();
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(NamedResource.create(PK));
+        final Assertion assertion = Assertion.createObjectPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA"), false);
+        descriptor.addAssertion(assertion);
+        final Set<NamedResource> values = new HashSet<>();
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA3"));
+        values.forEach(value -> descriptor.addAssertionValue(assertion, new Value<>(value)));
+
+        adapter.persist(descriptor);
+        verifyObjectPropertyValuesInOntology(assertion, values);
+    }
+
+    private void verifyObjectPropertyValuesInOntology(Assertion assertion, Set<NamedResource> values) {
+        final Set<OWLObjectPropertyAssertionAxiom> opAxioms = realSnapshot.getOntology().getObjectPropertyAssertionAxioms(individual());
+        assertEquals(values.size(), opAxioms.size());
+        for (OWLObjectPropertyAssertionAxiom axiom : opAxioms) {
+            assertEquals(assertion.getIdentifier(), axiom.getProperty().asOWLObjectProperty().getIRI().toURI());
+            final NamedResource target = NamedResource.create(axiom.getObject().asOWLNamedIndividual().getIRI().toURI());
+            assertTrue(values.contains(target));
+        }
+    }
+
+    @Ignore
+    @Test
+    public void testPersistIndividualWithUnspecifiedPropertyType() throws Exception {
+        initRealOntology();
+        final AxiomValueDescriptor descriptor = new AxiomValueDescriptor(NamedResource.create(PK));
+        final Assertion assertion = Assertion.createPropertyAssertion(
+                URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA"), false);
+        descriptor.addAssertion(assertion);
+        final Set<NamedResource> values = new HashSet<>();
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA"));
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA2"));
+        values.add(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA3"));
+        values.forEach(value -> descriptor.addAssertionValue(assertion, new Value<>(value)));
     }
 }

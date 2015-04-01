@@ -6,6 +6,7 @@ import cz.cvut.kbss.ontodriver.owlapi.exceptions.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.semanticweb.owlapi.model.*;
@@ -191,5 +192,10 @@ class OwlapiAdapter {
     Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
         startTransactionIfNotActive();
         return new AxiomLoader(ontologySnapshot).findAxioms(descriptor);
+    }
+
+    void persist(AxiomValueDescriptor descriptor) {
+        startTransactionIfNotActive();
+        new AxiomSaver(ontologySnapshot, language).persist(descriptor);
     }
 }
