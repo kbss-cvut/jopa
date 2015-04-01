@@ -4,7 +4,7 @@ public enum OntologyConnectorType {
 	/**
 	 * OWL API ontology connector. Name: owlapi
 	 */
-	OWLAPI("owlapi", OntoDriverProperties.OWLAPI_DRIVER_FACTORY, ""),
+	OWLAPI("owlapi", OntoDriverProperties.OWLAPI_DRIVER_FACTORY, "cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource"),
 	/**
 	 * Jena ontology connector. Name: jena
 	 */

@@ -179,6 +179,7 @@ public class TestCreateOperations {
 		final Map<String, String> map = new HashMap<>();
 		map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
 		map.put(OWLAPIPersistenceProperties.LANG, "en");
+		map.put("storage", "new");
 		return map;
 	}
 }

@@ -136,6 +136,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>ontodriver-owlapi</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>aterm</groupId>
             <artifactId>aterm</artifactId>
             <version>1.6</version>

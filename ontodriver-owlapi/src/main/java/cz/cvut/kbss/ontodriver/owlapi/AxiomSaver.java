@@ -48,6 +48,10 @@ class AxiomSaver {
                 case OBJECT_PROPERTY:
                     persistObjectPropertyValues(descriptor.getSubject(), assertion,
                             descriptor.getAssertionValues(assertion));
+                    break;
+                case PROPERTY:
+                    persistPropertyValues(descriptor.getSubject(), assertion, descriptor.getAssertionValues(assertion));
+                    break;
             }
         }
     }
@@ -97,10 +101,24 @@ class AxiomSaver {
         final OWLNamedIndividual individual = individual(subject);
         final OWLObjectProperty property = dataFactory.getOWLObjectProperty(IRI.create(assertion.getIdentifier()));
         final List<AddAxiom> addAxioms = values.stream().map(value -> {
-            final NamedResource resource = (NamedResource) value.getValue();
-            final OWLNamedIndividual target = dataFactory.getOWLNamedIndividual(IRI.create(resource.getIdentifier()));
+            // Simplistic version using value.stringValue
+            // We expect the value to  be a NamedResource, but in case the property was unspecified and it was only assumed
+            // it is an object property (see #persistPropertyValues), the value would be a simple string
+            final OWLNamedIndividual target = dataFactory.getOWLNamedIndividual(IRI.create(value.stringValue()));
             return new AddAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(property, individual, target));
         }).collect(Collectors.toList());
         ontologyManager.applyChanges(addAxioms);
+    }
+
+    private void persistPropertyValues(NamedResource subject, Assertion assertion, List<Value<?>> values) {
+        final IRI property = IRI.create(assertion.getIdentifier());
+        if (ontology.containsDataPropertyInSignature(property)) {
+            persistDataPropertyValues(subject, assertion, values);
+        } else if (ontology.containsAnnotationPropertyInSignature(property)) {
+            persistAnnotationPropertyValues(subject, assertion, values);
+        } else {
+            // The property is: 1) known to be an object property, 2) unknown, we just try object property
+            persistObjectPropertyValues(subject, assertion, values);
+        }
     }
 }
