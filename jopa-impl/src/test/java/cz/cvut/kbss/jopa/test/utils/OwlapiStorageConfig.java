@@ -33,7 +33,7 @@ public class OwlapiStorageConfig extends StorageConfig {
 		final URI physicalUri = url.toURI();
 		TestEnvironment.removeOldTestFiles(url);
 
-		return new OntologyStorageProperties(ontoUri, physicalUri, TYPE);
+		return OntologyStorageProperties.ontologyUri(ontoUri).physicalUri(physicalUri).connectorType(TYPE).build();
 	}
 
 }

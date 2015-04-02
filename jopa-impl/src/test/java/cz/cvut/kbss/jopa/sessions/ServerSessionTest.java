@@ -21,33 +21,33 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 public class ServerSessionTest {
 
-	private OntologyStorageProperties storageProperties;
+    private OntologyStorageProperties storageProperties;
 
-	@Mock
-	private Metamodel metamodelMock;
+    @Mock
+    private Metamodel metamodelMock;
 
-	private ServerSession session;
+    private ServerSession session;
 
-	@Before
-	public void setUp() throws Exception {
-		MockitoAnnotations.initMocks(this);
-		this.storageProperties = new OntologyStorageProperties(
-				URI.create("http://krizik.felk.cvut.cz/ontologies/jopa"),
-				URI.create("file://tmp/jopa"), OntologyConnectorType.OWLAPI);
-		when(metamodelMock.getEntities()).thenReturn(Collections.<EntityType<?>> emptySet());
-		this.session = new ServerSession(storageProperties,
-				Collections.<String, String> emptyMap(), metamodelMock);
-	}
+    @Before
+    public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+        this.storageProperties = OntologyStorageProperties.ontologyUri(
+                URI.create("http://krizik.felk.cvut.cz/ontologies/jopa")).physicalUri(
+                URI.create("file://tmp/jopa")).connectorType(OntologyConnectorType.OWLAPI).build();
+        when(metamodelMock.getEntities()).thenReturn(Collections.<EntityType<?>>emptySet());
+        this.session = new ServerSession(storageProperties,
+                Collections.<String, String>emptyMap(), metamodelMock);
+    }
 
-	@Test
-	public void testClose() {
-		final EntityTransaction et = mock(EntityTransaction.class);
-		when(et.isActive()).thenReturn(Boolean.TRUE);
-		when(et.isRollbackOnly()).thenReturn(Boolean.FALSE);
-		final AbstractEntityManager em = mock(AbstractEntityManager.class);
-		session.transactionStarted(et, em);
+    @Test
+    public void testClose() {
+        final EntityTransaction et = mock(EntityTransaction.class);
+        when(et.isActive()).thenReturn(Boolean.TRUE);
+        when(et.isRollbackOnly()).thenReturn(Boolean.FALSE);
+        final AbstractEntityManager em = mock(AbstractEntityManager.class);
+        session.transactionStarted(et, em);
 
-		session.close();
-		verify(et).setRollbackOnly();
-	}
+        session.close();
+        verify(et).setRollbackOnly();
+    }
 }

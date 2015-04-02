@@ -33,7 +33,7 @@ public class JenaStorageConfig extends StorageConfig {
 		TestEnvironment.removeOldTestFiles(url);
 		final URI physicalUri = url.toURI();
 
-		return new OntologyStorageProperties(ontoUri, physicalUri, TYPE);
+		return OntologyStorageProperties.ontologyUri(ontoUri).physicalUri(physicalUri).connectorType(TYPE).build();
 	}
 
 }

@@ -22,7 +22,7 @@ public class NewStorageAccessorTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(storageProperties.getDataSource()).thenReturn(DATA_SOURCE_CLASS);
+        when(storageProperties.getDriver()).thenReturn(DATA_SOURCE_CLASS);
     }
 
     @Test
@@ -35,7 +35,7 @@ public class NewStorageAccessorTest {
 
     @Test(expected = DataSourceCreationException.class)
     public void throwsExceptionWhenDataSourceClassWithoutProperConstructorIsProvided() throws Exception {
-        when(storageProperties.getDataSource()).thenReturn(INVALID_DATA_SOURCE_CLASS);
+        when(storageProperties.getDriver()).thenReturn(INVALID_DATA_SOURCE_CLASS);
         final NewStorageAccessor a = new NewStorageAccessor(storageProperties, Collections.<String, String>emptyMap());
         // This shouldn't be reached
         assertFalse(a.isOpen());

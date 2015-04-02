@@ -23,7 +23,7 @@ public class NewStorageAccessor implements Closeable {
     private DataSource initDataSource(OntologyStorageProperties storageProperties, Map<String, String> properties) {
         final Class<?> dataSourceCls;
         try {
-            dataSourceCls = Class.forName(storageProperties.getDataSource());
+            dataSourceCls = Class.forName(storageProperties.getDriver());
             DataSource ds = (DataSource) dataSourceCls.newInstance();
             ds.setStorageProperties(storageProperties);
             if (properties != null) {
@@ -31,9 +31,9 @@ public class NewStorageAccessor implements Closeable {
             }
             return ds;
         } catch (ClassNotFoundException e) {
-            throw new DataSourceCreationException("Unable to find OntoDriver data source class " + storageProperties.getDataSource(), e);
+            throw new DataSourceCreationException("Unable to find OntoDriver data source class " + storageProperties.getDriver(), e);
         } catch (InstantiationException | IllegalAccessException | OntoDriverException e) {
-            throw new DataSourceCreationException("Unable to create instance of OntoDriver data source " + storageProperties.getDataSource(), e);
+            throw new DataSourceCreationException("Unable to create instance of OntoDriver data source " + storageProperties.getDriver(), e);
         }
     }
 

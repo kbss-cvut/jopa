@@ -27,74 +27,28 @@ public class OntologyStorageProperties {
 	private final URI ontologyUri;
 	/** URI of the physical storage, e. g. OWLDB database, OWLIM storage, file */
 	private final URI physicalUri;
-	// TODO This will be removed, only dataSource class will be used
+	// TODO This will be removed, only driver class will be used
 	/** Type of the storage connector. */
 	private final OntologyConnectorType connectorType;
 	/** Fully qualified OntoDriver data source class name */
-	private final String dataSource;
+	private final String driver;
 	/** User name for the storage, if necessary */
 	private final String username;
 	/** Password for the storage, if neccessary */
 	private final String password;
 
-	/**
-	 * Constructor for the OntologyStorageProperties.
-	 * 
-	 * @param ontologyUri
-	 *            URI of the ontology
-	 * @param physicalUri
-	 *            URI of the storage where the ontology is stored
-	 * @param connectorType
-	 *            Type of the connector
-	 * @throws NullPointerException
-	 *             If {@code physicalUri} or {@code connectorType} is null
-	 */
-	public OntologyStorageProperties(URI ontologyUri, URI physicalUri,
-			OntologyConnectorType connectorType) {
-		super();
-		this.physicalUri = Objects.requireNonNull(physicalUri,
+	OntologyStorageProperties(OntologyStoragePropertiesBuilder builder) {
+		this.physicalUri = Objects.requireNonNull(builder.physicalUri,
 				ErrorUtils.constructNPXMessage("physicalUri"));
-		this.connectorType = Objects.requireNonNull(connectorType,
-				ErrorUtils.constructNPXMessage("connectorType"));
-		this.dataSource = connectorType.getDataSource();
-		this.ontologyUri = ontologyUri;
-		this.username = null;
-		this.password = null;
-	}
-
-	/**
-	 * Constructor for the OntologyStorageProperties.
-	 * 
-	 * @param ontologyUri
-	 *            URI of the ontology
-	 * @param physicalUri
-	 *            URI of the storage where the ontology is stored
-	 * @param connectorType
-	 *            Type of the ontology connector
-	 * @param username
-	 *            Username for the storage. Optional
-	 * @param password
-	 *            Password for the storage. Optional
-	 * @throws NullPointerException
-	 *             If {@code physicalUri} or {@code connectorType} is
-	 *             {@code null}
-	 */
-	public OntologyStorageProperties(URI ontologyUri, URI physicalUri,
-			OntologyConnectorType connectorType, String username, String password) {
-		super();
-		this.physicalUri = Objects.requireNonNull(physicalUri,
-				ErrorUtils.constructNPXMessage("physicalUri"));
-		this.connectorType = Objects.requireNonNull(connectorType,
-				ErrorUtils.constructNPXMessage("connectorType"));
-		this.dataSource = connectorType.getDataSource();
-		this.ontologyUri = ontologyUri;
-		this.username = username;
-		this.password = password;
-	}
-
-	protected OntologyStorageProperties(OntologyStoragePropertiesBuilder builder) {
-		this(builder.ontologyUri, builder.physicalUri, builder.connectorType, builder.username,
-				builder.password);
+		// TODO Will be removed
+		this.connectorType = builder.connectorType;
+		if (connectorType == null && builder.driverClass == null) {
+			throw new IllegalStateException("Either data source or connector type has to be specified");
+		}
+		this.driver = builder.driverClass != null ? builder.driverClass : connectorType.getDataSource();
+		this.ontologyUri = builder.ontologyUri;
+		this.username = builder.username;
+		this.password = builder.password;
 	}
 
 	public URI getOntologyURI() {
@@ -109,8 +63,8 @@ public class OntologyStorageProperties {
 		return connectorType;
 	}
 
-	public String getDataSource() {
-		return dataSource;
+	public String getDriver() {
+		return driver;
 	}
 
 	public String getUsername() {
@@ -128,8 +82,8 @@ public class OntologyStorageProperties {
 		b.append(ontologyUri);
 		b.append(", physical URI = ");
 		b.append(physicalUri);
-		b.append(", connector type = ");
-		b.append(connectorType);
+		b.append(", data source class = ");
+		b.append(driver);
 		if (username != null) {
 			b.append(", username = ");
 			b.append(username);
@@ -159,6 +113,10 @@ public class OntologyStorageProperties {
 		return new OntologyStoragePropertiesBuilder().password(password);
 	}
 
+	public static OntologyStoragePropertiesBuilder driver(String driverClass) {
+		return new OntologyStoragePropertiesBuilder().driver(driverClass);
+	}
+
 	/**
 	 * Builder class for the {@code OntologyStorageProperties}.
 	 * 
@@ -172,6 +130,7 @@ public class OntologyStorageProperties {
 		protected OntologyConnectorType connectorType;
 		protected String username;
 		protected String password;
+		protected String driverClass;
 
 		public OntologyStoragePropertiesBuilder ontologyUri(URI ontologyUri) {
 			this.ontologyUri = ontologyUri;
@@ -195,6 +154,11 @@ public class OntologyStorageProperties {
 
 		public OntologyStoragePropertiesBuilder password(String password) {
 			this.password = password;
+			return this;
+		}
+
+		public OntologyStoragePropertiesBuilder driver(String driverClass) {
+			this.driverClass = driverClass;
 			return this;
 		}
 

@@ -186,6 +186,8 @@ class AxiomLoader {
             final Collection<OWLClassExpression> classes = EntitySearcher.getTypes(individual, ontology);
             axioms.addAll(owlClassesToAxioms(descriptor.getSubject(), classes));
         }
+        // TODO This may be inefficient in case there are much more properties for an individual than in the descriptor
+        // Perhaps we should use EntitySearcher and look for values of concrete properties
         final Collection<OWLDataPropertyAssertionAxiom> dpAssertions = ontology.getDataPropertyAssertionAxioms(
                 individual);
         axioms.addAll(dataPropertyValuesToAxioms(descriptor, dpAssertions));

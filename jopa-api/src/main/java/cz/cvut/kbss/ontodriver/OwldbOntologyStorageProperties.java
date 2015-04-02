@@ -23,16 +23,6 @@ public final class OwldbOntologyStorageProperties extends OntologyStoragePropert
      */
     private final String jdbcDriverClass;
 
-    public OwldbOntologyStorageProperties(URI ontologyUri, URI physicalUri,
-                                          OntologyConnectorType connectorType, String jdbcDriverClass) {
-        super(ontologyUri, physicalUri, connectorType);
-        if (jdbcDriverClass == null || jdbcDriverClass.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "The jdbc driver class cannot be neither null nor empty.");
-        }
-        this.jdbcDriverClass = jdbcDriverClass;
-    }
-
     private OwldbOntologyStorageProperties(OwldbStoragePropertiesBuilder builder) {
         super(builder);
         if (builder.jdbcDriverClass == null || builder.jdbcDriverClass.isEmpty()) {

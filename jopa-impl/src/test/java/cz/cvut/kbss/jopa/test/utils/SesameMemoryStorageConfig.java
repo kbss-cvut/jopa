@@ -29,7 +29,7 @@ public class SesameMemoryStorageConfig extends StorageConfig {
 		final URI ontoUri = URI.create(TestEnvironment.IRI_BASE + base);
 		final URI physicalUri = URI.create(base);
 
-		return new OntologyStorageProperties(ontoUri, physicalUri, TYPE);
+		return OntologyStorageProperties.ontologyUri(ontoUri).physicalUri(physicalUri).connectorType(TYPE).build();
 	}
 
 }

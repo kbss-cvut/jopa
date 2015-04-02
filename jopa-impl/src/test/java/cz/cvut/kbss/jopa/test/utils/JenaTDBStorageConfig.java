@@ -32,7 +32,7 @@ public class JenaTDBStorageConfig extends JenaStorageConfig {
 		boolean res = url.mkdirs();
 		assert res;
 
-		return new OntologyStorageProperties(ontoUri, physicalUri, TYPE);
+		return OntologyStorageProperties.ontologyUri(ontoUri).physicalUri(physicalUri).connectorType(TYPE).build();
 	}
 
 }
