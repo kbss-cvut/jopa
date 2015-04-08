@@ -32,117 +32,117 @@ import cz.cvut.kbss.ontodriver.utils.DriverFactoryStub;
 
 public class SimpleDataSourceTest {
 
-	private static OntologyStorageProperties props;
-	private static Map<String, String> properties;
+    private static OntologyStorageProperties props;
+    private static Map<String, String> properties;
 
-	@Mock
-	private OntoDriver driverMock;
+    @Mock
+    private OntoDriver driverMock;
 
-	@Mock
-	private PersistenceProviderFacade facadeMock;
+    @Mock
+    private PersistenceProviderFacade facadeMock;
 
-	@Mock
-	private StorageModule moduleMock;
+    @Mock
+    private StorageModule moduleMock;
 
-	private SimpleDataSource ds;
+    private SimpleDataSource ds;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		// Override the default factories
-		props = new OntologyStorageProperties(URI.create("http://testOntology"),
-				URI.create("file:testResults/ontoDriverTests.owl"), OntologyConnectorType.OWLAPI);
-		properties = new HashMap<>();
-		properties.put(OntoDriverProperties.OWLAPI_DRIVER_FACTORY,
-				DriverFactoryStub.class.getName());
-	}
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+        // Override the default factories
+        props = OntologyStorageProperties.ontologyUri(URI.create("http://testOntology")).physicalUri(
+                URI.create("file:testResults/ontoDriverTests.owl")).connectorType(OntologyConnectorType.OWLAPI).build();
+        properties = new HashMap<>();
+        properties.put(OntoDriverProperties.OWLAPI_DRIVER_FACTORY,
+                DriverFactoryStub.class.getName());
+    }
 
-	@Before
-	public void setUp() throws Exception {
-		MockitoAnnotations.initMocks(this);
-		this.ds = new SimpleDataSource(props, properties);
-		final Field f = SimpleDataSource.class.getDeclaredField("driver");
-		f.setAccessible(true);
-		f.set(ds, driverMock);
-		when(driverMock.acquireStorageModule(facadeMock)).thenReturn(moduleMock);
-	}
+    @Before
+    public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+        this.ds = new SimpleDataSource(props, properties);
+        final Field f = SimpleDataSource.class.getDeclaredField("driver");
+        f.setAccessible(true);
+        f.set(ds, driverMock);
+        when(driverMock.acquireStorageModule(facadeMock)).thenReturn(moduleMock);
+    }
 
-	@Test
-	public void testSimpleDataSourceSingleArg() {
-		final DataSource res = new SimpleDataSource(props);
-		assertNotNull(res);
-		assertTrue(res.isOpen());
-	}
+    @Test
+    public void testSimpleDataSourceSingleArg() {
+        final DataSource res = new SimpleDataSource(props);
+        assertNotNull(res);
+        assertTrue(res.isOpen());
+    }
 
-	@Test(expected = NullPointerException.class)
-	public void testSimpleDataSourceSingleArgEmpty() {
-		final DataSource res = new SimpleDataSource(null);
-	}
+    @Test(expected = NullPointerException.class)
+    public void testSimpleDataSourceSingleArgEmpty() {
+        final DataSource res = new SimpleDataSource(null);
+    }
 
-	@Test
-	public void testSimpleDataSourceTwoArgs() {
-		final DataSource res = new SimpleDataSource(props, properties);
-		assertNotNull(res);
-		assertTrue(res.isOpen());
-	}
+    @Test
+    public void testSimpleDataSourceTwoArgs() {
+        final DataSource res = new SimpleDataSource(props, properties);
+        assertNotNull(res);
+        assertTrue(res.isOpen());
+    }
 
-	@Test
-	public void testSimpleDataSourceTwoArgsNullProps() {
-		final DataSource res = new SimpleDataSource(props, null);
-		assertNotNull(res);
-		assertTrue(res.isOpen());
-	}
+    @Test
+    public void testSimpleDataSourceTwoArgsNullProps() {
+        final DataSource res = new SimpleDataSource(props, null);
+        assertNotNull(res);
+        assertTrue(res.isOpen());
+    }
 
-	@Test(expected = NullPointerException.class)
-	public void testSimpleDataSourceTwoArgsNullStorages() throws Exception {
-		final DataSource res = new SimpleDataSource(null, properties);
-	}
+    @Test(expected = NullPointerException.class)
+    public void testSimpleDataSourceTwoArgsNullStorages() throws Exception {
+        final DataSource res = new SimpleDataSource(null, properties);
+    }
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void testGetConnection() throws Exception {
-		final Connection res = ds.getConnection();
-		// This shouldn't be reached
-		assert res == null;
-	}
+    @Test(expected = UnsupportedOperationException.class)
+    public void testGetConnection() throws Exception {
+        final Connection res = ds.getConnection();
+        // This shouldn't be reached
+        assert res == null;
+    }
 
-	@Test
-	public void testGetConnectionWithFacade() throws Exception {
-		final Connection res = ds.getConnection(facadeMock);
-		assertNotNull(res);
-		assertTrue(res.isOpen());
-		assertTrue(res.getAutoCommit());
-		verify(driverMock).acquireStorageModule(facadeMock);
-	}
+    @Test
+    public void testGetConnectionWithFacade() throws Exception {
+        final Connection res = ds.getConnection(facadeMock);
+        assertNotNull(res);
+        assertTrue(res.isOpen());
+        assertTrue(res.getAutoCommit());
+        verify(driverMock).acquireStorageModule(facadeMock);
+    }
 
-	@Test
-	public void testGetConnectionAutoCommitFalse() throws Exception {
-		final Map<String, String> p = new HashMap<>(properties);
-		p.put(OntoDriverProperties.CONNECTION_AUTO_COMMIT, Boolean.FALSE.toString());
-		final DataSource src = new SimpleDataSource(props, p);
-		final Field f = SimpleDataSource.class.getDeclaredField("driver");
-		f.setAccessible(true);
-		f.set(src, driverMock);
+    @Test
+    public void testGetConnectionAutoCommitFalse() throws Exception {
+        final Map<String, String> p = new HashMap<>(properties);
+        p.put(OntoDriverProperties.CONNECTION_AUTO_COMMIT, Boolean.FALSE.toString());
+        final DataSource src = new SimpleDataSource(props, p);
+        final Field f = SimpleDataSource.class.getDeclaredField("driver");
+        f.setAccessible(true);
+        f.set(src, driverMock);
 
-		final Connection res = src.getConnection(facadeMock);
-		assertNotNull(res);
-		assertFalse(res.getAutoCommit());
-	}
+        final Connection res = src.getConnection(facadeMock);
+        assertNotNull(res);
+        assertFalse(res.getAutoCommit());
+    }
 
-	@Test(expected = NullPointerException.class)
-	public void testGetConnectionNull() throws Exception {
-		try {
-			final Connection res = ds.getConnection(null);
-			// This shouldn't be reached
-			assert res == null;
-		} finally {
-			verify(driverMock, never()).acquireStorageModule(any(PersistenceProviderFacade.class));
-		}
-	}
+    @Test(expected = NullPointerException.class)
+    public void testGetConnectionNull() throws Exception {
+        try {
+            final Connection res = ds.getConnection(null);
+            // This shouldn't be reached
+            assert res == null;
+        } finally {
+            verify(driverMock, never()).acquireStorageModule(any(PersistenceProviderFacade.class));
+        }
+    }
 
-	@Test
-	public void testClose() throws Exception {
-		assertTrue(ds.isOpen());
-		ds.close();
-		assertFalse(ds.isOpen());
-		verify(driverMock).close();
-	}
+    @Test
+    public void testClose() throws Exception {
+        assertTrue(ds.isOpen());
+        ds.close();
+        assertFalse(ds.isOpen());
+        verify(driverMock).close();
+    }
 }

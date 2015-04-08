@@ -44,8 +44,8 @@ public class OntoDriverImplTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Override the default factories
-		storageProperties = new OntologyStorageProperties(URI.create("http://testOntology"),
-				URI.create("file:testResults/ontoDriverTests.owl"), OntologyConnectorType.OWLAPI);
+		storageProperties = OntologyStorageProperties.ontologyUri(URI.create("http://testOntology")).physicalUri(
+				URI.create("file:testResults/ontoDriverTests.owl")).connectorType(OntologyConnectorType.OWLAPI).build();
 		properties = new HashMap<>();
 		properties.put(OntoDriverProperties.OWLAPI_DRIVER_FACTORY,
 				DriverFactoryStub.class.getName());
