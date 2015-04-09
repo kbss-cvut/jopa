@@ -20,7 +20,8 @@
         <module>ontodriver-owlapi</module>
 		<module>jopa-impl</module>
 		<module>ontodriver-impl</module>
-    </modules>
+		<module>../jopa-refactoring/jopa-integration-tests</module>
+	</modules>
 
 	<properties>
 		<jacoco.version>0.7.2.201409121644</jacoco.version>
