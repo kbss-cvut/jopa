@@ -9,7 +9,6 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -264,7 +263,7 @@ public class CreateOperationsRunner extends BaseRunner {
         assertNotNull(res.getProperties());
         assertFalse(res.getProperties().isEmpty());
         assertEquals(expected.size(), res.getProperties().size());
-        for (Entry<String, Set<String>> e : expected.entrySet()) {
+        for (Map.Entry<String, Set<String>> e : expected.entrySet()) {
             assertTrue(res.getProperties().containsKey(e.getKey()));
             final Set<String> s = e.getValue();
             final Set<String> resS = res.getProperties().get(e.getKey());

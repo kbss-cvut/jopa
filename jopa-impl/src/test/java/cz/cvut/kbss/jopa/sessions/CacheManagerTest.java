@@ -21,13 +21,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
-import cz.cvut.kbss.jopa.sessions.CacheManager;
-import cz.cvut.kbss.jopa.sessions.CacheManagerImpl;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.OWLClassE;
-import cz.cvut.kbss.jopa.test.OWLClassF;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassE;
+import cz.cvut.kbss.jopa.environment.OWLClassF;
 
 public class CacheManagerTest {
 

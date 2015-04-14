@@ -1,13 +1,13 @@
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
-import cz.cvut.kbss.jopa.test.*;
-import cz.cvut.kbss.jopa.test.utils.Generators;
-import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Assertion.AssertionType;

@@ -19,8 +19,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.utils.Generators;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 
 public class IndirectMapTest {
 

@@ -20,7 +20,7 @@
         <module>ontodriver-owlapi</module>
 		<module>jopa-impl</module>
 		<module>ontodriver-impl</module>
-		<module>../jopa-refactoring/jopa-integration-tests</module>
+		<module>jopa-integration-tests</module>
 	</modules>
 
 	<properties>

@@ -5,10 +5,10 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
 import cz.cvut.kbss.jopa.test.*;
-import cz.cvut.kbss.jopa.test.utils.Generators;
+import cz.cvut.kbss.jopa.test.environment.Generators;
 
 import java.net.URI;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -125,7 +125,7 @@ public class CreateOperationsMultiContextRunner extends BaseRunner {
 		assertNotNull(res);
 		assertEquals(entityB.getStringAttribute(), res.getStringAttribute());
 		assertEquals(entityB.getProperties().size(), res.getProperties().size());
-		for (Entry<String, Set<String>> e : res.getProperties().entrySet()) {
+		for (Map.Entry<String, Set<String>> e : res.getProperties().entrySet()) {
 			assertTrue(entityB.getProperties().containsKey(e.getKey()));
 			assertEquals(e.getValue(), entityB.getProperties().get(e.getKey()));
 		}

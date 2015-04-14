@@ -8,7 +8,6 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
@@ -474,7 +473,7 @@ public class UpdateOperationsRunner extends BaseRunner {
 		final OWLClassB res = em.find(OWLClassB.class, b.getUri(), bDescriptor);
 		assertNotNull(res);
 		assertEquals(expected.size(), res.getProperties().size());
-		for (Entry<String, Set<String>> e : expected.entrySet()) {
+		for (Map.Entry<String, Set<String>> e : expected.entrySet()) {
 			assertTrue(res.getProperties().containsKey(e.getKey()));
 			final Set<String> s = e.getValue();
 			assertEquals(1, s.size());
@@ -507,7 +506,7 @@ public class UpdateOperationsRunner extends BaseRunner {
 		final OWLClassB res = em.find(OWLClassB.class, b.getUri(), bDescriptor);
 		assertNotNull(res);
 		assertEquals(expected.size(), res.getProperties().size());
-		for (Entry<String, Set<String>> e : expected.entrySet()) {
+		for (Map.Entry<String, Set<String>> e : expected.entrySet()) {
 			assertTrue(res.getProperties().containsKey(e.getKey()));
 			final Set<String> s = e.getValue();
 			final Set<String> resS = res.getProperties().get(e.getKey());

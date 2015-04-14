@@ -23,8 +23,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassC;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
 
 public class IndirectListTest {
 

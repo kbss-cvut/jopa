@@ -1,9 +1,9 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.test.*;
-import cz.cvut.kbss.jopa.test.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
