@@ -1,4 +1,3 @@
-- Consider replacing threaded cache sweeper with a different strategy (e. g. per-access sweep)
 - Add support for parameters in queries (query builder)
 - Add support for EntityManager.getReference
 - Add support for namespace definition - on class and package level

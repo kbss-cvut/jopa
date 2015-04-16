@@ -160,6 +160,7 @@ public class ServerSession extends AbstractSession {
         } else if (newStorageAccessor != null && newStorageAccessor.isOpen()) {
             newStorageAccessor.close();
         }
+        liveObjectCache.close();
     }
 
     @Override

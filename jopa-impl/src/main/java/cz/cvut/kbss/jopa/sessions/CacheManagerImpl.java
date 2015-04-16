@@ -100,6 +100,9 @@ public class CacheManagerImpl implements CacheManager {
 	@Override
 	public void close() {
 		if (sweeperFuture != null) {
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.fine("Stopping cache sweeper.");
+			}
 			sweeperFuture.cancel(true);
 			sweeperScheduler.shutdown();
 		}
