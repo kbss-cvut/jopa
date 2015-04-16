@@ -69,6 +69,7 @@ import org.semanticweb.owlapi.reasoner.impl.OWLObjectPropertyNode;
 import org.semanticweb.owlapi.reasoner.impl.OWLObjectPropertyNodeSet;
 import org.semanticweb.owlapi.util.Version;
 
+@Deprecated
 class OWLAPIIdentityReasoner implements OWLReasoner {
 
 	private final OWLOntology o;

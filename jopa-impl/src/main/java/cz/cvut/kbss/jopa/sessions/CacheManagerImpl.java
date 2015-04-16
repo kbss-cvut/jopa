@@ -1,26 +1,19 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
+
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 /**
  * Manages the second level cache shared by all persistence contexts. </p>
@@ -50,12 +43,11 @@ public class CacheManagerImpl implements CacheManager {
 
 	// Each repository can have its own lock and they could be acquired by this
 	// instance itself, no need to pass this burden to callers
-	private final ReadWriteLock lock;
 	private final Lock readLock;
 	private final Lock writeLock;
 
-	private final CacheSweeper cacheSweeper;
 	private final ScheduledExecutorService sweeperScheduler;
+	private Future<?> sweeperFuture;
 	private long initDelay;
 	private long sweepRate;
 	private long timeToLive;
@@ -64,12 +56,11 @@ public class CacheManagerImpl implements CacheManager {
 	public CacheManagerImpl(Map<String, String> properties) {
 		this.cache = new CacheImpl();
 		initSettings(properties);
-		this.lock = new ReentrantReadWriteLock();
+		final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		this.readLock = lock.readLock();
 		this.writeLock = lock.writeLock();
-		this.cacheSweeper = new CacheSweeper();
 		this.sweeperScheduler = Executors.newSingleThreadScheduledExecutor();
-		sweeperScheduler.scheduleAtFixedRate(cacheSweeper, initDelay, sweepRate,
+		this.sweeperFuture = sweeperScheduler.scheduleAtFixedRate(new CacheSweeper(), initDelay, sweepRate,
 				TimeUnit.MILLISECONDS);
 	}
 
@@ -107,6 +98,15 @@ public class CacheManagerImpl implements CacheManager {
 	}
 
 	@Override
+	public void close() {
+		if (sweeperFuture != null) {
+			sweeperFuture.cancel(true);
+			sweeperScheduler.shutdown();
+		}
+		this.sweeperFuture = null;
+	}
+
+	@Override
 	public void add(Object primaryKey, Object entity, URI context) {
 		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 		Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
@@ -135,9 +135,7 @@ public class CacheManagerImpl implements CacheManager {
 	public void clearInferredObjects() {
 		acquireWriteLock();
 		try {
-			for (Class<?> c : getInferredClasses()) {
-				cache.evict(c);
-			}
+			getInferredClasses().forEach(cache::evict);
 		} finally {
 			releaseWriteLock();
 		}
@@ -299,9 +297,7 @@ public class CacheManagerImpl implements CacheManager {
 					}
 				}
 				// Evict them
-				for (URI u : toEvict) {
-					CacheManagerImpl.this.evict(u);
-				}
+				toEvict.forEach(CacheManagerImpl.this::evict);
 			} finally {
 				CacheManagerImpl.this.sweepRunning = false;
 				CacheManagerImpl.this.releaseWriteLock();

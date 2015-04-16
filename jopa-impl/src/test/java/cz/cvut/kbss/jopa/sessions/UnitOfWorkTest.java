@@ -1,5 +1,10 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassL;
+import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -9,11 +14,6 @@ import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassB;
-import cz.cvut.kbss.jopa.environment.OWLClassD;
-import cz.cvut.kbss.jopa.environment.OWLClassL;
-import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 import org.junit.Before;
@@ -24,7 +24,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.semanticweb.owlapi.model.IRI;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -703,7 +702,7 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testMergeDetachedNew() throws Exception {
-		when(storageMock.contains(IRI.create(entityA.getUri()), entityA.getClass(), descriptor))
+		when(storageMock.contains(entityA.getUri(), entityA.getClass(), descriptor))
 				.thenReturn(Boolean.FALSE);
 		final OWLClassA res = uow.mergeDetached(entityA, descriptor);
 		assertNotNull(res);

@@ -20,6 +20,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerConfiguration;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 
+@Deprecated
 public class OWLAPIIdentityReasonerFactory implements OWLReasonerFactory {
 
 	

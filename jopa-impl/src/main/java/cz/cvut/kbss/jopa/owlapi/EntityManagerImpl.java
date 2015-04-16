@@ -31,7 +31,6 @@ import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import org.semanticweb.owlapi.model.IRI;
 
 import java.net.URI;
 import java.util.*;
@@ -256,7 +255,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.config("Finding " + cls + " with key " + primaryKey + " in context " + descriptor);
 		}
-		final IRI uri = IRI.create(primaryKey.toString());
+		final URI uri = (primaryKey instanceof URI) ? (URI) primaryKey : URI.create(primaryKey.toString());
 
 		return getCurrentPersistenceContext().readObject(cls, uri, descriptor);
 	}

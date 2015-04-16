@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import java.net.URI;
 import java.util.Collections;
 
+import cz.cvut.kbss.jopa.accessors.DataSourceStub;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -33,10 +34,11 @@ public class ServerSessionTest {
         MockitoAnnotations.initMocks(this);
         this.storageProperties = OntologyStorageProperties.ontologyUri(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa")).physicalUri(
-                URI.create("file://tmp/jopa")).connectorType(OntologyConnectorType.OWLAPI).build();
+                URI.create("file://tmp/jopa")).connectorType(OntologyConnectorType.OWLAPI)
+                .driver(DataSourceStub.class.getCanonicalName()).build();
         when(metamodelMock.getEntities()).thenReturn(Collections.<EntityType<?>>emptySet());
         this.session = new ServerSession(storageProperties,
-                Collections.<String, String>emptyMap(), metamodelMock);
+                Collections.singletonMap("storage", "new"), metamodelMock);
     }
 
     @Test

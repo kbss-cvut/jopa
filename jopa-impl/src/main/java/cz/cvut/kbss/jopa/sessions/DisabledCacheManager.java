@@ -21,6 +21,11 @@ public class DisabledCacheManager implements CacheManager {
 	}
 
 	@Override
+	public void close() {
+		// Do nothing
+	}
+
+	@Override
 	public boolean contains(Class<?> cls, Object primaryKey, URI context) {
 		return false;
 	}

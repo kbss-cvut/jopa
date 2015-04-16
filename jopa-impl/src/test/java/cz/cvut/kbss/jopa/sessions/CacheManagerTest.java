@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Logger;
 
 import org.junit.Before;
@@ -337,7 +338,7 @@ public class CacheManagerTest {
 	@Test
 	public void testEvictWithSweeper() throws Exception {
 		LOG.config("Test: evict using sweeper.");
-		initSweepeableManager();
+		initSweepableManager();
 		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
 		mngr.add(testB.getUri(), testB, CONTEXT_TWO);
 		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
@@ -351,7 +352,7 @@ public class CacheManagerTest {
 	@Test
 	public void testRefreshTTL() throws Exception {
 		LOG.config("Test: refresh TTL.");
-		initSweepeableManager();
+		initSweepableManager();
 		mngr.add(testA.getUri(), testA, CONTEXT_ONE);
 		mngr.add(testB.getUri(), testB, CONTEXT_TWO);
 		assertTrue(mngr.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
@@ -366,7 +367,7 @@ public class CacheManagerTest {
 		assertFalse(mngr.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
 	}
 
-	private void initSweepeableManager() {
+	private void initSweepableManager() {
 		final Map<String, String> props = new HashMap<String, String>();
 		props.put(OWLAPIPersistenceProperties.CACHE_TTL, "1");
 		props.put(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE, "2");
@@ -377,5 +378,15 @@ public class CacheManagerTest {
 		for (Entry<URI, OWLClassB> e : entities.entrySet()) {
 			mngr.add(e.getKey(), e.getValue(), CONTEXT_ONE);
 		}
+	}
+
+	@Test
+	public void closeShutsDownSweeper() throws Exception {
+		initSweepableManager();
+		final Field schedulerField = CacheManagerImpl.class.getDeclaredField("sweeperScheduler");
+		schedulerField.setAccessible(true);
+		final ScheduledExecutorService scheduler = (ScheduledExecutorService) schedulerField.get(mngr);
+		mngr.close();
+		assertTrue(scheduler.isShutdown());
 	}
 }
