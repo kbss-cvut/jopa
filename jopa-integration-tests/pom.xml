@@ -16,7 +16,30 @@
 
     <properties>
         <org.aspectj.version>1.8.5</org.aspectj.version>
+        <pellet.version>2.3.0</pellet.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>krizik</id>
+            <name>KBSS Maven 2 Repository</name>
+            <url>http://krizik.felk.cvut.cz/m2repo</url>
+        </repository>
+        <repository>
+            <id>berkeley</id>
+            <name>Berkeley Maven 2 Repository</name>
+            <url>http://code.berkeleybop.org/maven/repository</url>
+        </repository>
+        <repository>
+            <id>jena</id>
+            <url>http://repo1.maven.org/maven2/com/hp/hpl/</url>
+        </repository>
+        <repository>
+            <id>repository.jboss.org-public</id>
+            <name>JBoss.org Maven repository</name>
+            <url>https://repository.jboss.org/nexus/content/groups/public</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
@@ -41,6 +64,72 @@
             <artifactId>ontodriver-sesame</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- OWLAPI + Pellet -->
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-query</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-rules</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-core</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-datatypes</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-el</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-explanation</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-modularity</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mindswap.pellet</groupId>
+            <artifactId>pellet-owlapiv3</artifactId>
+            <version>${pellet.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>aterm</groupId>
+            <artifactId>aterm</artifactId>
+            <version>1.6</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>false</optional>
         </dependency>
     </dependencies>
 

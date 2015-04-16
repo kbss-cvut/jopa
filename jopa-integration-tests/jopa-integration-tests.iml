@@ -26,7 +26,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="jopa-api" />
     <orderEntry type="module" module-name="jopa-impl" />
-    <orderEntry type="library" name="Maven: org.semanticweb:owlapi:3.2.2" level="project" />
     <orderEntry type="library" name="Maven: org.aspectj:aspectjrt:1.8.5" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.aspectj:aspectjweaver:1.8.5" level="project" />
     <orderEntry type="library" name="Maven: org.jgrapht:jgrapht-jdk1.5:0.7.3" level="project" />
@@ -83,6 +82,7 @@
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.4" level="project" />
     <orderEntry type="library" name="Maven: de.fraunhofer.iitb:owldb:2.04-cvut" level="project" />
     <orderEntry type="module" module-name="jopa-owlapi-utils" />
+    <orderEntry type="library" name="Maven: org.semanticweb:owlapi:3.2.2" level="project" />
     <orderEntry type="library" name="Maven: com.github.ansell.pellet:pellet-core:2.3.3" level="project" />
     <orderEntry type="library" name="Maven: com.github.ansell.pellet:pellet-common:2.3.3" level="project" />
     <orderEntry type="library" name="Maven: com.github.ansell.aterms:aterm-java:1.8.2-p1" level="project" />
@@ -180,6 +180,15 @@
     <orderEntry type="library" name="Maven: org.openrdf.sesame:sesame-queryalgebra-model:2.7.9" level="project" />
     <orderEntry type="library" name="Maven: org.openrdf.sesame:sesame-query:2.7.9" level="project" />
     <orderEntry type="library" name="Maven: org.openrdf.sesame:sesame-util:2.7.9" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mindswap.pellet:pellet-query:2.3.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mindswap.pellet:pellet-rules:2.3.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mindswap.pellet:pellet-core:2.3.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mindswap.pellet:pellet-datatypes:2.3.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mindswap.pellet:pellet-el:2.3.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mindswap.pellet:pellet-explanation:2.3.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mindswap.pellet:pellet-modularity:2.3.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.mindswap.pellet:pellet-owlapiv3:2.3.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: aterm:aterm:1.6" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.12" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.mockito:mockito-core:1.10.19" level="project" />
