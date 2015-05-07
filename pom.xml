@@ -21,6 +21,9 @@
 		<module>jopa-impl</module>
 		<module>ontodriver-impl</module>
 		<module>jopa-integration-tests</module>
+		<module>jopa-integration-tests-sesame</module>
+		<!--<module>jopa-integration-tests-owlapi</module>-->
+		<!--<module>jopa-integration-tests-jena</module>-->
 	</modules>
 
 	<properties>

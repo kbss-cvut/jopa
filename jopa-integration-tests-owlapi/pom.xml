@@ -2,7 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-parent</artifactId>
@@ -10,9 +9,9 @@
         <relativePath>../jopa-parent/pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>jopa-integration-tests</artifactId>
-    <name>JOPA Integration Tests</name>
-    <description>Integration tests of JOPA and its OntoDriver implementations</description>
+    <artifactId>jopa-integration-tests-owlapi</artifactId>
+    <name>JOPA Integration Tests for OWLAPI</name>
+    <description>Integration tests of JOPA and OWLAPI OntoDriver implementation</description>
 
     <properties>
         <org.aspectj.version>1.8.5</org.aspectj.version>
@@ -43,21 +42,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
-            <artifactId>jopa-api</artifactId>
+            <artifactId>jopa-integration-tests</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>jopa-impl</artifactId>
             <version>${project.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
@@ -68,12 +61,6 @@
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>ontodriver-owlapi</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>cz.cvut.kbss.jopa</groupId>
-            <artifactId>ontodriver-sesame</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
@@ -197,4 +184,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
