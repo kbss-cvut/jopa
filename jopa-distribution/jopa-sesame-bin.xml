@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<assembly>
+	<id>bin</id>
+	<formats>
+		<format>tar.gz</format>
+	</formats>
+	<includeBaseDirectory>true</includeBaseDirectory>
+	<dependencySets>
+		<dependencySet>
+			<useTransitiveDependencies>true</useTransitiveDependencies>
+			<outputDirectory>/lib</outputDirectory>
+		</dependencySet>
+	</dependencySets>
+	<fileSets>
+		<fileSet>
+			<directory>.</directory>
+			<outputDirectory>/</outputDirectory>
+			<includes>
+				<include>license</include>
+				<include>readme</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>examples</directory>
+			<outputDirectory>/examples</outputDirectory>
+		</fileSet>
+	</fileSets>
+	<files>
+		<!--file>
+			<source>target/generated-sources/license/THIRD-PARTY.txt</source>
+			<outputDirectory>/</outputDirectory>
+		</file-->
+		<file>
+			
+			<source>../jopa-owl2java/target/classes/owl2java.sh</source>
+			<outputDirectory>/</outputDirectory>
+		</file>
+	</files>
+</assembly>
