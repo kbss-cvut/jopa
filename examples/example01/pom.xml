@@ -13,6 +13,14 @@
         model.
     </description>
 
+    <repositories>
+        <repository>
+            <id>krizik</id>
+            <name>KBSS Maven 2 Repository</name>
+            <url>http://krizik.felk.cvut.cz/m2repo</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
