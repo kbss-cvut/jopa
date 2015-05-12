@@ -1,117 +1,117 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>cz.cvut.kbss.jopa</groupId>
-	<version>0.4-SNAPSHOT</version>
-	<artifactId>jopa-distribution</artifactId>
-	<packaging>pom</packaging>
-	<name>JOPA distribution assembly</name>
+    <groupId>cz.cvut.kbss.jopa</groupId>
+    <version>0.4-SNAPSHOT</version>
+    <artifactId>jopa-distribution</artifactId>
+    <packaging>pom</packaging>
+    <name>JOPA distribution assembly</name>
 
-	<!-- On recommendation of http://books.sonatype.com/mvnref-book/reference/assemblies-sect-best-practices.html -->
+    <!-- On recommendation of http://books.sonatype.com/mvnref-book/reference/assemblies-sect-best-practices.html -->
 
-	<build>
-		<plugins>
-			 <plugin>
-                                <groupId>org.apache.maven.plugins</groupId>
-                                <artifactId>maven-assembly-plugin</artifactId>
-                                <version>2.2.1</version>
-                                <executions>
-                                <execution>
-                                        <id>distro-assembly></id>
-                                        <phase>package</phase>
-                                        <goals>
-                                                <goal>single</goal>
-                                        </goals>
-                                </execution>
-                                </executions>
-                                <configuration>
-                                        <tarLongFileMode>gnu</tarLongFileMode>
-                                        <descriptors>
-                                                <descriptor>
-                                                        jopa-sesame-bin.xml
-                                                </descriptor>
-                                        </descriptors>
-                                </configuration>
-                        </plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>distro-assembly></id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <tarLongFileMode>gnu</tarLongFileMode>
+                    <descriptors>
+                        <descriptor>
+                            jopa-sesame-bin.xml
+                        </descriptor>
+                    </descriptors>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-	<dependencies>
+    <dependencies>
 
-		<dependency>
-                    <groupId>cz.cvut.kbss.jopa</groupId>
-                    <artifactId>jopa-parent</artifactId>
-                    <version>${project.version}</version>
-		    <type>pom</type>
-                </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-parent</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+        </dependency>
 
-		<dependency>
-	            <groupId>cz.cvut.kbss.jopa</groupId>
-	            <artifactId>jopa-api</artifactId>
-	            <version>${project.version}</version>
-	        </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		 <dependency>
-                    <groupId>cz.cvut.kbss.jopa</groupId>
-                    <artifactId>jopa-owlapi-utils</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-owlapi-utils</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-                    <groupId>cz.cvut.kbss.jopa</groupId>
-                    <artifactId>jopa-owl2java</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-owl2java</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-                    <groupId>cz.cvut.kbss.jopa</groupId>
-                    <artifactId>jopa-maven-plugin</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-maven-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-                    <groupId>cz.cvut.kbss.jopa</groupId>
-                    <artifactId>ontodriver-sesame</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>ontodriver-sesame</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-                    <groupId>cz.cvut.kbss.jopa</groupId>
-                    <artifactId>ontodriver-jena</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>ontodriver-jena</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-                    <groupId>cz.cvut.kbss.jopa</groupId>
-                    <artifactId>ontodriver-owlapi</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>ontodriver-owlapi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-	            <groupId>cz.cvut.kbss.jopa</groupId>
-	            <artifactId>jopa-impl</artifactId>
-	            <version>${project.version}</version>
-	        </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-                    <groupId>cz.cvut.kbss.jopa</groupId>
-                    <artifactId>ontodriver-impl</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>ontodriver-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-                    <groupId>cz.cvut.kbss.jopa</groupId>
-                    <artifactId>jopa-integration-tests</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-integration-tests</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-                    <groupId>cz.cvut.kbss.jopa</groupId>
-                    <artifactId>jopa-integration-tests-sesame</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-integration-tests-sesame</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 </project>
