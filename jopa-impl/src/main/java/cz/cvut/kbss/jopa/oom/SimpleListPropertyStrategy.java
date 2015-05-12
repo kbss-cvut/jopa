@@ -26,9 +26,7 @@ class SimpleListPropertyStrategy<X> extends
 	void addValueFromAxiom(Axiom<?> ax) {
 		final SimpleListDescriptor listDescriptor = createListDescriptor(ax);
 		final Collection<Axiom<NamedResource>> sequence = mapper.loadSimpleList(listDescriptor);
-		for (Axiom<NamedResource> a : sequence) {
-			super.addValueFromAxiom(a);
-		}
+		sequence.forEach(super::addValueFromAxiom);
 	}
 
 	@Override
