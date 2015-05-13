@@ -95,6 +95,27 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <!-- Generate entity classes from OWL integrity constraints -->
+                <groupId>cz.cvut.kbss.jopa</groupId>
+                <artifactId>jopa-maven-plugin</artifactId>
+                <version>0.4-SNAPSHOT</version>
+                <configuration>
+                    <package>cz.cvut.kbss.jopa.example01.generated</package>
+                    <output-directory>src/main/java/</output-directory>
+                    <ontology-iri>http://krizik.felk.cvut.cz/ontologies/2015/jopa-example01.owl</ontology-iri>
+                    <mapping-file>mapping</mapping-file>
+                    <context-name>jopa-example01</context-name>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>owl2java-transform</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

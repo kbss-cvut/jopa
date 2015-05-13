@@ -6,7 +6,7 @@ import java.net.URI;
 import java.util.Set;
 
 @OWLClass(iri = "http://uob.iodt.ibm.com/univ-bench-dl.owl#UndergraduateStudent")
-public class Student {
+public class UndergraduateStudent {
 
 	@Id
 	private URI uri;
@@ -26,16 +26,16 @@ public class Student {
 	@OWLObjectProperty(iri = "http://uob.iodt.ibm.com/univ-bench-dl.owl#takesCourse", fetch = FetchType.LAZY)
 	private Set<Course> courses;
 
-	@OWLObjectProperty(iri = "http://uob.iodt.ibm.com/univ-bench-dl.owl#publicationAuthor", fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+	@OWLObjectProperty(iri = "http://uob.iodt.ibm.com/univ-bench-dl.owl#isAuthorOf", fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
 	private Set<ConferencePaper> papers;
 
 	@Types
 	private Set<String> types;
 
-	public Student() {
+	public UndergraduateStudent() {
 	}
 
-	public Student(URI uri) {
+	public UndergraduateStudent(URI uri) {
 		this.uri = uri;
 	}
 
