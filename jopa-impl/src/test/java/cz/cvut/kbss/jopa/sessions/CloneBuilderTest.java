@@ -1,50 +1,27 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import cz.cvut.kbss.jopa.adapters.IndirectCollection;
+import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
+import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
-import cz.cvut.kbss.jopa.adapters.IndirectCollection;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassB;
-import cz.cvut.kbss.jopa.environment.OWLClassC;
-import cz.cvut.kbss.jopa.environment.OWLClassD;
-import cz.cvut.kbss.jopa.environment.utils.Generators;
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.*;
+import java.util.Map.Entry;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 
 public class CloneBuilderTest {
 
@@ -56,6 +33,7 @@ public class CloneBuilderTest {
 	private static OWLClassB entityB;
 	private static OWLClassC entityC;
 	private static OWLClassD entityD;
+	private static OWLClassM entityM;
 	private static Set<String> types;
 	private static Set<Class<?>> managedTypes;
 	private static EntityDescriptor defaultDescriptor;
@@ -94,6 +72,18 @@ public class CloneBuilderTest {
 	private Attribute refListMock;
 	@Mock
 	private Attribute simpleListMock;
+	@Mock
+	private EntityType<OWLClassM> etM;
+	@Mock
+	private Identifier identifierM;
+	@Mock
+	private SingularAttribute mBooleanAttribute;
+	@Mock
+	private SingularAttribute mIntAttribute;
+	@Mock
+	private SingularAttribute mLongAttribute;
+	@Mock
+	private SingularAttribute mDoubleAttribute;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -101,7 +91,7 @@ public class CloneBuilderTest {
 		final URI pk = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA");
 		entityA.setUri(pk);
 		entityA.setStringAttribute("TEST");
-		types = new HashSet<String>();
+		types = new HashSet<>();
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA");
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityU");
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityX");
@@ -118,6 +108,8 @@ public class CloneBuilderTest {
 		entityD = new OWLClassD();
 		entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
 		entityD.setOwlClassA(entityA);
+		entityM = new OWLClassM();
+		entityM.initializeTestValues(true);
 		initManagedTypes();
 		defaultDescriptor = new EntityDescriptor();
 	}
@@ -125,26 +117,22 @@ public class CloneBuilderTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		when(uow.isTypeManaged((Class<?>) any())).thenAnswer(new Answer<Boolean>() {
-			public Boolean answer(InvocationOnMock invocation) {
-				Class<?> cls = (Class<?>) invocation.getArguments()[0];
-				return managedTypes.contains(cls);
-			}
-		});
+		when(uow.isTypeManaged(any())).thenAnswer(invocation -> {
+            Class<?> cls = (Class<?>) invocation.getArguments()[0];
+            return managedTypes.contains(cls);
+        });
 		when(uow.getMetamodel()).thenReturn(metamodel);
 		when(uow.registerExistingObject(any(), any(Descriptor.class))).thenAnswer(
-				new Answer<Object>() {
-					@Override
-					public Object answer(InvocationOnMock invocation) {
-						Object obj = invocation.getArguments()[0];
-						Descriptor desc = (Descriptor) invocation.getArguments()[1];
-						return builder.buildClone(obj, desc);
-					}
+				invocation -> {
+					Object obj = invocation.getArguments()[0];
+					Descriptor desc = (Descriptor) invocation.getArguments()[1];
+					return builder.buildClone(obj, desc);
 				});
 		when(metamodel.entity(OWLClassA.class)).thenReturn(etA);
 		when(metamodel.entity(OWLClassB.class)).thenReturn(etB);
 		when(metamodel.entity(OWLClassC.class)).thenReturn(etC);
 		when(metamodel.entity(OWLClassD.class)).thenReturn(etD);
+		when(metamodel.entity(OWLClassM.class)).thenReturn(etM);
 		when(etA.getIdentifier()).thenReturn(identifierA);
 		when(etB.getIdentifier()).thenReturn(identifierB);
 		when(etC.getIdentifier()).thenReturn(identifierC);
@@ -177,6 +165,7 @@ public class CloneBuilderTest {
 		when(simpleListMock.getJavaField()).thenReturn(OWLClassC.getSimpleListField());
 		when(simpleListMock.getPersistentAttributeType())
 				.thenReturn(PersistentAttributeType.OBJECT);
+		TestEnvironmentUtils.initOWLClassMMock(etM, mBooleanAttribute, mIntAttribute, mLongAttribute, mDoubleAttribute, identifierM);
 		this.builder = new CloneBuilderImpl(uow);
 		entityA.setTypes(types);
 		entityB.setProperties(null);
@@ -494,11 +483,44 @@ public class CloneBuilderTest {
 		}
 	}
 
+	@Test
+	public void testBuildCloneWithMultipleWrapperTypesAndStringKey() throws Exception {
+		final OWLClassM m = (OWLClassM) builder.buildClone(entityM, defaultDescriptor);
+		assertNotSame(entityM, m);
+		assertEquals(entityM.getKey(), m.getKey());
+		assertEquals(entityM.getBooleanAttribute(), m.getBooleanAttribute());
+		assertEquals(entityM.getIntAttribute(), m.getIntAttribute());
+		assertEquals(entityM.getLongAttribute(), m.getLongAttribute());
+		assertEquals(entityM.getDoubleAttribute(), m.getDoubleAttribute());
+	}
+
+	@Test
+	public void testMergeChangesWithMultipleWrapperTypesAndStringKey() throws Exception {
+		final OWLClassM m = (OWLClassM) builder.buildClone(entityM, defaultDescriptor);
+		assertNotSame(entityM, m);
+		final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(entityM, m, defaultDescriptor);
+		m.setBooleanAttribute(!m.getBooleanAttribute());
+		changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassM.getBooleanAttributeField().getName(), m.getBooleanAttribute()));
+		m.setIntAttribute(11111);
+		changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassM.getIntAttributeField().getName(), m.getIntAttribute()));
+		m.setLongAttribute(999L);
+		changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassM.getLongAttributeField().getName(), m.getLongAttribute()));
+		m.setDoubleAttribute(1.1);
+		changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassM.getDoubleAttributeField().getName(), m.getDoubleAttribute()));
+
+		builder.mergeChanges(entityM, changeSet);
+		assertEquals(m.getBooleanAttribute(), entityM.getBooleanAttribute());
+		assertEquals(m.getIntAttribute(), entityM.getIntAttribute());
+		assertEquals(m.getLongAttribute(), entityM.getLongAttribute());
+		assertEquals(m.getDoubleAttribute(), entityM.getDoubleAttribute());
+	}
+
 	private static void initManagedTypes() {
 		managedTypes = new HashSet<>();
 		managedTypes.add(OWLClassA.class);
 		managedTypes.add(OWLClassB.class);
 		managedTypes.add(OWLClassC.class);
 		managedTypes.add(OWLClassD.class);
+		managedTypes.add(OWLClassM.class);
 	}
 }

@@ -61,7 +61,7 @@ public class AxiomValueDescriptor extends AxiomDescriptor {
 	private List<Value<?>> getAssertionList(Assertion assertion) {
 		assert assertion != null;
 		if (!values.containsKey(assertion)) {
-			values.put(assertion, new ArrayList<Value<?>>());
+			values.put(assertion, new ArrayList<>());
 			addAssertion(assertion);
 		}
 		return values.get(assertion);
@@ -84,9 +84,7 @@ public class AxiomValueDescriptor extends AxiomDescriptor {
 		if (getClass() != obj.getClass())
 			return false;
 		AxiomValueDescriptor other = (AxiomValueDescriptor) obj;
-		if (!values.equals(other.values))
-			return false;
-		return true;
+		return values.equals(other.values);
 	}
 
 	@Override

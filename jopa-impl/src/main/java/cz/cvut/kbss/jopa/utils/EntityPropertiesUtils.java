@@ -2,7 +2,6 @@ package cz.cvut.kbss.jopa.utils;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.UnassignableIdentifierException;
@@ -55,17 +54,6 @@ public class EntityPropertiesUtils {
 		} catch (IllegalAccessException e) {
 			throw new OWLPersistenceException();
 		}
-//		if (fieldValue == null) {
-//			return null;
-//		}
-
-//		if (fieldValue instanceof String) {
-//			return IRI.create((String) fieldValue);
-//		} else if (fieldValue instanceof URI) {
-//			return IRI.create((URI) fieldValue);
-//		} else {
-//			throw new OWLPersistenceException("Unknown identifier type: " + fieldValue.getClass());
-//		}
 	}
 
 	/**
@@ -94,20 +82,31 @@ public class EntityPropertiesUtils {
 	}
 
 	public static <T> void setPrimaryKey(Object primaryKey, T entity, EntityType<T> et) {
-		final Identifier id = et.getIdentifier();
-		final Field idField = id.getJavaField();
-		if (!idField.getType().isAssignableFrom(primaryKey.getClass())) {
-			throw new UnassignableIdentifierException("Cannot assign identifier of type "
-					+ primaryKey + " to field of type " + idField.getType());
-		}
+		// TODO We need to be able to map identifiers from storage to the field type (to some extent)
+		final Field idField = et.getIdentifier().getJavaField();
+		final Object identifier = transformIdentifierToFieldType(primaryKey, idField);
 		if (!idField.isAccessible()) {
 			idField.setAccessible(true);
 		}
 		try {
-			idField.set(entity, primaryKey);
+			idField.set(entity, identifier);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new OWLPersistenceException("Unable to set entity primary key.", e);
 		}
+	}
+
+	private static Object transformIdentifierToFieldType(Object identifier, Field idField) {
+		if (idField.getType().isAssignableFrom(identifier.getClass())) {
+			return identifier;
+		}
+		if (idField.getType().equals(String.class)) {
+			return identifier.toString();
+		}
+		if (idField.getType().equals(URI.class)) {
+			return URI.create(identifier.toString());
+		}
+		throw new UnassignableIdentifierException("Cannot assign identifier of type "
+				+ identifier.getClass() + " to field of type " + idField.getType());
 	}
 
 	/**

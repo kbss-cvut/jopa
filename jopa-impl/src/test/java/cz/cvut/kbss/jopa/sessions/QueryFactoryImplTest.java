@@ -1,19 +1,17 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.model.query.Query;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import cz.cvut.kbss.jopa.model.query.Query;
-import cz.cvut.kbss.jopa.environment.OWLClassA;
+import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class QueryFactoryImplTest {
 
@@ -47,7 +45,6 @@ public class QueryFactoryImplTest {
 	public void testCreateNativeQueryNull() {
 		final Query<List<String>> q = factory.createNativeQuery(null);
 		assert q == null;
-		fail("This line hsould not have been reached.");
 	}
 
 	@Test
@@ -61,14 +58,12 @@ public class QueryFactoryImplTest {
 	public void testCreateNativeQueryTypedNullQuery() {
 		final Query<OWLClassA> q = factory.createNativeQuery(null, CLS);
 		assert q == null;
-		fail("This line hsould not have been reached.");
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testCreateNativeQueryTypedNullType() {
 		final Query<OWLClassA> q = factory.createNativeQuery(QUERY, null);
 		assert q == null;
-		fail("This line hsould not have been reached.");
 	}
 
 	@Test
@@ -82,7 +77,6 @@ public class QueryFactoryImplTest {
 	public void testCreateQueryNull() {
 		final Query q = factory.createQuery(null);
 		assert q == null;
-		fail("This line hsould not have been reached.");
 	}
 
 	@Test
@@ -96,13 +90,11 @@ public class QueryFactoryImplTest {
 	public void testCreateQueryTypedNullQuery() {
 		final Query<OWLClassA> q = factory.createQuery(null, CLS);
 		assert q == null;
-		fail("This line hsould not have been reached.");
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testCreateQueryTypedNullType() {
 		final Query<OWLClassA> q = factory.createQuery(QUERY, null);
 		assert q == null;
-		fail("This line hsould not have been reached.");
 	}
 }

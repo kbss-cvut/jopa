@@ -22,8 +22,6 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 public class ServerSessionTest {
 
-    private OntologyStorageProperties storageProperties;
-
     @Mock
     private Metamodel metamodelMock;
 
@@ -32,10 +30,11 @@ public class ServerSessionTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        this.storageProperties = OntologyStorageProperties.ontologyUri(
+        OntologyStorageProperties storageProperties = OntologyStorageProperties.ontologyUri(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa")).physicalUri(
                 URI.create("file://tmp/jopa")).connectorType(OntologyConnectorType.OWLAPI)
-                .driver(DataSourceStub.class.getCanonicalName()).build();
+                                                                               .driver(DataSourceStub.class
+                                                                                       .getCanonicalName()).build();
         when(metamodelMock.getEntities()).thenReturn(Collections.<EntityType<?>>emptySet());
         this.session = new ServerSession(storageProperties,
                 Collections.singletonMap("storage", "new"), metamodelMock);

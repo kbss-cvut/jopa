@@ -16,7 +16,7 @@
 package cz.cvut.kbss.jopa.transactions;
 
 /**
- * Taken from javax.persistence.EntityTransacion
+ * Taken from javax.persistence.EntityTransaction
  * 
  * @author kidney
  * 

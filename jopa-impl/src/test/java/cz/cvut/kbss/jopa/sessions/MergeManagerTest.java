@@ -132,8 +132,7 @@ public class MergeManagerTest {
 	}
 
 	private static ObjectChangeSet createChangeSet(OWLClassB orig, OWLClassB clone) {
-		return TestEnvironmentUtils.createObjectChangeSet(orig, clone,
-				defaultDescriptor.getContext());
+		return ChangeSetFactory.createObjectChangeSet(orig, clone, defaultDescriptor);
 	}
 
 	private static class CloneBuilderStub extends CloneBuilderImpl {

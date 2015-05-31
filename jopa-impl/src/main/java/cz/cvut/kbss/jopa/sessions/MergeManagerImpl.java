@@ -53,12 +53,8 @@ public class MergeManagerImpl implements MergeManager {
 				Object clone = objectChangeSet.getCloneObject();
 				mergeChangesOnObject(clone, objectChangeSet);
 		}
-		for (ObjectChangeSet objectChangeSet : changeSet.getNewObjects()) {
-				mergeNewObject(objectChangeSet);
-		}
-		for (ObjectChangeSet deletedChangeSet : changeSet.getDeletedObjects()) {
-			deleteObjectFromCache(deletedChangeSet);
-		}
+		changeSet.getNewObjects().forEach(this::mergeNewObject);
+		changeSet.getDeletedObjects().forEach(this::deleteObjectFromCache);
 
 	}
 

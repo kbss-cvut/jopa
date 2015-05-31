@@ -1,30 +1,23 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 public class UnitOfWorkChangeSetTest {
 
-	@Mock
 	private ObjectChangeSet changeSet;
 	private String testObject;
 
 	private UnitOfWorkChangeSet chs;
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Before
 	public void setUp() throws Exception {
 		this.testObject = "TEST";
 		final String testClone = "TEST";
-		MockitoAnnotations.initMocks(this);
-		when(changeSet.getChangedObject()).thenReturn(testObject);
-		when(changeSet.getCloneObject()).thenReturn(testClone);
-		when(changeSet.getObjectClass()).thenReturn((Class) testClone.getClass());
+		this.changeSet = ChangeSetFactory.createObjectChangeSet(testObject, testClone, new EntityDescriptor());
 		chs = new UnitOfWorkChangeSetImpl();
 	}
 
@@ -43,7 +36,7 @@ public class UnitOfWorkChangeSetTest {
 	 */
 	@Test
 	public void testAddObjectChangeSetWithNew() {
-		when(changeSet.isNew()).thenReturn(Boolean.TRUE);
+		changeSet.setNew(true);
 		chs.addObjectChangeSet(changeSet);
 		assertEquals(1, chs.getNewObjects().size());
 		ObjectChangeSet res = chs.getNewObjects().iterator().next();
@@ -64,7 +57,7 @@ public class UnitOfWorkChangeSetTest {
 
 	@Test
 	public void testAddNewObjectChangeSet() {
-		when(changeSet.isNew()).thenReturn(Boolean.TRUE);
+		changeSet.setNew(true);
 		chs.addNewObjectChangeSet(changeSet);
 		assertTrue(chs.hasChanges());
 		assertEquals(1, chs.getNewObjects().size());
