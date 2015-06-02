@@ -22,8 +22,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -98,7 +96,7 @@ public class UnitOfWorkTest {
 		entityA = new OWLClassA();
 		entityA.setUri(pkOne);
 		entityA.setStringAttribute("attribute");
-		entityA.setTypes(new HashSet<String>());
+		entityA.setTypes(new HashSet<>());
         entityA.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa#entityQ");
         entityA.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa#entityX");
         entityA.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa#entityW");
@@ -251,7 +249,6 @@ public class UnitOfWorkTest {
 		uow.commit();
 
 		assertEquals(d.getOwlClassA().getUri(), newA.getUri());
-        System.out.println(newA.getUri());
         verify(cacheManagerMock).add(eq(newA.getUri()), any(Object.class),
 				eq(CONTEXT_URI));
 	}
@@ -570,16 +567,11 @@ public class UnitOfWorkTest {
 		assertNull(clone.getStringAttribute());
 		final Field strField = OWLClassB.getStrAttField();
 		strField.setAccessible(true);
-		doAnswer(new Answer<Void>() {
-
-			@Override
-			public Void answer(InvocationOnMock invocation) throws Throwable {
-				final Field f = (Field) invocation.getArguments()[1];
-				f.set(invocation.getArguments()[0], stringAtt);
-				return null;
-			}
-
-		}).when(storageMock).loadFieldValue(clone, strField, descriptor);
+		doAnswer(invocation -> {
+            final Field f = (Field) invocation.getArguments()[1];
+            f.set(invocation.getArguments()[0], stringAtt);
+            return null;
+        }).when(storageMock).loadFieldValue(clone, strField, descriptor);
 
 		uow.loadEntityField(clone, strField);
 		assertNotNull(clone.getStringAttribute());
@@ -593,16 +585,11 @@ public class UnitOfWorkTest {
 		final OWLClassD clone = (OWLClassD) uow.registerExistingObject(d, descriptor);
 		assertNull(clone.getOwlClassA());
 		final Field toLoad = OWLClassD.getOwlClassAField();
-		doAnswer(new Answer<Void>() {
-
-			@Override
-			public Void answer(InvocationOnMock invocation) throws Throwable {
-				final Field f = (Field) invocation.getArguments()[1];
-				f.set(invocation.getArguments()[0], entityA);
-				return null;
-			}
-
-		}).when(storageMock).loadFieldValue(clone, toLoad, descriptor);
+		doAnswer(invocation -> {
+            final Field f = (Field) invocation.getArguments()[1];
+            f.set(invocation.getArguments()[0], entityA);
+            return null;
+        }).when(storageMock).loadFieldValue(clone, toLoad, descriptor);
 
 		uow.loadEntityField(clone, toLoad);
 		assertNotNull(clone.getOwlClassA());

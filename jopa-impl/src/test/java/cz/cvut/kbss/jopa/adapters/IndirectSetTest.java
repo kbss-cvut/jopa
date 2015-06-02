@@ -42,8 +42,8 @@ public class IndirectSetTest {
 		owner = new OWLClassF();
 		owner.setUri(URI.create("http://C"));
 		ownerField = OWLClassF.class.getDeclaredField("simpleSet");
-		backupSet = new HashSet<OWLClassA>();
-		set = new HashSet<OWLClassA>();
+		backupSet = new HashSet<>();
+		set = new HashSet<>();
 		for (byte i = 0; i < 10; i++) {
 			OWLClassA a = new OWLClassA();
 			a.setUri(URI.create("http://a" + i));
@@ -57,7 +57,7 @@ public class IndirectSetTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
-		target = new IndirectSet<OWLClassA>(owner, ownerField, uow, set);
+		target = new IndirectSet<>(owner, ownerField, uow, set);
 		set.clear();
 		set.addAll(backupSet);
 		owner.setSimpleSet(target);
@@ -66,14 +66,14 @@ public class IndirectSetTest {
 	@Test(expected = NullPointerException.class)
 	public void testIndirectSetNullUoW() {
 		@SuppressWarnings("unused")
-		final IndirectSet<OWLClassA> res = new IndirectSet<OWLClassA>(owner, ownerField, null, set);
+		final IndirectSet<OWLClassA> res = new IndirectSet<>(owner, ownerField, null, set);
 		fail("This line should not have been reached.");
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testIndirectSetNullReferencedSet() {
 		@SuppressWarnings("unused")
-		final IndirectSet<OWLClassA> res = new IndirectSet<OWLClassA>(owner, ownerField, uow, null);
+		final IndirectSet<OWLClassA> res = new IndirectSet<>(owner, ownerField, uow, null);
 		fail("This line should not have been reached.");
 	}
 
@@ -134,7 +134,7 @@ public class IndirectSetTest {
 
 	@Test
 	public void testAddAll() {
-		final List<OWLClassA> toAdd = new ArrayList<OWLClassA>();
+		final List<OWLClassA> toAdd = new ArrayList<>();
 		for (int i = 0; i < 5; i++) {
 			final OWLClassA a = new OWLClassA();
 			a.setUri(URI.create("http://addAllA" + i));
@@ -148,7 +148,7 @@ public class IndirectSetTest {
 
 	@Test
 	public void testRetainAll() {
-		Set<OWLClassA> toRetain = new HashSet<OWLClassA>();
+		Set<OWLClassA> toRetain = new HashSet<>();
 		Iterator<OWLClassA> it = backupSet.iterator();
 		for (int i = 0; i < 8; i++) {
 			assertTrue(it.hasNext());
@@ -162,7 +162,7 @@ public class IndirectSetTest {
 
 	@Test
 	public void testRemoveAll() {
-		Set<OWLClassA> toRemove = new HashSet<OWLClassA>();
+		Set<OWLClassA> toRemove = new HashSet<>();
 		Iterator<OWLClassA> it = backupSet.iterator();
 		for (int i = 0; i < 8; i++) {
 			assertTrue(it.hasNext());

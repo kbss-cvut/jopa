@@ -19,6 +19,8 @@ import java.util.*;
  */
 public class EntityPropertiesUtils {
 
+    private static final IdentifierTransformer identifierTransformer = new IdentifierTransformer();
+
     /**
      * Private constructor
      */
@@ -41,24 +43,18 @@ public class EntityPropertiesUtils {
         Object fieldValue;
         try {
             final EntityType<?> type = metamodel.entity(entity.getClass());
-            final Field idField = type.getIdentifier().getJavaField();
-            idField.setAccessible(true);
-            fieldValue = idField.get(entity);
+            fieldValue = getFieldValue(type.getIdentifier().getJavaField(), entity);
             return fieldValue;
         } catch (IllegalAccessException e) {
             throw new OWLPersistenceException();
         }
-//		if (fieldValue == null) {
-//			return null;
-//		}
+    }
 
-//		if (fieldValue instanceof String) {
-//			return IRI.create((String) fieldValue);
-//		} else if (fieldValue instanceof URI) {
-//			return IRI.create((URI) fieldValue);
-//		} else {
-//			throw new OWLPersistenceException("Unknown identifier type: " + fieldValue.getClass());
-//		}
+    private static Object getFieldValue(Field field, Object instance) throws IllegalAccessException {
+        if (!field.isAccessible()) {
+            field.setAccessible(true);
+        }
+        return field.get(instance);
     }
 
     /**
@@ -69,12 +65,8 @@ public class EntityPropertiesUtils {
      * @return Primary key, possibly null
      */
     public static <T> URI getPrimaryKey(T entity, EntityType<?> et) {
-        final Field idField = et.getIdentifier().getJavaField();
-        if (!idField.isAccessible()) {
-            idField.setAccessible(true);
-        }
         try {
-            final Object id = idField.get(entity);
+            final Object id = getFieldValue(et.getIdentifier().getJavaField(), entity);
             if (id == null) {
                 return null;
             }
@@ -94,27 +86,17 @@ public class EntityPropertiesUtils {
     public static <T> void setPrimaryKey(Object primaryKey, T entity, EntityType<T> et) {
         final Identifier id = et.getIdentifier();
         final Field idField = id.getJavaField();
-        final Object assignablePk = primaryKeyToFieldType(primaryKey, idField);
-        if (!idField.isAccessible()) {
-            idField.setAccessible(true);
-        }
         try {
+            final Object assignablePk = identifierTransformer.transformToType(primaryKey, idField.getType());
+            if (!idField.isAccessible()) {
+                idField.setAccessible(true);
+            }
             idField.set(entity, assignablePk);
-        } catch (IllegalArgumentException | IllegalAccessException e) {
+        } catch (IllegalArgumentException e) {
+            throw new UnassignableIdentifierException(e);
+        } catch (IllegalAccessException e) {
             throw new OWLPersistenceException("Unable to set entity primary key.", e);
         }
-    }
-
-    private static Object primaryKeyToFieldType(Object primaryKey, Field idField) {
-        if (idField.getType().isAssignableFrom(primaryKey.getClass())) {
-            return primaryKey;
-        }
-        // Support for String-based ids
-        if (idField.getType().isAssignableFrom(String.class)) {
-            return primaryKey.toString();
-        }
-        throw new UnassignableIdentifierException("Cannot assign identifier of type "
-                + primaryKey + " to field of type " + idField.getType());
     }
 
     /**
@@ -128,11 +110,7 @@ public class EntityPropertiesUtils {
     public static URI getValueAsURI(Object value) {
         Objects.requireNonNull(value, ErrorUtils.constructNPXMessage("value"));
 
-        if (value instanceof URI) {
-            return (URI) value;
-        } else {
-            return URI.create(value.toString());
-        }
+        return identifierTransformer.valueAsUri(value);
     }
 
     /**

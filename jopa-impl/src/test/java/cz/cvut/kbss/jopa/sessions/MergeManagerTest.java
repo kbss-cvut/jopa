@@ -1,13 +1,12 @@
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.environment.OWLClassB;
-import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -132,8 +131,7 @@ public class MergeManagerTest {
 	}
 
 	private static ObjectChangeSet createChangeSet(OWLClassB orig, OWLClassB clone) {
-		return TestEnvironmentUtils.createObjectChangeSet(orig, clone,
-				defaultDescriptor.getContext());
+		return ChangeSetFactory.createObjectChangeSet(orig, clone, defaultDescriptor);
 	}
 
 	private static class CloneBuilderStub extends CloneBuilderImpl {

@@ -107,9 +107,9 @@ public class EntityConstructorPluralAttributesTest {
 
 	private Collection<Axiom<?>> initAxiomsForC() throws Exception {
 		final Collection<Axiom<?>> axioms = new HashSet<>();
-		axioms.add(new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false), new Value<URI>(
+		axioms.add(new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false), new Value<>(
 				URI.create(OWLClassC.getClassIri()))));
-		axioms.add(new AxiomImpl<>(SUBJECT, hasSimpleListAssertion, new Value<URI>(firstListElem)));
+		axioms.add(new AxiomImpl<>(SUBJECT, hasSimpleListAssertion, new Value<>(firstListElem)));
 		return axioms;
 	}
 
@@ -122,12 +122,12 @@ public class EntityConstructorPluralAttributesTest {
 			final Axiom<NamedResource> ax;
 			if (first) {
 				ax = new AxiomImpl<>(NamedResource.create(PK), hasSimpleListAssertion,
-						new Value<NamedResource>(NamedResource.create(key)));
+						new Value<>(NamedResource.create(key)));
 				first = false;
 			} else {
 				ax = new AxiomImpl<>(NamedResource.create(previous),
 						Assertion.createObjectPropertyAssertion(nextElemProperty,
-								simpleListMock.isInferred()), new Value<NamedResource>(NamedResource.create(key)));
+								simpleListMock.isInferred()), new Value<>(NamedResource.create(key)));
 			}
 			previous = key;
 			axioms.add(ax);
@@ -138,7 +138,7 @@ public class EntityConstructorPluralAttributesTest {
 	@Test
 	public void setsSimpleListLazilyLoadedFieldValue() throws Exception {
 		final Collection<Axiom<?>> axioms = Collections.<Axiom<?>> singleton(new AxiomImpl<>(
-				SUBJECT, hasSimpleListAssertion, new Value<URI>(firstListElem)));
+				SUBJECT, hasSimpleListAssertion, new Value<>(firstListElem)));
 		prepareMapperMockForSimpleListLoad();
 
 		final OWLClassC c = new OWLClassC();

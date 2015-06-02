@@ -43,8 +43,8 @@ public class IndirectListTest {
 		owner = new OWLClassC();
 		owner.setUri(URI.create("http://C"));
 		ownerField = OWLClassC.class.getDeclaredField("referencedList");
-		backupList = new ArrayList<OWLClassA>();
-		list = new ArrayList<OWLClassA>();
+		backupList = new ArrayList<>();
+		list = new ArrayList<>();
 		for (byte i = 0; i < 10; i++) {
 			OWLClassA a = new OWLClassA();
 			a.setUri(URI.create("http://a" + i));
@@ -58,7 +58,7 @@ public class IndirectListTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		when(uow.isInTransaction()).thenReturn(Boolean.TRUE);
-		target = new IndirectList<OWLClassA>(owner, ownerField, uow, list);
+		target = new IndirectList<>(owner, ownerField, uow, list);
 		list.clear();
 		list.addAll(backupList);
 		owner.setReferencedList(target);
@@ -67,14 +67,14 @@ public class IndirectListTest {
 	@Test(expected = NullPointerException.class)
 	public void testConstructorNull() {
 		@SuppressWarnings("unused")
-		final IndirectList<OWLClassA> l = new IndirectList<OWLClassA>(owner, ownerField, uow, null);
+		final IndirectList<OWLClassA> l = new IndirectList<>(owner, ownerField, uow, null);
 		fail("This line should not have been reached.");
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testConstructorNullTwo() {
 		@SuppressWarnings("unused")
-		final IndirectList<OWLClassA> l = new IndirectList<OWLClassA>(owner, ownerField, null, list);
+		final IndirectList<OWLClassA> l = new IndirectList<>(owner, ownerField, null, list);
 		fail("This line should not have been reached.");
 	}
 
@@ -107,7 +107,7 @@ public class IndirectListTest {
 
 	@Test
 	public void testAddAll() {
-		final List<OWLClassA> toAdd = new ArrayList<OWLClassA>();
+		final List<OWLClassA> toAdd = new ArrayList<>();
 		for (int i = 0; i < 5; i++) {
 			final OWLClassA a = new OWLClassA();
 			a.setUri(URI.create("http://addedA" + i));
@@ -120,7 +120,7 @@ public class IndirectListTest {
 
 	@Test
 	public void testAddAllAtIndex() {
-		final List<OWLClassA> toAdd = new ArrayList<OWLClassA>();
+		final List<OWLClassA> toAdd = new ArrayList<>();
 		for (int i = 0; i < 5; i++) {
 			final OWLClassA a = new OWLClassA();
 			a.setUri(URI.create("http://addedA" + i));

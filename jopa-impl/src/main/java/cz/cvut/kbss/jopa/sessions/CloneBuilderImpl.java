@@ -241,7 +241,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 				if (!f.isAccessible()) {
 					f.setAccessible(true);
 				}
-				if (isPrimitiveOrString(f.getClass())) {
+				if (isPrimitiveOrString(f.getType())) {
 					f.set(original, change.getNewValue());
 					continue;
 				}

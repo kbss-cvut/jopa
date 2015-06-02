@@ -76,7 +76,7 @@ public class AxiomValueGathererTest {
     @Test
     public void testAddPropertiesTwice() throws Exception {
         final Map<Assertion, Set<Value<?>>> propsOne = new HashMap<>();
-        propsOne.put(DATA_ASSERTION, new HashSet<Value<?>>(Arrays.asList(new Value<>("one"), new Value<>("two"))));
+        propsOne.put(DATA_ASSERTION, new HashSet<>(Arrays.asList(new Value<>("one"), new Value<>("two"))));
         gatherer.addProperties(propsOne, null);
         final Map<Assertion, Set<Value<?>>> propsTwo = new HashMap<>();
         propsTwo.put(OBJECT_ASSERTION, Collections.<Value<?>>singleton(new Value<>("http://krizik.felk.cvut.cz/pp")));

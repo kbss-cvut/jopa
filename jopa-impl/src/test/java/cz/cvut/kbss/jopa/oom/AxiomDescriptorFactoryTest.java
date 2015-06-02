@@ -41,7 +41,7 @@ public class AxiomDescriptorFactoryTest {
 
 	private static URI stringAttAUri;
 	private static URI stringAttBUri;
-	private static URI owlclassAAttUri;
+	private static URI owlClassAAttUri;
 
 	@Mock
 	private EntityType<OWLClassA> etAMock;
@@ -77,7 +77,7 @@ public class AxiomDescriptorFactoryTest {
 				.iri());
 		stringAttBUri = URI.create(OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class)
 				.iri());
-		owlclassAAttUri = URI.create(OWLClassD.getOwlClassAField()
+		owlClassAAttUri = URI.create(OWLClassD.getOwlClassAField()
 				.getAnnotation(OWLObjectProperty.class).iri());
 	}
 
@@ -91,7 +91,7 @@ public class AxiomDescriptorFactoryTest {
 		when(etDMock.getAttribute(OWLClassD.getOwlClassAField().getName())).thenReturn(
                 owlClassAAttMock);
 		when(owlClassAAttMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
-		when(owlClassAAttMock.getIRI()).thenReturn(IRI.create(owlclassAAttUri.toString()));
+		when(owlClassAAttMock.getIRI()).thenReturn(IRI.create(owlClassAAttUri.toString()));
 		when(owlClassAAttMock.getPersistentAttributeType()).thenReturn(
                 PersistentAttributeType.OBJECT);
 		when(owlClassAAttMock.getFetchType()).thenReturn(FetchType.EAGER);
@@ -149,14 +149,14 @@ public class AxiomDescriptorFactoryTest {
 		assertNull(res.getSubjectContext());
 		Assertion ass = null;
 		for (Assertion a : res.getAssertions()) {
-			if (a.getIdentifier().equals(owlclassAAttUri)) {
+			if (a.getIdentifier().equals(owlClassAAttUri)) {
 				ass = a;
 				break;
 			}
 		}
 		assertNotNull(ass);
 		assertEquals(CONTEXT, res.getAssertionContext(ass));
-		assertEquals(owlclassAAttUri, ass.getIdentifier());
+		assertEquals(owlClassAAttUri, ass.getIdentifier());
 	}
 
 	@Test
@@ -170,7 +170,7 @@ public class AxiomDescriptorFactoryTest {
 		assertEquals(NamedResource.create(PK), res.getSubject());
 		assertNull(res.getSubjectContext());
 		assertTrue(res.getAssertions().contains(
-				Assertion.createAnnotationPropertyAssertion(owlclassAAttUri, false)));
+				Assertion.createAnnotationPropertyAssertion(owlClassAAttUri, false)));
 	}
 
 	@Test
@@ -206,7 +206,7 @@ public class AxiomDescriptorFactoryTest {
 				OWLClassD.getOwlClassAField(), desc, etDMock);
 		assertEquals(1, res.getAssertions().size());
 		final Assertion as = res.getAssertions().iterator().next();
-		assertEquals(Assertion.createObjectPropertyAssertion(owlclassAAttUri, false), as);
+		assertEquals(Assertion.createObjectPropertyAssertion(owlClassAAttUri, false), as);
 		assertEquals(CONTEXT, res.getAssertionContext(as));
 	}
 
