@@ -1,3 +1,4 @@
+- Resolve problems with cloning of Date attributes
 - Add some tests for String-based ids support
 - Add support for parameters in queries (query builder)
 - Add support for EntityManager.getReference
