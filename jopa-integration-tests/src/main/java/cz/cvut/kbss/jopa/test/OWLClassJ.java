@@ -2,14 +2,11 @@ package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Set;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassJ")
 public class OWLClassJ {
-
-	private static final String CLS_A_FIELD = "owlClassA";
 
 	@Id
 	private URI uri;
@@ -42,13 +39,5 @@ public class OWLClassJ {
 
 	public Set<OWLClassA> getOwlClassA() {
 		return owlClassA;
-	}
-
-	public static String getClassIri() {
-		return OWLClassJ.class.getAnnotation(OWLClass.class).iri();
-	}
-	
-	public static Field getOwlClassAField() throws NoSuchFieldException, SecurityException {
-		return OWLClassJ.class.getDeclaredField(CLS_A_FIELD);
 	}
 }

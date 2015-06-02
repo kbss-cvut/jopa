@@ -16,7 +16,6 @@ import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -94,6 +93,8 @@ public class EntityDeconstructorTest {
     private SingularAttribute longAttMock;
     @Mock
     private SingularAttribute doubleAttMock;
+    @Mock
+    private SingularAttribute dateAttMock;
 
     @Mock
     private ObjectOntologyMapperImpl oomMock;
@@ -136,7 +137,7 @@ public class EntityDeconstructorTest {
         TestEnvironmentUtils.initOWLClassEMocks(etEMock, strAttEMock, idE);
         TestEnvironmentUtils.initOWLClassDMocks(etDMock, clsAMock, idD);
         TestEnvironmentUtils.initOWLClassKMocks(etKMock, clsEMock, idK);
-        TestEnvironmentUtils.initOWLClassMMock(etMMock, booleanAttMock, intAttMock, longAttMock, doubleAttMock, idM);
+        TestEnvironmentUtils.initOWLClassMMock(etMMock, booleanAttMock, intAttMock, longAttMock, doubleAttMock, dateAttMock, idM);
         when(oomMock.getEntityType(OWLClassA.class)).thenReturn(etAMock);
         entityA.setTypes(null);
         entityA.setStringAttribute("someStringAttribute");
@@ -432,7 +433,8 @@ public class EntityDeconstructorTest {
         assertTrue(containsDPAssertion(res, OWLClassM.getBooleanAttributeField(), entityM.getBooleanAttribute()));
         assertTrue(containsDPAssertion(res, OWLClassM.getIntAttributeField(), entityM.getIntAttribute()));
         assertTrue(containsDPAssertion(res, OWLClassM.getDoubleAttributeField(), entityM.getDoubleAttribute()));
-        // TODO Support for plural data properties is not implemented yet
+        assertTrue(containsDPAssertion(res, OWLClassM.getLongAttributeField(), entityM.getLongAttribute()));
+        assertTrue(containsDPAssertion(res, OWLClassM.getDateAttributeField(), entityM.getDoubleAttribute()));
     }
 
     private boolean containsInstanceAssertion(AxiomValueDescriptor descriptor) throws Exception {

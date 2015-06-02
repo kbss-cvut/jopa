@@ -68,7 +68,7 @@ public class UpdateOperationsRunner extends BaseRunner {
 		em.getTransaction().begin();
 		final OWLClassB b = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
 		assertNotNull(b);
-		final Field propsField = OWLClassB.getPropertiesField();
+		final Field propsField = OWLClassB.class.getDeclaredField("properties");
 		propsField.setAccessible(true);
 		assertNull(propsField.get(b));
 		final String newString = "NewString";
@@ -572,11 +572,13 @@ public class UpdateOperationsRunner extends BaseRunner {
         m.setBooleanAttribute(!entityM.getBooleanAttribute());
         m.setDoubleAttribute(m.getDoubleAttribute() - 100.0);
         m.setLongAttribute(m.getLongAttribute() + 100L);
+        m.setDateAttribute(new Date(System.currentTimeMillis() + 10000));
         em.getTransaction().commit();
 
         final OWLClassM res = em.find(OWLClassM.class, entityM.getKey(), mDescriptor);
         assertEquals(m.getBooleanAttribute(), res.getBooleanAttribute());
         assertEquals(m.getLongAttribute(), res.getLongAttribute());
         assertEquals(m.getDoubleAttribute(), res.getDoubleAttribute());
+        assertEquals(m.getDateAttribute(), res.getDateAttribute());
     }
 }

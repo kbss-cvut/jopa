@@ -34,7 +34,7 @@ public class CreateOperationsMultiContextRunner extends BaseRunner {
 	public void persistDataPropertyIntoContext(EntityManager em) throws Exception {
 		logger.config("Test: persist an entity into the default context and its data property into a different one.");
 		final Descriptor aDescriptor = new EntityDescriptor();
-		aDescriptor.addAttributeContext(OWLClassA.getStrAttField(), CONTEXT_ONE);
+		aDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("stringAttribute"), CONTEXT_ONE);
 		em.getTransaction().begin();
 		em.persist(entityA, aDescriptor);
 		em.getTransaction().commit();
@@ -51,7 +51,7 @@ public class CreateOperationsMultiContextRunner extends BaseRunner {
 		logger.config("Test: persist entity into one context and its object property into another, along with its own attributes.");
 		final Descriptor dDescriptor = new EntityDescriptor();
 		final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
-		dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+		dDescriptor.addAttributeDescriptor(OWLClassD.class.getDeclaredField("owlClassA"), aDescriptor);
 		em.getTransaction().begin();
 		em.persist(entityD, dDescriptor);
 		em.persist(entityA, aDescriptor);
@@ -116,7 +116,7 @@ public class CreateOperationsMultiContextRunner extends BaseRunner {
 		logger.config("Test: persist an entity and persist its properties into a different context.");
 		final Descriptor bDescriptor = new EntityDescriptor();
 		entityB.setProperties(Generators.createProperties(10));
-		bDescriptor.addAttributeContext(OWLClassB.getPropertiesField(), CONTEXT_ONE);
+		bDescriptor.addAttributeContext(OWLClassB.class.getDeclaredField("properties"), CONTEXT_ONE);
 		em.getTransaction().begin();
 		em.persist(entityB, bDescriptor);
 		em.getTransaction().commit();
@@ -136,8 +136,8 @@ public class CreateOperationsMultiContextRunner extends BaseRunner {
 		final Descriptor gDescriptor = new EntityDescriptor();
 		final Descriptor hDescriptor = new EntityDescriptor(CONTEXT_ONE);
 		final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
-		hDescriptor.addAttributeDescriptor(OWLClassH.getOwlClassAField(), aDescriptor);
-		gDescriptor.addAttributeDescriptor(OWLClassG.getOwlClassHField(), hDescriptor);
+		hDescriptor.addAttributeDescriptor(OWLClassH.class.getDeclaredField("owlClassA"), aDescriptor);
+		gDescriptor.addAttributeDescriptor(OWLClassG.class.getDeclaredField("owlClassH"), hDescriptor);
 		em.getTransaction().begin();
 		em.persist(entityG, gDescriptor);
 		assertTrue(em.contains(entityG));
@@ -160,10 +160,10 @@ public class CreateOperationsMultiContextRunner extends BaseRunner {
 		entityF.setSimpleSet(Generators.createSimpleSet(20));
 		final Descriptor fDescriptor = new EntityDescriptor();
 		final Descriptor setDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_ONE,
-				OWLClassF.getSimpleSetField());
-		fDescriptor.addAttributeDescriptor(OWLClassF.getSimpleSetField(), setDescriptor);
-		setDescriptor.addAttributeContext(OWLClassA.getStrAttField(), CONTEXT_TWO);
-		setDescriptor.addAttributeContext(OWLClassA.getTypesField(), CONTEXT_TWO);
+				OWLClassF.class.getDeclaredField("simpleSet"));
+		fDescriptor.addAttributeDescriptor(OWLClassF.class.getDeclaredField("simpleSet"), setDescriptor);
+		setDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("stringAttribute"), CONTEXT_TWO);
+		setDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("types"), CONTEXT_TWO);
 		em.getTransaction().begin();
 		em.persist(entityF, fDescriptor);
 		for (OWLClassA a : entityF.getSimpleSet()) {
@@ -190,7 +190,7 @@ public class CreateOperationsMultiContextRunner extends BaseRunner {
 		assertNull(entityE.getUri());
 		final Descriptor eDescriptor = new EntityDescriptor(CONTEXT_TWO);
 		final Descriptor kDescriptor = new EntityDescriptor(CONTEXT_ONE);
-		kDescriptor.addAttributeDescriptor(OWLClassK.getOwlClassEField(), eDescriptor);
+		kDescriptor.addAttributeDescriptor(OWLClassK.class.getDeclaredField("owlClassE"), eDescriptor);
 		em.getTransaction().begin();
 		em.persist(entityK, kDescriptor);
 		assertNotNull(entityE.getUri());

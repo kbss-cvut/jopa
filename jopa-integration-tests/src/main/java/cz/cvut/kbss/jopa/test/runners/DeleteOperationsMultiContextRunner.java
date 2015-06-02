@@ -63,7 +63,7 @@ public class DeleteOperationsMultiContextRunner extends BaseRunner {
 		logger.config("Test: remove object property value from a context.");
 		final Descriptor dDescriptor = new EntityDescriptor(CONTEXT_ONE);
 		final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
-		dDescriptor.addAttributeDescriptor(OWLClassD.getOwlClassAField(), aDescriptor);
+		dDescriptor.addAttributeDescriptor(OWLClassD.class.getDeclaredField("owlClassA"), aDescriptor);
 		em.getTransaction().begin();
 		em.persist(entityD, dDescriptor);
 		em.persist(entityA, aDescriptor);
@@ -90,8 +90,8 @@ public class DeleteOperationsMultiContextRunner extends BaseRunner {
 		final Descriptor gDescriptor = new EntityDescriptor();
 		final Descriptor hDescriptor = new EntityDescriptor(CONTEXT_ONE);
 		final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
-		hDescriptor.addAttributeDescriptor(OWLClassH.getOwlClassAField(), aDescriptor);
-		gDescriptor.addAttributeDescriptor(OWLClassG.getOwlClassHField(), hDescriptor);
+		hDescriptor.addAttributeDescriptor(OWLClassH.class.getDeclaredField("owlClassA"), aDescriptor);
+		gDescriptor.addAttributeDescriptor(OWLClassG.class.getDeclaredField("owlClassH"), hDescriptor);
 		em.getTransaction().begin();
 		em.persist(entityG, gDescriptor);
 		em.getTransaction().commit();

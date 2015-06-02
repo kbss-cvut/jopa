@@ -321,5 +321,6 @@ public class CreateOperationsRunner extends BaseRunner {
         assertEquals(entityM.getIntAttribute(), res.getIntAttribute());
         assertEquals(entityM.getLongAttribute(), res.getLongAttribute());
         assertEquals(entityM.getDoubleAttribute(), res.getDoubleAttribute());
+        assertEquals(entityM.getDateAttribute(), res.getDateAttribute());
     }
 }

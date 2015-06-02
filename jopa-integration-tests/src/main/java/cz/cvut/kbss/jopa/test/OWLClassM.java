@@ -4,11 +4,11 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
-import java.lang.reflect.Field;
+import java.util.Date;
 
 /**
  * Contains a generated string URI and data property attributes of primitive wrapper types
- * - boolean, int, long, double.
+ * - boolean, int, long, double and date.
  *
  * @author ledvima1
  */
@@ -29,6 +29,9 @@ public class OWLClassM {
 
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-doubleAttribute")
     private Double doubleAttribute;
+
+    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-dateAttribute")
+    private Date dateAttribute;
 
     public String getKey() {
         return key;
@@ -70,6 +73,14 @@ public class OWLClassM {
         this.doubleAttribute = doubleAttribute;
     }
 
+    public Date getDateAttribute() {
+        return dateAttribute;
+    }
+
+    public void setDateAttribute(Date dateAttribute) {
+        this.dateAttribute = dateAttribute;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -89,29 +100,6 @@ public class OWLClassM {
         this.intAttribute = 117;
         this.longAttribute = 365L;
         this.doubleAttribute = 3.14D;
-    }
-
-    public static String getClassIri() throws Exception {
-        return OWLClassM.class.getAnnotation(OWLClass.class).iri();
-    }
-
-    public static Field getUriField() throws Exception {
-        return OWLClassM.class.getDeclaredField("key");
-    }
-
-    public static Field getBooleanAttributeField() throws Exception {
-        return OWLClassM.class.getDeclaredField("booleanAttribute");
-    }
-
-    public static Field getIntAttributeField() throws Exception {
-        return OWLClassM.class.getDeclaredField("intAttribute");
-    }
-
-    public static Field getLongAttributeField() throws Exception {
-        return OWLClassM.class.getDeclaredField("longAttribute");
-    }
-
-    public static Field getDoubleAttributeField() throws Exception {
-        return OWLClassM.class.getDeclaredField("doubleAttribute");
+        this.dateAttribute = new Date();
     }
 }

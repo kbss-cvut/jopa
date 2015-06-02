@@ -4,13 +4,10 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE")
 public class OWLClassE {
-
-	private static final String STR_ATT_FIELD = "stringAttribute";
 
 	@Id(generated = true)
 	private URI uri;
@@ -32,14 +29,6 @@ public class OWLClassE {
 
 	public void setStringAttribute(String stringAttribute) {
 		this.stringAttribute = stringAttribute;
-	}
-
-	public static String getClassIri() {
-		return OWLClassE.class.getAnnotation(OWLClass.class).iri();
-	}
-	
-	public static Field getStrAttField() throws NoSuchFieldException, SecurityException {
-		return OWLClassE.class.getDeclaredField(STR_ATT_FIELD);
 	}
 
 	@Override

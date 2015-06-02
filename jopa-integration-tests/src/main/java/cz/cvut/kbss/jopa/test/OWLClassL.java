@@ -2,7 +2,6 @@ package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
@@ -90,25 +89,5 @@ public class OWLClassL {
                 ", referencedList=" + referencedList +
                 ", set=" + set +
                 '}';
-    }
-
-    public static String getClassIri() {
-        return OWLClassL.class.getAnnotation(OWLClass.class).iri();
-    }
-
-    public static Field getReferencedListField() throws NoSuchFieldException {
-        return OWLClassL.class.getDeclaredField("referencedList");
-    }
-
-    public static Field getSimpleListField() throws NoSuchFieldException {
-        return OWLClassL.class.getDeclaredField("simpleList");
-    }
-
-    public static Field getSetField() throws NoSuchFieldException {
-        return OWLClassL.class.getDeclaredField("set");
-    }
-
-    public static Field getSingleAField() throws NoSuchFieldException {
-        return OWLClassL.class.getDeclaredField("singleA");
     }
 }

@@ -17,15 +17,11 @@ package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Set;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
 public class OWLClassA {
-
-	private static final String TYPES_FIELD = "types";
-	private static final String STR_ATT_FIELD = "stringAttribute";
 
 	@Types(fetchType = FetchType.EAGER)
 	private Set<String> types;
@@ -72,20 +68,6 @@ public class OWLClassA {
 
 	public Set<String> getTypes() {
 		return types;
-	}
-
-	public static String getClassIri() {
-		return OWLClassA.class.getAnnotation(OWLClass.class).iri();
-	}
-
-	public static Field getStrAttField() throws NoSuchFieldException,
-			SecurityException {
-		return OWLClassA.class.getDeclaredField(STR_ATT_FIELD);
-	}
-
-	public static Field getTypesField() throws NoSuchFieldException,
-			SecurityException {
-		return OWLClassA.class.getDeclaredField(TYPES_FIELD);
 	}
 
 	@Override

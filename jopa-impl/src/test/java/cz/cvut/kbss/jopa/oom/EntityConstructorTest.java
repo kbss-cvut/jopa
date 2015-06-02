@@ -80,6 +80,8 @@ public class EntityConstructorTest {
     @Mock
     private SingularAttribute doubleAttMock;
     @Mock
+    private SingularAttribute dateAttMock;
+    @Mock
     private Identifier idMMock;
 
     private Descriptor descriptor;
@@ -95,7 +97,8 @@ public class EntityConstructorTest {
         TestEnvironmentUtils.initOWLClassDMocks(etDMock, clsAAttMock, idDMock);
         TestEnvironmentUtils.initOWLClassJMocks(etJMock, aSetAttMock, idJMock);
         TestEnvironmentUtils
-                .initOWLClassMMock(etMMock, booleanAttMock, intAttMock, longAttMock, doubleAttMock, idMMock);
+                .initOWLClassMMock(etMMock, booleanAttMock, intAttMock, longAttMock, doubleAttMock, dateAttMock,
+                        idMMock);
         this.descriptor = new EntityDescriptor();
         this.constructor = new EntityConstructor(mapperMock);
     }
@@ -385,10 +388,9 @@ public class EntityConstructorTest {
         final Set<Axiom<?>> axioms = new HashSet<>();
         for (Entry<String, Set<String>> e : props.entrySet()) {
             final URI property = URI.create(e.getKey());
-            axioms.addAll(e.getValue().stream().map(val -> {
-                return new AxiomImpl<>(NamedResource.create(PK), Assertion
-                        .createPropertyAssertion(property, false), new Value<>(URI.create(val)));
-            }).collect(Collectors.toList()));
+            axioms.addAll(e.getValue().stream().map(val -> new AxiomImpl<>(PK_RESOURCE, Assertion
+                    .createPropertyAssertion(property, false), new Value<>(URI.create(val))))
+                           .collect(Collectors.toList()));
         }
         return axioms;
     }
@@ -461,16 +463,19 @@ public class EntityConstructorTest {
         final Integer i = 117;
         final Long lng = 365L;
         final Double d = 3.14;
-        axioms.addAll(createAxiomsForValues(true, i, lng, d));
+        final Date date = new Date();
+        axioms.addAll(createAxiomsForValues(true, i, lng, d, date));
 
         final OWLClassM res = constructor.reconstructEntity(PK, etMMock, descriptor, axioms);
         assertEquals(true, res.getBooleanAttribute());
         assertEquals(i, res.getIntAttribute());
         assertEquals(lng, res.getLongAttribute());
         assertEquals(d, res.getDoubleAttribute());
+        assertEquals(date, res.getDateAttribute());
     }
 
-    private Collection<Axiom<?>> createAxiomsForValues(Boolean b, Integer i, Long lng, Double d) throws Exception {
+    private Collection<Axiom<?>> createAxiomsForValues(Boolean b, Integer i, Long lng, Double d, Date date) throws
+            Exception {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         final String boolAttIri = OWLClassM.getBooleanAttributeField().getAnnotation(OWLDataProperty.class).iri();
         axioms.add(new AxiomImpl<>(PK_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(boolAttIri), false),
@@ -480,10 +485,13 @@ public class EntityConstructorTest {
                 new Value<>(i)));
         final String longAttIri = OWLClassM.getLongAttributeField().getAnnotation(OWLDataProperty.class).iri();
         final Assertion laAssertion = Assertion.createDataPropertyAssertion(URI.create(longAttIri), false);
-            axioms.add(new AxiomImpl<>(PK_RESOURCE, laAssertion, new Value<>(lng)));
+        axioms.add(new AxiomImpl<>(PK_RESOURCE, laAssertion, new Value<>(lng)));
         final String doubleAttIri = OWLClassM.getDoubleAttributeField().getAnnotation(OWLDataProperty.class).iri();
         axioms.add(new AxiomImpl<>(PK_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(doubleAttIri), false),
                 new Value<>(d)));
+        final String dateAttIri = OWLClassM.getDateAttributeField().getAnnotation(OWLDataProperty.class).iri();
+        axioms.add(new AxiomImpl<>(PK_RESOURCE, Assertion.createDataPropertyAssertion(URI.create(dateAttIri), false),
+                new Value<>(date)));
         return axioms;
     }
 }

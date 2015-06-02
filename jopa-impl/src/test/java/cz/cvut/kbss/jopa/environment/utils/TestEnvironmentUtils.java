@@ -59,12 +59,10 @@ public final class TestEnvironmentUtils {
     }
 
     /**
-     * Sets value of field {@code field} on the {@code target} object to the
-     * specified {@code mock}. </p>
-     * <p/>
-     * This method also works for final fields. Note that in case static fields
-     * are set, it is the responsibility of the client to reset the field to the
-     * original value in test cleanup.
+     * Sets value of field {@code field} on the {@code target} object to the specified {@code mock}. </p>
+     * <p>
+     * This method also works for final fields. Note that in case static fields are set, it is the responsibility of the
+     * client to reset the field to the original value in test cleanup.
      *
      * @param target Target instance, can be {@code null} for static fields
      * @param field  Field to set
@@ -88,7 +86,8 @@ public final class TestEnvironmentUtils {
      * Initializes the specified mock objects to return reasonable values.
      */
     public static void initOWLClassAMocks(EntityType<OWLClassA> etMock, Attribute strAttMock,
-                                          TypesSpecification typesMock, Identifier idMock) throws NoSuchFieldException, SecurityException {
+                                          TypesSpecification typesMock, Identifier idMock) throws NoSuchFieldException,
+            SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
         when(etMock.getAttribute(OWLClassA.getStrAttField().getName())).thenReturn(strAttMock);
@@ -97,7 +96,7 @@ public final class TestEnvironmentUtils {
                 Collections.<Attribute<? super OWLClassA, ?>>singleton(strAttMock));
         when(strAttMock.getJavaField()).thenReturn(OWLClassA.getStrAttField());
         final String stringAttIri = OWLClassA.getStrAttField().getAnnotation(OWLDataProperty.class)
-                .iri();
+                                             .iri();
         when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
         when(strAttMock.getName()).thenReturn(OWLClassA.getStrAttField().getName());
         when(strAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
@@ -114,7 +113,8 @@ public final class TestEnvironmentUtils {
      * Initializes the specified mock objects to return reasonable values.
      */
     public static void initOWLClassBMocks(EntityType<OWLClassB> etMock, Attribute strAttMock,
-                                          PropertiesSpecification propsMock, Identifier idMock) throws NoSuchFieldException, SecurityException {
+                                          PropertiesSpecification propsMock, Identifier idMock) throws
+            NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassB.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
         when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
@@ -123,7 +123,7 @@ public final class TestEnvironmentUtils {
                 Collections.<Attribute<? super OWLClassB, ?>>singleton(strAttMock));
         when(strAttMock.getJavaField()).thenReturn(OWLClassB.getStrAttField());
         final String stringAttIri = OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class)
-                .iri();
+                                             .iri();
         when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
         when(strAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
         when(strAttMock.getName()).thenReturn(OWLClassB.getStrAttField().getName());
@@ -154,12 +154,12 @@ public final class TestEnvironmentUtils {
         when(simpleListMock.getName()).thenReturn(OWLClassC.getSimpleListField().getName());
         when(etMock.getFieldSpecification(simpleListMock.getName())).thenReturn(simpleListMock);
         String hasListAttIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
-                .ClassOWLListIRI();
+                                        .ClassOWLListIRI();
         when(simpleListMock.getSequenceType()).thenReturn(SequenceType.simple);
         when(simpleListMock.getCollectionType()).thenReturn(CollectionType.LIST);
         when(simpleListMock.getOWLListClass()).thenReturn(IRI.create(hasListAttIri));
         String hasNextIri = OWLClassC.getSimpleListField().getAnnotation(Sequence.class)
-                .ObjectPropertyHasNextIRI();
+                                     .ObjectPropertyHasNextIRI();
         when(simpleListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
         when(simpleListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(simpleListMock.getPersistentAttributeType())
@@ -173,10 +173,10 @@ public final class TestEnvironmentUtils {
         when(refListMock.getName()).thenReturn(OWLClassC.getRefListField().getName());
         when(etMock.getFieldSpecification(refListMock.getName())).thenReturn(refListMock);
         hasNextIri = OWLClassC.getRefListField().getAnnotation(Sequence.class)
-                .ObjectPropertyHasNextIRI();
+                              .ObjectPropertyHasNextIRI();
         when(refListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(hasNextIri));
         final String contentIri = OWLClassC.getRefListField().getAnnotation(Sequence.class)
-                .ObjectPropertyHasContentsIRI();
+                                           .ObjectPropertyHasContentsIRI();
         when(refListMock.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(contentIri));
         attIri = OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).iri();
         when(refListMock.getIRI()).thenReturn(IRI.create(attIri));
@@ -197,7 +197,7 @@ public final class TestEnvironmentUtils {
                 Collections.<Attribute<? super OWLClassE, ?>>singleton(strAttMock));
         when(strAttMock.getJavaField()).thenReturn(OWLClassB.getStrAttField());
         final String stringAttIri = OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class)
-                .iri();
+                                             .iri();
         when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
         when(strAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
         when(etMock.getIdentifier()).thenReturn(idMock);
@@ -217,7 +217,7 @@ public final class TestEnvironmentUtils {
         when(clsAMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
         when(clsAMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
         final String clsAIri = OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                        .iri();
         when(clsAMock.getIRI()).thenReturn(IRI.create(clsAIri));
         when(clsAMock.getJavaType()).thenReturn(OWLClassA.class);
         when(clsAMock.getName()).thenReturn(OWLClassD.getOwlClassAField().getName());
@@ -236,7 +236,7 @@ public final class TestEnvironmentUtils {
         when(setAMock.getJavaField()).thenReturn(OWLClassJ.getOwlClassAField());
         when(setAMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
         final String clsAIri = OWLClassJ.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                        .iri();
         when(setAMock.getIRI()).thenReturn(IRI.create(clsAIri));
         when(setAMock.getJavaType()).thenReturn(Set.class);
         when(setAMock.isCollection()).thenReturn(Boolean.TRUE);
@@ -256,7 +256,7 @@ public final class TestEnvironmentUtils {
         when(clsEMock.getJavaField()).thenReturn(OWLClassK.getOwlClassEField());
         when(clsEMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
         final String clsEIri = OWLClassK.getOwlClassEField().getAnnotation(OWLObjectProperty.class)
-                .iri();
+                                        .iri();
         when(clsEMock.getIRI()).thenReturn(IRI.create(clsEIri));
         when(clsEMock.getJavaType()).thenReturn(OWLClassE.class);
         when(etMock.getIdentifier()).thenReturn(idMock);
@@ -264,44 +264,55 @@ public final class TestEnvironmentUtils {
     }
 
     public static void initOWLClassLMocks(EntityType<OWLClassL> etMock, ListAttribute refListMock,
-                                          ListAttribute simpleListMock, PluralAttribute setMock, Attribute singleAMock, Identifier idMock)
+                                          ListAttribute simpleListMock, PluralAttribute setMock, Attribute singleAMock,
+                                          Identifier idMock)
             throws NoSuchFieldException {
         when(etMock.getJavaType()).thenReturn(OWLClassL.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassL.getClassIri()));
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassL.class.getDeclaredField("uri"));
-        when(etMock.getAttributes()).thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassL, ?>>asList(refListMock, simpleListMock, setMock)));
+        when(etMock.getAttributes()).thenReturn(
+                new HashSet<>(Arrays.<Attribute<? super OWLClassL, ?>>asList(refListMock, simpleListMock, setMock)));
 
         when(refListMock.getJavaField()).thenReturn(OWLClassL.getReferencedListField());
         when(refListMock.getName()).thenReturn(OWLClassL.getReferencedListField().getName());
         when(refListMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
-        when(refListMock.getIRI()).thenReturn(IRI.create(OWLClassL.getReferencedListField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(refListMock.getConstraints()).thenReturn(OWLClassL.getReferencedListField().getAnnotation(ParticipationConstraints.class).value());
+        when(refListMock.getIRI()).thenReturn(
+                IRI.create(OWLClassL.getReferencedListField().getAnnotation(OWLObjectProperty.class).iri()));
+        when(refListMock.getConstraints()).thenReturn(
+                OWLClassL.getReferencedListField().getAnnotation(ParticipationConstraints.class).value());
         when(refListMock.getCollectionType()).thenReturn(CollectionType.LIST);
         when(refListMock.getSequenceType()).thenReturn(SequenceType.referenced);
         when(refListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(refListMock.isCollection()).thenReturn(true);
-        when(refListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(OWLClassL.getReferencedListField().getAnnotation(Sequence.class).ObjectPropertyHasNextIRI()));
-        when(refListMock.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(OWLClassL.getReferencedListField().getAnnotation(Sequence.class).ObjectPropertyHasContentsIRI()));
+        when(refListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(
+                OWLClassL.getReferencedListField().getAnnotation(Sequence.class).ObjectPropertyHasNextIRI()));
+        when(refListMock.getOWLPropertyHasContentsIRI()).thenReturn(IRI.create(
+                OWLClassL.getReferencedListField().getAnnotation(Sequence.class).ObjectPropertyHasContentsIRI()));
         when(etMock.getFieldSpecification(OWLClassL.getReferencedListField().getName())).thenReturn(refListMock);
 
         when(simpleListMock.getJavaField()).thenReturn(OWLClassL.getSimpleListField());
         when(simpleListMock.getName()).thenReturn(OWLClassL.getSimpleListField().getName());
         when(simpleListMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
-        when(simpleListMock.getIRI()).thenReturn(IRI.create(OWLClassL.getSimpleListField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(simpleListMock.getConstraints()).thenReturn(OWLClassL.getSimpleListField().getAnnotation(ParticipationConstraints.class).value());
+        when(simpleListMock.getIRI()).thenReturn(
+                IRI.create(OWLClassL.getSimpleListField().getAnnotation(OWLObjectProperty.class).iri()));
+        when(simpleListMock.getConstraints()).thenReturn(
+                OWLClassL.getSimpleListField().getAnnotation(ParticipationConstraints.class).value());
         when(simpleListMock.getCollectionType()).thenReturn(CollectionType.LIST);
         when(simpleListMock.getSequenceType()).thenReturn(SequenceType.simple);
         when(simpleListMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(simpleListMock.isCollection()).thenReturn(true);
-        when(simpleListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(IRI.create(OWLClassL.getSimpleListField().getAnnotation(OWLObjectProperty.class).iri()));
+        when(simpleListMock.getOWLObjectPropertyHasNextIRI()).thenReturn(
+                IRI.create(OWLClassL.getSimpleListField().getAnnotation(OWLObjectProperty.class).iri()));
         when(etMock.getFieldSpecification(OWLClassL.getSimpleListField().getName())).thenReturn(simpleListMock);
 
         when(setMock.getJavaField()).thenReturn(OWLClassL.getSetField());
         when(setMock.getName()).thenReturn(OWLClassL.getSetField().getName());
         when(setMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
-        when(setMock.getIRI()).thenReturn(IRI.create(OWLClassL.getSetField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(setMock.getConstraints()).thenReturn(OWLClassL.getSetField().getAnnotation(ParticipationConstraints.class).value());
+        when(setMock.getIRI()).thenReturn(
+                IRI.create(OWLClassL.getSetField().getAnnotation(OWLObjectProperty.class).iri()));
+        when(setMock.getConstraints()).thenReturn(
+                OWLClassL.getSetField().getAnnotation(ParticipationConstraints.class).value());
         when(setMock.getCollectionType()).thenReturn(CollectionType.SET);
         when(setMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(setMock.isCollection()).thenReturn(true);
@@ -310,43 +321,61 @@ public final class TestEnvironmentUtils {
         when(singleAMock.getJavaField()).thenReturn(OWLClassL.getSingleAField());
         when(singleAMock.getName()).thenReturn(OWLClassL.getSingleAField().getName());
         when(singleAMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
-        when(singleAMock.getIRI()).thenReturn(IRI.create(OWLClassL.getSingleAField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(singleAMock.getConstraints()).thenReturn(OWLClassL.getSingleAField().getAnnotation(ParticipationConstraints.class).value());
+        when(singleAMock.getIRI()).thenReturn(
+                IRI.create(OWLClassL.getSingleAField().getAnnotation(OWLObjectProperty.class).iri()));
+        when(singleAMock.getConstraints()).thenReturn(
+                OWLClassL.getSingleAField().getAnnotation(ParticipationConstraints.class).value());
         when(singleAMock.isCollection()).thenReturn(false);
         when(etMock.getFieldSpecification(OWLClassL.getSingleAField().getName())).thenReturn(singleAMock);
     }
 
-    public static void initOWLClassMMock(EntityType<OWLClassM> etMock, SingularAttribute booleanAtt, SingularAttribute intAtt, SingularAttribute longAtt, SingularAttribute doubleAtt, Identifier idMock) throws Exception {
+    public static void initOWLClassMMock(EntityType<OWLClassM> etMock, SingularAttribute booleanAtt,
+                                         SingularAttribute intAtt, SingularAttribute longAtt,
+                                         SingularAttribute doubleAtt, SingularAttribute dateAtt,
+                                         Identifier idMock) throws
+            Exception {
         when(etMock.getJavaType()).thenReturn(OWLClassM.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassM.getClassIri()));
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassM.getUriField());
-        when(etMock.getAttributes()).thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt)));
+        when(etMock.getAttributes()).thenReturn(
+                new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt)));
 
         when(booleanAtt.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
-        when(booleanAtt.getIRI()).thenReturn(IRI.create(OWLClassM.getBooleanAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(booleanAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassM.getBooleanAttributeField().getAnnotation(OWLDataProperty.class).iri()));
         when(booleanAtt.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
         when(booleanAtt.isCollection()).thenReturn(false);
         when(etMock.getFieldSpecification(OWLClassM.getBooleanAttributeField().getName())).thenReturn(booleanAtt);
 
         when(intAtt.getJavaField()).thenReturn(OWLClassM.getIntAttributeField());
-        when(intAtt.getIRI()).thenReturn(IRI.create(OWLClassM.getIntAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(intAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassM.getIntAttributeField().getAnnotation(OWLDataProperty.class).iri()));
         when(intAtt.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
         when(intAtt.isCollection()).thenReturn(false);
         when(etMock.getFieldSpecification(OWLClassM.getIntAttributeField().getName())).thenReturn(intAtt);
 
         when(longAtt.getJavaField()).thenReturn(OWLClassM.getLongAttributeField());
-        when(longAtt.getIRI()).thenReturn(IRI.create(OWLClassM.getLongAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(longAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassM.getLongAttributeField().getAnnotation(OWLDataProperty.class).iri()));
         when(longAtt.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
         when(longAtt.isCollection()).thenReturn(false);
         when(longAtt.getBindableJavaType()).thenReturn(Long.class);
         when(etMock.getFieldSpecification(OWLClassM.getLongAttributeField().getName())).thenReturn(longAtt);
 
         when(doubleAtt.getJavaField()).thenReturn(OWLClassM.getDoubleAttributeField());
-        when(doubleAtt.getIRI()).thenReturn(IRI.create(OWLClassM.getDoubleAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(doubleAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassM.getDoubleAttributeField().getAnnotation(OWLDataProperty.class).iri()));
         when(doubleAtt.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
         when(doubleAtt.isCollection()).thenReturn(false);
         when(etMock.getFieldSpecification(OWLClassM.getIntAttributeField().getName())).thenReturn(doubleAtt);
+
+        when(dateAtt.getJavaField()).thenReturn(OWLClassM.getDateAttributeField());
+        when(dateAtt.getIRI())
+                .thenReturn(IRI.create(OWLClassM.getDateAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(dateAtt.getPersistentAttributeType()).thenReturn(PersistentAttributeType.DATA);
+        when(dateAtt.isCollection()).thenReturn(false);
+        when(etMock.getFieldSpecification(OWLClassM.getDateAttributeField().getName())).thenReturn(dateAtt);
     }
 
     public static Set<String> generateTypes(int count) {
