@@ -434,7 +434,7 @@ public class EntityDeconstructorTest {
         assertTrue(containsDPAssertion(res, OWLClassM.getIntAttributeField(), entityM.getIntAttribute()));
         assertTrue(containsDPAssertion(res, OWLClassM.getDoubleAttributeField(), entityM.getDoubleAttribute()));
         assertTrue(containsDPAssertion(res, OWLClassM.getLongAttributeField(), entityM.getLongAttribute()));
-        assertTrue(containsDPAssertion(res, OWLClassM.getDateAttributeField(), entityM.getDoubleAttribute()));
+        assertTrue(containsDPAssertion(res, OWLClassM.getDateAttributeField(), entityM.getDateAttribute()));
     }
 
     private boolean containsInstanceAssertion(AxiomValueDescriptor descriptor) throws Exception {
