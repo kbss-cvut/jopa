@@ -166,6 +166,13 @@ public class TestCreateOperationsNativeStore {
 		runner.persistURITwiceInDifferentClasses(em, context());
 	}
 
+	@Test
+	public void testPersistEntityWithBasicTypeAttributes() {
+		em = TestEnvironment.getPersistenceConnector("SesameNativePersistEntityWithBasicTypeAttributes", storage, false,
+				properties);
+		runner.persistEntityWithBasicTypedDataProperties(em, context());
+	}
+
 	private URI context() {
 		// Don't use contexts for now
 		return null;

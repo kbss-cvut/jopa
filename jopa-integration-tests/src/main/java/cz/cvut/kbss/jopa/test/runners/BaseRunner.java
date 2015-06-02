@@ -27,6 +27,7 @@ abstract class BaseRunner {
 	protected OWLClassH entityH;
 	// Lazy reference to OWLClassA
 	protected OWLClassI entityI;
+	protected OWLClassM entityM;
 
 	BaseRunner(Logger logger) {
 		assert logger != null;
@@ -45,33 +46,36 @@ abstract class BaseRunner {
 	 * <li>entityG's reference to OWLClassH is set to entityH</li>
 	 * <li>entityH's reference to OWLClassA is set to entityA</li>
 	 * <li>entityI's reference to OWLClassA is set to entityA</li>
+     * <li>entityM has all fields set to some values</li>
 	 * </ul>
 	 */
 	private void init() {
-		entityA = new OWLClassA();
+		this.entityA = new OWLClassA();
 		entityA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
 		entityA.setStringAttribute("entityAStringAttribute");
-		final Set<String> types = new HashSet<String>();
+		final Set<String> types = new HashSet<>();
 		types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassU");
 		entityA.setTypes(types);
-		entityB = new OWLClassB();
+        this.entityB = new OWLClassB();
 		entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
 		entityB.setStringAttribute("entityBStringAttribute");
-		entityC = new OWLClassC();
+        this.entityC = new OWLClassC();
 		entityC.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
-		entityD = new OWLClassD();
+        this.entityD = new OWLClassD();
 		entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
 		entityD.setOwlClassA(entityA);
-		entityE = new OWLClassE();
+        this.entityE = new OWLClassE();
 		entityE.setStringAttribute("entityEStringAttribute");
-		entityH = new OWLClassH();
+        this.entityH = new OWLClassH();
 		entityH.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityH"));
 		entityH.setOwlClassA(entityA);
-		entityG = new OWLClassG();
+        this.entityG = new OWLClassG();
 		entityG.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityG"));
 		entityG.setOwlClassH(entityH);
-		entityI = new OWLClassI();
+        this.entityI = new OWLClassI();
 		entityI.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityI"));
 		entityI.setOwlClassA(entityA);
+        this.entityM = new OWLClassM();
+        entityM.initializeTestValues(true);
 	}
 }

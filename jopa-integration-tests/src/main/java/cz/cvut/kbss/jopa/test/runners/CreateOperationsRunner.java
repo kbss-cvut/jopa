@@ -305,4 +305,21 @@ public class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
         fail("This line should not have been reached.");
     }
+
+    public void persistEntityWithBasicTypedDataProperties(EntityManager em, URI ctx) {
+        logger.config("Test: persist entity with attributes of basic types (Integer, Boolean etc.).");
+        final EntityDescriptor descriptor = new EntityDescriptor(ctx);
+        em.getTransaction().begin();
+        em.persist(entityM, descriptor);
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassM res = em.find(OWLClassM.class, entityM.getKey(), descriptor);
+        assertNotNull(res);
+        assertEquals(entityM.getKey(), res.getKey());
+        assertEquals(entityM.getBooleanAttribute(), res.getBooleanAttribute());
+        assertEquals(entityM.getIntAttribute(), res.getIntAttribute());
+        assertEquals(entityM.getLongAttribute(), res.getLongAttribute());
+        assertEquals(entityM.getDoubleAttribute(), res.getDoubleAttribute());
+    }
 }

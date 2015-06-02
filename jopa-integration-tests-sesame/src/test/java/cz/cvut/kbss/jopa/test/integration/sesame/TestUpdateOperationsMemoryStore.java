@@ -177,6 +177,13 @@ public class TestUpdateOperationsMemoryStore {
 		runner.modifyInferredAttribute(em, context());
 	}
 
+    @Test
+    public void testModifyAttributesOfBasicTypes() {
+        em = TestEnvironment.getPersistenceConnector("SesameModifyBasicTypeAttributes", storage,
+                false, properties);
+        runner.updateBasicTypeAttributes(em,context());
+    }
+
 	private URI context() {
 		// Don't use contexts for now
 		return null;

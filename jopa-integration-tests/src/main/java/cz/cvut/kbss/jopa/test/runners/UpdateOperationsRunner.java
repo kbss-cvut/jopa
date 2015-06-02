@@ -559,4 +559,24 @@ public class UpdateOperationsRunner extends BaseRunner {
 		em.getTransaction().commit();
 		fail("This line should not have been reached.");
 	}
+
+	public void updateBasicTypeAttributes(EntityManager em, URI ctx) {
+        logger.config("Test: modify attributes of basic Java types (Integer, Boolean etc.).");
+        final EntityDescriptor mDescriptor = new EntityDescriptor(ctx);
+        em.getTransaction().begin();
+        em.persist(entityM, mDescriptor);
+        em.getTransaction().commit();
+
+        em.getTransaction().begin();
+        final OWLClassM m = em.find(OWLClassM.class, entityM.getKey(), mDescriptor);
+        m.setBooleanAttribute(!entityM.getBooleanAttribute());
+        m.setDoubleAttribute(m.getDoubleAttribute() - 100.0);
+        m.setLongAttribute(m.getLongAttribute() + 100L);
+        em.getTransaction().commit();
+
+        final OWLClassM res = em.find(OWLClassM.class, entityM.getKey(), mDescriptor);
+        assertEquals(m.getBooleanAttribute(), res.getBooleanAttribute());
+        assertEquals(m.getLongAttribute(), res.getLongAttribute());
+        assertEquals(m.getDoubleAttribute(), res.getDoubleAttribute());
+    }
 }
