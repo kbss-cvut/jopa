@@ -83,7 +83,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 		}
 		final AbstractInstanceBuilder builder = getInstanceBuilder(original);
 		Object clone = builder.buildClone(cloneOwner, clonedField, original, descriptor);
-		visitedObjects.put(original, clone);
+		addToVisited(original, clone);
 		if (!builder.populatesAttributes() && !isPrimitiveOrString(original.getClass())) {
 			populateAttributes(original, clone, descriptor);
 		}
@@ -93,6 +93,12 @@ public class CloneBuilderImpl implements CloneBuilder {
 		}
 		return clone;
 	}
+
+	private void addToVisited(Object original, Object clone) {
+        if (isTypeManaged(clone.getClass())) {
+            visitedObjects.put(original, clone);
+        }
+    }
 
 	/**
 	 * Clone all the attributes of the original and set the clone values. This
@@ -336,15 +342,20 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	private final class Builders {
 		private AbstractInstanceBuilder defaultBuilder;
+        private AbstractInstanceBuilder dateBuilder;
 		// Lists and Sets
 		private AbstractInstanceBuilder collectionBuilder;
 		private AbstractInstanceBuilder mapBuilder;
 
 		private Builders() {
 			this.defaultBuilder = new DefaultInstanceBuilder(CloneBuilderImpl.this, uow);
+            this.dateBuilder = new DateInstanceBuilder(CloneBuilderImpl.this, uow);
 		}
 
 		private AbstractInstanceBuilder getBuilder(Object toClone) {
+            if (toClone instanceof Date) {
+                return dateBuilder;
+            }
 			if (toClone instanceof Map) {
 				if (mapBuilder == null) {
 					this.mapBuilder = new MapInstanceBuilder(CloneBuilderImpl.this, uow);
