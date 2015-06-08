@@ -25,7 +25,7 @@ public interface QueryHolder {
      * @param value     Value to use
      * @throws IllegalArgumentException If there is no such parameter in the query
      */
-    void setParameter(String parameter, Object value);
+    void setParameter(String parameter, ParameterValue value);
 
     /**
      * Clears any previously set value of the specified parameter.

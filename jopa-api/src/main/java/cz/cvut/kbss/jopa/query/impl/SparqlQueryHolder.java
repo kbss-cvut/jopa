@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.query.impl;
 
+import cz.cvut.kbss.jopa.query.ParameterValue;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 
 import java.util.*;
@@ -12,7 +13,7 @@ public class SparqlQueryHolder implements QueryHolder {
     private final Set<String> parameterNames;
     private final List<String> parameters;
     private final List<String> queryParts;
-    private final Map<String, Object> values;
+    private final Map<String, ParameterValue> values;
 
     public SparqlQueryHolder(List<String> parts, List<String> parameters) {
         this.parameters = parameters;
@@ -27,7 +28,7 @@ public class SparqlQueryHolder implements QueryHolder {
     }
 
     @Override
-    public void setParameter(String parameter, Object value) {
+    public void setParameter(String parameter, ParameterValue value) {
         Objects.requireNonNull(parameter);
         Objects.requireNonNull(value);
         if (!parameterNames.contains(parameter)) {
@@ -39,16 +40,31 @@ public class SparqlQueryHolder implements QueryHolder {
 
     @Override
     public void clearParameter(String parameter) {
-
+        values.remove(parameter);
     }
 
     @Override
     public void clearParameters() {
-
+        values.clear();
     }
 
     @Override
     public String assembleQuery() {
-        return null;
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < parameters.size(); i++) {
+            sb.append(queryParts.get(i));
+            final String paramValue = getParameterValue(parameters.get(i));
+            if (paramValue == null) {
+                sb.append("?").append(parameters.get(i));
+            } else {
+                sb.append(paramValue);
+            }
+        }
+        sb.append(queryParts.get(parameters.size()));
+        return sb.toString();
+    }
+
+    private String getParameterValue(String parameter) {
+        return values.containsKey(parameter) ? values.get(parameter).getValue() : null;
     }
 }
