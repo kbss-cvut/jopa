@@ -165,6 +165,13 @@ public class TestCreateOperations {
 		runner.persistURITwiceInDifferentClasses(em, context());
 	}
 
+	@Test
+	public void testPersistAndUpdateAttributeBeforeCommit() {
+		em = TestEnvironment.getPersistenceConnector("OwlapiPersistAndUpdateBeforeCommit", storage, false,
+				properties);
+		runner.setAttributeValueAfterPersistButBeforeCommit(em, context());
+	}
+
 	private URI context() {
 		// OWLAPI doesn't use contexts
 		return null;

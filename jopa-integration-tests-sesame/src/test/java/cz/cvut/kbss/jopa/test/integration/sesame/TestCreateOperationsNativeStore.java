@@ -173,6 +173,13 @@ public class TestCreateOperationsNativeStore {
 		runner.persistEntityWithBasicTypedDataProperties(em, context());
 	}
 
+	@Test
+	public void testPersistAndUpdateAttributeBeforeCommit() {
+		em = TestEnvironment.getPersistenceConnector("SesameNativePersistAndUpdateBeforeCommit", storage, false,
+				properties);
+		runner.setAttributeValueAfterPersistButBeforeCommit(em, context());
+	}
+
 	private URI context() {
 		// Don't use contexts for now
 		return null;

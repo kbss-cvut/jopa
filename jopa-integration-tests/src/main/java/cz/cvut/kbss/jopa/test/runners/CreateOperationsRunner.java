@@ -323,4 +323,19 @@ public class CreateOperationsRunner extends BaseRunner {
         assertEquals(entityM.getDoubleAttribute(), res.getDoubleAttribute());
         assertEquals(entityM.getDateAttribute(), res.getDateAttribute());
     }
+
+    public void setAttributeValueAfterPersistButBeforeCommit(EntityManager em, URI ctx) {
+        logger.config("Test: persist entity, set attribute value and then commit.");
+        final EntityDescriptor descriptor = new EntityDescriptor(ctx);
+        final String updatedValue = "updatedStringAttributeValue";
+        em.getTransaction().begin();
+        em.persist(entityA, descriptor);
+        entityA.setStringAttribute(updatedValue);
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassA res = em.find(OWLClassA.class, entityA.getUri());
+        assertNotNull(res);
+        assertEquals(updatedValue, res.getStringAttribute());
+    }
 }

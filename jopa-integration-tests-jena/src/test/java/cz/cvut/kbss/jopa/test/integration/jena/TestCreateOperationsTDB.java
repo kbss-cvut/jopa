@@ -166,6 +166,13 @@ public class TestCreateOperationsTDB {
 		runner.persistURITwiceInDifferentClasses(em, context());
 	}
 
+	@Test
+	public void testPersistAndUpdateAttributeBeforeCommit() {
+		em = TestEnvironment.getPersistenceConnector("JenaTDBPersistAndUpdateBeforeCommit", storage, false,
+				properties);
+		runner.setAttributeValueAfterPersistButBeforeCommit(em, context());
+	}
+
 	private URI context() {
 		// OWLAPI doesn't use contexts
 		return null;
