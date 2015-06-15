@@ -35,6 +35,19 @@ public class SparqlQueryHolderTest {
     }
 
     @Test
+    public void testGetParameterValue() throws Exception {
+        final String value = "http://kbss.felk.cvut.cz";
+        holder.setParameter("homepage", new StringParameterValue(value));
+        assertEquals(value, holder.getParameterValue("homepage"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getValueOfUnknownParameterThrowsIllegalArgumentException() throws Exception {
+        holder.setParameter("homepage", new StringParameterValue("tatata"));
+        holder.getParameterValue("blabla");
+    }
+
+    @Test
     public void testSetParameter() throws Exception {
         final String value = "http://kbss.felk.cvut.cz";
         final String expected = "\"" + value + "\"";

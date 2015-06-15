@@ -1,5 +1,5 @@
 **/target
-*.iml
+**/*.iml
 **/.idea
 **/results
 **/testResults

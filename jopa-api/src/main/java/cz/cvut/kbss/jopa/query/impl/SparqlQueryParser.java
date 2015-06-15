@@ -37,6 +37,10 @@ public class SparqlQueryParser implements QueryParser {
                         inParam = true;
                     }
                     break;
+                // TODO Take a look at some existing SPARQL parsers and maybe use them instead of this simplified version
+                case '<':
+                case '>':
+                case ',':
                 case '\n':
                 case ' ':
                     if (inParam) {

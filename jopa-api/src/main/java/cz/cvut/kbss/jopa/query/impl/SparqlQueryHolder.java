@@ -28,6 +28,20 @@ public class SparqlQueryHolder implements QueryHolder {
     }
 
     @Override
+    public Object getParameterValue(String name) {
+        if (!parameterNames.contains(name)) {
+            throw new IllegalArgumentException("Unknown parameter '" + name + "'.");
+        }
+        return values.containsKey(name) ? values.get(name).getValue() : null;
+    }
+
+    @Override
+    public Object getParameterValue(int position) {
+        // TODO
+        return null;
+    }
+
+    @Override
     public void setParameter(String parameter, ParameterValue value) {
         Objects.requireNonNull(parameter);
         Objects.requireNonNull(value);
@@ -53,7 +67,7 @@ public class SparqlQueryHolder implements QueryHolder {
         final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < parameters.size(); i++) {
             sb.append(queryParts.get(i));
-            final String paramValue = getParameterValue(parameters.get(i));
+            final String paramValue = getParameterQueryValue(parameters.get(i));
             if (paramValue == null) {
                 sb.append("?").append(parameters.get(i));
             } else {
@@ -64,7 +78,7 @@ public class SparqlQueryHolder implements QueryHolder {
         return sb.toString();
     }
 
-    private String getParameterValue(String parameter) {
+    public String getParameterQueryValue(String parameter) {
         return values.containsKey(parameter) ? values.get(parameter).getQueryString() : null;
     }
 }

@@ -17,8 +17,26 @@ public interface QueryHolder {
     Collection<String> getParameters();
 
     /**
+     * Gets value bound to the parameter with specified name.
+     *
+     * @param name Parameter name
+     * @return parameter value
+     * @throws IllegalArgumentException If there is no parameter with the specified name
+     */
+    Object getParameterValue(String name);
+
+    /**
+     * Gets value bound to the parameter at the specified position.
+     *
+     * @param position position
+     * @return parameter value
+     * @throws IllegalArgumentException If the position is not present in the query
+     */
+    Object getParameterValue(int position);
+
+    /**
      * Sets value of the specified parameter in the query.
-     * <p/>
+     * <p>
      * If a value was already specified for the parameter, it is overwritten by the new one.
      *
      * @param parameter Parameter name

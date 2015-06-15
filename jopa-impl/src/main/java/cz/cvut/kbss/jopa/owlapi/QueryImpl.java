@@ -27,6 +27,7 @@ import java.util.Set;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
@@ -74,7 +75,7 @@ public class QueryImpl implements Query<List<String>> {
 			// Call it with maxResults = 2 just to see whether there are more
 			final List<List<String>> list = getResultListImpl(2);
 			if (list.isEmpty()) {
-				throw new NoResultException("No result found for querytransactional " + query);
+				throw new NoResultException("No result found for query " + query);
 			}
 			if (list.size() > 1) {
 				throw new NoUniqueResultException("Multiple results found for query " + query);
@@ -90,6 +91,56 @@ public class QueryImpl implements Query<List<String>> {
 		return maxResults;
 	}
 
+	@Override
+	public Parameter<?> getParameter(int position) {
+		throw new NotYetImplementedException();
+	}
+
+	@Override
+	public Parameter<?> getParameter(String name) {
+		return null;
+	}
+
+	@Override
+	public Set<Parameter<?>> getParameters() {
+		return null;
+	}
+
+	@Override
+	public Object getParameterValue(int position) {
+		throw new NotYetImplementedException();
+	}
+
+	@Override
+	public Object getParameterValue(String name) {
+		return null;
+	}
+
+	@Override
+	public Object getParameterValue(Parameter<?> parameter) {
+		return null;
+	}
+
+	@Override
+	public Query<List<String>> setParameter(int position, Object value) {
+		return null;
+	}
+
+	@Override
+	public Query<List<String>> setParameter(int position, String value, String language) {
+		return null;
+	}
+
+	@Override
+	public Query<List<String>> setParameter(String name, Object value) {
+		return null;
+	}
+
+	@Override
+	public Query<List<String>> setParameter(String name, String value, String language) {
+		return null;
+	}
+
 	public Query<List<String>> setMaxResults(int maxResults) {
 		if (maxResults < 0) {
 			throw new IllegalArgumentException(
@@ -102,7 +153,7 @@ public class QueryImpl implements Query<List<String>> {
 	/**
 	 * Sets ontology used for processing of this query. </p>
 	 * 
-	 * @param useTransactional
+	 * @param useBackupOntology
 	 *            If true, the backup (central) ontology is used, otherwise the
 	 *            transactional ontology is used (default)
 	 */
@@ -121,17 +172,15 @@ public class QueryImpl implements Query<List<String>> {
 		URI[] uris = new URI[contexts.size()];
 		uris = contexts.toArray(uris);
 		final ResultSet rs = stmt.executeQuery(query, uris);
-		// TODO Fix the bug in Sesame statement, the context information gets
-		// lost along the way
 		try {
 			final int cols = rs.getColumnCount();
 			int cnt = 0;
-			final List<List<String>> res = new ArrayList<List<String>>();
+			final List<List<String>> res = new ArrayList<>();
 			// TODO register this as observer on the result set so that
 			// additional results can be loaded asynchronously
 			while (rs.hasNext() && cnt < maxResults) {
 				rs.next();
-				final List<String> row = new ArrayList<String>(cols);
+				final List<String> row = new ArrayList<>(cols);
 				res.add(row);
 				for (int i = 0; i < cols; i++) {
 					final String ob = rs.getString(i);
@@ -155,7 +204,7 @@ public class QueryImpl implements Query<List<String>> {
 	@Override
 	public Query<List<String>> addContexts(Collection<URI> contexts) {
 		Objects.requireNonNull(contexts, ErrorUtils.constructNPXMessage("contexts"));
-		contexts.addAll(contexts);
+		this.contexts.addAll(contexts);
 		return this;
 	}
 
