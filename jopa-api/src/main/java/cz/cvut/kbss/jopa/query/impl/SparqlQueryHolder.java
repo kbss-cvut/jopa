@@ -65,6 +65,6 @@ public class SparqlQueryHolder implements QueryHolder {
     }
 
     private String getParameterValue(String parameter) {
-        return values.containsKey(parameter) ? values.get(parameter).getValue() : null;
+        return values.containsKey(parameter) ? values.get(parameter).getQueryString() : null;
     }
 }

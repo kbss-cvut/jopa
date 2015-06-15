@@ -14,17 +14,21 @@ public class UriParameterValue extends ParameterValue {
     private final URI uri;
 
     public UriParameterValue(URI uri) {
-        assert uri != null;
         this.uri = uri;
     }
 
     @Override
-    public String getValue() {
+    public Object getValue() {
+        return uri;
+    }
+
+    @Override
+    public String getQueryString() {
         return "<" + uri.toString() + ">";
     }
 
     @Override
     public String toString() {
-        return getValue();
+        return getQueryString();
     }
 }

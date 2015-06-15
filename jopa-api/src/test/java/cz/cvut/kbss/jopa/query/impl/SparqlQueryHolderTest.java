@@ -37,15 +37,16 @@ public class SparqlQueryHolderTest {
     @Test
     public void testSetParameter() throws Exception {
         final String value = "http://kbss.felk.cvut.cz";
-        holder.setParameter("homepage", new LiteralParameterValue(value));
-        assertEquals(value, getParameter("homepage"));
+        final String expected = "\"" + value + "\"";
+        holder.setParameter("homepage", new StringParameterValue(value));
+        assertEquals(expected, getParameter("homepage"));
     }
 
     private String getParameter(String name) throws Exception {
         final Field valuesField = SparqlQueryHolder.class.getDeclaredField("values");
         valuesField.setAccessible(true);
         final Map<String, ParameterValue> values = getParamValues();
-        return values.get(name).getValue();
+        return values.get(name).getQueryString();
     }
 
     @Test(expected = NullPointerException.class)
@@ -55,12 +56,12 @@ public class SparqlQueryHolderTest {
 
     @Test(expected = NullPointerException.class)
     public void setNullParameterThrowsException() throws Exception {
-        holder.setParameter(null, new LiteralParameterValue("Whatever"));
+        holder.setParameter(null, new StringParameterValue("Whatever"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setUnknownParameterThrowsException() throws Exception {
-        holder.setParameter("unknownParameter", new LiteralParameterValue("Whatever"));
+        holder.setParameter("unknownParameter", new StringParameterValue("Whatever"));
     }
 
     @Test
@@ -101,12 +102,12 @@ public class SparqlQueryHolderTest {
 
     @Test
     public void assembleQueryWithLiteral() throws Exception {
-        holder.setParameter("homepage", new LiteralParameterValue("http://kbss.felk.cvut.cz"));
+        holder.setParameter("homepage", new StringParameterValue("http://kbss.felk.cvut.cz", null));
         final String expected = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                 "SELECT ?craft\n" +
                 "{\n" +
                 "?craft foaf:name \"Apollo 7\" .\n" +
-                "?craft foaf:homepage http://kbss.felk.cvut.cz\n" +
+                "?craft foaf:homepage \"http://kbss.felk.cvut.cz\"\n" +
                 "}";
         assertEquals(expected, holder.assembleQuery());
     }
