@@ -28,6 +28,7 @@ import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
@@ -113,6 +114,56 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
 	@Override
 	public int getMaxResults() {
 		return maxResults;
+	}
+
+	@Override
+	public Parameter<?> getParameter(int position) {
+		return null;
+	}
+
+	@Override
+	public Parameter<?> getParameter(String name) {
+		return null;
+	}
+
+	@Override
+	public Set<Parameter<?>> getParameters() {
+		return null;
+	}
+
+	@Override
+	public Object getParameterValue(int position) {
+		return null;
+	}
+
+	@Override
+	public Object getParameterValue(String name) {
+		return null;
+	}
+
+	@Override
+	public Object getParameterValue(Parameter<?> parameter) {
+		return null;
+	}
+
+	@Override
+	public Query<T> setParameter(int position, Object value) {
+		return null;
+	}
+
+	@Override
+	public Query<T> setParameter(int position, String value, String language) {
+		return null;
+	}
+
+	@Override
+	public Query<T> setParameter(String name, Object value) {
+		return null;
+	}
+
+	@Override
+	public Query<T> setParameter(String name, String value, String language) {
+		return null;
 	}
 
 	private List<T> getResultListImpl(int maxResults) throws OntoDriverException {
