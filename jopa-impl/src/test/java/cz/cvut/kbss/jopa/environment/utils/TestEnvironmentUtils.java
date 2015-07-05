@@ -60,7 +60,7 @@ public final class TestEnvironmentUtils {
 
     /**
      * Sets value of field {@code field} on the {@code target} object to the specified {@code mock}. </p>
-     * <p>
+     * <p/>
      * This method also works for final fields. Note that in case static fields are set, it is the responsibility of the
      * client to reset the field to the original value in test cleanup.
      *
@@ -87,7 +87,7 @@ public final class TestEnvironmentUtils {
      */
     public static void initOWLClassAMocks(EntityType<OWLClassA> etMock, Attribute strAttMock,
                                           TypesSpecification typesMock, Identifier idMock) throws NoSuchFieldException,
-            SecurityException {
+                                                                                                  SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
         when(etMock.getAttribute(OWLClassA.getStrAttField().getName())).thenReturn(strAttMock);
@@ -114,7 +114,8 @@ public final class TestEnvironmentUtils {
      */
     public static void initOWLClassBMocks(EntityType<OWLClassB> etMock, Attribute strAttMock,
                                           PropertiesSpecification propsMock, Identifier idMock) throws
-            NoSuchFieldException, SecurityException {
+                                                                                                NoSuchFieldException,
+                                                                                                SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassB.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
         when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
@@ -235,6 +236,8 @@ public final class TestEnvironmentUtils {
                 Collections.<Attribute<? super OWLClassJ, ?>>singleton(setAMock));
         when(setAMock.getJavaField()).thenReturn(OWLClassJ.getOwlClassAField());
         when(setAMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
+        when(setAMock.getCascadeTypes())
+                .thenReturn(OWLClassJ.getOwlClassAField().getAnnotation(OWLObjectProperty.class).cascade());
         final String clsAIri = OWLClassJ.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
                                         .iri();
         when(setAMock.getIRI()).thenReturn(IRI.create(clsAIri));
@@ -333,13 +336,14 @@ public final class TestEnvironmentUtils {
                                          SingularAttribute intAtt, SingularAttribute longAtt,
                                          SingularAttribute doubleAtt, SingularAttribute dateAtt,
                                          Identifier idMock) throws
-            Exception {
+                                                            Exception {
         when(etMock.getJavaType()).thenReturn(OWLClassM.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassM.getClassIri()));
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassM.getUriField());
         when(etMock.getAttributes()).thenReturn(
-                new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt)));
+                new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt,
+                        dateAtt)));
 
         when(booleanAtt.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
         when(booleanAtt.getIRI()).thenReturn(
