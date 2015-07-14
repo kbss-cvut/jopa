@@ -178,34 +178,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
     }
 
-    // TODO Remove this if all works fine with change recording during transaction
-//	private void calculateModifiedObjects(final UnitOfWorkChangeSet changeSet) {
-//		try {
-//			for (Object clone : cloneMapping.keySet()) {
-//				if (getDeletedObjects().containsKey(clone)) {
-//					// Make sure deleted objects are not persisted again
-//					continue;
-//				}
-//				Object original = cloneToOriginals.get(clone);
-//				if (original == null && !getNewObjectsCloneToOriginal().containsKey(clone)) {
-//					throw new OWLPersistenceException("Cannot find an original for clone!");
-//				}
-//				if (original == null) {
-//					continue; // It was a new object
-//				}
-//				Descriptor descriptor = getDescriptor(clone);
-//				ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(original, clone,
-//						descriptor);
-//				final boolean anyChanges = changeManager.calculateChanges(chSet);
-//				if (anyChanges) {
-//					changeSet.addObjectChangeSet(chSet);
-//				}
-//			}
-//		} catch (IllegalAccessException | IllegalArgumentException e) {
-//			throw new OWLPersistenceException(e);
-//		}
-//	}
-
     public void clear() {
         this.cloneMapping.clear();
         this.cloneToOriginals.clear();

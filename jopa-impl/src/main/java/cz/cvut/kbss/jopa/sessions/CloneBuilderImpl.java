@@ -10,7 +10,6 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -24,9 +23,7 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	private static final Set<Class<?>> WRAPPER_TYPES = getWrapperTypes();
 
-	// The identity map stores objects visited during the clone building
-	// process. We use this to prevent cloning already cloned objects.
-	private final Map<Object, Object> visitedObjects;
+    // Contains entities that are already cloned, so that we don't clone them again
 	private final RepositoryMap visitedEntities;
 
 	private final Builders builders;
@@ -35,7 +32,6 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	public CloneBuilderImpl(UnitOfWorkImpl uow) {
 		this.uow = uow;
-		this.visitedObjects = new IdentityHashMap<>();
 		this.visitedEntities = new RepositoryMap();
 		this.builders = new Builders();
 	}
@@ -65,40 +61,27 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original,
 			Descriptor descriptor) {
-
-		if (visitedObjects.containsKey(original)) {
-			return visitedObjects.get(original);
-		}
 		if (isOriginalInUoW(original)) {
 			return uow.getCloneForOriginal(original);
 		}
 		final Class<?> cls = original.getClass();
 		final boolean managed = isTypeManaged(cls);
 		if (managed) {
-			final Object pk = getIdentifier(original);
-			final Object visitedClone = getVisitedEntity(descriptor, pk);
+			final Object visitedClone = getVisitedEntity(descriptor, original);
 			if (visitedClone != null) {
 				return visitedClone;
 			}
 		}
 		final AbstractInstanceBuilder builder = getInstanceBuilder(original);
 		Object clone = builder.buildClone(cloneOwner, clonedField, original, descriptor);
-		addToVisited(original, clone);
 		if (!builder.populatesAttributes() && !isPrimitiveOrString(original.getClass())) {
 			populateAttributes(original, clone, descriptor);
 		}
 		if (managed) {
-			final Object pk = getIdentifier(clone);
-			putVisitedEntity(descriptor, pk, clone);
+			putVisitedEntity(descriptor, original, clone);
 		}
 		return clone;
 	}
-
-	private void addToVisited(Object original, Object clone) {
-        if (isTypeManaged(clone.getClass())) {
-            visitedObjects.put(original, clone);
-        }
-    }
 
 	/**
 	 * Clone all the attributes of the original and set the clone values. This
@@ -147,10 +130,6 @@ public class CloneBuilderImpl implements CloneBuilder {
 				} else {
 					// Else we have a relationship and we need to clone its
 					// target as well
-					if (visitedObjects.containsKey(origVal)) {
-						f.set(clone, visitedObjects.get(origVal));
-						continue;
-					}
 					if (isOriginalInUoW(origVal)) {
 						// If the reference is already managed
 						f.set(clone, uow.getCloneForOriginal(origVal));
@@ -159,9 +138,8 @@ public class CloneBuilderImpl implements CloneBuilder {
 					Object toAssign;
 					if (isTypeManaged(origClass)) {
 						final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass,
-								descriptor);
-						final Object pk = getIdentifier(origVal);
-						toAssign = getVisitedEntity(descriptor, pk);
+                                descriptor);
+						toAssign = getVisitedEntity(descriptor, origVal);
 						if (toAssign == null) {
 							toAssign = uow.registerExistingObject(origVal, fieldDescriptor);
 						}
@@ -265,21 +243,15 @@ public class CloneBuilderImpl implements CloneBuilder {
 		}
 	}
 
-	private Object getVisitedEntity(Descriptor descriptor, Object primaryKey) {
+	private Object getVisitedEntity(Descriptor descriptor, Object original) {
 		assert descriptor != null;
-		assert primaryKey != null;
-		return visitedEntities.get(descriptor, primaryKey);
+		assert original != null;
+		return visitedEntities.get(descriptor, original);
 	}
 
-	private void putVisitedEntity(Descriptor descriptor, Object primaryKey, Object entity) {
+	private void putVisitedEntity(Descriptor descriptor, Object original, Object clone) {
 		assert descriptor != null;
-		visitedEntities.add(descriptor, primaryKey, entity);
-	}
-
-	private Object getIdentifier(Object entity) {
-		assert entity != null;
-		assert isTypeManaged(entity.getClass());
-		return EntityPropertiesUtils.getPrimaryKey(entity, uow.getMetamodel());
+		visitedEntities.add(descriptor, original, clone);
 	}
 
 	AbstractInstanceBuilder getInstanceBuilder(Object toClone) {
@@ -304,7 +276,6 @@ public class CloneBuilderImpl implements CloneBuilder {
 
 	@Override
 	public void reset() {
-		visitedObjects.clear();
 		visitedEntities.clear();
 	}
 

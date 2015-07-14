@@ -391,21 +391,6 @@ public class CloneBuilderTest {
     }
 
     @Test
-    public void testReset() throws Exception {
-        final Field visitedObjectsField = builder.getClass().getDeclaredField("visitedObjects");
-        visitedObjectsField.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        final Map<Object, Object> visitedObjects = (Map<Object, Object>) visitedObjectsField
-                .get(builder);
-        assertTrue(visitedObjects.isEmpty());
-        final OWLClassA res = (OWLClassA) builder.buildClone(entityA, defaultDescriptor);
-        assertNotNull(res);
-        assertFalse(visitedObjects.isEmpty());
-        builder.reset();
-        assertTrue(visitedObjects.isEmpty());
-    }
-
-    @Test
     public void testMergeChangesOnString() throws Exception {
         final OWLClassA a = new OWLClassA();
         a.setUri(entityA.getUri());

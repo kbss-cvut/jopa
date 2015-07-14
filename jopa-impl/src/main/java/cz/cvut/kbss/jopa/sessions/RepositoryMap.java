@@ -22,21 +22,21 @@ final class RepositoryMap {
 		this.entityDescriptors = new IdentityHashMap<>();
 	}
 
-	void add(Descriptor descriptor, Object key, Object value) {
+	void add(Descriptor descriptor, Object original, Object clone) {
 		assert descriptor != null;
-		assert key != null;
+		assert original != null;
 		// Null values are permitted
 
 		final Map<Object, Object> entities = getMap(descriptor);
-		entities.put(key, value);
+		entities.put(original, clone);
 	}
 
-	void remove(Descriptor descriptor, Object key) {
+	void remove(Descriptor descriptor, Object original) {
 		assert descriptor != null;
-		assert key != null;
+		assert original != null;
 
 		final Map<Object, Object> entities = getMap(descriptor);
-		entities.remove(key);
+		entities.remove(original);
 	}
 
 	/**
@@ -55,23 +55,23 @@ final class RepositoryMap {
 		entityDescriptors.remove(entity);
 	}
 
-	boolean contains(Descriptor descriptor, Object key) {
+	boolean contains(Descriptor descriptor, Object original) {
 		assert descriptor != null;
-		assert key != null;
+		assert original != null;
 
 		final Map<Object, Object> entities = getMap(descriptor);
-		return entities.containsKey(key);
+		return entities.containsKey(original);
 	}
 
-	Object get(Descriptor descriptor, Object key) {
+	Object get(Descriptor descriptor, Object original) {
 		assert descriptor != null;
-		assert key != null;
+		assert original != null;
 
 		final Map<Object, Object> entities = getMap(descriptor);
-		if (!entities.containsKey(key)) {
+		if (!entities.containsKey(original)) {
 			return null;
 		}
-		return entities.get(key);
+		return entities.get(original);
 	}
 
 	/**
@@ -85,9 +85,7 @@ final class RepositoryMap {
 	}
 
 	void clear() {
-		for (Map<Object, Object> m : map.values()) {
-			m.clear();
-		}
+		map.values().forEach(Map::clear);
 		if (entityDescriptors != null) {
 			initDescriptors();
 		}
@@ -97,7 +95,7 @@ final class RepositoryMap {
 		final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : DEFAULT_CONTEXT;
 		Map<Object, Object> entities;
 		if (!map.containsKey(ctx)) {
-			entities = new HashMap<>();
+			entities = new IdentityHashMap<>();
 			map.put(ctx, entities);
 		} else {
 			entities = map.get(ctx);
