@@ -10,15 +10,18 @@ import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -69,6 +72,10 @@ public class EntityManagerImplTest {
         assertNull(j.getOwlClassA());
 
         em.merge(j);
-        // Just check that no exception is thrown. There was a bug which caused NPX for null collections on cascade merge
+        final ArgumentCaptor<OWLClassJ> argumentCaptor = ArgumentCaptor.forClass(OWLClassJ.class);
+        verify(uowMock).mergeDetached(argumentCaptor.capture(), any(Descriptor.class));
+        assertSame(j, argumentCaptor.getValue());
+        // Check that there is no exception thrown (there was a NPX bug in merging null collections) and that
+        // the merged object is correctly passed to merge in UoW
     }
 }

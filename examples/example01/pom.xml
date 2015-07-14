@@ -21,21 +21,25 @@
         </repository>
     </repositories>
 
+    <properties>
+        <jopa.version>0.5-SNAPSHOT</jopa.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>jopa-api</artifactId>
-            <version>0.4-SNAPSHOT</version>
+            <version>${jopa.version}</version>
         </dependency>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>jopa-impl</artifactId>
-            <version>0.4-SNAPSHOT</version>
+            <version>${jopa.version}</version>
         </dependency>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>ontodriver-sesame</artifactId>
-            <version>0.4-SNAPSHOT</version>
+            <version>${jopa.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -99,7 +103,7 @@
                 <!-- Generate entity classes from OWL integrity constraints -->
                 <groupId>cz.cvut.kbss.jopa</groupId>
                 <artifactId>jopa-maven-plugin</artifactId>
-                <version>0.4-SNAPSHOT</version>
+                <version>0.5-SNAPSHOT</version>
                 <configuration>
                     <package>cz.cvut.kbss.jopa.example01.generated</package>
                     <output-directory>src/main/java/</output-directory>

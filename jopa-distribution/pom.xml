@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.5-SNAPSHOT</version>
     <artifactId>jopa-distribution</artifactId>
     <packaging>pom</packaging>
     <name>JOPA distribution assembly</name>

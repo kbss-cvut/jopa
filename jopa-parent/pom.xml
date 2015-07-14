@@ -6,10 +6,10 @@
 
     <groupId>cz.cvut.kbss.jopa</groupId>
     <artifactId>jopa-parent</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.5-SNAPSHOT</version>
     <name>JOPA - parent</name>
     <packaging>pom</packaging>
-    <url>http://jopa.sourceforge.net</url>
+    <url>https://github.com/kbss-cvut/jopa</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
