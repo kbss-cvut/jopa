@@ -15,6 +15,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.sessions.cache.TtlCacheManager;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -84,7 +85,7 @@ public class ServerSession extends AbstractSession {
         this.uowsToEntities = new WeakHashMap<>();
         final String cache = properties.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
         if (cache == null || cache.equals("on")) {
-            this.liveObjectCache = new CacheManagerImpl(properties);
+            this.liveObjectCache = new TtlCacheManager(properties);
             liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
         } else {
             this.liveObjectCache = new DisabledCacheManager();

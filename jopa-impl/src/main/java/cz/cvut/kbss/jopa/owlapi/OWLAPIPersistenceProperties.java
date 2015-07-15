@@ -38,4 +38,9 @@ public interface OWLAPIPersistenceProperties extends PersistenceProperties {
 	 * How often should the cache be swept for dead entities. In seconds.
 	 */
 	public static final String CACHE_SWEEP_RATE = "cz.cvut.jopa.cache.sweepRate";
+
+    /**
+     * Capacity of the LRU second level cache.
+     */
+    public static final String LRU_CACHE_CAPACITY = "cz.cvut.jopa.cache.lru.capacity";
 }

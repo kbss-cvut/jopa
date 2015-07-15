@@ -20,7 +20,7 @@ public interface CacheManager extends Cache {
      * @param entity     The object to be added into the cache
      * @param context    Repository context URI
      */
-    public void add(Object primaryKey, Object entity, URI context);
+    void add(Object primaryKey, Object entity, URI context);
 
     /**
      * Gets entity with the specified primary key from the cache. </p>
@@ -33,13 +33,13 @@ public interface CacheManager extends Cache {
      * @param context    Repository context URI
      * @return Entity with the specified primary key or {@code null}
      */
-    public <T> T get(Class<T> cls, Object primaryKey, URI context);
+    <T> T get(Class<T> cls, Object primaryKey, URI context);
 
     /**
      * Remove objects with inferred attributes from the cache, since there are changes in the ontology that might
      * influence the inferred attributes.
      */
-    public void clearInferredObjects();
+    void clearInferredObjects();
 
     /**
      * Set the inferred classes for this cache manager. </p>
@@ -49,10 +49,10 @@ public interface CacheManager extends Cache {
      *
      * @param inferredClasses Set of inferred classes
      */
-    public void setInferredClasses(Set<Class<?>> inferredClasses);
+    void setInferredClasses(Set<Class<?>> inferredClasses);
 
     /**
      * Closes the cache.
      */
-    public void close();
+    void close();
 }
