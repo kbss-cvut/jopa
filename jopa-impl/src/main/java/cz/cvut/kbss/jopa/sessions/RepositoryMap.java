@@ -11,11 +11,10 @@ final class RepositoryMap {
 
 	private static final URI DEFAULT_CONTEXT = URI.create("http://defaultContext");
 
-	private final Map<URI, Map<Object, Object>> map;
+	private final Map<URI, Map<Object, Object>> origsToClones = new HashMap<>();
 	private Map<Object, Descriptor> entityDescriptors;
 
 	RepositoryMap() {
-		this.map = new HashMap<>();
 	}
 
 	void initDescriptors() {
@@ -85,7 +84,7 @@ final class RepositoryMap {
 	}
 
 	void clear() {
-		map.values().forEach(Map::clear);
+		origsToClones.values().forEach(Map::clear);
 		if (entityDescriptors != null) {
 			initDescriptors();
 		}
@@ -94,11 +93,11 @@ final class RepositoryMap {
 	private Map<Object, Object> getMap(Descriptor descriptor) {
 		final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : DEFAULT_CONTEXT;
 		Map<Object, Object> entities;
-		if (!map.containsKey(ctx)) {
+		if (!origsToClones.containsKey(ctx)) {
 			entities = new IdentityHashMap<>();
-			map.put(ctx, entities);
+			origsToClones.put(ctx, entities);
 		} else {
-			entities = map.get(ctx);
+			entities = origsToClones.get(ctx);
 		}
 		return entities;
 	}

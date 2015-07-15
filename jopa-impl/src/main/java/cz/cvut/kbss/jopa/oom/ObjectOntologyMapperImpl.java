@@ -147,6 +147,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         }
     }
 
+    @Override
     public URI generateIdentifier(EntityType<?> et) {
         try {
             return storageConnection.generateIdentifier(et.getIRI().toURI());
@@ -155,7 +156,12 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         }
     }
 
+    @Override
     public <T> T getEntityFromCacheOrOntology(Class<T> cls, URI primaryKey, Descriptor descriptor) {
+        final T orig = uow.getManagedOriginal(cls, primaryKey, descriptor);
+        if (orig != null) {
+            return orig;
+        }
         if (uow.getLiveObjectCache().contains(cls, primaryKey, descriptor.getContext())) {
             return uow.getLiveObjectCache().get(cls, primaryKey, descriptor.getContext());
         } else if (instanceRegistry.containsInstance(primaryKey, descriptor.getContext())) {

@@ -45,6 +45,7 @@ public class DeleteOperationsRunner extends BaseRunner {
 		final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
 		assertNotNull(a);
 		em.getTransaction().begin();
+        // TODO Should this be possible? There's still a reference from entityD to a
 		em.remove(a);
 		em.getTransaction().commit();
 

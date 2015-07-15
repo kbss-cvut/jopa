@@ -185,7 +185,7 @@ public class UnitOfWorkTest {
 	@Test
 	public void testReadObjectFromOntology() throws Exception {
 		when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(entityA);
-		OWLClassA res = this.uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+		OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
 		assertNotNull(res);
 		assertEquals(entityA.getUri(), res.getUri());
 		verify(cacheManagerMock).get(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
@@ -199,6 +199,16 @@ public class UnitOfWorkTest {
 		assertNotNull(res);
 		assertSame(entityA, res);
 	}
+
+	@Test
+    public void readAlreadyManagedObjectReturnsTheManagedOne() throws Exception {
+        final OWLClassA clone = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        assertNotNull(clone);
+        final OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+        assertSame(clone, res);
+        // Had to cast, otherwise ajc refused to compile this
+        verify(storageMock, never()).find((LoadingParameters<OWLClassA>) any(LoadingParameters.class));
+    }
 
 	@Test
 	public void testCalculateNewObjects() throws Exception {
@@ -308,8 +318,9 @@ public class UnitOfWorkTest {
 
 	@Test
 	public void testGetOriginal() throws Exception {
-		when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(entityA);
-		OWLClassA tO = this.uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+		when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(
+                entityA);
+		OWLClassA tO = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
 		assertNotNull(tO);
 		OWLClassA origOne = (OWLClassA) uow.getOriginal(tO);
 		assertSame(entityA, origOne);
@@ -321,6 +332,32 @@ public class UnitOfWorkTest {
 	public void testGetOriginalNull() {
 		assertNull(uow.getOriginal(null));
 	}
+
+    @Test
+    public void getManagedOriginalReturnsManagedOriginalInstance() throws Exception {
+        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(
+                entityA);
+        OWLClassA tO = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+
+        final OWLClassA res = uow.getManagedOriginal(OWLClassA.class, entityA.getUri(), descriptor);
+        assertNotNull(res);
+        assertSame(entityA, res);
+    }
+
+    @Test
+    public void getManagedOriginalForDifferentContextReturnsNull() throws Exception {
+        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(
+                entityA);
+        OWLClassA tO = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+
+        final EntityDescriptor differentContext = new EntityDescriptor(URI.create("http://differentContext"));
+        assertNull(uow.getManagedOriginal(OWLClassA.class, entityA.getUri(), differentContext));
+    }
+
+    @Test
+    public void getManagedOriginalForUnknownIdentifierReturnsNull() throws Exception {
+        assertNull(uow.getManagedOriginal(OWLClassA.class, entityA.getUri(), descriptor));
+    }
 
 	@Test
 	public void testIsObjectNew() throws Exception {
@@ -378,7 +415,7 @@ public class UnitOfWorkTest {
 	public void testRemoveObjectFromCache() {
 		uow.removeObjectFromCache(entityB, descriptor.getContext());
 		verify(cacheManagerMock).evict(OWLClassB.class, entityB.getUri(),
-				descriptor.getContext());
+                descriptor.getContext());
 	}
 
 	@Test
@@ -598,6 +635,26 @@ public class UnitOfWorkTest {
 		assertTrue(uow.contains(clone.getOwlClassA()));
 		verify(storageMock).loadFieldValue(clone, toLoad, descriptor);
 	}
+
+    @Test
+    public void findOfObjectAlreadyManagedAsLazilyLoadedValueReturnSameObject() throws Exception {
+        final OWLClassD d = new OWLClassD();
+        d.setUri(URI.create("http://dUri"));
+        final OWLClassD clone = (OWLClassD) uow.registerExistingObject(d, descriptor);
+        assertNull(clone.getOwlClassA());
+        final Field toLoad = OWLClassD.getOwlClassAField();
+        doAnswer(invocation -> {
+            final Field f = (Field) invocation.getArguments()[1];
+            f.set(invocation.getArguments()[0], entityA);
+            return null;
+        }).when(storageMock).loadFieldValue(clone, toLoad, descriptor);
+        uow.loadEntityField(clone, toLoad);
+        assertNotNull(clone.getOwlClassA());
+
+        final OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+        assertNotNull(res);
+        assertSame(clone.getOwlClassA(), res);
+    }
 
 	@Test(expected = OWLPersistenceException.class)
 	public void testLoadFieldValueNotRegistered() throws Exception {

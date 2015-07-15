@@ -128,12 +128,14 @@ public class UpdateOperationsRunner extends BaseRunner {
 		final OWLClassA resA1 = em.find(OWLClassA.class, newA.getUri(), dDescriptor);
 		assertNotNull(resA1);
 		final OWLClassD resD = em.find(OWLClassD.class, d.getUri(), dDescriptor);
-		assertSame(resD.getOwlClassA(), resA1);
+        assertEquals(resA1.getUri(), resD.getOwlClassA().getUri());
+//		assertSame(resD.getOwlClassA(), resA1);
 		assertNotNull(em.find(OWLClassA.class, entityA.getUri(), iDescriptor));
 		final OWLClassI resI = em.find(OWLClassI.class, i.getUri(), iDescriptor);
 		assertEquals(newA.getUri(), resI.getOwlClassA().getUri());
 		assertNotNull(em.find(OWLClassA.class, entityA.getUri(), dDescriptor));
-		assertEquals(resA1, resI.getOwlClassA());
+		assertEquals(resA1.getUri(), resI.getOwlClassA().getUri());
+//		assertEquals(resA1, resI.getOwlClassA());
 	}
 
 	public void mergeDetachedWithChanges(EntityManager em, URI ctx) {

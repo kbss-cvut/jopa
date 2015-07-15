@@ -25,6 +25,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     private final Map<Object, Object> cloneMapping;
     private final Map<Object, Object> cloneToOriginals;
+    private final Map<Object, Object> keysToClones;
     private Map<Object, Object> deletedObjects;
     private Map<Object, Object> newObjectsCloneToOriginal;
     private Map<Object, Object> newObjectsOriginalToClone;
@@ -60,6 +61,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.parent = Objects.requireNonNull(parent, ErrorUtils.constructNPXMessage("parent"));
         this.cloneMapping = createMap();
         this.cloneToOriginals = createMap();
+        this.keysToClones = new HashMap<>();
         this.repoMap = new RepositoryMap();
         repoMap.initDescriptors();
         this.cloneBuilder = new CloneBuilderImpl(this);
@@ -109,6 +111,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             // this UOW
             return cls.cast(result);
         }
+        // Object is already managed
+        result = keysToClones.get(primaryKey);
+        if (result != null && isInRepository(descriptor, result) && !getDeletedObjects().containsKey(result)) {
+            return cls.cast(result);
+        }
         // Search the cache
         result = getObjectFromCache(cls, primaryKey, descriptor.getContext());
         if (result == null) {
@@ -137,9 +144,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         if (hasDeleted()) {
             calculateDeletedObjects(changeSet);
         }
-//		if (hasChanges()) {
-//			calculateModifiedObjects(changeSet);
-//		}
     }
 
     /**
@@ -235,15 +239,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      */
     private void postCommit() {
         // Remove indirect collections from clones
-        for (Object clone : cloneMapping.keySet()) {
-            removeIndirectCollections(clone);
-        }
+        cloneMapping.keySet().forEach(this::removeIndirectCollections);
         getNewObjectsCloneToOriginal().clear();
         getNewObjectsOriginalToClone().clear();
         getNewObjectsKeyToClone().clear();
         getDeletedObjects().clear();
         cloneToOriginals.clear();
         cloneMapping.clear();
+        keysToClones.clear();
         this.hasChanges = false;
         this.hasDeleted = false;
         this.hasNew = false;
@@ -277,9 +280,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         for (ObjectChangeSet changeSet : uowChangeSet.getNewObjects()) {
             CardinalityConstraintsValidation.validateCardinalityConstraints(changeSet.getCloneObject());
         }
-        for (ObjectChangeSet changeSet : uowChangeSet.getExistingObjectsChanges()) {
-            CardinalityConstraintsValidation.validateCardinalityConstraints(changeSet);
-        }
+        uowChangeSet.getExistingObjectsChanges()
+                    .forEach(CardinalityConstraintsValidation::validateCardinalityConstraints);
     }
 
     private Map<Object, Object> createMap() {
@@ -288,7 +290,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     /**
      * Gets current state of the specified entity. </p>
-     * <p/>
+     * <p>
      * Note that since no repository is specified we can only determine if the
      * entity is managed or removed. Therefore if the case is different this
      * method returns State#NOT_MANAGED.
@@ -350,6 +352,30 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             original = getNewObjectsCloneToOriginal().get(clone);
         }
         return original;
+    }
+
+    /**
+     * Gets managed original with the specified identifier or {@code null} if there is none matching.
+     * <p>
+     * Descriptor is used to check repository context validity.
+     *
+     * @param cls Return type of the original
+     * @param identifier Instance identifier
+     * @param descriptor Repository descriptor
+     * @return Original object managed by this UoW or {@code null} if this UoW doesn't contain a matching instance
+     */
+    public <T> T getManagedOriginal(Class<T> cls, Object identifier, Descriptor descriptor) {
+        if (!keysToClones.containsKey(identifier)) {
+            return null;
+        }
+        final Object clone = keysToClones.get(identifier);
+        if (!cls.isAssignableFrom(clone.getClass())) {
+            return null;
+        }
+        if (!isInRepository(descriptor, clone)) {
+            return null;
+        }
+        return cls.cast(cloneToOriginals.get(clone));
     }
 
     /**
@@ -606,22 +632,24 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     /**
      * {@inheritDoc}
      */
-    public Object registerExistingObject(Object object, Descriptor descriptor) {
-        if (object == null) {
+    public Object registerExistingObject(Object entity, Descriptor descriptor) {
+        if (entity == null) {
             return null;
         }
-        if (cloneToOriginals.containsValue(object)) {
-            return getCloneForOriginal(object);
+        if (cloneToOriginals.containsValue(entity)) {
+            return getCloneForOriginal(entity);
         }
-        Object clone = this.cloneBuilder.buildClone(object, descriptor);
+        Object clone = this.cloneBuilder.buildClone(entity, descriptor);
         assert clone != null;
-        registerClone(clone, object, descriptor);
+        registerClone(clone, entity, descriptor);
         return clone;
     }
 
     private void registerClone(Object clone, Object original, Descriptor descriptor) {
         cloneMapping.put(clone, clone);
         cloneToOriginals.put(clone, original);
+        final Object identifier = EntityPropertiesUtils.getPrimaryKey(clone, getMetamodel());
+        keysToClones.put(identifier, clone);
         registerEntityWithPersistenceContext(clone, this);
         registerEntityWithOntologyContext(descriptor, clone);
     }
@@ -934,7 +962,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     /**
      * Create and set indirect collection on the specified entity field.</p>
-     * <p/>
+     * <p>
      * If the specified field is of Collection type and it is not already an
      * indirect collection, create new one and set it as the value of the
      * specified field on the specified entity.
@@ -996,7 +1024,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     /**
      * Get entity with the specified primary key from the cache. </p>
-     * <p/>
+     * <p>
      * If the cache does not contain any object with the specified primary key
      * and class, null is returned. This method is just a delegate for the cache
      * methods, it handles locks.
