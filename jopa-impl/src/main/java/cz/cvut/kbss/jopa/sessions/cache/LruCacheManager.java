@@ -2,9 +2,17 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 /**
@@ -25,6 +33,11 @@ public class LruCacheManager implements CacheManager {
 
     private final int capacity;
 
+    private final Lock readLock;
+    private final Lock writeLock;
+
+    private LruEntityCache entityCache;
+
     private Set<Class<?>> inferredClasses;
 
     public LruCacheManager() {
@@ -35,6 +48,10 @@ public class LruCacheManager implements CacheManager {
         Objects.requireNonNull(properties);
         this.capacity = properties.containsKey(OWLAPIPersistenceProperties.LRU_CACHE_CAPACITY) ?
                 resolveCapacitySetting(properties) : DEFAULT_CAPACITY;
+        final ReadWriteLock rwLock = new ReentrantReadWriteLock();
+        this.readLock = rwLock.readLock();
+        this.writeLock = rwLock.writeLock();
+        this.entityCache = new LruEntityCache(capacity);
     }
 
     private int resolveCapacitySetting(Map<String, String> properties) {
@@ -58,17 +75,45 @@ public class LruCacheManager implements CacheManager {
 
     @Override
     public void add(Object primaryKey, Object entity, URI context) {
+        Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 
+        writeLock.lock();
+        try {
+            entityCache.put(primaryKey, entity, context);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     @Override
     public <T> T get(Class<T> cls, Object primaryKey, URI context) {
-        return null;
+        if (cls == null || primaryKey == null) {
+            return null;
+        }
+        readLock.lock();
+        try {
+            return entityCache.get(cls, primaryKey, context);
+        } finally {
+            readLock.unlock();
+        }
     }
 
     @Override
     public void clearInferredObjects() {
+        writeLock.lock();
+        try {
+            getInferredClasses().forEach(this::evict);
+        } finally {
+            writeLock.unlock();
+        }
+    }
 
+    private Set<Class<?>> getInferredClasses() {
+        if (inferredClasses == null) {
+            return Collections.emptySet();
+        }
+        return inferredClasses;
     }
 
     @Override
@@ -78,71 +123,147 @@ public class LruCacheManager implements CacheManager {
 
     @Override
     public void close() {
-
+        // No-op
     }
 
     @Override
     public boolean contains(Class<?> cls, Object primaryKey) {
-        return false;
+        if (cls == null || primaryKey == null) {
+            return false;
+        }
+        readLock.lock();
+        try {
+            return entityCache.contains(cls, primaryKey);
+        } finally {
+            readLock.unlock();
+        }
     }
 
     @Override
     public boolean contains(Class<?> cls, Object primaryKey, URI context) {
-        return false;
+        if (cls == null || primaryKey == null) {
+            return false;
+        }
+        readLock.lock();
+        try {
+            return entityCache.contains(cls, primaryKey, context);
+        } finally {
+            readLock.unlock();
+        }
     }
 
     @Override
     public void evict(Class<?> cls, Object primaryKey, URI context) {
+        Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
+        Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
 
+        writeLock.lock();
+        try {
+            entityCache.evict(cls, primaryKey, context);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     @Override
     public void evict(Class<?> cls) {
+        Objects.requireNonNull(cls);
 
+        writeLock.lock();
+        try {
+            entityCache.evict(cls);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     @Override
     public void evict(URI context) {
-
+        writeLock.lock();
+        try {
+            entityCache.evict(context);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     @Override
     public void evictAll() {
-
+        writeLock.lock();
+        try {
+            this.entityCache = new LruEntityCache(capacity);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
-    private static final class CacheNode {
-        private Class<?> cls;
-        private Object identifier;
-        private URI context;
+    static final class LruEntityCache extends EntityCache implements Consumer<LruCache.CacheNode> {
 
-        private CacheNode(Class<?> cls, Object identifier, URI context) {
-            this.cls = cls;
-            this.identifier = identifier;
-            this.context = context;
+        private static final Object NULL_VALUE = null;
+
+        private final LruCache cache;
+
+        LruEntityCache(int capacity) {
+            this.cache = new LruCache(capacity, this);
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            CacheNode cacheNode = (CacheNode) o;
-
-            return cls.equals(cacheNode.cls) && identifier.equals(cacheNode.identifier) && context
-                    .equals(cacheNode.context);
-
+        public void accept(LruCache.CacheNode cacheNode) {
+            super.evict(cacheNode.getCls(), cacheNode.getIdentifier(), cacheNode.getContext());
         }
 
         @Override
-        public int hashCode() {
-            int result = cls.hashCode();
-            result = 31 * result + identifier.hashCode();
-            result = 31 * result + context.hashCode();
+        void put(Object primaryKey, Object entity, URI context) {
+            final URI ctx = context != null ? context : defaultContext;
+            super.put(primaryKey, entity, ctx);
+            cache.put(new LruCache.CacheNode(ctx, entity.getClass(), primaryKey), NULL_VALUE);
+        }
+
+        @Override
+        <T> T get(Class<T> cls, Object primaryKey, URI context) {
+            final URI ctx = context != null ? context : defaultContext;
+            T result = super.get(cls, primaryKey, ctx);
+            if (result != null) {
+                cache.get(new LruCache.CacheNode(ctx, cls, primaryKey));
+            }
             return result;
         }
-    }
 
-    // TODO The cache will be a standard cache with map of context -> map of class -> map of identifier -> object
-    // Plus there will be a LinkedHashMap for maintaining the LRU policy. Once an object is too old, it will be evicted
+        @Override
+        void evict(Class<?> cls, Object primaryKey, URI context) {
+            final URI ctx = context != null ? context : defaultContext;
+            super.evict(cls, primaryKey, ctx);
+            cache.remove(new LruCache.CacheNode(ctx, cls, primaryKey));
+        }
+
+        @Override
+        void evict(URI context) {
+            if (context == null) {
+                context = defaultContext;
+            }
+            if (!repoCache.containsKey(context)) {
+                return;
+            }
+            final Map<Class<?>, Map<Object, Object>> ctxContent = repoCache.get(context);
+            for (Map.Entry<Class<?>, Map<Object, Object>> e : ctxContent.entrySet()) {
+                for (Object id : e.getValue().keySet()) {
+                    cache.remove(new LruCache.CacheNode(context, e.getKey(), id));
+                }
+            }
+            ctxContent.clear();
+        }
+
+        @Override
+        void evict(Class<?> cls) {
+            for (Map.Entry<URI, Map<Class<?>, Map<Object, Object>>> e : repoCache.entrySet()) {
+                final Map<Class<?>, Map<Object, Object>> m = e.getValue();
+                final Map<Object, Object> cached = m.remove(cls);
+                if (cached != null) {
+                    for (Object id : cached.keySet()) {
+                        cache.remove(new LruCache.CacheNode(e.getKey(), cls, id));
+                    }
+                }
+            }
+        }
+    }
 }

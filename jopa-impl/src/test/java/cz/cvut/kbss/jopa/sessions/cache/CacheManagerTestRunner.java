@@ -159,7 +159,7 @@ public class CacheManagerTestRunner {
         }
     }
 
-    public void testEvictByClass(CacheManager manager) {
+    public Class<?> testEvictByClass(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         manager.add(testB.getUri(), testB, CONTEXT_TWO);
         addAllToCache(listOfBs, manager);
@@ -169,6 +169,7 @@ public class CacheManagerTestRunner {
         for (OWLClassB b : listOfBs.values()) {
             assertFalse(manager.contains(b.getClass(), b.getUri(), CONTEXT_TWO));
         }
+        return OWLClassB.class;
     }
 
     public void testEvictByClassNull(CacheManager manager) {
@@ -178,12 +179,13 @@ public class CacheManagerTestRunner {
         manager.evict((Class<?>) null);
     }
 
-    public void testEvictByContext(CacheManager manager) {
+    public URI testEvictByContext(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         manager.add(testB.getUri(), testB, CONTEXT_TWO);
         manager.evict(CONTEXT_ONE);
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
         assertTrue(manager.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
+        return CONTEXT_ONE;
     }
 
     public void testEvictByContextNull(CacheManager manager) {

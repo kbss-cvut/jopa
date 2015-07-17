@@ -130,9 +130,9 @@ public class TestEnvironment {
     private static Map<String, String> initParams(boolean cache) {
         final Map<String, String> params = new HashMap<>();
         if (cache) {
-            params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "on");
+            params.put(OWLAPIPersistenceProperties.CACHE_ENABLED, "true");
         } else {
-            params.put(OWLAPIPersistenceProperties.CACHE_PROPERTY, "off");
+            params.put(OWLAPIPersistenceProperties.CACHE_ENABLED, "false");
         }
         /* Set location of the entities (package) */
         params.put(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.test");

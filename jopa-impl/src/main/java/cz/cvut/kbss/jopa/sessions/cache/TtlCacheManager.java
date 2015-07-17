@@ -44,7 +44,7 @@ public class TtlCacheManager implements CacheManager {
 
     private Set<Class<?>> inferredClasses;
 
-    private CacheImpl cache;
+    private TtlCache cache;
 
     // Each repository can have its own lock and they could be acquired by this
     // instance itself, no need to pass this burden to callers
@@ -59,7 +59,7 @@ public class TtlCacheManager implements CacheManager {
     private volatile boolean sweepRunning;
 
     public TtlCacheManager(Map<String, String> properties) {
-        this.cache = new CacheImpl();
+        this.cache = new TtlCache();
         initSettings(properties);
         final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
         this.readLock = lock.readLock();
@@ -133,7 +133,7 @@ public class TtlCacheManager implements CacheManager {
     private void releaseCache() {
         acquireWriteLock();
         try {
-            this.cache = new CacheImpl();
+            this.cache = new TtlCache();
         } finally {
             releaseWriteLock();
         }
@@ -311,74 +311,26 @@ public class TtlCacheManager implements CacheManager {
         }
     }
 
-    private static final class CacheImpl {
+    private static final class TtlCache extends EntityCache {
 
-        private static final String DEFAULT_CONTEXT_BASE = "http://defaultContext";
+        private final Map<URI, Long> ttls = new HashMap<>();
 
-        private Map<URI, Map<Class<?>, Map<Object, Object>>> repoCache;
-        private Map<URI, Long> ttls;
-        private final URI defaultContext;
-
-        private CacheImpl() {
-            repoCache = new HashMap<>();
-            ttls = new HashMap<>();
-            this.defaultContext = URI.create(DEFAULT_CONTEXT_BASE + System.currentTimeMillis());
-        }
-
-        private void put(Object primaryKey, Object entity, URI context) {
-            assert primaryKey != null;
-            assert entity != null;
-
-            final Class<?> cls = entity.getClass();
+        void put(Object primaryKey, Object entity, URI context) {
+            super.put(primaryKey, entity, context);
             final URI ctx = context != null ? context : defaultContext;
-
-            Map<Class<?>, Map<Object, Object>> ctxMap;
-            if (!repoCache.containsKey(ctx)) {
-                ctxMap = new HashMap<>();
-                repoCache.put(ctx, ctxMap);
-            } else {
-                ctxMap = repoCache.get(ctx);
-            }
-            Map<Object, Object> clsMap;
-            if (!ctxMap.containsKey(cls)) {
-                clsMap = new HashMap<>();
-                ctxMap.put(cls, clsMap);
-            } else {
-                clsMap = ctxMap.get(cls);
-            }
-            clsMap.put(primaryKey, entity);
             updateTimeToLive(ctx);
         }
 
-        private <T> T get(Class<T> cls, Object primaryKey, URI context) {
+        <T> T get(Class<T> cls, Object primaryKey, URI context) {
             assert cls != null;
             assert primaryKey != null;
 
             final URI ctx = context != null ? context : defaultContext;
-            final Map<Object, Object> m = getMapForClass(ctx, cls);
-            if (m.containsKey(primaryKey)) {
+            T result = super.get(cls, primaryKey, ctx);
+            if (result != null) {
                 updateTimeToLive(ctx);
-                return cls.cast(m.get(primaryKey));
             }
-            return null;
-        }
-
-        private boolean contains(Class<?> cls, Object primaryKey) {
-            assert cls != null;
-            assert primaryKey != null;
-            final Map<Object, Object> m = getMapForClass(defaultContext, cls);
-            return m.containsKey(primaryKey);
-        }
-
-        private boolean contains(Class<?> cls, Object primaryKey, URI context) {
-            assert cls != null;
-            assert primaryKey != null;
-            if (context == null) {
-                return contains(cls, primaryKey);
-            }
-
-            final Map<Object, Object> m = getMapForClass(context, cls);
-            return m.containsKey(primaryKey);
+            return result;
         }
 
         private void updateTimeToLive(URI context) {
@@ -387,29 +339,13 @@ public class TtlCacheManager implements CacheManager {
             ttls.put(context, System.currentTimeMillis());
         }
 
-        private void evict(Class<?> cls, Object primaryKey, URI context) {
-            assert cls != null;
-            assert primaryKey != null;
-
+        void evict(URI context) {
             final URI ctx = context != null ? context : defaultContext;
-            final Map<Object, Object> m = getMapForClass(ctx, cls);
-            if (m.containsKey(primaryKey)) {
-                m.remove(primaryKey);
-            }
-        }
-
-        private void evict(URI context) {
-            if (context == null) {
-                context = defaultContext;
-            }
-            if (!repoCache.containsKey(context)) {
-                return;
-            }
-            repoCache.get(context).clear();
+            super.evict(ctx);
             ttls.remove(context);
         }
 
-        private void evict(Class<?> cls) {
+        void evict(Class<?> cls) {
             for (Entry<URI, Map<Class<?>, Map<Object, Object>>> e : repoCache.entrySet()) {
                 final Map<Class<?>, Map<Object, Object>> m = e.getValue();
                 m.remove(cls);
@@ -417,17 +353,6 @@ public class TtlCacheManager implements CacheManager {
                     ttls.remove(e.getKey());
                 }
             }
-        }
-
-        private Map<Object, Object> getMapForClass(URI context, Class<?> cls) {
-            assert context != null;
-            assert cls != null;
-
-            if (!repoCache.containsKey(context)) {
-                return Collections.emptyMap();
-            }
-            final Map<Class<?>, Map<Object, Object>> ctxMap = repoCache.get(context);
-            return (ctxMap.containsKey(cls) ? ctxMap.get(cls) : Collections.emptyMap());
         }
     }
 }

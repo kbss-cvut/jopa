@@ -58,7 +58,7 @@ public class RepositoryMapTest {
         initData();
 		this.repoMap = new RepositoryMap();
 		repoMap.initDescriptors();
-		final Field mapField = RepositoryMap.class.getDeclaredField("map");
+		final Field mapField = RepositoryMap.class.getDeclaredField("origsToClones");
 		mapField.setAccessible(true);
 		this.theMap = (Map<URI, Map<Object, Object>>) mapField.get(repoMap);
 		final Field descriptorsField = RepositoryMap.class.getDeclaredField("entityDescriptors");

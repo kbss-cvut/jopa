@@ -1,11 +1,5 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.net.URI;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
-
 import cz.cvut.kbss.jopa.accessors.NewStorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
@@ -14,18 +8,22 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
-import cz.cvut.kbss.jopa.sessions.cache.TtlCacheManager;
+import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
+import java.net.URI;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
+
 /**
  * The ServerSession is the primary interface for accessing the ontology. </p>
- * <p/>
- * It manages an accessor object, which performs the queries. NOTE: In the
- * future there should be a pool of accessors, since we will be dealing with
- * parallel access from many clients.
+ * <p>
+ * It manages an accessor object, which performs the queries. NOTE: In the future there should be a pool of accessors,
+ * since we will be dealing with parallel access from many clients.
  *
  * @author kidney
  */
@@ -69,8 +67,8 @@ public class ServerSession extends AbstractSession {
     }
 
     /**
-     * Initializes this ServerSession. This in particular means initialization
-     * of the ontology accessor and live object cache.
+     * Initializes this ServerSession. This in particular means initialization of the ontology accessor and live object
+     * cache.
      *
      * @param storageProperties Storage properties
      * @param properties        Map of setup properties
@@ -83,13 +81,8 @@ public class ServerSession extends AbstractSession {
         this.runningTransactions = new WeakHashMap<>();
         this.activePersistenceContexts = new WeakHashMap<>();
         this.uowsToEntities = new WeakHashMap<>();
-        final String cache = properties.get(OWLAPIPersistenceProperties.CACHE_PROPERTY);
-        if (cache == null || cache.equals("on")) {
-            this.liveObjectCache = new TtlCacheManager(properties);
-            liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
-        } else {
-            this.liveObjectCache = new DisabledCacheManager();
-        }
+        this.liveObjectCache = CacheFactory.createCache(properties);
+        liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
         final String storage = properties.get("storage");
         if (storage != null && storage.equals("new")) {
             this.newStorageAccessor = new NewStorageAccessor(storageProperties, properties);
@@ -140,8 +133,7 @@ public class ServerSession extends AbstractSession {
     }
 
     /**
-     * Close the server session and all connections to the underlying data
-     * source.
+     * Close the server session and all connections to the underlying data source.
      */
     public void close() {
         if (!runningTransactions.isEmpty()) {
@@ -185,12 +177,10 @@ public class ServerSession extends AbstractSession {
     }
 
     /**
-     * Register the specified entity as managed in the specified
-     * {@code UnitOfWork}. </p>
-     * <p/>
-     * Registering loaded entities with their owning {@code UnitOfWork} is
-     * highly recommended, since it speeds up persistence context lookup when
-     * entity attributes are modified.
+     * Register the specified entity as managed in the specified {@code UnitOfWork}. </p>
+     * <p>
+     * Registering loaded entities with their owning {@code UnitOfWork} is highly recommended, since it speeds up
+     * persistence context lookup when entity attributes are modified.
      *
      * @param entity The entity to register
      * @param uow    Persistence context of the specified entity
@@ -221,8 +211,7 @@ public class ServerSession extends AbstractSession {
      * Get persistence context for the specified entity. </p>
      *
      * @param entity The entity
-     * @return Persistence context of the specified entity or null, if it cannot
-     * be found
+     * @return Persistence context of the specified entity or null, if it cannot be found
      */
     public synchronized UnitOfWorkImpl getPersistenceContext(Object entity) {
         if (entity == null) {
@@ -232,9 +221,8 @@ public class ServerSession extends AbstractSession {
     }
 
     /**
-     * Remove the specified {@code UnitOfWork} from the list of currently active
-     * persistence contexts. </p>
-     * <p/>
+     * Remove the specified {@code UnitOfWork} from the list of currently active persistence contexts. </p>
+     * <p>
      * Also remove all the objects associated with this persistence context.
      *
      * @param uow The persistence context to remove

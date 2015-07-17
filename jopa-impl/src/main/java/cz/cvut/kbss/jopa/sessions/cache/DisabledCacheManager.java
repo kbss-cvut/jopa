@@ -1,4 +1,6 @@
-package cz.cvut.kbss.jopa.sessions;
+package cz.cvut.kbss.jopa.sessions.cache;
+
+import cz.cvut.kbss.jopa.sessions.CacheManager;
 
 import java.net.URI;
 import java.util.Set;

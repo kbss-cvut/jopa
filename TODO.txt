@@ -1,4 +1,4 @@
-- Add a LRU cache
+- When an entity is removed, there should be some IC check that verifies it is not referenced from any other entity
 - Revisit the way objects and clones are cached in UoW, CloneBuilder and RepositoryMap
     - There should be some unambiguous workflow
     - And how they are loaded, especially as attributes of other objects
