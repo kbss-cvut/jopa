@@ -1,8 +1,10 @@
+- Add support for ASK queries!!!
+- Add support for a 'required' parameter in Object, Data and Annotation Property annotations
+- What about support for lists, that are neither Simple nor Referenced?
 - When an entity is removed, there should be some IC check that verifies it is not referenced from any other entity
 - Revisit the way objects and clones are cached in UoW, CloneBuilder and RepositoryMap
     - There should be some unambiguous workflow
     - And how they are loaded, especially as attributes of other objects
-- When an entity is persisted and added into the cache, should also entities referenced by it be added into cache (when cascade is used)?
 - Add support for parameters in queries (query builder)
 - Add support for EntityManager.getReference
 - Add support for namespace definition - on class and package level
