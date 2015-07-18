@@ -460,16 +460,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return parent.getLiveObjectCache();
     }
 
-    /**
-     * Get a set of classes managed in this persistence unit.
-     *
-     * @return Set of managed classes.
-     */
-    @Override
-    public Set<Class<?>> getManagedTypes() {
-        return parent.getManagedTypes();
-    }
-
     public UnitOfWorkChangeSet getUowChangeSet() {
         if (uowChangeSet == null) {
             this.uowChangeSet = ChangeSetFactory.createUoWChangeSet();

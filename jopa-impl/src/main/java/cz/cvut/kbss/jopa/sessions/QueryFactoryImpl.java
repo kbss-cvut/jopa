@@ -11,10 +11,10 @@ import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 class QueryFactoryImpl implements QueryFactory {
 
-	private final UnitOfWork uow;
+	private final UnitOfWorkImpl uow;
 	private final ConnectionWrapper connection;
 
-	QueryFactoryImpl(UnitOfWork uow, ConnectionWrapper connection) {
+	QueryFactoryImpl(UnitOfWorkImpl uow, ConnectionWrapper connection) {
 		assert uow != null;
 		assert connection != null;
 		this.uow = uow;
@@ -25,7 +25,7 @@ class QueryFactoryImpl implements QueryFactory {
 	public Query<List<String>> createNativeQuery(String sparql) {
 		Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
 
-		final QueryImpl q = new QueryImpl(sparql, true, connection);
+		final QueryImpl q = new QueryImpl(sparql, connection);
 		q.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
 		return q;
 	}
@@ -35,8 +35,9 @@ class QueryFactoryImpl implements QueryFactory {
 		Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
 		Objects.requireNonNull(resultClass, ErrorUtils.constructNPXMessage("resultClass"));
 
-		final TypedQueryImpl<T> tq = new TypedQueryImpl<>(sparql, resultClass, true, uow,
-				connection);
+		final TypedQueryImpl<T> tq = new TypedQueryImpl<>(sparql, resultClass,
+				connection, uow);
+		tq.setUnitOfWork(uow);
 		tq.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
 		return tq;
 	}
@@ -45,11 +46,8 @@ class QueryFactoryImpl implements QueryFactory {
 	public Query createQuery(String query) {
 		Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
 
-		// We specify the query as SPARQL since currently we don't support any
-		// more abstract syntax
-		final QueryImpl q = new QueryImpl(query, false, connection);
-		q.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
-		return q;
+        // We do not support any more abstract syntax, yet
+		return createNativeQuery(query);
 	}
 
 	@Override
@@ -57,9 +55,7 @@ class QueryFactoryImpl implements QueryFactory {
 		Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
 		Objects.requireNonNull(resultClass, ErrorUtils.constructNPXMessage("resultClass"));
 
-		final TypedQueryImpl<T> tq = new TypedQueryImpl<>(query, resultClass, false, uow,
-				connection);
-		tq.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
-		return tq;
+        // We do not support any more abstract syntax, yet
+		return createNativeQuery(query, resultClass);
 	}
 }

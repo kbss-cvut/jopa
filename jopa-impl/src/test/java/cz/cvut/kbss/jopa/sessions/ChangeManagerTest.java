@@ -123,7 +123,6 @@ public class ChangeManagerTest {
                 return TestEnvironmentUtils.getManagedTypes().contains(cls);
             }
         });
-        when(providerMock.getManagedTypes()).thenReturn(TestEnvironmentUtils.getManagedTypes());
 		testAClone.setStringAttribute(null);
 		testAClone.setTypes(null);
 		testA.setTypes(null);

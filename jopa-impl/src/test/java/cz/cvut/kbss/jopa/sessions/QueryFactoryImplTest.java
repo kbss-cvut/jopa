@@ -19,7 +19,7 @@ public class QueryFactoryImplTest {
 	private static final Class<OWLClassA> CLS = OWLClassA.class;
 
 	@Mock
-	private UnitOfWork uowMock;
+	private UnitOfWorkImpl uowMock;
 
 	@Mock
 	private ConnectionWrapper connectionMock;

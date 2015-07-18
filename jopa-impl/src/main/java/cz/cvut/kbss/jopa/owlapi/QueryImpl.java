@@ -35,31 +35,27 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
+// TODO This class hardcode the type to List<String>, see JPA Query
 public class QueryImpl implements Query<List<String>> {
 
 	private final String query;
 	private final Set<URI> contexts;
-	private final boolean sparql;
 	private final ConnectionWrapper connection;
 
 	private int maxResults;
 	private boolean useBackupOntology;
 
 	// sparql=false -> abstract syntax
-	public QueryImpl(final String query, final boolean sparql, final ConnectionWrapper connection) {
+	public QueryImpl(final String query, final ConnectionWrapper connection) {
 		this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
 		this.connection = Objects.requireNonNull(connection,
 				ErrorUtils.constructNPXMessage("connection"));
 		this.contexts = new HashSet<>();
 		this.useBackupOntology = false;
-		this.sparql = sparql;
 		this.maxResults = Integer.MAX_VALUE;
 	}
 
 	public List<List<String>> getResultList() {
-		if (!sparql) {
-			throw new NotYetImplementedException();
-		}
 		try {
 			if (maxResults == 0) {
 				return Collections.emptyList();

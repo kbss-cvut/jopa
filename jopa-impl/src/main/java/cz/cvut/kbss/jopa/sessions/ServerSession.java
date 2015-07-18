@@ -162,11 +162,6 @@ public class ServerSession extends AbstractSession {
     }
 
     @Override
-    public Set<Class<?>> getManagedTypes() {
-        return managedClasses;
-    }
-
-    @Override
     public Metamodel getMetamodel() {
         return metamodel;
     }

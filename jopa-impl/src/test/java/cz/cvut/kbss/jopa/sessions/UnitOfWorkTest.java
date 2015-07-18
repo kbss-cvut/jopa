@@ -840,13 +840,8 @@ public class UnitOfWorkTest {
 		}
 
         @Override
-        public Set<Class<?>> getManagedTypes() {
-            return TestEnvironmentUtils.getManagedTypes();
-        }
-
-        @Override
         public boolean isTypeManaged(Class<?> cls) {
-            return getManagedTypes().contains(cls);
+            return TestEnvironmentUtils.getManagedTypes().contains(cls);
         }
     }
 }
