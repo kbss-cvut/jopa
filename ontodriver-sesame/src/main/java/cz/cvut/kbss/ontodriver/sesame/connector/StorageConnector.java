@@ -208,16 +208,15 @@ class StorageConnector extends AbstractConnector {
 
     @Override
     public TupleQueryResult executeSelectQuery(String query) throws SesameDriverException {
-        RepositoryConnection connection = null;
+        RepositoryConnection connection;
         try {
             connection = acquireConnection();
             final TupleQuery tq = connection.prepareTupleQuery(QueryLanguage.SPARQL, query);
             return new QueryResult(tq.evaluate(), connection);
         } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
             throw new SesameDriverException(e);
-        } finally {
-            releaseConnection(connection);
         }
+        // The connection is released by the result set once it is closed
     }
 
     private RepositoryConnection acquireConnection() throws SesameDriverException {
