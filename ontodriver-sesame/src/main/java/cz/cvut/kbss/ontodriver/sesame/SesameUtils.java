@@ -11,7 +11,7 @@ import java.util.Date;
  *
  * @author ledvima1
  */
-final class SesameUtils {
+public final class SesameUtils {
 
     private SesameUtils() {
         // Private constructor
@@ -26,7 +26,7 @@ final class SesameUtils {
      * literal
      * @throws IllegalArgumentException If literal's datatype is not supported
      */
-    static Object getDataPropertyValue(Literal literal) {
+    public static Object getDataPropertyValue(Literal literal) {
         assert literal != null;
 
         final URI datatype = literal.getDatatype();
@@ -70,7 +70,7 @@ final class SesameUtils {
      * @return Sesame Literal
      * @throws IllegalArgumentException If the type of the value is not supported
      */
-    static Literal createDataPropertyLiteral(Object value, String language, ValueFactory vf) {
+    public static Literal createDataPropertyLiteral(Object value, String language, ValueFactory vf) {
         assert value != null;
 
         if (value instanceof Integer) {
@@ -100,7 +100,7 @@ final class SesameUtils {
      * @param value The value to check
      * @return {@code true} if the value is a blank node, {@code false} otherwise
      */
-    static boolean isBlankNode(Value value) {
+    public static boolean isBlankNode(Value value) {
         assert value != null;
         return value instanceof BNode;
     }
@@ -111,7 +111,7 @@ final class SesameUtils {
      * @param value The value to check
      * @return {@code true} if the value is either an URI or an URL
      */
-    static boolean isResourceIdentifier(Object value) {
+    public static boolean isResourceIdentifier(Object value) {
         return value instanceof java.net.URI || value instanceof URL || value instanceof URI;
     }
 
@@ -122,11 +122,11 @@ final class SesameUtils {
      * @param factory ValueFactory used for the conversion
      * @return Sesame URI
      */
-    static URI toSesameUri(java.net.URI javaUri, ValueFactory factory) {
+    public static URI toSesameUri(java.net.URI javaUri, ValueFactory factory) {
         return (javaUri != null ? factory.createURI(javaUri.toString()) : null);
     }
 
-    static java.net.URI toJavaUri(Resource resource) {
+    public static java.net.URI toJavaUri(Resource resource) {
         if (resource instanceof BNode) {
             // We have to check for BNode explicitly, because java's URI treats
             // BNode's identifier as a valid URI

@@ -180,4 +180,29 @@ public class TypedQueryRunner {
 		fail("This line should not have been reached.");
 		assert q == null;
 	}
+
+	public void askQueryReturnsTrue(EntityManager em, URI... ctxs) {
+        logger.config("Test: execute a ASK query which returns true.");
+        final String query = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
+        final Query<Boolean> q = em.createNativeQuery(query, Boolean.class);
+        for (URI ctx : ctxs) {
+            q.addContext(ctx);
+        }
+        final Boolean res = q.getSingleResult();
+        assertNotNull(res);
+        assertTrue(res);
+    }
+
+    public void askQueryReturnsFalse(EntityManager em, URI... ctxs) {
+        logger.config("Test: execute a ASK query which returns false.");
+        final String query = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX> . }";
+        final Query<Boolean> q = em.createNativeQuery(query, Boolean.class);
+        for (URI ctx : ctxs) {
+            q.addContext(ctx);
+        }
+        final List<Boolean> res = q.getResultList();
+        assertNotNull(res);
+        assertEquals(1, res.size());
+        assertFalse(res.get(0));
+    }
 }

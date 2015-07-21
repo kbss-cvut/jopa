@@ -36,7 +36,7 @@ public class SesamePreparedStatementTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		when(executorMock.executeQuery(any(String.class))).thenReturn(resultMock);
+		when(executorMock.executeSelectQuery(any(String.class))).thenReturn(resultMock);
 		this.paramsValuesField = SesamePreparedStatement.class.getDeclaredField("paramValues");
 		paramsValuesField.setAccessible(true);
 		this.paramNamesField = SesamePreparedStatement.class.getDeclaredField("paramNames");
@@ -125,7 +125,7 @@ public class SesamePreparedStatementTest {
 		initStatement(query);
 		statement.setObject("x", "_:subject");
 		statement.executeQuery();
-		verify(executorMock).executeQuery(expected);
+		verify(executorMock).executeSelectQuery(expected);
 	}
 
 	@Test

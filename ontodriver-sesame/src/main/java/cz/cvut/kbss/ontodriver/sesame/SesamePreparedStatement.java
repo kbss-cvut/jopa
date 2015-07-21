@@ -8,6 +8,7 @@ import java.util.Map;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
 import cz.cvut.kbss.ontodriver_new.PreparedStatement;
 
 public class SesamePreparedStatement extends SesameStatement implements PreparedStatement {

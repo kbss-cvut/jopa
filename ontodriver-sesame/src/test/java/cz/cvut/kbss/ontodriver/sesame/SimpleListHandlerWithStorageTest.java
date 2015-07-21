@@ -19,7 +19,7 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
-public class SimpleListHandlerTestWithStorage {
+public class SimpleListHandlerWithStorageTest {
 
     private static NamedResource OWNER = NamedResource
             .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#EntityC");

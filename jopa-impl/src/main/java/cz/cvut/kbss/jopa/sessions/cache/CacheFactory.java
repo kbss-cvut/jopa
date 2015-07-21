@@ -5,6 +5,7 @@ import cz.cvut.kbss.jopa.sessions.CacheManager;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 /**
  * Creates second level cache based on the specified properties.
@@ -12,6 +13,8 @@ import java.util.Objects;
  * @author ledvima1
  */
 public abstract class CacheFactory {
+
+    private static final Logger LOG = Logger.getLogger(CacheFactory.class.getName());
 
     private static final String LRU_CACHE = "lru";
     private static final String TTL_CACHE = "ttl";
@@ -30,6 +33,7 @@ public abstract class CacheFactory {
         Objects.requireNonNull(properties);
         final String enabledStr = properties.get(OWLAPIPersistenceProperties.CACHE_ENABLED);
         if (enabledStr != null && !Boolean.parseBoolean(enabledStr)) {
+            LOG.config("Second level cache is disabled.");
             return new DisabledCacheManager();
         }
         return createEnabledCache(properties);
@@ -40,8 +44,10 @@ public abstract class CacheFactory {
                                            .toLowerCase();
         switch (cacheType) {
             case LRU_CACHE:
+                LOG.config("Using LRU cache.");
                 return new LruCacheManager(properties);
             case TTL_CACHE:
+                LOG.config("Using TTL cache.");
                 return new TtlCacheManager(properties);
             default:
                 throw new IllegalArgumentException("Invalid second level cache type " + cacheType);

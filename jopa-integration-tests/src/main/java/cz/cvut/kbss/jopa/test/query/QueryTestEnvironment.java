@@ -84,7 +84,7 @@ public final class QueryTestEnvironment {
 			int sublistStart = 0;
 			for (URI ctx : contexts) {
 				if (!contextMap.containsKey(ctx)) {
-					contextMap.put(ctx, new HashMap<Class<?>, List<?>>());
+					contextMap.put(ctx, new HashMap<>());
 				}
 				final List<?> sublist = dataLst.subList(sublistStart, sublistStart + sublistSize);
 				contextMap.get(ctx).put(e.getKey(), sublist);
@@ -196,7 +196,7 @@ public final class QueryTestEnvironment {
 			final OWLClassA a = new OWLClassA();
 			a.setUri(URI.create(BASE_A + randomNum));
 			a.setStringAttribute("stringAttribute" + randomNum);
-			final Set<String> s = new HashSet<String>();
+			final Set<String> s = new HashSet<>();
 			s.add(TYPE_A);
 			s.add(ann.iri());
 			a.setTypes(s);

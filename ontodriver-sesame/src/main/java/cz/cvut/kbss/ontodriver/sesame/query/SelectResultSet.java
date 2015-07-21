@@ -1,40 +1,30 @@
-package cz.cvut.kbss.ontodriver.sesame;
+package cz.cvut.kbss.ontodriver.sesame.query;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Observer;
-
+import cz.cvut.kbss.ontodriver.Statement;
+import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.sesame.SesameUtils;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 
-import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver_new.ResultSet;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
-public class SesameResultSet implements ResultSet {
-
-	private final Statement statement;
-
-	private int index;
-	private boolean open;
+public class SelectResultSet extends AbstractResultSet {
 
 	private final TupleQueryResult result;
 	private List<String> bindings;
 	private BindingSet current;
 
-	public SesameResultSet(TupleQueryResult result, Statement statement)
+	public SelectResultSet(TupleQueryResult result, Statement statement)
 			throws QueryEvaluationException {
-		assert statement != null;
+        super(statement);
 		assert result != null;
 
-		this.statement = statement;
-		this.open = true;
-		this.index = -1;
 		this.result = result;
 		init();
 	}
@@ -44,42 +34,13 @@ public class SesameResultSet implements ResultSet {
 	}
 
 	@Override
-	public boolean isOpen() {
-		return open;
-	}
-
-	@Override
-	public int getRowIndex() throws OntoDriverException {
-		ensureOpen();
-		return index;
-	}
-
-	@Override
-	public Statement getStatement() throws OntoDriverException {
-		ensureOpen();
-		return statement;
-	}
-
-	@Override
-	public boolean isFirst() throws OntoDriverException {
-		ensureOpen();
-		return index == 0;
-	}
-
-	protected void ensureOpen() {
-		if (!open) {
-			throw new IllegalStateException("The result set is closed!");
-		}
-	}
-
-	@Override
 	public void close() throws OntoDriverException {
 		try {
 			result.close();
 		} catch (QueryEvaluationException e) {
 			throw new OntoDriverException(e);
 		} finally {
-			this.open = false;
+			super.close();
 		}
 	}
 
@@ -95,13 +56,7 @@ public class SesameResultSet implements ResultSet {
 		return bindings.size();
 	}
 
-	@Override
-	public void first() throws OntoDriverException {
-		throw new UnsupportedOperationException(
-				"Returning to the first row is not supported by this result set.");
-	}
-
-	@Override
+    @Override
 	public boolean getBoolean(int columnIndex) throws OntoDriverException {
 		ensureOpen();
 		return toBoolean(getLiteralValue(columnIndex));
@@ -318,10 +273,10 @@ public class SesameResultSet implements ResultSet {
 			}
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
-			throw new OntoDriverException("Unable to create instance of type " + cls
+			throw new SesameDriverException("Unable to create instance of type " + cls
 					+ " with value " + val, e);
 		}
-		throw new OntoDriverException("No suitable constructor for value " + val
+		throw new SesameDriverException("No suitable constructor for value " + val
 				+ " found in type " + cls);
 	}
 
@@ -367,21 +322,9 @@ public class SesameResultSet implements ResultSet {
 		}
 	}
 
-	@Override
-	public void last() throws OntoDriverException {
-		ensureOpen();
-		while (hasNext()) {
-			next();
-		}
-	}
-
-	@Override
+    @Override
 	public void next() throws OntoDriverException {
-		ensureOpen();
-		if (!hasNext()) {
-			throw new NoSuchElementException();
-		}
-		index++;
+		super.next();
 		try {
 			this.current = result.next();
 		} catch (QueryEvaluationException e) {
@@ -389,38 +332,7 @@ public class SesameResultSet implements ResultSet {
 		}
 	}
 
-	@Override
-	public void previous() throws OntoDriverException {
-		throw new UnsupportedOperationException("Going back is not supported by this result set.");
-	}
-
-	@Override
-	public void registerObserver(Observer observer) throws OntoDriverException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void relative(int rows) throws OntoDriverException {
-		setRowIndex(index + rows);
-	}
-
-	@Override
-	public void setRowIndex(int rowIndex) throws OntoDriverException {
-		ensureOpen();
-		if (rowIndex < index) {
-			throw new UnsupportedOperationException(
-					"Going back in this result set is not supported.");
-		}
-		if (rowIndex == index) {
-			return;
-		}
-		while (index <= rowIndex) {
-			next();
-		}
-	}
-
-	private Object getLiteralValue(int columnIndex) throws OntoDriverException {
+    private Object getLiteralValue(int columnIndex) throws OntoDriverException {
 		final Value val = getCurrent(columnIndex);
 		if (!(val instanceof Literal)) {
 			throw new OntoDriverException("Expected value " + val + " to be a literal.");
@@ -437,6 +349,7 @@ public class SesameResultSet implements ResultSet {
 	}
 
 	private Value getCurrent(int columnIndex) {
+        ensureState();
 		if (columnIndex < 0 || columnIndex >= bindings.size()) {
 			throw new IllegalArgumentException(
 					"The column index is out of bounds of the column count.");
@@ -444,7 +357,14 @@ public class SesameResultSet implements ResultSet {
 		return current.getValue(bindings.get(columnIndex));
 	}
 
+    private void ensureState() {
+        if (current == null) {
+            throw new IllegalStateException("Must call next before getting the first value.");
+        }
+    }
+
 	private Value getCurrent(String columnName) {
+        ensureState();
 		if (!bindings.contains(columnName)) {
 			throw new IllegalArgumentException("Unknown column name " + columnName);
 		}

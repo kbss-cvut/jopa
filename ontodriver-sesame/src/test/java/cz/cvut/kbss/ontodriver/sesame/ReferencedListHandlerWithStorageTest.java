@@ -20,7 +20,7 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
-public class ReferencedListHandlerTestWithStorage {
+public class ReferencedListHandlerWithStorageTest {
 
     private static NamedResource OWNER = NamedResource
             .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#EntityC");

@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 /**
  * The ServerSession is the primary interface for accessing the ontology. </p>
@@ -60,9 +61,7 @@ public class ServerSession extends AbstractSession {
      */
     private Set<Class<?>> processTypes(Set<EntityType<?>> entities) {
         Set<Class<?>> types = new HashSet<>(entities.size());
-        for (Type<?> t : entities) {
-            types.add(t.getJavaType());
-        }
+        types.addAll(entities.stream().map(Type::getJavaType).collect(Collectors.toList()));
         return types;
     }
 
@@ -138,11 +137,8 @@ public class ServerSession extends AbstractSession {
     public void close() {
         if (!runningTransactions.isEmpty()) {
             LOG.warning("There are still transactions running. Marking them for rollback.");
-            for (EntityTransaction t : runningTransactions.keySet()) {
-                if (t.isActive()) {
-                    t.setRollbackOnly();
-                }
-            }
+            runningTransactions.keySet().stream().filter(EntityTransaction::isActive)
+                               .forEach(EntityTransaction::setRollbackOnly);
         }
         if (storageAccessor != null && storageAccessor.isOpen()) {
             try {

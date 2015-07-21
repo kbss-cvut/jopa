@@ -157,6 +157,16 @@ public class SesameMemStoreQueryTests {
 		typedRunner.createQueryNullClass(em);
 	}
 
+	@Test
+    public void typedAskQueryReturnsBoolean_true() {
+        typedRunner.askQueryReturnsTrue(em);
+    }
+
+    @Test
+    public void typedAskQueryReturnsBoolean_false() {
+        typedRunner.askQueryReturnsFalse(em);
+    }
+
 	private static StorageConfig initStorage() {
 		return new SesameMemoryStorageConfig();
 	}
