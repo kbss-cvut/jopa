@@ -17,8 +17,8 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 class PoolingStorageConnector extends AbstractConnector {
 
     private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
-    private static final Lock READ = LOCK.readLock();
-    private static final Lock WRITE = LOCK.writeLock();
+    private static Lock READ = LOCK.readLock();
+    private static Lock WRITE = LOCK.writeLock();
 
     private final Connector centralConnector;
     private LocalModel localModel;
