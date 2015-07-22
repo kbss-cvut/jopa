@@ -18,12 +18,11 @@ public final class SesameUtils {
     }
 
     /**
-     * Gets value of the specified data property literal as the corresponding
-     * Java object. Primitives are returned boxed.
+     * Gets value of the specified data property literal as the corresponding Java object. Primitives are returned
+     * boxed.
      *
      * @param literal DataProperty value
-     * @return Java value corresponding to the XML Schema datatype of the
-     * literal
+     * @return Java value corresponding to the XML Schema datatype of the literal
      * @throws IllegalArgumentException If literal's datatype is not supported
      */
     public static Object getDataPropertyValue(Literal literal) {
@@ -61,8 +60,7 @@ public final class SesameUtils {
     }
 
     /**
-     * Creates Sesame literal from the specified value, which can be used as
-     * data property object.
+     * Creates Sesame literal from the specified value, which can be used as data property object.
      *
      * @param value    The value to transform
      * @param language Language to add to string literals
@@ -89,6 +87,8 @@ public final class SesameUtils {
             return vf.createLiteral((Long) value);
         } else if (value instanceof Date) {
             return vf.createLiteral((Date) value);
+        } else if (value.getClass().isEnum()) {
+            return vf.createLiteral(value.toString());
         } else {
             throw new IllegalArgumentException("Unsupported literal type " + value.getClass());
         }

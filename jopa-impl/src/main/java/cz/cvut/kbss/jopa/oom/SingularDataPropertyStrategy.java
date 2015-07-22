@@ -4,7 +4,6 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -27,13 +26,19 @@ class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X,
             return;
         }
         if (value != null) {
-            throw new CardinalityConstraintViolatedException("Expected single value of attribute " + attribute.getName() + ", but got multiple");
+            throw new CardinalityConstraintViolatedException(
+                    "Expected single value of attribute " + attribute.getName() + ", but got multiple");
         }
         this.value = val.getValue();
     }
 
     private boolean isValidRange(Object value) {
-        return attribute.getJavaField().getType().isAssignableFrom(value.getClass());
+        return attribute.getJavaField().getType().isAssignableFrom(value.getClass()) || isFieldEnum();
+    }
+
+    private boolean isFieldEnum() {
+        final Class<?> cls = attribute.getJavaField().getType();
+        return cls.isEnum();
     }
 
     @Override
@@ -44,12 +49,13 @@ class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X,
         if (!f.isAccessible()) {
             f.setAccessible(true);
         }
-        if (!f.getType().isAssignableFrom(value.getClass())) {
-            throw new EntityReconstructionException("Incompatible types found. The field " + f
-                    + " requires type " + f.getType() + ", but the loaded value is of type "
-                    + value.getClass());
-        }
-        f.set(entity, value);
+        final Object toAssign = isFieldEnum() ? resolveEnumValue() : value;
+        f.set(entity, toAssign);
+    }
+
+    private Object resolveEnumValue() {
+        final Class<? extends Enum<?>> cls = (Class<? extends Enum<?>>) attribute.getJavaField().getType();
+        return Enum.valueOf(cls, value.toString());
     }
 
     @Override

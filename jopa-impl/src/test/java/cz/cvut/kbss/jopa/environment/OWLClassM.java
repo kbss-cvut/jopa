@@ -34,6 +34,13 @@ public class OWLClassM {
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-dateAttribute")
     private Date dateAttribute;
 
+    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-enumAttribute")
+    private Severity enumAttribute;
+
+    public enum Severity {
+        LOW, MEDIUM, HIGH
+    }
+
     public String getKey() {
         return key;
     }
@@ -82,6 +89,14 @@ public class OWLClassM {
         this.dateAttribute = dateAttribute;
     }
 
+    public Severity getEnumAttribute() {
+        return enumAttribute;
+    }
+
+    public void setEnumAttribute(Severity enumAttribute) {
+        this.enumAttribute = enumAttribute;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -90,6 +105,7 @@ public class OWLClassM {
                 ", intAttribute=" + intAttribute +
                 ", longAttribute=" + longAttribute +
                 ", doubleAttribute=" + doubleAttribute +
+                ", enumAttribute=" + enumAttribute +
                 '}';
     }
 
@@ -102,6 +118,7 @@ public class OWLClassM {
         this.longAttribute = 365L;
         this.doubleAttribute = 3.14D;
         this.dateAttribute = new Date();
+        this.enumAttribute = Severity.MEDIUM;
     }
 
     public static String getClassIri() throws Exception {
@@ -130,5 +147,9 @@ public class OWLClassM {
 
     public static Field getDateAttributeField() throws Exception {
         return OWLClassM.class.getDeclaredField("dateAttribute");
+    }
+
+    public static Field getEnumAttributeField() throws Exception {
+        return OWLClassM.class.getDeclaredField("enumAttribute");
     }
 }

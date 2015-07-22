@@ -180,6 +180,13 @@ public class TestCreateOperationsNativeStore {
 		runner.setAttributeValueAfterPersistButBeforeCommit(em, context());
 	}
 
+	@Test
+	public void testPersistEntityWithEnumAttribute() {
+		em = TestEnvironment.getPersistenceConnector("SesameNativePersistEntityWithEnum", storage, false,
+				properties);
+		runner.persistEntityWithEnum(em, context());
+	}
+
 	private URI context() {
 		// Don't use contexts for now
 		return null;

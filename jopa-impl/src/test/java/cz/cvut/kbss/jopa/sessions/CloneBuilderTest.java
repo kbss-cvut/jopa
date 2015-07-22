@@ -82,6 +82,8 @@ public class CloneBuilderTest {
     private SingularAttribute mDoubleAttribute;
     @Mock
     private SingularAttribute mDateAttribute;
+    @Mock
+    private SingularAttribute mEnumAttribute;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -135,7 +137,7 @@ public class CloneBuilderTest {
         TestEnvironmentUtils.initOWLClassCMocks(etC, simpleListMock, refListMock, identifierC);
         TestEnvironmentUtils.initOWLClassDMocks(etD, classAAttMock, identifierD);
         TestEnvironmentUtils.initOWLClassMMock(etM, mBooleanAttribute, mIntAttribute, mLongAttribute, mDoubleAttribute,
-                mDateAttribute, identifierM);
+                mDateAttribute, mEnumAttribute, identifierM);
         this.builder = new CloneBuilderImpl(uow);
         entityA.setTypes(types);
         entityB.setProperties(null);

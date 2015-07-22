@@ -1,3 +1,4 @@
+- Support for enums
 - Resolve problems with generating javadoc using the javadoc plugin
 - Add support for a 'required' parameter in Object, Data and Annotation Property annotations
 - What about support for lists, that are neither Simple nor Referenced?
@@ -7,6 +8,7 @@
     - And how they are loaded, especially as attributes of other objects
 - Add support for parameters in queries (query builder)
 - Add support for EntityManager.getReference
+- Add support for orphanRemoval attribute in object properties
 - Add support for namespace definition - on class and package level
 - Design a strategy for supporting bidirectional relationships. Will probably require modifications of the OntoDriver API
 - Do some research on how to implement class hierarchies in JOPA

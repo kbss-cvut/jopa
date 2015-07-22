@@ -338,4 +338,16 @@ public class CreateOperationsRunner extends BaseRunner {
         assertNotNull(res);
         assertEquals(updatedValue, res.getStringAttribute());
     }
+
+    public void persistEntityWithEnum(EntityManager em, URI ctx) {
+        logger.config("Test: persist entity with enum attribute.");
+        final EntityDescriptor descriptor = new EntityDescriptor(ctx);
+        em.getTransaction().begin();
+        em.persist(entityM, descriptor);
+        em.getTransaction().commit();
+
+        final OWLClassM res = em.find(OWLClassM.class, entityM.getKey());
+        assertNotNull(res);
+        assertEquals(entityM.getSeverity(), res.getSeverity());
+    }
 }

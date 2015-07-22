@@ -3,8 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>0.5-SNAPSHOT</version>
+    <parent>
+        <groupId>cz.cvut.kbss.jopa</groupId>
+        <artifactId>jopa-parent</artifactId>
+        <version>0.5-SNAPSHOT</version>
+        <relativePath>../jopa-parent/pom.xml</relativePath>
+    </parent>
+
     <artifactId>jopa-distribution</artifactId>
     <packaging>pom</packaging>
     <name>JOPA distribution assembly</name>

@@ -95,6 +95,8 @@ public class EntityDeconstructorTest {
     private SingularAttribute doubleAttMock;
     @Mock
     private SingularAttribute dateAttMock;
+    @Mock
+    private SingularAttribute enumAttMock;
 
     @Mock
     private ObjectOntologyMapperImpl oomMock;
@@ -137,7 +139,9 @@ public class EntityDeconstructorTest {
         TestEnvironmentUtils.initOWLClassEMocks(etEMock, strAttEMock, idE);
         TestEnvironmentUtils.initOWLClassDMocks(etDMock, clsAMock, idD);
         TestEnvironmentUtils.initOWLClassKMocks(etKMock, clsEMock, idK);
-        TestEnvironmentUtils.initOWLClassMMock(etMMock, booleanAttMock, intAttMock, longAttMock, doubleAttMock, dateAttMock, idM);
+        TestEnvironmentUtils
+                .initOWLClassMMock(etMMock, booleanAttMock, intAttMock, longAttMock, doubleAttMock, dateAttMock,
+                        enumAttMock, idM);
         when(oomMock.getEntityType(OWLClassA.class)).thenReturn(etAMock);
         entityA.setTypes(null);
         entityA.setStringAttribute("someStringAttribute");
