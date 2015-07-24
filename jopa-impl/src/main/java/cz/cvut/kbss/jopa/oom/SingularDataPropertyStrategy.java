@@ -54,7 +54,7 @@ class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X,
     }
 
     private Object resolveEnumValue() {
-        final Class<? extends Enum<?>> cls = (Class<? extends Enum<?>>) attribute.getJavaField().getType();
+        final Class cls = attribute.getJavaField().getType();
         return Enum.valueOf(cls, value.toString());
     }
 

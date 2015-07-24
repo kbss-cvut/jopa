@@ -468,7 +468,7 @@ public class UpdateOperationsRunner extends BaseRunner {
 		assertEquals(expected.size(), b.getProperties().size());
 		em.getTransaction().begin();
 		b.getProperties().put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyFour",
-				Collections.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/Stroustrup"));
+                Collections.singleton("http://krizik.felk.cvut.cz/ontologies/jopa/Stroustrup"));
 		expected.putAll(b.getProperties());
 		em.getTransaction().commit();
 
@@ -582,5 +582,24 @@ public class UpdateOperationsRunner extends BaseRunner {
         assertEquals(m.getLongAttribute(), res.getLongAttribute());
         assertEquals(m.getDoubleAttribute(), res.getDoubleAttribute());
         assertEquals(m.getDateAttribute(), res.getDateAttribute());
+    }
+
+	public void updateEnumAttribute(EntityManager em, URI ctx) {
+        logger.config("Test: modify enum attribute.");
+        final EntityDescriptor mDescriptor = new EntityDescriptor(ctx);
+        assertNotNull(entityM.getEnumAttribute());
+        em.getTransaction().begin();
+        em.persist(entityM, mDescriptor);
+        em.getTransaction().commit();
+
+        final OWLClassM.Severity updated = OWLClassM.Severity.LOW;
+        em.getTransaction().begin();
+        final OWLClassM m = em.find(OWLClassM.class, entityM.getKey(), mDescriptor);
+        m.setEnumAttribute(updated);
+        em.getTransaction().commit();
+
+        final OWLClassM res = em.find(OWLClassM.class, entityM.getKey(), mDescriptor);
+        assertNotNull(res);
+        assertEquals(updated, res.getEnumAttribute());
     }
 }

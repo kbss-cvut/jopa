@@ -34,7 +34,7 @@ public class OWLClassM {
     private Date dateAttribute;
 
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-enumAttribute")
-    private Severity severity;
+    private Severity enumAttribute;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -88,12 +88,12 @@ public class OWLClassM {
         this.dateAttribute = dateAttribute;
     }
 
-    public Severity getSeverity() {
-        return severity;
+    public Severity getEnumAttribute() {
+        return enumAttribute;
     }
 
-    public void setSeverity(Severity severity) {
-        this.severity = severity;
+    public void setEnumAttribute(Severity enumAttribute) {
+        this.enumAttribute = enumAttribute;
     }
 
     @Override
@@ -104,7 +104,7 @@ public class OWLClassM {
                 ", intAttribute=" + intAttribute +
                 ", longAttribute=" + longAttribute +
                 ", doubleAttribute=" + doubleAttribute +
-                ", severity=" + severity +
+                ", enumAttribute=" + enumAttribute +
                 '}';
     }
 
@@ -117,6 +117,6 @@ public class OWLClassM {
         this.longAttribute = 365L;
         this.doubleAttribute = 3.14D;
         this.dateAttribute = new Date();
-        this.severity = Severity.MEDIUM;
+        this.enumAttribute = Severity.MEDIUM;
     }
 }

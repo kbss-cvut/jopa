@@ -348,6 +348,6 @@ public class CreateOperationsRunner extends BaseRunner {
 
         final OWLClassM res = em.find(OWLClassM.class, entityM.getKey());
         assertNotNull(res);
-        assertEquals(entityM.getSeverity(), res.getSeverity());
+        assertEquals(entityM.getEnumAttribute(), res.getEnumAttribute());
     }
 }
