@@ -1,3 +1,4 @@
+- Use username and password when available when connecting to Sesame repo
 - Resolve problems with generating javadoc using the javadoc plugin
 - Add support for a 'required' parameter in Object, Data and Annotation Property annotations
 - What about support for lists, that are neither Simple nor Referenced?
