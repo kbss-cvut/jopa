@@ -13,6 +13,5 @@
 - Design a strategy for supporting bidirectional relationships. Will probably require modifications of the OntoDriver API
 - Do some research on how to implement class hierarchies in JOPA
 - Define schema for persistence.xml for JOPA
-- Revisit entity classes discovery
 - Research whether we could replace aspectj with cglib-generated proxies
 - Consider adding support for JNDI data source lookup
