@@ -1,76 +1,129 @@
 package cz.cvut.kbss.jopa.loaders;
 
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
-
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
-import org.reflections.Reflections;
-
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EntityLoader {
 
-    private Set<URL> classUrls;
+    private static final Logger LOG = Logger.getLogger(EntityLoader.class.getName());
 
     private EntityLoader() {
     }
 
     /**
-     * Discovers and returns all entity classes, i. e. classes annotated with {@link OWLClass}.
+     * Discovers and returns all entity classes within the scan package and its subpackages.
+     * <p>
+     * I.e., it looks for classes annotated with {@link OWLClass}.
      *
+     * @param properties Persistence properties, should contain value for the {@link OWLAPIPersistenceProperties#SCAN_PACKAGE}
+     *                   property
      * @return Set of entity classes
+     * @throws IllegalArgumentException If {@link OWLAPIPersistenceProperties#SCAN_PACKAGE} values is missing
      */
     public static Set<Class<?>> discoverEntityClasses(Map<String, String> properties) {
-        // TODO Add our custom implementation here
         Objects.requireNonNull(properties);
         if (!properties.containsKey(OWLAPIPersistenceProperties.SCAN_PACKAGE)) {
             throw new IllegalArgumentException(
                     "Missing the " + OWLAPIPersistenceProperties.SCAN_PACKAGE + " property.");
         }
         String toScan = properties.get(OWLAPIPersistenceProperties.SCAN_PACKAGE);
-        final Reflections r = new Reflections(toScan);
-        return r.getTypesAnnotatedWith(OWLClass.class);
-    }
-
-    public static Set<Class<?>> discoverEntityClassesNew(Map<String, String> properties) {Objects.requireNonNull(properties);
-        if (!properties.containsKey(OWLAPIPersistenceProperties.SCAN_PACKAGE)) {
-            throw new IllegalArgumentException(
-                    "Missing the " + OWLAPIPersistenceProperties.SCAN_PACKAGE + " property.");
+        if (toScan.isEmpty()) {
+            throw new IllegalArgumentException(OWLAPIPersistenceProperties.SCAN_PACKAGE + " property cannot be empty.");
         }
-        String toScan = properties.get(OWLAPIPersistenceProperties.SCAN_PACKAGE);
         return new EntityLoader().discoverEntities(toScan);
     }
 
+    /**
+     * Using code from https://github.com/ddopson/java-class-enumerator
+     */
     private Set<Class<?>> discoverEntities(String scanPath) {
-        loadUrls(scanPath);
-        // TODO
-        return null;
-    }
-
-    private ClassLoader[] getClassLoaders() {
-        final ClassLoader[] loaders = new ClassLoader[2];
-        loaders[0] = Thread.currentThread().getContextClassLoader();
-        loaders[1] = EntityLoader.class.getClassLoader();
-        return loaders;
-    }
-
-    private void loadUrls(String scanPath) {
-        final Set<URL> all = new HashSet<>();
-        final ClassLoader[] loaders = getClassLoaders();
+        final Set<Class<?>> all = new HashSet<>();
+        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try {
-            for (ClassLoader c : loaders) {
-                Enumeration<URL> urls = c.getResources(scanPath.replace('.', '/'));
-                while (urls.hasMoreElements()) {
-                    final URL url = urls.nextElement();
-                    final URL normalizedUrl = new URL(url.toExternalForm());
-                    all.add(normalizedUrl);
+            Enumeration<URL> urls = loader.getResources(scanPath.replace('.', '/'));
+            while (urls.hasMoreElements()) {
+                final URL url = urls.nextElement();
+                if (url.toString().startsWith("jar:")) {
+                    processJarFile(url, scanPath, all);
+                } else {
+                    processDirectory(new File(url.getPath()), scanPath, all);
                 }
             }
         } catch (IOException e) {
-            throw new JopaInitializationException(
-                    "Unable to scan packages for entity classes.", e);
+            throw new JopaInitializationException("Unable to scan packages for entity classes.", e);
         }
-        this.classUrls = all;
+        if (all.isEmpty()) {
+            LOG.warning("No entity classes found in package " + scanPath);
+        }
+        return all;
+    }
+
+    private void processJarFile(URL jarResource, String packageName, Set<Class<?>> entityClasses) {
+        final String relPath = packageName.replace('.', '/');
+        final String jarPath = jarResource.getPath().replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
+        JarFile jarFile;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Scanning jar file " + jarPath + " for entity classes.");
+        }
+        try {
+            jarFile = new JarFile(jarPath);
+        } catch (IOException e) {
+            throw new JopaInitializationException("Unexpected IOException reading JAR File " + jarPath, e);
+        }
+        final Enumeration<JarEntry> entries = jarFile.entries();
+        while (entries.hasMoreElements()) {
+            final JarEntry entry = entries.nextElement();
+            final String entryName = entry.getName();
+            String className = null;
+            if (entryName.endsWith(".class") && entryName.startsWith(relPath)) {
+                className = entryName.replace('/', '.').replace('\\', '.').replace(".class", "");
+            }
+            if (className != null) {
+                processClass(className, entityClasses);
+            }
+        }
+    }
+
+    private void processClass(String className, Set<Class<?>> entityClasses) {
+        try {
+            final Class<?> cls = Class.forName(className);
+            if (cls.getAnnotation(OWLClass.class) != null) {
+                entityClasses.add(cls);
+            }
+        } catch (ClassNotFoundException e) {
+            throw new JopaInitializationException("Unexpected ClassNotFoundException when scanning for entities.", e);
+        }
+    }
+
+    private void processDirectory(File dir, String packageName, Set<Class<?>> entityClasses) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Scanning directory " + dir + " for entity classes.");
+        }
+        // Get the list of the files contained in the package
+        final String[] files = dir.list();
+        for (String fileName : files) {
+            String className = null;
+            // we are only interested in .class files
+            if (fileName.endsWith(".class")) {
+                // removes the .class extension
+                className = packageName + '.' + fileName.substring(0, fileName.length() - 6);
+            }
+            if (className != null) {
+                processClass(className, entityClasses);
+            }
+            final File subDir = new File(dir, fileName);
+            if (subDir.isDirectory()) {
+                processDirectory(subDir, packageName + '.' + fileName, entityClasses);
+            }
+        }
     }
 }
