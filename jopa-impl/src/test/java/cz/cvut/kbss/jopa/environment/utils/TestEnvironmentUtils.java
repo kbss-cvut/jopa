@@ -422,7 +422,7 @@ public final class TestEnvironmentUtils {
     }
 
     private static void initManagedTypes() {
-        managedTypes = EntityLoader.discoverEntityClasses(
+        managedTypes = new EntityLoader().discoverEntityClasses(
                 Collections.singletonMap(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa"));
     }
 }

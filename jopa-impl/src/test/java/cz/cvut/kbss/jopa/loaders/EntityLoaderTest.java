@@ -34,27 +34,30 @@ public class EntityLoaderTest {
         set.add(OWLClassK.class);
         set.add(OWLClassL.class);
         set.add(OWLClassM.class);
+        set.add(OWLClassN.class);
         return set;
     }
+
+    private EntityLoader entityLoader = new EntityLoader();
 
     @Test(expected = IllegalArgumentException.class)
     public void throwsExceptionWhenScanPackageIsNotSupplied() throws Exception {
         final Map<String, String> properties = Collections.emptyMap();
-        EntityLoader.discoverEntityClasses(properties);
+        entityLoader.discoverEntityClasses(properties);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void throwsExceptionWhenScanPackageIsEmpty() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
                 OWLAPIPersistenceProperties.SCAN_PACKAGE, "");
-        EntityLoader.discoverEntityClasses(properties);
+        entityLoader.discoverEntityClasses(properties);
     }
 
     @Test
     public void doesNotFailWhenUnknownPackageNameIsPassed() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
                 OWLAPIPersistenceProperties.SCAN_PACKAGE, "com.cvut");
-        final Set<Class<?>> result = EntityLoader.discoverEntityClasses(properties);
+        final Set<Class<?>> result = entityLoader.discoverEntityClasses(properties);
         assertTrue(result.isEmpty());
     }
 
@@ -62,7 +65,7 @@ public class EntityLoaderTest {
     public void loadsEntityClassesWhenCorrectPackageIsSet() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
                 OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
-        final Set<Class<?>> result = EntityLoader.discoverEntityClasses(properties);
+        final Set<Class<?>> result = entityLoader.discoverEntityClasses(properties);
         assertEquals(ENTITY_CLASSES, result);
     }
 
@@ -70,7 +73,7 @@ public class EntityLoaderTest {
     public void loadsEntityClassesWhenAncestorPackageIsSet() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
                 OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss");
-        final Set<Class<?>> result = EntityLoader.discoverEntityClasses(properties);
-        assertEquals(ENTITY_CLASSES, result);
+        final Set<Class<?>> result = entityLoader.discoverEntityClasses(properties);
+        assertTrue(result.containsAll(ENTITY_CLASSES));
     }
 }

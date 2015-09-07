@@ -9,6 +9,7 @@ import cz.cvut.kbss.jopa.test.runners.DeleteOperationsRunner;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.URI;
@@ -51,6 +52,8 @@ public class TestDeleteOperationsMemoryStore {
 		runner.removeSimple(em, context());
 	}
 
+	// TODO First we need to resolve referential integrity
+	@Ignore
 	@Test
 	public void testRemoveReference() {
 		em = TestEnvironment.getPersistenceConnector("SesameRemoveReference", storage, true,

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2011 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 
 package cz.cvut.kbss.jopa.owlapi;
@@ -22,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.PersistenceUnitUtil;
@@ -32,169 +31,167 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 public class EntityManagerFactoryImpl implements EntityManagerFactory, PersistenceUnitUtil {
 
-	private volatile boolean open = true;
+    // TODO Get rid of the double-synchronization anti-pattern
 
-	private final Set<AbstractEntityManager> em;
-	private final Map<String, String> properties;
-	private final OntologyStorageProperties storageProperties;
+    private volatile boolean open = true;
 
-	private volatile ServerSession serverSession;
+    private final Set<AbstractEntityManager> em;
+    private final Map<String, String> properties;
+    private final OntologyStorageProperties storageProperties;
 
-	private volatile MetamodelImpl metamodel;
+    private volatile ServerSession serverSession;
 
-	public EntityManagerFactoryImpl(final Map<String, String> properties) {
-		this.em = Collections
-				.newSetFromMap(new ConcurrentHashMap<AbstractEntityManager, Boolean>());
-		this.properties = properties != null ? properties : Collections.<String, String> emptyMap();
-		// TODO The storage properties should be read from persistence.xml
-		this.storageProperties = null;
-	}
+    private volatile MetamodelImpl metamodel;
 
-	public EntityManagerFactoryImpl(OntologyStorageProperties storageProperties,
-			Map<String, String> properties) {
-		if (storageProperties == null) {
-			throw new NullPointerException();
-		}
-		this.em = Collections
-				.newSetFromMap(new ConcurrentHashMap<AbstractEntityManager, Boolean>());
-		this.properties = properties != null ? properties : Collections.<String, String> emptyMap();
-		this.storageProperties = storageProperties;
-	}
-
-	public void close() {
-		if (!open) {
-			return;
-		}
-		synchronized (this) {
-			if (!open) {
-				return;
-			}
-			open = false;
-
-			for (final EntityManager m : em) {
-				if (m.isOpen()) {
-					m.close();
-				}
-			}
-			em.clear();
-			if (serverSession != null) {
-				serverSession.close();
-				this.serverSession = null;
-			}
-		}
-	}
-
-	public EntityManager createEntityManager() {
-		return this.createEntityManager(Collections.<String, String> emptyMap());
-	}
-
-	public EntityManager createEntityManager(Map<String, String> map) {
-		if (!open) {
-			throw new IllegalStateException("The OWLEntityManager has been closed.");
-		}
-
-		final Map<String, String> newMap = new HashMap<>(map);
-
-		newMap.putAll(properties);
-		newMap.putAll(map);
-
-		initServerSession(newMap);
-
-		final AbstractEntityManager c = new EntityManagerImpl(this, newMap, this.serverSession);
-
-		em.add(c);
-		return c;
-	}
-
-	/**
-	 * Initializes the server session if necessary.
-	 * 
-	 * @param newMap
-	 *            Map of properties. These properties specify primarily the
-	 *            connection to the underlying ontology.
-	 */
-	private void initServerSession(Map<String, String> newMap) {
-		assert newMap != null;
-		if (serverSession == null) {
-			synchronized (this) {
-				if (serverSession == null) {
-					this.serverSession = new ServerSession(storageProperties, newMap,
-							getMetamodel());
-				}
-			}
-		}
-	}
-
-	/**
-	 * The server session should by initialized by now, but to make sure, there
-	 * is default initialization with an empty properties map.
-	 * 
-	 * @return The ServerSession for this factory.
-	 */
-	public ServerSession getServerSession() {
-		return serverSession;
-	}
-
-	public boolean isOpen() {
-		return open;
-	}
-
-	public Map<String, String> getProperties() {
-		return properties;
-	}
-
-	public Set<AbstractEntityManager> getEntityManagers() {
-		return Collections.unmodifiableSet(em);
-	}
-
-	public Metamodel getMetamodel() {
-		MetamodelImpl mm = metamodel;
-		if (mm == null) {
-			synchronized (this) {
-				if (mm == null) {
-					metamodel = mm = new MetamodelImpl(this);
-				}
-			}
-		}
-		return mm;
-	}
-
-	public PersistenceUnitUtil getPersistenceUnitUtil() {
-		return this;
-	}
-
-	public Object getIdentifier(Object entity) {
-		try {
-			return getMetamodel().entity(entity.getClass()).getIdentifier().getJavaField()
-					.get(entity);
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			throw new OWLPersistenceException();
-		}
+    public EntityManagerFactoryImpl(final Map<String, String> properties) {
+        this.em = Collections
+                .newSetFromMap(new ConcurrentHashMap<>());
+        this.properties = properties != null ? properties : Collections.emptyMap();
+        // TODO The storage properties should be read from persistence.xml
+        this.storageProperties = null;
     }
 
-	public boolean isLoaded(Object entity, String attributeName) {
-		for (final AbstractEntityManager emi : em) {
-			if (emi.contains(entity)) {
+    public EntityManagerFactoryImpl(OntologyStorageProperties storageProperties, Map<String, String> properties) {
+        if (storageProperties == null) {
+            throw new NullPointerException();
+        }
+        this.em = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        this.properties = properties != null ? properties : Collections.emptyMap();
+        this.storageProperties = storageProperties;
+    }
+
+    public void close() {
+        if (!open) {
+            return;
+        }
+        synchronized (this) {
+            if (!open) {
+                return;
+            }
+            open = false;
+
+            for (final EntityManager m : em) {
+                if (m.isOpen()) {
+                    m.close();
+                }
+            }
+            em.clear();
+            if (serverSession != null) {
+                serverSession.close();
+                this.serverSession = null;
+            }
+        }
+    }
+
+    public EntityManager createEntityManager() {
+        return this.createEntityManager(Collections.<String, String>emptyMap());
+    }
+
+    public EntityManager createEntityManager(Map<String, String> map) {
+        if (!open) {
+            throw new IllegalStateException("The OWLEntityManager has been closed.");
+        }
+
+        final Map<String, String> newMap = new HashMap<>(map);
+
+        newMap.putAll(properties);
+        newMap.putAll(map);
+
+        initServerSession(newMap);
+
+        final AbstractEntityManager c = new EntityManagerImpl(this, newMap, this.serverSession);
+
+        em.add(c);
+        return c;
+    }
+
+    /**
+     * Initializes the server session if necessary.
+     *
+     * @param newMap Map of properties. These properties specify primarily the connection to the underlying ontology.
+     */
+    private void initServerSession(Map<String, String> newMap) {
+        assert newMap != null;
+        if (serverSession == null) {
+            synchronized (this) {
+                if (serverSession == null) {
+                    this.serverSession = new ServerSession(storageProperties, newMap,
+                            getMetamodel());
+                }
+            }
+        }
+    }
+
+    /**
+     * The server session should by initialized by now, but to make sure, there is default initialization with an empty
+     * properties map.
+     *
+     * @return The ServerSession for this factory.
+     */
+    public ServerSession getServerSession() {
+        return serverSession;
+    }
+
+    public boolean isOpen() {
+        return open;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    public Set<AbstractEntityManager> getEntityManagers() {
+        return Collections.unmodifiableSet(em);
+    }
+
+    public Metamodel getMetamodel() {
+        MetamodelImpl mm = metamodel;
+        if (mm == null) {
+            synchronized (this) {
+                if (mm == null) {
+                    metamodel = mm = new MetamodelImpl(this, new EntityLoader());
+                }
+            }
+        }
+        return mm;
+    }
+
+    public PersistenceUnitUtil getPersistenceUnitUtil() {
+        return this;
+    }
+
+    public Object getIdentifier(Object entity) {
+        try {
+            return getMetamodel().entity(entity.getClass()).getIdentifier().getJavaField()
+                                 .get(entity);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            throw new OWLPersistenceException();
+        }
+    }
+
+    public boolean isLoaded(Object entity, String attributeName) {
+        for (final AbstractEntityManager emi : em) {
+            if (emi.contains(entity)) {
                 return attributeName == null || emi.isLoaded(entity, attributeName);
 
             }
-		}
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public boolean isLoaded(Object entity) {
-		// TODO
-		return false;
-		// return isLoaded(entity);
-	}
+    public boolean isLoaded(Object entity) {
+        // TODO
+        return false;
+        // return isLoaded(entity);
+    }
 
-	public Cache getCache() {
-		if (!isOpen()) {
-			throw new IllegalStateException("The entity manager factory is closed.");
-		}
-		initServerSession(properties);
-		return serverSession.getLiveObjectCache();
-	}
+    public Cache getCache() {
+        if (!isOpen()) {
+            throw new IllegalStateException("The entity manager factory is closed.");
+        }
+        initServerSession(properties);
+        return serverSession.getLiveObjectCache();
+    }
 
 }

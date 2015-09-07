@@ -16,9 +16,6 @@ public class EntityLoader {
 
     private static final Logger LOG = Logger.getLogger(EntityLoader.class.getName());
 
-    private EntityLoader() {
-    }
-
     /**
      * Discovers and returns all entity classes within the scan package and its subpackages.
      * <p>
@@ -29,7 +26,7 @@ public class EntityLoader {
      * @return Set of entity classes
      * @throws IllegalArgumentException If {@link OWLAPIPersistenceProperties#SCAN_PACKAGE} values is missing
      */
-    public static Set<Class<?>> discoverEntityClasses(Map<String, String> properties) {
+    public Set<Class<?>> discoverEntityClasses(Map<String, String> properties) {
         Objects.requireNonNull(properties);
         if (!properties.containsKey(OWLAPIPersistenceProperties.SCAN_PACKAGE)) {
             throw new IllegalArgumentException(
@@ -39,8 +36,10 @@ public class EntityLoader {
         if (toScan.isEmpty()) {
             throw new IllegalArgumentException(OWLAPIPersistenceProperties.SCAN_PACKAGE + " property cannot be empty.");
         }
-        return new EntityLoader().discoverEntities(toScan);
+        return discoverEntities(toScan);
     }
+
+
 
     /**
      * Using code from https://github.com/ddopson/java-class-enumerator
