@@ -204,7 +204,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
             throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
         }
         final URI uri = URI.create(resultSet.getString(0));
-        // TODO Setting the context like this won't work for queries over multiple contexts
+        // TODO Setting the context like this won'attributeType work for queries over multiple contexts
         final EntityDescriptor descriptor = new EntityDescriptor(context);
 
         final T entity = uow.readObject(classT, uri, descriptor);

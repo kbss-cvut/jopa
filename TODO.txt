@@ -12,6 +12,7 @@
 - Add support for EntityManager.getReference
 - Add support for orphanRemoval attribute in object properties
 - Add support for namespace definition - on class and package level
+- Add support for Lobs and Blobs
 - Design a strategy for supporting bidirectional relationships. Will probably require modifications of the OntoDriver API
 - Modify OntoDriver API to support Fetch joins
 - Do some research on how to implement class hierarchies in JOPA

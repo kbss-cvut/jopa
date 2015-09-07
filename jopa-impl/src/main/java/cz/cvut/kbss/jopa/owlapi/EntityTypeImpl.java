@@ -63,20 +63,20 @@ public class EntityTypeImpl<X> implements EntityType<X> {
 	// attributeMap.put(name, a);
 	// }
 
-	void addDirectTypes(TypesSpecification<X, ?> a) {
+	public void addDirectTypes(TypesSpecification<X, ?> a) {
 		this.directTypes = a;
 	}
 
-	void addOtherProperties(PropertiesSpecification<X, ?> a) {
+	public void addOtherProperties(PropertiesSpecification<X, ?> a) {
 		this.properties = a;
 	}
 
-	void addDeclaredAttribute(final String name, final Attribute<X, ?> a) {
+	public void addDeclaredAttribute(final String name, final Attribute<X, ?> a) {
 		declaredAttributeMap.put(name, a);
 		attributeMap.put(name, a);
 	}
 
-	void setIdentifier(final Identifier identifier) {
+	public void setIdentifier(final Identifier identifier) {
 		this.identifier = identifier;
 	}
 
