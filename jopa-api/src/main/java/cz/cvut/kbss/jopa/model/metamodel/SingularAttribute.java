@@ -52,8 +52,6 @@ public interface SingularAttribute<X, T> extends Attribute<X, T>, Bindable<T> {
 	 * 
 	 * @return boolean indicating whether the attribute can be null
 	 */
-	@UnusedJPA
-	@Deprecated
 	boolean isOptional();
 
 	/**

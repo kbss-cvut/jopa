@@ -30,7 +30,8 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
  *            The type of the represented attribute
  */
 public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
-	public static enum PersistentAttributeType {
+
+	enum PersistentAttributeType {
 		// @UnusedJPA
 		// @Deprecated
 		// MANY_TO_ONE,

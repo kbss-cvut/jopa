@@ -79,16 +79,12 @@ public class EntityFieldMetamodelProcessor<X> {
         final Type[] t = cls.getActualTypeArguments();
 
         if (t.length != 1) {
-            throw new OWLPersistenceException(
-                    "Only valid OWLClass annotated classes can be used as parameters for lists and sets.");
+            throw new OWLPersistenceException("Only collections with a single generic parameter are supported");
         }
-
         Type type = t[0];
-
         if (!(type instanceof Class<?>)) {
             throw new OWLPersistenceException("Only Classes might be valid parameters for generic lists and sets");
         }
-
         return (Class<?>) type;
     }
 
