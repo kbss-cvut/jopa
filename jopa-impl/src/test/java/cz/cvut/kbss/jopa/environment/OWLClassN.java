@@ -18,6 +18,10 @@ public class OWLClassN {
     @OWLAnnotationProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationProperty")
     private String annotationProperty;
 
+    @Basic(optional = false)
+    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
+    private String stringAttribute;
+
     @Inferred
     @Properties(fetchType = FetchType.LAZY)
     private Map<String, Set<String>> properties;
@@ -38,6 +42,14 @@ public class OWLClassN {
         this.annotationProperty = annotationProperty;
     }
 
+    public String getStringAttribute() {
+        return stringAttribute;
+    }
+
+    public void setStringAttribute(String stringAttribute) {
+        this.stringAttribute = stringAttribute;
+    }
+
     public Map<String, Set<String>> getProperties() {
         return properties;
     }
@@ -52,6 +64,10 @@ public class OWLClassN {
 
     public static Field getAnnotationPropertyField() throws Exception {
         return OWLClassN.class.getDeclaredField("annotationProperty");
+    }
+
+    public static Field getStringAttributeField() throws Exception {
+        return OWLClassN.class.getDeclaredField("stringAttribute");
     }
 
     public static Field getPropertiesField() throws Exception {

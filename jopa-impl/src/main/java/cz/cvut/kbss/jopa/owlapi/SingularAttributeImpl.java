@@ -269,7 +269,7 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> option(boolean optional) {
+        public SingularAttributeBuilder<X, T> optional(boolean optional) {
             this.optional = optional;
             return this;
         }

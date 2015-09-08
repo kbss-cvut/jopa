@@ -18,6 +18,7 @@ abstract class PropertyAttributes {
     IRI iri = null;
     CascadeType[] cascadeTypes = new CascadeType[]{};
     FetchType fetchType = FetchType.EAGER;
+    boolean optional = true;
 
     public Type<?> getType() {
         return type;
@@ -43,7 +44,22 @@ abstract class PropertyAttributes {
         return true;
     }
 
-    abstract void resolve(Field field, MetamodelImpl metamodel, Class<?> fieldValueCls);
+    public boolean isOptional() {
+        return optional;
+    }
+
+    void resolve(Field field, MetamodelImpl metamodel, Class<?> fieldValueCls) {
+        resolveBasicAnnotation(field);
+    }
+
+    void resolveBasicAnnotation(Field field) {
+        final Basic basic = field.getAnnotation(Basic.class);
+        if (basic == null) {
+            return;
+        }
+        this.fetchType = basic.fetch();
+        this.optional = basic.optional();
+    }
 
     static PropertyAttributes create(Field field) {
         if (field.getAnnotation(OWLObjectProperty.class) != null) {

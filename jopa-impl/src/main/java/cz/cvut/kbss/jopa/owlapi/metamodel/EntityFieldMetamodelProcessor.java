@@ -153,8 +153,7 @@ public class EntityFieldMetamodelProcessor<X> {
                                  .owlListClass(IRI.create(os.ClassOWLListIRI()))
                                  .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
                                  .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
-                                 .sequenceType(os.type())
-                                 .participationConstraints(ics).build();
+                                 .sequenceType(os.type()).participationConstraints(ics).build();
         } else if (field.getType().isAssignableFrom(Set.class)) {
             a = SetAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et).field(field)
                                 .elementType(propertyAttributes.getType())
@@ -169,9 +168,9 @@ public class EntityFieldMetamodelProcessor<X> {
                                      .declaringType(et).type(propertyAttributes.getType()).field(field)
                                      .cascadeTypes(propertyAttributes.getCascadeTypes())
                                      .attributeType(propertyAttributes.getPersistentAttributeType())
-                                     .fetchType(propertyAttributes.getFetchType())
-                                     .inferred(inference.inferred).includeExplicit(inference.includeExplicit)
-                                     .constraints(ics).build();
+                                     .fetchType(propertyAttributes.getFetchType()).inferred(inference.inferred)
+                                     .includeExplicit(inference.includeExplicit).constraints(ics)
+                                     .optional(propertyAttributes.isOptional()).build();
         }
         et.addDeclaredAttribute(field.getName(), a);
     }

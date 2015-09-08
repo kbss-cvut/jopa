@@ -15,6 +15,7 @@ class AnnotationPropertyAttributes extends PropertyAttributes {
 
     @Override
     void resolve(Field field, MetamodelImpl metamodel, Class<?> fieldValueCls) {
+        super.resolve(field, metamodel, fieldValueCls);
         final OWLAnnotationProperty oap = field.getAnnotation(OWLAnnotationProperty.class);
         assert oap != null;
         persistentAttributeType = Attribute.PersistentAttributeType.ANNOTATION;
