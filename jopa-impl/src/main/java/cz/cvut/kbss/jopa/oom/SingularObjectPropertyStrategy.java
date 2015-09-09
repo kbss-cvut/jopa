@@ -36,7 +36,7 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
 	@Override
 	void buildInstanceFieldValue(Object instance) throws IllegalArgumentException,
 			IllegalAccessException {
-		validateCardinalityConstraints(value);
+		validateIntegrityConstraints(value);
 		setValueOnInstance(instance, value);
 	}
 

@@ -11,7 +11,7 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
-import cz.cvut.kbss.jopa.utils.CardinalityConstraintsValidation;
+import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
@@ -76,8 +76,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * This method returns null, since we don't support nested Units of Work
-     * yet.
+     * This method returns null, since we don't support nested Units of Work yet.
      */
     @Override
     public UnitOfWork acquireUnitOfWork() {
@@ -132,9 +131,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * This method calculates the changes that were to the registered entities
-     * and adds these changes into the given change set for future commit to the
-     * ontology.
+     * This method calculates the changes that were to the registered entities and adds these changes into the given
+     * change set for future commit to the ontology.
      */
     private void calculateChanges() {
         final UnitOfWorkChangeSet changeSet = getUowChangeSet();
@@ -147,8 +145,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Create object change sets for the new objects and adds them into our
-     * UnitOfWorkChangeSet.
+     * Create object change sets for the new objects and adds them into our UnitOfWorkChangeSet.
      *
      * @param changeSet UnitOfWorkChangeSet
      */
@@ -277,11 +274,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         if (uowChangeSet == null) {
             return;
         }
+        final IntegrityConstraintsValidator validator = IntegrityConstraintsValidator.getValidator();
         for (ObjectChangeSet changeSet : uowChangeSet.getNewObjects()) {
-            CardinalityConstraintsValidation.validateCardinalityConstraints(changeSet.getCloneObject());
+            validator.validate(changeSet.getCloneObject());
         }
-        uowChangeSet.getExistingObjectsChanges()
-                    .forEach(CardinalityConstraintsValidation::validateCardinalityConstraints);
+        uowChangeSet.getExistingObjectsChanges().forEach(validator::validate);
     }
 
     private Map<Object, Object> createMap() {
@@ -291,9 +288,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     /**
      * Gets current state of the specified entity. </p>
      * <p>
-     * Note that since no repository is specified we can only determine if the
-     * entity is managed or removed. Therefore if the case is different this
-     * method returns State#NOT_MANAGED.
+     * Note that since no repository is specified we can only determine if the entity is managed or removed. Therefore
+     * if the case is different this method returns State#NOT_MANAGED.
      *
      * @param entity The entity to check
      * @return State of the entity
@@ -313,8 +309,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Checks the state of the specified entity with regards to the specified
-     * repository.
+     * Checks the state of the specified entity with regards to the specified repository.
      *
      * @param entity     Object
      * @param descriptor Entity descriptor
@@ -337,8 +332,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Tries to find the original object for the given clone. It searches the
-     * existing objects, new objects and deleted objects.
+     * Tries to find the original object for the given clone. It searches the existing objects, new objects and deleted
+     * objects.
      *
      * @param clone Object
      * @return The original object for the given clone
@@ -359,7 +354,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * <p>
      * Descriptor is used to check repository context validity.
      *
-     * @param cls Return type of the original
+     * @param cls        Return type of the original
      * @param identifier Instance identifier
      * @param descriptor Repository descriptor
      * @return Original object managed by this UoW or {@code null} if this UoW doesn't contain a matching instance
@@ -379,9 +374,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Check if this UnitOfWork contains this original entity. This method is
-     * used by the CloneBuilder so it does not have to clone already managed
-     * referenced objects.
+     * Check if this UnitOfWork contains this original entity. This method is used by the CloneBuilder so it does not
+     * have to clone already managed referenced objects.
      *
      * @param entity The original entity.
      * @return True if the original is managed in this UnitOfWork.
@@ -391,10 +385,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Finds clone for the specified original. This method assumes that the
-     * original is managed in this persistence context (UnitOfWork). However, if
-     * not, this method just goes through all the managed objects and if it does
-     * not find match, returns null.
+     * Finds clone for the specified original. This method assumes that the original is managed in this persistence
+     * context (UnitOfWork). However, if not, this method just goes through all the managed objects and if it does not
+     * find match, returns null.
      *
      * @param original The original object whose clone we are looking for.
      * @return The clone or null, if there is none.
@@ -472,8 +465,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Returns true if the given clone represents a newly created object.
-     * Otherwise returns false.
+     * Returns true if the given clone represents a newly created object. Otherwise returns false.
      *
      * @param clone Object
      * @return boolean
@@ -548,8 +540,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Merge the changes from this Unit of Work's change set into the server
-     * session.
+     * Merge the changes from this Unit of Work's change set into the server session.
      */
     public void mergeChangesIntoParent() {
         if (hasChanges()) {
@@ -645,8 +636,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Release this Unit of Work. Releasing an active Unit of Work with
-     * uncommitted changes causes all pending changes to be discarded.
+     * Release this Unit of Work. Releasing an active Unit of Work with uncommitted changes causes all pending changes
+     * to be discarded.
      */
     public void release() {
         clear();
@@ -937,9 +928,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Check if the specified entity contains a collection. If so, replace it
-     * with its indirect representation so that changes in that collection can
-     * be tracked.
+     * Check if the specified entity contains a collection. If so, replace it with its indirect representation so that
+     * changes in that collection can be tracked.
      *
      * @param entity The entity to check
      */
@@ -953,9 +943,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     /**
      * Create and set indirect collection on the specified entity field.</p>
      * <p>
-     * If the specified field is of Collection type and it is not already an
-     * indirect collection, create new one and set it as the value of the
-     * specified field on the specified entity.
+     * If the specified field is of Collection type and it is not already an indirect collection, create new one and set
+     * it as the value of the specified field on the specified entity.
      *
      * @param entity The entity collection will be set on
      * @param field  The field to set
@@ -985,8 +974,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Remove indirect collection implementations from the specified entity (if
-     * present).
+     * Remove indirect collection implementations from the specified entity (if present).
      *
      * @param entity The entity to remove indirect collections from
      */
@@ -1015,9 +1003,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     /**
      * Get entity with the specified primary key from the cache. </p>
      * <p>
-     * If the cache does not contain any object with the specified primary key
-     * and class, null is returned. This method is just a delegate for the cache
-     * methods, it handles locks.
+     * If the cache does not contain any object with the specified primary key and class, null is returned. This method
+     * is just a delegate for the cache methods, it handles locks.
      *
      * @return Cached object or null
      */

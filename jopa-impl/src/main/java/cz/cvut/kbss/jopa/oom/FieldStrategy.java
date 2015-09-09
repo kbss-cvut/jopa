@@ -2,7 +2,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
-import cz.cvut.kbss.jopa.utils.CardinalityConstraintsValidation;
+import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
@@ -102,11 +102,10 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     }
 
     /**
-     * Sets the specified value on the specified instance, the field is taken
-     * from the attribute represented by this strategy. </p>
-     * <p/>
-     * Note that this method assumes the value and the field are of compatible
-     * types, no check is done here.
+     * Sets the specified value on the specified instance, the field is taken from the attribute represented by this
+     * strategy. </p>
+     * <p>
+     * Note that this method assumes the value and the field are of compatible types, no check is done here.
      */
     void setValueOnInstance(Object instance, Object value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -144,15 +143,14 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         return attributeDescriptor.getContext();
     }
 
-    void validateCardinalityConstraints(Object values) {
-        CardinalityConstraintsValidation.validateCardinalityConstraints(attribute.getJavaField(), values);
+    void validateIntegrityConstraints(Object values) {
+        IntegrityConstraintsValidator.getValidator().validate(attribute.getJavaField(), values);
     }
 
     /**
      * Adds value from the specified axioms to this strategy. </p>
-     * <p/>
-     * The value(s) is/are then set on entity field using
-     * {@link #buildInstanceFieldValue(Object)}.
+     * <p>
+     * The value(s) is/are then set on entity field using {@link #buildInstanceFieldValue(Object)}.
      *
      * @param ax Axiom to extract value from
      */
@@ -169,8 +167,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             throws IllegalArgumentException, IllegalAccessException;
 
     /**
-     * Extracts values of field represented by this strategy from the specified
-     * instance.
+     * Extracts values of field represented by this strategy from the specified instance.
      *
      * @param instance     The instance to extract values from
      * @param valueBuilder Builder into which the attribute value(s) are extracted
@@ -182,8 +179,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             IllegalAccessException;
 
     /**
-     * Creates property assertion appropriate for the attribute represented by
-     * this strategy.
+     * Creates property assertion appropriate for the attribute represented by this strategy.
      *
      * @return Property assertion
      */

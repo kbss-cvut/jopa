@@ -5,7 +5,6 @@ package cz.cvut.kbss.jopa.exceptions;
  * <p/>
  * For example when the model expects only single value of a property but multiple are present.
  * <p/>
- * Created by ledvima1 on 12.12.14.
  */
 public class CardinalityConstraintViolatedException extends IntegrityConstraintViolatedException {
 

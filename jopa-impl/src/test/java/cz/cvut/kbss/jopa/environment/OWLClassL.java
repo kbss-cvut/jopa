@@ -36,10 +36,8 @@ public class OWLClassL {
     })
     private Set<OWLClassA> set;
 
+    @Basic(optional = false)
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasAExtra")
-    @ParticipationConstraints({
-            @ParticipationConstraint(min = 1, owlObjectIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
-    })
     private OWLClassA singleA;
 
     public URI getUri() {

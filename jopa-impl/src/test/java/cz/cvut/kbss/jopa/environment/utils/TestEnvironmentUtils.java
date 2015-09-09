@@ -326,9 +326,9 @@ public final class TestEnvironmentUtils {
         when(singleAMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
         when(singleAMock.getIRI()).thenReturn(
                 IRI.create(OWLClassL.getSingleAField().getAnnotation(OWLObjectProperty.class).iri()));
-        when(singleAMock.getConstraints()).thenReturn(
-                OWLClassL.getSingleAField().getAnnotation(ParticipationConstraints.class).value());
         when(singleAMock.isCollection()).thenReturn(false);
+        when(((SingularAttribute) singleAMock).isOptional())
+                .thenReturn(OWLClassL.getSingleAField().getAnnotation(Basic.class).optional());
         when(etMock.getFieldSpecification(OWLClassL.getSingleAField().getName())).thenReturn(singleAMock);
     }
 
