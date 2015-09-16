@@ -1,8 +1,7 @@
-- Use username and password when available when connecting to Sesame repo
-- Resolve problems with generating javadoc using the javadoc plugin
 - Add support for a 'required' parameter in Object, Data and Annotation Property annotations
-    - use @Basic annotation
-    - Perhaps add OneToOne and ManyToOne annotations with optional attribute
+    - Add nonEmpty parameter to ParticipationConstraints (if PC specified, they have priority over nonEmpty)
+    - Add fetch to DataProperty and AnnotationProperty
+- Add setting for disabling IC validation on entity load
 - What about support for lists, that are neither Simple nor Referenced?
 - When an entity is removed, there should be some IC check that verifies it is not referenced from any other entity
 - Revisit the way objects and clones are cached in UoW, CloneBuilder and RepositoryMap
