@@ -10,6 +10,7 @@ import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute.CollectionType;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
+import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -274,8 +275,8 @@ public final class TestEnvironmentUtils {
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassL.getClassIri()));
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassL.class.getDeclaredField("uri"));
-        when(etMock.getAttributes()).thenReturn(
-                new HashSet<>(Arrays.<Attribute<? super OWLClassL, ?>>asList(refListMock, simpleListMock, setMock)));
+        when(etMock.getDeclaredAttributes()).thenReturn(new HashSet<>(
+                Arrays.<Attribute<OWLClassL, ?>>asList(refListMock, simpleListMock, setMock, singleAMock)));
 
         when(refListMock.getJavaField()).thenReturn(OWLClassL.getReferencedListField());
         when(refListMock.getName()).thenReturn(OWLClassL.getReferencedListField().getName());
@@ -422,7 +423,7 @@ public final class TestEnvironmentUtils {
     }
 
     private static void initManagedTypes() {
-        managedTypes = new EntityLoader().discoverEntityClasses(
-                Collections.singletonMap(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa"));
+        managedTypes = new EntityLoader().discoverEntityClasses(new Configuration(
+                Collections.singletonMap(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa")));
     }
 }

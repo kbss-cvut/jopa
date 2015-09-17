@@ -12,6 +12,7 @@ import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
@@ -21,7 +22,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 
-public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory {
+public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory, ConfigurationHolder {
 
     private final Map<Object, Object> cloneMapping;
     private final Map<Object, Object> cloneToOriginals;
@@ -276,7 +277,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
         final IntegrityConstraintsValidator validator = IntegrityConstraintsValidator.getValidator();
         for (ObjectChangeSet changeSet : uowChangeSet.getNewObjects()) {
-            validator.validate(changeSet.getCloneObject());
+            validator.validate(changeSet.getCloneObject(),
+                    getMetamodel().entity((Class<Object>) changeSet.getObjectClass()), false);
         }
         uowChangeSet.getExistingObjectsChanges().forEach(validator::validate);
     }
@@ -1063,5 +1065,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             entityManager.removeCurrentPersistenceContext();
             throw e;
         }
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return entityManager.getConfiguration();
     }
 }

@@ -5,10 +5,16 @@ import cz.cvut.kbss.jopa.environment.OWLClassL;
 import cz.cvut.kbss.jopa.environment.OWLClassN;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
+import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.owlapi.MetamodelImpl;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
+import cz.cvut.kbss.jopa.utils.Configuration;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -16,13 +22,22 @@ import java.util.Collections;
 
 public class IntegrityConstraintsValidatorTest {
 
+    private Metamodel metamodel;
+
     private IntegrityConstraintsValidator validator = IntegrityConstraintsValidator.getValidator();
+
+    @Before
+    public void setUp() throws Exception {
+        final Configuration config = new Configuration(
+                Collections.singletonMap(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment"));
+        this.metamodel = new MetamodelImpl(config, new EntityLoader());
+    }
 
     @Test
     public void validationOfObjectWithoutConstraintsPasses() throws Exception {
         final OWLClassA obj = new OWLClassA();
         obj.setStringAttribute("aaaa");
-        validator.validate(obj);
+        validator.validate(obj, metamodel.entity(OWLClassA.class), false);
     }
 
     @Test
@@ -43,13 +58,13 @@ public class IntegrityConstraintsValidatorTest {
         obj.setSet(Collections.singleton(new OWLClassA()));
         obj.setSingleA(new OWLClassA());
 
-        validator.validate(obj);
+        validator.validate(obj, metamodel.entity(OWLClassL.class), false);
     }
 
     @Test(expected = IntegrityConstraintViolatedException.class)
     public void missingRequiredAttributeOnObjectFailsValidation() throws Exception {
         final OWLClassN n = createInstanceWithMissingRequiredField();
-        validator.validate(n);
+        validator.validate(n, metamodel.entity(OWLClassN.class), false);
     }
 
     private OWLClassN createInstanceWithMissingRequiredField() {
@@ -80,7 +95,7 @@ public class IntegrityConstraintsValidatorTest {
         obj.setSimpleList(Collections.singletonList(new OWLClassA()));
         obj.setSingleA(new OWLClassA());
 
-        validator.validate(obj);
+        validator.validate(obj, metamodel.entity(OWLClassL.class), false);
     }
 
     @Test(expected = CardinalityConstraintViolatedException.class)

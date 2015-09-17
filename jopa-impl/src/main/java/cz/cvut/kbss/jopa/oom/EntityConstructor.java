@@ -11,6 +11,8 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
@@ -31,6 +33,8 @@ class EntityConstructor {
         }
         final T instance = createEntityInstance(primaryKey, et, descriptor);
         populateAttributes(instance, et, descriptor, axioms);
+        validateIntegrityConstraints(instance, et);
+
         return instance;
     }
 
@@ -52,7 +56,8 @@ class EntityConstructor {
     }
 
     private <T> void populateAttributes(final T instance, EntityType<T> et,
-                                        Descriptor entityDescriptor, Collection<Axiom<?>> axioms) throws IllegalAccessException {
+                                        Descriptor entityDescriptor, Collection<Axiom<?>> axioms)
+            throws IllegalAccessException {
         final Map<URI, FieldSpecification<? super T, ?>> attributes = indexEntityAttributes(et);
         final Map<FieldSpecification<? super T, ?>, FieldStrategy<? extends FieldSpecification<? super T, ?>, T>> fieldLoaders = new HashMap<>(
                 et.getAttributes().size());
@@ -78,7 +83,7 @@ class EntityConstructor {
 
     private <T> Map<URI, FieldSpecification<? super T, ?>> indexEntityAttributes(EntityType<T> et) {
         final Map<URI, FieldSpecification<? super T, ?>> atts = new HashMap<>(et.getAttributes()
-                .size());
+                                                                                .size());
         for (Attribute<? super T, ?> at : et.getAttributes()) {
             atts.put(at.getIRI().toURI(), at);
         }
@@ -107,6 +112,13 @@ class EntityConstructor {
                     desc.getAttributeDescriptor(att), mapper));
         }
         return loaders.get(att);
+    }
+
+    private <T> void validateIntegrityConstraints(T entity, EntityType<T> et) {
+        if (mapper.getConfiguration().is(OWLAPIPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD)) {
+            return;
+        }
+        IntegrityConstraintsValidator.getValidator().validate(entity, et, true);
     }
 
     <T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,

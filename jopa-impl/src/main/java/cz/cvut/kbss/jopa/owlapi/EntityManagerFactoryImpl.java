@@ -13,12 +13,6 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -27,16 +21,21 @@ import cz.cvut.kbss.jopa.model.PersistenceUnitUtil;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.Cache;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
-public class EntityManagerFactoryImpl implements EntityManagerFactory, PersistenceUnitUtil {
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-    // TODO Get rid of the double-synchronization anti-pattern
+public class EntityManagerFactoryImpl implements EntityManagerFactory, PersistenceUnitUtil {
 
     private volatile boolean open = true;
 
     private final Set<AbstractEntityManager> em;
-    private final Map<String, String> properties;
+    private final Configuration configuration;
     private final OntologyStorageProperties storageProperties;
 
     private volatile ServerSession serverSession;
@@ -46,9 +45,10 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     public EntityManagerFactoryImpl(final Map<String, String> properties) {
         this.em = Collections
                 .newSetFromMap(new ConcurrentHashMap<>());
-        this.properties = properties != null ? properties : Collections.emptyMap();
+        this.configuration = new Configuration(properties != null ? properties : Collections.emptyMap());
         // TODO The storage properties should be read from persistence.xml
         this.storageProperties = null;
+        initMetamodel();
     }
 
     public EntityManagerFactoryImpl(OntologyStorageProperties storageProperties, Map<String, String> properties) {
@@ -56,8 +56,13 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
             throw new NullPointerException();
         }
         this.em = Collections.newSetFromMap(new ConcurrentHashMap<>());
-        this.properties = properties != null ? properties : Collections.emptyMap();
+        this.configuration = new Configuration(properties != null ? properties : Collections.emptyMap());
         this.storageProperties = storageProperties;
+        initMetamodel();
+    }
+
+    private void initMetamodel() {
+        this.metamodel = new MetamodelImpl(configuration, new EntityLoader());
     }
 
     public void close() {
@@ -94,12 +99,11 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
         final Map<String, String> newMap = new HashMap<>(map);
 
-        newMap.putAll(properties);
-        newMap.putAll(map);
+        newMap.putAll(configuration.getProperties());
 
-        initServerSession(newMap);
+        initServerSession();
 
-        final AbstractEntityManager c = new EntityManagerImpl(this, newMap, this.serverSession);
+        final AbstractEntityManager c = new EntityManagerImpl(this, new Configuration(newMap), this.serverSession);
 
         em.add(c);
         return c;
@@ -107,18 +111,10 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
     /**
      * Initializes the server session if necessary.
-     *
-     * @param newMap Map of properties. These properties specify primarily the connection to the underlying ontology.
      */
-    private void initServerSession(Map<String, String> newMap) {
-        assert newMap != null;
+    private synchronized void initServerSession() {
         if (serverSession == null) {
-            synchronized (this) {
-                if (serverSession == null) {
-                    this.serverSession = new ServerSession(storageProperties, newMap,
-                            getMetamodel());
-                }
-            }
+            this.serverSession = new ServerSession(storageProperties, configuration.getProperties(), metamodel);
         }
     }
 
@@ -137,7 +133,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     }
 
     public Map<String, String> getProperties() {
-        return properties;
+        return configuration.getProperties();
     }
 
     public Set<AbstractEntityManager> getEntityManagers() {
@@ -145,15 +141,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     }
 
     public Metamodel getMetamodel() {
-        MetamodelImpl mm = metamodel;
-        if (mm == null) {
-            synchronized (this) {
-                if (mm == null) {
-                    metamodel = mm = new MetamodelImpl(this, new EntityLoader());
-                }
-            }
-        }
-        return mm;
+        return metamodel;
     }
 
     public PersistenceUnitUtil getPersistenceUnitUtil() {
@@ -190,7 +178,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         if (!isOpen()) {
             throw new IllegalStateException("The entity manager factory is closed.");
         }
-        initServerSession(properties);
+        initServerSession();
         return serverSession.getLiveObjectCache();
     }
 

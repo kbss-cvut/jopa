@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2011 Czech Technical University in Prague
- * <p/>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- * <p/>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 
 package cz.cvut.kbss.jopa.owlapi;
@@ -30,6 +28,7 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.net.URI;
@@ -48,11 +47,13 @@ public class EntityManagerImpl extends AbstractEntityManager {
     private TransactionWrapper transaction;
     private UnitOfWorkImpl persistenceContext;
     private ServerSession serverSession;
+    private final Configuration configuration;
 
-    public EntityManagerImpl(EntityManagerFactoryImpl emf, Map<String, String> properties,
+    public EntityManagerImpl(EntityManagerFactoryImpl emf, Configuration configuration,
                              ServerSession serverSession) {
         this.emf = emf;
         this.serverSession = serverSession;
+        this.configuration = configuration;
 
         this.setTransactionWrapper();
 
@@ -144,14 +145,10 @@ public class EntityManagerImpl extends AbstractEntityManager {
     }
 
     /**
-     * Merges state of the specified entity into the current persistence
-     * context. </p>
+     * Merges state of the specified entity into the current persistence context. </p>
      *
-     * @param entity
-     *            Entity instance
-     * @param descriptor
-     *            Contains information about contexts into which the entity and
-     *            its field should be merged
+     * @param entity     Entity instance
+     * @param descriptor Contains information about contexts into which the entity and its field should be merged
      * @return Managed instance of the merged entity
      */
     private <T> T mergeInternal(final T entity, final Descriptor descriptor) {
@@ -445,8 +442,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
     }
 
     /**
-     * Called from EntityTransaction in case of a rollback. Releasing the UoW is
-     * up to the EntityTransaction.
+     * Called from EntityTransaction in case of a rollback. Releasing the UoW is up to the EntityTransaction.
      */
     public void removeCurrentPersistenceContext() {
         if (persistenceContext != null && persistenceContext.isActive()) {
@@ -464,12 +460,16 @@ public class EntityManagerImpl extends AbstractEntityManager {
     }
 
     /**
-     * Since we support only EntityTransactions, we set the TransactionWrapper
-     * to EntityTransactionWrapper. In the future, if JTA transactions are
-     * supported, JTATransactionWrapper should be set instead of the
+     * Since we support only EntityTransactions, we set the TransactionWrapper to EntityTransactionWrapper. In the
+     * future, if JTA transactions are supported, JTATransactionWrapper should be set instead of the
      * EntityTransactionWrapper.
      */
     private void setTransactionWrapper() {
         this.transaction = new EntityTransactionWrapper(this);
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return configuration;
     }
 }

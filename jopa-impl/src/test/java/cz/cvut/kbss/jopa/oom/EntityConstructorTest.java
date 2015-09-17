@@ -4,12 +4,15 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
+import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver_new.model.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,6 +73,20 @@ public class EntityConstructorTest {
     private Identifier idJMock;
 
     @Mock
+    private EntityType<OWLClassL> etLMock;
+    @Mock
+    private ListAttribute simpleListAttMock;
+    @Mock
+    private ListAttribute refListAttMock;
+    @Mock
+    private PluralAttribute lSetAttMock;
+    @Mock
+    private SingularAttribute aAttMock;
+    @Mock
+    private Identifier idLMock;
+
+
+    @Mock
     private EntityType<OWLClassM> etMMock;
     @Mock
     private SingularAttribute booleanAttMock;
@@ -93,11 +110,14 @@ public class EntityConstructorTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(mapperMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
         TestEnvironmentUtils.initOWLClassAMocks(etAMock, strAttAMock, typesSpecMock, idAMock);
         TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsSpecMock, idBMock);
         when(etBMock.getIdentifier()).thenReturn(idBMock);
         TestEnvironmentUtils.initOWLClassDMocks(etDMock, clsAAttMock, idDMock);
         TestEnvironmentUtils.initOWLClassJMocks(etJMock, aSetAttMock, idJMock);
+        TestEnvironmentUtils.initOWLClassLMocks(etLMock, refListAttMock, simpleListAttMock, lSetAttMock, aAttMock,
+                idLMock);
         TestEnvironmentUtils
                 .initOWLClassMMock(etMMock, booleanAttMock, intAttMock, longAttMock, doubleAttMock, dateAttMock,
                         enumAttMock, idMMock);
@@ -528,5 +548,29 @@ public class EntityConstructorTest {
         assertNotNull(result);
         assertNotNull(result.getEnumAttribute());
         assertEquals(enumValue, result.getEnumAttribute());
+    }
+
+    @Test(expected = IntegrityConstraintViolatedException.class)
+    public void icsAreValidatedForAllFieldsOnEntityLoad() throws Exception {
+        final Set<Axiom<?>> axioms = new HashSet<>();
+        axioms.add(getClassAssertionAxiomForType(OWLClassL.getClassIri()));
+
+        constructor.reconstructEntity(PK, etLMock, descriptor, axioms);
+
+    }
+
+    @Test
+    public void icValidationIsSkippedOnLoadBasedOnProperties() throws Exception {
+        final Set<Axiom<?>> axioms = new HashSet<>();
+        axioms.add(getClassAssertionAxiomForType(OWLClassL.getClassIri()));
+
+        final Map<String, String> props = Collections
+                .singletonMap(OWLAPIPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD, Boolean.TRUE.toString());
+        final Configuration conf = new Configuration(props);
+        when(mapperMock.getConfiguration()).thenReturn(conf);
+
+        final OWLClassL result = constructor.reconstructEntity(PK, etLMock, descriptor, axioms);
+        assertNotNull(result);
+        assertNull(result.getSingleA());
     }
 }

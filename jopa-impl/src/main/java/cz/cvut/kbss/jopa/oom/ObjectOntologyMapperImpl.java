@@ -10,6 +10,7 @@ import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver_new.Connection;
@@ -252,5 +253,10 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         }
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return uow.getConfiguration();
     }
 }

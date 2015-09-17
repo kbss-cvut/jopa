@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.owlapi.metamodel.EntityFieldMetamodelProcessor;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
 import java.lang.reflect.Field;
@@ -42,14 +43,15 @@ public class MetamodelImpl implements Metamodel {
 
     private final Set<Class<?>> inferredClasses = new HashSet<>();
 
-    private EntityManagerFactoryImpl emf;
+    private final Configuration configuration;
 
     private Set<URI> moduleExtractionSignature;
 
     private final Set<Class<?>> entities = new HashSet<>();
 
-    MetamodelImpl(final EntityManagerFactoryImpl emf, EntityLoader entityLoader) {
-        this.emf = emf;
+    public MetamodelImpl(Configuration configuration, EntityLoader entityLoader) {
+        this.configuration = Objects.requireNonNull(configuration);
+        Objects.requireNonNull(entityLoader);
         build(entityLoader);
     }
 
@@ -61,7 +63,7 @@ public class MetamodelImpl implements Metamodel {
 
         loadEntities(entityLoader);
 
-        entities.forEach((cls) -> processOWLClass(cls));
+        entities.forEach(cls -> processOWLClass(cls));
     }
 
     /**
@@ -79,7 +81,7 @@ public class MetamodelImpl implements Metamodel {
     }
 
     private void loadEntities(EntityLoader entityLoader) {
-        Set<Class<?>> discoveredEntities = entityLoader.discoverEntityClasses(emf.getProperties());
+        Set<Class<?>> discoveredEntities = entityLoader.discoverEntityClasses(configuration);
         entities.addAll(discoveredEntities);
     }
 
@@ -169,7 +171,7 @@ public class MetamodelImpl implements Metamodel {
     private synchronized Set<URI> getSignatureInternal() {
         // This can be lazily loaded since we don'attributeType know if we'll need it
         if (moduleExtractionSignature == null) {
-            final String sig = emf.getProperties().get(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE);
+            final String sig = configuration.get(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE);
             if (sig == null) {
                 this.moduleExtractionSignature = new HashSet<>();
             } else {

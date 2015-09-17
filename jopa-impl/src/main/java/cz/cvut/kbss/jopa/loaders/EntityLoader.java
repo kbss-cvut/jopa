@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.loaders;
 
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,24 +22,23 @@ public class EntityLoader {
      * <p>
      * I.e., it looks for classes annotated with {@link OWLClass}.
      *
-     * @param properties Persistence properties, should contain value for the {@link OWLAPIPersistenceProperties#SCAN_PACKAGE}
-     *                   property
+     * @param configuration Persistence configuration, should contain value for the {@link
+     *                      OWLAPIPersistenceProperties#SCAN_PACKAGE} property
      * @return Set of entity classes
      * @throws IllegalArgumentException If {@link OWLAPIPersistenceProperties#SCAN_PACKAGE} values is missing
      */
-    public Set<Class<?>> discoverEntityClasses(Map<String, String> properties) {
-        Objects.requireNonNull(properties);
-        if (!properties.containsKey(OWLAPIPersistenceProperties.SCAN_PACKAGE)) {
+    public Set<Class<?>> discoverEntityClasses(Configuration configuration) {
+        Objects.requireNonNull(configuration);
+        if (!configuration.contains(OWLAPIPersistenceProperties.SCAN_PACKAGE)) {
             throw new IllegalArgumentException(
                     "Missing the " + OWLAPIPersistenceProperties.SCAN_PACKAGE + " property.");
         }
-        String toScan = properties.get(OWLAPIPersistenceProperties.SCAN_PACKAGE);
+        String toScan = configuration.get(OWLAPIPersistenceProperties.SCAN_PACKAGE);
         if (toScan.isEmpty()) {
             throw new IllegalArgumentException(OWLAPIPersistenceProperties.SCAN_PACKAGE + " property cannot be empty.");
         }
         return discoverEntities(toScan);
     }
-
 
 
     /**

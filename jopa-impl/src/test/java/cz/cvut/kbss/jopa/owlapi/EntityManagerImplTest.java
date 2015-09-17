@@ -8,6 +8,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -59,7 +60,7 @@ public class EntityManagerImplTest {
         when(emfMock.getMetamodel()).thenReturn(metamodelMock);
         TestEnvironmentUtils.initOWLClassJMocks(etJ, clsAMock, idJMock);
         when(metamodelMock.entity(OWLClassJ.class)).thenReturn(etJ);
-        this.em = new EntityManagerImpl(emfMock, Collections.emptyMap(), serverSessionMock);
+        this.em = new EntityManagerImpl(emfMock, new Configuration(Collections.emptyMap()), serverSessionMock);
     }
 
     @Test

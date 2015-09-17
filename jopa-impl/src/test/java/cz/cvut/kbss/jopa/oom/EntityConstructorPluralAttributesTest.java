@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -70,6 +71,7 @@ public class EntityConstructorPluralAttributesTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
+		when(mapperMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
 		TestEnvironmentUtils.initOWLClassCMocks(etCMock, simpleListMock, refListMock, idCMock);
 		this.descriptor = new EntityDescriptor();
 		final URI simpleListProperty = URI.create(OWLClassC.getSimpleListField()

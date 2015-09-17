@@ -1,3 +1,4 @@
+- Validate ICs on entity load (all fields, except the lazy loaded)
 - Add setting for disabling IC validation on entity load
 - What about support for lists, that are neither Simple nor Referenced?
 - When an entity is removed, there should be some IC check that verifies it is not referenced from any other entity
@@ -15,3 +16,4 @@
 - Define schema for persistence.xml for JOPA
 - Research whether we could replace aspectj with cglib-generated proxies
 - Consider adding support for JNDI data source lookup
+- IC - SHACL

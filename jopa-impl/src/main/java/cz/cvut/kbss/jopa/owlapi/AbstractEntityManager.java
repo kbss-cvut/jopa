@@ -17,10 +17,11 @@ package cz.cvut.kbss.jopa.owlapi;
 
 import cz.cvut.kbss.jopa.NonJPA;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.sessions.ConfigurationHolder;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 
-public abstract class AbstractEntityManager implements EntityManager {
+public abstract class AbstractEntityManager implements EntityManager, ConfigurationHolder {
 
 	public abstract boolean isLoaded(final Object object, final String attributeName);
 

@@ -17,41 +17,46 @@ import cz.cvut.kbss.jopa.model.PersistenceProperties;
 
 public interface OWLAPIPersistenceProperties extends PersistenceProperties {
 
-    public static final String ONTOLOGY_URI_KEY = "cz.cvut.jopa.ontologyURI";
-    public static final String ONTOLOGY_DB_CONNECTION = "cz.cvut.jopa.ontologyDBConnection";
-    public static final String ONTOLOGY_FILE_KEY = "cz.cvut.jopa.ontologyDocumentURI";
-    public static final String ONTOLOGY_PHYSICAL_URI_KEY = "cz.cvut.jopa.ontologyPhysicalURI";
-    public static final String MAPPING_FILE_URI_KEY = "cz.cvut.jopa.mappingFileURI";
-    public static final String REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
-    public static final String LANG = "cz.cvut.jopa.lang";
+    String ONTOLOGY_URI_KEY = "cz.cvut.jopa.ontologyURI";
+    String ONTOLOGY_DB_CONNECTION = "cz.cvut.jopa.ontologyDBConnection";
+    String ONTOLOGY_FILE_KEY = "cz.cvut.jopa.ontologyDocumentURI";
+    String ONTOLOGY_PHYSICAL_URI_KEY = "cz.cvut.jopa.ontologyPhysicalURI";
+    String MAPPING_FILE_URI_KEY = "cz.cvut.jopa.mappingFileURI";
+    String REASONER_FACTORY_CLASS = "cz.cvut.jopa.reasonerFactoryClass";
+    String LANG = "cz.cvut.jopa.lang";
 
     /**
      * Whether a second level cache should be used.
      */
-    public static final String CACHE_ENABLED = "cz.cvut.jopa.cache.enable";
+    String CACHE_ENABLED = "cz.cvut.jopa.cache.enable";
 
     /**
      * Where the entity classes are located.
      */
-    public static final String SCAN_PACKAGE = "cz.cvut.jopa.scanPackage";
+    String SCAN_PACKAGE = "cz.cvut.jopa.scanPackage";
 
     /**
      * Cached entity time to live. In seconds.
      */
-    public static final String CACHE_TTL = "cz.cvut.jopa.cache.ttl";
+    String CACHE_TTL = "cz.cvut.jopa.cache.ttl";
 
     /**
      * How often should the cache be swept for dead entities. In seconds.
      */
-    public static final String CACHE_SWEEP_RATE = "cz.cvut.jopa.cache.sweepRate";
+    String CACHE_SWEEP_RATE = "cz.cvut.jopa.cache.sweepRate";
 
     /**
      * Type of the second level cache. Currently supported are {@literal ttl} and {@literal lru}.
      */
-    public static final String CACHE_TYPE = "cz.cvut.jopa.cache.type";
+    String CACHE_TYPE = "cz.cvut.jopa.cache.type";
 
     /**
      * Capacity of the LRU second level cache.
      */
-    public static final String LRU_CACHE_CAPACITY = "cz.cvut.jopa.cache.lru.capacity";
+    String LRU_CACHE_CAPACITY = "cz.cvut.jopa.cache.lru.capacity";
+
+    /**
+     * Disable integrity constraints validation on entity/field load.
+     */
+    String DISABLE_IC_VALIDATION_ON_LOAD = "cz.cvut.jopa.ic.validation.disableOnLoad";
 }

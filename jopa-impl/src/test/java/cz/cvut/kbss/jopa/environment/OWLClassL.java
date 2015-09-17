@@ -37,7 +37,7 @@ public class OWLClassL {
     private Set<OWLClassA> set;
 
     @ParticipationConstraints(nonEmpty = true)
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasAExtra")
+    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasAExtra", fetch = FetchType.EAGER)
     private OWLClassA singleA;
 
     public URI getUri() {

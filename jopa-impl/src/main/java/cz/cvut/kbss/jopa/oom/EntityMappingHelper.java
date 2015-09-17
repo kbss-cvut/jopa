@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.sessions.ConfigurationHolder;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -10,7 +11,7 @@ import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import java.net.URI;
 import java.util.Collection;
 
-interface EntityMappingHelper {
+interface EntityMappingHelper extends ConfigurationHolder {
 
 	<T> T getEntityFromCacheOrOntology(Class<T> cls, URI primaryKey, Descriptor descriptor);
 

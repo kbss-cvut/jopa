@@ -2,11 +2,6 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 
-import java.util.Set;
-
-/**
- * Created by ledvima1 on 4.2.15.
- */
 public interface MetamodelProvider {
 
     /**
