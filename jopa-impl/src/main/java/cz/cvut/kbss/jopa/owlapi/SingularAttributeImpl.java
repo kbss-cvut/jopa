@@ -13,9 +13,6 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
@@ -23,6 +20,9 @@ import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.metamodel.SingularAttribute;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 
 public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
 
@@ -50,7 +50,7 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
 
     private final boolean readOnly;
 
-    private final boolean optional;
+    private final boolean nonEmpty;
 
     private ParticipationConstraint[] constraints;
 
@@ -68,7 +68,7 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
         this.includeExplicit = builder.includeExplicit;
         this.readOnly = builder.readOnly;
         this.constraints = builder.constraints;
-        this.optional = builder.optional;
+        this.nonEmpty = builder.nonEmpty;
     }
 
     @Override
@@ -82,8 +82,8 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
     }
 
     @Override
-    public boolean isOptional() {
-        return optional;
+    public boolean isNonEmpty() {
+        return nonEmpty;
     }
 
     @Override
@@ -201,7 +201,7 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
         private boolean inferred;
         private boolean includeExplicit;
         private boolean readOnly;
-        private boolean optional = true;
+        private boolean nonEmpty = false;
         private ParticipationConstraint[] constraints;
 
         public SingularAttributeBuilder identifier(boolean isId) {
@@ -269,8 +269,8 @@ public class SingularAttributeImpl<X, T> implements SingularAttribute<X, T> {
             return this;
         }
 
-        public SingularAttributeBuilder<X, T> optional(boolean optional) {
-            this.optional = optional;
+        public SingularAttributeBuilder<X, T> nonEmpty(boolean nonEmpty) {
+            this.nonEmpty = nonEmpty;
             return this;
         }
 

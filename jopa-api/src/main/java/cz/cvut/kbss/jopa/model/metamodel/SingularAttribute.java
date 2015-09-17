@@ -48,13 +48,6 @@ public interface SingularAttribute<X, T> extends Attribute<X, T>, Bindable<T> {
 	boolean isVersion();
 
 	/**
-	 * Can the attribute be null.
-	 * 
-	 * @return boolean indicating whether the attribute can be null
-	 */
-	boolean isOptional();
-
-	/**
 	 * Return the type that represents the type of the attribute.
 	 * 
 	 * @return type of attribute

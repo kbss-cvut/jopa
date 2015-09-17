@@ -18,8 +18,10 @@ class AnnotationPropertyAttributes extends PropertyAttributes {
         super.resolve(field, metamodel, fieldValueCls);
         final OWLAnnotationProperty oap = field.getAnnotation(OWLAnnotationProperty.class);
         assert oap != null;
-        persistentAttributeType = Attribute.PersistentAttributeType.ANNOTATION;
-        iri = IRI.create(oap.iri());
-        type = BasicTypeImpl.get(fieldValueCls);
+
+        this.persistentAttributeType = Attribute.PersistentAttributeType.ANNOTATION;
+        this.iri = IRI.create(oap.iri());
+        this.fetchType = oap.fetch();
+        this.type = BasicTypeImpl.get(fieldValueCls);
     }
 }

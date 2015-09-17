@@ -18,8 +18,10 @@ class DataPropertyAttributes extends PropertyAttributes {
         super.resolve(field, metamodel, fieldValueCls);
         final OWLDataProperty odp = field.getAnnotation(OWLDataProperty.class);
         assert odp != null;
-        persistentAttributeType = Attribute.PersistentAttributeType.DATA;
-        iri = IRI.create(odp.iri());
-        type = BasicTypeImpl.get(fieldValueCls);
+
+        this.persistentAttributeType = Attribute.PersistentAttributeType.DATA;
+        this.iri = IRI.create(odp.iri());
+        this.fetchType = odp.fetch();
+        this.type = BasicTypeImpl.get(fieldValueCls);
     }
 }

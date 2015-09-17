@@ -374,7 +374,7 @@ public class MetamodelImplTest {
     }
 
     @Test
-    public void buildsSingleEntityWithSingularDataPropertyWithBasicOptionalFalse() throws Exception {
+    public void buildsSingleEntityWithSingularDataPropertyWithNonEmptyField() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(PROPERTIES)).thenReturn(Collections.singleton(OWLClassN.class));
         final Metamodel metamodel = new MetamodelImpl(emfMock, entityLoaderMock);
 
@@ -383,6 +383,6 @@ public class MetamodelImplTest {
         final FieldSpecification<? super OWLClassN, ?> att = et.getFieldSpecification(strAttField.getName());
         assertTrue(att instanceof SingularAttribute);
         final SingularAttribute<? super OWLClassN, ?> singularString = (SingularAttribute<? super OWLClassN, ?>) att;
-        assertFalse(singularString.isOptional());
+        assertTrue(singularString.isNonEmpty());
     }
 }

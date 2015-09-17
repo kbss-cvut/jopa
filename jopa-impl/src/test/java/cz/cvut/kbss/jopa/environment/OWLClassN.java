@@ -18,7 +18,7 @@ public class OWLClassN {
     @OWLAnnotationProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationProperty")
     private String annotationProperty;
 
-    @Basic(optional = false)
+    @ParticipationConstraints(nonEmpty = true)
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
     private String stringAttribute;
 

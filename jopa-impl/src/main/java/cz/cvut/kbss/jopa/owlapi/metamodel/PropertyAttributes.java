@@ -18,25 +18,26 @@ abstract class PropertyAttributes {
     IRI iri = null;
     CascadeType[] cascadeTypes = new CascadeType[]{};
     FetchType fetchType = FetchType.EAGER;
-    boolean optional = true;
+    boolean nonEmpty = false;
+    ParticipationConstraint[] participationConstraints = new ParticipationConstraint[]{};
 
-    public Type<?> getType() {
+    Type<?> getType() {
         return type;
     }
 
-    public Attribute.PersistentAttributeType getPersistentAttributeType() {
+    Attribute.PersistentAttributeType getPersistentAttributeType() {
         return persistentAttributeType;
     }
 
-    public IRI getIri() {
+    IRI getIri() {
         return iri;
     }
 
-    public CascadeType[] getCascadeTypes() {
+    CascadeType[] getCascadeTypes() {
         return cascadeTypes;
     }
 
-    public FetchType getFetchType() {
+    FetchType getFetchType() {
         return fetchType;
     }
 
@@ -44,21 +45,27 @@ abstract class PropertyAttributes {
         return true;
     }
 
-    public boolean isOptional() {
-        return optional;
+    boolean isNonEmpty() {
+        return nonEmpty;
+    }
+
+    ParticipationConstraint[] getParticipationConstraints() {
+        return participationConstraints;
     }
 
     void resolve(Field field, MetamodelImpl metamodel, Class<?> fieldValueCls) {
-        resolveBasicAnnotation(field);
+        resolveParticipationConstraints(field);
     }
 
-    void resolveBasicAnnotation(Field field) {
-        final Basic basic = field.getAnnotation(Basic.class);
-        if (basic == null) {
-            return;
+    void resolveParticipationConstraints(Field field) {
+        ParticipationConstraints cons = field.getAnnotation(ParticipationConstraints.class);
+        if (cons != null) {
+            if (cons.value() != null && cons.value().length > 0) {
+                this.participationConstraints = cons.value();
+            } else {
+                this.nonEmpty = cons.nonEmpty();
+            }
         }
-        this.fetchType = basic.fetch();
-        this.optional = basic.optional();
     }
 
     static PropertyAttributes create(Field field) {

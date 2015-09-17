@@ -18,7 +18,7 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
     }
 
     /**
-     * Validates cardinality constraints defined in the ParticipationConstraint annotation.
+     * Validates cardinality constraints defined in the {@link ParticipationConstraints} annotation.
      *
      * @param field Field on which the constraints are defined
      * @param value The value to validate
@@ -26,28 +26,42 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
     public void validate(Field field, Object value) {
         Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
         final ParticipationConstraints constraints = field.getAnnotation(ParticipationConstraints.class);
-        if (constraints == null || constraints.value().length == 0) {
+        if (constraints == null) {
             return;
         }
         final int valueCount = extractValueCount(value);
         for (ParticipationConstraint pc : constraints.value()) {
-            if (valueCount < pc.min()) {
-                throw new CardinalityConstraintViolatedException("At least " + pc.min() +
-                        " values of attribute " + field.getName() + " of type " + field.getDeclaringClass() +
-                        " expected, but got only " + valueCount);
-            }
-            if (pc.max() >= 0 && pc.max() < valueCount) {
-                throw new CardinalityConstraintViolatedException("At most " + pc.max() +
-                        " values of attribute " + field.getName() + " of type " + field.getDeclaringClass() +
-                        " expected, but got " + valueCount);
-            }
+            validateParticipationConstraint(field, valueCount, pc);
+        }
+        if (constraints.value().length == 0) {
+            validateNonEmpty(field, valueCount, constraints);
         }
     }
 
-    private static int extractValueCount(Object value) {
+    private int extractValueCount(Object value) {
         if (value == null) {
             return 0;
         }
         return value instanceof Collection ? ((Collection<?>) value).size() : 1;
+    }
+
+    private void validateParticipationConstraint(Field field, int valueCount, ParticipationConstraint pc) {
+        if (valueCount < pc.min()) {
+            throw new CardinalityConstraintViolatedException("At least " + pc.min() +
+                    " values of attribute " + field.getName() + " of type " + field.getDeclaringClass() +
+                    " expected, but got only " + valueCount);
+        }
+        if (pc.max() >= 0 && pc.max() < valueCount) {
+            throw new CardinalityConstraintViolatedException("At most " + pc.max() +
+                    " values of attribute " + field.getName() + " of type " + field.getDeclaringClass() +
+                    " expected, but got " + valueCount);
+        }
+    }
+
+    private void validateNonEmpty(Field field, int valueCount, ParticipationConstraints constraints) {
+        if (valueCount == 0 && constraints.nonEmpty()) {
+            throw new CardinalityConstraintViolatedException(
+                    "Attribute " + field.getName() + " was marked as nonEmpty, but contains no value.");
+        }
     }
 }

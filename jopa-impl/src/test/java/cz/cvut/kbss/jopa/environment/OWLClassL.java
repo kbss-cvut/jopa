@@ -36,7 +36,7 @@ public class OWLClassL {
     })
     private Set<OWLClassA> set;
 
-    @Basic(optional = false)
+    @ParticipationConstraints(nonEmpty = true)
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasAExtra")
     private OWLClassA singleA;
 

@@ -7,9 +7,6 @@ import cz.cvut.kbss.jopa.owlapi.MetamodelImpl;
 
 import java.lang.reflect.Field;
 
-/**
- * @author ledvima1
- */
 class ObjectPropertyAttributes extends PropertyAttributes {
 
     @Override
@@ -18,10 +15,10 @@ class ObjectPropertyAttributes extends PropertyAttributes {
         final OWLObjectProperty oop = field.getAnnotation(OWLObjectProperty.class);
         assert oop != null;
 
-        persistentAttributeType = Attribute.PersistentAttributeType.OBJECT;
-        iri = IRI.create(oop.iri());
-        cascadeTypes = oop.cascade();
-        fetchType = oop.fetch();
-        type = metamodel.entity(fieldValueCls);
+        this.persistentAttributeType = Attribute.PersistentAttributeType.OBJECT;
+        this.iri = IRI.create(oop.iri());
+        this.cascadeTypes = oop.cascade();
+        this.fetchType = oop.fetch();
+        this.type = metamodel.entity(fieldValueCls);
     }
 }

@@ -1,13 +1,5 @@
 package cz.cvut.kbss.jopa.environment.utils;
 
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.net.URI;
-import java.util.*;
-import java.util.Map.Entry;
-
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.IRI;
@@ -18,6 +10,14 @@ import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute.CollectionType;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSetImpl;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.net.URI;
+import java.util.*;
+import java.util.Map.Entry;
+
+import static org.mockito.Mockito.when;
 
 public final class TestEnvironmentUtils {
 
@@ -327,8 +327,8 @@ public final class TestEnvironmentUtils {
         when(singleAMock.getIRI()).thenReturn(
                 IRI.create(OWLClassL.getSingleAField().getAnnotation(OWLObjectProperty.class).iri()));
         when(singleAMock.isCollection()).thenReturn(false);
-        when(((SingularAttribute) singleAMock).isOptional())
-                .thenReturn(OWLClassL.getSingleAField().getAnnotation(Basic.class).optional());
+        when(((SingularAttribute) singleAMock).isNonEmpty())
+                .thenReturn(OWLClassL.getSingleAField().getAnnotation(ParticipationConstraints.class).nonEmpty());
         when(etMock.getFieldSpecification(OWLClassL.getSingleAField().getName())).thenReturn(singleAMock);
     }
 

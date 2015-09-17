@@ -55,13 +55,11 @@ public class EntityFieldMetamodelProcessor<X> {
             return;
         }
 
-        final ParticipationConstraint[] ics = getParticipationConstraints(field);
-
         final PropertyAttributes propertyAtt = PropertyAttributes.create(field);
         propertyAtt.resolve(field, metamodel, fieldValueCls);
 
         if (propertyAtt.isKnownOwlProperty()) {
-            createAttribute(field, inference, ics, propertyAtt);
+            createAttribute(field, inference, propertyAtt);
         } else {
             processIdentifierField(field);
         }
@@ -107,7 +105,7 @@ public class EntityFieldMetamodelProcessor<X> {
         if (!Set.class.isAssignableFrom(field.getType())) {
             throw new OWLPersistenceException("The Types element must be a set of Strings.");
         }
-        et.addDirectTypes(new TypesSpecificationImpl(et,
+        et.addDirectTypes(new TypesSpecificationImpl<>(et,
                 tt.fetchType(), field, fieldValueCls, inference.inferred));
     }
 
@@ -120,23 +118,11 @@ public class EntityFieldMetamodelProcessor<X> {
         if (!Map.class.isAssignableFrom(field.getType())) {
             throw new OWLPersistenceException("The Types element must be a Map<String,Set<String>>.");
         }
-        et.addOtherProperties(new PropertiesSpecificationImpl(et,
+        et.addOtherProperties(new PropertiesSpecificationImpl<>(et,
                 properties.fetchType(), field, fieldValueCls, inference.inferred));
     }
 
-    private ParticipationConstraint[] getParticipationConstraints(Field field) {
-        final ParticipationConstraint[] ics;
-        ParticipationConstraints cons = field.getAnnotation(ParticipationConstraints.class);
-        if (cons != null && cons.value() != null) {
-            ics = cons.value();
-        } else {
-            ics = new ParticipationConstraint[]{};
-        }
-        return ics;
-    }
-
-    private void createAttribute(Field field, InferenceInfo inference, ParticipationConstraint[] ics,
-                                 PropertyAttributes propertyAttributes) {
+    private void createAttribute(Field field, InferenceInfo inference, PropertyAttributes propertyAttributes) {
         final Attribute<X, ?> a;
         if (field.getType().isAssignableFrom(List.class)) {
             final Sequence os = field.getAnnotation(Sequence.class);
@@ -153,14 +139,16 @@ public class EntityFieldMetamodelProcessor<X> {
                                  .owlListClass(IRI.create(os.ClassOWLListIRI()))
                                  .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
                                  .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
-                                 .sequenceType(os.type()).participationConstraints(ics).build();
+                                 .sequenceType(os.type())
+                                 .participationConstraints(propertyAttributes.getParticipationConstraints()).build();
         } else if (field.getType().isAssignableFrom(Set.class)) {
             a = SetAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et).field(field)
                                 .elementType(propertyAttributes.getType())
                                 .attributeType(propertyAttributes.getPersistentAttributeType())
                                 .fetchType(propertyAttributes.getFetchType())
                                 .cascadeTypes(propertyAttributes.getCascadeTypes()).inferred(inference.inferred)
-                                .includeExplicit(inference.includeExplicit).participationConstraints(ics).build();
+                                .includeExplicit(inference.includeExplicit)
+                                .participationConstraints(propertyAttributes.getParticipationConstraints()).build();
         } else if (field.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
@@ -169,8 +157,9 @@ public class EntityFieldMetamodelProcessor<X> {
                                      .cascadeTypes(propertyAttributes.getCascadeTypes())
                                      .attributeType(propertyAttributes.getPersistentAttributeType())
                                      .fetchType(propertyAttributes.getFetchType()).inferred(inference.inferred)
-                                     .includeExplicit(inference.includeExplicit).constraints(ics)
-                                     .optional(propertyAttributes.isOptional()).build();
+                                     .includeExplicit(inference.includeExplicit)
+                                     .constraints(propertyAttributes.getParticipationConstraints())
+                                     .nonEmpty(propertyAttributes.isNonEmpty()).build();
         }
         et.addDeclaredAttribute(field.getName(), a);
     }

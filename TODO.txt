@@ -1,6 +1,3 @@
-- Add support for a 'required' parameter in Object, Data and Annotation Property annotations
-    - Add nonEmpty parameter to ParticipationConstraints (if PC specified, they have priority over nonEmpty)
-    - Add fetch to DataProperty and AnnotationProperty
 - Add setting for disabling IC validation on entity load
 - What about support for lists, that are neither Simple nor Referenced?
 - When an entity is removed, there should be some IC check that verifies it is not referenced from any other entity
