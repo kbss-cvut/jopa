@@ -1,11 +1,8 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import java.io.Serializable;
 import java.util.*;
 
-public class UnitOfWorkChangeSetImpl implements Serializable, UnitOfWorkChangeSet {
-
-	private static final long serialVersionUID = 7834438138173201896L;
+public class UnitOfWorkChangeSetImpl implements UnitOfWorkChangeSet {
 
 	private Set<ObjectChangeSet> deletedObjects;
 	private Map<Object, ObjectChangeSet> objectChanges;

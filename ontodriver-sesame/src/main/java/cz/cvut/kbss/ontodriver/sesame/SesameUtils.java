@@ -5,6 +5,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 
 import java.net.URL;
 import java.util.Date;
+import java.util.logging.Logger;
 
 /**
  * Utility methods for the Sesame driver.
@@ -135,6 +136,8 @@ public final class SesameUtils {
         try {
             return java.net.URI.create(resource.stringValue());
         } catch (IllegalArgumentException e) {
+            // This shouldn't happen
+            Logger.getLogger(SesameUtils.class.getName()).severe("Sesame resource is not a valid URI: " + e);
             return null;
         }
     }

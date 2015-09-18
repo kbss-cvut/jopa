@@ -23,8 +23,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class TestEnvironment {
+
+    private static final Logger LOG = Logger.getLogger(TestEnvironment.class.getName());
 
     public static final String dir = "testResults";
 
@@ -32,11 +35,10 @@ public class TestEnvironment {
     public static final String IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/2013/jopa-tests/";
 
     /**
-     * True if the ontology file should be deleted before access to it is
-     * initialized. This effectively means that the test will create the
-     * ontology from scratch. Default value is true.
+     * True if the ontology file should be deleted before access to it is initialized. This effectively means that the
+     * test will create the ontology from scratch. Default value is true.
      */
-    public static boolean shouldDeleteOntologyFile = true;
+    public static final boolean DELETE_ONTOLOGY_FILE = true;
 
     // private static final String REASONER_FACTORY_CLASS =
     // "org.semanticweb.HermiT.Reasoner$ReasonerFactory";
@@ -47,13 +49,12 @@ public class TestEnvironment {
             LogManager.getLogManager().readConfiguration(
                     TestEnvironment.class.getResourceAsStream("/logging.properties"));
         } catch (SecurityException | IOException e) {
-            e.printStackTrace();
+            LOG.severe(e.toString());
         }
     }
 
     /**
-     * Creates persistence connector, with enabled second level cache, for
-     * OWLAPI accessed ontology stored in a file.
+     * Creates persistence connector, with enabled second level cache, for OWLAPI accessed ontology stored in a file.
      *
      * @param name Base name used for ontology URI and physical storage path/URI
      * @return Persistence context
@@ -63,8 +64,7 @@ public class TestEnvironment {
     }
 
     /**
-     * Creates persistence connector for OWLAPI accessed ontology stored in a
-     * file.
+     * Creates persistence connector for OWLAPI accessed ontology stored in a file.
      *
      * @param name  Base name used for ontology URI and physical storage path/URI
      * @param cache Whether second level cache should be enabled
@@ -109,7 +109,8 @@ public class TestEnvironment {
      * @return Persistence context
      */
     public static List<EntityManager> getPersistenceConnector(String baseName,
-                                                              List<StorageConfig> storages, boolean cache, Map<String, String> props) {
+                                                              List<StorageConfig> storages, boolean cache,
+                                                              Map<String, String> props) {
         final Map<String, String> params = initParams(cache);
         // Can override default params
         params.putAll(props);
@@ -144,15 +145,14 @@ public class TestEnvironment {
 
     /**
      * Removes (recursively) the specified file/directory. </p>
-     * <p/>
-     * The removal is executed only if the file exists and
-     * {@code deleteOntologyFile} is set to {@code true}.
+     * <p>
+     * The removal is executed only if the file exists and {@code deleteOntologyFile} is set to {@code true}.
      *
      * @param file The file/directory to remove
      */
     public static void removeOldTestFiles(File file) {
-        if (file.exists() && shouldDeleteOntologyFile) {
-            if (file.isDirectory()) {
+        if (file.exists() && DELETE_ONTOLOGY_FILE) {
+            if (file.isDirectory() && file.listFiles() != null) {
                 for (File c : file.listFiles())
                     removeOldTestFiles(c);
                 assert file.delete();

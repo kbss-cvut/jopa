@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.model.descriptors;
 
-import java.io.Serializable;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Collection;
@@ -8,19 +9,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-
 /**
- * Defines base descriptor, which is used to specify context information for
- * entities and their fields. </p>
- * <p/>
+ * Defines base descriptor, which is used to specify context information for entities and their fields. </p>
+ * <p>
  * The descriptor hierarchy is a classical <b>Composite</b> pattern.
  *
  * @author ledvima1
  */
-public abstract class Descriptor implements Serializable {
-
-    private static final long serialVersionUID = 3916845634058702888L;
+public abstract class Descriptor {
 
     protected final URI context;
 
@@ -34,9 +30,8 @@ public abstract class Descriptor implements Serializable {
 
     /**
      * Gets context for this descriptor. </p>
-     * <p/>
-     * Note that the context URI may be {@code null}, meaning that the default
-     * context is referenced
+     * <p>
+     * Note that the context URI may be {@code null}, meaning that the default context is referenced
      *
      * @return Context URI
      */
@@ -70,9 +65,8 @@ public abstract class Descriptor implements Serializable {
 
     /**
      * Adds repository context for the specified attribute. </p>
-     * <p/>
-     * This in effect means creating a descriptor for the specified field with
-     * the specified context.
+     * <p>
+     * This in effect means creating a descriptor for the specified field with the specified context.
      *
      * @param attribute The attribute to set context for
      * @param context   The context to set
@@ -81,16 +75,12 @@ public abstract class Descriptor implements Serializable {
     public abstract void addAttributeContext(Field attribute, URI context);
 
     /**
-     * Gets all contexts present in this descriptor. </p>
-     * <p/>
-     * If any of the descriptors specifies the default context, an empty set is
-     * returned. </p>
-     * <p/>
-     * In case of entity descriptor this means recursively asking all of its
-     * attributes for their context.
+     * Gets all contexts present in this descriptor. </p> <p/> If any of the descriptors specifies the default context,
+     * an empty set is returned. </p>
+     * <p>
+     * In case of entity descriptor this means recursively asking all of its attributes for their context.
      *
-     * @return Set of context URIs or an empty set, if the default one should be
-     * used
+     * @return Set of context URIs or an empty set, if the default one should be used
      */
     public Set<URI> getAllContexts() {
         Set<URI> contexts = new HashSet<>();

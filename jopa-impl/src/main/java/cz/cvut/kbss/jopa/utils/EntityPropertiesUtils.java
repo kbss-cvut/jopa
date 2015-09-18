@@ -46,7 +46,7 @@ public class EntityPropertiesUtils {
             fieldValue = getFieldValue(type.getIdentifier().getJavaField(), entity);
             return fieldValue;
         } catch (IllegalAccessException e) {
-            throw new OWLPersistenceException();
+            throw new OWLPersistenceException(e);
         }
     }
 

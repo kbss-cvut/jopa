@@ -83,7 +83,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
             case NOT_MANAGED:
                 try {
                     getCurrentPersistenceContext().registerNewObject(entity, descriptor);
-                } catch (Throwable e) {
+                } catch (RuntimeException e) {
                     if (getTransaction().isActive()) {
                         getTransaction().setRollbackOnly();
                     }
@@ -223,6 +223,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
             case MANAGED_NEW:
             case MANAGED:
                 getCurrentPersistenceContext().removeObject(object);
+                // Intentional fall-through
             case REMOVED:
                 new SimpleOneLevelCascadeExplorer() {
                     @Override
@@ -301,15 +302,6 @@ public class EntityManagerImpl extends AbstractEntityManager {
                         detach(ox2);
                     }
                 }.start(this, entity, CascadeType.DETACH);
-                break;
-            case REMOVED:
-                getCurrentPersistenceContext().unregisterObject(entity);
-                new SimpleOneLevelCascadeExplorer() {
-                    @Override
-                    protected void runCascadedForEach(Object ox2) {
-                        detach(ox2);
-                    }
-                };
                 break;
             default:
                 break;

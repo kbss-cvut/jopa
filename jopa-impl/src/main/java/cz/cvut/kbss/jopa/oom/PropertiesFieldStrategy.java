@@ -113,7 +113,7 @@ public class PropertiesFieldStrategy<X> extends
         try {
             assertion = Assertion.createPropertyAssertion(URI.create(property), attribute.isInferred());
         } catch (IllegalArgumentException e) {
-            throw new InvalidAssertionIdentifierException(property + " is not a valid URI.");
+            throw new InvalidAssertionIdentifierException(property + " is not a valid URI.", e);
         }
         return assertion;
     }

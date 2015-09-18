@@ -590,7 +590,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             unregisterObject(entity);
             throw e;
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            throw new OWLPersistenceException(e);
         }
         if (cacheManager.contains(entityCls, iri, descriptor.getContext())) {
             cacheManager.evict(entityCls, iri, descriptor.getContext());

@@ -95,6 +95,7 @@ class PoolingStorageConnector extends AbstractConnector {
             transaction.rollback();
             centralConnector.rollback();
             transaction.afterRollback();
+            throw e;
         } finally {
             WRITE.unlock();
             this.localModel = null;

@@ -152,7 +152,7 @@ public class PoolingStorageConnectorTest {
         assertFalse(transaction.isActive());
     }
 
-    @Test
+    @Test(expected = SesameDriverException.class)
     public void testUnlockWhenCommitThrowsException() throws Exception {
         doThrow(new SesameDriverException()).when(centralMock).commit();
         connector.begin();

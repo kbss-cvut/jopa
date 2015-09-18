@@ -153,7 +153,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
             return getMetamodel().entity(entity.getClass()).getIdentifier().getJavaField()
                                  .get(entity);
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            throw new OWLPersistenceException();
+            throw new OWLPersistenceException(e);
         }
     }
 

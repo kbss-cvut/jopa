@@ -24,7 +24,7 @@ public abstract class Assertion extends NamedResource {
 
 	private final boolean inferred;
 
-	public static enum AssertionType {
+	public enum AssertionType {
 		/**
 		 * PROPERTY assertion is used in cases where we don't know the property
 		 * type, for instance when loading value of the Properties attribute

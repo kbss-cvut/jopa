@@ -1,6 +1,7 @@
 - Fix most serious issues discovered by SCA
 - Create a provider class with mocked metamodel for tests
 - Centralize getting attribute values by adding a getValue method into field specification
+- Use SLF4J for logging
 - What about support for lists, that are neither Simple nor Referenced?
 - When an entity is removed, there should be some IC check that verifies it is not referenced from any other entity
 - Revisit the way objects and clones are cached in UoW, CloneBuilder and RepositoryMap
@@ -16,5 +17,6 @@
 - Do some research on how to implement class hierarchies in JOPA
 - Define schema for persistence.xml for JOPA
 - Research whether we could replace aspectj with cglib-generated proxies
+- Consider adding serialization support to some classes - e.g. change sets
 - Consider adding support for JNDI data source lookup
 - IC - SHACL
