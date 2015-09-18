@@ -156,8 +156,8 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
                         return null;
                     }
                 }
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                    | InvocationTargetException e) {
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                LOG.fine("Class does not have suitable no-arg constructor. " + e);
                 // Do nothing
             }
         }

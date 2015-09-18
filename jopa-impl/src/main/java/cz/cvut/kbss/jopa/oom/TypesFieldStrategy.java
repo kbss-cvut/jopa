@@ -9,6 +9,7 @@ import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, ?>, X> {
 
@@ -40,8 +41,7 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
     }
 
     @Override
-    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
-            throws IllegalArgumentException, IllegalAccessException {
+    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
         final Object val = extractFieldValueFromInstance(instance);
         final X original = mapper.getOriginalInstance(instance);
         if (val == null) {
@@ -67,30 +67,25 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
     }
 
     private void extractTypesToAdd(AxiomValueGatherer valueBuilder, Set<?> types, Set<?> origTypes) {
-        final Set<URI> toAdd = new HashSet<>(types.size());
-        for (Object t : types) {
-            if (!origTypes.contains(t)) {
-                toAdd.add(URI.create(t.toString()));
-            }
-        }
+        final Set<URI> toAdd = typesDiff(origTypes, types);
         valueBuilder.addTypes(toAdd, getAttributeContext());
     }
 
+    private Set<URI> typesDiff(Set<?> base, Set<?> difference) {
+        final Set<URI> addedDiff = new HashSet<>(base.size());
+        addedDiff.addAll(difference.stream().filter(t -> !base.contains(t)).map(t -> URI.create(t.toString()))
+                                .collect(Collectors.toList()));
+        return addedDiff;
+    }
+
     private void extractTypesToRemove(AxiomValueGatherer valueBuilder, Set<?> types, Set<?> origTypes) {
-        final Set<URI> toRemove = new HashSet<>(types.size());
-        for (Object t : origTypes) {
-            if (!types.contains(t)) {
-                toRemove.add(URI.create(t.toString()));
-            }
-        }
+        final Set<URI> toRemove = typesDiff(types, origTypes);
         valueBuilder.removeTypes(toRemove, getAttributeContext());
     }
 
     private Set<URI> prepareTypes(Set<?> types) {
         final Set<URI> toAdd = new HashSet<>(types.size());
-        for (Object t : types) {
-            toAdd.add(URI.create(t.toString()));
-        }
+        toAdd.addAll(types.stream().map(t -> URI.create(t.toString())).collect(Collectors.toList()));
         return toAdd;
     }
 

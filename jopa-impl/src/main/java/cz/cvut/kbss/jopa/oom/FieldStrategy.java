@@ -2,7 +2,6 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
-import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
@@ -73,19 +72,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             Descriptor descriptor, EntityMappingHelper mapper) {
         switch (attribute.getCollectionType()) {
             case LIST:
-                final ListAttribute<? super Y, ?> listAtt = (ListAttribute<? super Y, ?>) attribute;
-                switch (listAtt.getSequenceType()) {
-                    case referenced:
-                        return new ReferencedListPropertyStrategy<>(et, listAtt,
-                                descriptor, mapper);
-                    case simple:
-                        return new SimpleListPropertyStrategy<>(et, listAtt,
-                                descriptor, mapper);
-                    default:
-                        throw new NotYetImplementedException(
-                                "Unsupported list attribute sequence type "
-                                        + listAtt.getSequenceType());
-                }
+                return createOwlListPropertyStrategy(et, (ListAttribute<? super Y, ?>) attribute, descriptor,
+                        mapper);
             case COLLECTION:
             case SET:
                 return new SimpleSetPropertyStrategy<>(et, attribute, descriptor,
@@ -94,6 +82,21 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
                 throw new NotYetImplementedException(
                         "Unsupported plural attribute collection type "
                                 + attribute.getCollectionType());
+        }
+    }
+
+    private static <Y> FieldStrategy<? extends FieldSpecification<? super Y, ?>, Y> createOwlListPropertyStrategy(
+            EntityType<Y> et, ListAttribute<? super Y, ?> attribute, Descriptor descriptor,
+            EntityMappingHelper mapper) {
+        final ListAttribute<? super Y, ?> listAtt = attribute;
+        switch (listAtt.getSequenceType()) {
+            case referenced:
+                return new ReferencedListPropertyStrategy<>(et, listAtt, descriptor, mapper);
+            case simple:
+                return new SimpleListPropertyStrategy<>(et, listAtt, descriptor, mapper);
+            default:
+                throw new NotYetImplementedException(
+                        "Unsupported list attribute sequence type " + listAtt.getSequenceType());
         }
     }
 
@@ -107,8 +110,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      * <p>
      * Note that this method assumes the value and the field are of compatible types, no check is done here.
      */
-    void setValueOnInstance(Object instance, Object value)
-            throws IllegalArgumentException, IllegalAccessException {
+    void setValueOnInstance(Object instance, Object value) throws IllegalAccessException {
         final Field field = attribute.getJavaField();
         if (!field.isAccessible()) {
             field.setAccessible(true);
@@ -121,8 +123,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      *
      * @return Attribute value, possibly {@code null}
      */
-    Object extractFieldValueFromInstance(Object instance)
-            throws IllegalArgumentException, IllegalAccessException {
+    Object extractFieldValueFromInstance(Object instance) throws IllegalAccessException {
         final Field field = attribute.getJavaField();
         if (!field.isAccessible()) {
             field.setAccessible(true);
@@ -159,8 +160,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      * @throws IllegalArgumentException Access error
      * @throws IllegalAccessException   Access error
      */
-    abstract void buildInstanceFieldValue(Object instance)
-            throws IllegalArgumentException, IllegalAccessException;
+    abstract void buildInstanceFieldValue(Object instance) throws IllegalAccessException;
 
     /**
      * Extracts values of field represented by this strategy from the specified instance.
@@ -170,9 +170,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      * @throws IllegalArgumentException Access error
      * @throws IllegalAccessException   Access error
      */
-    abstract void buildAxiomValuesFromInstance(X instance,
-                                               AxiomValueGatherer valueBuilder) throws IllegalArgumentException,
-            IllegalAccessException;
+    abstract void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
+            throws IllegalAccessException;
 
     /**
      * Creates property assertion appropriate for the attribute represented by this strategy.

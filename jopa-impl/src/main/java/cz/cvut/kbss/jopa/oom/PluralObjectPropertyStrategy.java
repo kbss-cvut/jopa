@@ -49,8 +49,7 @@ abstract class PluralObjectPropertyStrategy<X> extends FieldStrategy<Attribute<?
     }
 
     @Override
-    void buildInstanceFieldValue(Object instance) throws IllegalArgumentException,
-            IllegalAccessException {
+    void buildInstanceFieldValue(Object instance) throws IllegalAccessException {
         setValueOnInstance(instance, values.isEmpty() ? null : values);
     }
 

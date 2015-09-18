@@ -70,9 +70,10 @@ class AxiomDescriptorFactory {
             case ANNOTATION:
                 return Assertion.createAnnotationPropertyAssertion(att.getIRI().toURI(),
                         att.isInferred());
+            default:
+                throw new IllegalArgumentException("Illegal persistent attribute type "
+                        + att.getPersistentAttributeType());
         }
-        throw new IllegalArgumentException("Illegal persistent attribute type "
-                + att.getPersistentAttributeType());
     }
 
     AxiomDescriptor createForFieldLoading(URI primaryKey, Field field, Descriptor entityDescriptor,
@@ -84,7 +85,7 @@ class AxiomDescriptorFactory {
             assertion = Assertion.createClassAssertion(et.getTypes().isInferred());
         } else if (et.getProperties() != null && fieldSpec.equals(et.getProperties())) {
             assertion = Assertion.createUnspecifiedPropertyAssertion(et.getProperties()
-                    .isInferred());
+                                                                       .isInferred());
         } else {
             assertion = createAssertion((Attribute<?, ?>) fieldSpec);
         }

@@ -11,28 +11,29 @@ import cz.cvut.kbss.ontodriver.PersistenceProviderFacade;
 
 class PersistenceProviderProxy implements PersistenceProviderFacade {
 
-	private final Metamodel metamodel;
-	private final ServerSession serverSession;
+    private final Metamodel metamodel;
 
-	public PersistenceProviderProxy(Metamodel metamodel, ServerSession serverSession) {
-		this.metamodel = Objects.requireNonNull(metamodel,
-				ErrorUtils.constructNPXMessage("metamodel"));
-		this.serverSession = Objects.requireNonNull(serverSession,
-				ErrorUtils.constructNPXMessage("serverSession"));
-	}
+    private final ServerSession serverSession;
 
-	@Override
-	public Metamodel getMetamodel() {
-		return metamodel;
-	}
+    public PersistenceProviderProxy(Metamodel metamodel, ServerSession serverSession) {
+        this.metamodel = Objects.requireNonNull(metamodel,
+                ErrorUtils.constructNPXMessage("metamodel"));
+        this.serverSession = Objects.requireNonNull(serverSession,
+                ErrorUtils.constructNPXMessage("serverSession"));
+    }
 
-	@Override
-	public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey, URI context) {
-		Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
-		Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+    @Override
+    public Metamodel getMetamodel() {
+        return metamodel;
+    }
 
-		final CacheManager cache = serverSession.getLiveObjectCache();
-		return cache.get(cls, primaryKey, context);
-	}
+    @Override
+    public <T> T getEntityFromLiveObjectCache(Class<T> cls, Object primaryKey, URI context) {
+        Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
+        Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+
+        final CacheManager cache = serverSession.getLiveObjectCache();
+        return cache.get(cls, primaryKey, context);
+    }
 
 }

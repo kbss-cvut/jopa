@@ -14,53 +14,53 @@ import java.net.URI;
 
 class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
 
-	private Object value;
+    private Object value;
 
-	SingularObjectPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att,
-			Descriptor descriptor, EntityMappingHelper mapper) {
-		super(et, att, descriptor, mapper);
-	}
+    SingularObjectPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att,
+                                   Descriptor descriptor, EntityMappingHelper mapper) {
+        super(et, att, descriptor, mapper);
+    }
 
-	@Override
-	void addValueFromAxiom(Axiom<?> ax) {
-		assert ax.getValue().getValue() instanceof NamedResource;
-		final NamedResource valueIdentifier = (NamedResource) ax.getValue().getValue();
-		final Object newValue = mapper.getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier.getIdentifier(),
-				attributeDescriptor);
-		if (value != null) {
-			throw new CardinalityConstraintViolatedException("Expected single value of attribute " + attribute.getName() + " but got multiple.");
-		}
-		this.value = newValue;
-	}
+    @Override
+    void addValueFromAxiom(Axiom<?> ax) {
+        assert ax.getValue().getValue() instanceof NamedResource;
+        final NamedResource valueIdentifier = (NamedResource) ax.getValue().getValue();
+        final Object newValue = mapper
+                .getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier.getIdentifier(),
+                        attributeDescriptor);
+        if (value != null) {
+            throw new CardinalityConstraintViolatedException(
+                    "Expected single value of attribute " + attribute.getName() + " but got multiple.");
+        }
+        this.value = newValue;
+    }
 
-	@Override
-	void buildInstanceFieldValue(Object instance) throws IllegalArgumentException,
-			IllegalAccessException {
-		setValueOnInstance(instance, value);
-	}
+    @Override
+    void buildInstanceFieldValue(Object instance) throws IllegalAccessException {
+        setValueOnInstance(instance, value);
+    }
 
-	@Override
-	void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
-			throws IllegalArgumentException, IllegalAccessException {
-		final Object value = extractFieldValueFromInstance(instance);
-		Value<?> val = value != null ? extractReferenceIdentifier(value) : Value.nullValue();
-		valueBuilder.addValue(createAssertion(), val, getAttributeContext());
-	}
+    @Override
+    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
+        final Object extractedValue = extractFieldValueFromInstance(instance);
+        Value<?> val = extractedValue != null ? extractReferenceIdentifier(extractedValue) : Value.nullValue();
+        valueBuilder.addValue(createAssertion(), val, getAttributeContext());
+    }
 
-	private <V> Value<NamedResource> extractReferenceIdentifier(final V value) {
-		final EntityType<V> valEt = (EntityType<V>) mapper.getEntityType(value.getClass());
-		if (valEt == null) {
-			throw new EntityDeconstructionException("Value of field " + attribute.getJavaField()
-					+ " is not a recognized entity.");
-		}
-		final URI id = resolveValueIdentifier(value, valEt);
-		cascadeResolver.resolveFieldCascading(attribute, value, getAttributeContext());
-		return new Value<>(NamedResource.create(id));
-	}
+    private <V> Value<NamedResource> extractReferenceIdentifier(final V value) {
+        final EntityType<V> valEt = (EntityType<V>) mapper.getEntityType(value.getClass());
+        if (valEt == null) {
+            throw new EntityDeconstructionException("Value of field " + attribute.getJavaField()
+                    + " is not a recognized entity.");
+        }
+        final URI id = resolveValueIdentifier(value, valEt);
+        cascadeResolver.resolveFieldCascading(attribute, value, getAttributeContext());
+        return new Value<>(NamedResource.create(id));
+    }
 
-	@Override
-	Assertion createAssertion() {
-		return Assertion.createObjectPropertyAssertion(attribute.getIRI().toURI(),
-				attribute.isInferred());
-	}
+    @Override
+    Assertion createAssertion() {
+        return Assertion.createObjectPropertyAssertion(attribute.getIRI().toURI(),
+                attribute.isInferred());
+    }
 }

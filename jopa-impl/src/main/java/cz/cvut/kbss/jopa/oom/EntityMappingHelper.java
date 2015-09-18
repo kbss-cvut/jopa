@@ -13,15 +13,15 @@ import java.util.Collection;
 
 interface EntityMappingHelper extends ConfigurationHolder {
 
-	<T> T getEntityFromCacheOrOntology(Class<T> cls, URI primaryKey, Descriptor descriptor);
+    <T> T getEntityFromCacheOrOntology(Class<T> cls, URI primaryKey, Descriptor descriptor);
 
-	<T> EntityType<T> getEntityType(Class<T> cls);
+    <T> EntityType<T> getEntityType(Class<T> cls);
 
-	URI generateIdentifier(EntityType<?> et);
+    URI generateIdentifier(EntityType<?> et);
 
-	<T> T getOriginalInstance(T clone);
+    <T> T getOriginalInstance(T clone);
 
-	public Collection<Axiom<NamedResource>> loadSimpleList(SimpleListDescriptor listDescriptor);
+    Collection<Axiom<NamedResource>> loadSimpleList(SimpleListDescriptor listDescriptor);
 
-	public Collection<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor listDescriptor);
+    Collection<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor listDescriptor);
 }

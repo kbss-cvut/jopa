@@ -6,12 +6,11 @@ import cz.cvut.kbss.ontodriver.Connection;
 
 public interface StorageAccessor extends Closeable {
 
-	/**
-	 * Acquires a connection to the underlying ontology driver. </p>
-	 * 
-	 * @return Connection to the storage
-	 * @throws OWLPersistenceException
-	 *             If an error occurs during storage access
-	 */
-	public Connection acquireConnection();
+    /**
+     * Acquires a connection to the underlying ontology driver. </p>
+     *
+     * @return Connection to the storage
+     * @throws OWLPersistenceException If an error occurs during storage access
+     */
+    Connection acquireConnection();
 }

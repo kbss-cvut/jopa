@@ -17,6 +17,9 @@ public class EntityLoader {
 
     private static final Logger LOG = Logger.getLogger(EntityLoader.class.getName());
 
+    private static final String JAR_FILE_SUFFIX = ".jar";
+    private static final String CLASS_FILE_SUFFIX = ".class";
+
     /**
      * Discovers and returns all entity classes within the scan package and its subpackages.
      * <p>
@@ -68,7 +71,8 @@ public class EntityLoader {
 
     private void processJarFile(URL jarResource, String packageName, Set<Class<?>> entityClasses) {
         final String relPath = packageName.replace('.', '/');
-        final String jarPath = jarResource.getPath().replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
+        final String jarPath = jarResource.getPath().replaceFirst("[.]jar[!].*", JAR_FILE_SUFFIX)
+                                          .replaceFirst("file:", "");
         JarFile jarFile;
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Scanning jar file " + jarPath + " for entity classes.");
@@ -83,8 +87,8 @@ public class EntityLoader {
             final JarEntry entry = entries.nextElement();
             final String entryName = entry.getName();
             String className = null;
-            if (entryName.endsWith(".class") && entryName.startsWith(relPath)) {
-                className = entryName.replace('/', '.').replace('\\', '.').replace(".class", "");
+            if (entryName.endsWith(CLASS_FILE_SUFFIX) && entryName.startsWith(relPath)) {
+                className = entryName.replace('/', '.').replace('\\', '.').replace(CLASS_FILE_SUFFIX, "");
             }
             if (className != null) {
                 processClass(className, entityClasses);
@@ -112,7 +116,7 @@ public class EntityLoader {
         for (String fileName : files) {
             String className = null;
             // we are only interested in .class files
-            if (fileName.endsWith(".class")) {
+            if (fileName.endsWith(CLASS_FILE_SUFFIX)) {
                 // removes the .class extension
                 className = packageName + '.' + fileName.substring(0, fileName.length() - 6);
             }

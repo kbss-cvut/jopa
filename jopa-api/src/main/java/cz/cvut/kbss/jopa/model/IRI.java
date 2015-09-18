@@ -20,29 +20,30 @@ import java.util.Objects;
 
 public class IRI implements AnnotationValue {
 
-	final String iri;
+	final String value;
 
 	public static IRI create(final String s) {
 		return new IRI(s);
 	}
 
 	IRI(String iri) {
-		this.iri = Objects.requireNonNull(iri);
+		this.value = Objects.requireNonNull(iri);
 	}
 
 	public URI toURI() {
-		return URI.create(iri);
+		return URI.create(value);
 	}
 
+	@Override
 	public String toString() {
-		return iri;
+		return value;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + iri.hashCode();
+		result = prime * result + value.hashCode();
 		return result;
 	}
 
@@ -55,7 +56,7 @@ public class IRI implements AnnotationValue {
 		if (getClass() != obj.getClass())
 			return false;
 		IRI other = (IRI) obj;
-		if (!iri.equals(other.iri))
+		if (!value.equals(other.value))
 			return false;
 		return true;
 	}

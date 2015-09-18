@@ -93,6 +93,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         }
     }
 
+    @Override
     public <T> EntityType<T> getEntityType(Class<T> cls) {
         return metamodel.entity(cls);
     }

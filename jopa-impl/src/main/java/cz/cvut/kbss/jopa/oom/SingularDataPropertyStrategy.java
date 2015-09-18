@@ -42,8 +42,7 @@ class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X,
     }
 
     @Override
-    void buildInstanceFieldValue(Object entity) throws IllegalArgumentException,
-            IllegalAccessException {
+    void buildInstanceFieldValue(Object entity) throws IllegalAccessException {
         final Field f = attribute.getJavaField();
         if (!f.isAccessible()) {
             f.setAccessible(true);
@@ -58,11 +57,10 @@ class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X,
     }
 
     @Override
-    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder)
-            throws IllegalArgumentException, IllegalAccessException {
-        final Object value = extractFieldValueFromInstance(instance);
+    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
+        final Object extractedValue = extractFieldValueFromInstance(instance);
 
-        final Value<?> val = value != null ? new Value<>(value) : Value.nullValue();
+        final Value<?> val = extractedValue != null ? new Value<>(extractedValue) : Value.nullValue();
         valueBuilder.addValue(createAssertion(), val, getAttributeContext());
     }
 

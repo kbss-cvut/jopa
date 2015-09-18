@@ -33,6 +33,4 @@ public @interface OWLClass {
 	 * @return URI of the referenced class
 	 */
 	String iri();
-	
-//	boolean mutable() default true;	
 }

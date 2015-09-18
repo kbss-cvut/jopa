@@ -1,167 +1,161 @@
 /**
  * Copyright (C) 2011 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 
 package cz.cvut.kbss.jopa;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import cz.cvut.kbss.jopa.model.*;
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import cz.cvut.kbss.jopa.model.EntityManagerFactory;
-import cz.cvut.kbss.jopa.model.LoadState;
-import cz.cvut.kbss.jopa.model.PersistenceProperties;
-import cz.cvut.kbss.jopa.model.PersistenceProvider;
-import cz.cvut.kbss.jopa.model.PersistenceProviderResolverHolder;
-import cz.cvut.kbss.jopa.model.PersistenceUtil;
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-
 public class Persistence {
 
-	private static final Logger LOG = Logger.getLogger(Persistence.class.getName());
+    private static final Logger LOG = Logger.getLogger(Persistence.class.getName());
 
-	private static final Map<String, Map<String, String>> mapProp = new HashMap<String, Map<String, String>>();
+    private static final Map<String, Map<String, String>> mapProp = new HashMap<>();
 
-	private static final Set<PersistenceProvider> map = new HashSet<PersistenceProvider>();
+    private static final Set<PersistenceProvider> map = new HashSet<>();
 
-	private static final PersistenceUtil pu = new PersistenceUtilImpl();
+    private static final PersistenceUtil pu = new PersistenceUtilImpl();
 
-	static {
-		// TODO load persistence providers
-	}
+    static {
+        // TODO load persistence providers
+    }
 
-	/**
-	 * Create and return an EntityManagerFactory for the named persistence unit.
-	 * 
-	 * @param persistenceUnitName
-	 *            the name of the persistence unit
-	 * @return the factory that creates EntityManagers configured according to
-	 *         the specified persistence unit.
-	 */
-	public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName) {
-		return createEntityManagerFactory(persistenceUnitName,
-				Collections.<String, String> emptyMap());
-	}
+    private Persistence() {
+        throw new AssertionError();
+    }
 
-	public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName,
-			final Map<String, String> parameters) {
+    /**
+     * Create and return an EntityManagerFactory for the named persistence unit.
+     *
+     * @param persistenceUnitName the name of the persistence unit
+     * @return the factory that creates EntityManagers configured according to the specified persistence unit.
+     */
+    public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName) {
+        return createEntityManagerFactory(persistenceUnitName,
+                Collections.<String, String>emptyMap());
+    }
 
-		// if (map.containsKey(persistenceUnitName)) {
-		// throw new IllegalArgumentException("Persistent unit of the name '"
-		// + persistenceUnitName + "' already configured.");
-		// }
+    public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName,
+                                                                  final Map<String, String> parameters) {
 
-		return createEntityManagerFactory(persistenceUnitName, null, parameters);
-	}
+        // if (map.containsKey(persistenceUnitName)) {
+        // throw new IllegalArgumentException("Persistent unit of the name '"
+        // + persistenceUnitName + "' already configured.");
+        // }
 
-	public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName,
-			final OntologyStorageProperties storageProperties, final Map<String, String> parameters) {
-		final Map<String, String> realParams = new HashMap<String, String>();
+        return createEntityManagerFactory(persistenceUnitName, null, parameters);
+    }
 
-		if (mapProp.containsKey(persistenceUnitName)) {
-			realParams.putAll(mapProp.get(persistenceUnitName));
-		}
-		realParams.putAll(parameters);
+    public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName,
+                                                                  final OntologyStorageProperties storageProperties,
+                                                                  final Map<String, String> parameters) {
+        final Map<String, String> realParams = new HashMap<String, String>();
 
-		final String className = realParams.get(PersistenceProperties.JPA_PERSISTENCE_PROVIDER);
+        if (mapProp.containsKey(persistenceUnitName)) {
+            realParams.putAll(mapProp.get(persistenceUnitName));
+        }
+        realParams.putAll(parameters);
 
-		if (className == null) {
-			throw new IllegalArgumentException("Persistent unit provider unknown.");
-		}
+        final String className = realParams.get(PersistenceProperties.JPA_PERSISTENCE_PROVIDER);
 
-		try {
-			final PersistenceProvider pp = ((Class<PersistenceProvider>) Class.forName(className))
-					.newInstance();
+        if (className == null) {
+            throw new IllegalArgumentException("Persistent unit provider unknown.");
+        }
 
-			// TODO get at runtime
-			map.add(pp);
+        try {
+            final PersistenceProvider pp = ((Class<PersistenceProvider>) Class.forName(className))
+                    .newInstance();
 
-			return pp
-					.createEntityManagerFactory(persistenceUnitName, storageProperties, realParams);
-		} catch (Exception e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-			throw new IllegalArgumentException("Problems with creating EntityManagerFactory.");
-		}
-	}
+            // TODO get at runtime
+            map.add(pp);
 
-	/**
-	 * @return PersistenceUtil instance
-	 */
-	public static PersistenceUtil getPersistenceUtil() {
-		return pu;
-	}
+            return pp
+                    .createEntityManagerFactory(persistenceUnitName, storageProperties, realParams);
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, e.getMessage(), e);
+            throw new IllegalArgumentException("Problems with creating EntityManagerFactory.");
+        }
+    }
 
-	private static PersistenceProvider getProvider(final Object o) {
-		for (final PersistenceProvider emp : map) {
-			if (!emp.getProviderUtil().isLoaded(o).equals(LoadState.UNKNOWN)) {
-				return emp;
-			}
-		}
-		return null;
-	}
+    /**
+     * @return PersistenceUtil instance
+     */
+    public static PersistenceUtil getPersistenceUtil() {
+        return pu;
+    }
+
+    private static PersistenceProvider getProvider(final Object o) {
+        for (final PersistenceProvider emp : map) {
+            if (!emp.getProviderUtil().isLoaded(o).equals(LoadState.UNKNOWN)) {
+                return emp;
+            }
+        }
+        return null;
+    }
 }
 
 class PersistenceUtilImpl implements PersistenceUtil {
 
-	public boolean isLoaded(Object entity, String attributeName) {
-		for (final PersistenceProvider pp : PersistenceProviderResolverHolder
-				.getPersistenceProviderResolver().getPersistenceProviders()) {
+    @Override
+    public boolean isLoaded(Object entity, String attributeName) {
+        for (final PersistenceProvider pp : PersistenceProviderResolverHolder
+                .getPersistenceProviderResolver().getPersistenceProviders()) {
 
-			switch (pp.getProviderUtil().isLoadedWithoutReference(entity, attributeName)) {
-			case LOADED:
-				return true;
-			case NOT_LOADED:
-				return false;
-			default:
+            switch (pp.getProviderUtil().isLoadedWithoutReference(entity, attributeName)) {
+                case LOADED:
+                    return true;
+                case NOT_LOADED:
+                    return false;
+                default:
+                    break;
+            }
+        }
 
-			}
-		}
+        for (final PersistenceProvider pp : PersistenceProviderResolverHolder
+                .getPersistenceProviderResolver().getPersistenceProviders()) {
 
-		for (final PersistenceProvider pp : PersistenceProviderResolverHolder
-				.getPersistenceProviderResolver().getPersistenceProviders()) {
+            switch (pp.getProviderUtil().isLoadedWithReference(entity, attributeName)) {
+                case LOADED:
+                    return true;
+                case NOT_LOADED:
+                    return false;
+                default:
+                    break;
+            }
+        }
+        return true;
+    }
 
-			switch (pp.getProviderUtil().isLoadedWithReference(entity, attributeName)) {
-			case LOADED:
-				return true;
-			case NOT_LOADED:
-				return false;
-			default:
+    @Override
+    public boolean isLoaded(Object entity) {
+        for (final PersistenceProvider pp : PersistenceProviderResolverHolder
+                .getPersistenceProviderResolver().getPersistenceProviders()) {
 
-			}
-		}
-		return true;
-	}
+            switch (pp.getProviderUtil().isLoaded(entity)) {
+                case LOADED:
+                    return true;
+                case NOT_LOADED:
+                    return false;
+                default:
 
-	public boolean isLoaded(Object entity) {
-		for (final PersistenceProvider pp : PersistenceProviderResolverHolder
-				.getPersistenceProviderResolver().getPersistenceProviders()) {
+            }
+        }
 
-			switch (pp.getProviderUtil().isLoaded(entity)) {
-			case LOADED:
-				return true;
-			case NOT_LOADED:
-				return false;
-			default:
-
-			}
-		}
-
-		return true;
-	}
+        return true;
+    }
 
 }

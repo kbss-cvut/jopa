@@ -18,7 +18,7 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 	 */
 	IndirectList() {
 		super();
-		this.internalList = new ArrayList<E>();
+		this.internalList = new ArrayList<>();
 	}
 
 	/**
@@ -43,6 +43,7 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 		this.internalList = referencedList;
 	}
 
+	@Override
 	public boolean add(E arg0) {
 		boolean res = internalList.add(arg0);
 		if (res) {
@@ -51,11 +52,13 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 		return res;
 	}
 
+    @Override
 	public void add(int arg0, E arg1) {
 		internalList.add(arg0, arg1);
 		persistChange();
 	}
 
+    @Override
 	public boolean addAll(Collection<? extends E> arg0) {
 		boolean res = internalList.addAll(arg0);
 		if (res) {
@@ -64,6 +67,7 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 		return res;
 	}
 
+    @Override
 	public boolean addAll(int arg0, Collection<? extends E> arg1) {
 		boolean res = internalList.addAll(arg0, arg1);
 		if (res) {
@@ -72,47 +76,58 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 		return res;
 	}
 
+    @Override
 	public void clear() {
 		internalList.clear();
 		persistChange();
 	}
 
+    @Override
 	public boolean contains(Object arg0) {
 		return internalList.contains(arg0);
 	}
 
+    @Override
 	public boolean containsAll(Collection<?> arg0) {
 		return internalList.containsAll(arg0);
 	}
 
+    @Override
 	public E get(int arg0) {
 		return internalList.get(arg0);
 	}
 
+    @Override
 	public int indexOf(Object arg0) {
 		return internalList.indexOf(arg0);
 	}
 
+    @Override
 	public boolean isEmpty() {
 		return internalList.isEmpty();
 	}
 
+    @Override
 	public Iterator<E> iterator() {
 		return new IndirectIterator(internalList.iterator());
 	}
 
+    @Override
 	public int lastIndexOf(Object arg0) {
 		return internalList.lastIndexOf(arg0);
 	}
 
+    @Override
 	public ListIterator<E> listIterator() {
 		return new IndirectListIterator(internalList.listIterator());
 	}
 
+    @Override
 	public ListIterator<E> listIterator(int arg0) {
 		return new IndirectListIterator(internalList.listIterator(arg0));
 	}
 
+    @Override
 	public boolean remove(Object arg0) {
 		boolean res = internalList.remove(arg0);
 		if (res) {
@@ -121,12 +136,14 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 		return res;
 	}
 
+    @Override
 	public E remove(int arg0) {
 		E elem = internalList.remove(arg0);
 		persistChange();
 		return elem;
 	}
 
+    @Override
 	public boolean removeAll(Collection<?> arg0) {
 		boolean res = internalList.removeAll(arg0);
 		if (res) {
@@ -135,6 +152,7 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 		return res;
 	}
 
+    @Override
 	public boolean retainAll(Collection<?> arg0) {
 		boolean res = internalList.retainAll(arg0);
 		if (res) {
@@ -143,25 +161,30 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 		return res;
 	}
 
+    @Override
 	public E set(int arg0, E arg1) {
 		E elem = internalList.set(arg0, arg1);
 		persistChange();
 		return elem;
 	}
 
+    @Override
 	public int size() {
 		return internalList.size();
 	}
 
+    @Override
 	public List<E> subList(int arg0, int arg1) {
 		return new IndirectList<E>(owner, field, persistenceContext, internalList.subList(arg0,
 				arg1));
 	}
 
+    @Override
 	public Object[] toArray() {
 		return internalList.toArray();
 	}
 
+    @Override
 	public <T> T[] toArray(T[] arg0) {
 		return internalList.toArray(arg0);
 	}

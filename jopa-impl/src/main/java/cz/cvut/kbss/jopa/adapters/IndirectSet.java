@@ -17,7 +17,7 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
 	 */
 	IndirectSet() {
 		super();
-		this.internalSet = new HashSet<E>();
+		this.internalSet = new HashSet<>();
 	}
 
 	public IndirectSet(Object owner, Field f, UnitOfWorkImpl uow, Set<E> referencedSet) {
@@ -28,30 +28,37 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
 		this.internalSet = referencedSet;
 	}
 
+	@Override
 	public int size() {
 		return internalSet.size();
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return internalSet.isEmpty();
 	}
 
+    @Override
 	public boolean contains(Object o) {
 		return internalSet.contains(o);
 	}
 
+    @Override
 	public Iterator<E> iterator() {
 		return new IndirectSetIterator<E>(internalSet.iterator());
 	}
 
+    @Override
 	public Object[] toArray() {
 		return internalSet.toArray();
 	}
 
+    @Override
 	public <T> T[] toArray(T[] a) {
 		return internalSet.toArray(a);
 	}
 
+    @Override
 	public boolean add(E e) {
 		boolean res = internalSet.add(e);
 		if (res) {
@@ -60,6 +67,7 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
 		return res;
 	}
 
+    @Override
 	public boolean remove(Object o) {
 		boolean res = internalSet.remove(o);
 		if (res) {
@@ -68,9 +76,11 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
 		return res;
 	}
 
+    @Override
 	public boolean containsAll(Collection<?> c) {
 		return internalSet.containsAll(c);
 	}
+    @Override
 
 	public boolean addAll(Collection<? extends E> c) {
 		boolean res = internalSet.addAll(c);
@@ -80,6 +90,7 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
 		return res;
 	}
 
+    @Override
 	public boolean retainAll(Collection<?> c) {
 		boolean res = internalSet.retainAll(c);
 		if (res) {
@@ -88,6 +99,7 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
 		return res;
 	}
 
+    @Override
 	public boolean removeAll(Collection<?> c) {
 		boolean res = internalSet.removeAll(c);
 		if (res) {
@@ -96,6 +108,7 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
 		return res;
 	}
 
+    @Override
 	public void clear() {
 		internalSet.clear();
 		persistChange();
@@ -109,14 +122,17 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
 			this.iterator = iterator;
 		}
 
+        @Override
 		public boolean hasNext() {
 			return iterator.hasNext();
 		}
 
+        @Override
 		public T next() {
 			return iterator.next();
 		}
 
+        @Override
 		public void remove() {
 			iterator.remove();
 			IndirectSet.this.persistChange();

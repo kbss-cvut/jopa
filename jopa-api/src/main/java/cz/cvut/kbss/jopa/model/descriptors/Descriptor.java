@@ -21,7 +21,7 @@ public abstract class Descriptor {
     protected final URI context;
 
     protected Descriptor() {
-        this.context = null;
+        this(null);
     }
 
     protected Descriptor(URI context) {
@@ -84,8 +84,8 @@ public abstract class Descriptor {
      */
     public Set<URI> getAllContexts() {
         Set<URI> contexts = new HashSet<>();
-        contexts = getContextsInternal(contexts, new HashSet<Descriptor>());
-        return (contexts != null ? contexts : Collections.<URI>emptySet());
+        contexts = getContextsInternal(contexts, new HashSet<>());
+        return contexts != null ? contexts : Collections.<URI>emptySet();
     }
 
     /**
@@ -124,6 +124,6 @@ public abstract class Descriptor {
 
     @Override
     public String toString() {
-        return (context != null ? context.toString() : "default_context");
+        return context != null ? context.toString() : "default_context";
     }
 }
