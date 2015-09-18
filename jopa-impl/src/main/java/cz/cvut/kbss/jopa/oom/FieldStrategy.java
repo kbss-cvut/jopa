@@ -143,10 +143,6 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         return attributeDescriptor.getContext();
     }
 
-    void validateIntegrityConstraints(Object values) {
-        IntegrityConstraintsValidator.getValidator().validate(attribute.getJavaField(), values);
-    }
-
     /**
      * Adds value from the specified axioms to this strategy. </p>
      * <p>

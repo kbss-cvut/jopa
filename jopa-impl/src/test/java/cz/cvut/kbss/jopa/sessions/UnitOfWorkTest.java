@@ -8,6 +8,7 @@ import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
@@ -33,22 +34,26 @@ import static org.mockito.Mockito.*;
 
 public class UnitOfWorkTest {
 
-    private static final URI CONTEXT_URI = URI.create("http://testContext");
+    static final URI CONTEXT_URI = URI.create("http://testContext");
 
-    private Descriptor descriptor;
+    Descriptor descriptor;
 
-    private static OWLClassA entityA;
-    private static OWLClassB entityB;
-    private static OWLClassD entityD;
-    private OWLClassL entityL;
-
-    @Mock
-    private Metamodel metamodelMock;
+    static OWLClassA entityA;
+    static OWLClassB entityB;
+    static OWLClassD entityD;
+    OWLClassL entityL;
 
     @Mock
-    private CacheManager cacheManagerMock;
+    Metamodel metamodelMock;
     @Mock
-    private ConnectionWrapper storageMock;
+    CacheManager cacheManagerMock;
+    @Mock
+    ConnectionWrapper storageMock;
+    @Mock
+    EntityManagerImpl emMock;
+    @Mock
+    EntityTransaction transactionMock;
+
     @Mock
     private EntityType<OWLClassA> typeA;
     @Mock
@@ -83,10 +88,7 @@ public class UnitOfWorkTest {
     private PluralAttribute setAttrMock;
     @Mock
     private SingularAttribute singleAMock;
-    @Mock
-    EntityManagerImpl emMock;
-    @Mock
-    EntityTransaction transactionMock;
+
 
     UnitOfWorkImpl uow;
 
@@ -245,6 +247,7 @@ public class UnitOfWorkTest {
         when(typeD.getFieldSpecification(OWLClassD.getOwlClassAField().getName())).thenReturn(
                 attMock);
         when(attMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
+        when(attMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         final OWLClassD d = new OWLClassD();
         d.setUri(URI.create("http://tempD"));
         final OWLClassA a = new OWLClassA();
@@ -811,38 +814,24 @@ public class UnitOfWorkTest {
         }
     }
 
-    private static class ServerSessionStub extends ServerSession {
-
-        private ConnectionWrapper connection;
-
-        private ServerSessionStub(ConnectionWrapper conn) {
-            this.connection = conn;
+    @Test
+    public void icValidationPassesOnCommitWhenConstraintsAreViolatedAndThenFixedDuringTransaction() throws Exception {
+        when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
+        final List<OWLClassA> lst = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            lst.add(new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#a" + i)));
         }
-
-        protected ConnectionWrapper acquireConnection() {
-            return connection;
+        entityL.setSimpleList(lst);
+        final OWLClassL clone = (OWLClassL) uow.registerExistingObject(entityL, descriptor);
+        clone.setSimpleList(Collections.emptyList());
+        uow.attributeChanged(clone, OWLClassL.getSimpleListField());
+        final List<OWLClassA> updatedList = new ArrayList<>();
+        for (int i = 100; i < 103; i++) {
+            updatedList.add(new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#a" + i)));
         }
-
-        @Override
-        public Metamodel getMetamodel() {
-            // Just exporting API as public so that we can stub it with Mockito
-            return null;
-        }
-
-        @Override
-        protected synchronized void registerEntityWithPersistenceContext(Object entity,
-                                                                         UnitOfWorkImpl uow) {
-            // do nothing
-        }
-
-        @Override
-        protected void deregisterEntityFromPersistenceContext(Object entity, UnitOfWork uow) {
-            // do nothing
-        }
-
-        @Override
-        public boolean isTypeManaged(Class<?> cls) {
-            return TestEnvironmentUtils.getManagedTypes().contains(cls);
-        }
+        clone.setSimpleList(updatedList);
+        uow.attributeChanged(clone, OWLClassL.getSimpleListField());
+        uow.commit();
+        verify(storageMock).commit();
     }
 }

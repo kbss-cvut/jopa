@@ -7,6 +7,7 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.owlapi.MetamodelImpl;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
@@ -48,7 +49,7 @@ public class IntegrityConstraintsValidatorTest {
         final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, null);
         changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassN.getStringAttributeField().getName(), "newString"));
 
-        validator.validate(changeSet);
+        validator.validate(changeSet, metamodel);
     }
 
     @Test
@@ -80,13 +81,15 @@ public class IntegrityConstraintsValidatorTest {
         final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, null);
         changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassN.getStringAttributeField().getName(), null));
 
-        validator.validate(changeSet);
+        validator.validate(changeSet, metamodel);
     }
 
     @Test(expected = IntegrityConstraintViolatedException.class)
     public void missingRequiredFieldValueFailsValidation() throws Exception {
         final OWLClassN n = createInstanceWithMissingRequiredField();
-        validator.validate(OWLClassN.getStringAttributeField(), n.getStringAttribute());
+        final Attribute<?, ?> att = metamodel.entity(OWLClassN.class)
+                                             .getDeclaredAttribute(OWLClassN.getStringAttributeField().getName());
+        validator.validate(att, n.getStringAttribute());
     }
 
     @Test(expected = CardinalityConstraintViolatedException.class)
@@ -114,6 +117,6 @@ public class IntegrityConstraintsValidatorTest {
         changeSet.addChangeRecord(
                 new ChangeRecordImpl(OWLClassL.getReferencedListField().getName(), clone.getReferencedList()));
 
-        validator.validate(changeSet);
+        validator.validate(changeSet, metamodel);
     }
 }

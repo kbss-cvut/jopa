@@ -1,4 +1,5 @@
-- Refactor IC validation on save
+- Fix most serious issues discovered by SCA
+- Create a provider class with mocked metamodel for tests
 - Centralize getting attribute values by adding a getValue method into field specification
 - What about support for lists, that are neither Simple nor Referenced?
 - When an entity is removed, there should be some IC check that verifies it is not referenced from any other entity

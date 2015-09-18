@@ -280,7 +280,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             validator.validate(changeSet.getCloneObject(),
                     getMetamodel().entity((Class<Object>) changeSet.getObjectClass()), false);
         }
-        uowChangeSet.getExistingObjectsChanges().forEach(validator::validate);
+        uowChangeSet.getExistingObjectsChanges().forEach(changeSet -> validator.validate(changeSet, getMetamodel()));
     }
 
     private Map<Object, Object> createMap() {

@@ -5,6 +5,7 @@ import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
@@ -62,26 +63,15 @@ public abstract class IntegrityConstraintsValidator {
      *
      * @param changeSet The change set to validate
      */
-    public void validate(ObjectChangeSet changeSet) {
+    public void validate(ObjectChangeSet changeSet, Metamodel metamodel) {
         Objects.requireNonNull(changeSet, ErrorUtils.constructNPXMessage("changeSet"));
+        Objects.requireNonNull(metamodel, ErrorUtils.constructNPXMessage("metamodel"));
         for (Map.Entry<String, ChangeRecord> entry : changeSet.getChanges().entrySet()) {
-            try {
-                final Field field = changeSet.getObjectClass().getDeclaredField(entry.getKey());
-                validate(field, entry.getValue().getNewValue());
-            } catch (NoSuchFieldException e) {
-                throw new OWLPersistenceException("Fatal error: field " + entry.getKey() + " not found in entity "
-                        + changeSet.getObjectClass());
-            }
+            final EntityType<?> et = metamodel.entity(changeSet.getObjectClass());
+            final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(entry.getKey());
+            validate(fieldSpec, entry.getValue().getNewValue());
         }
     }
-
-    /**
-     * Validates integrity constraints against the value and of the specified.
-     *
-     * @param field      Field on which the constraints are defined
-     * @param fieldValue The field value to validate
-     */
-    public abstract void validate(Field field, Object fieldValue);
 
     /**
      * Validates whether the specified value conforms to the attribute integrity constraints.
