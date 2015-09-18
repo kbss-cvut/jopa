@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.sessions.validator;
 
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ class GeneralIntegrityConstraintsValidator extends IntegrityConstraintsValidator
     }
 
     @Override
-    public void validate(Attribute<?, ?> attribute, Object attributeValue) {
+    public void validate(FieldSpecification<?, ?> attribute, Object attributeValue) {
         for (IntegrityConstraintsValidator validator : validators) {
             validator.validate(attribute, attributeValue);
         }

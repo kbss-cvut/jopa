@@ -44,7 +44,6 @@ class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X,
     @Override
     void buildInstanceFieldValue(Object entity) throws IllegalArgumentException,
             IllegalAccessException {
-        validateIntegrityConstraints(value);
         final Field f = attribute.getJavaField();
         if (!f.isAccessible()) {
             f.setAccessible(true);

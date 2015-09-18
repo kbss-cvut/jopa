@@ -27,12 +27,9 @@ class ReferencedListPropertyStrategy<X> extends
 	void addValueFromAxiom(Axiom<?> ax) {
 		final ReferencedListDescriptor listDescriptor = createListDescriptor(ax);
 		final Collection<Axiom<NamedResource>> sequence = mapper.loadReferencedList(listDescriptor);
-		for (Axiom<?> a : sequence) {
-			if (a.getAssertion().getIdentifier()
-					.equals(listAttribute.getOWLPropertyHasContentsIRI().toURI())) {
-				super.addValueFromAxiom(a);
-			}
-		}
+		sequence.stream().filter(a -> a.getAssertion().getIdentifier()
+									   .equals(listAttribute.getOWLPropertyHasContentsIRI().toURI()))
+				.forEach(super::addValueFromAxiom);
 	}
 
 	@Override

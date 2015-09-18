@@ -4,12 +4,12 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Objects;
 
@@ -29,36 +29,12 @@ public abstract class IntegrityConstraintsValidator {
     }
 
     /**
-     * Validates integrity constraints of all fields of the specified instance.
-     *
-     * @param instance The instance to validate
-     */
-    public void validate(Object instance) {
-        Objects.requireNonNull(instance, ErrorUtils.constructNPXMessage("instance"));
-        final Class<?> cls = instance.getClass();
-        for (Field f : cls.getDeclaredFields()) {
-            if (Modifier.isStatic(f.getModifiers())) {
-                continue;
-            }
-            if (!f.isAccessible()) {
-                f.setAccessible(true);
-            }
-            try {
-                final Object value = f.get(instance);
-                validate(f, value);
-            } catch (IllegalAccessException e) {
-                throw new OWLPersistenceException(e);
-            }
-        }
-    }
-
-    /**
      * Validates integrity constraints of all attributes of the specified instance.
      *
      * @param instance The instance to validate
      * @param et       EntityType of the instance
      * @param skipLazy Whether to skip validation of lazily loaded attributes
-     * @param <T>      Entity class
+     * @param <T>      Entity class type
      */
     public <T> void validate(T instance, EntityType<T> et, boolean skipLazy) {
         Objects.requireNonNull(instance, ErrorUtils.constructNPXMessage("instance"));
@@ -74,7 +50,7 @@ public abstract class IntegrityConstraintsValidator {
             }
             try {
                 final Object value = f.get(instance);
-                validate(f, value);
+                validate(att, value);
             } catch (IllegalAccessException e) {
                 throw new OWLPersistenceException(e);
             }
@@ -113,5 +89,5 @@ public abstract class IntegrityConstraintsValidator {
      * @param attribute      Attribute metadata with integrity constraints
      * @param attributeValue Value to be validated
      */
-    public abstract void validate(Attribute<?, ?> attribute, Object attributeValue);
+    public abstract void validate(FieldSpecification<?, ?> attribute, Object attributeValue);
 }

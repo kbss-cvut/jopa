@@ -5,14 +5,17 @@ import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -572,5 +575,47 @@ public class EntityConstructorTest {
         final OWLClassL result = constructor.reconstructEntity(PK, etLMock, descriptor, axioms);
         assertNotNull(result);
         assertNull(result.getSingleA());
+    }
+
+    @Test(expected = IntegrityConstraintViolatedException.class)
+    public void icsAreValidatedOnLazilyLoadedFieldFetch() throws Exception {
+        final Set<Axiom<?>> fieldAxiom = initInvalidFieldValuesForICValidation();
+
+        final OWLClassL instance = new OWLClassL();
+        constructor.setFieldValue(instance, OWLClassL.getReferencedListField(), fieldAxiom, etLMock, descriptor);
+    }
+
+    private Set<Axiom<?>> initInvalidFieldValuesForICValidation() throws NoSuchFieldException {
+        final Set<Axiom<NamedResource>> listAxioms = new HashSet<>();
+        when(mapperMock.loadReferencedList(any(ReferencedListDescriptor.class))).thenReturn(listAxioms);
+        final Descriptor attDescriptor = new EntityDescriptor();
+        descriptor.addAttributeDescriptor(OWLClassL.getReferencedListField(), attDescriptor);
+        final Assertion nodeContent = Assertion
+                .createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasContents), false);
+        final int max = OWLClassL.getReferencedListField().getAnnotation(ParticipationConstraints.class).value()[0]
+                .max();
+        for (int i = 0; i < max + 1; i++) {
+            final URI uri = URI.create("http://value" + i);
+            listAxioms.add(new AxiomImpl<>(PK_RESOURCE, nodeContent, new Value<>(NamedResource.create(uri))));
+            when(mapperMock.getEntityFromCacheOrOntology(OWLClassA.class, uri, attDescriptor))
+                    .thenReturn(new OWLClassA(uri));
+        }
+        final Assertion assertion = Assertion.createObjectPropertyAssertion(
+                URI.create(OWLClassL.getReferencedListField().getAnnotation(OWLObjectProperty.class).iri()), false);
+        return Collections.singleton(
+                new AxiomImpl<>(PK_RESOURCE, assertion, new Value<>(URI.create("http://referencedList"))));
+    }
+
+    @Test
+    public void icsAreNotValidatedOnLazilyLoadedFetchWhenLoadingICValidationIsDisabled() throws Exception {
+        final Set<Axiom<?>> fieldAxiom = initInvalidFieldValuesForICValidation();
+
+        final Map<String, String> props = Collections
+                .singletonMap(OWLAPIPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD, Boolean.TRUE.toString());
+        final Configuration conf = new Configuration(props);
+        when(mapperMock.getConfiguration()).thenReturn(conf);
+
+        final OWLClassL instance = new OWLClassL();
+        constructor.setFieldValue(instance, OWLClassL.getReferencedListField(), fieldAxiom, etLMock, descriptor);
     }
 }

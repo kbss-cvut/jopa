@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -115,10 +116,30 @@ class EntityConstructor {
     }
 
     private <T> void validateIntegrityConstraints(T entity, EntityType<T> et) {
-        if (mapper.getConfiguration().is(OWLAPIPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD)) {
+        if (shouldSkipICValidationOnLoad()) {
             return;
         }
         IntegrityConstraintsValidator.getValidator().validate(entity, et, true);
+    }
+
+    private boolean shouldSkipICValidationOnLoad() {
+        return mapper.getConfiguration().is(OWLAPIPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD);
+    }
+
+    private <T> void validateIntegrityConstraints(T entity, FieldSpecification<T, ?> fieldSpec) {
+        if (shouldSkipICValidationOnLoad()) {
+            return;
+        }
+        final Field field = fieldSpec.getJavaField();
+        if (!field.isAccessible()) {
+            field.setAccessible(true);
+        }
+        try {
+            final Object value = field.get(entity);
+            IntegrityConstraintsValidator.getValidator().validate(fieldSpec, value);
+        } catch (IllegalAccessException e) {
+            throw new OWLPersistenceException(e);
+        }
     }
 
     <T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,
@@ -127,10 +148,9 @@ class EntityConstructor {
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
                 .createFieldStrategy(et, fieldSpec,
                         entityDescriptor.getAttributeDescriptor(fieldSpec), mapper);
-        for (Axiom<?> ax : axioms) {
-            fs.addValueFromAxiom(ax);
-        }
+        axioms.forEach(fs::addValueFromAxiom);
         fs.buildInstanceFieldValue(entity);
+        validateIntegrityConstraints(entity, fieldSpec);
     }
 
     private <T> FieldSpecification<? super T, ?> getFieldSpecification(Field field, EntityType<T> et) {

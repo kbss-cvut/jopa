@@ -4,6 +4,7 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.lang.reflect.Field;
@@ -40,13 +41,18 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
     }
 
     @Override
-    public void validate(Attribute<?, ?> attribute, Object attributeValue) {
-        final int valueCount = extractValueCount(attributeValue);
-        for (ParticipationConstraint pc : attribute.getConstraints()) {
-            validateParticipationConstraint(attribute.getName(), valueCount, pc);
+    public void validate(FieldSpecification<?, ?> attribute, Object attributeValue) {
+        if (!(attribute instanceof Attribute)) {
+            // Only proper attributes can have cardinality constraints
+            return;
         }
-        if (attribute.getConstraints().length == 0) {
-            validateNonEmpty(attribute, valueCount);
+        final Attribute<?, ?> att = (Attribute<?, ?>) attribute;
+        final int valueCount = extractValueCount(attributeValue);
+        for (ParticipationConstraint pc : att.getConstraints()) {
+            validateParticipationConstraint(att.getName(), valueCount, pc);
+        }
+        if (att.getConstraints().length == 0) {
+            validateNonEmpty(att, valueCount);
         }
     }
 
