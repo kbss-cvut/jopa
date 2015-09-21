@@ -8,17 +8,13 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
-import java.util.Collections;
 
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
@@ -28,206 +24,186 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
-import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
 public class AxiomDescriptorFactoryTest {
 
-	private static final URI CONTEXT = URI
-			.create("http://krizik.felk.cvut.cz/ontologies/contextOne");
-	private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/entityX");
+    private static final URI CONTEXT = URI
+            .create("http://krizik.felk.cvut.cz/ontologies/contextOne");
+    private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/entityX");
 
-	private static URI stringAttAUri;
-	private static URI stringAttBUri;
-	private static URI owlClassAAttUri;
+    private static URI stringAttAUri;
+    private static URI stringAttBUri;
+    private static URI owlClassAAttUri;
 
-	@Mock
-	private EntityType<OWLClassA> etAMock;
-	@Mock
-	private Attribute strAttAMock;
-	@Mock
-	private TypesSpecification typesSpecMock;
-	@Mock
-	private Identifier idAMock;
-
-	@Mock
-	private EntityType<OWLClassB> etBMock;
-    @Mock
-    private Identifier idBMock;
-	@Mock
-	private Attribute strAttBMock;
-	@Mock
-	private PropertiesSpecification propsSpecMock;
-
-	@Mock
-	private EntityType<OWLClassD> etDMock;
-	@Mock
-	private Attribute owlClassAAttMock;
+    private MetamodelMocks metamodelMocks;
 
     private Descriptor descriptor;
     private Descriptor descriptorInContext;
 
-	private AxiomDescriptorFactory factory;
+    private AxiomDescriptorFactory factory;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		stringAttAUri = URI.create(OWLClassA.getStrAttField().getAnnotation(OWLDataProperty.class)
-				.iri());
-		stringAttBUri = URI.create(OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class)
-				.iri());
-		owlClassAAttUri = URI.create(OWLClassD.getOwlClassAField()
-				.getAnnotation(OWLObjectProperty.class).iri());
-	}
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+        stringAttAUri = URI.create(OWLClassA.getStrAttField().getAnnotation(OWLDataProperty.class)
+                                            .iri());
+        stringAttBUri = URI.create(OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class)
+                                            .iri());
+        owlClassAAttUri = URI.create(OWLClassD.getOwlClassAField()
+                                              .getAnnotation(OWLObjectProperty.class).iri());
+    }
 
-	@Before
-	public void setUp() throws Exception {
-		MockitoAnnotations.initMocks(this);
-		TestEnvironmentUtils.initOWLClassAMocks(etAMock, strAttAMock, typesSpecMock, idAMock);
-		TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttBMock, propsSpecMock, idBMock);
-		when(etDMock.getAttributes()).thenReturn(
-				Collections.<Attribute<? super OWLClassD, ?>> singleton(owlClassAAttMock));
-		when(etDMock.getAttribute(OWLClassD.getOwlClassAField().getName())).thenReturn(
-                owlClassAAttMock);
-		when(owlClassAAttMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
-		when(owlClassAAttMock.getIRI()).thenReturn(IRI.create(owlClassAAttUri.toString()));
-		when(owlClassAAttMock.getPersistentAttributeType()).thenReturn(
-                PersistentAttributeType.OBJECT);
-		when(owlClassAAttMock.getFetchType()).thenReturn(FetchType.EAGER);
-
+    @Before
+    public void setUp() throws Exception {
+        this.metamodelMocks = new MetamodelMocks();
         this.descriptor = new EntityDescriptor();
-        this.descriptorInContext= new EntityDescriptor(CONTEXT);
+        this.descriptorInContext = new EntityDescriptor(CONTEXT);
 
-		factory = new AxiomDescriptorFactory();
-	}
+        factory = new AxiomDescriptorFactory();
+    }
 
-	@Test
-	public void testCreateForEntityLoadingWithTypes() throws Exception {
-		final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor), etAMock);
-		// Types specification and the string attribute
-		assertEquals(2, res.getAssertions().size());
-		assertEquals(NamedResource.create(PK), res.getSubject());
-		assertNull(res.getSubjectContext());
-		assertTrue(res.getAssertions().contains(
-				Assertion.createDataPropertyAssertion(stringAttAUri, false)));
-		assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
-	}
+    @Test
+    public void testCreateForEntityLoadingWithTypes() throws Exception {
+        final AxiomDescriptor res = factory
+                .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor),
+                        metamodelMocks.forOwlClassA().entityType());
+        // Types specification and the string attribute
+        assertEquals(2, res.getAssertions().size());
+        assertEquals(NamedResource.create(PK), res.getSubject());
+        assertNull(res.getSubjectContext());
+        assertTrue(res.getAssertions().contains(
+                Assertion.createDataPropertyAssertion(stringAttAUri, false)));
+        assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
+    }
 
-	@Test
-	public void testCreateForEntityLoadingWithTypesInContext() throws Exception {
-		descriptor.addAttributeContext(OWLClassA.getTypesField(), CONTEXT);
-		final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor), etAMock);
-		// Types specification and the string attribute
-		assertEquals(2, res.getAssertions().size());
-		assertEquals(NamedResource.create(PK), res.getSubject());
-		assertNull(res.getSubjectContext());
-		assertTrue(res.getAssertions().contains(
-				Assertion.createDataPropertyAssertion(stringAttAUri, false)));
-		assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
-		assertEquals(CONTEXT, res.getAssertionContext(Assertion.createClassAssertion(false)));
-	}
+    @Test
+    public void testCreateForEntityLoadingWithTypesInContext() throws Exception {
+        descriptor.addAttributeContext(OWLClassA.getTypesField(), CONTEXT);
+        final AxiomDescriptor res = factory
+                .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor),
+                        metamodelMocks.forOwlClassA().entityType());
+        // Types specification and the string attribute
+        assertEquals(2, res.getAssertions().size());
+        assertEquals(NamedResource.create(PK), res.getSubject());
+        assertNull(res.getSubjectContext());
+        assertTrue(res.getAssertions().contains(
+                Assertion.createDataPropertyAssertion(stringAttAUri, false)));
+        assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
+        assertEquals(CONTEXT, res.getAssertionContext(Assertion.createClassAssertion(false)));
+    }
 
-	@Test
-	public void testCreateForEntityLoadingWithPropertiesAndContext() throws Exception {
-		final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassB.class, PK, descriptorInContext), etBMock);
-		// Class assertion, properties specification and the string attribute
-		assertEquals(3, res.getAssertions().size());
-		assertEquals(NamedResource.create(PK), res.getSubject());
-		assertEquals(CONTEXT, res.getSubjectContext());
-		assertTrue(res.getAssertions().contains(
-				Assertion.createDataPropertyAssertion(stringAttBUri, false)));
-	}
+    @Test
+    public void testCreateForEntityLoadingWithPropertiesAndContext() throws Exception {
+        final AxiomDescriptor res = factory
+                .createForEntityLoading(new LoadingParameters<>(OWLClassB.class, PK, descriptorInContext),
+                        metamodelMocks.forOwlClassB().entityType());
+        // Class assertion, properties specification and the string attribute
+        assertEquals(3, res.getAssertions().size());
+        assertEquals(NamedResource.create(PK), res.getSubject());
+        assertEquals(CONTEXT, res.getSubjectContext());
+        assertTrue(res.getAssertions().contains(
+                Assertion.createDataPropertyAssertion(stringAttBUri, false)));
+    }
 
-	@Test
-	public void testCreateForEntityLoadingWithObjectPropertyInContext() throws Exception {
-		descriptor.addAttributeContext(OWLClassD.getOwlClassAField(), CONTEXT);
-		final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassD.class, PK, descriptor), etDMock);
-		// Class assertion and the object property assertion
-		assertEquals(2, res.getAssertions().size());
-		assertEquals(NamedResource.create(PK), res.getSubject());
-		assertNull(res.getSubjectContext());
-		Assertion ass = null;
-		for (Assertion a : res.getAssertions()) {
-			if (a.getIdentifier().equals(owlClassAAttUri)) {
-				ass = a;
-				break;
-			}
-		}
-		assertNotNull(ass);
-		assertEquals(CONTEXT, res.getAssertionContext(ass));
-		assertEquals(owlClassAAttUri, ass.getIdentifier());
-	}
+    @Test
+    public void testCreateForEntityLoadingWithObjectPropertyInContext() throws Exception {
+        descriptor.addAttributeContext(OWLClassD.getOwlClassAField(), CONTEXT);
+        final AxiomDescriptor res = factory
+                .createForEntityLoading(new LoadingParameters<>(OWLClassD.class, PK, descriptor),
+                        metamodelMocks.forOwlClassD().entityType());
+        // Class assertion and the object property assertion
+        assertEquals(2, res.getAssertions().size());
+        assertEquals(NamedResource.create(PK), res.getSubject());
+        assertNull(res.getSubjectContext());
+        Assertion ass = null;
+        for (Assertion a : res.getAssertions()) {
+            if (a.getIdentifier().equals(owlClassAAttUri)) {
+                ass = a;
+                break;
+            }
+        }
+        assertNotNull(ass);
+        assertEquals(CONTEXT, res.getAssertionContext(ass));
+        assertEquals(owlClassAAttUri, ass.getIdentifier());
+    }
 
-	@Test
-	public void testCreateForEntityLoadingWithAnnotationProperty() throws Exception {
-		// Artificially change the attribute type to annotation
-		when(owlClassAAttMock.getPersistentAttributeType()).thenReturn(
+    @Test
+    public void testCreateForEntityLoadingWithAnnotationProperty() throws Exception {
+        // Artificially change the attribute type to annotation
+        when(metamodelMocks.forOwlClassD().owlClassAAtt().getPersistentAttributeType()).thenReturn(
                 PersistentAttributeType.ANNOTATION);
-		final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassD.class, PK, descriptor), etDMock);
-		// Class assertion and the annotation property assertion
-		assertEquals(2, res.getAssertions().size());
-		assertEquals(NamedResource.create(PK), res.getSubject());
-		assertNull(res.getSubjectContext());
-		assertTrue(res.getAssertions().contains(
-				Assertion.createAnnotationPropertyAssertion(owlClassAAttUri, false)));
-	}
+        final AxiomDescriptor res = factory
+                .createForEntityLoading(new LoadingParameters<>(OWLClassD.class, PK, descriptor),
+                        metamodelMocks.forOwlClassD().entityType());
+        // Class assertion and the annotation property assertion
+        assertEquals(2, res.getAssertions().size());
+        assertEquals(NamedResource.create(PK), res.getSubject());
+        assertNull(res.getSubjectContext());
+        assertTrue(res.getAssertions().contains(
+                Assertion.createAnnotationPropertyAssertion(owlClassAAttUri, false)));
+    }
 
-	@Test
-	public void createForEntityLoadingWithLazilyLoadedAttribute() throws Exception {
-		when(strAttAMock.getFetchType()).thenReturn(FetchType.LAZY);
-		final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor), etAMock);
-		// Types specification (class assertion)
-		assertEquals(1, res.getAssertions().size());
-		assertEquals(NamedResource.create(PK), res.getSubject());
-		assertNull(res.getSubjectContext());
-		assertFalse(res.getAssertions().contains(
-				Assertion.createDataPropertyAssertion(stringAttAUri, false)));
-		assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
-	}
+    @Test
+    public void createForEntityLoadingWithLazilyLoadedAttribute() throws Exception {
+        when(metamodelMocks.forOwlClassA().stringAttribute().getFetchType()).thenReturn(FetchType.LAZY);
+        final AxiomDescriptor res = factory
+                .createForEntityLoading(new LoadingParameters<>(OWLClassA.class, PK, descriptor),
+                        metamodelMocks.forOwlClassA().entityType());
+        // Types specification (class assertion)
+        assertEquals(1, res.getAssertions().size());
+        assertEquals(NamedResource.create(PK), res.getSubject());
+        assertNull(res.getSubjectContext());
+        assertFalse(res.getAssertions().contains(
+                Assertion.createDataPropertyAssertion(stringAttAUri, false)));
+        assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
+    }
 
-	@Test
-	public void testCreateForFieldLoadingDataProperty() throws Exception {
-		final Descriptor desc = new EntityDescriptor();
-		when(strAttAMock.getFetchType()).thenReturn(FetchType.LAZY);
-		final AxiomDescriptor res = factory.createForFieldLoading(PK, OWLClassA.getStrAttField(),
-				desc, etAMock);
-		assertNotNull(res);
-		assertEquals(1, res.getAssertions().size());
-		assertTrue(res.getAssertions().contains(
-				Assertion.createDataPropertyAssertion(stringAttAUri, false)));
-	}
+    @Test
+    public void testCreateForFieldLoadingDataProperty() throws Exception {
+        final Descriptor desc = new EntityDescriptor();
+        when(metamodelMocks.forOwlClassA().stringAttribute().getFetchType()).thenReturn(FetchType.LAZY);
+        final AxiomDescriptor res = factory.createForFieldLoading(PK, OWLClassA.getStrAttField(),
+                desc, metamodelMocks.forOwlClassA().entityType());
+        assertNotNull(res);
+        assertEquals(1, res.getAssertions().size());
+        assertTrue(res.getAssertions().contains(
+                Assertion.createDataPropertyAssertion(stringAttAUri, false)));
+    }
 
-	@Test
-	public void testCreateForFieldLoadingObjectPropertyInEntityContext() throws Exception {
-		final Descriptor desc = new EntityDescriptor();
-		desc.addAttributeDescriptor(OWLClassD.getOwlClassAField(), new EntityDescriptor(CONTEXT));
-		final AxiomDescriptor res = factory.createForFieldLoading(PK,
-				OWLClassD.getOwlClassAField(), desc, etDMock);
-		assertEquals(1, res.getAssertions().size());
-		final Assertion as = res.getAssertions().iterator().next();
-		assertEquals(Assertion.createObjectPropertyAssertion(owlClassAAttUri, false), as);
-		assertEquals(CONTEXT, res.getAssertionContext(as));
-	}
+    @Test
+    public void testCreateForFieldLoadingObjectPropertyInEntityContext() throws Exception {
+        final Descriptor desc = new EntityDescriptor();
+        desc.addAttributeDescriptor(OWLClassD.getOwlClassAField(), new EntityDescriptor(CONTEXT));
+        final AxiomDescriptor res = factory.createForFieldLoading(PK,
+                OWLClassD.getOwlClassAField(), desc, metamodelMocks.forOwlClassD().entityType());
+        assertEquals(1, res.getAssertions().size());
+        final Assertion as = res.getAssertions().iterator().next();
+        assertEquals(Assertion.createObjectPropertyAssertion(owlClassAAttUri, false), as);
+        assertEquals(CONTEXT, res.getAssertionContext(as));
+    }
 
-	@Test
-	public void testCreateForFieldLoadingTypes() throws Exception {
-		final Descriptor desc = new EntityDescriptor(CONTEXT);
-		final AxiomDescriptor res = factory.createForFieldLoading(PK, OWLClassA.getTypesField(),
-				desc, etAMock);
-		assertEquals(1, res.getAssertions().size());
-		final Assertion as = res.getAssertions().iterator().next();
-		assertEquals(Assertion.createClassAssertion(typesSpecMock.isInferred()), as);
-		assertEquals(CONTEXT, res.getAssertionContext(as));
-	}
+    @Test
+    public void testCreateForFieldLoadingTypes() throws Exception {
+        final Descriptor desc = new EntityDescriptor(CONTEXT);
+        final AxiomDescriptor res = factory.createForFieldLoading(PK, OWLClassA.getTypesField(),
+                desc, metamodelMocks.forOwlClassA().entityType());
+        assertEquals(1, res.getAssertions().size());
+        final Assertion as = res.getAssertions().iterator().next();
+        assertEquals(Assertion.createClassAssertion(metamodelMocks.forOwlClassA().typesSpec().isInferred()), as);
+        assertEquals(CONTEXT, res.getAssertionContext(as));
+    }
 
-	@Test
-	public void testCreateForFieldLoadingProperties() throws Exception {
-		final Descriptor desc = new EntityDescriptor();
-		final AxiomDescriptor res = factory.createForFieldLoading(PK,
-				OWLClassB.getPropertiesField(), desc, etBMock);
-		assertEquals(1, res.getAssertions().size());
-		final Assertion as = res.getAssertions().iterator().next();
-		assertEquals(Assertion.createUnspecifiedPropertyAssertion(propsSpecMock.isInferred()), as);
-	}
+    @Test
+    public void testCreateForFieldLoadingProperties() throws Exception {
+        final Descriptor desc = new EntityDescriptor();
+        final AxiomDescriptor res = factory.createForFieldLoading(PK,
+                OWLClassB.getPropertiesField(), desc, metamodelMocks.forOwlClassB().entityType());
+        assertEquals(1, res.getAssertions().size());
+        final Assertion as = res.getAssertions().iterator().next();
+        assertEquals(Assertion
+                .createUnspecifiedPropertyAssertion(metamodelMocks.forOwlClassB().propertiesSpec().isInferred()),
+                as);
+    }
 }

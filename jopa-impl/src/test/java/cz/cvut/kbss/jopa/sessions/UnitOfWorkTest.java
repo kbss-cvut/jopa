@@ -4,15 +4,13 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
 import cz.cvut.kbss.jopa.environment.OWLClassL;
-import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.*;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
@@ -54,42 +52,6 @@ public class UnitOfWorkTest {
     @Mock
     EntityTransaction transactionMock;
 
-    @Mock
-    private EntityType<OWLClassA> typeA;
-    @Mock
-    private EntityType<OWLClassB> typeB;
-    @Mock
-    private EntityType<OWLClassD> typeD;
-    @Mock
-    private EntityType<OWLClassL> typeL;
-    @Mock
-    private Identifier idA;
-    @Mock
-    private Identifier idB;
-    @Mock
-    private Identifier idD;
-    @Mock
-    private Identifier idL;
-    @Mock
-    private Attribute strAttMock;
-    @Mock
-    private TypesSpecification typesMock;
-    @Mock
-    private Attribute classAAttMock;
-    @Mock
-    private PropertiesSpecification propertiesMock;
-    @Mock
-    private Attribute strAttBMock;
-    @Mock
-    private ListAttribute refListMock;
-    @Mock
-    private ListAttribute simpleListMock;
-    @Mock
-    private PluralAttribute setAttrMock;
-    @Mock
-    private SingularAttribute singleAMock;
-
-
     UnitOfWorkImpl uow;
 
     @BeforeClass
@@ -121,20 +83,9 @@ public class UnitOfWorkTest {
         ServerSessionStub serverSessionMock = spy(ssStub);
         when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
         when(serverSessionMock.getLiveObjectCache()).thenReturn(cacheManagerMock);
-        when(metamodelMock.entity(OWLClassA.class)).thenReturn(typeA);
-        when(metamodelMock.entity(OWLClassB.class)).thenReturn(typeB);
-        when(metamodelMock.entity(OWLClassD.class)).thenReturn(typeD);
-        when(metamodelMock.entity(OWLClassL.class)).thenReturn(typeL);
-        TestEnvironmentUtils.initOWLClassAMocks(typeA, strAttMock, typesMock, idA);
-        TestEnvironmentUtils.initOWLClassBMocks(typeB, strAttBMock, propertiesMock, idB);
-        TestEnvironmentUtils.initOWLClassLMocks(typeL, refListMock, simpleListMock, setAttrMock, singleAMock, idL);
-        when(typeD.getIdentifier()).thenReturn(idD);
-        when(idD.getJavaField()).thenReturn(OWLClassD.class.getDeclaredField("uri"));
-        when(typeD.getFieldSpecification(OWLClassD.getOwlClassAField().getName())).thenReturn(
-                classAAttMock);
-        when(classAAttMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
-        when(classAAttMock.getPersistentAttributeType()).thenReturn(PersistentAttributeType.OBJECT);
         when(emMock.getTransaction()).thenReturn(transactionMock);
+        final MetamodelMocks mocks = new MetamodelMocks();
+        mocks.setMocks(metamodelMock);
         uow = new UnitOfWorkImpl(serverSessionMock);
         uow.setEntityManager(emMock);
         final Field connectionField = UnitOfWorkImpl.class.getDeclaredField("storage");
@@ -243,11 +194,6 @@ public class UnitOfWorkTest {
     @Test
     public void testCalculateModificationsObjectProperty() throws Exception {
         when(transactionMock.isActive()).thenReturn(Boolean.TRUE);
-        final Attribute attMock = mock(Attribute.class);
-        when(typeD.getFieldSpecification(OWLClassD.getOwlClassAField().getName())).thenReturn(
-                attMock);
-        when(attMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
-        when(attMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         final OWLClassD d = new OWLClassD();
         d.setUri(URI.create("http://tempD"));
         final OWLClassA a = new OWLClassA();
@@ -341,7 +287,7 @@ public class UnitOfWorkTest {
     public void getManagedOriginalReturnsManagedOriginalInstance() throws Exception {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(
                 entityA);
-        OWLClassA tO = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+        uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
 
         final OWLClassA res = uow.getManagedOriginal(OWLClassA.class, entityA.getUri(), descriptor);
         assertNotNull(res);
@@ -352,7 +298,7 @@ public class UnitOfWorkTest {
     public void getManagedOriginalForDifferentContextReturnsNull() throws Exception {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor))).thenReturn(
                 entityA);
-        OWLClassA tO = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+        uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
 
         final EntityDescriptor differentContext = new EntityDescriptor(URI.create("http://differentContext"));
         assertNull(uow.getManagedOriginal(OWLClassA.class, entityA.getUri(), differentContext));
@@ -720,15 +666,6 @@ public class UnitOfWorkTest {
         it.remove();
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, true)))
                 .thenReturn(orig);
-        final Attribute<? super OWLClassA, ?> strAtt = mock(Attribute.class);
-        when(strAtt.getJavaField()).thenReturn(OWLClassA.getStrAttField());
-        @SuppressWarnings("rawtypes")
-        final TypesSpecification typesAtt = mock(TypesSpecification.class);
-        when(typesAtt.getJavaField()).thenReturn(OWLClassA.getTypesField());
-        final Set<Attribute<? super OWLClassA, ?>> atts = new HashSet<>();
-        atts.add(strAtt);
-        when(typeA.getAttributes()).thenReturn(atts);
-        when(typeA.getTypes()).thenReturn(typesAtt);
 
         final OWLClassA res = uow.mergeDetached(entityA, descriptor);
         assertNotNull(res);

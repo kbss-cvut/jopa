@@ -1,14 +1,11 @@
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.exceptions.InvalidAssertionIdentifierException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
-import cz.cvut.kbss.jopa.environment.OWLClassB;
-import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -28,15 +25,6 @@ public class PropertiesFieldStrategyTest {
     private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityB");
 
     @Mock
-    private EntityType<OWLClassB> etBMock;
-    @Mock
-    private Attribute strAttMock;
-    @Mock
-    private PropertiesSpecification propsSpecMock;
-    @Mock
-    private Identifier idMock;
-
-    @Mock
     private EntityMappingHelper mapperMock;
 
     private PropertiesFieldStrategy<OWLClassB> strategy;
@@ -47,14 +35,15 @@ public class PropertiesFieldStrategyTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        TestEnvironmentUtils.initOWLClassBMocks(etBMock, strAttMock, propsSpecMock, idMock);
+        MetamodelMocks mocks = new MetamodelMocks();
 
         this.entityB = new OWLClassB();
         entityB.setUri(PK);
         entityB.setStringAttribute("someString");
         final Descriptor descriptor = new EntityDescriptor();
 
-        this.strategy = new PropertiesFieldStrategy<>(etBMock, propsSpecMock, descriptor, mapperMock);
+        this.strategy = new PropertiesFieldStrategy<>(mocks.forOwlClassB().entityType(),
+                mocks.forOwlClassB().propertiesSpec(), descriptor, mapperMock);
         this.gatherer = new AxiomValueGatherer(NamedResource.create(PK), null);
         gatherer.addValue(Assertion.createClassAssertion(false), new Value<>(PK), null);
     }
@@ -133,7 +122,7 @@ public class PropertiesFieldStrategyTest {
         final Map<String, Set<String>> properties = TestEnvironmentUtils.generateProperties(5, 5);
         entityB.setProperties(properties);
         when(mapperMock.getOriginalInstance(entityB)).thenReturn(createOriginal());
-        entityB.setProperties(Collections. <String, Set<String>>emptyMap());
+        entityB.setProperties(Collections.<String, Set<String>>emptyMap());
 
         strategy.buildAxiomValuesFromInstance(entityB, gatherer);
         final Map<Assertion, Set<Value<?>>> result = OOMTestUtils.getPropertiesToRemove(gatherer);
@@ -164,7 +153,7 @@ public class PropertiesFieldStrategyTest {
         int propIndex = 0;
         for (Map.Entry<String, Set<String>> e : entityB.getProperties().entrySet()) {
             if (propIndex++ % 2 != 0) {
-                toRemove.put(e.getKey(), new HashSet<String>());
+                toRemove.put(e.getKey(), new HashSet<>());
                 int valueIndex = 0;
                 final Iterator<String> it = e.getValue().iterator();
                 while (it.hasNext()) {
@@ -238,8 +227,9 @@ public class PropertiesFieldStrategyTest {
         final Set<String> newValues = new HashSet<>(Arrays.asList("one", "seven", "http://krizik.felk.cvut.cz/valueS"));
         added.put(property, newValues);
         entityB.getProperties().get(property).addAll(newValues);
-        final Map<String, Set<String>> newProperty = Collections. <String, Set<String>>singletonMap("http://krizik.felk.cvut.cz/ontologies/jopa#newProperty",
-                new HashSet<>(Arrays.asList("blablaOne", "blablaTwo", "http://blabla.org")));
+        final Map<String, Set<String>> newProperty = Collections
+                .<String, Set<String>>singletonMap("http://krizik.felk.cvut.cz/ontologies/jopa#newProperty",
+                        new HashSet<>(Arrays.asList("blablaOne", "blablaTwo", "http://blabla.org")));
         added.putAll(newProperty);
         entityB.getProperties().putAll(newProperty);
         return added;
@@ -270,12 +260,14 @@ public class PropertiesFieldStrategyTest {
         return removed;
     }
 
-    private static boolean collectionsAreEqual(Map<String, Set<String>> expected, Map<Assertion, Set<Value<?>>> actual) {
+    private static boolean collectionsAreEqual(Map<String, Set<String>> expected,
+                                               Map<Assertion, Set<Value<?>>> actual) {
         if (expected.size() != actual.size()) {
             return false;
         }
         for (Map.Entry<String, Set<String>> entry : expected.entrySet()) {
-            final Set<Value<?>> values = actual.get(Assertion.createPropertyAssertion(URI.create(entry.getKey()), false));
+            final Set<Value<?>> values = actual
+                    .get(Assertion.createPropertyAssertion(URI.create(entry.getKey()), false));
             if (values == null) {
                 return false;
             }

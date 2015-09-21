@@ -1,14 +1,17 @@
 package cz.cvut.kbss.jopa.oom;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.Sequence;
+import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.model.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -17,25 +20,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.MockitoAnnotations;
-
-import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.jopa.model.annotations.Sequence;
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassC;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.model.Assertion;
-import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
-import cz.cvut.kbss.ontodriver_new.model.NamedResource;
-import cz.cvut.kbss.ontodriver_new.model.Value;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 public class SimpleListPropertyStrategyTest extends
         ListPropertyStrategyTestBase {
+
+    private ListAttribute<OWLClassC, OWLClassA> simpleList;
 
     private SimpleListPropertyStrategy<OWLClassC> strategy;
 
@@ -43,7 +36,8 @@ public class SimpleListPropertyStrategyTest extends
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         super.setUp();
-        this.strategy = new SimpleListPropertyStrategy<>(etC, simpleList,
+        this.simpleList = mocks.forOwlClassC().simpleListAtt();
+        this.strategy = new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(), simpleList,
                 descriptor, mapperMock);
         strategy.setCascadeResolver(cascadeResolverMock);
     }
@@ -52,7 +46,7 @@ public class SimpleListPropertyStrategyTest extends
     public void buildsInstanceFieldFromAxioms() throws Exception {
         final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(PK),
                 Assertion.createObjectPropertyAssertion(simpleList.getIRI()
-                        .toURI(), false), new Value<>(
+                                                                  .toURI(), false), new Value<>(
                 URI.create("http://someSequence.org")));
         final Collection<Axiom<NamedResource>> axioms = new ArrayList<>();
         final List<OWLClassA> entitiesA = new ArrayList<>();
@@ -90,7 +84,7 @@ public class SimpleListPropertyStrategyTest extends
     public void addsValueFromAxiomAndVerifiesCorrectDescriptorWasCreated() {
         final Axiom<NamedResource> ax = new AxiomImpl<>(NamedResource.create(PK),
                 Assertion.createObjectPropertyAssertion(simpleList.getIRI()
-                        .toURI(), false), new Value<>(
+                                                                  .toURI(), false), new Value<>(
                 NamedResource.create("http://someSequence.org")));
         final Collection<Axiom<NamedResource>> axioms = Collections.emptyList();
         when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class)))
@@ -103,7 +97,7 @@ public class SimpleListPropertyStrategyTest extends
         final SimpleListDescriptor res = captor.getValue();
         assertEquals(PK, res.getListOwner().getIdentifier());
         assertEquals(simpleList.getIRI().toURI(), res.getListProperty()
-                .getIdentifier());
+                                                     .getIdentifier());
         assertEquals(simpleList.getOWLObjectPropertyHasNextIRI().toURI(), res
                 .getNextNode().getIdentifier());
         assertNull(res.getContext());
@@ -124,14 +118,14 @@ public class SimpleListPropertyStrategyTest extends
         assertEquals(PK, res.getListOwner().getIdentifier());
         final Field simpleListField = OWLClassC.getSimpleListField();
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class)
-                .iri(), res.getListProperty().getIdentifier().toString());
+                                    .iri(), res.getListProperty().getIdentifier().toString());
         assertEquals(simpleListField.getAnnotation(Sequence.class)
-                .ObjectPropertyHasNextIRI(), res.getNextNode().getIdentifier()
-                .toString());
+                                    .ObjectPropertyHasNextIRI(), res.getNextNode().getIdentifier()
+                                                                    .toString());
         assertEquals(c.getSimpleList().size(), res.getValues().size());
         for (int i = 0; i < c.getSimpleList().size(); i++) {
             assertEquals(c.getSimpleList().get(i).getUri(), res.getValues()
-                    .get(i).getIdentifier());
+                                                               .get(i).getIdentifier());
         }
         verify(cascadeResolverMock, times(c.getSimpleList().size()))
                 .resolveFieldCascading(eq(simpleList), any(Object.class),
@@ -142,7 +136,7 @@ public class SimpleListPropertyStrategyTest extends
     public void extractsListValuesForSaveListIsEmpty() throws Exception {
         final OWLClassC c = new OWLClassC();
         c.setUri(PK);
-        c.setSimpleList(new ArrayList<OWLClassA>());
+        c.setSimpleList(new ArrayList<>());
         final AxiomValueGatherer builder = new AxiomValueGatherer(
                 NamedResource.create(PK), null);
         strategy.buildAxiomValuesFromInstance(c, builder);
@@ -153,10 +147,10 @@ public class SimpleListPropertyStrategyTest extends
         assertEquals(PK, res.getListOwner().getIdentifier());
         final Field simpleListField = OWLClassC.getSimpleListField();
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class)
-                .iri(), res.getListProperty().getIdentifier().toString());
+                                    .iri(), res.getListProperty().getIdentifier().toString());
         assertEquals(simpleListField.getAnnotation(Sequence.class)
-                .ObjectPropertyHasNextIRI(), res.getNextNode().getIdentifier()
-                .toString());
+                                    .ObjectPropertyHasNextIRI(), res.getNextNode().getIdentifier()
+                                                                    .toString());
         assertTrue(res.getValues().isEmpty());
         verify(cascadeResolverMock, never()).resolveFieldCascading(
                 eq(simpleList), any(Object.class), eq((URI) null));
@@ -177,10 +171,10 @@ public class SimpleListPropertyStrategyTest extends
         assertEquals(PK, res.getListOwner().getIdentifier());
         final Field simpleListField = OWLClassC.getSimpleListField();
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class)
-                .iri(), res.getListProperty().getIdentifier().toString());
+                                    .iri(), res.getListProperty().getIdentifier().toString());
         assertEquals(simpleListField.getAnnotation(Sequence.class)
-                .ObjectPropertyHasNextIRI(), res.getNextNode().getIdentifier()
-                .toString());
+                                    .ObjectPropertyHasNextIRI(), res.getNextNode().getIdentifier()
+                                                                    .toString());
         assertTrue(res.getValues().isEmpty());
         verify(cascadeResolverMock, never()).resolveFieldCascading(
                 eq(simpleList), any(Object.class), eq((URI) null));

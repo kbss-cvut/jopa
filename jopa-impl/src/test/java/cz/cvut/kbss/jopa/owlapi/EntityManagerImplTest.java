@@ -1,10 +1,8 @@
 package cz.cvut.kbss.jopa.owlapi;
 
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
-import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -42,12 +40,7 @@ public class EntityManagerImplTest {
     @Mock
     private Metamodel metamodelMock;
 
-    @Mock
-    private EntityType<OWLClassJ> etJ;
-    @Mock
-    private Identifier idJMock;
-    @Mock
-    private PluralAttributeImpl clsAMock;
+    private MetamodelMocks mocks;
 
     private EntityManagerImpl em;
 
@@ -58,8 +51,8 @@ public class EntityManagerImplTest {
         when(serverSessionMock.acquireUnitOfWork()).thenReturn(uowMock);
         when(uowMock.getMetamodel()).thenReturn(metamodelMock);
         when(emfMock.getMetamodel()).thenReturn(metamodelMock);
-        TestEnvironmentUtils.initOWLClassJMocks(etJ, clsAMock, idJMock);
-        when(metamodelMock.entity(OWLClassJ.class)).thenReturn(etJ);
+        this.mocks = new MetamodelMocks();
+        mocks.setMocks(metamodelMock);
         this.em = new EntityManagerImpl(emfMock, new Configuration(Collections.emptyMap()), serverSessionMock);
     }
 
@@ -69,7 +62,7 @@ public class EntityManagerImplTest {
         j.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityJ"));
         when(uowMock.getState(eq(j), any(Descriptor.class))).thenReturn(EntityManagerImpl.State.NOT_MANAGED);
         when(uowMock.mergeDetached(eq(j), any(Descriptor.class))).thenReturn(j);
-        clsAMock.getJavaField().setAccessible(true);
+        mocks.forOwlClassJ().setAttribute().getJavaField().setAccessible(true);
         assertNull(j.getOwlClassA());
 
         em.merge(j);

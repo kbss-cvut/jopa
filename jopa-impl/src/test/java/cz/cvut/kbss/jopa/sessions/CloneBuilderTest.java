@@ -3,10 +3,10 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
-import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -38,52 +38,6 @@ public class CloneBuilderTest {
     private UnitOfWorkImpl uow;
     @Mock
     private Metamodel metamodel;
-    @Mock
-    private EntityType<OWLClassA> etA;
-    @Mock
-    private Identifier identifierA;
-    @Mock
-    private EntityType<OWLClassB> etB;
-    @Mock
-    private Identifier identifierB;
-    @Mock
-    private EntityType<OWLClassC> etC;
-    @Mock
-    private Identifier identifierC;
-    @Mock
-    private EntityType<OWLClassD> etD;
-    @Mock
-    private Identifier identifierD;
-    @Mock
-    private Attribute strAttMock;
-    @Mock
-    private TypesSpecification typesMock;
-    @Mock
-    private Attribute classAAttMock;
-    @Mock
-    private PropertiesSpecification propertiesMock;
-    @Mock
-    private Attribute strAttBMock;
-    @Mock
-    private ListAttribute refListMock;
-    @Mock
-    private ListAttribute simpleListMock;
-    @Mock
-    private EntityType<OWLClassM> etM;
-    @Mock
-    private Identifier identifierM;
-    @Mock
-    private SingularAttribute mBooleanAttribute;
-    @Mock
-    private SingularAttribute mIntAttribute;
-    @Mock
-    private SingularAttribute mLongAttribute;
-    @Mock
-    private SingularAttribute mDoubleAttribute;
-    @Mock
-    private SingularAttribute mDateAttribute;
-    @Mock
-    private SingularAttribute mEnumAttribute;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -127,17 +81,8 @@ public class CloneBuilderTest {
                     Descriptor desc = (Descriptor) invocation.getArguments()[1];
                     return builder.buildClone(obj, desc);
                 });
-        when(metamodel.entity(OWLClassA.class)).thenReturn(etA);
-        when(metamodel.entity(OWLClassB.class)).thenReturn(etB);
-        when(metamodel.entity(OWLClassC.class)).thenReturn(etC);
-        when(metamodel.entity(OWLClassD.class)).thenReturn(etD);
-        when(metamodel.entity(OWLClassM.class)).thenReturn(etM);
-        TestEnvironmentUtils.initOWLClassAMocks(etA, strAttMock, typesMock, identifierA);
-        TestEnvironmentUtils.initOWLClassBMocks(etB, strAttBMock, propertiesMock, identifierB);
-        TestEnvironmentUtils.initOWLClassCMocks(etC, simpleListMock, refListMock, identifierC);
-        TestEnvironmentUtils.initOWLClassDMocks(etD, classAAttMock, identifierD);
-        TestEnvironmentUtils.initOWLClassMMock(etM, mBooleanAttribute, mIntAttribute, mLongAttribute, mDoubleAttribute,
-                mDateAttribute, mEnumAttribute, identifierM);
+        final MetamodelMocks mocks = new MetamodelMocks();
+        mocks.setMocks(metamodel);
         this.builder = new CloneBuilderImpl(uow);
         entityA.setTypes(types);
         entityB.setProperties(null);
@@ -471,7 +416,8 @@ public class CloneBuilderTest {
         changeSet.addChangeRecord(
                 new ChangeRecordImpl(OWLClassM.getDoubleAttributeField().getName(), m.getDoubleAttribute()));
         m.setDateAttribute(new Date(System.currentTimeMillis() + 10000L));
-        changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassM.getDateAttributeField().getName(), m.getDateAttribute()));
+        changeSet.addChangeRecord(
+                new ChangeRecordImpl(OWLClassM.getDateAttributeField().getName(), m.getDateAttribute()));
 
         builder.mergeChanges(entityM, changeSet);
         assertEquals(m.getBooleanAttribute(), entityM.getBooleanAttribute());

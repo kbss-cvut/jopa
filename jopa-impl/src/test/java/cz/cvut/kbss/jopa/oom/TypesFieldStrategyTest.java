@@ -1,12 +1,10 @@
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -28,14 +26,6 @@ public class TypesFieldStrategyTest {
     private static URI PK = URI.create("http;//krizik.felk.cvut.cz/ontologies/jopa#entityA");
 
     @Mock
-    private EntityType<OWLClassA> etAMock;
-    @Mock
-    private Attribute strAttMock;
-    @Mock
-    private TypesSpecification typesMock;
-    @Mock
-    private Identifier idAMock;
-    @Mock
     private EntityMappingHelper mapperMock;
 
     private TypesFieldStrategy<OWLClassA> strategy;
@@ -46,14 +36,16 @@ public class TypesFieldStrategyTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        TestEnvironmentUtils.initOWLClassAMocks(etAMock, strAttMock, typesMock, idAMock);
 
+        final MetamodelMocks mocks = new MetamodelMocks();
         this.entityA = new OWLClassA();
         entityA.setUri(PK);
         EntityDescriptor descriptor = new EntityDescriptor();
 
         this.gatherer = new AxiomValueGatherer(NamedResource.create(PK), null);
-        this.strategy = new TypesFieldStrategy<>(etAMock, typesMock, descriptor.getAttributeDescriptor(typesMock), mapperMock);
+        final TypesSpecification<OWLClassA, ?> typesMock = mocks.forOwlClassA().typesSpec();
+        this.strategy = new TypesFieldStrategy<>(mocks.forOwlClassA().entityType(), typesMock,
+                descriptor.getAttributeDescriptor(typesMock), mapperMock);
         gatherer.addValue(Assertion.createClassAssertion(false), new Value<>(PK), null);
     }
 

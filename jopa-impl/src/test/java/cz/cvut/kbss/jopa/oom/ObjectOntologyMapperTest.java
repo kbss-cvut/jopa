@@ -1,11 +1,10 @@
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
-import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
@@ -23,8 +22,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -57,11 +54,6 @@ public class ObjectOntologyMapperTest {
     private CacheManager cacheMock;
 
     @Mock
-    private EntityType<OWLClassA> etAMock;
-    @Mock
-    private Identifier idA;
-
-    @Mock
     private AxiomDescriptorFactory descriptorFactoryMock;
 
     @Mock
@@ -69,6 +61,8 @@ public class ObjectOntologyMapperTest {
     @Mock
     private EntityDeconstructor entityDeconstructorMock;
 
+    private MetamodelMocks mocks;
+    private EntityType<OWLClassA> etAMock;
     private LoadingParameters<OWLClassA> loadingParameters;
 
     private ObjectOntologyMapperImpl mapper;
@@ -91,15 +85,14 @@ public class ObjectOntologyMapperTest {
         when(uowMock.getMetamodel()).thenReturn(metamodelMock);
         when(uowMock.getLiveObjectCache()).thenReturn(cacheMock);
         this.loadingParameters = new LoadingParameters<>(OWLClassA.class, ENTITY_PK, aDescriptor);
-        when(descriptorFactoryMock.createForEntityLoading(loadingParameters, etAMock))
+        this.mocks = new MetamodelMocks();
+        mocks.setMocks(metamodelMock);
+        this.etAMock = mocks.forOwlClassA().entityType();
+        when(descriptorFactoryMock.createForEntityLoading(loadingParameters, mocks.forOwlClassA().entityType()))
                 .thenReturn(axiomDescriptor);
         when(
                 descriptorFactoryMock.createForFieldLoading(ENTITY_PK, OWLClassA.getTypesField(),
-                        aDescriptor, etAMock)).thenReturn(axiomDescriptor);
-        when(metamodelMock.entity(OWLClassA.class)).thenReturn(etAMock);
-        when(etAMock.getIdentifier()).thenReturn(idA);
-        when(etAMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
-        when(idA.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
+                        aDescriptor, mocks.forOwlClassA().entityType())).thenReturn(axiomDescriptor);
         entityA.setTypes(null);
         this.mapper = new ObjectOntologyMapperImpl(uowMock, connectionMock);
         TestEnvironmentUtils.setMock(mapper,
@@ -118,8 +111,7 @@ public class ObjectOntologyMapperTest {
         final Collection<Axiom<?>> entityAAxioms = getAxiomsForEntityA();
         when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
         when(
-                entityConstructorMock.reconstructEntity(ENTITY_PK, etAMock, aDescriptor,
-                        entityAAxioms)).thenReturn(entityA);
+                entityConstructorMock.reconstructEntity(ENTITY_PK, etAMock, aDescriptor, entityAAxioms)).thenReturn(entityA);
         final OWLClassA res = mapper.loadEntity(loadingParameters);
 
         assertNotNull(res);
@@ -161,25 +153,18 @@ public class ObjectOntologyMapperTest {
         assertNull(typesField.get(entityA));
         final Collection<Axiom<?>> axiomsForA = getAxiomsForEntityA();
         when(connectionMock.find(axiomDescriptor)).thenReturn(axiomsForA);
-        doAnswer(new Answer<Void>() {
-
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                final OWLClassA a = (OWLClassA) invocation.getArguments()[0];
-                final Field types = (Field) invocation.getArguments()[1];
-                types.setAccessible(true);
-                types.set(a, aTypes);
-                return null;
-            }
-
-        }).when(entityConstructorMock).setFieldValue(entityA, typesField, axiomsForA, etAMock,
-                aDescriptor);
+        doAnswer(invocation -> {
+            final OWLClassA a = (OWLClassA) invocation.getArguments()[0];
+            final Field types = (Field) invocation.getArguments()[1];
+            types.setAccessible(true);
+            types.set(a, aTypes);
+            return null;
+        }).when(entityConstructorMock).setFieldValue(entityA, typesField, axiomsForA, etAMock, aDescriptor);
         mapper.loadFieldValue(entityA, typesField, aDescriptor);
         assertNotNull(typesField.get(entityA));
         assertEquals(aTypes, entityA.getTypes());
         verify(connectionMock).find(axiomDescriptor);
-        verify(entityConstructorMock).setFieldValue(entityA, typesField, axiomsForA, etAMock,
-                aDescriptor);
+        verify(entityConstructorMock).setFieldValue(entityA, typesField, axiomsForA, etAMock, aDescriptor);
     }
 
     @Test
@@ -221,9 +206,6 @@ public class ObjectOntologyMapperTest {
 
     @Test
     public void testPersistEntityWithGeneratedURI() throws Exception {
-        final Identifier id = mock(Identifier.class);
-        when(etAMock.getIdentifier()).thenReturn(id);
-        when(id.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
         final OWLClassA a = new OWLClassA();
         final AxiomValueGatherer madMock = mock(AxiomValueGatherer.class);
         final URI generatedUri = URI.create("http://generatedUri" + System.currentTimeMillis());
