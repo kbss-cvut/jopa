@@ -28,6 +28,7 @@ import cz.cvut.kbss.jopa.model.ProviderUtil;
 import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 public class OWLAPIPersistenceProvider implements PersistenceProvider, ProviderUtil {
@@ -93,7 +94,7 @@ public class OWLAPIPersistenceProvider implements PersistenceProvider, ProviderU
 			if (managedOrig == null) {
 				return;
 			}
-			Object val = f.get(managedOrig);
+			Object val = EntityPropertiesUtils.getFieldValue(f, managedOrig);
 			if (val != null) {
 				return;
 			}

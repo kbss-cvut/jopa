@@ -29,6 +29,7 @@ import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.net.URI;
@@ -94,7 +95,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
                     @Override
                     protected void exploreCascaded(Attribute<?, ?> at, Object o) {
                         try {
-                            Object ox = at.getJavaField().get(o);
+                            Object ox = EntityPropertiesUtils.getAttributeValue(at, o);
                             if (LOG.isLoggable(Level.FINEST)) {
                                 LOG.finest("object=" + o + ", attribute=" + at.getName() + ", value="
                                         + ox);
@@ -186,7 +187,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
                     @Override
                     protected void exploreNonCascaded(Attribute<?, ?> at, Object o)
                             throws IllegalAccessException {
-                        final Object attVal = at.getJavaField().get(o);
+                        final Object attVal = EntityPropertiesUtils.getAttributeValue(at, o);
                         at.getJavaField().set(o, attVal);
                     }
                 }.start(this, merged, CascadeType.MERGE);
@@ -199,7 +200,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
     private void mergeX(Attribute<?, ?> at, Object o, Descriptor descriptor)
             throws IllegalAccessException {
-        Object attVal = at.getJavaField().get(o);
+        Object attVal = EntityPropertiesUtils.getAttributeValue(at, o);
         if (attVal == null) {
             return;
         }

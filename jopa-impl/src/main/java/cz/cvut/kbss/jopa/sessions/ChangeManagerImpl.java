@@ -1,7 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
@@ -19,7 +18,7 @@ public class ChangeManagerImpl implements ChangeManager {
 
     private final Map<Object, Object> visitedObjects;
 
-    private static enum Changed {
+    private enum Changed {
         TRUE, FALSE, UNDETERMINED
     }
 
@@ -38,9 +37,8 @@ public class ChangeManagerImpl implements ChangeManager {
     }
 
     /**
-     * This method does the actual check for changes. It is wrapped in the
-     * public method since the IdentityMap for visited objects has to be cleared
-     * after the whole check is done.
+     * This method does the actual check for changes. It is wrapped in the public method since the IdentityMap for
+     * visited objects has to be cleared after the whole check is done.
      *
      * @param original The original object.
      * @param clone    The clone that may have changed.
@@ -59,36 +57,26 @@ public class ChangeManagerImpl implements ChangeManager {
         final Class<?> cls = clone.getClass();
         List<Field> fields = EntityPropertiesUtils.getAllFields(cls);
         Map<Object, Object> composedObjects = new HashMap<>();
-        Iterator<Field> it = fields.iterator();
-        try {
-            while (it.hasNext()) {
-                Field f = it.next();
-                if (!f.isAccessible()) {
-                    f.setAccessible(true);
-                }
-                Object clVal = f.get(clone);
-                Object origVal = f.get(original);
-                final Changed ch = valueChanged(origVal, clVal);
-                switch (ch) {
-                    case TRUE:
-                        return true;
-                    case UNDETERMINED:
-                        visitedObjects.put(clVal, clVal);
-                        composedObjects.put(clVal, origVal);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            // First check all primitive values - performance, then do composed
-            for (Object cl : composedObjects.keySet()) {
-                if (hasChangesInternal(cl, composedObjects.get(cl))) {
+        for (Field f : fields) {
+            Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
+            Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
+            final Changed ch = valueChanged(origVal, clVal);
+            switch (ch) {
+                case TRUE:
                     return true;
-                }
+                case UNDETERMINED:
+                    visitedObjects.put(clVal, clVal);
+                    composedObjects.put(clVal, origVal);
+                    break;
+                default:
+                    break;
             }
-        } catch (IllegalAccessException e) {
-            throw new OWLPersistenceException(
-                    "Exception caught when trying to check changes on entities.", e);
+        }
+        // First check all primitive values - performance, then do composed
+        for (Object cl : composedObjects.keySet()) {
+            if (hasChangesInternal(cl, composedObjects.get(cl))) {
+                return true;
+            }
         }
         return false;
     }
@@ -114,14 +102,12 @@ public class ChangeManagerImpl implements ChangeManager {
     }
 
     /**
-     * This method checks for changes in collections. A change may be different
-     * size - removed or added element, or different elements or even different
-     * order of elements.
+     * This method checks for changes in collections. A change may be different size - removed or added element, or
+     * different elements or even different order of elements.
      *
      * @param clone    The cloned collection.
      * @param original The original collection.
-     * @return True if the clone collection contains any modifications compared
-     * to the original collection.
+     * @return True if the clone collection contains any modifications compared to the original collection.
      */
     private boolean hasCollectionChanged(Object clone, Object original) {
         boolean hasChanged = false;
@@ -187,12 +173,11 @@ public class ChangeManagerImpl implements ChangeManager {
     }
 
     /**
-     * This internal method does the actual changes calculation. It compares
-     * every non-static attribute of the clone to the original value. If the
-     * values are different, a change record is added into the change set.
+     * This internal method does the actual changes calculation. It compares every non-static attribute of the clone to
+     * the original value. If the values are different, a change record is added into the change set.
      *
-     * @param changeSet The change set where change records will be put in. It also
-     *                  contains reference to the clone and original object.
+     * @param changeSet The change set where change records will be put in. It also contains reference to the clone and
+     *                  original object.
      * @throws IllegalArgumentException
      * @throws IllegalAccessException
      * @throws OWLInferredAttributeModifiedException
@@ -207,11 +192,8 @@ public class ChangeManagerImpl implements ChangeManager {
         final List<Field> fields = EntityPropertiesUtils.getAllFields(clone.getClass());
         boolean changes = false;
         for (Field f : fields) {
-            if (!f.isAccessible()) {
-                f.setAccessible(true);
-            }
-            Object clVal = f.get(clone);
-            Object origVal = f.get(original);
+            Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
+            Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
             ChangeRecord r = null;
             if (clVal == null && origVal == null) {
                 continue;

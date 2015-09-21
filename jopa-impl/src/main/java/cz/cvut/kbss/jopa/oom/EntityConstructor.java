@@ -1,13 +1,6 @@
 package cz.cvut.kbss.jopa.oom;
 
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import cz.cvut.kbss.jopa.CommonVocabulary;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -16,6 +9,12 @@ import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
+
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 class EntityConstructor {
 
@@ -130,16 +129,8 @@ class EntityConstructor {
         if (shouldSkipICValidationOnLoad()) {
             return;
         }
-        final Field field = fieldSpec.getJavaField();
-        if (!field.isAccessible()) {
-            field.setAccessible(true);
-        }
-        try {
-            final Object value = field.get(entity);
-            IntegrityConstraintsValidator.getValidator().validate(fieldSpec, value);
-        } catch (IllegalAccessException e) {
-            throw new OWLPersistenceException(e);
-        }
+        final Object value = EntityPropertiesUtils.getAttributeValue(fieldSpec, entity);
+        IntegrityConstraintsValidator.getValidator().validate(fieldSpec, value);
     }
 
     <T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,

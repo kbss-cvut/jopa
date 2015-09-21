@@ -124,8 +124,8 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
             if (!f.isAccessible()) {
                 f.setAccessible(true);
             }
-            Object clVal = f.get(cloneValue);
-            Object origVal = f.get(originalValue);
+            Object clVal = EntityPropertiesUtils.getFieldValue(f, cloneValue);
+            Object origVal = EntityPropertiesUtils.getFieldValue(f, originalValue);
             if (!(clVal instanceof Collection) && !builder.isOriginalInUoW(origVal)) {
                 f.set(originalValue, clVal);
             } else {

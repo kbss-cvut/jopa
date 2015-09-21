@@ -124,11 +124,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      * @return Attribute value, possibly {@code null}
      */
     Object extractFieldValueFromInstance(Object instance) throws IllegalAccessException {
-        final Field field = attribute.getJavaField();
-        if (!field.isAccessible()) {
-            field.setAccessible(true);
-        }
-        return field.get(instance);
+        return EntityPropertiesUtils.getAttributeValue(attribute, instance);
     }
 
     <E> URI resolveValueIdentifier(E instance, EntityType<E> valEt) {

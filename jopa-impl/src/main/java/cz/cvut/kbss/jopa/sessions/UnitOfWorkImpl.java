@@ -531,14 +531,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             chSet = ChangeSetFactory.createObjectChangeSet(orig, clone, descriptor);
             getUowChangeSet().addObjectChangeSet(chSet);
         }
-        if (!field.isAccessible()) {
-            field.setAccessible(true);
-        }
-        try {
-            chSet.addChangeRecord(new ChangeRecordImpl(field.getName(), field.get(clone)));
-        } catch (IllegalAccessException e) {
-            throw new OWLPersistenceException("Unable to read value of field " + field, e);
-        }
+        chSet.addChangeRecord(new ChangeRecordImpl(field.getName(), EntityPropertiesUtils.getFieldValue(field, clone)));
     }
 
     /**
@@ -824,7 +817,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             if (!field.isAccessible()) {
                 field.setAccessible(true);
             }
-            if (field.get(entity) != null) {
+            if (EntityPropertiesUtils.getFieldValue(field, entity) != null) {
                 return;
             }
             final Descriptor entityDescriptor = getDescriptor(entity);
@@ -834,7 +827,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                                 + ". Is it managed by this UoW?");
             }
             storage.loadFieldValue(entity, field, entityDescriptor);
-            final Object orig = field.get(entity);
+            final Object orig = EntityPropertiesUtils.getFieldValue(field, entity);
             final Object entityOriginal = getOriginal(entity);
             if (entityOriginal != null) {
                 field.set(entityOriginal, orig);
@@ -960,7 +953,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             field.setAccessible(true);
         }
         try {
-            Object value = field.get(entity);
+            Object value = EntityPropertiesUtils.getFieldValue(field, entity);
             if (value == null || value instanceof IndirectCollection) {
                 return;
             }
@@ -987,7 +980,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                 if (!f.isAccessible()) {
                     f.setAccessible(true);
                 }
-                final Object ob = f.get(entity);
+                final Object ob = EntityPropertiesUtils.getFieldValue(f, entity);
                 if (ob == null) {
                     continue;
                 }

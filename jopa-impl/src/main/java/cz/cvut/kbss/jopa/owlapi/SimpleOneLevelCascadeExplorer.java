@@ -16,6 +16,7 @@
 package cz.cvut.kbss.jopa.owlapi;
 
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -24,7 +25,7 @@ public abstract class SimpleOneLevelCascadeExplorer extends OneLevelCascadeExplo
 
 	protected void runForEach(final Attribute<?, ?> at, final Object o, boolean cascaded)
 			throws IllegalAccessException {
-		Object attVal = at.getJavaField().get(o);
+		Object attVal = EntityPropertiesUtils.getAttributeValue(at, o);
 		if (attVal == null) {
 			return;
 		}

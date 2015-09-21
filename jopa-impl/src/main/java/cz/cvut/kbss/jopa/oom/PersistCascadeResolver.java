@@ -32,9 +32,9 @@ class PersistCascadeResolver extends CascadeResolver {
             idField.setAccessible(true);
         }
         try {
-            final URI id = EntityPropertiesUtils.getValueAsURI(idField.get(fieldValue));
+            final URI id = EntityPropertiesUtils.getPrimaryKey(fieldValue, et);
             mapper.registerPendingPersist(id, fieldValue, context);
-        } catch (IllegalArgumentException | IllegalAccessException e) {
+        } catch (IllegalArgumentException e) {
             throw new EntityDeconstructionException("Unable to check field cascading.", e);
         }
     }

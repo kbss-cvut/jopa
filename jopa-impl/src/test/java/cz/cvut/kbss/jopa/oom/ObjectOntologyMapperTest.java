@@ -61,7 +61,6 @@ public class ObjectOntologyMapperTest {
     @Mock
     private EntityDeconstructor entityDeconstructorMock;
 
-    private MetamodelMocks mocks;
     private EntityType<OWLClassA> etAMock;
     private LoadingParameters<OWLClassA> loadingParameters;
 
@@ -85,7 +84,7 @@ public class ObjectOntologyMapperTest {
         when(uowMock.getMetamodel()).thenReturn(metamodelMock);
         when(uowMock.getLiveObjectCache()).thenReturn(cacheMock);
         this.loadingParameters = new LoadingParameters<>(OWLClassA.class, ENTITY_PK, aDescriptor);
-        this.mocks = new MetamodelMocks();
+        final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         this.etAMock = mocks.forOwlClassA().entityType();
         when(descriptorFactoryMock.createForEntityLoading(loadingParameters, mocks.forOwlClassA().entityType()))

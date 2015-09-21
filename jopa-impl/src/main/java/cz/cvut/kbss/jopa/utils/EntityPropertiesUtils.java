@@ -1,9 +1,7 @@
 package cz.cvut.kbss.jopa.utils;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.UnassignableIdentifierException;
 
@@ -41,20 +39,41 @@ public class EntityPropertiesUtils {
             throw new NullPointerException();
         }
         Object fieldValue;
-        try {
-            final EntityType<?> type = metamodel.entity(entity.getClass());
-            fieldValue = getFieldValue(type.getIdentifier().getJavaField(), entity);
-            return fieldValue;
-        } catch (IllegalAccessException e) {
-            throw new OWLPersistenceException(e);
-        }
+        final EntityType<?> type = metamodel.entity(entity.getClass());
+        fieldValue = getFieldValue(type.getIdentifier().getJavaField(), entity);
+        return fieldValue;
     }
 
-    private static Object getFieldValue(Field field, Object instance) throws IllegalAccessException {
+    /**
+     * Gets value of the specified field from the specified instance.
+     *
+     * @param field    Field to get value of
+     * @param instance Instance that contains the field
+     * @return Field value
+     */
+    public static Object getFieldValue(Field field, Object instance) {
+        Objects.requireNonNull(field);
         if (!field.isAccessible()) {
             field.setAccessible(true);
         }
-        return field.get(instance);
+        try {
+            return field.get(instance);
+        } catch (IllegalAccessException e) {
+            throw new OWLPersistenceException("Unable to extract field value.", e);
+        }
+    }
+
+    /**
+     * Gets value of the specified attribute.
+     *
+     * @param attribute Attribute to extract value of
+     * @param instance  Instance from which value will be extracted
+     * @return Attribute value
+     */
+    public static Object getAttributeValue(FieldSpecification<?, ?> attribute, Object instance) {
+        Objects.requireNonNull(attribute);
+        final Field field = attribute.getJavaField();
+        return getFieldValue(field, instance);
     }
 
     /**
@@ -71,7 +90,7 @@ public class EntityPropertiesUtils {
                 return null;
             }
             return getValueAsURI(id);
-        } catch (IllegalArgumentException | IllegalAccessException e) {
+        } catch (IllegalArgumentException e) {
             throw new OWLPersistenceException("Unable to extract entity identifier.", e);
         }
     }
@@ -139,7 +158,7 @@ public class EntityPropertiesUtils {
 
     /**
      * Verifies, that the primary key (identifier) of the specified instance is generated. </p>
-     * <p/>
+     * <p>
      * If not, an exception is thrown.
      *
      * @param instance   The instance to verify

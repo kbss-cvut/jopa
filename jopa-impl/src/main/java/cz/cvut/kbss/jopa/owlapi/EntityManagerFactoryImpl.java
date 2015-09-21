@@ -13,15 +13,16 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
 import cz.cvut.kbss.jopa.model.PersistenceUnitUtil;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.Cache;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 import java.util.Collections;
@@ -149,12 +150,8 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     }
 
     public Object getIdentifier(Object entity) {
-        try {
-            return getMetamodel().entity(entity.getClass()).getIdentifier().getJavaField()
-                                 .get(entity);
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            throw new OWLPersistenceException(e);
-        }
+        final EntityType<?> et = getMetamodel().entity(entity.getClass());
+        return EntityPropertiesUtils.getFieldValue(et.getIdentifier().getJavaField(), entity);
     }
 
     public boolean isLoaded(Object entity, String attributeName) {
