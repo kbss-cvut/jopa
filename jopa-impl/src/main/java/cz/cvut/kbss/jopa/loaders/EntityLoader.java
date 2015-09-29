@@ -113,6 +113,9 @@ public class EntityLoader {
         }
         // Get the list of the files contained in the package
         final String[] files = dir.list();
+        if (files == null) {
+            return;
+        }
         for (String fileName : files) {
             String className = null;
             // we are only interested in .class files

@@ -43,7 +43,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ssh</artifactId>
-                <version>2.9</version>
+                <version>2.10</version>
             </extension>
         </extensions>
         <plugins>
@@ -146,7 +146,7 @@
         <repository>
             <id>krizik</id>
             <name>KBSS Maven 2 Repository</name>
-            <url>scp://krizik.felk.cvut.cz/var/www/m2repo</url>
+            <url>sftp://krizik.felk.cvut.cz/var/www/m2repo</url>
         </repository>
         <site>
             <id>jopa</id>
