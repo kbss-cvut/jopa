@@ -1,3 +1,4 @@
+- Refactor integration tests to use a single abstract class and the concrete implementations will just set up connector
 - Fix most serious issues discovered by SCA
 - Use SLF4J for logging
 - What about support for lists, that are neither Simple nor Referenced?

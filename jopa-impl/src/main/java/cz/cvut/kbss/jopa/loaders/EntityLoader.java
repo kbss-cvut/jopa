@@ -58,11 +58,11 @@ public class EntityLoader {
         try {
             Enumeration<URL> urls = loader.getResources(scanPath.replace('.', '/'));
             while (urls.hasMoreElements()) {
-                final URI uri = getUrlAsUri(urls.nextElement());
-                if (uri.toString().startsWith("jar:")) {
-                    processJarFile(uri, scanPath, all);
+                final URL url = urls.nextElement();
+                if (url.toString().startsWith("jar:")) {
+                    processJarFile(url, scanPath, all);
                 } else {
-                    processDirectory(new File(uri.getPath()), scanPath, all);
+                    processDirectory(new File(getUrlAsUri(url).getPath()), scanPath, all);
                 }
             }
         } catch (IOException e) {
@@ -84,7 +84,7 @@ public class EntityLoader {
         }
     }
 
-    private void processJarFile(URI jarResource, String packageName, Set<Class<?>> entityClasses) {
+    private void processJarFile(URL jarResource, String packageName, Set<Class<?>> entityClasses) {
         final String relPath = packageName.replace('.', '/');
         final String jarPath = jarResource.getPath().replaceFirst("[.]jar[!].*", JAR_FILE_SUFFIX)
                                           .replaceFirst("file:", "");
