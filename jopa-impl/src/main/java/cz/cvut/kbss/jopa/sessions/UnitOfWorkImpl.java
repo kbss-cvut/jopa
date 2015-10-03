@@ -813,31 +813,24 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
         Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
 
-        try {
-            if (!field.isAccessible()) {
-                field.setAccessible(true);
-            }
-            if (EntityPropertiesUtils.getFieldValue(field, entity) != null) {
-                return;
-            }
-            final Descriptor entityDescriptor = getDescriptor(entity);
-            if (entityDescriptor == null) {
-                throw new OWLPersistenceException(
-                        "Unable to find repository identifier for entity " + entity
-                                + ". Is it managed by this UoW?");
-            }
-            storage.loadFieldValue(entity, field, entityDescriptor);
-            final Object orig = EntityPropertiesUtils.getFieldValue(field, entity);
-            final Object entityOriginal = getOriginal(entity);
-            if (entityOriginal != null) {
-                field.set(entityOriginal, orig);
-            }
-            final Descriptor fieldDescriptor = getFieldDescriptor(entity, field, entityDescriptor);
-            final Object clone = cloneLoadedFieldValue(entity, field, fieldDescriptor, orig);
-            field.set(entity, clone);
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            throw new OWLPersistenceException(e);
+        if (EntityPropertiesUtils.getFieldValue(field, entity) != null) {
+            return;
         }
+        final Descriptor entityDescriptor = getDescriptor(entity);
+        if (entityDescriptor == null) {
+            throw new OWLPersistenceException(
+                    "Unable to find repository identifier for entity " + entity
+                            + ". Is it managed by this UoW?");
+        }
+        storage.loadFieldValue(entity, field, entityDescriptor);
+        final Object orig = EntityPropertiesUtils.getFieldValue(field, entity);
+        final Object entityOriginal = getOriginal(entity);
+        if (entityOriginal != null) {
+            EntityPropertiesUtils.setFieldValue(field, entityOriginal, orig);
+        }
+        final Descriptor fieldDescriptor = getFieldDescriptor(entity, field, entityDescriptor);
+        final Object clone = cloneLoadedFieldValue(entity, field, fieldDescriptor, orig);
+        EntityPropertiesUtils.setFieldValue(field, entity, clone);
     }
 
     private <T> Descriptor getFieldDescriptor(T entity, Field field, Descriptor entityDescriptor) {
@@ -949,22 +942,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
         Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
 
-        if (!field.isAccessible()) {
-            field.setAccessible(true);
+        Object value = EntityPropertiesUtils.getFieldValue(field, entity);
+        if (value == null || value instanceof IndirectCollection) {
+            return;
         }
-        try {
-            Object value = EntityPropertiesUtils.getFieldValue(field, entity);
-            if (value == null || value instanceof IndirectCollection) {
-                return;
-            }
-            if (value instanceof Collection || value instanceof Map) {
-                final Object indirectCollection = ((CloneBuilderImpl) cloneBuilder).createIndirectCollection(
-                        value, entity, field);
-                field.set(entity, indirectCollection);
-            }
-        } catch (IllegalAccessException e) {
-            LOG.severe("Unable to set indirect collection on entity " + entity);
-            throw new OWLPersistenceException(e);
+        if (value instanceof Collection || value instanceof Map) {
+            final Object indirectCollection = ((CloneBuilderImpl) cloneBuilder).createIndirectCollection(
+                    value, entity, field);
+            EntityPropertiesUtils.setFieldValue(field, entity, indirectCollection);
         }
     }
 
@@ -975,23 +960,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      */
     private void removeIndirectCollections(Object entity) {
         Field[] fields = entity.getClass().getDeclaredFields();
-        try {
-            for (Field f : fields) {
-                if (!f.isAccessible()) {
-                    f.setAccessible(true);
-                }
-                final Object ob = EntityPropertiesUtils.getFieldValue(f, entity);
-                if (ob == null) {
-                    continue;
-                }
-                if (ob instanceof IndirectCollection) {
-                    IndirectCollection<?> indCol = (IndirectCollection<?>) ob;
-                    f.set(entity, indCol.getReferencedCollection());
-                }
+        for (Field f : fields) {
+            final Object ob = EntityPropertiesUtils.getFieldValue(f, entity);
+            if (ob == null) {
+                continue;
             }
-        } catch (IllegalAccessException e) {
-            LOG.severe("Unable to set indirect collection on entity " + entity);
-            throw new OWLPersistenceException(e);
+            if (ob instanceof IndirectCollection) {
+                IndirectCollection<?> indCol = (IndirectCollection<?>) ob;
+                EntityPropertiesUtils.setFieldValue(f, entity, indCol.getReferencedCollection());
+            }
         }
     }
 

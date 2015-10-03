@@ -8,8 +8,6 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.Value;
 
-import java.lang.reflect.Field;
-
 class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
 
     private Object value;
@@ -43,12 +41,8 @@ class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X,
 
     @Override
     void buildInstanceFieldValue(Object entity) throws IllegalAccessException {
-        final Field f = attribute.getJavaField();
-        if (!f.isAccessible()) {
-            f.setAccessible(true);
-        }
         final Object toAssign = isFieldEnum() ? resolveEnumValue() : value;
-        f.set(entity, toAssign);
+        setValueOnInstance(entity, toAssign);
     }
 
     private Object resolveEnumValue() {

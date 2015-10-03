@@ -55,11 +55,8 @@ abstract class AbstractInstanceBuilder {
      * @param target        target object on which the values are merged
      * @param originalValue The original value
      * @param cloneValue    The clone value
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
      */
-    abstract void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue)
-            throws IllegalArgumentException, IllegalAccessException;
+    abstract void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue);
 
     /**
      * Return the declared constructor for the specified class. If the constructor is not accessible, it is set

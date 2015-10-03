@@ -181,8 +181,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     }
 
     @Override
-    void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue)
-            throws IllegalArgumentException, IllegalAccessException {
+    void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue) {
         assert (originalValue == null || originalValue instanceof Collection);
         assert cloneValue instanceof Collection;
 
@@ -196,7 +195,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             if (orig == null) {
                 orig = createDefaultCollection(clone.getClass());
             }
-            field.set(target, orig);
+            EntityPropertiesUtils.setFieldValue(field, target, orig);
         }
         orig.clear();
         if (clone.isEmpty()) {

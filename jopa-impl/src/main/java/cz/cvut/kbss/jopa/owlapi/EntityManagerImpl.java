@@ -166,8 +166,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
             case MANAGED:
                 new OneLevelCascadeExplorer() {
                     @Override
-                    protected void exploreCascaded(Attribute<?, ?> at, Object o)
-                            throws IllegalAccessException {
+                    protected void exploreCascaded(Attribute<?, ?> at, Object o) {
                         mergeX(at, o, descriptor);
                     }
                 }.start(this, entity, CascadeType.MERGE);
@@ -178,17 +177,15 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
                 new OneLevelCascadeExplorer() {
                     @Override
-                    protected void exploreCascaded(Attribute<?, ?> at, Object o)
-                            throws IllegalAccessException {
+                    protected void exploreCascaded(Attribute<?, ?> at, Object o) {
                         final Descriptor attDescriptor = descriptor.getAttributeDescriptor(at);
                         mergeX(at, o, attDescriptor);
                     }
 
                     @Override
-                    protected void exploreNonCascaded(Attribute<?, ?> at, Object o)
-                            throws IllegalAccessException {
+                    protected void exploreNonCascaded(Attribute<?, ?> at, Object o) {
                         final Object attVal = EntityPropertiesUtils.getAttributeValue(at, o);
-                        at.getJavaField().set(o, attVal);
+                        EntityPropertiesUtils.setFieldValue(at.getJavaField(), o, attVal);
                     }
                 }.start(this, merged, CascadeType.MERGE);
                 return merged;
@@ -198,8 +195,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
         }
     }
 
-    private void mergeX(Attribute<?, ?> at, Object o, Descriptor descriptor)
-            throws IllegalAccessException {
+    private void mergeX(Attribute<?, ?> at, Object o, Descriptor descriptor) {
         Object attVal = EntityPropertiesUtils.getAttributeValue(at, o);
         if (attVal == null) {
             return;
@@ -214,7 +210,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
         } else {
             attVal = mergeInternal(attVal, descriptor);
         }
-        at.getJavaField().set(o, attVal);
+        EntityPropertiesUtils.setFieldValue(at.getJavaField(), o, attVal);
     }
 
     public void remove(Object object) {

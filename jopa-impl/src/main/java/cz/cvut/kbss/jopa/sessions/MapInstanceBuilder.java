@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -157,8 +158,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
     }
 
     @Override
-    void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue)
-            throws IllegalArgumentException, IllegalAccessException {
+    void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue) {
         assert (originalValue == null) || (originalValue instanceof Map);
         assert cloneValue instanceof Map;
 
@@ -172,7 +172,7 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
             if (orig == null) {
                 orig = createDefaultMap(clone.size());
             }
-            field.set(target, orig);
+            EntityPropertiesUtils.setFieldValue(field, target, orig);
         }
         orig.clear();
         if (clone.isEmpty()) {

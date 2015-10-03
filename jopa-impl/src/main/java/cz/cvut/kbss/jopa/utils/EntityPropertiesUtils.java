@@ -45,6 +45,25 @@ public class EntityPropertiesUtils {
     }
 
     /**
+     * Sets value of the specified field.
+     *
+     * @param field    Field to set value on
+     * @param instance Target instance (may be null for static fields)
+     * @param value    The value to set
+     */
+    public static void setFieldValue(Field field, Object instance, Object value) {
+        Objects.requireNonNull(field);
+        if (!field.isAccessible()) {
+            field.setAccessible(true);
+        }
+        try {
+            field.set(instance, value);
+        } catch (IllegalAccessException e) {
+            throw new OWLPersistenceException("Unable to set field value.", e);
+        }
+    }
+
+    /**
      * Gets value of the specified field from the specified instance.
      *
      * @param field    Field to get value of
@@ -107,14 +126,9 @@ public class EntityPropertiesUtils {
         final Field idField = id.getJavaField();
         try {
             final Object assignablePk = identifierTransformer.transformToType(primaryKey, idField.getType());
-            if (!idField.isAccessible()) {
-                idField.setAccessible(true);
-            }
-            idField.set(entity, assignablePk);
+            setFieldValue(idField, entity, assignablePk);
         } catch (IllegalArgumentException e) {
             throw new UnassignableIdentifierException(e);
-        } catch (IllegalAccessException e) {
-            throw new OWLPersistenceException("Unable to set entity primary key.", e);
         }
     }
 

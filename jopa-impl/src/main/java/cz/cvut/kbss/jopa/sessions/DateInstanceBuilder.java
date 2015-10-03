@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Field;
 import java.util.Date;
@@ -24,12 +25,8 @@ public class DateInstanceBuilder extends AbstractInstanceBuilder {
     }
 
     @Override
-    void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue) throws
-            IllegalArgumentException, IllegalAccessException {
-        if (!field.isAccessible()) {
-            field.setAccessible(true);
-        }
-        field.set(target, cloneValue);
+    void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue) {
+        EntityPropertiesUtils.setFieldValue(field, target, cloneValue);
     }
 
     @Override

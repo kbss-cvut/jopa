@@ -7,7 +7,6 @@ import cz.cvut.kbss.ontodriver.exceptions.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 
 abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
@@ -110,12 +109,8 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
      * <p>
      * Note that this method assumes the value and the field are of compatible types, no check is done here.
      */
-    void setValueOnInstance(Object instance, Object value) throws IllegalAccessException {
-        final Field field = attribute.getJavaField();
-        if (!field.isAccessible()) {
-            field.setAccessible(true);
-        }
-        field.set(instance, value);
+    void setValueOnInstance(Object instance, Object value) {
+        EntityPropertiesUtils.setFieldValue(attribute.getJavaField(), instance, value);
     }
 
     /**

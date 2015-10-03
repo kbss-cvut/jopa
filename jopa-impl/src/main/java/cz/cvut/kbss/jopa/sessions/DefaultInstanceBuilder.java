@@ -108,26 +108,22 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
     }
 
     @Override
-    void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue)
-            throws IllegalArgumentException, IllegalAccessException {
+    void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue) {
         if (originalValue == null) {
             Object clOrig = builder.getOriginal(cloneValue);
             if (clOrig == null) {
                 clOrig = cloneValue;
             }
-            field.set(target, clOrig);
+            EntityPropertiesUtils.setFieldValue(field, target, clOrig);
             return;
         }
         Class<?> cls = originalValue.getClass();
         List<Field> fields = EntityPropertiesUtils.getAllFields(cls);
         for (Field f : fields) {
-            if (!f.isAccessible()) {
-                f.setAccessible(true);
-            }
             Object clVal = EntityPropertiesUtils.getFieldValue(f, cloneValue);
             Object origVal = EntityPropertiesUtils.getFieldValue(f, originalValue);
             if (!(clVal instanceof Collection) && !builder.isOriginalInUoW(origVal)) {
-                f.set(originalValue, clVal);
+                EntityPropertiesUtils.setFieldValue(f, originalValue, clVal);
             } else {
                 builder.getInstanceBuilder(origVal).mergeChanges(f, originalValue, origVal, clVal);
             }

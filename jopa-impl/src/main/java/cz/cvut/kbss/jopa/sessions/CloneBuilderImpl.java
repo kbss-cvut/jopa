@@ -92,6 +92,7 @@ public class CloneBuilderImpl implements CloneBuilder {
      * @param clone    Object
      */
     private void populateAttributes(final Object original, Object clone, final Descriptor descriptor) {
+        // TODO This should be refactored
         Class<?> theClass = original.getClass();
         List<Field> fields = new ArrayList<>();
         fields.addAll(Arrays.asList(theClass.getDeclaredFields()));
@@ -100,56 +101,49 @@ public class CloneBuilderImpl implements CloneBuilder {
             fields.addAll(Arrays.asList(tmp.getDeclaredFields()));
             tmp = tmp.getSuperclass();
         }
-        try {
-            for (Field f : fields) {
-                if (Modifier.isStatic(f.getModifiers())) {
-                    continue;
-                }
-                if (!f.isAccessible()) {
-                    f.setAccessible(true);
-                }
-                final Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
-                if (origVal == null) {
-                    continue;
-                }
-                final Class<?> origClass = origVal.getClass();
-                if (isPrimitiveOrString(origClass)) {
-                    // The field is an immutable type
-                    f.set(clone, origVal);
-                } else if (origVal instanceof Collection || origVal instanceof Map) {
-                    final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass, descriptor);
-                    // Collection or a Map
-                    final Object clonedCollection = getInstanceBuilder(origVal).buildClone(clone,
-                            f, origVal, fieldDescriptor);
-                    f.set(clone, clonedCollection);
-                } else if (f.getType().isArray()) {
-                    final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass, descriptor);
-                    Object[] arr = cloneArray(origVal, fieldDescriptor);
-                    f.set(clone, arr);
-                } else {
-                    // Else we have a relationship and we need to clone its
-                    // target as well
-                    if (isOriginalInUoW(origVal)) {
-                        // If the reference is already managed
-                        f.set(clone, uow.getCloneForOriginal(origVal));
-                        continue;
-                    }
-                    Object toAssign;
-                    if (isTypeManaged(origClass)) {
-                        final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass,
-                                descriptor);
-                        toAssign = getVisitedEntity(descriptor, origVal);
-                        if (toAssign == null) {
-                            toAssign = uow.registerExistingObject(origVal, fieldDescriptor);
-                        }
-                    } else {
-                        toAssign = buildClone(origVal, descriptor);
-                    }
-                    f.set(clone, toAssign);
-                }
+        for (Field f : fields) {
+            if (Modifier.isStatic(f.getModifiers())) {
+                continue;
             }
-        } catch (IllegalAccessException | IllegalArgumentException e) {
-            throw new OWLPersistenceException("Error while cloning object.", e);
+            final Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
+            if (origVal == null) {
+                continue;
+            }
+            final Class<?> origClass = origVal.getClass();
+            if (isPrimitiveOrString(origClass)) {
+                // The field is an immutable type
+                EntityPropertiesUtils.setFieldValue(f, clone, origVal);
+            } else if (origVal instanceof Collection || origVal instanceof Map) {
+                final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass, descriptor);
+                // Collection or a Map
+                final Object clonedCollection = getInstanceBuilder(origVal).buildClone(clone,
+                        f, origVal, fieldDescriptor);
+                EntityPropertiesUtils.setFieldValue(f, clone, clonedCollection);
+            } else if (f.getType().isArray()) {
+                final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass, descriptor);
+                Object[] arr = cloneArray(origVal, fieldDescriptor);
+                EntityPropertiesUtils.setFieldValue(f, clone, arr);
+            } else {
+                // Else we have a relationship and we need to clone its
+                // target as well
+                if (isOriginalInUoW(origVal)) {
+                    // If the reference is already managed
+                    EntityPropertiesUtils.setFieldValue(f, clone, uow.getCloneForOriginal(origVal));
+                    continue;
+                }
+                Object toAssign;
+                if (isTypeManaged(origClass)) {
+                    final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass,
+                            descriptor);
+                    toAssign = getVisitedEntity(descriptor, origVal);
+                    if (toAssign == null) {
+                        toAssign = uow.registerExistingObject(origVal, fieldDescriptor);
+                    }
+                } else {
+                    toAssign = buildClone(origVal, descriptor);
+                }
+                EntityPropertiesUtils.setFieldValue(f, clone, toAssign);
+            }
         }
     }
 
@@ -219,23 +213,19 @@ public class CloneBuilderImpl implements CloneBuilder {
             for (String att : changes.keySet()) {
                 ChangeRecord change = changes.get(att);
                 Field f = original.getClass().getDeclaredField(att);
-                if (!f.isAccessible()) {
-                    f.setAccessible(true);
-                }
                 if (isPrimitiveOrString(f.getType())) {
-                    f.set(original, change.getNewValue());
+                    EntityPropertiesUtils.setFieldValue(f, original, change.getNewValue());
                     continue;
                 }
                 Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
                 Object newVal = change.getNewValue();
                 if (newVal == null) {
-                    f.set(original, null);
+                    EntityPropertiesUtils.setFieldValue(f, original, null);
                     continue;
                 }
                 getInstanceBuilder(newVal).mergeChanges(f, original, origVal, newVal);
             }
-        } catch (NoSuchFieldException | SecurityException
-                | IllegalAccessException | IllegalArgumentException e) {
+        } catch (NoSuchFieldException | SecurityException e) {
             throw new OWLPersistenceException(e);
         }
     }

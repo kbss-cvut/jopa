@@ -1,5 +1,4 @@
 - Fix most serious issues discovered by SCA
-- Centralize getting and setting attribute values
 - Use SLF4J for logging
 - What about support for lists, that are neither Simple nor Referenced?
 - When an entity is removed, there should be some IC check that verifies it is not referenced from any other entity
@@ -11,7 +10,6 @@
 - Add support for orphanRemoval attribute in object properties
 - Add support for namespace definition - on class and package level
 - Add support for Lobs and Blobs
-- Design a strategy for supporting bidirectional relationships. Will probably require modifications of the OntoDriver API
 - Modify OntoDriver API to support Fetch joins
 - Do some research on how to implement class hierarchies in JOPA
 - Define schema for persistence.xml for JOPA
