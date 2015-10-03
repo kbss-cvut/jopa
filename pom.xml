@@ -99,17 +99,17 @@
 		</plugins>
 	</reporting>
 
-	<distributionManagement>
-		<repository>
-			<id>krizik</id>
-			<name>KBSS Maven 2 Repository</name>
-			<url>scp://krizik.felk.cvut.cz/var/www/m2repo</url>
-		</repository>
-		<site>
-			<id>jopa</id>
-			<name>JOPA</name>
-			<url>http://jopa.sourceforge.net</url>
-		</site>
-		<downloadUrl>http://sourceforge.net/projects/jopa/files/</downloadUrl>
-	</distributionManagement>
+	<!--<distributionManagement>-->
+		<!--<repository>-->
+			<!--<id>krizik</id>-->
+			<!--<name>KBSS Maven 2 Repository</name>-->
+			<!--<url>sftp://krizik.felk.cvut.cz/var/www/m2repo</url>-->
+		<!--</repository>-->
+		<!--<site>-->
+			<!--<id>jopa</id>-->
+			<!--<name>JOPA</name>-->
+			<!--<url>http://jopa.sourceforge.net</url>-->
+		<!--</site>-->
+		<!--<downloadUrl>http://sourceforge.net/projects/jopa/files/</downloadUrl>-->
+	<!--</distributionManagement>-->
 </project>
