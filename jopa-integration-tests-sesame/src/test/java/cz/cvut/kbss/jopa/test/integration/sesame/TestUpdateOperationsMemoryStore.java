@@ -190,6 +190,12 @@ public class TestUpdateOperationsMemoryStore {
         runner.updateEnumAttribute(em, context());
     }
 
+    @Test
+    public void testCascadeOfNewlyPersistedOnMerge() {
+        em = TestEnvironment.getPersistenceConnector("SesameCascadeMergeWithNewlyPersisted", storage, true, properties);
+        runner.cascadeMergeOfNewlyPersistedOnUpdate(em, context());
+    }
+
     private URI context() {
         // Don't use contexts for now
         return null;

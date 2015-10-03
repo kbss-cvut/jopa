@@ -163,6 +163,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
         Class<T> clz = (Class<T>) entity.getClass();
 
         switch (getState(entity, descriptor)) {
+            case MANAGED_NEW:
             case MANAGED:
                 new OneLevelCascadeExplorer() {
                     @Override

@@ -79,7 +79,7 @@ abstract class AbstractInstanceBuilder {
                 c.setAccessible(true);
             }
         } catch (NoSuchMethodException e) {
-            LOG.warning("Constructor in type " + javaClass + "  taking arguments " + Arrays.toString(args) +
+            LOG.finest("Constructor in type " + javaClass + "  taking arguments " + Arrays.toString(args) +
                     " not found. " + e);
             return null;
         }
