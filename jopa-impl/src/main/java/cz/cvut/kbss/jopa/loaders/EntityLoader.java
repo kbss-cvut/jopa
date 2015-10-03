@@ -6,8 +6,13 @@ import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -53,11 +58,11 @@ public class EntityLoader {
         try {
             Enumeration<URL> urls = loader.getResources(scanPath.replace('.', '/'));
             while (urls.hasMoreElements()) {
-                final URL url = urls.nextElement();
-                if (url.toString().startsWith("jar:")) {
-                    processJarFile(url, scanPath, all);
+                final URI uri = getUrlAsUri(urls.nextElement());
+                if (uri.toString().startsWith("jar:")) {
+                    processJarFile(uri, scanPath, all);
                 } else {
-                    processDirectory(new File(url.getPath()), scanPath, all);
+                    processDirectory(new File(uri.getPath()), scanPath, all);
                 }
             }
         } catch (IOException e) {
@@ -69,7 +74,17 @@ public class EntityLoader {
         return all;
     }
 
-    private void processJarFile(URL jarResource, String packageName, Set<Class<?>> entityClasses) {
+    private URI getUrlAsUri(URL url) {
+        try {
+            // Transformation to URI handles encoding, e.g. of whitespaces in the path
+            return url.toURI();
+        } catch (URISyntaxException ex) {
+            throw new JopaInitializationException(
+                    "Unable to scan resource " + url + ". It is not a valid URI.", ex);
+        }
+    }
+
+    private void processJarFile(URI jarResource, String packageName, Set<Class<?>> entityClasses) {
         final String relPath = packageName.replace('.', '/');
         final String jarPath = jarResource.getPath().replaceFirst("[.]jar[!].*", JAR_FILE_SUFFIX)
                                           .replaceFirst("file:", "");
@@ -113,6 +128,9 @@ public class EntityLoader {
         }
         // Get the list of the files contained in the package
         final String[] files = dir.list();
+        if (files == null) {
+            return;
+        }
         for (String fileName : files) {
             String className = null;
             // we are only interested in .class files
