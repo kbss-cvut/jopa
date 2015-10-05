@@ -6,7 +6,7 @@ import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.environment.JenaStorageConfig;
 import cz.cvut.kbss.jopa.test.environment.StorageConfig;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
-import cz.cvut.kbss.jopa.test.runners.UpdateOperationsRunner;
+import cz.cvut.kbss.jopa.test.runner.UpdateOperationsRunner;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.impl.jena.DriverCachingJenaFactory;
 import org.junit.After;

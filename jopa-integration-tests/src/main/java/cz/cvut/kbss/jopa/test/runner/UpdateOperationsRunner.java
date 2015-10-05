@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.runners;
+package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.test.*;

@@ -7,7 +7,7 @@ import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.environment.OwlapiStorageConfig;
 import cz.cvut.kbss.jopa.test.environment.StorageConfig;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
-import cz.cvut.kbss.jopa.test.runners.CreateOperationsRunner;
+import cz.cvut.kbss.jopa.test.runner.CreateOperationsRunner;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 import org.junit.After;

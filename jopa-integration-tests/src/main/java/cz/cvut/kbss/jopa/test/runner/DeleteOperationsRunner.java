@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.runners;
+package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;

@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.runners;
+package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;

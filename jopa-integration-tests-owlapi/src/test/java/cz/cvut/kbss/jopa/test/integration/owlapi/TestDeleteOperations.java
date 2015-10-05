@@ -5,7 +5,7 @@ import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.test.environment.OwlapiStorageConfig;
 import cz.cvut.kbss.jopa.test.environment.StorageConfig;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
-import cz.cvut.kbss.jopa.test.runners.DeleteOperationsRunner;
+import cz.cvut.kbss.jopa.test.runner.DeleteOperationsRunner;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import org.junit.After;
 import org.junit.Before;
