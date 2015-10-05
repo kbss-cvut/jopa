@@ -21,9 +21,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     public void testRetrieveSimple() {
         logger.config("Test: retrieve a simple entity.");
         this.em = getEntityManager("RetrieveSimple", false);
-        em.getTransaction().begin();
-        em.persist(entityA);
-        em.getTransaction().commit();
+        persist(entityA);
 
         em.getEntityManagerFactory().getCache().evictAll();
         final OWLClassA res = em.find(OWLClassA.class, entityA.getUri());
@@ -45,9 +43,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     public void testRetrieveLazy() throws Exception {
         logger.config("Test: retrieve entity with lazy loaded attribute.");
         this.em = getEntityManager("RetrieveLazy", false);
-        em.getTransaction().begin();
-        em.persist(entityI);
-        em.getTransaction().commit();
+        persist(entityI);
 
         final OWLClassI resI = em.find(OWLClassI.class, entityI.getUri());
         assertNotNull(resI);
@@ -99,10 +95,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     public void testRefresh() {
         logger.config("Test: refresh entity.");
         this.em = getEntityManager("Refresh", false);
-        em.getTransaction().begin();
-        em.persist(entityD);
-        em.persist(entityA);
-        em.getTransaction().commit();
+        persist(entityD, entityA);
 
         final OWLClassA newA = new OWLClassA();
         newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA"));
@@ -119,9 +112,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     public void testRefreshNotManaged() {
         logger.config("Test: refresh entity which is not managed.");
         this.em = getEntityManager("RefreshNotManaged", false);
-        em.getTransaction().begin();
-        em.persist(entityA);
-        em.getTransaction().commit();
+        persist(entityA);
 
         final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(a);
@@ -135,9 +126,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     public void testRetrieveDifferentType() {
         logger.config("Test: persist entity but try to retrieve it as a different type.");
         this.em = getEntityManager("RetrieveDifferentType", false);
-        em.getTransaction().begin();
-        em.persist(entityA);
-        em.getTransaction().commit();
+        persist(entityA);
 
         final OWLClassB res = em.find(OWLClassB.class, entityA.getUri());
         assertNull(res);

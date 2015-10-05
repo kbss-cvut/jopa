@@ -26,10 +26,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     public void testPersistWithGenerated() {
         logger.config("Test: persist into all contexts, also with generated id.");
         this.em = getEntityManager("PersistWithGenerated", false);
-        em.getTransaction().begin();
-        em.persist(entityA);
-        em.persist(entityE);
-        em.getTransaction().commit();
+        persist(entityA, entityE);
 
         final OWLClassA resA1 = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(resA1);
@@ -49,9 +46,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         this.em = getEntityManager("PersistWithoutId", false);
         final OWLClassB b = new OWLClassB();
         b.setStringAttribute("someValue");
-        em.getTransaction().begin();
-        em.persist(b);
-        em.getTransaction().commit();
+        persist(b);
     }
 
     @Test(expected = NullPointerException.class)
@@ -89,9 +84,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     public void testPersistCascade() {
         logger.config("Test: persist with cascade over two relationships.");
         this.em = getEntityManager("PersistWithCascade", false);
-        em.getTransaction().begin();
-        em.persist(entityG);
-        em.getTransaction().commit();
+        persist(entityG);
 
         final OWLClassA resA2 = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(resA2);
@@ -108,28 +101,22 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     public void testPersistTwiceInOne() {
         logger.config("Test: persist twice into one context.");
         this.em = getEntityManager("PersistTwice", false);
-        em.getTransaction().begin();
-        em.persist(entityB);
-        em.persist(entityB);
-        em.getTransaction().commit();
+        persist(entityB, entityB);
     }
 
     @Test(expected = RollbackException.class)
     public void testPersistWithoutCascade() {
         logger.config("Test: try persisting relationship not marked as cascade.");
         this.em = getEntityManager("PersistWithoutCascade", false);
-        em.getTransaction().begin();
-        em.persist(entityD);
-        em.getTransaction().commit();
+        persist(entityD);
     }
 
     @Test(expected = OWLEntityExistsException.class)
     public void testPersistDetached() {
         logger.config("Test: persist detached entity. Should throw entity exists exception.");
         this.em = getEntityManager("PersistDetached", false);
-        em.getTransaction().begin();
-        em.persist(entityA);
-        em.getTransaction().commit();
+        persist(entityA);
+
         final OWLClassA det = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(det);
         em.detach(det);
@@ -161,9 +148,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         logger.config("Test: persist entity with simple list, but don't persist the referenced entities.");
         this.em = getEntityManager("PersistSimpleListNoCascade", false);
         entityC.setSimpleList(Generators.createSimpleList(10));
-        em.getTransaction().begin();
-        em.persist(entityC);
-        em.getTransaction().commit();
+        persist(entityC);
     }
 
     @Test
@@ -196,9 +181,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         logger.config("Test: persist entity with referenced list. Don't persist the referenced entities.");
         this.em = getEntityManager("PersistReferencedListNoCascade", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
-        em.getTransaction().begin();
-        em.persist(entityC);
-        em.getTransaction().commit();
+        persist(entityC);
     }
 
     @Test
@@ -245,9 +228,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         final Map<String, Set<String>> expected = new HashMap<>(4);
         expected.putAll(props);
         entityB.setProperties(props);
-        em.getTransaction().begin();
-        em.persist(entityB);
-        em.getTransaction().commit();
+        persist(entityB);
         em.clear();
 
         final OWLClassB res = em.find(OWLClassB.class, entityB.getUri());
@@ -303,9 +284,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     public void testPersistEntityWithBasicTypeAttributes() {
         logger.config("Test: persist entity with attributes of basic types (Integer, Boolean etc.).");
         this.em = getEntityManager("PersistEntityWithBasicTypeAttributes", false);
-        em.getTransaction().begin();
-        em.persist(entityM);
-        em.getTransaction().commit();
+        persist(entityM);
         em.clear();
 
         final OWLClassM res = em.find(OWLClassM.class, entityM.getKey());
@@ -338,9 +317,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     public void testPersistEntityWithEnumAttribute() {
         logger.config("Test: persist entity with enum attribute.");
         this.em = getEntityManager("PersistEntityWithEnum", false);
-        em.getTransaction().begin();
-        em.persist(entityM);
-        em.getTransaction().commit();
+        persist(entityM);
 
         final OWLClassM res = em.find(OWLClassM.class, entityM.getKey());
         assertNotNull(res);

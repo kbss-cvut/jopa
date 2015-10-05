@@ -20,9 +20,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     public void testRemoveSimple() {
         logger.config("Test: simple entity removal.");
         this.em = getEntityManager("SimpleRemove", false);
-        em.getTransaction().begin();
-        em.persist(entityA);
-        em.getTransaction().commit();
+        persist(entityA);
 
         final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(a);
@@ -39,10 +37,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     public void testRemoveReference() {
         logger.config("Test: remove entity referenced by another entity.");
         this.em = getEntityManager("RemoveReference", true);
-        em.getTransaction().begin();
-        em.persist(entityD);
-        em.persist(entityA);
-        em.getTransaction().commit();
+        persist(entityD, entityA);
 
         final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(a);
@@ -92,10 +87,8 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     public void testRemoveDetached() {
         logger.config("Test: try removing detached entity.");
         this.em = getEntityManager("RemoveDetached", true);
-        em.getTransaction().begin();
         assertNull(entityE.getUri());
-        em.persist(entityE);
-        em.getTransaction().commit();
+        persist(entityE);
         assertNotNull(entityE.getUri());
 
         em.getTransaction().begin();

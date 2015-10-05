@@ -91,6 +91,19 @@ public abstract class BaseRunner {
         }
     }
 
+    /**
+     * Persists the specified instance in a separate transaction.
+     *
+     * @param entity Entity to persist
+     */
+    protected void persist(Object... entity) {
+        em.getTransaction().begin();
+        for (Object ent: entity) {
+            em.persist(ent);
+        }
+        em.getTransaction().commit();
+    }
+
     protected abstract EntityManager getEntityManager(String repositoryName, boolean cacheEnabled);
 
     protected abstract EntityManager getEntityManager(String repositoryName, boolean cacheEnabled,
