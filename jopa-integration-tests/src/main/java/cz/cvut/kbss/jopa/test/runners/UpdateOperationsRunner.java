@@ -1,9 +1,9 @@
 package cz.cvut.kbss.jopa.test.runners;
 
-import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -12,19 +12,19 @@ import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
-public class UpdateOperationsRunner extends BaseRunner {
+public abstract class UpdateOperationsRunner extends BaseRunner {
 
     private OWLClassA entityA2;
     private OWLClassF entityF;
     private OWLClassJ entityJ;
     private OWLClassO entityO;
 
-    public UpdateOperationsRunner(Logger logger) throws Exception {
+    public UpdateOperationsRunner(Logger logger) {
         super(logger);
         initialize();
     }
 
-    private void initialize() throws Exception {
+    private void initialize() {
         this.entityF = new OWLClassF();
         entityF.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityF"));
         this.entityA2 = new OWLClassA();
@@ -45,38 +45,18 @@ public class UpdateOperationsRunner extends BaseRunner {
         entityO.setOwlClassESet(es);
     }
 
-    public void mergeSet(EntityManager em, URI ctx) {
-        logger.config("Test: merge set property.");
-        final EntityDescriptor jDescriptor = new EntityDescriptor(ctx);
-        em.getTransaction().begin();
-        em.persist(entityJ, jDescriptor);
-        em.getTransaction().commit();
-        em.clear();
-
-        for (final OWLClassA a : entityJ.getOwlClassA()) {
-            a.setStringAttribute("NEWVALUE");
-        }
-
-        em.getTransaction().begin();
-        OWLClassJ merged = em.merge(entityJ, jDescriptor);
-
-        for (final OWLClassA a : merged.getOwlClassA()) {
-            assertEquals(a.getStringAttribute(), "NEWVALUE");
-        }
-        em.getTransaction().commit();
-    }
-
-    public void updateDataPropertyKeepLazyEmpty(EntityManager em, URI ctx) throws Exception {
+    @Test
+    public void testUpdateDataLeaveLazy() throws Exception {
         logger.config(
                 "Test: update data property. Leaves lazily loaded field empty and checks that after commit the field's value hasn't changed.");
-        final EntityDescriptor bDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateDataProperty", false);
         entityB.setProperties(Generators.createProperties());
         em.getTransaction().begin();
-        em.persist(entityB, bDescriptor);
+        em.persist(entityB);
         em.getTransaction().commit();
 
         em.getTransaction().begin();
-        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
+        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri());
         assertNotNull(b);
         final Field propsField = OWLClassB.class.getDeclaredField("properties");
         propsField.setAccessible(true);
@@ -85,164 +65,187 @@ public class UpdateOperationsRunner extends BaseRunner {
         b.setStringAttribute(newString);
         em.getTransaction().commit();
 
-        final OWLClassB res = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
+        final OWLClassB res = em.find(OWLClassB.class, entityB.getUri());
         assertNotNull(res);
         assertEquals(newString, res.getStringAttribute());
         assertNotNull(res.getProperties());
         assertEquals(entityB.getProperties(), res.getProperties());
     }
 
-    public void updateDataPropertySetNull(EntityManager em, URI ctx) {
+    @Test
+    public void testUpdateDataPropertySetNull() {
         logger.config("Test: update data property. Set it to null.");
-        final EntityDescriptor aDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateDataPropertyToNull", true);
         em.getTransaction().begin();
-        em.persist(entityA, aDescriptor);
+        em.persist(entityA);
         em.getTransaction().commit();
 
         em.getTransaction().begin();
-        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
+        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(a);
         assertNotNull(a.getStringAttribute());
         a.setStringAttribute(null);
         em.getTransaction().commit();
 
-        final OWLClassA res = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
+        final OWLClassA res = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(res);
         assertNull(res.getStringAttribute());
         assertEquals(entityA.getTypes(), res.getTypes());
     }
 
-    public void updateReference(EntityManager em, URI ctx) {
+    @Test
+    public void testUpdateReference() {
         logger.config("Test: update reference to entity.");
-        final EntityDescriptor dDescriptor = new EntityDescriptor(ctx);
-        final EntityDescriptor iDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateReference", true);
         em.getTransaction().begin();
-        em.persist(entityD, dDescriptor);
+        em.persist(entityD);
         // em.persist(entityA, ctx);
-        em.persist(entityI, iDescriptor);
+        em.persist(entityI);
         em.getTransaction().commit();
 
         final OWLClassA newA = new OWLClassA();
         newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/newEntityA"));
         newA.setStringAttribute("newA");
         em.getTransaction().begin();
-        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
+        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
         assertNotNull(d.getOwlClassA());
         d.setOwlClassA(newA);
-        final OWLClassI i = em.find(OWLClassI.class, entityI.getUri(), iDescriptor);
+        final OWLClassI i = em.find(OWLClassI.class, entityI.getUri());
         assertNotNull(i.getOwlClassA());
         i.setOwlClassA(newA);
-        em.persist(newA, iDescriptor);
+        em.persist(newA);
         em.getTransaction().commit();
 
-        final OWLClassA resA1 = em.find(OWLClassA.class, newA.getUri(), dDescriptor);
+        final OWLClassA resA1 = em.find(OWLClassA.class, newA.getUri());
         assertNotNull(resA1);
-        final OWLClassD resD = em.find(OWLClassD.class, d.getUri(), dDescriptor);
+        final OWLClassD resD = em.find(OWLClassD.class, d.getUri());
         assertEquals(resA1.getUri(), resD.getOwlClassA().getUri());
 //		assertSame(resD.getOwlClassA(), resA1);
-        assertNotNull(em.find(OWLClassA.class, entityA.getUri(), iDescriptor));
-        final OWLClassI resI = em.find(OWLClassI.class, i.getUri(), iDescriptor);
+        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
+        final OWLClassI resI = em.find(OWLClassI.class, i.getUri());
         assertEquals(newA.getUri(), resI.getOwlClassA().getUri());
-        assertNotNull(em.find(OWLClassA.class, entityA.getUri(), dDescriptor));
+        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
         assertEquals(resA1.getUri(), resI.getOwlClassA().getUri());
 //		assertEquals(resA1, resI.getOwlClassA());
     }
 
-    public void mergeDetachedWithChanges(EntityManager em, URI ctx) {
-        logger.config("Test: merge detached entity with changes.");
-        final EntityDescriptor aDescriptor = new EntityDescriptor(ctx);
+    @Test
+    public void testMergeSet() throws Exception {
+        logger.config("Test: merge set property.");
+        this.em = getEntityManager("MergeSet", false);
         em.getTransaction().begin();
-        em.persist(entityA, aDescriptor);
+        em.persist(entityJ);
+        em.getTransaction().commit();
+        em.clear();
+
+        entityJ.getOwlClassA().forEach(a -> a.setStringAttribute("NEWVALUE"));
+
+        em.getTransaction().begin();
+        OWLClassJ merged = em.merge(entityJ);
+
+        for (final OWLClassA a : merged.getOwlClassA()) {
+            assertEquals(a.getStringAttribute(), "NEWVALUE");
+        }
+        em.getTransaction().commit();
+    }
+
+    @Test
+    public void testMergeDetachedWithChanges() {
+        logger.config("Test: merge detached entity with changes.");
+        this.em = getEntityManager("UpdateDetached", true);
+        em.getTransaction().begin();
+        em.persist(entityA);
         em.getTransaction().commit();
 
-        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
+        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
         assertTrue(em.contains(a));
         em.detach(a);
         assertFalse(em.contains(a));
         final String newType = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#AddedType";
         a.getTypes().add(newType);
         em.getTransaction().begin();
-        final OWLClassA merged = em.merge(a, aDescriptor);
+        final OWLClassA merged = em.merge(a);
         assertTrue(merged.getTypes().contains(newType));
         em.getTransaction().commit();
 
-        final OWLClassA res = em.find(OWLClassA.class, a.getUri(), aDescriptor);
+        final OWLClassA res = em.find(OWLClassA.class, a.getUri());
         assertEquals(a.getTypes().size(), res.getTypes().size());
         assertTrue(res.getTypes().containsAll(a.getTypes()));
     }
 
-    public void mergeDetachedCascade(EntityManager em, URI ctx) {
+    @Test
+    public void testMergeDetachedCascade() {
         logger.config("Test: merge detached with cascade.");
-        final EntityDescriptor hDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateCascade", true);
         em.getTransaction().begin();
-        em.persist(entityH, hDescriptor);
+        em.persist(entityH);
         assertTrue(em.contains(entityA));
         em.getTransaction().commit();
 
         em.getTransaction().begin();
-        final OWLClassH h = em.find(OWLClassH.class, entityH.getUri(), hDescriptor);
+        final OWLClassH h = em.find(OWLClassH.class, entityH.getUri());
         assertNotNull(h.getOwlClassA());
         em.detach(h);
         assertFalse(em.contains(h));
         assertFalse(em.contains(h.getOwlClassA()));
         final String newStr = "newStringAttribute";
         h.getOwlClassA().setStringAttribute(newStr);
-        final OWLClassH merged = em.merge(h, hDescriptor);
+        final OWLClassH merged = em.merge(h);
         assertEquals(newStr, merged.getOwlClassA().getStringAttribute());
         em.getTransaction().commit();
 
-        final OWLClassA res = em.find(OWLClassA.class, entityA.getUri(), hDescriptor);
+        final OWLClassA res = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(res);
         assertEquals(newStr, res.getStringAttribute());
     }
 
-    public void mergeDetachedWithUpdatedObjectProperty(EntityManager em, URI ctx) {
+    @Test
+    public void testMergeDetachedWithObjectPropertyChange() {
         logger.config("Test: merge detached with object property change.");
-        final EntityDescriptor dDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateDetachedWithOPChange", true);
         em.getTransaction().begin();
-        em.persist(entityD, dDescriptor);
-        em.persist(entityA, dDescriptor);
+        em.persist(entityD);
+        em.persist(entityA);
         em.getTransaction().commit();
 
-        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
+        final OWLClassD d = em.find(OWLClassD.class, entityD.getUri());
         em.detach(d);
         d.setOwlClassA(entityA2);
         em.getTransaction().begin();
-        em.merge(d, dDescriptor);
-        em.persist(entityA2, dDescriptor);
+        em.merge(d);
+        em.persist(entityA2);
         em.getTransaction().commit();
 
-        final OWLClassD res = em.find(OWLClassD.class, entityD.getUri(), dDescriptor);
+        final OWLClassD res = em.find(OWLClassD.class, entityD.getUri());
         assertNotNull(res);
         assertEquals(entityA2.getUri(), res.getOwlClassA().getUri());
         assertEquals(entityA2.getStringAttribute(), res.getOwlClassA().getStringAttribute());
-        final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), dDescriptor);
+        final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(resA);
         assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
         assertEquals(entityA.getTypes(), resA.getTypes());
     }
 
-    public void removeFromSimpleList(EntityManager em, URI ctx) {
+    @Test
+    public void testRemoveFromSimpleList() {
         logger.config("Test: remove entity from simple list. (But keep it in the ontology.)");
-        final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateRemoveFromSimpleList", true);
         entityC.setSimpleList(Generators.createSimpleList());
         em.getTransaction().begin();
-        em.persist(entityC, cDescriptor);
-        for (OWLClassA a : entityC.getSimpleList()) {
-            em.persist(a, cDescriptor);
-        }
+        em.persist(entityC);
+        entityC.getSimpleList().forEach(em::persist);
         em.getTransaction().commit();
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(c);
         em.getTransaction().begin();
         final OWLClassA a = c.getSimpleList().get(1);
         c.getSimpleList().remove(a);
         em.getTransaction().commit();
 
-        final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), cDescriptor);
+        final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
         assertNotNull(resA);
-        final OWLClassC resC = em.find(OWLClassC.class, c.getUri(), cDescriptor);
+        final OWLClassC resC = em.find(OWLClassC.class, c.getUri());
         assertEquals(c.getSimpleList().size(), resC.getSimpleList().size());
         assertEquals(entityC.getSimpleList().size() - 1, resC.getSimpleList().size());
         for (OWLClassA aa : resC.getSimpleList()) {
@@ -250,82 +253,78 @@ public class UpdateOperationsRunner extends BaseRunner {
         }
     }
 
-    public void addToSimpleList(EntityManager em, URI ctx) {
+    @Test
+    public void testAddToSimpleList() {
         logger.config("Test: add entity to simple list.");
-        final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateAddToSimpleList", true);
         entityC.setSimpleList(Generators.createSimpleList());
         em.getTransaction().begin();
-        em.persist(entityC, cDescriptor);
-        for (OWLClassA a : entityC.getSimpleList()) {
-            em.persist(a, cDescriptor);
-        }
-        final EntityDescriptor aDescriptor = new EntityDescriptor(ctx);
-        em.persist(entityA, aDescriptor);
+        em.persist(entityC);
+        entityC.getSimpleList().forEach(em::persist);
+        em.persist(entityA);
         em.getTransaction().commit();
 
         em.getTransaction().begin();
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(c);
-        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
+        final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(a);
         assertFalse(c.getSimpleList().contains(a));
         c.getSimpleList().add(a);
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
         assertEquals(c.getSimpleList().size(), resC.getSimpleList().size());
         assertEquals(entityC.getSimpleList().size() + 1, resC.getSimpleList().size());
-        final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
+        final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(resA);
         assertTrue(resC.getSimpleList().contains(resA));
     }
 
-    public void clearSimpleList(EntityManager em, URI ctx) {
+    @Test
+    public void testClearSimpleList() {
         logger.config("Test: clear a simple list (but keep the entities in ontology).");
-        final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateClearSimpleList", true);
         entityC.setSimpleList(Generators.createSimpleList());
         em.getTransaction().begin();
-        em.persist(entityC, cDescriptor);
-        for (OWLClassA a : entityC.getSimpleList()) {
-            em.persist(a, cDescriptor);
-        }
+        em.persist(entityC);
+        entityC.getSimpleList().forEach(em::persist);
         em.getTransaction().commit();
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(c);
         assertFalse(c.getSimpleList().isEmpty());
         em.getTransaction().begin();
         c.getSimpleList().clear();
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(resC);
         assertTrue(resC.getSimpleList() == null || resC.getSimpleList().isEmpty());
         for (OWLClassA a : entityC.getSimpleList()) {
-            assertNotNull(em.find(OWLClassA.class, a.getUri(), cDescriptor));
+            assertNotNull(em.find(OWLClassA.class, a.getUri()));
         }
     }
 
-    public void replaceSimpleList(EntityManager em, URI ctx) {
+    @Test
+    public void testReplaceSimpleList() {
         logger.config("Test: replace simple list with a new one.");
-        final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateReplaceSimpleList", true);
         entityC.setSimpleList(Generators.createSimpleList());
         em.getTransaction().begin();
-        em.persist(entityC, cDescriptor);
-        for (OWLClassA a : entityC.getSimpleList()) {
-            em.persist(a, cDescriptor);
-        }
+        em.persist(entityC);
+        entityC.getSimpleList().forEach(em::persist);
         em.getTransaction().commit();
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
         final List<OWLClassA> newList = new ArrayList<>(1);
         newList.add(entityA);
         em.getTransaction().begin();
-        em.persist(entityA, cDescriptor);
+        em.persist(entityA);
         c.setSimpleList(newList);
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(resC);
         assertEquals(newList.size(), resC.getSimpleList().size());
         boolean found;
@@ -340,31 +339,30 @@ public class UpdateOperationsRunner extends BaseRunner {
             assertTrue(found);
         }
         for (OWLClassA a : entityC.getSimpleList()) {
-            assertNotNull(em.find(OWLClassA.class, a.getUri(), cDescriptor));
+            assertNotNull(em.find(OWLClassA.class, a.getUri()));
         }
     }
 
-    public void removeFromReferencedList(EntityManager em, URI ctx) {
+    @Test
+    public void testRemoveFromReferencedList() {
         logger.config("Test: remove entity from referenced list. (But keep it in the ontology.");
-        final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateRemoveFromReferencedList", true);
         entityC.setReferencedList(Generators.createReferencedList());
         em.getTransaction().begin();
-        em.persist(entityC, cDescriptor);
-        for (OWLClassA a : entityC.getReferencedList()) {
-            em.persist(a, cDescriptor);
-        }
+        em.persist(entityC);
+        entityC.getReferencedList().forEach(em::persist);
         em.getTransaction().commit();
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(c);
         em.getTransaction().begin();
         final OWLClassA a = c.getReferencedList().get(3);
         c.getReferencedList().remove(a);
         em.getTransaction().commit();
 
-        final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), cDescriptor);
+        final OWLClassA resA = em.find(OWLClassA.class, a.getUri());
         assertNotNull(resA);
-        final OWLClassC resC = em.find(OWLClassC.class, c.getUri(), cDescriptor);
+        final OWLClassC resC = em.find(OWLClassC.class, c.getUri());
         assertEquals(c.getReferencedList().size(), resC.getReferencedList().size());
         assertEquals(entityC.getReferencedList().size() - 1, resC.getReferencedList().size());
         for (OWLClassA aa : resC.getReferencedList()) {
@@ -372,78 +370,75 @@ public class UpdateOperationsRunner extends BaseRunner {
         }
     }
 
-    public void addToReferencedList(EntityManager em, URI ctx) {
+    @Test
+    public void testAddToReferencedList() {
         logger.config("Test: add entity to Referenced list.");
-        final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateAddToReferencedList", true);
         entityC.setReferencedList(Generators.createReferencedList());
         em.getTransaction().begin();
-        em.persist(entityC, cDescriptor);
-        for (OWLClassA a : entityC.getReferencedList()) {
-            em.persist(a, cDescriptor);
-        }
+        em.persist(entityC);
+        entityC.getReferencedList().forEach(em::persist);
         em.getTransaction().commit();
 
         em.getTransaction().begin();
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(c);
-        em.persist(entityA, cDescriptor);
+        em.persist(entityA);
         c.getReferencedList().add(entityA);
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
         assertEquals(c.getReferencedList().size(), resC.getReferencedList().size());
         assertEquals(entityC.getReferencedList().size() + 1, resC.getReferencedList().size());
-        final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), cDescriptor);
+        final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(resA);
         assertTrue(resC.getReferencedList().contains(resA));
     }
 
-    public void clearReferencedList(EntityManager em, URI ctx) {
+    @Test
+    public void testClearReferencedList() {
         logger.config("Test: clear referenced list (but keep the entities in ontology).");
-        final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateClearReferencedList", true);
         entityC.setReferencedList(Generators.createReferencedList());
         em.getTransaction().begin();
-        em.persist(entityC, cDescriptor);
-        for (OWLClassA a : entityC.getReferencedList()) {
-            em.persist(a, cDescriptor);
-        }
+        em.persist(entityC);
+        entityC.getReferencedList().forEach(em::persist);
         em.getTransaction().commit();
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(c);
         assertFalse(c.getReferencedList().isEmpty());
         em.getTransaction().begin();
         c.setReferencedList(null);
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(resC);
         assertNull(resC.getReferencedList());
         for (OWLClassA a : entityC.getReferencedList()) {
-            assertNotNull(em.find(OWLClassA.class, a.getUri(), cDescriptor));
+            assertNotNull(em.find(OWLClassA.class, a.getUri()));
         }
     }
 
-    public void replaceReferencedList(EntityManager em, URI ctx) {
+    @Test
+    public void testReplaceReferencedList() {
         logger.config("Test: replace referenced list with a new one.");
-        final EntityDescriptor cDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateReplaceReferencedList", true);
         entityC.setReferencedList(Generators.createReferencedList());
         em.getTransaction().begin();
-        em.persist(entityC, cDescriptor);
-        for (OWLClassA a : entityC.getReferencedList()) {
-            em.persist(a, cDescriptor);
-        }
+        em.persist(entityC);
+        entityC.getReferencedList().forEach(em::persist);
         em.getTransaction().commit();
 
-        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
         final List<OWLClassA> newList = new ArrayList<>(1);
         newList.add(entityA);
         em.getTransaction().begin();
-        em.persist(entityA, cDescriptor);
+        em.persist(entityA);
         c.setReferencedList(newList);
         em.getTransaction().commit();
 
-        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri(), cDescriptor);
+        final OWLClassC resC = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(resC);
         assertEquals(newList.size(), resC.getReferencedList().size());
         boolean found;
@@ -458,22 +453,23 @@ public class UpdateOperationsRunner extends BaseRunner {
             assertTrue(found);
         }
         for (OWLClassA a : entityC.getReferencedList()) {
-            assertNotNull(em.find(OWLClassA.class, a.getUri(), cDescriptor));
+            assertNotNull(em.find(OWLClassA.class, a.getUri()));
         }
     }
 
-    public void addNewToProperties(EntityManager em, URI ctx) {
+    @Test
+    public void testAddNewToProperties() {
         logger.config("Test: add a new property value to entity's properties.");
-        final EntityDescriptor bDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateAddNewToProperties", false);
         entityB.setProperties(Generators.createProperties());
         final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
         expected.putAll(entityB.getProperties());
         em.getTransaction().begin();
-        em.persist(entityB, bDescriptor);
+        em.persist(entityB);
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
+        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri());
         assertNotNull(b);
         assertEquals(expected.size(), b.getProperties().size());
         em.getTransaction().begin();
@@ -482,7 +478,7 @@ public class UpdateOperationsRunner extends BaseRunner {
         expected.putAll(b.getProperties());
         em.getTransaction().commit();
 
-        final OWLClassB res = em.find(OWLClassB.class, b.getUri(), bDescriptor);
+        final OWLClassB res = em.find(OWLClassB.class, b.getUri());
         assertNotNull(res);
         assertEquals(expected.size(), res.getProperties().size());
         for (Map.Entry<String, Set<String>> e : expected.entrySet()) {
@@ -495,19 +491,20 @@ public class UpdateOperationsRunner extends BaseRunner {
         }
     }
 
-    public void addPropertyValue(EntityManager em, URI ctx) {
+    @Test
+    public void testAddPropertyValue() {
         logger.config("Test: add another value to an existing property.");
-        final EntityDescriptor bDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateAddPropertyValue", false);
         entityB.setProperties(Generators.createProperties());
         final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
         final String prop = entityB.getProperties().keySet().iterator().next();
         expected.putAll(entityB.getProperties());
         em.getTransaction().begin();
-        em.persist(entityB, bDescriptor);
+        em.persist(entityB);
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
+        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri());
         assertNotNull(b);
         assertEquals(expected.size(), b.getProperties().size());
         em.getTransaction().begin();
@@ -515,7 +512,7 @@ public class UpdateOperationsRunner extends BaseRunner {
         expected.putAll(b.getProperties());
         em.getTransaction().commit();
 
-        final OWLClassB res = em.find(OWLClassB.class, b.getUri(), bDescriptor);
+        final OWLClassB res = em.find(OWLClassB.class, b.getUri());
         assertNotNull(res);
         assertEquals(expected.size(), res.getProperties().size());
         for (Map.Entry<String, Set<String>> e : expected.entrySet()) {
@@ -534,110 +531,112 @@ public class UpdateOperationsRunner extends BaseRunner {
         }
     }
 
-    public void addPropertyValueDetached(EntityManager em, URI ctx) {
+    @Test
+    public void testAddPropertyValueDetached() {
         logger.config("Test: add another value to an existing property.");
-        final EntityDescriptor bDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("UpdateAddPropertyValueDetached", false);
         entityB.setProperties(Generators.createProperties());
         final String prop = entityB.getProperties().keySet().iterator().next();
         final String newPropertyValue = "http://krizik.felk.cvut.cz/ontologies/jopa#newPropertyValue";
         em.getTransaction().begin();
-        em.persist(entityB, bDescriptor);
+        em.persist(entityB);
         em.getTransaction().commit();
         em.clear();
 
-        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
+        final OWLClassB b = em.find(OWLClassB.class, entityB.getUri());
         b.getProperties().get(prop).add(newPropertyValue);
         em.detach(b);
         em.getTransaction().begin();
-        em.merge(b, bDescriptor);
+        em.merge(b);
         em.getTransaction().commit();
 
-        final OWLClassB res = em.find(OWLClassB.class, entityB.getUri(), bDescriptor);
+        final OWLClassB res = em.find(OWLClassB.class, entityB.getUri());
         assertNotNull(res);
         assertTrue(res.getProperties().get(prop).contains(newPropertyValue));
     }
 
-    public void modifyInferredAttribute(EntityManager em, URI ctx) {
+    @Test(expected = OWLInferredAttributeModifiedException.class)
+    public void testModifyInferredAttribute() {
         logger.config("Test: modify an inferred attribute.");
-        final EntityDescriptor fDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("ModifyInferredAttribute", false);
         em.getTransaction().begin();
-        em.persist(entityF, fDescriptor);
+        em.persist(entityF);
         em.getTransaction().commit();
 
         em.getTransaction().begin();
-        final OWLClassF f = em.find(OWLClassF.class, entityF.getUri(), fDescriptor);
+        final OWLClassF f = em.find(OWLClassF.class, entityF.getUri());
         assertNotNull(f);
         f.setSecondStringAttribute("otherValue");
         em.getTransaction().commit();
-        fail("This line should not have been reached.");
     }
 
-    public void updateBasicTypeAttributes(EntityManager em, URI ctx) {
+    @Test
+    public void testModifyAttributesOfBasicTypes() {
         logger.config("Test: modify attributes of basic Java types (Integer, Boolean etc.).");
-        final EntityDescriptor mDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("ModifyBasicTypeAttributes", false);
         em.getTransaction().begin();
-        em.persist(entityM, mDescriptor);
+        em.persist(entityM);
         em.getTransaction().commit();
 
         em.getTransaction().begin();
-        final OWLClassM m = em.find(OWLClassM.class, entityM.getKey(), mDescriptor);
+        final OWLClassM m = em.find(OWLClassM.class, entityM.getKey());
         m.setBooleanAttribute(!entityM.getBooleanAttribute());
         m.setDoubleAttribute(m.getDoubleAttribute() - 100.0);
         m.setLongAttribute(m.getLongAttribute() + 100L);
         m.setDateAttribute(new Date(System.currentTimeMillis() + 10000));
         em.getTransaction().commit();
 
-        final OWLClassM res = em.find(OWLClassM.class, entityM.getKey(), mDescriptor);
+        final OWLClassM res = em.find(OWLClassM.class, entityM.getKey());
         assertEquals(m.getBooleanAttribute(), res.getBooleanAttribute());
         assertEquals(m.getLongAttribute(), res.getLongAttribute());
         assertEquals(m.getDoubleAttribute(), res.getDoubleAttribute());
         assertEquals(m.getDateAttribute(), res.getDateAttribute());
     }
 
-    public void updateEnumAttribute(EntityManager em, URI ctx) {
+    @Test
+    public void testModifyEnumAttribute() {
         logger.config("Test: modify enum attribute.");
-        final EntityDescriptor mDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("ModifyEnumAttribute", false);
         assertNotNull(entityM.getEnumAttribute());
         em.getTransaction().begin();
-        em.persist(entityM, mDescriptor);
+        em.persist(entityM);
         em.getTransaction().commit();
 
         final OWLClassM.Severity updated = OWLClassM.Severity.LOW;
         em.getTransaction().begin();
-        final OWLClassM m = em.find(OWLClassM.class, entityM.getKey(), mDescriptor);
+        final OWLClassM m = em.find(OWLClassM.class, entityM.getKey());
         m.setEnumAttribute(updated);
         em.getTransaction().commit();
 
-        final OWLClassM res = em.find(OWLClassM.class, entityM.getKey(), mDescriptor);
+        final OWLClassM res = em.find(OWLClassM.class, entityM.getKey());
         assertNotNull(res);
         assertEquals(updated, res.getEnumAttribute());
     }
 
-    public void cascadeMergeOfNewlyPersistedOnUpdate(EntityManager em, URI ctx) {
+    @Test
+    public void testCascadeOfNewlyPersistedOnMerge() {
         logger.config("Test: cascade merging of an object that has been just persisted.");
-        final EntityDescriptor oDescriptor = new EntityDescriptor(ctx);
+        this.em = getEntityManager("CascadeMergeWithNewlyPersisted", true);
         em.getTransaction().begin();
-        em.persist(entityO, oDescriptor);
-        for (OWLClassE e : entityO.getOwlClassESet()) {
-            em.persist(e, oDescriptor);
-        }
+        em.persist(entityO);
+        entityO.getOwlClassESet().forEach(em::persist);
         em.getTransaction().commit();
 
         final OWLClassE newE = new OWLClassE();
         newE.setStringAttribute("NewlyAddedE");
-        final OWLClassO toUpdate = em.find(OWLClassO.class, entityO.getUri(), oDescriptor);
+        final OWLClassO toUpdate = em.find(OWLClassO.class, entityO.getUri());
         em.detach(toUpdate);
 
         em.getTransaction().begin();
         toUpdate.getOwlClassESet().add(newE);
-        em.persist(newE, oDescriptor);
-        final OWLClassO merged = em.merge(toUpdate, oDescriptor);
+        em.persist(newE);
+        final OWLClassO merged = em.merge(toUpdate);
         assertTrue(merged.getOwlClassESet().contains(newE));
         em.getTransaction().commit();
 
-        final OWLClassE resE = em.find(OWLClassE.class, newE.getUri(), oDescriptor);
+        final OWLClassE resE = em.find(OWLClassE.class, newE.getUri());
         assertNotNull(resE);
-        final OWLClassO resO = em.find(OWLClassO.class, entityO.getUri(), oDescriptor);
+        final OWLClassO resO = em.find(OWLClassO.class, entityO.getUri());
         assertEquals(entityO.getOwlClassESet().size() + 1, resO.getOwlClassESet().size());
     }
 }

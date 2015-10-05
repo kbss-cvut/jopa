@@ -1,13 +1,16 @@
 package cz.cvut.kbss.jopa.test.runners;
 
+import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.*;
+import org.junit.After;
 
 import java.net.URI;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-abstract class BaseRunner {
+public abstract class BaseRunner {
 
 	protected static final URI CONTEXT_ONE = URI
 			.create("http://krizik.felk.cvut.cz/jopa/contexts#One");
@@ -29,7 +32,10 @@ abstract class BaseRunner {
 	protected OWLClassI entityI;
 	protected OWLClassM entityM;
 
-	BaseRunner(Logger logger) {
+
+	protected EntityManager em;
+
+	public BaseRunner(Logger logger) {
 		assert logger != null;
 		this.logger = logger;
 		init();
@@ -78,4 +84,21 @@ abstract class BaseRunner {
         this.entityM = new OWLClassM();
         entityM.initializeTestValues(true);
 	}
+
+    @After
+    public void tearDown() throws Exception {
+        assert em != null;
+        if (em.isOpen()) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            em.close();
+            em.getEntityManagerFactory().close();
+        }
+    }
+
+    protected abstract EntityManager getEntityManager(String repositoryName, boolean cacheEnabled);
+
+    protected abstract EntityManager getEntityManager(String repositoryName, boolean cacheEnabled,
+                                                      Map<String, String> properties);
 }

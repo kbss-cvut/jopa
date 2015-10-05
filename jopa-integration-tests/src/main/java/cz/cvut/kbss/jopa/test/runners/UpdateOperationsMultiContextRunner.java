@@ -1,6 +1,5 @@
 package cz.cvut.kbss.jopa.test.runners;
 
-import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
@@ -10,6 +9,7 @@ import cz.cvut.kbss.jopa.test.OWLClassC;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
+import org.junit.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -20,14 +20,16 @@ import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
-public class UpdateOperationsMultiContextRunner extends BaseRunner {
+public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
     public UpdateOperationsMultiContextRunner(Logger logger) {
         super(logger);
     }
 
-    public void updateDataPropertyInContext(EntityManager em) throws Exception {
+    @Test
+    public void testUpdateDataPropertyInContext() throws Exception {
         logger.config("Test: update data property value which is stored in a different context that the owner.");
+        this.em = getEntityManager("MultiUpdateDataPropertyInContext", false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
         aDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("stringAttribute"), CONTEXT_TWO);
         em.getTransaction().begin();
@@ -47,8 +49,10 @@ public class UpdateOperationsMultiContextRunner extends BaseRunner {
         assertEquals(entityA.getTypes(), resA.getTypes());
     }
 
-    public void updateObjectPropertyToDifferentContext(EntityManager em) throws Exception {
+    @Test
+    public void testUpdateObjectPropertyToDifferentContext() throws Exception {
         logger.config("Test: update object property with value from different context than the previous.");
+        this.em = getEntityManager("MultiUpdateObjectPropertyToDifferent", false);
         final Descriptor dDescriptor = new EntityDescriptor();
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
         dDescriptor.addAttributeDescriptor(OWLClassD.class.getDeclaredField("owlClassA"), aDescriptor);
@@ -79,8 +83,10 @@ public class UpdateOperationsMultiContextRunner extends BaseRunner {
         assertEquals(entityA.getStringAttribute(), resA.getStringAttribute());
     }
 
-    public void updateAddToPropertiesInContext(EntityManager em) throws Exception {
+    @Test
+    public void testUpdateAddToPropertiesInContext() throws Exception {
         logger.config("Test: add new property value, properties are stored in a different context.");
+        this.em = getEntityManager("MultiUpdateAddToPropertiesInContext", false);
         entityB.setProperties(Generators.createProperties());
         final Descriptor bDescriptor = new EntityDescriptor(CONTEXT_ONE);
         bDescriptor.addAttributeContext(OWLClassB.class.getDeclaredField("properties"), CONTEXT_TWO);
@@ -105,8 +111,10 @@ public class UpdateOperationsMultiContextRunner extends BaseRunner {
         assertTrue(TestEnvironmentUtils.arePropertiesEqual(b.getProperties(), res.getProperties()));
     }
 
-    public void updateAddToSimpleListInContext(EntityManager em) throws Exception {
+    @Test
+    public void testUpdateAddToSimpleListInContext() throws Exception {
         logger.config("Test: add new element into a simple list stored in different context than its owner.");
+        this.em = getEntityManager("MultiUpdateAddToSimpleListInContext", false);
         entityC.setSimpleList(Generators.createSimpleList(15));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor lstDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
@@ -114,9 +122,7 @@ public class UpdateOperationsMultiContextRunner extends BaseRunner {
         cDescriptor.addAttributeDescriptor(OWLClassC.class.getDeclaredField("simpleList"), lstDescriptor);
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
-        for (OWLClassA a : entityC.getSimpleList()) {
-            em.persist(a, lstDescriptor);
-        }
+        entityC.getSimpleList().forEach(a -> em.persist(a, lstDescriptor));
         em.getTransaction().commit();
 
         em.getTransaction().begin();
@@ -142,8 +148,10 @@ public class UpdateOperationsMultiContextRunner extends BaseRunner {
         assertTrue(found);
     }
 
-    public void updateAddToReferencedListInContext(EntityManager em) throws Exception {
+    @Test
+    public void testUpdateAddToReferencedListInContext() throws Exception {
         logger.config("Test: add new element into a referenced list stored in different context than its owner.");
+        this.em = getEntityManager("MultiUpdateAddToReferencedListInContext", false);
         entityC.setReferencedList(Generators.createReferencedList(10));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor lstDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
@@ -151,9 +159,7 @@ public class UpdateOperationsMultiContextRunner extends BaseRunner {
         cDescriptor.addAttributeDescriptor(OWLClassC.class.getDeclaredField("referencedList"), lstDescriptor);
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
-        for (OWLClassA a : entityC.getReferencedList()) {
-            em.persist(a, lstDescriptor);
-        }
+        entityC.getReferencedList().forEach(a -> em.persist(a, lstDescriptor));
         em.getTransaction().commit();
 
         em.getTransaction().begin();
@@ -179,8 +185,10 @@ public class UpdateOperationsMultiContextRunner extends BaseRunner {
         assertTrue(found);
     }
 
-    public void updateRemoveFromSimpleListInContext(EntityManager em) throws Exception {
+    @Test
+    public void testUpdateRemoveFromSimpleListInContext() throws Exception {
         logger.config("Test: remove element from simple list stored in a different context than its owner.");
+        this.em = getEntityManager("MultiUpdateRemoveFromSimpleListInContext", false);
         entityC.setSimpleList(Generators.createSimpleList(15));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor lstDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
@@ -188,9 +196,7 @@ public class UpdateOperationsMultiContextRunner extends BaseRunner {
         cDescriptor.addAttributeDescriptor(OWLClassC.class.getDeclaredField("simpleList"), lstDescriptor);
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
-        for (OWLClassA a : entityC.getSimpleList()) {
-            em.persist(a, lstDescriptor);
-        }
+        entityC.getSimpleList().forEach(a -> em.persist(a, lstDescriptor));
         em.getTransaction().commit();
 
         em.getTransaction().begin();
@@ -208,8 +214,10 @@ public class UpdateOperationsMultiContextRunner extends BaseRunner {
         assertNull(em.find(OWLClassA.class, a.getUri(), lstDescriptor));
     }
 
-    public void updateRemoveFromReferencedListInContext(EntityManager em) throws Exception {
+    @Test
+    public void testUpdateRemoveFromReferencedListInContext() throws Exception {
         logger.config("Test: remove elements from referenced list stored in a different context than its owner.");
+        this.em = getEntityManager("MultiUpdateRemoveFromReferencedListInContext", false);
         entityC.setReferencedList(Generators.createReferencedList(10));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor lstDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
@@ -217,9 +225,7 @@ public class UpdateOperationsMultiContextRunner extends BaseRunner {
         cDescriptor.addAttributeDescriptor(OWLClassC.class.getDeclaredField("referencedList"), lstDescriptor);
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
-        for (OWLClassA a : entityC.getReferencedList()) {
-            em.persist(a, lstDescriptor);
-        }
+        entityC.getReferencedList().forEach(a -> em.persist(a, lstDescriptor));
         em.getTransaction().commit();
 
         em.getTransaction().begin();
