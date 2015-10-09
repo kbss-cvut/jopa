@@ -1,24 +1,18 @@
 package cz.cvut.kbss.jopa.test.query;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.test.environment.SesameMemoryStorageConfig;
-import cz.cvut.kbss.jopa.test.environment.StorageConfig;
-import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
+import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.runner.TypedQueryRunner;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 import java.util.logging.Logger;
 
 public class SesameTypedQueryTests extends TypedQueryRunner {
 
     private static final Logger LOG = Logger.getLogger(SesameTypedQueryTests.class.getName());
-
-    private static StorageConfig storage = initStorage();
-    private static Map<String, String> properties = initProperties();
 
     private static EntityManager em;
 
@@ -28,7 +22,9 @@ public class SesameTypedQueryTests extends TypedQueryRunner {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        em = TestEnvironment.getPersistenceConnector("SesameMemStoreSPARQLTypedQueryTests", storage, false, properties);
+        final SesamePersistenceFactory persistenceFactory = new SesamePersistenceFactory();
+        em = persistenceFactory.getEntityManager("SPARQLTypedQueryTests", false,
+                Collections.singletonMap(OntoDriverProperties.SESAME_USE_INFERENCE, "true"));
         QueryTestEnvironment.generateTestData(em);
         em.clear();
         em.getEntityManagerFactory().getCache().evictAll();
@@ -43,17 +39,5 @@ public class SesameTypedQueryTests extends TypedQueryRunner {
     @Override
     protected EntityManager getEntityManager() {
         return em;
-    }
-
-    private static StorageConfig initStorage() {
-        return new SesameMemoryStorageConfig();
-    }
-
-    private static Map<String, String> initProperties() {
-        final Map<String, String> map = new HashMap<>();
-        map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-        map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        map.put("storage", "new");
-        return map;
     }
 }
