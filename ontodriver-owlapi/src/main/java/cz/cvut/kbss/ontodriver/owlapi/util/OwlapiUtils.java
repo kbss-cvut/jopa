@@ -8,11 +8,14 @@ import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Utility methods for the OWLAPI driver.
  */
 public class OwlapiUtils {
+
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
     /**
      * Creates OWLLiteral from the specified Java instance.
@@ -23,10 +26,12 @@ public class OwlapiUtils {
      * @return OWLLiteral representing the value
      * @throws IllegalArgumentException If {@code value} is of unsupported type
      */
-    public static OWLLiteral createOWLLiteralFromValue(Object value, OWLDataFactory dataFactory,
-                                                       String lang) {
+    public static OWLLiteral createOWLLiteralFromValue(Object value, OWLDataFactory dataFactory, String lang) {
+        Objects.requireNonNull(value);
         if (value instanceof Integer) {
             return dataFactory.getOWLLiteral((Integer) value);
+        } else if (value instanceof Long) {
+            return dataFactory.getOWLLiteral(value.toString(), OWL2Datatype.XSD_LONG);
         } else if (value instanceof Boolean) {
             return dataFactory.getOWLLiteral((Boolean) value);
         } else if (value instanceof Double) {
@@ -34,9 +39,11 @@ public class OwlapiUtils {
         } else if (value instanceof String) {
             return dataFactory.getOWLLiteral((String) value, lang);
         } else if (value instanceof Date) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat(DATE_TIME_FORMAT);
             return dataFactory.getOWLLiteral(sdf.format(((Date) value)),
                     dataFactory.getOWLDatatype(OWL2Datatype.XSD_DATE_TIME.getIRI()));
+        } else if (value.getClass().isEnum()) {
+            return dataFactory.getOWLLiteral(value.toString());
         } else {
             throw new IllegalArgumentException();
         }
@@ -76,15 +83,13 @@ public class OwlapiUtils {
                 case XSD_DATE_TIME_STAMP:
                 case XSD_DATE_TIME:
                     try {
-                        return new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss")
-                                .parse(literal.getLiteral());
+                        return new SimpleDateFormat(DATE_TIME_FORMAT).parse(literal.getLiteral());
                     } catch (ParseException e) {
-                        throw new IllegalArgumentException("The date time '"
-                                + literal.getLiteral() + "' cannot be parsed");
+                        throw new IllegalArgumentException(
+                                "The date time '" + literal.getLiteral() + "' cannot be parsed.");
                     }
             }
 
-        throw new IllegalArgumentException("Unsupported datatype: "
-                + literal.getDatatype());
+        throw new IllegalArgumentException("Unsupported datatype: " + literal.getDatatype());
     }
 }

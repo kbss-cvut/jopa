@@ -10,21 +10,21 @@ import cz.cvut.kbss.ontodriver.owlapi.util.MutableAxiomChange;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.parameters.OntologyCopy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Default file-based storage connector.
- * <p/>
+ * <p>
  * Each call to {@link #getOntologySnapshot()} returns a new snapshot of the current state of the ontology. The changes
  * are the applied to a shared ontology, which represents the current state of the underlying storage.
  */
 public class BasicStorageConnector extends Connector {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BasicStorageConnector.class);
+    private static final Logger LOG = Logger.getLogger(BasicStorageConnector.class.getName());
 
     private OWLOntologyManager ontologyManager;
     private OWLOntology ontology;
@@ -36,9 +36,10 @@ public class BasicStorageConnector extends Connector {
 
     @Override
     protected void initializeConnector() throws OwlapiDriverException {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(
-                    "Loading ontology " + storageProperties.getOntologyURI() + " from " + storageProperties.getPhysicalURI());
+        if (LOG.isLoggable(Level.CONFIG)) {
+            LOG.config(
+                    "Loading ontology " + storageProperties.getOntologyURI() + " from " +
+                            storageProperties.getPhysicalURI());
         }
         this.ontologyManager = OWLManager.createOWLOntologyManager();
         try {
@@ -57,8 +58,8 @@ public class BasicStorageConnector extends Connector {
     }
 
     private void tryCreatingOntology() throws OwlapiDriverException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Creating new ontology in " + storageProperties.getPhysicalURI());
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Creating new ontology in " + storageProperties.getPhysicalURI());
         }
         try {
             this.ontology = ontologyManager.createOntology(IRI.create(storageProperties.getOntologyURI()));

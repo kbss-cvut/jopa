@@ -3,10 +3,12 @@ package cz.cvut.kbss.ontodriver.owlapi;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver.owlapi.exceptions.InvalidOntologyIriException;
+import cz.cvut.kbss.ontodriver.owlapi.util.IdentifierGenerator;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.exception.OWLIndividualExistsException;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.semanticweb.owlapi.model.*;
@@ -185,17 +187,38 @@ class OwlapiAdapter {
     }
 
     private OWLNamedIndividual individual(NamedResource subject) {
-        return dataFactory().getOWLNamedIndividual(
-                IRI.create(subject.getIdentifier()));
+        return dataFactory().getOWLNamedIndividual(IRI.create(subject.getIdentifier()));
     }
 
     Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
         startTransactionIfNotActive();
-        return new AxiomLoader(ontologySnapshot).findAxioms(descriptor);
+        return new AxiomLoader(this, ontologySnapshot).findAxioms(descriptor);
     }
 
     void persist(AxiomValueDescriptor descriptor) {
         startTransactionIfNotActive();
-        new AxiomSaver(ontologySnapshot, language).persist(descriptor);
+        if (individualExists(descriptor.getSubject())) {
+            throw new OWLIndividualExistsException(
+                    "Individual " + descriptor.getSubject() + " already exists in the ontology.");
+        }
+        new AxiomSaver(this, ontologySnapshot, language).persist(descriptor);
+    }
+
+    private boolean individualExists(NamedResource subject) {
+        return ontology().containsIndividualInSignature(IRI.create(subject.getIdentifier()));
+    }
+
+    URI generateIdentifier(URI classUri) {
+        startTransactionIfNotActive();
+        return new IdentifierGenerator(ontology()).generateIdentifier(classUri);
+    }
+
+    TypesHandler getTypesHandler() {
+        startTransactionIfNotActive();
+        return new TypesHandler(this, ontologySnapshot);
+    }
+
+    void addTransactionalChanges(List<OWLOntologyChange> changes) {
+        pendingChanges.addAll(changes);
     }
 }

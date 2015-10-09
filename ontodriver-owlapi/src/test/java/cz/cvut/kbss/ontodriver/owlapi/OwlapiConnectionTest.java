@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
+import cz.cvut.kbss.ontodriver_new.Types;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.*;
 import org.junit.Before;
@@ -12,9 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class OwlapiConnectionTest {
@@ -109,5 +108,33 @@ public class OwlapiConnectionTest {
                 NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa#instance"));
         connection.close();
         connection.find(descriptor);
+    }
+
+    @Test
+    public void typesReturnsTypesHandlerForOwlapiDriver() throws Exception {
+        final OwlapiTypes types = mock(OwlapiTypes.class);
+        connection.setTypes(types);
+        final Types result = connection.types();
+        assertNotNull(result);
+        assertEquals(types, result);
+    }
+
+    @Test
+    public void generateIdentifierGetsNewIdentifier() throws Exception {
+        final URI identifier = URI.create("http://newIdentifier");
+        when(adapterMock.generateIdentifier(any(URI.class))).thenReturn(identifier);
+
+        final URI result = connection.generateIdentifier(URI.create("http://baseUri"));
+        assertEquals(identifier, result);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void generateIdentifierOnClosedThrowsException() throws Exception {
+        connection.close();
+        try {
+            connection.generateIdentifier(URI.create("http://baseUri"));
+        } finally {
+            verify(adapterMock, never()).generateIdentifier(any(URI.class));
+        }
     }
 }

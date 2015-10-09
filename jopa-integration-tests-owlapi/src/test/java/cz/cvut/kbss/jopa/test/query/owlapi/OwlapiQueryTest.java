@@ -1,30 +1,29 @@
-package cz.cvut.kbss.jopa.test.query;
+package cz.cvut.kbss.jopa.test.query.owlapi;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
+import cz.cvut.kbss.jopa.test.integration.environment.OwlapiPersistenceFactory;
+import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.QueryRunner;
-import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import java.util.Collections;
 import java.util.logging.Logger;
 
-public class SesameQueryTests extends QueryRunner {
+public class OwlapiQueryTest extends QueryRunner {
 
-    private static final Logger LOG = Logger.getLogger(SesameQueryTests.class.getName());
+    private static final Logger LOG = Logger.getLogger(OwlapiQueryTest.class.getName());
 
     private static EntityManager em;
 
-    public SesameQueryTests() {
+    public OwlapiQueryTest() {
         super(LOG);
     }
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        final SesamePersistenceFactory persistenceFactory = new SesamePersistenceFactory();
-        em = persistenceFactory.getEntityManager("SPARQLQueryTests", false,
-                Collections.singletonMap(OntoDriverProperties.SESAME_USE_INFERENCE, "true"));
+        final OwlapiPersistenceFactory persistenceFactory = new OwlapiPersistenceFactory();
+        em = persistenceFactory.getEntityManager("SPARQLQueryTests", false, Collections.emptyMap());
         QueryTestEnvironment.generateTestData(em);
         em.clear();
         em.getEntityManagerFactory().getCache().evictAll();

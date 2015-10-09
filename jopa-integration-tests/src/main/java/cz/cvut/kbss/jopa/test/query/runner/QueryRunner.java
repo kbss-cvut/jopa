@@ -156,7 +156,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
                 "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> \""
-                        + a.getStringAttribute() + "\" .}";
+                        + a.getStringAttribute() + "\"@en .}";
         final Query<List<String>> q = getEntityManager().createNativeQuery(query);
 
         final List<String> res = q.getSingleResult();

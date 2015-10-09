@@ -11,9 +11,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by ledvima1 on 26.2.15.
- */
 class OwlapiDriver implements Closeable, ConnectionListener {
 
     private final OntologyStorageProperties storageProperties;
@@ -58,6 +55,7 @@ class OwlapiDriver implements Closeable, ConnectionListener {
         final OwlapiAdapter adapter = new OwlapiAdapter(
                 ConnectorFactory.getInstance(storageProperties, properties).getConnector(), properties);
         final OwlapiConnection c = new OwlapiConnection(adapter);
+        c.setTypes(new OwlapiTypes(c, adapter));
         openConnections.add(c);
         c.addListener(this);
         return c;

@@ -46,6 +46,7 @@ public class OwlapiDataSource implements DataSource {
     private void connect() {
         this.driver = new OwlapiDriver(storageProperties,
                 properties != null ? properties : Collections.<String, String>emptyMap());
+        this.connected = true;
     }
 
     @Override

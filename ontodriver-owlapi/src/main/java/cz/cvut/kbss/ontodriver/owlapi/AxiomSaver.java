@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
@@ -11,6 +12,7 @@ import org.semanticweb.owlapi.model.*;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -18,13 +20,16 @@ import java.util.stream.Collectors;
  */
 class AxiomSaver {
 
+    private final OwlapiAdapter adapter;
+
     private OWLOntology ontology;
     private OWLDataFactory dataFactory;
     private OWLOntologyManager ontologyManager;
 
     private String language;
 
-    AxiomSaver(OntologyStructures snapshot, String language) {
+    AxiomSaver(OwlapiAdapter adapter, OntologyStructures snapshot, String language) {
+        this.adapter = adapter;
         this.ontology = snapshot.getOntology();
         this.dataFactory = snapshot.getDataFactory();
         this.ontologyManager = snapshot.getOntologyManager();
@@ -57,12 +62,14 @@ class AxiomSaver {
     }
 
     private void persistTypes(NamedResource subject, List<Value<?>> types) {
-        final OWLNamedIndividual individual = individual(subject);
-        final List<AddAxiom> addAxioms = types.stream().map(value -> {
-            final OWLClass cls = dataFactory.getOWLClass(IRI.create(value.stringValue()));
-            return new AddAxiom(ontology, dataFactory.getOWLClassAssertionAxiom(cls, individual));
-        }).collect(Collectors.toList());
-        ontologyManager.applyChanges(addAxioms);
+        final Set<URI> classes = types.stream().map(val -> {
+            if (val.getValue() instanceof URI) {
+                return (URI) val.getValue();
+            } else {
+                return URI.create(val.stringValue());
+            }
+        }).collect(Collectors.toSet());
+        adapter.getTypesHandler().addTypes(subject, null, classes);
     }
 
     private OWLNamedIndividual individual(NamedResource subject) {
@@ -72,24 +79,50 @@ class AxiomSaver {
     private void persistDataPropertyValues(NamedResource subject, Assertion assertion, List<Value<?>> values) {
         final OWLNamedIndividual individual = individual(subject);
         final OWLDataProperty property = dataFactory.getOWLDataProperty(IRI.create(assertion.getIdentifier()));
-        final List<AddAxiom> addAxioms = values.stream().map(value -> {
-            final OWLLiteral val = OwlapiUtils.createOWLLiteralFromValue(value.getValue(), dataFactory, language);
-            return new AddAxiom(ontology, dataFactory.getOWLDataPropertyAssertionAxiom(property, individual, val));
-        }).collect(Collectors.toList());
-        ontologyManager.applyChanges(addAxioms);
+        final List<OWLDataPropertyAssertionAxiom> axioms = values.stream().filter(value -> value != Value.nullValue())
+                                                                 .map(
+                                                                         value -> {
+                                                                             final OWLLiteral val = OwlapiUtils
+                                                                                     .createOWLLiteralFromValue(
+                                                                                             value.getValue(),
+                                                                                             dataFactory, language);
+                                                                             return dataFactory
+                                                                                     .getOWLDataPropertyAssertionAxiom(
+                                                                                             property, individual, val);
+                                                                         }).collect(Collectors.toList());
+        addAxioms(axioms);
+    }
+
+    private void addAxioms(List<? extends OWLAxiom> axioms) {
+        if (axioms.isEmpty()) {
+            return;
+        }
+        final List<OWLOntologyChange> changes = axioms.stream().map(axiom -> new MutableAddAxiom(ontology, axiom))
+                                                      .collect(Collectors.toList());
+        adapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
     }
 
     private void persistAnnotationPropertyValues(NamedResource subject, Assertion assertion, List<Value<?>> values) {
         final IRI annotationSubject = IRI.create(subject.getIdentifier());
         final OWLAnnotationProperty property = dataFactory.getOWLAnnotationProperty(
                 IRI.create(assertion.getIdentifier()));
-        final List<AddAxiom> addAxioms = values.stream().map(value -> {
-            final OWLAnnotationValue val = isIri(value.getValue()) ? IRI.create(
-                    value.stringValue()) : OwlapiUtils.createOWLLiteralFromValue(value.getValue(), dataFactory,
-                    language);
-            return new AddAxiom(ontology, dataFactory.getOWLAnnotationAssertionAxiom(property, annotationSubject, val));
-        }).collect(Collectors.toList());
-        ontologyManager.applyChanges(addAxioms);
+        final List<OWLAnnotationAssertionAxiom> axioms = values.stream().filter(value -> value != Value.nullValue())
+                                                               .map(
+                                                                       value -> {
+                                                                           final OWLAnnotationValue val =
+                                                                                   isIri(value.getValue()) ? IRI.create(
+                                                                                           value.stringValue()) :
+                                                                                   OwlapiUtils
+                                                                                           .createOWLLiteralFromValue(
+                                                                                                   value.getValue(),
+                                                                                                   dataFactory,
+                                                                                                   language);
+                                                                           return dataFactory
+                                                                                   .getOWLAnnotationAssertionAxiom(
+                                                                                           property, annotationSubject,
+                                                                                           val);
+                                                                       }).collect(Collectors.toList());
+        addAxioms(axioms);
     }
 
     private boolean isIri(Object value) {
@@ -100,14 +133,22 @@ class AxiomSaver {
     private void persistObjectPropertyValues(NamedResource subject, Assertion assertion, List<Value<?>> values) {
         final OWLNamedIndividual individual = individual(subject);
         final OWLObjectProperty property = dataFactory.getOWLObjectProperty(IRI.create(assertion.getIdentifier()));
-        final List<AddAxiom> addAxioms = values.stream().map(value -> {
-            // Simplistic version using value.stringValue
-            // We expect the value to  be a NamedResource, but in case the property was unspecified and it was only assumed
-            // it is an object property (see #persistPropertyValues), the value would be a simple string
-            final OWLNamedIndividual target = dataFactory.getOWLNamedIndividual(IRI.create(value.stringValue()));
-            return new AddAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(property, individual, target));
-        }).collect(Collectors.toList());
-        ontologyManager.applyChanges(addAxioms);
+        final List<OWLObjectPropertyAssertionAxiom> axioms = values.stream().filter(value -> value != Value.nullValue())
+                                                                   .map(
+                                                                           value -> {
+                                                                               // Simplistic version using value.stringValue
+                                                                               // We expect the value to  be a NamedResource, but in case the property was unspecified and it was only assumed
+                                                                               // it is an object property (see #persistPropertyValues), the value would be a simple string
+                                                                               final OWLNamedIndividual target = dataFactory
+                                                                                       .getOWLNamedIndividual(
+                                                                                               IRI.create(
+                                                                                                       value.stringValue()));
+                                                                               return dataFactory
+                                                                                       .getOWLObjectPropertyAssertionAxiom(
+                                                                                               property, individual,
+                                                                                               target);
+                                                                           }).collect(Collectors.toList());
+        addAxioms(axioms);
     }
 
     private void persistPropertyValues(NamedResource subject, Assertion assertion, List<Value<?>> values) {

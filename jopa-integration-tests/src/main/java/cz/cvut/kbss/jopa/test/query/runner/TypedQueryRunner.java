@@ -57,7 +57,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
                 "SELECT ?x WHERE { " +
                         "?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB> ; " +
                         "<http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> \""
-                        + b.getStringAttribute() + "\" . }";
+                        + b.getStringAttribute() + "\"@en . }";
         final TypedQuery<OWLClassB> q = getEntityManager().createNativeQuery(query, OWLClassB.class);
         final OWLClassB res = q.getSingleResult();
         assertNotNull(res);
@@ -119,7 +119,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
                 "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> \""
-                        + a.getStringAttribute() + "\" .}";
+                        + a.getStringAttribute() + "\"@en .}";
         final Query<OWLClassA> q = getEntityManager().createNativeQuery(query, OWLClassA.class);
         final OWLClassA res = q.getSingleResult();
         assertNotNull(res);

@@ -20,7 +20,7 @@ public enum OntologyConnectorType {
 
 	private final String dataSource;
 
-	private OntologyConnectorType(String name, String property, String dataSource) {
+	OntologyConnectorType(String name, String property, String dataSource) {
 		this.name = name;
 		this.property = property;
 		this.dataSource = dataSource;

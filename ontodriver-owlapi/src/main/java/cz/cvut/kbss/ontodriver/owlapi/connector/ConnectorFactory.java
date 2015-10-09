@@ -5,9 +5,6 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 import java.util.Map;
 
-/**
- * Created by ledvima1 on 26.2.15.
- */
 public class ConnectorFactory {
 
     private static ConnectorFactory instance;

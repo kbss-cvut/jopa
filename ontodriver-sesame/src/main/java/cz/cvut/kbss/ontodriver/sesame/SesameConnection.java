@@ -12,7 +12,7 @@ import java.util.Set;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.IdentifierGenerationException;
+import cz.cvut.kbss.ontodriver_new.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
 import cz.cvut.kbss.ontodriver_new.Connection;
@@ -25,186 +25,202 @@ import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 class SesameConnection implements Connection {
 
-	private SesameAdapter adapter;
-	private boolean open;
-	private boolean autoCommit;
+    private SesameAdapter adapter;
+    private boolean open;
+    private boolean autoCommit;
 
     // TODO Remove coupling between lists, types and properties and connection by introducing callbacks
-	private Lists lists;
-	private Types types;
+    private Lists lists;
+    private Types types;
     private Properties properties;
 
-	private final Set<ConnectionListener> listeners;
+    private final Set<ConnectionListener> listeners;
 
-	public SesameConnection(SesameAdapter adapter) {
-		assert adapter != null;
-		this.adapter = adapter;
-		this.listeners = new HashSet<>(4);
-		this.open = true;
-	}
+    public SesameConnection(SesameAdapter adapter) {
+        assert adapter != null;
+        this.adapter = adapter;
+        this.listeners = new HashSet<>(4);
+        this.open = true;
+    }
 
-	void setLists(SesameLists lists) {
-		this.lists = lists;
-	}
+    void setLists(SesameLists lists) {
+        this.lists = lists;
+    }
 
-	void setTypes(SesameTypes types) {
-		this.types = types;
-	}
+    void setTypes(SesameTypes types) {
+        this.types = types;
+    }
 
     public void setProperties(Properties properties) {
         this.properties = properties;
     }
 
     void addListener(ConnectionListener listener) {
-		assert listener != null;
-		listeners.add(listener);
-	}
+        assert listener != null;
+        listeners.add(listener);
+    }
 
-	void removeListener(ConnectionListener listener) {
-		assert listener != null;
-		listeners.remove(listener);
-	}
+    void removeListener(ConnectionListener listener) {
+        assert listener != null;
+        listeners.remove(listener);
+    }
 
-	@Override
-	public void close() throws Exception {
-		if (!open) {
-			return;
-		}
-		try {
-			adapter.close();
-			for (ConnectionListener listener : listeners) {
-				listener.connectionClosed(this);
-			}
-		} finally {
-			this.open = false;
-		}
-	}
+    @Override
+    public void close() throws Exception {
+        if (!open) {
+            return;
+        }
+        try {
+            adapter.close();
+            for (ConnectionListener listener : listeners) {
+                listener.connectionClosed(this);
+            }
+        } finally {
+            this.open = false;
+        }
+    }
 
-	@Override
-	public boolean isOpen() {
-		return open;
-	}
+    @Override
+    public boolean isOpen() {
+        return open;
+    }
 
-	@Override
-	public void commit() throws OntoDriverException {
-		ensureOpen();
-		if (autoCommit) {
-			return;
-		}
-		adapter.commit();
-	}
+    @Override
+    public void commit() throws OntoDriverException {
+        ensureOpen();
+        if (autoCommit) {
+            return;
+        }
+        adapter.commit();
+    }
 
-	@Override
-	public void rollback() throws OntoDriverException {
-		ensureOpen();
-		if (autoCommit) {
-			return;
-		}
-		adapter.rollback();
-	}
+    @Override
+    public void rollback() throws OntoDriverException {
+        ensureOpen();
+        if (autoCommit) {
+            return;
+        }
+        adapter.rollback();
+    }
 
-	@Override
-	public void setAutoCommit(boolean autoCommit) {
-		ensureOpen();
-		this.autoCommit = autoCommit;
-	}
+    @Override
+    public void setAutoCommit(boolean autoCommit) {
+        ensureOpen();
+        this.autoCommit = autoCommit;
+    }
 
-	@Override
-	public boolean isAutoCommit() {
-		ensureOpen();
-		return autoCommit;
-	}
+    @Override
+    public boolean isAutoCommit() {
+        ensureOpen();
+        return autoCommit;
+    }
 
-	@Override
-	public Statement createStatement() throws OntoDriverException {
-		ensureOpen();
-		return new SesameStatement(adapter.getQueryExecutor());
-	}
+    @Override
+    public Statement createStatement() throws OntoDriverException {
+        ensureOpen();
+        return new SesameStatement(adapter.getQueryExecutor());
+    }
 
-	@Override
-	public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
-		ensureOpen();
-		Objects.requireNonNull(sparql, constructNPXMessage("sparql"));
-		if (sparql.isEmpty()) {
-			throw new IllegalArgumentException("The value for prepared statement cannot be empty.");
-		}
-		return new SesamePreparedStatement(adapter.getQueryExecutor(), sparql);
-	}
+    @Override
+    public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
+        ensureOpen();
+        Objects.requireNonNull(sparql, constructNPXMessage("sparql"));
+        if (sparql.isEmpty()) {
+            throw new IllegalArgumentException("The value for prepared statement cannot be empty.");
+        }
+        return new SesamePreparedStatement(adapter.getQueryExecutor(), sparql);
+    }
 
-	@Override
-	public boolean isConsistent(URI context) throws OntoDriverException {
-		ensureOpen();
-		return adapter.isConsistent(context);
-	}
+    @Override
+    public boolean isConsistent(URI context) throws OntoDriverException {
+        ensureOpen();
+        return adapter.isConsistent(context);
+    }
 
-	@Override
-	public List<URI> getContexts() throws OntoDriverException {
-		ensureOpen();
-		return adapter.getContexts();
-	}
+    @Override
+    public List<URI> getContexts() throws OntoDriverException {
+        ensureOpen();
+        return adapter.getContexts();
+    }
 
-	@Override
-	public URI generateIdentifier(URI classUri) throws OntoDriverException {
-		ensureOpen();
-		Objects.requireNonNull(classUri, constructNPXMessage("classUri"));
-		try {
-			return adapter.generateIdentifier(classUri);
-		} catch (IdentifierGenerationException e) {
-			throw new SesameDriverException(e);
-		}
-	}
+    @Override
+    public URI generateIdentifier(URI classUri) throws OntoDriverException {
+        ensureOpen();
+        Objects.requireNonNull(classUri, constructNPXMessage("classUri"));
+        try {
+            return adapter.generateIdentifier(classUri);
+        } catch (IdentifierGenerationException e) {
+            throw new SesameDriverException(e);
+        }
+    }
 
-	@Override
-	public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
-		ensureOpen();
-		Objects.requireNonNull(axiom, constructNPXMessage("axiom"));
-		return adapter.contains(axiom, context);
-	}
+    @Override
+    public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
+        ensureOpen();
+        Objects.requireNonNull(axiom, constructNPXMessage("axiom"));
+        return adapter.contains(axiom, context);
+    }
 
-	@Override
-	public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
-		ensureOpen();
-		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
-		return adapter.find(descriptor);
-	}
+    @Override
+    public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
+        ensureOpen();
+        Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+        try {
+            return adapter.find(descriptor);
+        } catch (RuntimeException e) {
+            throw new SesameDriverException(e);
+        }
+    }
 
-	@Override
-	public void persist(AxiomValueDescriptor descriptor) throws OntoDriverException {
-		ensureOpen();
-		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
-		adapter.persist(descriptor);
-		commitIfAuto();
-	}
+    @Override
+    public void persist(AxiomValueDescriptor descriptor) throws OntoDriverException {
+        ensureOpen();
+        Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+        try {
+            adapter.persist(descriptor);
+            commitIfAuto();
+        } catch (RuntimeException e) {
+            throw new SesameDriverException(e);
+        }
+    }
 
-	@Override
-	public void update(AxiomValueDescriptor descriptor) throws OntoDriverException {
-		ensureOpen();
-		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
-		adapter.update(descriptor);
-		commitIfAuto();
-	}
+    @Override
+    public void update(AxiomValueDescriptor descriptor) throws OntoDriverException {
+        ensureOpen();
+        Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+        try {
+            adapter.update(descriptor);
+            commitIfAuto();
+        } catch (RuntimeException e) {
+            throw new SesameDriverException(e);
+        }
+    }
 
-	@Override
-	public void remove(AxiomDescriptor descriptor) throws OntoDriverException {
-		ensureOpen();
-		Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
-		adapter.remove(descriptor);
-		commitIfAuto();
-	}
+    @Override
+    public void remove(AxiomDescriptor descriptor) throws OntoDriverException {
+        ensureOpen();
+        Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+        try {
+            adapter.remove(descriptor);
+            commitIfAuto();
+        } catch (RuntimeException e) {
+            throw new SesameDriverException(e);
+        }
+    }
 
-	@Override
-	public Lists lists() {
-		ensureOpen();
-		assert lists != null;
-		return lists;
-	}
+    @Override
+    public Lists lists() {
+        ensureOpen();
+        assert lists != null;
+        return lists;
+    }
 
-	@Override
-	public Types types() {
-		ensureOpen();
-		assert types != null;
-		return types;
-	}
+    @Override
+    public Types types() {
+        ensureOpen();
+        assert types != null;
+        return types;
+    }
 
     @Override
     public Properties properties() {
@@ -214,14 +230,14 @@ class SesameConnection implements Connection {
     }
 
     void ensureOpen() {
-		if (!open) {
-			throw new IllegalStateException("This connection is closed.");
-		}
-	}
+        if (!open) {
+            throw new IllegalStateException("This connection is closed.");
+        }
+    }
 
-	void commitIfAuto() throws OntoDriverException {
-		if (autoCommit) {
-			adapter.commit();
-		}
-	}
+    void commitIfAuto() throws OntoDriverException {
+        if (autoCommit) {
+            adapter.commit();
+        }
+    }
 }

@@ -1,11 +1,13 @@
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.exception.OWLIndividualExistsException;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
@@ -83,7 +85,8 @@ class AxiomValueGatherer {
         appendProperties(propertiesToAdd, properties, context);
     }
 
-    private void appendProperties(Map<Assertion, Set<Value<?>>> target, Map<Assertion, Set<Value<?>>> properties, URI context) {
+    private void appendProperties(Map<Assertion, Set<Value<?>>> target, Map<Assertion, Set<Value<?>>> properties,
+                                  URI context) {
         for (Map.Entry<Assertion, Set<Value<?>>> e : properties.entrySet()) {
             if (!target.containsKey(e.getKey())) {
                 target.put(e.getKey(), e.getValue());
@@ -117,8 +120,16 @@ class AxiomValueGatherer {
                 connection.lists().persistReferencedList(d);
             }
         } catch (OntoDriverException e) {
-            throw new StorageAccessException(e);
+            handlePersistException(e);
         }
+    }
+
+    private void handlePersistException(OntoDriverException e) {
+        if (e.getCause() instanceof OWLIndividualExistsException) {
+            throw new OWLEntityExistsException(
+                    "Individual " + axiomDescriptor.getSubject() + " already exists in the ontology.", e.getCause());
+        }
+        throw new StorageAccessException(e);
     }
 
     void update(Connection connection) {
@@ -134,7 +145,8 @@ class AxiomValueGatherer {
                 connection.properties().addProperties(axiomDescriptor.getSubject(), propertiesContext, propertiesToAdd);
             }
             if (propertiesToRemove != null) {
-                connection.properties().removeProperties(axiomDescriptor.getSubject(), propertiesContext, propertiesToRemove);
+                connection.properties()
+                          .removeProperties(axiomDescriptor.getSubject(), propertiesContext, propertiesToRemove);
             }
             for (SimpleListValueDescriptor d : simpleListDescriptors) {
                 connection.lists().updateSimpleList(d);

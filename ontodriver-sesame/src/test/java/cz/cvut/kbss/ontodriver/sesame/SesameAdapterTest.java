@@ -41,7 +41,7 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.IdentifierGenerationException;
+import cz.cvut.kbss.ontodriver_new.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;

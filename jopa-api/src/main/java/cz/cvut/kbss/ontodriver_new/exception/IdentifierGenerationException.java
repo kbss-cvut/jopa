@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.sesame.exceptions;
+package cz.cvut.kbss.ontodriver_new.exception;
 
 public class IdentifierGenerationException extends RuntimeException {
 
