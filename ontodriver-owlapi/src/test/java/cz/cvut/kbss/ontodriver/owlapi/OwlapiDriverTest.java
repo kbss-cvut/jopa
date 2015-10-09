@@ -5,6 +5,7 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver_new.Connection;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +17,10 @@ import java.net.URI;
 import java.util.Collections;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class OwlapiDriverTest {
 
@@ -32,19 +37,19 @@ public class OwlapiDriverTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        final Field connectorField = ConnectorFactory.class.getDeclaredField("connector");
-        connectorField.setAccessible(true);
-        connectorField.set(ConnectorFactory.getInstance(STORAGE_PROPERTIES, Collections.<String, String>emptyMap()),
-                connectorMock);
+        final Field instanceField = ConnectorFactory.class.getDeclaredField("instance");
+        instanceField.setAccessible(true);
+        final ConnectorFactory mockFactory = mock(ConnectorFactory.class);
+        when(mockFactory.getConnector(any(OntologyStorageProperties.class), anyMap())).thenReturn(connectorMock);
+        when(mockFactory.isOpen()).thenReturn(true);
+        instanceField.set(null, mockFactory);
 
         this.driver = new OwlapiDriver(STORAGE_PROPERTIES, Collections.<String, String>emptyMap());
     }
 
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        final Field instanceField = ConnectorFactory.class.getDeclaredField("instance");
-        instanceField.setAccessible(true);
-        instanceField.set(null, null);
+    @After
+    public void tearDown() throws Exception {
+        when(ConnectorFactory.getInstance().isOpen()).thenReturn(false);
     }
 
     @Test
