@@ -25,11 +25,14 @@ class AxiomLoader {
     private NamedResource subject;
     private Set<URI> inferredAssertions;
 
+    private AxiomAdapter axiomAdapter;
+
     AxiomLoader(OwlapiAdapter adapter, OntologyStructures snapshot) {
         this.adapter = adapter;
         this.ontology = snapshot.getOntology();
         this.dataFactory = snapshot.getDataFactory();
         this.reasoner = snapshot.getReasoner();
+        this.axiomAdapter = new AxiomAdapter(dataFactory, adapter.getLanguage());
     }
 
     Collection<Axiom<?>> findAxioms(AxiomDescriptor descriptor) {
@@ -118,7 +121,7 @@ class AxiomLoader {
     }
 
     private boolean skipAssertion(Assertion assertion) {
-        final Assertion unspecifiedTypeAssertion = Assertion.createPropertyAssertion(assertion.getIdentifier(), false);
+        final Assertion unspecifiedTypeAssertion = Assertion.createUnspecifiedPropertyAssertion(false);
         return !(descriptor.containsAssertion(assertion) || descriptor.containsAssertion(
                 unspecifiedTypeAssertion)) || inferredAssertions.contains(assertion.getIdentifier());
     }
@@ -127,9 +130,9 @@ class AxiomLoader {
         final Set<OWLNamedIndividual> individuals = reasoner.getObjectPropertyValues(individual,
                 objectProperty(opAssertion)).getFlattened();
         return individuals.stream().map(
-                target -> new AxiomImpl<>(subject, opAssertion,
-                        new Value<>(NamedResource.create(target.getIRI().toURI())))).collect(
-                Collectors.toSet());
+                target -> axiomAdapter.createAxiom(subject, opAssertion, NamedResource.create(target.getIRI().toURI())))
+                          .collect(
+                                  Collectors.toList());
     }
 
     private OWLObjectProperty objectProperty(Assertion objectPropertyAssertion) {
@@ -174,7 +177,7 @@ class AxiomLoader {
 
     private Collection<Axiom<?>> loadExplicitValues(AxiomDescriptor descriptor) {
         final OWLNamedIndividual individual = getIndividual();
-        final Collection<Axiom<?>> axioms = new HashSet<>();
+        final Collection<Axiom<?>> axioms = new ArrayList<>();
         if (!inferredAssertions.contains(URI.create(CommonVocabulary.RDF_TYPE))) {
             axioms.addAll(adapter.getTypesHandler().getTypes(descriptor.getSubject(), null, false));
         }

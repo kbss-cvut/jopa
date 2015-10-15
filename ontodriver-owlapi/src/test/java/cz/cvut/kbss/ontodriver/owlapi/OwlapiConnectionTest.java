@@ -1,5 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
+import cz.cvut.kbss.ontodriver_new.Properties;
 import cz.cvut.kbss.ontodriver_new.Types;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.*;
@@ -136,5 +137,14 @@ public class OwlapiConnectionTest {
         } finally {
             verify(adapterMock, never()).generateIdentifier(any(URI.class));
         }
+    }
+
+    @Test
+    public void propertiesReturnPropertiesHandlerForOwlapiDriver() throws Exception {
+        final OwlapiProperties properties = mock(OwlapiProperties.class);
+        connection.setProperties(properties);
+        final Properties result = connection.properties();
+        assertNotNull(result);
+        assertEquals(properties, result);
     }
 }

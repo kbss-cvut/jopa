@@ -12,9 +12,9 @@ import java.util.Set;
 
 public class OwlapiTypes implements Types {
 
-    private OwlapiConnection connection;
+    private final OwlapiConnection connection;
 
-    private OwlapiAdapter adapter;
+    private final OwlapiAdapter adapter;
 
     public OwlapiTypes(OwlapiConnection connection, OwlapiAdapter adapter) {
         this.connection = connection;

@@ -27,6 +27,7 @@ public class OwlapiConnection implements Connection {
     private final OwlapiAdapter adapter;
 
     private OwlapiTypes types;
+    private OwlapiProperties properties;
 
     private final Set<ConnectionListener> listeners = new HashSet<>(4);
 
@@ -48,6 +49,10 @@ public class OwlapiConnection implements Connection {
 
     void setTypes(OwlapiTypes types) {
         this.types = types;
+    }
+
+    void setProperties(OwlapiProperties properties) {
+        this.properties = properties;
     }
 
     @Override
@@ -166,7 +171,9 @@ public class OwlapiConnection implements Connection {
 
     @Override
     public Properties properties() {
-        return null;
+        ensureOpen();
+        assert properties != null;
+        return properties;
     }
 
     @Override

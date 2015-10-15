@@ -20,6 +20,7 @@ import java.net.URI;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class AxiomSaverTest {
 
@@ -48,7 +49,8 @@ public class AxiomSaverTest {
         MockitoAnnotations.initMocks(this);
         this.dataFactory = new OWLDataFactoryImpl();
         this.axiomSaver = new AxiomSaver(adapterMock, new OntologyStructures(ontologyMock, managerMock, dataFactory,
-                reasonerMock), "en");
+                reasonerMock));
+        when(adapterMock.getLanguage()).thenReturn("en");
         this.descriptor = new AxiomValueDescriptor(INDIVIDUAL);
     }
 
