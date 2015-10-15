@@ -6,7 +6,6 @@ import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

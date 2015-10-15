@@ -13,6 +13,8 @@ import org.semanticweb.owlapi.model.parameters.OntologyCopy;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,10 +23,16 @@ import java.util.logging.Logger;
  * <p>
  * Each call to {@link #getOntologySnapshot()} returns a new snapshot of the current state of the ontology. The changes
  * are the applied to a shared ontology, which represents the current state of the underlying storage.
+ *
+ * Note: This connector currently does not handle concurrent updates.
  */
-public class BasicStorageConnector extends Connector {
+public class BasicStorageConnector extends AbstractConnector {
 
     private static final Logger LOG = Logger.getLogger(BasicStorageConnector.class.getName());
+
+    private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
+    private static Lock READ = LOCK.readLock();
+    private static Lock WRITE = LOCK.writeLock();
 
     private OWLOntologyManager ontologyManager;
     private OWLOntology ontology;
@@ -36,10 +44,12 @@ public class BasicStorageConnector extends Connector {
 
     @Override
     protected void initializeConnector() throws OwlapiDriverException {
+        if (isOpen()) {
+            return;
+        }
         if (LOG.isLoggable(Level.CONFIG)) {
-            LOG.config(
-                    "Loading ontology " + storageProperties.getOntologyURI() + " from " +
-                            storageProperties.getPhysicalURI());
+            LOG.config("Loading ontology " + storageProperties.getOntologyURI() + " from " +
+                    storageProperties.getPhysicalURI());
         }
         this.ontologyManager = OWLManager.createOWLOntologyManager();
         try {
@@ -70,8 +80,9 @@ public class BasicStorageConnector extends Connector {
     }
 
     @Override
-    public synchronized OntologyStructures getOntologySnapshot() {
+    public OntologyStructures getOntologySnapshot() {
         ensureOpen();
+        READ.lock();
         try {
             // TODO init reasoner
             final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
@@ -79,19 +90,23 @@ public class BasicStorageConnector extends Connector {
             return new OntologyStructures(snapshot, m, m.getOWLDataFactory(), null);
         } catch (OWLOntologyCreationException e) {
             throw new OntologySnapshotException("Unable to create ontology snapshot.", e);
+        } finally {
+            READ.unlock();
         }
     }
 
     @Override
-    public synchronized void applyChanges(List<OWLOntologyChange> changes) {
+    public void applyChanges(List<OWLOntologyChange> changes) {
         ensureOpen();
         assert changes != null;
-        for (OWLOntologyChange ch : changes) {
-            if (ch instanceof MutableAxiomChange) {
-                ((MutableAxiomChange) ch).setOntology(ontology);
-            }
+        WRITE.lock();
+        try {
+            changes.stream().filter(ch -> ch instanceof MutableAxiomChange)
+                   .forEach(ch -> ((MutableAxiomChange) ch).setOntology(ontology));
+            ontologyManager.applyChanges(changes);
+        } finally {
+            WRITE.unlock();
         }
-        ontologyManager.applyChanges(changes);
     }
 
     @Override
@@ -99,12 +114,17 @@ public class BasicStorageConnector extends Connector {
         if (!isOpen()) {
             return;
         }
+        WRITE.lock();
         try {
-            ontologyManager.saveOntology(ontology, IRI.create(storageProperties.getPhysicalURI()));
-        } catch (OWLOntologyStorageException e) {
-            throw new OntologyStorageException("Error when saving ontology to " + storageProperties.getPhysicalURI(),
-                    e);
+            try {
+                ontologyManager.saveOntology(ontology, IRI.create(storageProperties.getPhysicalURI()));
+            } catch (OWLOntologyStorageException e) {
+                throw new OntologyStorageException(
+                        "Error when saving ontology to " + storageProperties.getPhysicalURI(), e);
+            }
+            super.close();
+        } finally {
+            WRITE.unlock();
         }
-        super.close();
     }
 }

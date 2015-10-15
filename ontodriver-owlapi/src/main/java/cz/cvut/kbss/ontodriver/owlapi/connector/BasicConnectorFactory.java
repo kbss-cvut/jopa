@@ -8,30 +8,41 @@ import java.util.Map;
 
 public class BasicConnectorFactory extends ConnectorFactory {
 
-    // TODO Implement pooling connectors!!!!!
-
     private boolean open;
+
+    private AbstractConnector connector;
 
     BasicConnectorFactory() {
         this.open = true;
     }
 
     @Override
-    public Connector getConnector(OntologyStorageProperties storageProperties, Map<String, String> properties)
-            throws OwlapiDriverException {
+    public synchronized AbstractConnector getConnector(OntologyStorageProperties storageProperties,
+                                                       Map<String, String> properties) throws OwlapiDriverException {
         if (!open) {
             throw new IllegalStateException("The factory is closed.");
         }
-        return new BasicStorageConnector(storageProperties, properties);
+        if (connector == null) {
+            initConnector(storageProperties, properties);
+        }
+        return connector;
+    }
+
+    private void initConnector(OntologyStorageProperties storageProperties, Map<String, String> properties)
+            throws OwlapiDriverException {
+        this.connector = new BasicStorageConnector(storageProperties, properties);
     }
 
     @Override
     public boolean isOpen() {
-        return false;
+        return open;
     }
 
     @Override
-    public void close() throws OntoDriverException {
+    public synchronized void close() throws OntoDriverException {
+        if (connector != null) {
+            connector.close();
+        }
         this.open = false;
     }
 }

@@ -352,7 +352,7 @@ public class OwlapiAdapterTest {
         axioms.stream().forEach(axiom -> {
             final Object val = axiom.getValue().getValue();
             assertTrue(val instanceof NamedResource);
-            assertTrue(values.contains((NamedResource) val));
+            assertTrue(values.contains(val));
         });
     }
 

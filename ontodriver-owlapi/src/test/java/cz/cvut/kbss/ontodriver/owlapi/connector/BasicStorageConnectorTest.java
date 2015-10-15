@@ -20,7 +20,7 @@ public class BasicStorageConnectorTest {
 
     private static final URI ONTOLOGY_URI = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/connector");
 
-    private Connector connector;
+    private AbstractConnector connector;
 
     @After
     public void tearDown() throws Exception {
