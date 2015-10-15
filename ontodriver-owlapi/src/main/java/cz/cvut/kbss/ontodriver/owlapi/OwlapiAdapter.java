@@ -12,6 +12,7 @@ import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.net.URI;
 import java.util.*;
@@ -162,15 +163,23 @@ class OwlapiAdapter {
 
     void persist(AxiomValueDescriptor descriptor) {
         startTransactionIfNotActive();
-        if (individualExists(descriptor.getSubject())) {
+        if (instanceExists(descriptor.getSubject())) {
             throw new OWLIndividualExistsException(
                     "Individual " + descriptor.getSubject() + " already exists in the ontology.");
         }
         new AxiomSaver(this, ontologySnapshot).persist(descriptor);
     }
 
-    private boolean individualExists(NamedResource subject) {
-        return ontology().containsIndividualInSignature(IRI.create(subject.getIdentifier()));
+    /**
+     * An individual has to have explicit type(s) to exist in this sense.
+     */
+    private boolean instanceExists(NamedResource subject) {
+        final IRI iri = IRI.create(subject.getIdentifier());
+        if (!ontology().containsIndividualInSignature(iri)) {
+            return false;
+        }
+        final OWLNamedIndividual ind = dataFactory().getOWLNamedIndividual(iri);
+        return (!EntitySearcher.getTypes(ind, ontology()).isEmpty());
     }
 
     URI generateIdentifier(URI classUri) {

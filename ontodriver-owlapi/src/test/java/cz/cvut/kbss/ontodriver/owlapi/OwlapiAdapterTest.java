@@ -370,7 +370,7 @@ public class OwlapiAdapterTest {
                 Collections.singleton(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
 
         final Collection<Axiom<?>> res = adapter.find(descriptor);
-        assertEquals(values.size() + 1, res.size());
+        assertEquals(values.size(), res.size());
         res.stream().filter(ax -> ax.getAssertion().getType() == Assertion.AssertionType.ANNOTATION_PROPERTY)
            .forEach(
                    ax -> {
@@ -674,6 +674,10 @@ public class OwlapiAdapterTest {
         final AxiomValueDescriptor descriptorOne = new AxiomValueDescriptor(NamedResource.create(PK));
         descriptorOne.addAssertionValue(Assertion.createClassAssertion(false), new Value<>(URI.create("http://typeA")));
         when(ontologyMock.containsIndividualInSignature(IRI.create(PK))).thenReturn(true);
+        final OWLNamedIndividual ind = factory.getOWLNamedIndividual(IRI.create(PK));
+        when(ontologyMock.getClassAssertionAxioms(ind))
+                .thenReturn(Collections.singleton(factory.getOWLClassAssertionAxiom(
+                        factory.getOWLClass(IRI.create("http://typeA")), ind)));
         adapter.persist(descriptorOne);
     }
 }

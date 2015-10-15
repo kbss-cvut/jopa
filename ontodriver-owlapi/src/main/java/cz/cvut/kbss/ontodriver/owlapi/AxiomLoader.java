@@ -1,6 +1,5 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver.owlapi.exceptions.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
@@ -15,6 +14,8 @@ import java.util.stream.Collectors;
 
 class AxiomLoader {
 
+    // TODO Refactor this class
+
     private OwlapiAdapter adapter;
 
     private OWLOntology ontology;
@@ -23,7 +24,8 @@ class AxiomLoader {
 
     private AxiomDescriptor descriptor;
     private NamedResource subject;
-    private Set<URI> inferredAssertions;
+    private Set<URI> inferredAssertions = new HashSet<>();
+    private Set<URI> explicitAssertions = new HashSet<>();
 
     private AxiomAdapter axiomAdapter;
 
@@ -41,9 +43,8 @@ class AxiomLoader {
         if (!ontology.containsIndividualInSignature(IRI.create(subject.getIdentifier()))) {
             return Collections.emptySet();
         }
-        final Collection<Axiom<?>> result = new HashSet<>();
+        final Collection<Axiom<?>> result = new ArrayList<>();
         final Map<URI, Assertion> inferredAssertions = resolveInferredAssertions(descriptor);
-        this.inferredAssertions = inferredAssertions.keySet();
 
         result.addAll(loadInferredValues(inferredAssertions));
         result.addAll(loadExplicitValues(descriptor));
@@ -51,8 +52,16 @@ class AxiomLoader {
     }
 
     private Map<URI, Assertion> resolveInferredAssertions(AxiomDescriptor descriptor) {
-        return descriptor.getAssertions().stream().filter(Assertion::isInferred).collect(
-                Collectors.toMap(NamedResource::getIdentifier, a -> a));
+        final Map<URI, Assertion> inferred = new HashMap<>(descriptor.getAssertions().size());
+        descriptor.getAssertions().forEach(assertion -> {
+            if (assertion.isInferred()) {
+                inferredAssertions.add(assertion.getIdentifier());
+                inferred.put(assertion.getIdentifier(), assertion);
+            } else {
+                explicitAssertions.add(assertion.getIdentifier());
+            }
+        });
+        return inferred;
     }
 
     private Collection<Axiom<?>> loadInferredValues(Map<URI, Assertion> assertions) {
@@ -90,8 +99,7 @@ class AxiomLoader {
     }
 
     private OWLNamedIndividual getIndividual() {
-        return dataFactory.getOWLNamedIndividual(
-                IRI.create(subject.getIdentifier()));
+        return dataFactory.getOWLNamedIndividual(IRI.create(subject.getIdentifier()));
     }
 
     private Collection<Axiom<?>> inferDataPropertyValues(OWLNamedIndividual individual, Assertion dpAssertion) {
@@ -104,26 +112,21 @@ class AxiomLoader {
         return dataFactory.getOWLDataProperty(IRI.create(dataPropertyAssertion.getIdentifier()));
     }
 
-    private Collection<Axiom<?>> dataPropertyValuesToAxioms(AxiomDescriptor descriptor,
-                                                            Collection<OWLDataPropertyAssertionAxiom> dpAssertions) {
+    private Collection<Axiom<?>> dataPropertyValuesToAxioms(Collection<OWLDataPropertyAssertionAxiom> dpAssertions) {
         final Set<Axiom<?>> axioms = new HashSet<>(dpAssertions.size());
         for (OWLDataPropertyAssertionAxiom assertion : dpAssertions) {
-            final Assertion ass = Assertion.createDataPropertyAssertion(
-                    assertion.getProperty().asOWLDataProperty().getIRI().toURI(),
-                    false);
-            if (skipAssertion(ass)) {
+            if (skipAssertion(assertion.getProperty().asOWLDataProperty().getIRI().toURI())) {
                 continue;
             }
-            axioms.add(new AxiomImpl<>(descriptor.getSubject(), ass,
-                    new Value<>(OwlapiUtils.owlLiteralToValue(assertion.getObject()))));
+            axioms.add(axiomAdapter.toAxiom(subject, assertion, false));
         }
         return axioms;
     }
 
-    private boolean skipAssertion(Assertion assertion) {
+    private boolean skipAssertion(URI assertionUri) {
         final Assertion unspecifiedTypeAssertion = Assertion.createUnspecifiedPropertyAssertion(false);
-        return !(descriptor.containsAssertion(assertion) || descriptor.containsAssertion(
-                unspecifiedTypeAssertion)) || inferredAssertions.contains(assertion.getIdentifier());
+        return !(explicitAssertions.contains(assertionUri) || descriptor.containsAssertion(
+                unspecifiedTypeAssertion)) || inferredAssertions.contains(assertionUri);
     }
 
     private Collection<Axiom<?>> inferObjectPropertyValues(OWLNamedIndividual individual, Assertion opAssertion) {
@@ -139,38 +142,26 @@ class AxiomLoader {
         return dataFactory.getOWLObjectProperty(IRI.create(objectPropertyAssertion.getIdentifier()));
     }
 
-    private Collection<Axiom<?>> objectPropertyValuesToAxioms(AxiomDescriptor descriptor,
-                                                              Collection<OWLObjectPropertyAssertionAxiom> opAssertions) {
+    private Collection<Axiom<?>> objectPropertyValuesToAxioms(
+            Collection<OWLObjectPropertyAssertionAxiom> opAssertions) {
         final Set<Axiom<?>> axioms = new HashSet<>(opAssertions.size());
         for (OWLObjectPropertyAssertionAxiom assertion : opAssertions) {
-            final Assertion ass = Assertion.createObjectPropertyAssertion(
-                    assertion.getProperty().asOWLObjectProperty().getIRI().toURI(), false);
-            if (skipAssertion(ass)) {
+            if (skipAssertion(assertion.getProperty().asOWLObjectProperty().getIRI().toURI())) {
                 continue;
             }
-            final IRI target = assertion.getObject().asOWLNamedIndividual().getIRI();
-            axioms.add(new AxiomImpl<>(descriptor.getSubject(), ass,
-                    new Value<>(NamedResource.create(target.toURI()))));
+            axioms.add(axiomAdapter.toAxiom(subject, assertion, false));
         }
         return axioms;
     }
 
-    private Collection<Axiom<?>> annotationPropertyValuesToAxioms(AxiomDescriptor descriptor,
-                                                                  Collection<OWLAnnotationAssertionAxiom> apAssertions) {
+    private Collection<Axiom<?>> annotationPropertyValuesToAxioms(
+            Collection<OWLAnnotationAssertionAxiom> apAssertions) {
         final Set<Axiom<?>> axioms = new HashSet<>(apAssertions.size());
         for (OWLAnnotationAssertionAxiom assertion : apAssertions) {
-            final Assertion ass = Assertion.createAnnotationPropertyAssertion(
-                    assertion.getProperty().asOWLAnnotationProperty().getIRI().toURI(), false);
-            if (skipAssertion(ass)) {
+            if (skipAssertion(assertion.getProperty().asOWLAnnotationProperty().getIRI().toURI())) {
                 continue;
             }
-            Value<?> val;
-            if (assertion.getValue().asIRI().isPresent()) {
-                val = new Value<>(assertion.getValue().asIRI().get().toURI());
-            } else {
-                val = new Value<>(OwlapiUtils.owlLiteralToValue(assertion.getValue().asLiteral().get()));
-            }
-            axioms.add(new AxiomImpl<>(descriptor.getSubject(), ass, val));
+            axioms.add(axiomAdapter.toAxiom(subject, assertion, false));
         }
         return axioms;
     }
@@ -178,20 +169,20 @@ class AxiomLoader {
     private Collection<Axiom<?>> loadExplicitValues(AxiomDescriptor descriptor) {
         final OWLNamedIndividual individual = getIndividual();
         final Collection<Axiom<?>> axioms = new ArrayList<>();
-        if (!inferredAssertions.contains(URI.create(CommonVocabulary.RDF_TYPE))) {
+        if (explicitAssertions.contains(Assertion.createClassAssertion(false).getIdentifier())) {
             axioms.addAll(adapter.getTypesHandler().getTypes(descriptor.getSubject(), null, false));
         }
-        // TODO This may be inefficient in case there are much more properties for an individual than in the descriptor
+        // This may be inefficient in case there are much more properties for an individual than in the descriptor
         // Perhaps we should use EntitySearcher and look for values of concrete properties
         final Collection<OWLDataPropertyAssertionAxiom> dpAssertions = ontology.getDataPropertyAssertionAxioms(
                 individual);
-        axioms.addAll(dataPropertyValuesToAxioms(descriptor, dpAssertions));
+        axioms.addAll(dataPropertyValuesToAxioms(dpAssertions));
         final Collection<OWLObjectPropertyAssertionAxiom> opAssertions = ontology.getObjectPropertyAssertionAxioms(
                 individual);
-        axioms.addAll(objectPropertyValuesToAxioms(descriptor, opAssertions));
+        axioms.addAll(objectPropertyValuesToAxioms(opAssertions));
         final Collection<OWLAnnotationAssertionAxiom> apAssertions = ontology.getAnnotationAssertionAxioms(
                 individual.getIRI());
-        axioms.addAll(annotationPropertyValuesToAxioms(descriptor, apAssertions));
+        axioms.addAll(annotationPropertyValuesToAxioms(apAssertions));
         return axioms;
     }
 }
