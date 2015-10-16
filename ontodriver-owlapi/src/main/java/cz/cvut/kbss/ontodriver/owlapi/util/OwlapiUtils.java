@@ -1,7 +1,10 @@
 package cz.cvut.kbss.ontodriver.owlapi.util;
 
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.net.URI;
@@ -91,5 +94,16 @@ public class OwlapiUtils {
             }
 
         throw new IllegalArgumentException("Unsupported datatype: " + literal.getDatatype());
+    }
+
+    /**
+     * Gets OWLNamedIndividual for the specified named resource.
+     *
+     * @param subject     Named resource to transform to individual
+     * @param dataFactory OWL data factor
+     * @return OWLNamedIndividual
+     */
+    public static OWLNamedIndividual getIndividual(NamedResource subject, OWLDataFactory dataFactory) {
+        return dataFactory.getOWLNamedIndividual(IRI.create(subject.getIdentifier()));
     }
 }

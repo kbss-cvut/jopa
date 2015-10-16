@@ -158,7 +158,7 @@ class OwlapiAdapter {
 
     Collection<Axiom<?>> find(AxiomDescriptor descriptor) {
         startTransactionIfNotActive();
-        return new AxiomLoader(this, ontologySnapshot).findAxioms(descriptor);
+        return new MainAxiomLoader(this, ontologySnapshot).findAxioms(descriptor);
     }
 
     void persist(AxiomValueDescriptor descriptor) {
