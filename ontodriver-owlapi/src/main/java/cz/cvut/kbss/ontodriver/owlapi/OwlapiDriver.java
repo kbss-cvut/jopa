@@ -4,7 +4,8 @@ import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.connector.ConnectorFactory;
-import cz.cvut.kbss.ontodriver.owlapi.exceptions.OwlapiDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.list.OwlapiLists;
 import cz.cvut.kbss.ontodriver_new.Connection;
 
 import java.util.HashSet;
@@ -57,6 +58,7 @@ class OwlapiDriver implements Closeable, ConnectionListener {
         final OwlapiConnection c = new OwlapiConnection(adapter);
         c.setTypes(new OwlapiTypes(c, adapter));
         c.setProperties(new OwlapiProperties(c, adapter));
+        c.setLists(new OwlapiLists(c, adapter));
         openConnections.add(c);
         c.addListener(this);
         return c;

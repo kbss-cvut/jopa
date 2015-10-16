@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.owlapi.exceptions;
+package cz.cvut.kbss.ontodriver.owlapi.exception;
 
 /**
  * Signals that the driver requested services of a reasoner but it was not available.

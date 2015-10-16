@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.owlapi.exceptions;
+package cz.cvut.kbss.ontodriver.owlapi.exception;
 
 /**
  * Thrown when IRI of ontology does not match the expected one.

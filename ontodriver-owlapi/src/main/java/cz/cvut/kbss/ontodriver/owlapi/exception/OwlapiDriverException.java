@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.owlapi.exceptions;
+package cz.cvut.kbss.ontodriver.owlapi.exception;
 
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 

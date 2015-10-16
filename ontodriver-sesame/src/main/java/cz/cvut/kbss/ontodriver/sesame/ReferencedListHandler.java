@@ -13,6 +13,7 @@ import org.openrdf.model.ValueFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 public class ReferencedListHandler extends
 		ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> {
@@ -58,14 +59,14 @@ public class ReferencedListHandler extends
 		return node;
 	}
 
-	Collection<Statement> createListRest(URI headNode,
+	List<Statement> createListRest(URI headNode,
 			ReferencedListValueDescriptor listValueDescriptor) throws SesameDriverException {
 		final URI owner = owner(listValueDescriptor);
 		final URI hasNext = hasNext(listValueDescriptor);
 		final URI hasContent = hasContent(listValueDescriptor);
 		final URI context = context(listValueDescriptor);
 		URI previous = headNode;
-		final Collection<Statement> statements = new ArrayList<>(
+		final List<Statement> statements = new ArrayList<>(
 				listValueDescriptor.getValues().size() * 2);
 		final Iterator<NamedResource> it = listValueDescriptor.getValues().iterator();
 		// Skip the first element, it is already in the head

@@ -13,6 +13,7 @@ import org.openrdf.model.ValueFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> {
 
@@ -32,8 +33,8 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         return firstNode;
     }
 
-    Collection<Statement> createListRest(URI head, SimpleListValueDescriptor listValueDescriptor) {
-        final Collection<Statement> statements = new ArrayList<>(listValueDescriptor.getValues().size());
+    List<Statement> createListRest(URI head, SimpleListValueDescriptor listValueDescriptor) {
+        final List<Statement> statements = new ArrayList<>(listValueDescriptor.getValues().size());
         URI previous = head;
         final URI nextNodeProp = hasNext(listValueDescriptor);
         final URI context = context(listValueDescriptor);

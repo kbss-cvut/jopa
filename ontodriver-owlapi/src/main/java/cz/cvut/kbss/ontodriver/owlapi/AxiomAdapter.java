@@ -10,7 +10,7 @@ import java.net.URL;
 /**
  * Adapts OWLAPI axioms to JOPA (OntoDriver) axioms and vice versa.
  */
-class AxiomAdapter {
+public class AxiomAdapter {
 
     private final OWLDataFactory dataFactory;
     private final String language;
@@ -20,12 +20,12 @@ class AxiomAdapter {
         this.language = language;
     }
 
-    OWLAxiom toOwlClassAssertionAxiom(Axiom<?> axiom) {
+    public OWLAxiom toOwlClassAssertionAxiom(Axiom<?> axiom) {
         final OWLClass owlClass = dataFactory.getOWLClass(IRI.create(axiom.getValue().stringValue()));
         return dataFactory.getOWLClassAssertionAxiom(owlClass, toOWLIndividual(axiom.getSubject()));
     }
 
-    OWLAxiom toOwlObjectPropertyAssertionAxiom(Axiom<?> axiom) {
+    public OWLAxiom toOwlObjectPropertyAssertionAxiom(Axiom<?> axiom) {
         final OWLObjectProperty objectProperty = dataFactory
                 .getOWLObjectProperty(IRI.create(axiom.getAssertion().getIdentifier()));
         final OWLNamedIndividual objectValue = dataFactory.getOWLNamedIndividual(
@@ -34,7 +34,7 @@ class AxiomAdapter {
                 objectValue);
     }
 
-    OWLAxiom toOwlDataPropertyAssertionAxiom(Axiom<?> axiom) {
+    public OWLAxiom toOwlDataPropertyAssertionAxiom(Axiom<?> axiom) {
         final OWLDataProperty dataProperty = dataFactory.getOWLDataProperty(
                 IRI.create(axiom.getAssertion().getIdentifier()));
         final OWLLiteral dataValue = OwlapiUtils.createOWLLiteralFromValue(axiom.getValue().getValue(),
@@ -43,7 +43,7 @@ class AxiomAdapter {
                 .getOWLDataPropertyAssertionAxiom(dataProperty, toOWLIndividual(axiom.getSubject()), dataValue);
     }
 
-    OWLAxiom toOwlAnnotationPropertyAssertionAxiom(Axiom<?> axiom) {
+    public OWLAxiom toOwlAnnotationPropertyAssertionAxiom(Axiom<?> axiom) {
         final OWLAnnotationProperty annotationProperty = dataFactory.getOWLAnnotationProperty(IRI.create(
                 axiom.getAssertion().getIdentifier()));
         final Object value = axiom.getValue().getValue();
@@ -59,22 +59,22 @@ class AxiomAdapter {
                         annotationValue);
     }
 
-    OWLNamedIndividual toOWLIndividual(NamedResource subject) {
+    public OWLNamedIndividual toOWLIndividual(NamedResource subject) {
         return dataFactory.getOWLNamedIndividual(IRI.create(subject.getIdentifier()));
     }
 
-    Axiom<?> toAxiom(NamedResource subject, OWLDataPropertyAssertionAxiom assertionAxiom, boolean isInferred) {
+    public Axiom<?> toAxiom(NamedResource subject, OWLDataPropertyAssertionAxiom assertionAxiom, boolean isInferred) {
         final Assertion assertion = Assertion
                 .createDataPropertyAssertion(assertionAxiom.getProperty().asOWLDataProperty().getIRI().toURI(),
                         isInferred);
         return createAxiom(subject, assertion, OwlapiUtils.owlLiteralToValue(assertionAxiom.getObject()));
     }
 
-    <V> Axiom<V> createAxiom(NamedResource subject, Assertion assertion, V value) {
+    public <V> Axiom<V> createAxiom(NamedResource subject, Assertion assertion, V value) {
         return new AxiomImpl<>(subject, assertion, new Value<>(value));
     }
 
-    Axiom<?> toAxiom(NamedResource subject, OWLObjectPropertyAssertionAxiom assertionAxiom, boolean isInferred) {
+    public Axiom<?> toAxiom(NamedResource subject, OWLObjectPropertyAssertionAxiom assertionAxiom, boolean isInferred) {
         final Assertion assertion = Assertion
                 .createObjectPropertyAssertion(assertionAxiom.getProperty().asOWLObjectProperty().getIRI().toURI(),
                         isInferred);
@@ -82,7 +82,7 @@ class AxiomAdapter {
         return createAxiom(subject, assertion, NamedResource.create(target.toURI()));
     }
 
-    Axiom<?> toAxiom(NamedResource subject, OWLAnnotationAssertionAxiom assertionAxiom, boolean isInferred) {
+    public Axiom<?> toAxiom(NamedResource subject, OWLAnnotationAssertionAxiom assertionAxiom, boolean isInferred) {
         final Assertion assertion = Assertion
                 .createAnnotationPropertyAssertion(
                         assertionAxiom.getProperty().asOWLAnnotationProperty().getIRI().toURI(),

@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver.sesame;
 
 import static cz.cvut.kbss.jopa.utils.ErrorUtils.constructNPXMessage;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
@@ -26,7 +26,7 @@ class SesameLists implements Lists {
 	}
 
 	@Override
-	public Collection<Axiom<NamedResource>> loadSimpleList(SimpleListDescriptor descriptor)
+	public List<Axiom<NamedResource>> loadSimpleList(SimpleListDescriptor descriptor)
 			throws OntoDriverException {
 		verifyArgs(descriptor, "descriptor");
 		return adapter.getSimpleListHandler().loadList(descriptor);
@@ -52,7 +52,7 @@ class SesameLists implements Lists {
 	}
 
 	@Override
-	public Collection<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor descriptor)
+	public List<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor descriptor)
 			throws OntoDriverException {
 		verifyArgs(descriptor, "descriptor");
 		return adapter.getReferencedListHandler().loadList(descriptor);

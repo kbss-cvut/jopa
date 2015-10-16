@@ -51,7 +51,7 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 	 * @return Collection of axioms representing sequence values
 	 * @throws SesameDriverException
 	 */
-	Collection<Axiom<NamedResource>> loadList(T listDescriptor) throws SesameDriverException {
+	List<Axiom<NamedResource>> loadList(T listDescriptor) throws SesameDriverException {
 		final List<Axiom<NamedResource>> axioms = new ArrayList<>();
 		final SesameIterator it = createIterator(listDescriptor);
 		while (it.hasNext()) {
@@ -84,7 +84,7 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 
 	abstract URI createListHead(V valueDescriptor, Collection<Statement> listStatements) throws SesameDriverException;
 
-	abstract Collection<Statement> createListRest(URI head, V valueDescriptor) throws SesameDriverException;
+	abstract List<Statement> createListRest(URI head, V valueDescriptor) throws SesameDriverException;
 
 	/**
 	 * Updates list with values specified by the descriptor. </p>

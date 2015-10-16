@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.owlapi.exceptions;
+package cz.cvut.kbss.ontodriver.owlapi.exception;
 
 /**
  * Thrown when an error occurs during storage of an ontology.

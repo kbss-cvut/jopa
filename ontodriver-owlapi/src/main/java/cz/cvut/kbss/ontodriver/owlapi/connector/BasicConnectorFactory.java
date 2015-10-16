@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.owlapi.exceptions.OwlapiDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package cz.cvut.kbss.ontodriver.owlapi.exceptions;
+package cz.cvut.kbss.ontodriver.owlapi.exception;
 
 /**
  * Created by ledvima1 on 26.2.15.

@@ -2,10 +2,10 @@ package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.owlapi.exceptions.InvalidOntologyIriException;
-import cz.cvut.kbss.ontodriver.owlapi.exceptions.OntologySnapshotException;
-import cz.cvut.kbss.ontodriver.owlapi.exceptions.OntologyStorageException;
-import cz.cvut.kbss.ontodriver.owlapi.exceptions.OwlapiDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OntologySnapshotException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OntologyStorageException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAxiomChange;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;

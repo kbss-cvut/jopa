@@ -4,7 +4,8 @@ import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.owlapi.exceptions.OwlapiDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.list.OwlapiLists;
 import cz.cvut.kbss.ontodriver_new.Connection;
 import cz.cvut.kbss.ontodriver_new.Lists;
 import cz.cvut.kbss.ontodriver_new.Properties;
@@ -28,6 +29,7 @@ public class OwlapiConnection implements Connection {
 
     private OwlapiTypes types;
     private OwlapiProperties properties;
+    private OwlapiLists lists;
 
     private final Set<ConnectionListener> listeners = new HashSet<>(4);
 
@@ -55,6 +57,10 @@ public class OwlapiConnection implements Connection {
         this.properties = properties;
     }
 
+    void setLists(OwlapiLists lists) {
+        this.lists = lists;
+    }
+
     @Override
     public boolean isOpen() {
         return open;
@@ -66,7 +72,7 @@ public class OwlapiConnection implements Connection {
         adapter.commit();
     }
 
-    protected void ensureOpen() {
+    public void ensureOpen() {
         if (!open) {
             throw new IllegalStateException("Connection is closed.");
         }
@@ -159,7 +165,9 @@ public class OwlapiConnection implements Connection {
 
     @Override
     public Lists lists() {
-        return null;
+        ensureOpen();
+        assert lists != null;
+        return lists;
     }
 
     @Override
@@ -185,7 +193,7 @@ public class OwlapiConnection implements Connection {
         this.open = false;
     }
 
-    void commitIfAuto() throws OntoDriverException {
+    public void commitIfAuto() throws OntoDriverException {
         if (autoCommit) {
             adapter.commit();
         }

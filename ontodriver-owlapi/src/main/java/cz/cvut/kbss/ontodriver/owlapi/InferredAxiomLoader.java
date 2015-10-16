@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
-import cz.cvut.kbss.ontodriver.owlapi.exceptions.ReasonerNotAvailableException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.model.*;
 import org.semanticweb.owlapi.model.*;

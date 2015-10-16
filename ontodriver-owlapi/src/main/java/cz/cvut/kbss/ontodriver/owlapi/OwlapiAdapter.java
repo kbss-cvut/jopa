@@ -2,11 +2,14 @@ package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
-import cz.cvut.kbss.ontodriver.owlapi.exceptions.InvalidOntologyIriException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
+import cz.cvut.kbss.ontodriver.owlapi.list.ListHandler;
 import cz.cvut.kbss.ontodriver.owlapi.util.IdentifierGenerator;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.exception.OWLIndividualExistsException;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
@@ -22,7 +25,7 @@ import java.util.*;
  *
  * @author ledvima1
  */
-class OwlapiAdapter {
+public class OwlapiAdapter {
 
     private final Connector connector;
     private OntologyStructures ontologySnapshot;
@@ -201,7 +204,12 @@ class OwlapiAdapter {
         pendingChanges.addAll(changes);
     }
 
-    String getLanguage() {
+    public String getLanguage() {
         return language;
+    }
+
+    public ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler() {
+        startTransactionIfNotActive();
+        return ListHandler.getSimpleListHandler(ontologySnapshot, language);
     }
 }
