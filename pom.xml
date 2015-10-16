@@ -27,10 +27,6 @@
         <!--<module>jopa-integration-tests-jena</module>-->
     </modules>
 
-    <properties>
-        <jacoco.version>0.7.2.201409121644</jacoco.version>
-    </properties>
-
     <build>
         <finalName>jopa-${project.version}</finalName>
         <directory>target</directory>
@@ -65,33 +61,6 @@
                     </excludedArtifacts>
                 </configuration>
             </plugin>
-
-            <!-- Code coverage plugin -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
-                <configuration>
-                    <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
-                    <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>jacoco-initialize</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>jacoco-site</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
     <!-- Generate one javadoc for everything -->
