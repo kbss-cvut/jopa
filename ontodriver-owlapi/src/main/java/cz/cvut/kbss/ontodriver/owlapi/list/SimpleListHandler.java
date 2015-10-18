@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
@@ -23,11 +24,12 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
 
     private final AxiomAdapter axiomAdapter;
 
-    SimpleListHandler(OntologyStructures snapshot, String language) {
+    SimpleListHandler(OntologyStructures snapshot, OwlapiAdapter adapter) {
+        super(adapter);
         this.snapshot = snapshot;
         this.ontology = snapshot.getOntology();
         this.ontologyManager = snapshot.getOntologyManager();
-        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory(), language);
+        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory(), adapter.getLanguage());
     }
 
     @Override
@@ -56,7 +58,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         if (descriptor.getValues().isEmpty()) {
             return;
         }
-        ontologyManager.applyChanges(createListAxioms(descriptor));
+        owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(createListAxioms(descriptor)));
     }
 
     private List<OWLOntologyChange> createListAxioms(SimpleListValueDescriptor descriptor) {

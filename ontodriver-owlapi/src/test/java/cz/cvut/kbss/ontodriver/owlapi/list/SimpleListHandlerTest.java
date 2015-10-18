@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
+import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptorImpl;
@@ -48,6 +49,9 @@ public class SimpleListHandlerTest {
     @Mock
     private OWLReasoner reasonerMock;
 
+    @Mock
+    private OwlapiAdapter adapterMock;
+
     private SimpleListValueDescriptor valueDescriptor = new SimpleListValueDescriptor(SUBJECT, HAS_LIST, HAS_NEXT);
 
     private SimpleListHandler listHandler;
@@ -59,9 +63,10 @@ public class SimpleListHandlerTest {
         this.ontology = spy(realSnapshot.getOntology());
         this.manager = spy(realSnapshot.getOntologyManager());
         this.dataFactory = realSnapshot.getDataFactory();
+        when(adapterMock.getLanguage()).thenReturn("en");
         // This snapshot contains the spied on objects
         final OntologyStructures snapshotToUse = new OntologyStructures(ontology, manager, dataFactory, reasonerMock);
-        this.listHandler = new SimpleListHandler(snapshotToUse, "en");
+        this.listHandler = new SimpleListHandler(snapshotToUse, adapterMock);
         this.individual = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
     }
 
@@ -208,6 +213,7 @@ public class SimpleListHandlerTest {
         assertEquals(HAS_LIST.getIdentifier(), property.getIRI().toURI());
         final OWLIndividual value = ((OWLObjectPropertyAssertionAxiom) axiom).getObject();
         assertEquals(LIST_ITEMS.get(0), value.asOWLNamedIndividual().getIRI().toURI());
+        verify(adapterMock).addTransactionalChanges(anyList());
     }
 
     @Test
@@ -237,5 +243,6 @@ public class SimpleListHandlerTest {
             }
             assertEquals(LIST_ITEMS.get(i), assertionAxiom.getObject().asOWLNamedIndividual().getIRI().toURI());
         }
+        verify(adapterMock).addTransactionalChanges(anyList());
     }
 }

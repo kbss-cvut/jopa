@@ -200,7 +200,7 @@ public class OwlapiAdapter {
         return new PropertiesHandler(this, ontologySnapshot);
     }
 
-    void addTransactionalChanges(List<OWLOntologyChange> changes) {
+    public void addTransactionalChanges(List<OWLOntologyChange> changes) {
         pendingChanges.addAll(changes);
     }
 
@@ -210,6 +210,6 @@ public class OwlapiAdapter {
 
     public ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler() {
         startTransactionIfNotActive();
-        return ListHandler.getSimpleListHandler(ontologySnapshot, language);
+        return ListHandler.getSimpleListHandler(ontologySnapshot, this);
     }
 }
