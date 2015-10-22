@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.owlapi;
 import com.google.common.base.Optional;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
@@ -15,7 +16,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.Node;
 import org.semanticweb.owlapi.reasoner.NodeSet;
@@ -36,6 +36,8 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class OwlapiAdapterTest {
+
+    // TODO Remove methods that are just duplicates of other, more specialized, tests
 
     private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#EntityA");
 
@@ -268,10 +270,7 @@ public class OwlapiAdapterTest {
     }
 
     private void initRealOntology() throws Exception {
-        final OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        final OWLOntology ontology = manager.createOntology(
-                IRI.create("http://krizik.felk.cvut.cz/ontologies/adapterTest"));
-        this.realSnapshot = new OntologyStructures(ontology, manager, manager.getOWLDataFactory(), reasonerMock);
+        this.realSnapshot = TestUtils.initRealOntology(reasonerMock);
         when(connectorMock.getOntologySnapshot()).thenReturn(realSnapshot);
     }
 

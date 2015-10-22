@@ -160,7 +160,13 @@ public class OwlapiConnection implements Connection {
 
     @Override
     public void remove(AxiomDescriptor descriptor) throws OntoDriverException {
-
+        ensureOpen();
+        Objects.requireNonNull(descriptor);
+        try {
+            adapter.remove(descriptor);
+        } catch (RuntimeException e) {
+            throw new OwlapiDriverException(e);
+        }
     }
 
     @Override

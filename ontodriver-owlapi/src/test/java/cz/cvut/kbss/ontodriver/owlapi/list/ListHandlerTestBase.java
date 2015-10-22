@@ -3,10 +3,10 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.mockito.Mock;
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
@@ -47,18 +47,11 @@ public abstract class ListHandlerTestBase {
     }
 
     public void setUp() throws Exception {
-        final OntologyStructures realSnapshot = initRealOntology();
+        final OntologyStructures realSnapshot = TestUtils.initRealOntology(reasonerMock);
         this.ontology = spy(realSnapshot.getOntology());
         this.manager = spy(realSnapshot.getOntologyManager());
         this.dataFactory = realSnapshot.getDataFactory();
         when(adapterMock.getLanguage()).thenReturn("en");
         this.individual = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
-    }
-
-    OntologyStructures initRealOntology() throws Exception {
-        final OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        final OWLOntology ontology = manager.createOntology(
-                IRI.create("http://krizik.felk.cvut.cz/ontologies/adapterTest"));
-        return new OntologyStructures(ontology, manager, manager.getOWLDataFactory(), reasonerMock);
     }
 }

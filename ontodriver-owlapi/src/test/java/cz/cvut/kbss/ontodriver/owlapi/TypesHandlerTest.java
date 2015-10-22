@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -10,7 +11,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
@@ -61,7 +61,7 @@ public class TypesHandlerTest {
 
     @Test
     public void getTypesLoadsExplicitTypesFromOntology() throws Exception {
-        final OntologyStructures snapshot = initRealOntology();
+        final OntologyStructures snapshot = TestUtils.initRealOntology(reasonerMock);
         final Set<URI> types = initTypes();
         addClassAssertionsToOntology(PK, types, snapshot);
         final Set<Axiom<URI>> result = new TypesHandler(adapterMock, snapshot).getTypes(INDIVIDUAL, null, false);
@@ -70,13 +70,6 @@ public class TypesHandlerTest {
         for (Axiom<URI> ax : result) {
             assertTrue(types.contains(ax.getValue().getValue()));
         }
-    }
-
-    private OntologyStructures initRealOntology() throws Exception {
-        final OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        final OWLOntology ontology = manager.createOntology(
-                IRI.create("http://krizik.felk.cvut.cz/ontologies/adapterTest"));
-        return new OntologyStructures(ontology, manager, manager.getOWLDataFactory(), reasonerMock);
     }
 
     private void addClassAssertionsToOntology(URI subject, Collection<URI> classes, OntologyStructures snapshot) {
