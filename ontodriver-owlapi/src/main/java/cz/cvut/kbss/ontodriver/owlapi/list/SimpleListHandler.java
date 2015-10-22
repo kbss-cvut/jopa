@@ -57,4 +57,21 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         }
         return changes;
     }
+
+    @Override
+    public void updateList(SimpleListValueDescriptor descriptor) {
+        // TODO
+        if (isOrigEmpty(descriptor)) {
+            persistList(descriptor);
+        }
+    }
+
+    private void clearList(SimpleListDescriptor descriptor) {
+
+    }
+
+    private boolean isOrigEmpty(SimpleListDescriptor descriptor) {
+        final OwlapiListIterator it = iterator(descriptor);
+        return !it.hasNext();
+    }
 }

@@ -87,4 +87,9 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
         throw new IdentifierGenerationException(
                 "Unable to generate identifier for sequence node with base " + nodeUriBase);
     }
+
+    @Override
+    public void updateList(ReferencedListValueDescriptor descriptor) {
+        // TODO
+    }
 }

@@ -11,6 +11,7 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -19,6 +20,7 @@ import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNodeSet;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -205,5 +207,56 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
             assertEquals(LIST_ITEMS.get(i), assertionAxiom.getObject().asOWLNamedIndividual().getIRI().toURI());
         }
         verify(adapterMock).addTransactionalChanges(anyList());
+    }
+
+    @Test
+    public void updateEmptyListWithNonEmptyPersistsNewOne() throws Exception {
+        final List<URI> updated = LIST_ITEMS.subList(0, 5);
+        updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+
+        listHandler.updateList(valueDescriptor);
+
+        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        verifyUpdatedListContent(updated, result);
+    }
+
+    // TODO
+    @Ignore
+    @Test
+    public void updateListToEmptyClearsList() throws Exception {
+        final List<URI> origList = LIST_ITEMS.subList(0, 5);
+        origList.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+        listHandler.persistList(valueDescriptor);
+
+        final SimpleListValueDescriptor updatedDescriptor = new SimpleListValueDescriptor(SUBJECT, HAS_LIST, HAS_NEXT);
+        listHandler.updateList(updatedDescriptor);
+
+        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        assertTrue(result.isEmpty());
+    }
+
+    @Ignore
+    @Test
+    public void updateListByAppendingNewItems() throws Exception {
+        final List<URI> origList = LIST_ITEMS.subList(0, 5);
+        origList.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+        listHandler.persistList(valueDescriptor);
+
+        final List<URI> updated = new ArrayList<>(origList);
+        updated.add(LIST_ITEMS.get(7));
+        updated.add(LIST_ITEMS.get(8));
+        final SimpleListValueDescriptor updatedDescriptor = new SimpleListValueDescriptor(SUBJECT, HAS_LIST, HAS_NEXT);
+        updated.forEach(item -> updatedDescriptor.addValue(NamedResource.create(item)));
+        listHandler.updateList(updatedDescriptor);
+
+        final List<Axiom<NamedResource>> result = listHandler.loadList(updatedDescriptor);
+        verifyUpdatedListContent(updated, result);
+    }
+
+    private void verifyUpdatedListContent(List<URI> expected, List<Axiom<NamedResource>> result) {
+        assertEquals(expected.size(), result.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i), result.get(i).getValue().getValue().getIdentifier());
+        }
     }
 }

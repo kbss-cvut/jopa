@@ -35,6 +35,8 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
 
     public abstract void persistList(V descriptor);
 
+    public abstract void updateList(V descriptor);
+
     public static ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler(
             OwlapiAdapter adapter, OntologyStructures snapshot) {
         return new SimpleListHandler(adapter, snapshot);
