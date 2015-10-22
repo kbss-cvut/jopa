@@ -28,8 +28,6 @@ import static org.mockito.Mockito.*;
 
 public class OwlapiAdapterTest {
 
-    // TODO Remove methods that are just duplicates of other, more specialized, tests
-
     private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#EntityA");
 
     @Mock

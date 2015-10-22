@@ -155,7 +155,14 @@ public class OwlapiConnection implements Connection {
 
     @Override
     public void update(AxiomValueDescriptor descriptor) throws OntoDriverException {
-
+        ensureOpen();
+        Objects.requireNonNull(descriptor);
+        try {
+            adapter.update(descriptor);
+            commitIfAuto();
+        } catch (RuntimeException e) {
+            throw new OwlapiDriverException(e);
+        }
     }
 
     @Override
@@ -164,6 +171,7 @@ public class OwlapiConnection implements Connection {
         Objects.requireNonNull(descriptor);
         try {
             adapter.remove(descriptor);
+            commitIfAuto();
         } catch (RuntimeException e) {
             throw new OwlapiDriverException(e);
         }

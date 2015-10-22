@@ -187,6 +187,12 @@ public class OwlapiAdapter {
         return new IdentifierGenerator(ontology()).generateIdentifier(classUri);
     }
 
+    void update(AxiomValueDescriptor descriptor) {
+        startTransactionIfNotActive();
+        new EpistemicAxiomRemover(this, ontologySnapshot).remove(descriptor);
+        new AxiomSaver(this, ontologySnapshot).persist(descriptor);
+    }
+
     void remove(AxiomDescriptor descriptor) {
         startTransactionIfNotActive();
         new EpistemicAxiomRemover(this, ontologySnapshot).remove(descriptor);
