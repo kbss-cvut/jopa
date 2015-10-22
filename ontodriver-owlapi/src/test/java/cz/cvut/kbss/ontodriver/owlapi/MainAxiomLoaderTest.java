@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -153,6 +154,25 @@ public class MainAxiomLoaderTest {
         verify(typesMock).getTypes(SUBJECT, null, false);
         assertEquals(1, result.size());
         assertEquals(classAssertion, result.iterator().next().getAssertion());
+    }
+
+    @Test
+    public void loadsExplicitValuesForUntypedAssertion() throws Exception {
+        final URI assertionUri = URI.create("http://krizik.felk.cvut.cz/PropertyOne");
+        final Assertion assertion = Assertion.createPropertyAssertion(assertionUri, false);
+        when(ontologyMock.getDataPropertyAssertionAxioms(individual))
+                .thenReturn(Collections.singleton(dataFactory.getOWLDataPropertyAssertionAxiom(
+                        dataFactory.getOWLDataProperty(IRI.create("http://krizik.felk.cvut.cz/PropertyOne")),
+                        individual, 200)));
+        when(ontologyMock.getAnnotationAssertionAxioms(individual.getIRI()))
+                .thenReturn(Collections.singleton(dataFactory.getOWLAnnotationAssertionAxiom(
+                        dataFactory.getOWLAnnotationProperty(IRI.create("http://krizik.felk.cvut.cz/PropertyOne")),
+                        individual.getIRI(), dataFactory.getOWLLiteral(200))));
+        final Collection<Axiom<?>> result = axiomLoader.findAxioms(descriptor(assertion));
+        assertFalse(result.isEmpty());
+        verify(ontologyMock).getDataPropertyAssertionAxioms(individual);
+        verify(ontologyMock).getObjectPropertyAssertionAxioms(individual);
+        verify(ontologyMock).getAnnotationAssertionAxioms(individual.getIRI());
     }
 
     @Test
