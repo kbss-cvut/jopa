@@ -55,12 +55,15 @@ public class OwlapiLists implements Lists {
     @Override
     public List<Axiom<NamedResource>> loadReferencedList(ReferencedListDescriptor descriptor)
             throws OntoDriverException {
-        return null;
+        ensureStateAndArgumentValid(descriptor);
+        return adapter.getReferencedListHandler().loadList(descriptor);
     }
 
     @Override
     public void persistReferencedList(ReferencedListValueDescriptor descriptor) throws OntoDriverException {
-
+        ensureStateAndArgumentValid(descriptor);
+        adapter.getReferencedListHandler().persistList(descriptor);
+        connection.commitIfAuto();
     }
 
     @Override

@@ -1,7 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 
-import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
@@ -14,7 +13,7 @@ import org.semanticweb.owlapi.search.EntitySearcher;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
-class SimpleListIterator {
+class SimpleListIterator extends OwlapiListIterator {
 
     final OWLObjectProperty hasNextProperty;
 
@@ -23,8 +22,6 @@ class SimpleListIterator {
     OWLNamedIndividual previousNode;
     OWLNamedIndividual currentNode;
     Collection<? extends OWLIndividual> next;
-
-    boolean initialized = false;
 
     private final OWLOntology ontology;
 
@@ -42,23 +39,20 @@ class SimpleListIterator {
         this.axiomAdapter = axiomAdapter;
     }
 
-    void init() {
-        doStep();
-        this.initialized = true;
-    }
-
-    boolean hasNext() {
-        if (!initialized) {
-            throw new IllegalStateException("The iterator has not been initialized.");
+    @Override
+    public boolean hasNext() {
+        if (next == null) {
+            doStep();
         }
         return !next.isEmpty();
     }
 
-    Axiom<NamedResource> next() {
+    @Override
+    public Axiom<NamedResource> next() {
         if (!hasNext()) {
             throw new NoSuchElementException("There are no more elements.");
         }
-        checkMaxSuccessors(next);
+        checkMaxSuccessors(previousProperty, next);
         final OWLIndividual item = next.iterator().next();
         checkIsNamed(item);
         this.currentNode = item.asOWLNamedIndividual();
@@ -68,21 +62,6 @@ class SimpleListIterator {
         final Axiom<NamedResource> ax = axiomAdapter.createAxiom(subject, assertion, value);
         doStep();
         return ax;
-    }
-
-    private void checkMaxSuccessors(Collection<? extends OWLIndividual> successors) {
-        if (successors.size() > 1) {
-            throw new IntegrityConstraintViolatedException(
-                    "Invalid number of successors. Expected only 1 value of property " + previousProperty +
-                            ", but got " +
-                            successors.size());
-        }
-    }
-
-    private void checkIsNamed(OWLIndividual individual) {
-        if (!individual.isNamed()) {
-            throw new IllegalArgumentException("Expected OWLNamedIndividual, but got anonymous one.");
-        }
     }
 
     void doStep() {

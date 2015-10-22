@@ -15,13 +15,10 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNodeSet;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,25 +26,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
-public class SimpleListHandlerTest {
-
-    private static final List<URI> LIST_ITEMS = initListItems();
-    private static final NamedResource SUBJECT = NamedResource
-            .create("http://krizik.felk.cvut.cz/ontologies/jopa#Owner");
-    private static final Assertion HAS_LIST = Assertion
-            .createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasListProperty), false);
-    private static final Assertion HAS_NEXT = Assertion
-            .createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasNext), false);
+public class SimpleListHandlerTest extends ListHandlerTestBase {
 
     private static SimpleListDescriptor descriptor = new SimpleListDescriptorImpl(SUBJECT, HAS_LIST, HAS_NEXT);
-
-    private OWLOntology ontology;
-    private OWLOntologyManager manager;
-    private OWLDataFactory dataFactory;
-    private OWLNamedIndividual individual;
-
-    @Mock
-    private OWLReasoner reasonerMock;
 
     @Mock
     private OwlapiAdapter adapterMock;
@@ -59,30 +40,10 @@ public class SimpleListHandlerTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        final OntologyStructures realSnapshot = initRealOntology();
-        this.ontology = spy(realSnapshot.getOntology());
-        this.manager = spy(realSnapshot.getOntologyManager());
-        this.dataFactory = realSnapshot.getDataFactory();
-        when(adapterMock.getLanguage()).thenReturn("en");
+        super.setUp();
         // This snapshot contains the spied on objects
         final OntologyStructures snapshotToUse = new OntologyStructures(ontology, manager, dataFactory, reasonerMock);
-        this.listHandler = new SimpleListHandler(snapshotToUse, adapterMock);
-        this.individual = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
-    }
-
-    private OntologyStructures initRealOntology() throws Exception {
-        final OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        final OWLOntology ontology = manager.createOntology(
-                IRI.create("http://krizik.felk.cvut.cz/ontologies/adapterTest"));
-        return new OntologyStructures(ontology, manager, manager.getOWLDataFactory(), reasonerMock);
-    }
-
-    private static List<URI> initListItems() {
-        final List<URI> lst = new ArrayList<>(10);
-        for (int i = 0; i < 10; i++) {
-            lst.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#ListItem_" + i));
-        }
-        return lst;
+        this.listHandler = new SimpleListHandler(adapterMock, snapshotToUse);
     }
 
     @Test

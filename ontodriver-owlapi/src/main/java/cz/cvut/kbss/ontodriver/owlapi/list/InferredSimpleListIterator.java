@@ -14,8 +14,7 @@ class InferredSimpleListIterator extends SimpleListIterator {
 
     private final OWLReasoner reasoner;
 
-    InferredSimpleListIterator(SimpleListDescriptor descriptor,
-                               OntologyStructures snapshot,
+    InferredSimpleListIterator(SimpleListDescriptor descriptor, OntologyStructures snapshot,
                                AxiomAdapter axiomAdapter) {
         super(descriptor, snapshot, axiomAdapter);
         if (snapshot.getReasoner() == null) {

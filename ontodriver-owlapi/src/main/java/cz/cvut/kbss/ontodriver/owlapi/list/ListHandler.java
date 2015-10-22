@@ -1,30 +1,47 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
+import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
-import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.ListValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.*;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ListHandler<D extends ListDescriptor, V extends ListValueDescriptor> {
 
     protected final OwlapiAdapter owlapiAdapter;
+    protected final AxiomAdapter axiomAdapter;
+    protected final OntologyStructures snapshot;
 
-    protected ListHandler(OwlapiAdapter owlapiAdapter) {
+    protected ListHandler(OwlapiAdapter owlapiAdapter, OntologyStructures snapshot) {
         this.owlapiAdapter = owlapiAdapter;
+        this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory(), owlapiAdapter.getLanguage());
+        this.snapshot = snapshot;
     }
 
-    public abstract List<Axiom<NamedResource>> loadList(D descriptor);
+    public List<Axiom<NamedResource>> loadList(D descriptor) {
+        final List<Axiom<NamedResource>> list = new ArrayList<>();
+        final OwlapiListIterator iterator = iterator(descriptor);
+        while (iterator.hasNext()) {
+            list.add(iterator.next());
+        }
+        return list;
+    }
+
+    abstract OwlapiListIterator iterator(D descriptor);
 
     public abstract void persistList(V descriptor);
 
     public static ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler(
-            OntologyStructures snapshot, OwlapiAdapter adapter) {
-        return new SimpleListHandler(snapshot, adapter);
+            OwlapiAdapter adapter, OntologyStructures snapshot) {
+        return new SimpleListHandler(adapter, snapshot);
+    }
+
+    public static ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler(
+            OwlapiAdapter adapter, OntologyStructures snapshot) {
+        return new ReferencedListHandler(adapter, snapshot);
     }
 }

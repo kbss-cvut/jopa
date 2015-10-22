@@ -6,10 +6,7 @@ import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver.owlapi.list.ListHandler;
 import cz.cvut.kbss.ontodriver.owlapi.util.IdentifierGenerator;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.*;
 import cz.cvut.kbss.ontodriver_new.exception.OWLIndividualExistsException;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
@@ -210,6 +207,11 @@ public class OwlapiAdapter {
 
     public ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler() {
         startTransactionIfNotActive();
-        return ListHandler.getSimpleListHandler(ontologySnapshot, this);
+        return ListHandler.getSimpleListHandler(this, ontologySnapshot);
+    }
+
+    public ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler() {
+        startTransactionIfNotActive();
+        return ListHandler.getReferencedListHandler(this, ontologySnapshot);
     }
 }
