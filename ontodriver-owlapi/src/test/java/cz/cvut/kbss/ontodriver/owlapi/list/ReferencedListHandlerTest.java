@@ -33,6 +33,8 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 
     private ReferencedListHandler listHandler;
 
+    private ReferencedListTestHelper testHelper;
+
     private OWLObjectProperty hasListProperty;
     private OWLObjectProperty hasNextProperty;
     private OWLObjectProperty hasContentProperty;
@@ -42,6 +44,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
         MockitoAnnotations.initMocks(this);
         super.setUp();
         final OntologyStructures snapshotToUse = new OntologyStructures(ontology, manager, dataFactory, reasonerMock);
+        this.testHelper = new ReferencedListTestHelper(snapshotToUse, individual, SUBJECT.toString());
         this.listHandler = new ReferencedListHandler(adapterMock, snapshotToUse);
         this.hasListProperty = dataFactory.getOWLObjectProperty(IRI.create(HAS_LIST.getIdentifier()));
         this.hasNextProperty = dataFactory.getOWLObjectProperty(IRI.create(HAS_NEXT.getIdentifier()));
@@ -58,35 +61,15 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
     @Test
     public void loadListLoadsSingleElementListWithHeadOnly() throws Exception {
         final List<URI> headOnly = LIST_ITEMS.subList(0, 1);
-        persistList(headOnly);
+        testHelper.persistList(headOnly);
         final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
         assertEquals(1, result.size());
         assertEquals(headOnly.get(0), result.get(0).getValue().getValue().getIdentifier());
     }
 
-    private void persistList(List<URI> items) {
-        assert items.size() > 0;
-        int i = 0;
-        final String sequenceNodeBase = SUBJECT.toString() + "_SEQ";
-        OWLNamedIndividual node = dataFactory.getOWLNamedIndividual(IRI.create(sequenceNodeBase + i));
-        manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasListProperty, individual, node));
-        manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty, node,
-                dataFactory.getOWLNamedIndividual(IRI.create(items.get(i)))));
-        OWLNamedIndividual previousNode;
-        for (i = 1; i < items.size(); i++) {
-            previousNode = node;
-            node = dataFactory.getOWLNamedIndividual(IRI.create(sequenceNodeBase + i));
-            manager.addAxiom(ontology,
-                    dataFactory.getOWLObjectPropertyAssertionAxiom(hasNextProperty, previousNode, node));
-            manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty, node,
-                    dataFactory.getOWLNamedIndividual(IRI.create(items.get(i)))));
-
-        }
-    }
-
     @Test
     public void loadListWithMultipleItems() throws Exception {
-        persistList(LIST_ITEMS);
+        testHelper.persistList(LIST_ITEMS);
         final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
         assertEquals(LIST_ITEMS.size(), result.size());
         for (int i = 0; i < LIST_ITEMS.size(); i++) {
@@ -96,14 +79,15 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 
     @Test(expected = IntegrityConstraintViolatedException.class)
     public void loadingListWithItemWithMultipleSuccessorsThrowsException() throws Exception {
-        persistList(LIST_ITEMS.subList(0, 5));
+        testHelper.persistList(LIST_ITEMS.subList(0, 5));
         addExtraPropertyValue(SequencesVocabulary.s_p_hasNext, LIST_ITEMS.get(8));
         listHandler.loadList(descriptor);
     }
 
     private void addExtraPropertyValue(String property, URI value) {
         final OWLNamedIndividual node = dataFactory
-                .getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier().toString() + "_SEQ2"));
+                .getOWLNamedIndividual(IRI.create(
+                        SUBJECT.getIdentifier().toString() + ReferencedListTestHelper.SEQUENCE_NODE_SUFFIX + "2"));
         final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(property));
         manager.addAxiom(ontology,
                 dataFactory.getOWLObjectPropertyAssertionAxiom(hasNext, node,
@@ -112,7 +96,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 
     @Test(expected = IntegrityConstraintViolatedException.class)
     public void loadingListWithNodeWithMultipleContentElementsThrowsException() throws Exception {
-        persistList(LIST_ITEMS.subList(0, 8));
+        testHelper.persistList(LIST_ITEMS.subList(0, 8));
         addExtraPropertyValue(SequencesVocabulary.s_p_hasContents, LIST_ITEMS.get(0));
         listHandler.loadList(descriptor);
     }
@@ -128,7 +112,8 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
     }
 
     private void initReasoner() {
-        final OWLNamedIndividual node = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.toString() + "_SEQ0"));
+        final OWLNamedIndividual node = dataFactory.getOWLNamedIndividual(
+                IRI.create(SUBJECT.toString() + ReferencedListTestHelper.SEQUENCE_NODE_SUFFIX + "0"));
         final OWLNamedIndividual owner = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
         final NodeSet<OWLNamedIndividual> nodeSet = new OWLNamedIndividualNodeSet(node);
         when(reasonerMock.getObjectPropertyValues(owner, hasListProperty)).thenReturn(nodeSet);

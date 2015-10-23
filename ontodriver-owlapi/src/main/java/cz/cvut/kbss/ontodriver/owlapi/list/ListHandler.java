@@ -6,6 +6,7 @@ import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver_new.descriptors.*;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +32,16 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
         return list;
     }
 
+    public void persistList(V descriptor) {
+        if (descriptor.getValues().isEmpty()) {
+            return;
+        }
+        owlapiAdapter.addTransactionalChanges(snapshot.getOntologyManager().applyChanges(createListAxioms(descriptor)));
+    }
+
     abstract OwlapiListIterator iterator(D descriptor);
 
-    public abstract void persistList(V descriptor);
+    abstract List<OWLOntologyChange> createListAxioms(V descriptor);
 
     public abstract void updateList(V descriptor);
 

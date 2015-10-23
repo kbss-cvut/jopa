@@ -6,10 +6,14 @@ import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.exception.IdentifierGenerationException;
+import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +23,10 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
     private static final int NEXT_NODE_GENERATION_THRESHOLD = 100;
 
     private final OWLOntology ontology;
-    private final OWLOntologyManager manager;
 
     ReferencedListHandler(OwlapiAdapter owlapiAdapter, OntologyStructures snapshot) {
         super(owlapiAdapter, snapshot);
         this.ontology = snapshot.getOntology();
-        this.manager = snapshot.getOntologyManager();
     }
 
     @Override
@@ -37,59 +39,87 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
         }
     }
 
-
     @Override
-    public void persistList(ReferencedListValueDescriptor descriptor) {
-        if (descriptor.getValues().isEmpty()) {
-            return;
-        }
-        owlapiAdapter.addTransactionalChanges(manager.applyChanges(createListAxioms(descriptor)));
-    }
-
-    private List<OWLOntologyChange> createListAxioms(ReferencedListValueDescriptor descriptor) {
-        final List<OWLOntologyChange> changes = new ArrayList<>(descriptor.getValues().size() * 2);
+    List<OWLOntologyChange> createListAxioms(ReferencedListValueDescriptor descriptor) {
+        final ReferencedListNodeGenerator nodeGenerator = new ReferencedListNodeGenerator(
+                descriptor.getListOwner().toString(), descriptor.getNodeContent());
         boolean first = true;
-        final String nodeUriBase = descriptor.getListOwner().toString() + "-SEQ_";
         NamedResource previousNode = descriptor.getListOwner();
-        int i = 0;
+        nodeGenerator.setIndex(0);
         for (NamedResource value : descriptor.getValues()) {
-            final NamedResource node = generateNode(nodeUriBase, i);
-            final OWLAxiom axiom;
             if (first) {
-                axiom = axiomAdapter.toOwlObjectPropertyAssertionAxiom(
-                        new AxiomImpl<>(previousNode, descriptor.getListProperty(), new Value<>(node)));
+                nodeGenerator.setProperty(descriptor.getListProperty());
+                previousNode = nodeGenerator.addListNode(previousNode, value);
                 first = false;
             } else {
-                axiom = axiomAdapter.toOwlObjectPropertyAssertionAxiom(
-                        new AxiomImpl<>(previousNode, descriptor.getNextNode(), new Value<>(node)));
+                nodeGenerator.setProperty(descriptor.getNextNode());
+                previousNode = nodeGenerator.addListNode(previousNode, value);
             }
-            changes.add(new MutableAddAxiom(ontology, axiom));
-            final OWLAxiom valueAxiom = axiomAdapter.toOwlObjectPropertyAssertionAxiom(
-                    new AxiomImpl<>(node, descriptor.getNodeContent(), new Value<>(value)));
-            changes.add(new MutableAddAxiom(ontology, valueAxiom));
-            previousNode = node;
-            i++;
         }
-        return changes;
-    }
-
-    private NamedResource generateNode(String nodeUriBase, int index) {
-        int i = index;
-        IRI iri;
-        do {
-            iri = IRI.create(nodeUriBase + i);
-            if (!ontology.containsIndividualInSignature(iri)) {
-                return NamedResource.create(iri.toURI());
-            }
-            i++;
-        }
-        while (i < (i + NEXT_NODE_GENERATION_THRESHOLD));
-        throw new IdentifierGenerationException(
-                "Unable to generate identifier for sequence node with base " + nodeUriBase);
+        return nodeGenerator.getChanges();
     }
 
     @Override
     public void updateList(ReferencedListValueDescriptor descriptor) {
         // TODO
+    }
+
+    private class ReferencedListNodeGenerator {
+
+        private final String baseUri;
+        private final List<OWLOntologyChange> changes;
+        private final Assertion nodeContentProperty;
+
+        private int index;
+        private Assertion property;
+
+        public ReferencedListNodeGenerator(String baseUri, Assertion nodeContent) {
+            this.baseUri = baseUri + "-SEQ_";
+            this.changes = new ArrayList<>();
+            this.nodeContentProperty = nodeContent;
+        }
+
+        private void setIndex(int index) {
+            this.index = index;
+        }
+
+        private void setProperty(Assertion property) {
+            this.property = property;
+        }
+
+        private List<OWLOntologyChange> getChanges() {
+            return changes;
+        }
+
+        private NamedResource addListNode(NamedResource previousNode, NamedResource value) {
+            final NamedResource node = generateNode();
+            final OWLAxiom nodeAxiom = axiomAdapter
+                    .toOwlObjectPropertyAssertionAxiom(new AxiomImpl<>(previousNode, property, new Value<>(node)));
+            changes.add(new MutableAddAxiom(ontology, nodeAxiom));
+            changes.add(generateNodeContent(node, value));
+            index++;
+            return node;
+        }
+
+        private OWLOntologyChange generateNodeContent(NamedResource node, NamedResource value) {
+            final OWLAxiom valueAxiom = axiomAdapter
+                    .toOwlObjectPropertyAssertionAxiom(new AxiomImpl<>(node, nodeContentProperty, new Value<>(value)));
+            return new MutableAddAxiom(ontology, valueAxiom);
+        }
+
+        private NamedResource generateNode() {
+            int i = index;
+            IRI iri;
+            do {
+                iri = IRI.create(baseUri + i);
+                if (!ontology.containsIndividualInSignature(iri)) {
+                    return NamedResource.create(iri.toURI());
+                }
+                i++;
+            }
+            while (i < (i + NEXT_NODE_GENERATION_THRESHOLD));
+            throw new IdentifierGenerationException(
+                    "Unable to generate identifier for sequence node with base " + baseUri);
+        }
     }
 }

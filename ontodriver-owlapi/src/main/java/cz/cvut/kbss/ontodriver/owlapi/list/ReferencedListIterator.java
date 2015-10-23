@@ -2,6 +2,8 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -9,10 +11,7 @@ import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 class ReferencedListIterator extends OwlapiListIterator {
 
@@ -20,10 +19,13 @@ class ReferencedListIterator extends OwlapiListIterator {
     final OWLObjectProperty hasContentProperty;
 
     final OWLOntology ontology;
+    private final OWLDataFactory dataFactory;
 
     final AxiomAdapter axiomAdapter;
 
+    OWLIndividual previousNode;
     OWLIndividual currentNode;
+    OWLObjectProperty previousNextNodeProperty;
     OWLObjectProperty currentNextNodeProperty;
     Collection<? extends OWLIndividual> next;
 
@@ -32,23 +34,22 @@ class ReferencedListIterator extends OwlapiListIterator {
     ReferencedListIterator(ReferencedListDescriptor descriptor, OntologyStructures snapshot,
                            AxiomAdapter axiomAdapter) {
         this.ontology = snapshot.getOntology();
-        final OWLDataFactory dataFactory = snapshot.getDataFactory();
+        this.dataFactory = snapshot.getDataFactory();
         this.hasNextProperty = dataFactory.getOWLObjectProperty(IRI.create(descriptor.getNextNode().getIdentifier()));
         this.hasContentProperty = dataFactory
                 .getOWLObjectProperty(IRI.create(descriptor.getNodeContent().getIdentifier()));
         this.axiomAdapter = axiomAdapter;
         this.currentNextNodeProperty = dataFactory
                 .getOWLObjectProperty(IRI.create(descriptor.getListProperty().getIdentifier()));
+        this.previousNextNodeProperty = currentNextNodeProperty;
         this.currentNode = OwlapiUtils.getIndividual(descriptor.getListOwner(), dataFactory);
+        this.previousNode = currentNode;
         this.descriptor = descriptor;
     }
 
     @Override
     public boolean hasNext() {
-        if (next == null) {
-            doStep();
-        }
-        return !next.isEmpty();
+        return !EntitySearcher.getObjectPropertyValues(currentNode, currentNextNodeProperty, ontology).isEmpty();
     }
 
     void doStep() {
@@ -59,9 +60,11 @@ class ReferencedListIterator extends OwlapiListIterator {
             return;
         }
         checkMaxSuccessors(currentNextNodeProperty, nextNodes);
+        this.previousNextNodeProperty = currentNextNodeProperty;
         this.currentNextNodeProperty = hasNextProperty; // This just switches from hasList to hasNext
         final OWLIndividual node = nextNodes.iterator().next();
         checkIsNamed(node);
+        this.previousNode = currentNode;
         this.currentNode = node;
         this.next = EntitySearcher.getObjectPropertyValues(node, hasContentProperty, ontology);
     }
@@ -69,17 +72,16 @@ class ReferencedListIterator extends OwlapiListIterator {
     @Override
     public Axiom<NamedResource> next() {
         final NamedResource value = nextValue();
-        final Axiom<NamedResource> axiom = axiomAdapter
+        return axiomAdapter
                 .createAxiom(NamedResource.create(currentNode.asOWLNamedIndividual().getIRI().toURI()),
                         descriptor.getNodeContent(), value);
-        doStep();
-        return axiom;
     }
 
     @Override
     NamedResource nextValue() {
-        if (!hasNext()) {
-            throw new NoSuchElementException("No more elements in this referenced list.");
+        doStep();
+        if (next.isEmpty()) {
+            throw new NoSuchElementException("There are no more elements.");
         }
         checkMaxSuccessors(hasContentProperty, next);
         final OWLIndividual value = next.iterator().next();
@@ -89,11 +91,36 @@ class ReferencedListIterator extends OwlapiListIterator {
 
     @Override
     List<OWLOntologyChange> removeWithoutReconnect() {
-        return null;
+        final List<OWLOntologyChange> changes = new ArrayList<>(2);
+        changes.add(new MutableRemoveAxiom(ontology,
+                dataFactory.getOWLObjectPropertyAssertionAxiom(previousNextNodeProperty, previousNode, currentNode)));
+        final OWLIndividual nextNode = getNextNode();
+        if (nextNode != null) {
+            changes.add(new MutableRemoveAxiom(ontology,
+                    dataFactory.getOWLObjectPropertyAssertionAxiom(currentNextNodeProperty, currentNode, nextNode)));
+        }
+        return changes;
+    }
+
+    private OWLIndividual getNextNode() {
+        final Collection<OWLIndividual> nextOnes = EntitySearcher
+                .getObjectPropertyValues(currentNode, currentNextNodeProperty, ontology);
+        if (nextOnes.isEmpty()) {
+            return null;
+        }
+        return nextOnes.iterator().next();
     }
 
     @Override
     List<OWLOntologyChange> replaceNode(NamedResource newValue) {
-        return null;
+        // We know there is exactly one, because next has to have been called before this method
+        final OWLIndividual originalContent = next.iterator().next();
+        final OWLNamedIndividual newContent = OwlapiUtils.getIndividual(newValue, dataFactory);
+        final List<OWLOntologyChange> changes = new ArrayList<>(2);
+        changes.add(new MutableRemoveAxiom(ontology,
+                dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty, currentNode, originalContent)));
+        changes.add(new MutableAddAxiom(ontology,
+                dataFactory.getOWLObjectPropertyAssertionAxiom(hasContentProperty, currentNode, newContent)));
+        return changes;
     }
 }

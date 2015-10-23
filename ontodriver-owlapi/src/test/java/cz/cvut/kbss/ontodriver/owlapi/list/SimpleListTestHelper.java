@@ -7,20 +7,13 @@ import org.semanticweb.owlapi.model.*;
 import java.net.URI;
 import java.util.List;
 
-class SimpleListTestHelper {
-
-    private final OWLOntology ontology;
-    private final OWLOntologyManager manager;
-    private final OWLDataFactory dataFactory;
-    private final OWLNamedIndividual individual;
+class SimpleListTestHelper extends ListTestHelper {
 
     SimpleListTestHelper(OntologyStructures snapshot, OWLNamedIndividual individual) {
-        this.ontology = snapshot.getOntology();
-        this.manager = snapshot.getOntologyManager();
-        this.dataFactory = snapshot.getDataFactory();
-        this.individual = individual;
+        super(snapshot, individual);
     }
 
+    @Override
     void persistList(List<URI> items) {
         assert items.size() > 0;
         final OWLObjectProperty hasList = dataFactory

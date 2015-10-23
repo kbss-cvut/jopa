@@ -22,6 +22,8 @@ import java.util.NoSuchElementException;
  * next in order to avoid consulting the reasoner twice for values of the current node's successors.
  * <p>
  * We can do this because we need not worry about remove operations, they're not supported on inferred iterator.
+ * <p>
+ * TODO Check if the inferred iterators' logic is correct, especially for the nextValue method
  */
 class InferredSimpleListIterator extends SimpleListIterator {
 

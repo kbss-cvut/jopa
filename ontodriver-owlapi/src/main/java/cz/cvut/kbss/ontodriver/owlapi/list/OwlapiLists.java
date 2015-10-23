@@ -70,6 +70,8 @@ public class OwlapiLists implements Lists {
 
     @Override
     public void updateReferencedList(ReferencedListValueDescriptor descriptor) throws OntoDriverException {
-
+        ensureStateAndArgumentValid(descriptor);
+        adapter.getReferencedListHandler().updateList(descriptor);
+        connection.commitIfAuto();
     }
 }

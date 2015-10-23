@@ -78,4 +78,14 @@ public class OwlapiListsTest {
         verify(refListHandlerMock).persistList(descriptor);
         verify(connectionMock).commitIfAuto();
     }
+
+    @Test
+    public void testUpdateReferencedList() throws Exception {
+        final ReferencedListValueDescriptor descriptor = new ReferencedListValueDescriptor(SUBJECT, HAS_LIST, HAS_NEXT,
+                HAS_CONTENT);
+        descriptor.addValue(NamedResource.create("http://test"));
+        lists.updateReferencedList(descriptor);
+        verify(refListHandlerMock).updateList(descriptor);
+        verify(connectionMock).commitIfAuto();
+    }
 }

@@ -15,7 +15,6 @@ import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> {
@@ -29,6 +28,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         this.ontologyManager = snapshot.getOntologyManager();
     }
 
+    @Override
     OwlapiListIterator iterator(SimpleListDescriptor descriptor) {
         final SimpleListIterator iterator;
         if (descriptor.getListProperty().isInferred() || descriptor.getNextNode().isInferred()) {
@@ -40,14 +40,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
     }
 
     @Override
-    public void persistList(SimpleListValueDescriptor descriptor) {
-        if (descriptor.getValues().isEmpty()) {
-            return;
-        }
-        owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(createListAxioms(descriptor)));
-    }
-
-    private List<OWLOntologyChange> createListAxioms(SimpleListValueDescriptor descriptor) {
+    List<OWLOntologyChange> createListAxioms(SimpleListValueDescriptor descriptor) {
         final List<OWLOntologyChange> changes = new ArrayList<>(descriptor.getValues().size());
         NamedResource previous = descriptor.getListOwner();
         boolean first = true;
@@ -72,22 +65,12 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
     @Override
     public void updateList(SimpleListValueDescriptor descriptor) {
         if (descriptor.getValues().isEmpty()) {
-            clearList(descriptor);
+            removeObsoleteNodes(iterator(descriptor));
         } else if (isOrigEmpty(descriptor)) {
             persistList(descriptor);
         } else {
             mergeLists(descriptor);
         }
-    }
-
-    private void clearList(SimpleListDescriptor descriptor) {
-        final OwlapiListIterator it = iterator(descriptor);
-        final List<OWLOntologyChange> changes = new ArrayList<>();
-        while (it.hasNext()) {
-            it.next();
-            changes.addAll(it.removeWithoutReconnect());
-        }
-        owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
     }
 
     private boolean isOrigEmpty(SimpleListDescriptor descriptor) {
@@ -111,17 +94,14 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
             i++;
         }
         owlapiAdapter.addTransactionalChanges(changes);
-        changes.clear();
         assert lastNode != null;
-        changes.addAll(addNewNodes(descriptor, i, lastNode));
-        changes.addAll(removeObsoleteNodes(it));
-        owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
+        removeObsoleteNodes(it);
+        addNewNodes(descriptor, i, lastNode);
     }
 
-    private List<OWLOntologyChange> addNewNodes(SimpleListValueDescriptor descriptor, int index,
-                                                NamedResource lastNode) {
+    private void addNewNodes(SimpleListValueDescriptor descriptor, int index, NamedResource lastNode) {
         if (index >= descriptor.getValues().size()) {
-            return Collections.emptyList();
+            return;
         }
         final List<OWLOntologyChange> changes = new ArrayList<>(descriptor.getValues().size() - index);
         for (; index < descriptor.getValues().size(); index++) {
@@ -129,18 +109,18 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
             changes.add(new MutableAddAxiom(ontology, appendNode(lastNode, descriptor.getNextNode(), next)));
             lastNode = next;
         }
-        return changes;
+        owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
     }
 
-    private List<OWLOntologyChange> removeObsoleteNodes(OwlapiListIterator iterator) {
+    private void removeObsoleteNodes(OwlapiListIterator iterator) {
         if (!iterator.hasNext()) {
-            return Collections.emptyList();
+            return;
         }
         final List<OWLOntologyChange> changes = new ArrayList<>();
         while (iterator.hasNext()) {
             iterator.next();
             changes.addAll(iterator.removeWithoutReconnect());
         }
-        return changes;
+        owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
     }
 }
