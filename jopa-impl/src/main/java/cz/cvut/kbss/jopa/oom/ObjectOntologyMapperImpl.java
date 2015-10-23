@@ -61,7 +61,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         final EntityType<T> et = getEntityType(cls);
         final URI classUri = et.getIRI().toURI();
         final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(primaryKey),
-                Assertion.createClassAssertion(true), new Value<>(classUri));
+                Assertion.createClassAssertion(false), new Value<>(classUri));
         try {
             return storageConnection.contains(ax, descriptor.getContext());
         } catch (OntoDriverException e) {

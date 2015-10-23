@@ -26,9 +26,6 @@ import static org.mockito.Mockito.*;
 
 public class ReferencedListHandlerTest extends ListHandlerTestBase {
 
-    private static final Assertion HAS_CONTENT = Assertion
-            .createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasContents), false);
-
     private ReferencedListDescriptor descriptor = new ReferencedListDescriptorImpl(SUBJECT, HAS_LIST, HAS_NEXT,
             HAS_CONTENT);
     private ReferencedListValueDescriptor valueDescriptor = new ReferencedListValueDescriptor(SUBJECT, HAS_LIST,

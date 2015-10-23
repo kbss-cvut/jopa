@@ -208,7 +208,7 @@ public class OwlapiAdapter {
         return new PropertiesHandler(this, ontologySnapshot);
     }
 
-    public void addTransactionalChanges(List<OWLOntologyChange> changes) {
+    public void addTransactionalChanges(Collection<OWLOntologyChange> changes) {
         pendingChanges.addAll(changes);
     }
 

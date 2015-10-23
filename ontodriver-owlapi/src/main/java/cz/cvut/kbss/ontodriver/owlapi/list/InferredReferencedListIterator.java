@@ -5,11 +5,14 @@ import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 class InferredReferencedListIterator extends ReferencedListIterator {
 
@@ -38,5 +41,15 @@ class InferredReferencedListIterator extends ReferencedListIterator {
         this.currentNextNodeProperty = hasNextProperty;
         this.currentNode = nextNodes.iterator().next();
         this.next = reasoner.getObjectPropertyValues(currentNode, hasContentProperty).getFlattened();
+    }
+
+    @Override
+    List<OWLOntologyChange> removeWithoutReconnect() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    List<OWLOntologyChange> replaceNode(NamedResource newValue) {
+        throw new UnsupportedOperationException();
     }
 }

@@ -26,6 +26,8 @@ public abstract class ListHandlerTestBase {
             .createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasListProperty), false);
     static final Assertion HAS_NEXT = Assertion
             .createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasNext), false);
+    static final Assertion HAS_CONTENT = Assertion
+            .createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasContents), false);
 
     OWLOntology ontology;
     OWLOntologyManager manager;

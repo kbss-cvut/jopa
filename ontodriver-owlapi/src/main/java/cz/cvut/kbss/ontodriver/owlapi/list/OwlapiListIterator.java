@@ -5,14 +5,39 @@ import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.util.Collection;
+import java.util.List;
 
 abstract class OwlapiListIterator {
 
     abstract boolean hasNext();
 
     abstract Axiom<NamedResource> next();
+
+    abstract NamedResource nextValue();
+
+    /**
+     * Removes the current element without reconnecting the previous node to the following one.
+     * <p>
+     * This effectively breaks the list. It should be used only for removing all of the following nodes from the list.
+     * <p>
+     * Note that this method just creates the changes, it does not apply them.
+     *
+     * @return List of changes to apply
+     */
+    abstract List<OWLOntologyChange> removeWithoutReconnect();
+
+    /**
+     * Replaces the current value with the specified one.
+     * <p>
+     * Note that this method just creates the changes, it does not apply them.
+     *
+     * @param newValue The new value to use
+     * @return List of changes to apply
+     */
+    abstract List<OWLOntologyChange> replaceNode(NamedResource newValue);
 
     void checkMaxSuccessors(OWLObjectProperty property, Collection<? extends OWLIndividual> successors) {
         if (successors.size() > 1) {

@@ -36,7 +36,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     @Test
     public void testRemoveReference() {
         logger.config("Test: remove entity referenced by another entity.");
-        this.em = getEntityManager("RemoveReference", true);
+        this.em = getEntityManager("RemoveReference", false);
         persist(entityD, entityA);
 
         final OWLClassA a = em.find(OWLClassA.class, entityA.getUri());
@@ -53,7 +53,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     @Test
     public void testRemoveCascade() {
         logger.config("Test: remove cascade.");
-        this.em = getEntityManager("RemoveCascade", true);
+        this.em = getEntityManager("RemoveCascade", false);
         em.getTransaction().begin();
         em.persist(entityG);
         assertTrue(em.contains(entityG));
@@ -86,7 +86,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     @Test(expected = IllegalArgumentException.class)
     public void testRemoveDetached() {
         logger.config("Test: try removing detached entity.");
-        this.em = getEntityManager("RemoveDetached", true);
+        this.em = getEntityManager("RemoveDetached", false);
         assertNull(entityE.getUri());
         persist(entityE);
         assertNotNull(entityE.getUri());
@@ -103,7 +103,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     @Test
     public void testRemoveFromSimpleList() {
         logger.config("Test: remove entity from simple list.");
-        this.em = getEntityManager("RemoveFromSimpleList", true);
+        this.em = getEntityManager("RemoveFromSimpleList", false);
         final int size = 5;
         entityC.setSimpleList(Generators.createSimpleList(size));
         em.getTransaction().begin();
@@ -138,7 +138,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     @Test
     public void testRemoveFromReferencedList() {
         logger.config("Test: remove entity from referenced list.");
-        this.em = getEntityManager("RemoveFromReferencedList", true);
+        this.em = getEntityManager("RemoveFromReferencedList", false);
         final int size = 10;
         entityC.setReferencedList(Generators.createReferencedList(size));
         em.getTransaction().begin();
@@ -173,7 +173,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     @Test
     public void testRemoveListOwner() {
         logger.config("Test: remove owner of simple and referenced list.");
-        this.em = getEntityManager("RemoveListOwner", true);
+        this.em = getEntityManager("RemoveListOwner", false);
         entityC.setSimpleList(Generators.createSimpleList());
         entityC.setReferencedList(Generators.createReferencedList());
         em.getTransaction().begin();
@@ -200,7 +200,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     @Test
     public void testRemoveNotYetCommitted() {
         logger.config("Test: persist entity, but remove it before committing the transaction.");
-        this.em = getEntityManager("RemoveNotYetCommitted", true);
+        this.em = getEntityManager("RemoveNotYetCommitted", false);
         em.getTransaction().begin();
         em.persist(entityE);
         assertTrue(em.contains(entityE));

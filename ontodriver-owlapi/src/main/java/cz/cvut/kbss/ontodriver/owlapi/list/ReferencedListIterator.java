@@ -11,6 +11,7 @@ import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 class ReferencedListIterator extends OwlapiListIterator {
@@ -50,21 +51,6 @@ class ReferencedListIterator extends OwlapiListIterator {
         return !next.isEmpty();
     }
 
-    @Override
-    public Axiom<NamedResource> next() {
-        if (!hasNext()) {
-            throw new NoSuchElementException("No more elements in this referenced list.");
-        }
-        checkMaxSuccessors(hasContentProperty, next);
-        final OWLIndividual value = next.iterator().next();
-        checkIsNamed(value);
-        final Axiom<NamedResource> axiom = axiomAdapter.createAxiom(
-                NamedResource.create(currentNode.asOWLNamedIndividual().getIRI().toURI()),
-                descriptor.getNodeContent(), NamedResource.create(value.asOWLNamedIndividual().getIRI().toURI()));
-        doStep();
-        return axiom;
-    }
-
     void doStep() {
         final Collection<OWLIndividual> nextNodes = EntitySearcher
                 .getObjectPropertyValues(currentNode, currentNextNodeProperty, ontology);
@@ -78,5 +64,36 @@ class ReferencedListIterator extends OwlapiListIterator {
         checkIsNamed(node);
         this.currentNode = node;
         this.next = EntitySearcher.getObjectPropertyValues(node, hasContentProperty, ontology);
+    }
+
+    @Override
+    public Axiom<NamedResource> next() {
+        final NamedResource value = nextValue();
+        final Axiom<NamedResource> axiom = axiomAdapter
+                .createAxiom(NamedResource.create(currentNode.asOWLNamedIndividual().getIRI().toURI()),
+                        descriptor.getNodeContent(), value);
+        doStep();
+        return axiom;
+    }
+
+    @Override
+    NamedResource nextValue() {
+        if (!hasNext()) {
+            throw new NoSuchElementException("No more elements in this referenced list.");
+        }
+        checkMaxSuccessors(hasContentProperty, next);
+        final OWLIndividual value = next.iterator().next();
+        checkIsNamed(value);
+        return NamedResource.create(value.asOWLNamedIndividual().getIRI().toURI());
+    }
+
+    @Override
+    List<OWLOntologyChange> removeWithoutReconnect() {
+        return null;
+    }
+
+    @Override
+    List<OWLOntologyChange> replaceNode(NamedResource newValue) {
+        return null;
     }
 }

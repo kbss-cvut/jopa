@@ -49,7 +49,9 @@ public class OwlapiLists implements Lists {
 
     @Override
     public void updateSimpleList(SimpleListValueDescriptor descriptor) throws OntoDriverException {
-
+        ensureStateAndArgumentValid(descriptor);
+        adapter.getSimpleListHandler().updateList(descriptor);
+        connection.commitIfAuto();
     }
 
     @Override

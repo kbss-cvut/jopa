@@ -11,7 +11,6 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -37,6 +36,8 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 
     private SimpleListValueDescriptor valueDescriptor = new SimpleListValueDescriptor(SUBJECT, HAS_LIST, HAS_NEXT);
 
+    private SimpleListTestHelper testHelper;
+
     private SimpleListHandler listHandler;
 
     @Before
@@ -46,6 +47,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         // This snapshot contains the spied on objects
         final OntologyStructures snapshotToUse = new OntologyStructures(ontology, manager, dataFactory, reasonerMock);
         this.listHandler = new SimpleListHandler(adapterMock, snapshotToUse);
+        this.testHelper = new SimpleListTestHelper(snapshotToUse, individual);
     }
 
     @Test
@@ -57,7 +59,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
     @Test
     public void loadsListWithHeadOnly() throws Exception {
         final List<URI> list = LIST_ITEMS.subList(0, 1);
-        persistList(list);
+        testHelper.persistList(list);
         final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
         assertEquals(list.size(), result.size());
         for (int i = 0; i < list.size(); i++) {
@@ -66,25 +68,9 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         }
     }
 
-    private void persistList(List<URI> items) {
-        assert items.size() > 0;
-        final OWLObjectProperty hasList = dataFactory
-                .getOWLObjectProperty(IRI.create(SequencesVocabulary.s_p_hasListProperty));
-        final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(SequencesVocabulary.s_p_hasNext));
-        manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasList, individual,
-                dataFactory.getOWLNamedIndividual(IRI.create(items.get(0)))));
-        for (int i = 1; i < items.size(); i++) {
-            manager.addAxiom(ontology,
-                    dataFactory.getOWLObjectPropertyAssertionAxiom(hasNext, dataFactory.getOWLNamedIndividual(
-                                    IRI.create(items.get(i - 1))),
-                            dataFactory.getOWLNamedIndividual(IRI.create(items.get(i)))));
-
-        }
-    }
-
     @Test
     public void loadsListWithMultipleItems() throws Exception {
-        persistList(LIST_ITEMS);
+        testHelper.persistList(LIST_ITEMS);
         final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
         assertEquals(LIST_ITEMS.size(), result.size());
         for (int i = 0; i < LIST_ITEMS.size(); i++) {
@@ -99,7 +85,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 
     @Test(expected = IntegrityConstraintViolatedException.class)
     public void loadingListWithItemWithMultipleSuccessorsThrowsException() throws Exception {
-        persistList(LIST_ITEMS.subList(0, 5));
+        testHelper.persistList(LIST_ITEMS.subList(0, 5));
         addExtraSuccessor(LIST_ITEMS.get(2), LIST_ITEMS.get(8));
         listHandler.loadList(descriptor);
     }
@@ -220,8 +206,6 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         verifyUpdatedListContent(updated, result);
     }
 
-    // TODO
-    @Ignore
     @Test
     public void updateListToEmptyClearsList() throws Exception {
         final List<URI> origList = LIST_ITEMS.subList(0, 5);
@@ -235,21 +219,18 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         assertTrue(result.isEmpty());
     }
 
-    @Ignore
     @Test
     public void updateListByAppendingNewItems() throws Exception {
         final List<URI> origList = LIST_ITEMS.subList(0, 5);
-        origList.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
-        listHandler.persistList(valueDescriptor);
+        testHelper.persistList(origList);
 
         final List<URI> updated = new ArrayList<>(origList);
         updated.add(LIST_ITEMS.get(7));
         updated.add(LIST_ITEMS.get(8));
-        final SimpleListValueDescriptor updatedDescriptor = new SimpleListValueDescriptor(SUBJECT, HAS_LIST, HAS_NEXT);
-        updated.forEach(item -> updatedDescriptor.addValue(NamedResource.create(item)));
-        listHandler.updateList(updatedDescriptor);
+        updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+        listHandler.updateList(valueDescriptor);
 
-        final List<Axiom<NamedResource>> result = listHandler.loadList(updatedDescriptor);
+        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
         verifyUpdatedListContent(updated, result);
     }
 
@@ -258,5 +239,62 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         for (int i = 0; i < expected.size(); i++) {
             assertEquals(expected.get(i), result.get(i).getValue().getValue().getIdentifier());
         }
+    }
+
+    @Test
+    public void updateListByRemovingElementsFromTheEnd() throws Exception {
+        testHelper.persistList(LIST_ITEMS);
+        final List<URI> subList = LIST_ITEMS.subList(0, 5);
+        subList.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+
+        listHandler.updateList(valueDescriptor);
+        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        verifyUpdatedListContent(subList, result);
+    }
+
+    @Test
+    public void updateListByReplacingSomeElementsButKeepingSize() throws Exception {
+        final List<URI> origList = LIST_ITEMS.subList(0, 6);
+        testHelper.persistList(origList);
+
+        final List<URI> updated = new ArrayList<>(origList);
+        updated.set(2, LIST_ITEMS.get(7));
+        updated.set(4, LIST_ITEMS.get(9));
+        updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+
+        listHandler.updateList(valueDescriptor);
+        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        verifyUpdatedListContent(updated, result);
+    }
+
+    @Test
+    public void updateListByReplacingSomeElementsAndAddingNewOnes() throws Exception {
+        final List<URI> origList = LIST_ITEMS.subList(0, 6);
+        testHelper.persistList(origList);
+        final List<URI> updated = new ArrayList<>(origList);
+        updated.set(2, LIST_ITEMS.get(7));
+        updated.set(3, LIST_ITEMS.get(8));
+        updated.add(LIST_ITEMS.get(9));
+        updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+
+        listHandler.updateList(valueDescriptor);
+        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        verifyUpdatedListContent(updated, result);
+    }
+
+    @Test
+    public void updateListByReplacingSomeElementsAndRemovingSome() throws Exception {
+        final List<URI> origList = LIST_ITEMS.subList(0, 6);
+        testHelper.persistList(origList);
+        final List<URI> updated = new ArrayList<>(origList);
+        updated.set(0, LIST_ITEMS.get(7));
+        updated.set(1, LIST_ITEMS.get(8));
+        updated.remove(updated.size() - 1);
+        updated.remove(updated.size() - 2);
+        updated.forEach(item -> valueDescriptor.addValue(NamedResource.create(item)));
+
+        listHandler.updateList(valueDescriptor);
+        final List<Axiom<NamedResource>> result = listHandler.loadList(descriptor);
+        verifyUpdatedListContent(updated, result);
     }
 }
