@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
@@ -21,7 +21,7 @@ class InferredReferencedListIterator extends ReferencedListIterator {
     private OWLNamedIndividual currentNode;
     private OWLReasoner reasoner;
 
-    InferredReferencedListIterator(ReferencedListDescriptor descriptor, OntologyStructures snapshot,
+    InferredReferencedListIterator(ReferencedListDescriptor descriptor, OntologySnapshot snapshot,
                                    AxiomAdapter axiomAdapter) {
         super(descriptor, snapshot, axiomAdapter);
         this.reasoner = snapshot.getReasoner();

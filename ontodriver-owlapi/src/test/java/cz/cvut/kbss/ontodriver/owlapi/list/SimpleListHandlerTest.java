@@ -3,7 +3,7 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptorImpl;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
@@ -38,7 +38,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
         this.descriptor = new SimpleListDescriptorImpl(SUBJECT, HAS_LIST, HAS_NEXT);
         this.valueDescriptor = createDescriptor();
         // This snapshot contains the spied on objects
-        final OntologyStructures snapshotToUse = new OntologyStructures(ontology, manager, dataFactory, reasonerMock);
+        final OntologySnapshot snapshotToUse = new OntologySnapshot(ontology, manager, dataFactory, reasonerMock);
         this.listHandler = new SimpleListHandler(adapterMock, snapshotToUse);
         this.testHelper = new SimpleListTestHelper(snapshotToUse, individual);
     }

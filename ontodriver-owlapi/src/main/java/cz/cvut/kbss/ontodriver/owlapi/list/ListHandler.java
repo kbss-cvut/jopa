@@ -2,13 +2,12 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver_new.descriptors.*;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,16 +18,14 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
     protected final AxiomAdapter axiomAdapter;
 
     protected final OWLOntology ontology;
-    protected final OWLOntologyManager ontologyManager;
 
-    protected final OntologyStructures snapshot;
+    protected final OntologySnapshot snapshot;
 
-    protected ListHandler(OwlapiAdapter owlapiAdapter, OntologyStructures snapshot) {
+    protected ListHandler(OwlapiAdapter owlapiAdapter, OntologySnapshot snapshot) {
         this.owlapiAdapter = owlapiAdapter;
         this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory(), owlapiAdapter.getLanguage());
-        this.ontology = snapshot.getOntology();
-        this.ontologyManager = snapshot.getOntologyManager();
         this.snapshot = snapshot;
+        this.ontology = snapshot.getOntology();
     }
 
     public List<Axiom<NamedResource>> loadList(D descriptor) {
@@ -44,7 +41,7 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
         if (descriptor.getValues().isEmpty()) {
             return;
         }
-        owlapiAdapter.addTransactionalChanges(snapshot.getOntologyManager().applyChanges(createListAxioms(descriptor)));
+        owlapiAdapter.addTransactionalChanges(snapshot.applyChanges(createListAxioms(descriptor)));
     }
 
     abstract OwlapiListIterator iterator(ListDescriptor descriptor);
@@ -73,7 +70,7 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
             final NamedResource newValue = values.get(i);
             final NamedResource currentValue = it.nextValue();
             if (!newValue.equals(currentValue)) {
-                changes.addAll(ontologyManager.applyChanges(it.replaceNode(newValue)));
+                changes.addAll(snapshot.applyChanges(it.replaceNode(newValue)));
             }
             lastNode = it.getCurrentNode();
             i++;
@@ -93,18 +90,18 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
             iterator.next();
             changes.addAll(iterator.removeWithoutReconnect());
         }
-        owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
+        owlapiAdapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
 
     abstract void addNewNodes(V descriptor, int index, NamedResource lastNode);
 
     public static ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler(
-            OwlapiAdapter adapter, OntologyStructures snapshot) {
+            OwlapiAdapter adapter, OntologySnapshot snapshot) {
         return new SimpleListHandler(adapter, snapshot);
     }
 
     public static ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler(
-            OwlapiAdapter adapter, OntologyStructures snapshot) {
+            OwlapiAdapter adapter, OntologySnapshot snapshot) {
         return new ReferencedListHandler(adapter, snapshot);
     }
 }

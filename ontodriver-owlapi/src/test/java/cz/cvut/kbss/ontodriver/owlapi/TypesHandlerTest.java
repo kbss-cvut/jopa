@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
@@ -54,14 +54,14 @@ public class TypesHandlerTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         this.dataFactory = new OWLDataFactoryImpl();
-        final OntologyStructures snapshot = new OntologyStructures(ontologyMock, managerMock, dataFactory,
+        final OntologySnapshot snapshot = new OntologySnapshot(ontologyMock, managerMock, dataFactory,
                 reasonerMock);
         this.typesHandler = new TypesHandler(adapterMock, snapshot);
     }
 
     @Test
     public void getTypesLoadsExplicitTypesFromOntology() throws Exception {
-        final OntologyStructures snapshot = TestUtils.initRealOntology(reasonerMock);
+        final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
         final Set<URI> types = initTypes();
         addClassAssertionsToOntology(PK, types, snapshot);
         final Set<Axiom<URI>> result = new TypesHandler(adapterMock, snapshot).getTypes(INDIVIDUAL, null, false);
@@ -72,7 +72,7 @@ public class TypesHandlerTest {
         }
     }
 
-    private void addClassAssertionsToOntology(URI subject, Collection<URI> classes, OntologyStructures snapshot) {
+    private void addClassAssertionsToOntology(URI subject, Collection<URI> classes, OntologySnapshot snapshot) {
         final OWLNamedIndividual individual = snapshot.getDataFactory().getOWLNamedIndividual(IRI.create(subject));
         classes.stream().forEach(uri -> {
             final OWLClass cls = snapshot.getDataFactory().getOWLClass(IRI.create(uri));

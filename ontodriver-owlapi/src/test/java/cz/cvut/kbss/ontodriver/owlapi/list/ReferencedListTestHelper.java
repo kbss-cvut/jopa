@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import org.semanticweb.owlapi.model.*;
 
 import java.net.URI;
@@ -13,7 +13,7 @@ public class ReferencedListTestHelper extends ListTestHelper {
 
     private final String baseUri;
 
-    ReferencedListTestHelper(OntologyStructures snapshot, OWLNamedIndividual individual, String baseUri) {
+    ReferencedListTestHelper(OntologySnapshot snapshot, OWLNamedIndividual individual, String baseUri) {
         super(snapshot, individual);
         this.baseUri = baseUri;
     }

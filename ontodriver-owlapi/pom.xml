@@ -16,7 +16,7 @@
     </parent>
 
     <properties>
-        <net.sourceforge.owlapi.version>4.0.1</net.sourceforge.owlapi.version>
+        <net.sourceforge.owlapi.version>4.1.0</net.sourceforge.owlapi.version>
     </properties>
 
     <dependencies>

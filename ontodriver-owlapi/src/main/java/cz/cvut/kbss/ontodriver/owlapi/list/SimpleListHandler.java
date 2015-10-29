@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
@@ -18,7 +18,7 @@ import java.util.List;
 
 class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> {
 
-    SimpleListHandler(OwlapiAdapter adapter, OntologyStructures snapshot) {
+    SimpleListHandler(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         super(adapter, snapshot);
     }
 
@@ -71,6 +71,6 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
             changes.add(new MutableAddAxiom(ontology, appendNode(lastNode, descriptor.getNextNode(), next)));
             lastNode = next;
         }
-        owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
+        owlapiAdapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
 }

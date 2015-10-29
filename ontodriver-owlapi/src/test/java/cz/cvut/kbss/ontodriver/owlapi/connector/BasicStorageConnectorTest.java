@@ -42,7 +42,7 @@ public class BasicStorageConnectorTest {
                 Collections.<String, String>emptyMap());
         assertNotNull(connector);
         assertTrue(connector.isOpen());
-        final OntologyStructures snapshot = connector.getOntologySnapshot();
+        final OntologySnapshot snapshot = connector.getOntologySnapshot();
         assertNotNull(snapshot.getOntology());
         assertEquals(IRI.create(ONTOLOGY_URI), snapshot.getOntology().getOntologyID().getOntologyIRI().get());
         assertNotNull(snapshot.getOntologyManager());
@@ -84,8 +84,8 @@ public class BasicStorageConnectorTest {
         final URI physicalUri = initOntology();
         this.connector = new BasicStorageConnector(initStorageProperties(physicalUri, null),
                 Collections.<String, String>emptyMap());
-        final OntologyStructures snapshotOne = connector.getOntologySnapshot();
-        final OntologyStructures snapshotTwo = connector.getOntologySnapshot();
+        final OntologySnapshot snapshotOne = connector.getOntologySnapshot();
+        final OntologySnapshot snapshotTwo = connector.getOntologySnapshot();
 
         assertNotSame(snapshotOne.getOntology(), snapshotTwo.getOntology());
     }
@@ -115,13 +115,13 @@ public class BasicStorageConnectorTest {
         final URI physicalUri = initOntology();
         this.connector = new BasicStorageConnector(initStorageProperties(physicalUri, null),
                 Collections.<String, String>emptyMap());
-        final OntologyStructures snapshot = connector.getOntologySnapshot();
+        final OntologySnapshot snapshot = connector.getOntologySnapshot();
         final OWLClass cls = addClassToOntology(snapshot);
-        final OntologyStructures result = connector.getOntologySnapshot();
+        final OntologySnapshot result = connector.getOntologySnapshot();
         assertTrue(result.getOntology().containsClassInSignature(cls.getIRI()));
     }
 
-    private OWLClass addClassToOntology(OntologyStructures snapshot) {
+    private OWLClass addClassToOntology(OntologySnapshot snapshot) {
         final OWLClass cls = snapshot.getDataFactory().getOWLClass(
                 IRI.create("http://krizik.felk.cvut.cz/ontologies/jopa#OWClassA"));
         final OWLAxiom classDeclaration = snapshot.getDataFactory().getOWLDeclarationAxiom(cls);
@@ -140,7 +140,7 @@ public class BasicStorageConnectorTest {
         connector.close();
 
         this.connector = new BasicStorageConnector(storageProperties, Collections.<String, String>emptyMap());
-        final OntologyStructures res = connector.getOntologySnapshot();
+        final OntologySnapshot res = connector.getOntologySnapshot();
         assertTrue(res.getOntology().containsClassInSignature(cls.getIRI()));
     }
 }

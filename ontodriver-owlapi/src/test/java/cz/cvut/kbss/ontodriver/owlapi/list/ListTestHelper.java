@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -16,7 +16,7 @@ abstract class ListTestHelper {
     final OWLDataFactory dataFactory;
     final OWLNamedIndividual individual;
 
-    ListTestHelper(OntologyStructures snapshot, OWLNamedIndividual individual) {
+    ListTestHelper(OntologySnapshot snapshot, OWLNamedIndividual individual) {
         this.ontology = snapshot.getOntology();
         this.manager = snapshot.getOntologyManager();
         this.dataFactory = snapshot.getDataFactory();

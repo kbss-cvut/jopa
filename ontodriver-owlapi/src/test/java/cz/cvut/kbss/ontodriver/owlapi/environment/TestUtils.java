@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi.environment;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -20,10 +20,10 @@ public class TestUtils {
      * @param reasoner Reasoner to use. Can be null
      * @return Ontology snapshot
      */
-    public static OntologyStructures initRealOntology(OWLReasoner reasoner) throws Exception {
+    public static OntologySnapshot initRealOntology(OWLReasoner reasoner) throws Exception {
         final OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         final OWLOntology ontology = manager
                 .createOntology(IRI.create("http://krizik.felk.cvut.cz/ontologies/adapterTest"));
-        return new OntologyStructures(ontology, manager, manager.getOWLDataFactory(), reasoner);
+        return new OntologySnapshot(ontology, manager, manager.getOWLDataFactory(), reasoner);
     }
 }

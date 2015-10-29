@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver.owlapi.list.ListHandler;
 import cz.cvut.kbss.ontodriver.owlapi.util.IdentifierGenerator;
@@ -25,7 +25,7 @@ import java.util.*;
 public class OwlapiAdapter {
 
     private final Connector connector;
-    private OntologyStructures ontologySnapshot;
+    private OntologySnapshot ontologySnapshot;
     private final String language;
 
     private TransactionState transactionState = TransactionState.INITIAL;

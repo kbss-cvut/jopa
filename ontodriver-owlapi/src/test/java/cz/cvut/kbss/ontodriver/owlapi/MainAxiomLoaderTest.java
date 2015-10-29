@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.*;
@@ -53,7 +53,7 @@ public class MainAxiomLoaderTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        final OntologyStructures snapshot = new OntologyStructures(ontologyMock, managerMock, dataFactory,
+        final OntologySnapshot snapshot = new OntologySnapshot(ontologyMock, managerMock, dataFactory,
                 reasonerMock);
         this.axiomLoader = new MainAxiomLoader(adapterMock, snapshot);
         this.individual = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
@@ -236,7 +236,7 @@ public class MainAxiomLoaderTest {
     public void throwsExceptionWhenReasonerIsNotAvailableForInferredAssertions() throws Exception {
         final URI opUri = URI.create("http://krizik.felk.cvut.cz/PropertyOne");
         final Assertion op = Assertion.createObjectPropertyAssertion(opUri, true);
-        final OntologyStructures snapshot = new OntologyStructures(ontologyMock, managerMock, dataFactory, null);
+        final OntologySnapshot snapshot = new OntologySnapshot(ontologyMock, managerMock, dataFactory, null);
         final MainAxiomLoader loader = new MainAxiomLoader(adapterMock, snapshot);
 
         loader.findAxioms(descriptor(op));

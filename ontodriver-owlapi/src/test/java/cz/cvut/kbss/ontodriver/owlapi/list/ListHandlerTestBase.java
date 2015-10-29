@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ListValueDescriptor;
@@ -60,7 +60,7 @@ public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends Li
     }
 
     public void setUp() throws Exception {
-        final OntologyStructures realSnapshot = TestUtils.initRealOntology(reasonerMock);
+        final OntologySnapshot realSnapshot = TestUtils.initRealOntology(reasonerMock);
         this.ontology = spy(realSnapshot.getOntology());
         this.manager = spy(realSnapshot.getOntologyManager());
         this.dataFactory = realSnapshot.getDataFactory();

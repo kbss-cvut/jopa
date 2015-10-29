@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
@@ -43,7 +43,7 @@ public class EpistemicAxiomRemoverTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(adapterMock.getLanguage()).thenReturn("en");
-        final OntologyStructures snapshot = TestUtils.initRealOntology(null);
+        final OntologySnapshot snapshot = TestUtils.initRealOntology(null);
         this.ontology = snapshot.getOntology();
         this.manager = snapshot.getOntologyManager();
         this.dataFactory = snapshot.getDataFactory();

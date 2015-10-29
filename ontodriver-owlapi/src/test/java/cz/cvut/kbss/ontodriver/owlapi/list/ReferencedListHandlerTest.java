@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.ontodriver.exceptions.IntegrityConstraintViolatedException;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptorImpl;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
@@ -37,7 +37,7 @@ public class ReferencedListHandlerTest
         super.setUp();
         this.descriptor = new ReferencedListDescriptorImpl(SUBJECT, HAS_LIST, HAS_NEXT, HAS_CONTENT);
         this.valueDescriptor = createDescriptor();
-        final OntologyStructures snapshotToUse = new OntologyStructures(ontology, manager, dataFactory, reasonerMock);
+        final OntologySnapshot snapshotToUse = new OntologySnapshot(ontology, manager, dataFactory, reasonerMock);
         this.testHelper = new ReferencedListTestHelper(snapshotToUse, individual, SUBJECT.toString());
         this.listHandler = new ReferencedListHandler(adapterMock, snapshotToUse);
         this.hasListProperty = dataFactory.getOWLObjectProperty(IRI.create(HAS_LIST.getIdentifier()));

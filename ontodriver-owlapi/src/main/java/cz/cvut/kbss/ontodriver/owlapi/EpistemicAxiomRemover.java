@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
@@ -17,13 +17,13 @@ class EpistemicAxiomRemover {
 
     private final OwlapiAdapter owlapiAdapter;
     private final OWLOntology ontology;
-    private final OWLOntologyManager ontologyManager;
     private final OWLDataFactory dataFactory;
+    private final OntologySnapshot snapshot;
 
-    EpistemicAxiomRemover(OwlapiAdapter adapter, OntologyStructures snapshot) {
+    EpistemicAxiomRemover(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.owlapiAdapter = adapter;
+        this.snapshot = snapshot;
         this.ontology = snapshot.getOntology();
-        this.ontologyManager = snapshot.getOntologyManager();
         this.dataFactory = snapshot.getDataFactory();
     }
 
@@ -46,7 +46,7 @@ class EpistemicAxiomRemover {
             }
         }
         if (!changes.isEmpty()) {
-            owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
+            owlapiAdapter.addTransactionalChanges(snapshot.applyChanges(changes));
         }
     }
 

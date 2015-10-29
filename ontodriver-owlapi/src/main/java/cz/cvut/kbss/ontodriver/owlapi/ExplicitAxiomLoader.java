@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -26,7 +26,7 @@ class ExplicitAxiomLoader implements AxiomLoader {
     private Set<Assertion> assertions;
     private Set<URI> assertionUris;
 
-    ExplicitAxiomLoader(OwlapiAdapter adapter, OntologyStructures snapshot) {
+    ExplicitAxiomLoader(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
         this.ontology = snapshot.getOntology();
         this.dataFactory = snapshot.getDataFactory();

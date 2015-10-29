@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
 import cz.cvut.kbss.ontodriver_new.model.*;
@@ -14,19 +14,19 @@ import java.util.stream.Collectors;
 
 class TypesHandler {
 
-    private OWLOntology ontology;
-    private OWLDataFactory dataFactory;
-    private OWLReasoner reasoner;
-    private OWLOntologyManager ontologyManager;
+    private final OWLOntology ontology;
+    private final OWLDataFactory dataFactory;
+    private final OWLReasoner reasoner;
+    private final OntologySnapshot snapshot;
 
-    private OwlapiAdapter adapter;
+    private final OwlapiAdapter adapter;
 
-    TypesHandler(OwlapiAdapter adapter, OntologyStructures snapshot) {
+    TypesHandler(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
+        this.snapshot = snapshot;
         this.ontology = snapshot.getOntology();
         this.dataFactory = snapshot.getDataFactory();
         this.reasoner = snapshot.getReasoner();
-        this.ontologyManager = snapshot.getOntologyManager();
     }
 
     Set<Axiom<URI>> getTypes(NamedResource subject, URI context, boolean includeInferred) {
@@ -66,7 +66,7 @@ class TypesHandler {
         final List<OWLOntologyChange> changes = axioms.stream().map(axiom -> new MutableAddAxiom(ontology, axiom))
                                                       .collect(Collectors.toList());
 
-        adapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
+        adapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
 
     private List<OWLAxiom> getOwlAxiomsForTypes(NamedResource subject, Set<URI> types) {
@@ -85,6 +85,6 @@ class TypesHandler {
         final List<OWLOntologyChange> changes = axioms.stream().map(axiom -> new MutableRemoveAxiom(ontology, axiom))
                                                       .collect(Collectors.toList());
 
-        adapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
+        adapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
 }

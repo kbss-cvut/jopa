@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 
 
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
 import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
@@ -33,7 +33,7 @@ class SimpleListIterator extends OwlapiListIterator {
     final AxiomAdapter axiomAdapter;
 
 
-    SimpleListIterator(ListDescriptor descriptor, OntologyStructures snapshot, AxiomAdapter axiomAdapter) {
+    SimpleListIterator(ListDescriptor descriptor, OntologySnapshot snapshot, AxiomAdapter axiomAdapter) {
         this.ontology = snapshot.getOntology();
         this.dataFactory = snapshot.getDataFactory();
         this.previousProperty = dataFactory

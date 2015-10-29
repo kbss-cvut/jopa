@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
 import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
@@ -22,7 +22,7 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
 
     private static final int NEXT_NODE_GENERATION_THRESHOLD = 100;
 
-    ReferencedListHandler(OwlapiAdapter owlapiAdapter, OntologyStructures snapshot) {
+    ReferencedListHandler(OwlapiAdapter owlapiAdapter, OntologySnapshot snapshot) {
         super(owlapiAdapter, snapshot);
     }
 
@@ -78,7 +78,7 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
             final NamedResource nextValue = descriptor.getValues().get(index);
             lastNode = nodeGenerator.addListNode(lastNode, nextValue);
         }
-        owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(nodeGenerator.getChanges()));
+        owlapiAdapter.addTransactionalChanges(snapshot.applyChanges(nodeGenerator.getChanges()));
     }
 
     private class ReferencedListNodeGenerator {

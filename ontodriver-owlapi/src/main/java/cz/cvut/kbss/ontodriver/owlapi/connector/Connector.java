@@ -16,7 +16,7 @@ public interface Connector {
      *
      * @return Value object with the ontology snapshot
      */
-    OntologyStructures getOntologySnapshot();
+    OntologySnapshot getOntologySnapshot();
 
     /**
      * Applies the specified changes to the underlying ontology.

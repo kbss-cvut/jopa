@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import org.semanticweb.owlapi.model.*;
 
 import java.net.URI;
@@ -9,7 +9,7 @@ import java.util.List;
 
 class SimpleListTestHelper extends ListTestHelper {
 
-    SimpleListTestHelper(OntologyStructures snapshot, OWLNamedIndividual individual) {
+    SimpleListTestHelper(OntologySnapshot snapshot, OWLNamedIndividual individual) {
         super(snapshot, individual);
     }
 

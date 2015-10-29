@@ -80,14 +80,14 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     @Override
-    public OntologyStructures getOntologySnapshot() {
+    public OntologySnapshot getOntologySnapshot() {
         ensureOpen();
         READ.lock();
         try {
             // TODO init reasoner
             final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
             final OWLOntology snapshot = m.copyOntology(ontology, OntologyCopy.DEEP);
-            return new OntologyStructures(snapshot, m, m.getOWLDataFactory(), null);
+            return new OntologySnapshot(snapshot, m, m.getOWLDataFactory(), null);
         } catch (OWLOntologyCreationException e) {
             throw new OntologySnapshotException("Unable to create ontology snapshot.", e);
         } finally {

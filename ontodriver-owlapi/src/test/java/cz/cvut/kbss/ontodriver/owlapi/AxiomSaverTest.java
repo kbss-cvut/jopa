@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
@@ -50,11 +50,11 @@ public class AxiomSaverTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        final OntologyStructures snapshot = TestUtils.initRealOntology(reasonerMock);
+        final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
         this.ontology = spy(snapshot.getOntology());
         this.manager = spy(snapshot.getOntologyManager());
         this.dataFactory = snapshot.getDataFactory();
-        final OntologyStructures snapshotToUse = new OntologyStructures(ontology, manager, dataFactory, reasonerMock);
+        final OntologySnapshot snapshotToUse = new OntologySnapshot(ontology, manager, dataFactory, reasonerMock);
         this.axiomSaver = new AxiomSaver(adapterMock, snapshotToUse);
         when(adapterMock.getLanguage()).thenReturn("en");
         this.descriptor = new AxiomValueDescriptor(SUBJECT);

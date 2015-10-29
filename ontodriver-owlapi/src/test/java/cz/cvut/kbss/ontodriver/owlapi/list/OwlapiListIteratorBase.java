@@ -1,13 +1,11 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.junit.Test;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.net.URI;
@@ -23,7 +21,7 @@ abstract class OwlapiListIteratorBase {
 
     static final String SUBJECT = "http://krizik.felk.cvut.cz/jopa#Individual";
 
-    OntologyStructures snapshot;
+    OntologySnapshot snapshot;
     ListTestHelper testHelper;
     AxiomAdapter axiomAdapter;
 

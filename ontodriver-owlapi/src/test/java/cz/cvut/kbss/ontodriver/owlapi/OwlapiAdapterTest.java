@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver.owlapi;
 
 import com.google.common.base.Optional;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.exception.OWLIndividualExistsException;
@@ -33,7 +33,7 @@ public class OwlapiAdapterTest {
     @Mock
     private Connector connectorMock;
     @Mock
-    private OntologyStructures snapshotMock;
+    private OntologySnapshot snapshotMock;
     @Mock
     private OWLOntology ontologyMock;
     @Mock

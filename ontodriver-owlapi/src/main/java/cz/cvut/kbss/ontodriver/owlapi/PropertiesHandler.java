@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
@@ -14,9 +14,9 @@ import java.util.Set;
 class PropertiesHandler {
 
     private final OwlapiAdapter adapter;
-    private final OntologyStructures snapshot;
+    private final OntologySnapshot snapshot;
 
-    PropertiesHandler(OwlapiAdapter adapter, OntologyStructures snapshot) {
+    PropertiesHandler(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
         this.snapshot = snapshot;
     }

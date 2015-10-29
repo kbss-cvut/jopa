@@ -1,13 +1,16 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.net.URI;
 import java.util.Collection;
@@ -24,14 +27,14 @@ class AxiomSaver {
     private final OwlapiAdapter adapter;
 
     private final OWLOntology ontology;
-    private final OWLOntologyManager ontologyManager;
+    private final OntologySnapshot snapshot;
 
     private final AxiomAdapter axiomAdapter;
 
-    AxiomSaver(OwlapiAdapter adapter, OntologyStructures snapshot) {
+    AxiomSaver(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
+        this.snapshot = snapshot;
         this.ontology = snapshot.getOntology();
-        this.ontologyManager = snapshot.getOntologyManager();
         this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory(), adapter.getLanguage());
     }
 
@@ -85,7 +88,7 @@ class AxiomSaver {
         }
         final List<OWLOntologyChange> changes = axioms.stream().map(axiom -> new MutableAddAxiom(ontology, axiom))
                                                       .collect(Collectors.toList());
-        adapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
+        adapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
 
     private void persistAnnotationPropertyValues(NamedResource subject, Assertion assertion,

@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
@@ -31,7 +31,7 @@ class ReferencedListIterator extends OwlapiListIterator {
 
     final ReferencedListDescriptor descriptor;
 
-    ReferencedListIterator(ReferencedListDescriptor descriptor, OntologyStructures snapshot,
+    ReferencedListIterator(ReferencedListDescriptor descriptor, OntologySnapshot snapshot,
                            AxiomAdapter axiomAdapter) {
         this.ontology = snapshot.getOntology();
         this.dataFactory = snapshot.getDataFactory();

@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 class MainAxiomLoader {
 
     private final OwlapiAdapter adapter;
-    private final OntologyStructures snapshot;
+    private final OntologySnapshot snapshot;
 
     private OWLOntology ontology;
 
@@ -23,7 +23,7 @@ class MainAxiomLoader {
     private Set<Assertion> inferredAssertions = new HashSet<>();
     private Set<Assertion> explicitAssertions = new HashSet<>();
 
-    MainAxiomLoader(OwlapiAdapter adapter, OntologyStructures snapshot) {
+    MainAxiomLoader(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
         this.snapshot = snapshot;
         this.ontology = snapshot.getOntology();

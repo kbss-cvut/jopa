@@ -1,15 +1,12 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.jopa.model.annotations.*;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -61,7 +58,7 @@ public class PropertiesHandlerTest {
         MockitoAnnotations.initMocks(this);
         this.dataFactory = new OWLDataFactoryImpl();
         this.propertiesHandler = new PropertiesHandler(adapterMock,
-                new OntologyStructures(ontologyMock, managerMock, dataFactory, reasonerMock));
+                new OntologySnapshot(ontologyMock, managerMock, dataFactory, reasonerMock));
     }
 
     @Test
