@@ -1,21 +1,20 @@
 package cz.cvut.kbss.ontodriver.sesame.query;
 
-import java.net.URI;
-import java.util.Objects;
-
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.TupleQueryResult;
-
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver_new.ResultSet;
 import cz.cvut.kbss.ontodriver_new.Statement;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.TupleQueryResult;
+
+import java.net.URI;
+import java.util.Objects;
 
 public class SesameStatement implements Statement {
 
-    protected boolean useTransactionalOntology;
+    protected StatementOntology targetOntology = StatementOntology.TRANSACTIONAL;
     protected final StatementExecutor queryExecutor;
     protected ResultSet resultSet;
 
@@ -58,6 +57,16 @@ public class SesameStatement implements Statement {
         queryExecutor.executeUpdate(sparql);
     }
 
+    @Override
+    public void useOntology(StatementOntology ontology) {
+        this.targetOntology = ontology;
+    }
+
+    @Override
+    public StatementOntology getStatementOntology() {
+        return targetOntology;
+    }
+
     private void validateQueryParams(String sparql) {
         Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
         if (sparql.isEmpty()) {
@@ -78,22 +87,22 @@ public class SesameStatement implements Statement {
 
     public void setUseTransactionalOntology() {
         ensureOpen();
-        this.useTransactionalOntology = true;
+        this.targetOntology = StatementOntology.TRANSACTIONAL;
     }
 
     public boolean useTransactionalOntology() {
         ensureOpen();
-        return useTransactionalOntology;
+        return targetOntology == StatementOntology.TRANSACTIONAL;
     }
 
     public void setUseBackupOntology() {
         ensureOpen();
-        this.useTransactionalOntology = false;
+        this.targetOntology = StatementOntology.CENTRAL;
     }
 
     public boolean useBackupOntology() {
         ensureOpen();
-        return (!useTransactionalOntology);
+        return targetOntology == StatementOntology.CENTRAL;
     }
 
     protected void ensureOpen() {

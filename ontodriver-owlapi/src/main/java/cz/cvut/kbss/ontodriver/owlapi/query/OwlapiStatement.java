@@ -8,6 +8,14 @@ import java.net.URI;
 
 public class OwlapiStatement implements Statement {
 
+    private StatementOntology targetOntology;
+    private boolean open;
+
+    private void ensureOpen() {
+        if (!open) {
+            throw new IllegalStateException("The statement is closed.");
+        }
+    }
 
     @Override
     public ResultSet executeQuery(String sparql, URI... contexts) throws OntoDriverException {
@@ -21,26 +29,41 @@ public class OwlapiStatement implements Statement {
 
     @Override
     public void setUseTransactionalOntology() {
-
+        ensureOpen();
+        this.targetOntology = StatementOntology.TRANSACTIONAL;
     }
 
     @Override
     public boolean useTransactionalOntology() {
-        return false;
+        ensureOpen();
+        return  targetOntology == StatementOntology.TRANSACTIONAL;
     }
 
     @Override
     public void setUseBackupOntology() {
-
+        ensureOpen();
+        this.targetOntology = StatementOntology.CENTRAL;
     }
 
     @Override
     public boolean useBackupOntology() {
-        return false;
+        ensureOpen();
+        return targetOntology == StatementOntology.CENTRAL;
+    }
+
+    @Override
+    public void useOntology(StatementOntology ontology) {
+        ensureOpen();
+        this.targetOntology = ontology;
+    }
+
+    @Override
+    public StatementOntology getStatementOntology() {
+        return targetOntology;
     }
 
     @Override
     public void close() throws Exception {
-
+        this.open = false;
     }
 }

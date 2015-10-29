@@ -40,6 +40,16 @@ public class OwlapiPreparedStatement implements PreparedStatement {
     }
 
     @Override
+    public void useOntology(StatementOntology ontology) {
+
+    }
+
+    @Override
+    public StatementOntology getStatementOntology() {
+        return null;
+    }
+
+    @Override
     public void setUseTransactionalOntology() {
 
     }

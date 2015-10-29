@@ -3,7 +3,6 @@ package cz.cvut.kbss.ontodriver.sesame.query;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
-import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
 import cz.cvut.kbss.ontodriver_new.PreparedStatement;
 import cz.cvut.kbss.ontodriver_new.util.StatementHolder;
 
