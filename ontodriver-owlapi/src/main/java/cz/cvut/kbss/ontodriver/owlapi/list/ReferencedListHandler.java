@@ -10,10 +10,7 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import cz.cvut.kbss.ontodriver_new.model.Value;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,14 +20,16 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
     private static final int NEXT_NODE_GENERATION_THRESHOLD = 100;
 
     private final OWLOntology ontology;
+    private final OWLOntologyManager ontologyManager;
 
     ReferencedListHandler(OwlapiAdapter owlapiAdapter, OntologyStructures snapshot) {
         super(owlapiAdapter, snapshot);
         this.ontology = snapshot.getOntology();
+        this.ontologyManager = snapshot.getOntologyManager();
     }
 
     @Override
-    OwlapiListIterator iterator(ReferencedListDescriptor descriptor) {
+    ReferencedListIterator iterator(ReferencedListDescriptor descriptor) {
         if (descriptor.getListProperty().isInferred() || descriptor.getNextNode().isInferred() ||
                 descriptor.getNodeContent().isInferred()) {
             return new InferredReferencedListIterator(descriptor, snapshot, axiomAdapter);
@@ -42,7 +41,7 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
     @Override
     List<OWLOntologyChange> createListAxioms(ReferencedListValueDescriptor descriptor) {
         final ReferencedListNodeGenerator nodeGenerator = new ReferencedListNodeGenerator(
-                descriptor.getListOwner().toString(), descriptor.getNodeContent());
+                descriptor.getListOwner(), descriptor.getNodeContent());
         boolean first = true;
         NamedResource previousNode = descriptor.getListOwner();
         nodeGenerator.setIndex(0);
@@ -61,7 +60,66 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
 
     @Override
     public void updateList(ReferencedListValueDescriptor descriptor) {
-        // TODO
+        if (descriptor.getValues().isEmpty()) {
+            removeObsoleteNodes(iterator(descriptor));
+        } else if (isOrigEmpty(descriptor)) {
+            persistList(descriptor);
+        } else {
+            mergeLists(descriptor);
+        }
+    }
+
+    private boolean isOrigEmpty(ReferencedListValueDescriptor descriptor) {
+        final OwlapiListIterator it = iterator(descriptor);
+        return !it.hasNext();
+    }
+
+    private void removeObsoleteNodes(OwlapiListIterator iterator) {
+        if (!iterator.hasNext()) {
+            return;
+        }
+        final List<OWLOntologyChange> changes = new ArrayList<>();
+        while (iterator.hasNext()) {
+            iterator.next();
+            changes.addAll(iterator.removeWithoutReconnect());
+        }
+        owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
+    }
+
+    private void mergeLists(ReferencedListValueDescriptor descriptor) {
+        final ReferencedListIterator it = iterator(descriptor);
+        final List<NamedResource> values = descriptor.getValues();
+        final List<OWLOntologyChange> changes = new ArrayList<>(values.size());
+        int i = 0;
+        NamedResource lastNode = null;
+        while (it.hasNext() && i < values.size()) {
+            final NamedResource newValue = values.get(i);
+            final NamedResource currentValue = it.nextValue();
+            if (!newValue.equals(currentValue)) {
+                changes.addAll(ontologyManager.applyChanges(it.replaceNode(newValue)));
+            }
+            lastNode = it.getCurrentNode();
+            i++;
+        }
+        owlapiAdapter.addTransactionalChanges(changes);
+        assert lastNode != null;
+        removeObsoleteNodes(it);
+        addNewNodes(descriptor, i, lastNode);
+    }
+
+    private void addNewNodes(ReferencedListValueDescriptor descriptor, int index, NamedResource lastNode) {
+        if (index >= descriptor.getValues().size()) {
+            return;
+        }
+        final ReferencedListNodeGenerator nodeGenerator = new ReferencedListNodeGenerator(descriptor.getListOwner(),
+                descriptor.getNodeContent());
+        nodeGenerator.setProperty(descriptor.getNextNode()); // We know that we are past list head
+        nodeGenerator.setIndex(index);
+        for (; index < descriptor.getValues().size(); index++) {
+            final NamedResource nextValue = descriptor.getValues().get(index);
+            lastNode = nodeGenerator.addListNode(lastNode, nextValue);
+        }
+        owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(nodeGenerator.getChanges()));
     }
 
     private class ReferencedListNodeGenerator {
@@ -73,8 +131,8 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
         private int index;
         private Assertion property;
 
-        public ReferencedListNodeGenerator(String baseUri, Assertion nodeContent) {
-            this.baseUri = baseUri + "-SEQ_";
+        public ReferencedListNodeGenerator(NamedResource baseUri, Assertion nodeContent) {
+            this.baseUri = baseUri.toString() + "-SEQ_";
             this.changes = new ArrayList<>();
             this.nodeContentProperty = nodeContent;
         }
@@ -92,6 +150,8 @@ class ReferencedListHandler extends ListHandler<ReferencedListDescriptor, Refere
         }
 
         private NamedResource addListNode(NamedResource previousNode, NamedResource value) {
+            assert property != null;
+
             final NamedResource node = generateNode();
             final OWLAxiom nodeAxiom = axiomAdapter
                     .toOwlObjectPropertyAssertionAxiom(new AxiomImpl<>(previousNode, property, new Value<>(node)));

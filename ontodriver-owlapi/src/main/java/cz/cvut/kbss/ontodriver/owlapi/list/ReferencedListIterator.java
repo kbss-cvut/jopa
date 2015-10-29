@@ -89,6 +89,10 @@ class ReferencedListIterator extends OwlapiListIterator {
         return NamedResource.create(value.asOWLNamedIndividual().getIRI().toURI());
     }
 
+    public NamedResource getCurrentNode() {
+        return NamedResource.create(currentNode.asOWLNamedIndividual().getIRI().toURI());
+    }
+
     @Override
     List<OWLOntologyChange> removeWithoutReconnect() {
         final List<OWLOntologyChange> changes = new ArrayList<>(2);
