@@ -25,6 +25,8 @@
             <artifactId>jopa-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!-- OWLAPI -->
         <dependency>
             <groupId>net.sourceforge.owlapi</groupId>
             <artifactId>owlapi-api</artifactId>
@@ -45,6 +47,7 @@
             <artifactId>owlapi-parsers</artifactId>
             <version>${net.sourceforge.owlapi.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

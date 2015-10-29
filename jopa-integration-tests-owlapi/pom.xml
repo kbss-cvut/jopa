@@ -15,7 +15,7 @@
 
     <properties>
         <org.aspectj.version>1.8.5</org.aspectj.version>
-        <pellet.version>2.3.0</pellet.version>
+        <pellet.version>2.4.0-SNAPSHOT</pellet.version>
     </properties>
 
     <repositories>
@@ -59,71 +59,34 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- OWLAPI + Pellet -->
+        <!-- Pellet -->
         <dependency>
-            <groupId>org.mindswap.pellet</groupId>
-            <artifactId>pellet-query</artifactId>
-            <version>${pellet.version}</version>
-            <type>jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mindswap.pellet</groupId>
-            <artifactId>pellet-rules</artifactId>
-            <version>${pellet.version}</version>
-            <type>jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mindswap.pellet</groupId>
+            <groupId>com.clarkparsia.pellet</groupId>
             <artifactId>pellet-core</artifactId>
             <version>${pellet.version}</version>
-            <type>jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mindswap.pellet</groupId>
-            <artifactId>pellet-datatypes</artifactId>
+            <groupId>com.clarkparsia.pellet</groupId>
+            <artifactId>pellet-owlapi</artifactId>
             <version>${pellet.version}</version>
-            <type>jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mindswap.pellet</groupId>
-            <artifactId>pellet-el</artifactId>
-            <version>${pellet.version}</version>
-            <type>jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mindswap.pellet</groupId>
+            <groupId>com.clarkparsia.pellet</groupId>
             <artifactId>pellet-explanation</artifactId>
             <version>${pellet.version}</version>
-            <type>jar</type>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.mindswap.pellet</groupId>
-            <artifactId>pellet-modularity</artifactId>
-            <version>${pellet.version}</version>
-            <type>jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mindswap.pellet</groupId>
-            <artifactId>pellet-owlapiv3</artifactId>
-            <version>${pellet.version}</version>
-            <type>jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>aterm</groupId>
-            <artifactId>aterm</artifactId>
-            <version>1.6</version>
-            <type>jar</type>
-            <scope>test</scope>
-            <optional>false</optional>
-        </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>aterm</groupId>-->
+            <!--<artifactId>aterm</artifactId>-->
+            <!--<version>1.6</version>-->
+            <!--<type>jar</type>-->
+            <!--<scope>test</scope>-->
+            <!--<optional>false</optional>-->
+        <!--</dependency>-->
     </dependencies>
 
     <build>

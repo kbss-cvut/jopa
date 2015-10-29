@@ -2,14 +2,14 @@ package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
-import cz.cvut.kbss.ontodriver.owlapi.exception.OntologySnapshotException;
-import cz.cvut.kbss.ontodriver.owlapi.exception.OntologyStorageException;
-import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.exception.*;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAxiomChange;
+import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.parameters.OntologyCopy;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  * <p>
  * Each call to {@link #getOntologySnapshot()} returns a new snapshot of the current state of the ontology. The changes
  * are the applied to a shared ontology, which represents the current state of the underlying storage.
- *
+ * <p>
  * Note: This connector currently does not handle concurrent updates.
  */
 public class BasicStorageConnector extends AbstractConnector {
@@ -36,6 +36,7 @@ public class BasicStorageConnector extends AbstractConnector {
 
     private OWLOntologyManager ontologyManager;
     private OWLOntology ontology;
+    private OWLReasonerFactory reasonerFactory;
 
     public BasicStorageConnector(OntologyStorageProperties storageProperties, Map<String, String> properties) throws
             OwlapiDriverException {
@@ -65,6 +66,7 @@ public class BasicStorageConnector extends AbstractConnector {
         } catch (OWLOntologyCreationException e) {
             tryCreatingOntology();
         }
+        initializeReasonerFactory();
     }
 
     private void tryCreatingOntology() throws OwlapiDriverException {
@@ -79,20 +81,47 @@ public class BasicStorageConnector extends AbstractConnector {
         }
     }
 
+    private void initializeReasonerFactory() {
+        final String reasonerFactoryClass = properties.get(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS);
+        if (reasonerFactoryClass == null) {
+            LOG.warning("Reasoner factory class not found. Reasoner won't be available.");
+            return;
+        }
+        try {
+            this.reasonerFactory = (OWLReasonerFactory) Class.forName(reasonerFactoryClass).newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            final String msg = "Unable to instantiate reasoner factory class " + reasonerFactoryClass;
+            LOG.severe(msg);
+            throw new ReasonerNotAvailableException(msg);
+        } catch (ClassNotFoundException e) {
+            final String msg = "Reasoner factory class " + reasonerFactoryClass + " not found!";
+            LOG.severe(msg);
+            throw new ReasonerNotAvailableException(msg, e);
+        }
+    }
+
     @Override
     public OntologySnapshot getOntologySnapshot() {
         ensureOpen();
         READ.lock();
         try {
-            // TODO init reasoner
             final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
             final OWLOntology snapshot = m.copyOntology(ontology, OntologyCopy.DEEP);
-            return new OntologySnapshot(snapshot, m, m.getOWLDataFactory(), null);
+            return new OntologySnapshot(snapshot, m, m.getOWLDataFactory(), getReasonerForSnapshot(snapshot));
         } catch (OWLOntologyCreationException e) {
             throw new OntologySnapshotException("Unable to create ontology snapshot.", e);
         } finally {
             READ.unlock();
         }
+    }
+
+    private OWLReasoner getReasonerForSnapshot(OWLOntology ontologySnapshot) {
+        if (reasonerFactory == null) {
+            LOG.warning(
+                    "Creating ontology snapshot without reasoner, because reasoner factory class was not specified.");
+            return null;
+        }
+        return reasonerFactory.createReasoner(ontologySnapshot);
     }
 
     @Override
