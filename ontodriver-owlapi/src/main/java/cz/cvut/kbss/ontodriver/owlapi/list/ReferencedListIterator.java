@@ -89,6 +89,7 @@ class ReferencedListIterator extends OwlapiListIterator {
         return NamedResource.create(value.asOWLNamedIndividual().getIRI().toURI());
     }
 
+    @Override
     public NamedResource getCurrentNode() {
         return NamedResource.create(currentNode.asOWLNamedIndividual().getIRI().toURI());
     }

@@ -3,7 +3,7 @@ package cz.cvut.kbss.ontodriver.owlapi.list;
 import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
@@ -29,7 +29,7 @@ class InferredSimpleListIterator extends SimpleListIterator {
 
     private final OWLReasoner reasoner;
 
-    InferredSimpleListIterator(SimpleListDescriptor descriptor, OntologyStructures snapshot,
+    InferredSimpleListIterator(ListDescriptor descriptor, OntologyStructures snapshot,
                                AxiomAdapter axiomAdapter) {
         super(descriptor, snapshot, axiomAdapter);
         if (snapshot.getReasoner() == null) {

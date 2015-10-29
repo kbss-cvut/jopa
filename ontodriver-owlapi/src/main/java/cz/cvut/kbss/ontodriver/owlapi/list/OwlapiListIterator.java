@@ -19,6 +19,16 @@ abstract class OwlapiListIterator {
     abstract NamedResource nextValue();
 
     /**
+     * Gets the current list node.
+     * <p>
+     * Gets the current list node, which for simple lists is the same as {@link #nextValue()}, but for referenced list,
+     * it returns the actual node in the list, not its value.
+     *
+     * @return Current list node
+     */
+    abstract NamedResource getCurrentNode();
+
+    /**
      * Removes the current element without reconnecting the previous node to the following one.
      * <p>
      * This effectively breaks the list. It should be used only for removing all of the following nodes from the list.

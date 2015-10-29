@@ -6,7 +6,9 @@ import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver_new.descriptors.*;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +17,17 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
 
     protected final OwlapiAdapter owlapiAdapter;
     protected final AxiomAdapter axiomAdapter;
+
+    protected final OWLOntology ontology;
+    protected final OWLOntologyManager ontologyManager;
+
     protected final OntologyStructures snapshot;
 
     protected ListHandler(OwlapiAdapter owlapiAdapter, OntologyStructures snapshot) {
         this.owlapiAdapter = owlapiAdapter;
         this.axiomAdapter = new AxiomAdapter(snapshot.getDataFactory(), owlapiAdapter.getLanguage());
+        this.ontology = snapshot.getOntology();
+        this.ontologyManager = snapshot.getOntologyManager();
         this.snapshot = snapshot;
     }
 
@@ -39,11 +47,56 @@ public abstract class ListHandler<D extends ListDescriptor, V extends ListValueD
         owlapiAdapter.addTransactionalChanges(snapshot.getOntologyManager().applyChanges(createListAxioms(descriptor)));
     }
 
-    abstract OwlapiListIterator iterator(D descriptor);
+    abstract OwlapiListIterator iterator(ListDescriptor descriptor);
 
     abstract List<OWLOntologyChange> createListAxioms(V descriptor);
 
-    public abstract void updateList(V descriptor);
+    public void updateList(V descriptor) {
+        if (descriptor.getValues().isEmpty()) {
+            removeObsoleteNodes(iterator(descriptor));
+        } else if (isOrigEmpty(descriptor)) {
+            persistList(descriptor);
+        } else {
+            mergeLists(descriptor);
+        }
+    }
+
+    abstract boolean isOrigEmpty(V descriptor);
+
+    private void mergeLists(V descriptor) {
+        final OwlapiListIterator it = iterator(descriptor);
+        final List<NamedResource> values = descriptor.getValues();
+        final List<OWLOntologyChange> changes = new ArrayList<>(values.size());
+        int i = 0;
+        NamedResource lastNode = null;
+        while (it.hasNext() && i < values.size()) {
+            final NamedResource newValue = values.get(i);
+            final NamedResource currentValue = it.nextValue();
+            if (!newValue.equals(currentValue)) {
+                changes.addAll(ontologyManager.applyChanges(it.replaceNode(newValue)));
+            }
+            lastNode = it.getCurrentNode();
+            i++;
+        }
+        owlapiAdapter.addTransactionalChanges(changes);
+        assert lastNode != null;
+        removeObsoleteNodes(it);
+        addNewNodes(descriptor, i, lastNode);
+    }
+
+    private void removeObsoleteNodes(OwlapiListIterator iterator) {
+        if (!iterator.hasNext()) {
+            return;
+        }
+        final List<OWLOntologyChange> changes = new ArrayList<>();
+        while (iterator.hasNext()) {
+            iterator.next();
+            changes.addAll(iterator.removeWithoutReconnect());
+        }
+        owlapiAdapter.addTransactionalChanges(ontologyManager.applyChanges(changes));
+    }
+
+    abstract void addNewNodes(V descriptor, int index, NamedResource lastNode);
 
     public static ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler(
             OwlapiAdapter adapter, OntologyStructures snapshot) {

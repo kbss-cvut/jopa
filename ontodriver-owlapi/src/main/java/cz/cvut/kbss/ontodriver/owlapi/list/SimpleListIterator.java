@@ -5,14 +5,17 @@ import cz.cvut.kbss.ontodriver.owlapi.AxiomAdapter;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologyStructures;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
 import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 import cz.cvut.kbss.ontodriver_new.model.NamedResource;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 class SimpleListIterator extends OwlapiListIterator {
 
@@ -30,7 +33,7 @@ class SimpleListIterator extends OwlapiListIterator {
     final AxiomAdapter axiomAdapter;
 
 
-    SimpleListIterator(SimpleListDescriptor descriptor, OntologyStructures snapshot, AxiomAdapter axiomAdapter) {
+    SimpleListIterator(ListDescriptor descriptor, OntologyStructures snapshot, AxiomAdapter axiomAdapter) {
         this.ontology = snapshot.getOntology();
         this.dataFactory = snapshot.getDataFactory();
         this.previousProperty = dataFactory
@@ -71,6 +74,11 @@ class SimpleListIterator extends OwlapiListIterator {
         final OWLIndividual item = next.iterator().next();
         checkIsNamed(item);
         this.currentNode = item.asOWLNamedIndividual();
+        return getCurrentNode();
+    }
+
+    @Override
+    NamedResource getCurrentNode() {
         return NamedResource.create(currentNode.getIRI().toURI());
     }
 
@@ -87,6 +95,15 @@ class SimpleListIterator extends OwlapiListIterator {
         return changes;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This method also replaces the current node with the new value, so subsequent calls to {@link #getCurrentNode()}
+     * return the new value.
+     *
+     * @param newValue The new value to use
+     * @return The changes to apply
+     */
     @Override
     List<OWLOntologyChange> replaceNode(NamedResource newValue) {
         final List<OWLOntologyChange> changes = new ArrayList<>(2);
