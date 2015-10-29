@@ -12,6 +12,7 @@ import java.util.Set;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.sesame.query.SesamePreparedStatement;
 import cz.cvut.kbss.ontodriver_new.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
