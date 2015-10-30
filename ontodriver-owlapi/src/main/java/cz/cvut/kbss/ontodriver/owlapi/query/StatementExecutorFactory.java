@@ -19,9 +19,9 @@ public class StatementExecutorFactory {
 
         switch (ontology) {
             case TRANSACTIONAL:
-                return new StatementExecutor(transactionalSnapshot);
+                return new TransactionalStatementExecutor(transactionalSnapshot);
             case CENTRAL:
-                return new StatementExecutor(connector.getLiveOntology());
+                return new LiveOntologyStatementExecutor(connector);
             default:
                 throw new IllegalArgumentException("Unsupported statement ontology type " + ontology);
         }

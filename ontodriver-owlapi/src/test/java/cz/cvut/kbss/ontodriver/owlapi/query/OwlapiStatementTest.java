@@ -17,7 +17,7 @@ public class OwlapiStatementTest {
     private static final String UPDATE = "INSERT DATA { a b c . }";
 
     @Mock
-    private StatementExecutor executorMock;
+    private TransactionalStatementExecutor executorMock;
     @Mock
     private StatementExecutorFactory executorFactoryMock;
     @Mock

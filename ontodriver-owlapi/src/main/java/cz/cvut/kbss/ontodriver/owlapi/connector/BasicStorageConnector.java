@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -117,10 +119,31 @@ public class BasicStorageConnector extends AbstractConnector {
         }
     }
 
-    @Override
-    public OntologySnapshot getLiveOntology() {
+    private OntologySnapshot getLiveOntology() {
         ensureOpen();
         return new OntologySnapshot(ontology, ontologyManager, ontologyManager.getOWLDataFactory(), reasoner);
+    }
+
+    @Override
+    public <R> R executeRead(Function<OntologySnapshot, R> function) {
+        ensureOpen();
+        READ.lock();
+        try {
+            return function.apply(getLiveOntology());
+        } finally {
+            READ.unlock();
+        }
+    }
+
+    @Override
+    public void executeWrite(Consumer<OntologySnapshot> function) {
+        ensureOpen();
+        WRITE.lock();
+        try {
+            function.accept(getLiveOntology());
+        } finally {
+            WRITE.unlock();
+        }
     }
 
     private OWLReasoner getReasoner(OWLOntology ontology) {

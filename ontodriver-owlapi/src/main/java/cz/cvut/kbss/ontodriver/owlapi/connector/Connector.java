@@ -3,6 +3,8 @@ package cz.cvut.kbss.ontodriver.owlapi.connector;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Storage connector interface.
@@ -21,14 +23,9 @@ public interface Connector {
      */
     OntologySnapshot getOntologySnapshot();
 
-    /**
-     * Gets the real-time view of the current ontology.
-     * <p>
-     * In contrast to {@link #getOntologySnapshot()}, this method returns the live ontology.
-     *
-     * @return View of the live ontology
-     */
-    OntologySnapshot getLiveOntology();
+    <R> R executeRead(Function<OntologySnapshot, R> function);
+
+    void executeWrite(Consumer<OntologySnapshot> function);
 
     /**
      * Applies the specified changes to the underlying ontology.
