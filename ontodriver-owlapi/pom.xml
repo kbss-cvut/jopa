@@ -60,6 +60,12 @@
             <artifactId>owl2query-owlapi</artifactId>
             <version>${cz.cvut.kbss.owl2query.version}</version>
         </dependency>
+        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+            <version>1.4.01</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.slf4j</groupId>

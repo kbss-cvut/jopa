@@ -79,14 +79,14 @@
             <scope>test</scope>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>aterm</groupId>-->
-            <!--<artifactId>aterm</artifactId>-->
-            <!--<version>1.6</version>-->
-            <!--<type>jar</type>-->
-            <!--<scope>test</scope>-->
-            <!--<optional>false</optional>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>aterm</groupId>
+            <artifactId>aterm</artifactId>
+            <version>1.6</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>false</optional>
+        </dependency>
     </dependencies>
 
     <build>
