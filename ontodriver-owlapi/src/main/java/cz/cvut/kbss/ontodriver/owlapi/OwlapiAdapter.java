@@ -4,6 +4,7 @@ import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver.owlapi.list.ListHandler;
+import cz.cvut.kbss.ontodriver.owlapi.query.OwlapiPreparedStatement;
 import cz.cvut.kbss.ontodriver.owlapi.query.OwlapiStatement;
 import cz.cvut.kbss.ontodriver.owlapi.query.StatementExecutorFactory;
 import cz.cvut.kbss.ontodriver.owlapi.util.IdentifierGenerator;
@@ -234,5 +235,10 @@ public class OwlapiAdapter {
     public OwlapiStatement createStatement(OwlapiConnection connection) {
         startTransactionIfNotActive();
         return new OwlapiStatement(statementExecutorFactory, connection);
+    }
+
+    public OwlapiPreparedStatement prepareStatement(String statement, OwlapiConnection connection) {
+        startTransactionIfNotActive();
+        return new OwlapiPreparedStatement(statementExecutorFactory, connection, statement);
     }
 }

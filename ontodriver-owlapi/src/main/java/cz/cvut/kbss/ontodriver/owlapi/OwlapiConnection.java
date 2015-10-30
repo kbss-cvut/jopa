@@ -102,7 +102,8 @@ public class OwlapiConnection implements Connection {
 
     @Override
     public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
-        return null;
+        ensureOpen();
+        return adapter.prepareStatement(sparql, this);
     }
 
     @Override

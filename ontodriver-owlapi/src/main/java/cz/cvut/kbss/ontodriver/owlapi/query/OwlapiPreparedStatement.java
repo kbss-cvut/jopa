@@ -1,76 +1,52 @@
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.OwlapiConnection;
 import cz.cvut.kbss.ontodriver_new.PreparedStatement;
+import cz.cvut.kbss.ontodriver_new.util.StatementHolder;
 
-import java.net.URI;
+import java.util.Objects;
 
-public class OwlapiPreparedStatement implements PreparedStatement {
+public class OwlapiPreparedStatement extends OwlapiStatement implements PreparedStatement {
+
+    private final StatementHolder statementHolder;
+
+    public OwlapiPreparedStatement(StatementExecutorFactory executorFactory, OwlapiConnection connection,
+                                   String statement) {
+        super(executorFactory, connection);
+        this.statementHolder = new StatementHolder(statement);
+        if (statementHolder.getStatement().isEmpty()) {
+            throw new IllegalArgumentException("Statement cannot be empty.");
+        }
+        statementHolder.analyzeStatement();
+    }
 
     @Override
     public ResultSet executeQuery() throws OntoDriverException {
-        return null;
+        ensureOpen();
+        return getExecutor().executeQuery(statementHolder.assembleStatement(), this);
     }
 
     @Override
     public void executeUpdate() throws OntoDriverException {
-
+        ensureOpen();
+        getExecutor().executeUpdate(statementHolder.assembleStatement());
+        connection.commitIfAuto();
     }
 
     @Override
     public void setObject(String binding, Object value) throws OntoDriverException {
-
+        ensureOpen();
+        Objects.requireNonNull(binding, ErrorUtils.constructNPXMessage("binding"));
+        Objects.requireNonNull(value, ErrorUtils.constructNPXMessage("value"));
+        statementHolder.setParameter(binding, value.toString());
     }
 
     @Override
     public void clearParameters() throws OntoDriverException {
-
-    }
-
-    @Override
-    public cz.cvut.kbss.ontodriver_new.ResultSet executeQuery(String sparql, URI... contexts)
-            throws OntoDriverException {
-        return null;
-    }
-
-    @Override
-    public void executeUpdate(String sparql, URI... contexts) throws OntoDriverException {
-
-    }
-
-    @Override
-    public void useOntology(StatementOntology ontology) {
-
-    }
-
-    @Override
-    public StatementOntology getStatementOntology() {
-        return null;
-    }
-
-    @Override
-    public void setUseTransactionalOntology() {
-
-    }
-
-    @Override
-    public boolean useTransactionalOntology() {
-        return false;
-    }
-
-    @Override
-    public void setUseBackupOntology() {
-
-    }
-
-    @Override
-    public boolean useBackupOntology() {
-        return false;
-    }
-
-    @Override
-    public void close() throws Exception {
-
+        ensureOpen();
+        statementHolder.clearParameters();
     }
 }

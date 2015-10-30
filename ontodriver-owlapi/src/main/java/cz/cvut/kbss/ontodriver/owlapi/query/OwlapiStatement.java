@@ -14,7 +14,7 @@ public class OwlapiStatement implements Statement {
     private boolean open;
 
     private final StatementExecutorFactory executorFactory;
-    private final OwlapiConnection connection;
+    final OwlapiConnection connection;
 
     public OwlapiStatement(StatementExecutorFactory executorFactory, OwlapiConnection connection) {
         this.executorFactory = executorFactory;
@@ -22,7 +22,7 @@ public class OwlapiStatement implements Statement {
         this.open = true;
     }
 
-    private void ensureOpen() {
+    void ensureOpen() {
         if (!open) {
             throw new IllegalStateException("The statement is closed.");
         }
@@ -35,7 +35,7 @@ public class OwlapiStatement implements Statement {
         return getExecutor().executeQuery(sparql, this);
     }
 
-    private StatementExecutor getExecutor() {
+    StatementExecutor getExecutor() {
         return executorFactory.getStatementExecutor(targetOntology);
     }
 
