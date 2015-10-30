@@ -36,6 +36,7 @@ public class BasicStorageConnector extends AbstractConnector {
 
     private OWLOntologyManager ontologyManager;
     private OWLOntology ontology;
+    private OWLReasoner reasoner;
     private OWLReasonerFactory reasonerFactory;
 
     public BasicStorageConnector(OntologyStorageProperties storageProperties, Map<String, String> properties) throws
@@ -67,6 +68,7 @@ public class BasicStorageConnector extends AbstractConnector {
             tryCreatingOntology();
         }
         initializeReasonerFactory();
+        this.reasoner = getReasoner(ontology);
     }
 
     private void tryCreatingOntology() throws OwlapiDriverException {
@@ -107,7 +109,7 @@ public class BasicStorageConnector extends AbstractConnector {
         try {
             final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
             final OWLOntology snapshot = m.copyOntology(ontology, OntologyCopy.DEEP);
-            return new OntologySnapshot(snapshot, m, m.getOWLDataFactory(), getReasonerForSnapshot(snapshot));
+            return new OntologySnapshot(snapshot, m, m.getOWLDataFactory(), getReasoner(snapshot));
         } catch (OWLOntologyCreationException e) {
             throw new OntologySnapshotException("Unable to create ontology snapshot.", e);
         } finally {
@@ -115,13 +117,19 @@ public class BasicStorageConnector extends AbstractConnector {
         }
     }
 
-    private OWLReasoner getReasonerForSnapshot(OWLOntology ontologySnapshot) {
+    @Override
+    public OntologySnapshot getLiveOntology() {
+        ensureOpen();
+        return new OntologySnapshot(ontology, ontologyManager, ontologyManager.getOWLDataFactory(), reasoner);
+    }
+
+    private OWLReasoner getReasoner(OWLOntology ontology) {
         if (reasonerFactory == null) {
             LOG.warning(
                     "Creating ontology snapshot without reasoner, because reasoner factory class was not specified.");
             return null;
         }
-        return reasonerFactory.createReasoner(ontologySnapshot);
+        return reasonerFactory.createReasoner(ontology);
     }
 
     @Override

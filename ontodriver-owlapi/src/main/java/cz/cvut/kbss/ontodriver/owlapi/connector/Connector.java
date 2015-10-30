@@ -13,10 +13,22 @@ public interface Connector {
 
     /**
      * Gets snapshot of the underlying ontology.
+     * <p>
+     * The snapshot is completely independent of the live ontology, so any changes to either are not visible to the
+     * other.
      *
      * @return Value object with the ontology snapshot
      */
     OntologySnapshot getOntologySnapshot();
+
+    /**
+     * Gets the real-time view of the current ontology.
+     * <p>
+     * In contrast to {@link #getOntologySnapshot()}, this method returns the live ontology.
+     *
+     * @return View of the live ontology
+     */
+    OntologySnapshot getLiveOntology();
 
     /**
      * Applies the specified changes to the underlying ontology.

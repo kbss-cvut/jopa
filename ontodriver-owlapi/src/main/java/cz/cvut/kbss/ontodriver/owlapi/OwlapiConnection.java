@@ -96,7 +96,8 @@ public class OwlapiConnection implements Connection {
 
     @Override
     public Statement createStatement() throws OntoDriverException {
-        return null;
+        ensureOpen();
+        return adapter.createStatement(this);
     }
 
     @Override

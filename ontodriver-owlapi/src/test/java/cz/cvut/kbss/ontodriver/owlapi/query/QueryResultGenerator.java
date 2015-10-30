@@ -1,0 +1,167 @@
+package cz.cvut.kbss.ontodriver.owlapi.query;
+
+import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
+import cz.cvut.kbss.owl2query.model.GroundTerm;
+import cz.cvut.kbss.owl2query.model.QueryResult;
+import cz.cvut.kbss.owl2query.model.ResultBinding;
+import cz.cvut.kbss.owl2query.model.Variable;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLObject;
+import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
+
+import java.net.URI;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+class QueryResultGenerator {
+
+    private final OWLDataFactory dataFactory = new OWLDataFactoryImpl();
+
+    QueryResult<OWLObject> generate(List<String> variableNames, List<List<Object>> values) {
+        final List<Variable<OWLObject>> vars = variableNames.stream().map(name -> {
+            final Variable<OWLObject> var = mock(Variable.class);
+            when(var.getName()).thenReturn(name);
+            return var;
+        }).collect(Collectors.toList());
+        final QueryResult<OWLObject> result = new QueryResultImpl(vars);
+        initData(result, values);
+        return result;
+    }
+
+    private void initData(QueryResult<OWLObject> result, List<List<Object>> values) {
+        if (values.isEmpty()) {
+            return;
+        }
+        assert result.getResultVars().size() == values.get(0).size();
+        for (List<Object> row : values) {
+            final ResultBinding<OWLObject> binding = new ResultBindingImpl();
+            for (int i = 0; i < row.size(); i++) {
+                final GroundTerm<OWLObject> gt = mock(GroundTerm.class);
+                final Object value = row.get(i);
+                final OWLObject owlValue;
+                if (value instanceof URI) {
+                    owlValue = dataFactory.getOWLNamedIndividual(IRI.create(value.toString()));
+                } else {
+                    owlValue = OwlapiUtils.createOWLLiteralFromValue(value, dataFactory, "en");
+                }
+                when(gt.getWrappedObject()).thenReturn(owlValue);
+                binding.put(result.getResultVars().get(i), gt);
+            }
+            result.add(binding);
+        }
+    }
+
+    private static class QueryResultImpl implements QueryResult<OWLObject> {
+
+        private final List<ResultBinding<OWLObject>> bindings = new ArrayList<>();
+        private final List<Variable<OWLObject>> variables;
+
+        private QueryResultImpl(List<Variable<OWLObject>> variables) {
+            this.variables = variables;
+        }
+
+        @Override
+        public void add(ResultBinding<OWLObject> resultBinding) {
+            bindings.add(resultBinding);
+        }
+
+        @Override
+        public List<Variable<OWLObject>> getResultVars() {
+            return Collections.unmodifiableList(variables);
+        }
+
+        @Override
+        public boolean isDistinct() {
+            return false;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return bindings.isEmpty();
+        }
+
+        @Override
+        public int size() {
+            return bindings.size();
+        }
+
+        @Override
+        public Iterator<ResultBinding<OWLObject>> iterator() {
+            return bindings.iterator();
+        }
+    }
+
+    private static class ResultBindingImpl implements ResultBinding<OWLObject> {
+
+        private final Map<Variable<OWLObject>, GroundTerm<OWLObject>> map = new HashMap<>();
+
+        @Override
+        public ResultBinding<OWLObject> clone() {
+            return null;
+        }
+
+        @Override
+        public int size() {
+            return map.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return map.isEmpty();
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return map.containsKey(key);
+        }
+
+        @Override
+        public boolean containsValue(Object value) {
+            return map.containsValue(value);
+        }
+
+        @Override
+        public GroundTerm<OWLObject> get(Object key) {
+            return map.get(key);
+        }
+
+        @Override
+        public GroundTerm<OWLObject> put(Variable<OWLObject> key, GroundTerm<OWLObject> value) {
+            return map.put(key, value);
+        }
+
+        @Override
+        public GroundTerm<OWLObject> remove(Object key) {
+            return map.remove(key);
+        }
+
+        @Override
+        public void putAll(Map<? extends Variable<OWLObject>, ? extends GroundTerm<OWLObject>> m) {
+            map.putAll(m);
+        }
+
+        @Override
+        public void clear() {
+            map.clear();
+        }
+
+        @Override
+        public Set<Variable<OWLObject>> keySet() {
+            return map.keySet();
+        }
+
+        @Override
+        public Collection<GroundTerm<OWLObject>> values() {
+            return map.values();
+        }
+
+        @Override
+        public Set<Entry<Variable<OWLObject>, GroundTerm<OWLObject>>> entrySet() {
+            return map.entrySet();
+        }
+    }
+}

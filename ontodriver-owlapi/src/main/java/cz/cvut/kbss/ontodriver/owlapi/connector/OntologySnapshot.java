@@ -51,7 +51,7 @@ public class OntologySnapshot {
         final ChangeApplied result = ontologyManager.applyChanges(changes);
         if (result == ChangeApplied.UNSUCCESSFULLY) {
             throw new OntologyChangeApplicationException(
-                    "At least one of the following changes could not have been applied to this ontology snapshot:" +
+                    "At least one of the following changes could not have been applied to this ontology snapshot: " +
                             changes);
         }
         return changes;

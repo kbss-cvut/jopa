@@ -16,6 +16,7 @@ import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -251,5 +252,15 @@ public class OwlapiAdapterTest {
                 .thenReturn(Collections.singleton(factory.getOWLClassAssertionAxiom(
                         factory.getOWLClass(IRI.create("http://typeA")), ind)));
         adapter.persist(descriptorOne);
+    }
+
+    @Test
+    public void startingTransactionInitializesOntologySnapshotAndExecutorFactory() throws Exception {
+        final Field executorFactoryField = OwlapiAdapter.class.getDeclaredField("statementExecutorFactory");
+        executorFactoryField.setAccessible(true);
+        assertNull(executorFactoryField.get(adapter));
+        startTransaction();
+        verify(connectorMock).getOntologySnapshot();
+        assertNotNull(executorFactoryField.get(adapter));
     }
 }

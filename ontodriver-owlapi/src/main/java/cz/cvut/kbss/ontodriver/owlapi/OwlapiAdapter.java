@@ -4,6 +4,8 @@ import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver.owlapi.list.ListHandler;
+import cz.cvut.kbss.ontodriver.owlapi.query.OwlapiStatement;
+import cz.cvut.kbss.ontodriver.owlapi.query.StatementExecutorFactory;
 import cz.cvut.kbss.ontodriver.owlapi.util.IdentifierGenerator;
 import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver_new.descriptors.*;
@@ -28,6 +30,8 @@ public class OwlapiAdapter {
     private OntologySnapshot ontologySnapshot;
     private final String language;
 
+    private StatementExecutorFactory statementExecutorFactory;
+
     private TransactionState transactionState = TransactionState.INITIAL;
     private List<OWLOntologyChange> pendingChanges = new ArrayList<>();
 
@@ -44,6 +48,7 @@ public class OwlapiAdapter {
         if (transactionState == TransactionState.INITIAL) {
             this.ontologySnapshot = connector.getOntologySnapshot();
             this.transactionState = TransactionState.RUNNING;
+            this.statementExecutorFactory = new StatementExecutorFactory(ontologySnapshot, connector);
         }
     }
 
@@ -224,5 +229,10 @@ public class OwlapiAdapter {
     public ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler() {
         startTransactionIfNotActive();
         return ListHandler.getReferencedListHandler(this, ontologySnapshot);
+    }
+
+    public OwlapiStatement createStatement(OwlapiConnection connection) {
+        startTransactionIfNotActive();
+        return new OwlapiStatement(statementExecutorFactory, connection);
     }
 }
