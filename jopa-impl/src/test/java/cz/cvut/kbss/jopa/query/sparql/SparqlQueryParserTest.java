@@ -1,14 +1,13 @@
-package cz.cvut.kbss.jopa.query.impl;
+package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.query.QueryHolder;
+import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-/**
- * @author kidney
- */
 public class SparqlQueryParserTest {
 
     private QueryParser queryParser = new SparqlQueryParser();
@@ -26,7 +25,7 @@ public class SparqlQueryParserTest {
         final String query = "SELECT ?x WHERE { ?x <http://www.w3.org/2000/01/rdf-schema#label> \"Test\" . }";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(1, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains("x"));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
     }
 
     @Test
@@ -34,9 +33,9 @@ public class SparqlQueryParserTest {
         final String query = "SELECT ?x ?y ?z WHERE { ?x ?y ?z . }";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(3, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains("x"));
-        assertTrue(holder.getParameters().contains("y"));
-        assertTrue(holder.getParameters().contains("z"));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("y")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("z")));
     }
 
     @Test
@@ -49,8 +48,8 @@ public class SparqlQueryParserTest {
                 "}";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(2, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains("craft"));
-        assertTrue(holder.getParameters().contains("homepage"));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("homepage")));
     }
 
     @Test
@@ -62,8 +61,8 @@ public class SparqlQueryParserTest {
                 "        }";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(2, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains("title"));
-        assertTrue(holder.getParameters().contains("x"));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("title")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
     }
 
     @Test
@@ -76,9 +75,9 @@ public class SparqlQueryParserTest {
                 "          ?x dc:title ?title . }";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(3, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains("title"));
-        assertTrue(holder.getParameters().contains("price"));
-        assertTrue(holder.getParameters().contains("x"));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("title")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("price")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
     }
 
     @Test
@@ -90,7 +89,7 @@ public class SparqlQueryParserTest {
                 "WHERE  { ?x org:employeeName ?name }";
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(2, holder.getParameters().size());
-        assertTrue(holder.getParameters().contains("x"));
-        assertTrue(holder.getParameters().contains("name"));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("name")));
     }
 }

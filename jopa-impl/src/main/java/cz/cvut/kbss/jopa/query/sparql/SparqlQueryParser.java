@@ -1,20 +1,18 @@
-package cz.cvut.kbss.jopa.query.impl;
+package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.query.QueryHolder;
+import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author kidney
- */
 public class SparqlQueryParser implements QueryParser {
 
     @Override
     public QueryHolder parseQuery(String query) {
         final List<String> queryParts = new ArrayList<>();
-        final List<String> parameters = new ArrayList<>();
+        final List<QueryParameter<?>> parameters = new ArrayList<>();
         boolean inSQString = false;
         // In double-quoted string
         boolean inDQString = false;
@@ -38,6 +36,7 @@ public class SparqlQueryParser implements QueryParser {
                     }
                     break;
                 // TODO Take a look at some existing SPARQL parsers and maybe use them instead of this simplified version
+                // TODO Use $ for position parameters
                 case '<':
                 case '>':
                 case ',':
@@ -47,7 +46,7 @@ public class SparqlQueryParser implements QueryParser {
                         lastParamEndIndex = i;
                         inParam = false;
                         final String param = query.substring(paramStartIndex, i);
-                        parameters.add(param);
+                        parameters.add(new QueryParameter<>(param));
                     }
                     break;
                 default:

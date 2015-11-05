@@ -1,18 +1,17 @@
-package cz.cvut.kbss.jopa.query.impl;
+package cz.cvut.kbss.jopa.query.sparql;
 
-import cz.cvut.kbss.jopa.query.ParameterValue;
+import cz.cvut.kbss.jopa.model.query.Parameter;
+import cz.cvut.kbss.jopa.query.QueryParameter;
+import cz.cvut.kbss.jopa.query.parameter.ParameterValue;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
-
-/**
- * @author kidney
- */
+// TODO
 public class SparqlQueryHolderTest {
 
     private static final List<String> PARTS = Arrays.asList("PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
@@ -24,86 +23,88 @@ public class SparqlQueryHolderTest {
 
     @Before
     public void setUp() throws Exception {
-        this.holder = new SparqlQueryHolder(PARTS, PARAMS);
+        final List<QueryParameter<?>> parameters = PARAMS.stream().map(QueryParameter::new).collect(
+                Collectors.toList());
+        this.holder = new SparqlQueryHolder(PARTS, parameters);
     }
 
     @Test
     public void testGetParameters() throws Exception {
-        final Collection<String> res = holder.getParameters();
+        final Collection<Parameter<?>> res = holder.getParameters();
         assertEquals(PARAM_NAMES.size(), res.size());
-        assertTrue(PARAM_NAMES.containsAll(res));
+        for (Parameter<?> p : res) {
+            assertTrue(PARAM_NAMES.contains(p.getName()));
+        }
+    }
+
+    @Test
+    public void testGetParameterByName() throws Exception {
+        final String name = PARAMS.get(0);
+        final Parameter<?> p = holder.getParameter(name);
+        assertNotNull(p);
+        assertEquals(name, p.getName());
     }
 
     @Test
     public void testGetParameterValue() throws Exception {
         final String value = "http://kbss.felk.cvut.cz";
-        holder.setParameter("homepage", new StringParameterValue(value));
-        assertEquals(value, holder.getParameterValue("homepage"));
+        final Parameter<?> p = new QueryParameter<>("homepage");
+        holder.setParameter(p, ParameterValue.create(value));
+        assertEquals(value, holder.getParameterValue(p));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void getValueOfUnknownParameterThrowsIllegalArgumentException() throws Exception {
-        holder.setParameter("homepage", new StringParameterValue("tatata"));
-        holder.getParameterValue("blabla");
+        final Parameter<Object> p = new QueryParameter<>("homepage");
+        holder.setParameter(p, ParameterValue.create(1));
+        holder.getParameterValue(new QueryParameter<>("blabla"));
     }
 
     @Test
     public void testSetParameter() throws Exception {
         final String value = "http://kbss.felk.cvut.cz";
         final String expected = "\"" + value + "\"";
-        holder.setParameter("homepage", new StringParameterValue(value));
-        assertEquals(expected, getParameter("homepage"));
-    }
-
-    private String getParameter(String name) throws Exception {
-        final Field valuesField = SparqlQueryHolder.class.getDeclaredField("values");
-        valuesField.setAccessible(true);
-        final Map<String, ParameterValue> values = getParamValues();
-        return values.get(name).getQueryString();
+        holder.setParameter(new QueryParameter<>("homepage"), ParameterValue.create(value));
+        assertEquals(expected, holder.getParameterValue(holder.getParameter("homepage")));
     }
 
     @Test(expected = NullPointerException.class)
     public void setParameterToNullThrowsException() throws Exception {
-        holder.setParameter("homepage", null);
+        holder.setParameter(new QueryParameter<>("homepage"), null);
     }
 
     @Test(expected = NullPointerException.class)
     public void setNullParameterThrowsException() throws Exception {
-        holder.setParameter(null, new StringParameterValue("Whatever"));
+        holder.setParameter(null, ParameterValue.create("Whatever"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setUnknownParameterThrowsException() throws Exception {
-        holder.setParameter("unknownParameter", new StringParameterValue("Whatever"));
+        holder.setParameter(new QueryParameter<>("unknown"), ParameterValue.create("Whatever"));
     }
 
     @Test
     public void clearParameterRemovesParameterValue() throws Exception {
-        holder.setParameter("homepage", new UriParameterValue(URI.create("http://kbss.felk.cvut.cz")));
-        final Map<String, ParameterValue> paramValues = getParamValues();
-        assertTrue(paramValues.containsKey("homepage"));
-        holder.clearParameter("homepage");
-        assertFalse(paramValues.containsKey("homepage"));
-    }
-
-    private Map<String, ParameterValue> getParamValues() throws Exception {
-        final Field field = SparqlQueryHolder.class.getDeclaredField("values");
-        field.setAccessible(true);
-        return (Map<String, ParameterValue>) field.get(holder);
+        final QueryParameter<?> qp = new QueryParameter<>("homepage");
+        holder.setParameter(qp, ParameterValue.create(URI.create("http://kbss.felk.cvut.cz")));
+        assertNotNull(holder.getParameterValue(qp));
+        holder.clearParameter(qp);
+        assertNull(holder.getParameterValue(qp));
     }
 
     @Test
     public void clearParametersRemovesAllParameterValues() throws Exception {
-        holder.setParameter("homepage", new UriParameterValue(URI.create("http://kbss.felk.cvut.cz")));
-        final Map<String, ParameterValue> paramValues = getParamValues();
-        assertFalse(paramValues.isEmpty());
+        final QueryParameter<?> qp = new QueryParameter<>("homepage");
+        holder.setParameter(qp, ParameterValue.create(URI.create("http://kbss.felk.cvut.cz")));
+        holder.getParameters().forEach(param -> assertNotNull(holder.getParameterValue(param)));
         holder.clearParameters();
-        assertTrue(paramValues.isEmpty());
+        holder.getParameters().forEach(param -> assertNull(holder.getParameterValue(param)));
     }
 
     @Test
     public void assembleQueryWithUri() throws Exception {
-        holder.setParameter("homepage", new UriParameterValue(URI.create("http://kbss.felk.cvut.cz")));
+        final QueryParameter<?> qp = new QueryParameter<>("homepage");
+        holder.setParameter(qp, ParameterValue.create(URI.create("http://kbss.felk.cvut.cz")));
         final String expected = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                 "SELECT ?craft\n" +
                 "{\n" +
@@ -115,7 +116,8 @@ public class SparqlQueryHolderTest {
 
     @Test
     public void assembleQueryWithLiteral() throws Exception {
-        holder.setParameter("homepage", new StringParameterValue("http://kbss.felk.cvut.cz", null));
+        final QueryParameter<?> qp = new QueryParameter<>("homepage");
+        holder.setParameter(qp, ParameterValue.create("http://kbss.felk.cvut.cz", null));
         final String expected = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
                 "SELECT ?craft\n" +
                 "{\n" +
@@ -128,10 +130,13 @@ public class SparqlQueryHolderTest {
     @Test
     public void setParametersAndAssembleQueryWithMultipleParamsNextToEachOther() throws Exception {
         final String query = "SELECT ?y ?z WHERE { <http://krizik.felk.cvut.cz/ontologies/jopa#entityA> ?y ?z . }";
-        final List<String> params = Arrays.asList("y", "z", "x", "y", "z");
+        final List<QueryParameter<?>> params = Arrays
+                .asList(new QueryParameter<>("y"), new QueryParameter<>("z"), new QueryParameter<>("x"),
+                        new QueryParameter<>("y"), new QueryParameter<>("z"));
         final List<String> parts = Arrays.asList("SELECT ", " ", " WHERE { ", " ", " ", " . }");
         this.holder = new SparqlQueryHolder(parts, params);
-        holder.setParameter("x", new UriParameterValue(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityA")));
+        holder.setParameter(new QueryParameter<>("x"), ParameterValue.create(
+                URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityA")));
         final String result = holder.assembleQuery();
         assertEquals(query, result);
     }

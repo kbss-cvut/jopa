@@ -1,15 +1,11 @@
-package cz.cvut.kbss.jopa.query.impl;
+package cz.cvut.kbss.jopa.query.parameter;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
-import cz.cvut.kbss.jopa.query.ParameterValue;
 
 import java.util.Date;
 import java.util.Objects;
 
-/**
- * @author kidney
- */
-public class DateParameterValue extends ParameterValue {
+class DateParameterValue extends ParameterValue {
 
     private final Date value;
 
@@ -18,7 +14,7 @@ public class DateParameterValue extends ParameterValue {
     }
 
     @Override
-    public Object getValue() {
+    public Date getValue() {
         return value;
     }
 

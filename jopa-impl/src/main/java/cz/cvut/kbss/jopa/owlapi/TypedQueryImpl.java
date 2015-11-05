@@ -39,11 +39,11 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
-public class TypedQueryImpl<T> implements TypedQuery<T> {
+public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> {
 
     private final String query;
     private final Set<URI> contexts;
-    private final Class<T> classT;
+    private final Class<ResultElement> classT;
     private final ConnectionWrapper connection;
     private final MetamodelProvider metamodelProvider;
 
@@ -52,7 +52,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
     private boolean useBackupOntology;
     private int maxResults;
 
-    public TypedQueryImpl(final String query, final Class<T> classT, final ConnectionWrapper connection,
+    public TypedQueryImpl(final String query, final Class<ResultElement> classT, final ConnectionWrapper connection,
                           MetamodelProvider metamodelProvider) {
         this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
         this.classT = Objects.requireNonNull(classT, ErrorUtils.constructNPXMessage("classT"));
@@ -69,12 +69,12 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
     }
 
     @Override
-    public List<T> getResultList() {
+    public List<ResultElement> getResultList() {
         if (maxResults == 0) {
             return Collections.emptyList();
         }
 
-        List<T> list;
+        List<ResultElement> list;
         try {
             list = getResultListImpl(maxResults);
         } catch (OntoDriverException e) {
@@ -85,11 +85,11 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
     }
 
     @Override
-    public T getSingleResult() {
+    public ResultElement getSingleResult() {
         try {
             // call it with maxResults = 2 just to see whether there are
             // multiple results
-            final List<T> res = getResultListImpl(2);
+            final List<ResultElement> res = getResultListImpl(2);
             if (res.isEmpty()) {
                 throw new NoResultException("No result found for query " + query);
             }
@@ -103,7 +103,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
     }
 
     @Override
-    public TypedQuery<T> setMaxResults(int maxResults) {
+    public TypedQuery<ResultElement> setMaxResults(int maxResults) {
         if (maxResults < 0) {
             throw new IllegalArgumentException(
                     "Cannot set maximum number of results to less than 0.");
@@ -143,31 +143,41 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
     }
 
     @Override
-    public Object getParameterValue(Parameter<?> parameter) {
+    public <T> T getParameterValue(Parameter<T> parameter) {
         return null;
     }
 
     @Override
-    public Query<T> setParameter(int position, Object value) {
+    public Query<ResultElement> setParameter(int position, Object value) {
         return null;
     }
 
     @Override
-    public Query<T> setParameter(int position, String value, String language) {
+    public Query<ResultElement> setParameter(int position, String value, String language) {
         return null;
     }
 
     @Override
-    public Query<T> setParameter(String name, Object value) {
+    public Query<ResultElement> setParameter(String name, Object value) {
         return null;
     }
 
     @Override
-    public Query<T> setParameter(String name, String value, String language) {
+    public Query<ResultElement> setParameter(String name, String value, String language) {
         return null;
     }
 
-    private List<T> getResultListImpl(int maxResults) throws OntoDriverException {
+    @Override
+    public <T> Query<ResultElement> setParameter(Parameter<T> parameter, T value) {
+        return null;
+    }
+
+    @Override
+    public Query<ResultElement> setParameter(Parameter<String> parameter, String value, String language) {
+        return null;
+    }
+
+    private List<ResultElement> getResultListImpl(int maxResults) throws OntoDriverException {
         assert maxResults > 0;
         final Statement stmt = connection.createStatement();
         if (useBackupOntology) {
@@ -179,7 +189,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
         arr = contexts.toArray(arr);
         final ResultSet rs = stmt.executeQuery(query, arr);
         try {
-            final List<T> res = new ArrayList<>();
+            final List<ResultElement> res = new ArrayList<>();
             // TODO register this as observer on the result set so that additional results can be loaded asynchronously
             int cnt = 0;
             final URI ctx = arr.length > 0 ? arr[0] : null;
@@ -199,15 +209,15 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
         }
     }
 
-    private T loadEntityInstance(ResultSet resultSet, URI context) throws OntoDriverException {
+    private ResultElement loadEntityInstance(ResultSet resultSet, URI context) throws OntoDriverException {
         if (uow == null) {
             throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
         }
         final URI uri = URI.create(resultSet.getString(0));
-        // TODO Setting the context like this won'attributeType work for queries over multiple contexts
+        // TODO Setting the context like this won't work for queries over multiple contexts
         final EntityDescriptor descriptor = new EntityDescriptor(context);
 
-        final T entity = uow.readObject(classT, uri, descriptor);
+        final ResultElement entity = uow.readObject(classT, uri, descriptor);
         if (entity == null) {
             throw new OWLPersistenceException(
                     "Fatal error, unable to load entity for primary key already found by query "
@@ -216,7 +226,7 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
         return entity;
     }
 
-    private T loadResultValue(ResultSet resultSet) throws OntoDriverException {
+    private ResultElement loadResultValue(ResultSet resultSet) throws OntoDriverException {
         try {
             return resultSet.getObject(0, classT);
         } catch (OntoDriverException e) {
@@ -225,21 +235,21 @@ public class TypedQueryImpl<T> implements TypedQuery<T> {
     }
 
     @Override
-    public Query<T> addContext(URI context) {
+    public Query<ResultElement> addContext(URI context) {
         Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
         contexts.add(context);
         return this;
     }
 
     @Override
-    public Query<T> addContexts(Collection<URI> contexts) {
+    public Query<ResultElement> addContexts(Collection<URI> contexts) {
         Objects.requireNonNull(contexts, ErrorUtils.constructNPXMessage("contexts"));
         this.contexts.addAll(contexts);
         return this;
     }
 
     @Override
-    public Query<T> clearContexts() {
+    public Query<ResultElement> clearContexts() {
         contexts.clear();
         return this;
     }

@@ -1,13 +1,8 @@
-package cz.cvut.kbss.jopa.query.impl;
-
-import cz.cvut.kbss.jopa.query.ParameterValue;
+package cz.cvut.kbss.jopa.query.parameter;
 
 import java.util.Objects;
 
-/**
- * Created by kidney on 15.6.15.
- */
-public class StringParameterValue extends ParameterValue {
+class StringParameterValue extends ParameterValue {
 
     private final String value;
     private final String language;
@@ -23,7 +18,7 @@ public class StringParameterValue extends ParameterValue {
     }
 
     @Override
-    public Object getValue() {
+    public String getValue() {
         return value;
     }
 

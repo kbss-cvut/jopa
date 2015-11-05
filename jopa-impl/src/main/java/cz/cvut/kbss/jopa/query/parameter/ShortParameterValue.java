@@ -1,14 +1,10 @@
-package cz.cvut.kbss.jopa.query.impl;
+package cz.cvut.kbss.jopa.query.parameter;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
-import cz.cvut.kbss.jopa.query.ParameterValue;
 
 import java.util.Objects;
 
-/**
- * @author kidney
- */
-public class ShortParameterValue extends ParameterValue {
+class ShortParameterValue extends ParameterValue {
 
     private final short value;
 
@@ -17,7 +13,7 @@ public class ShortParameterValue extends ParameterValue {
     }
 
     @Override
-    public Object getValue() {
+    public Short getValue() {
         return value;
     }
 

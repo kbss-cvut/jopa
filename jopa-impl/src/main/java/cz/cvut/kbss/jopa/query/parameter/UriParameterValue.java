@@ -1,15 +1,11 @@
-package cz.cvut.kbss.jopa.query.impl;
-
-import cz.cvut.kbss.jopa.query.ParameterValue;
+package cz.cvut.kbss.jopa.query.parameter;
 
 import java.net.URI;
 
 /**
- * Parameter value that will be put as an IRI into the query.
- * I.e. it will be enclosed in < and >.
- * @author kidney
+ * Parameter value that will be put as an IRI into the query. I.e. it will be enclosed in < and >.
  */
-public class UriParameterValue extends ParameterValue {
+class UriParameterValue extends ParameterValue {
 
     private final URI uri;
 
@@ -18,7 +14,7 @@ public class UriParameterValue extends ParameterValue {
     }
 
     @Override
-    public Object getValue() {
+    public URI getValue() {
         return uri;
     }
 

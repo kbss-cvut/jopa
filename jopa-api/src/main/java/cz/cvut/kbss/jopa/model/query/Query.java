@@ -1,48 +1,37 @@
 /**
  * Copyright (C) 2011 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 
 package cz.cvut.kbss.jopa.model.query;
-
-import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 
-import javax.xml.transform.Result;
+import java.net.URI;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public interface Query<ResultElement> {
     /**
      * Execute a SELECT query and return the query results as an untyped List.
      *
      * @return a list of the results
-     * @throws IllegalStateException        if called for a Java Persistence query language UPDATE or
-     *                                      DELETE statement
-     * @throws QueryTimeoutException        if the query execution exceeds the query timeout value set
-     *                                      and only the statement is rolled back
+     * @throws IllegalStateException        if called for a Java Persistence query language UPDATE or DELETE statement
      * @throws TransactionRequiredException if a lock mode has been set and there is no transaction
-     * @throws PessimisticLockException     if pessimistic locking fails and the transaction is rolled
-     *                                      back
-     * @throws LockTimeoutException         if pessimistic locking fails and only the statement is rolled
-     *                                      back
-     * @throws OWLPersistenceException      if the query execution exceeds the query timeout value set
-     *                                      and the transaction is rolled back
+     * @throws OWLPersistenceException      if the query execution exceeds the query timeout value set and the
+     *                                      transaction is rolled back
      */
     List<ResultElement> getResultList();
 
@@ -58,8 +47,7 @@ public interface Query<ResultElement> {
     /**
      * Adds URI of context against which this query will be executed. </p>
      * <p>
-     * If no context was specified, the query is run against the default
-     * repository context.
+     * If no context was specified, the query is run against the default repository context.
      *
      * @param context Context URI
      * @return This instance
@@ -69,8 +57,7 @@ public interface Query<ResultElement> {
     /**
      * Adds URIs of contexts against which this query will be executed. </p>
      * <p>
-     * If no context was specified, the query is run against the default
-     * repository context.
+     * If no context was specified, the query is run against the default repository context.
      *
      * @param contexts Context URIs
      * @return This instance
@@ -98,8 +85,7 @@ public interface Query<ResultElement> {
     /**
      * The maximum number of results the query object was set to retrieve. </p>
      * <p>
-     * Returns Integer.MAX_VALUE if {@link #setMaxResults(int)} was not applied
-     * to the query object.
+     * Returns Integer.MAX_VALUE if {@link #setMaxResults(int)} was not applied to the query object.
      *
      * @return maximum number of results
      */
@@ -161,7 +147,7 @@ public interface Query<ResultElement> {
      * @throws IllegalStateException    If the parameter has not been bound
      * @throws IllegalArgumentException If the parameter is not a parameter of the query
      */
-    Object getParameterValue(Parameter<?> parameter);
+    <T> T getParameterValue(Parameter<T> parameter);
 
     /**
      * Binds an argument value to a positional parameter.
@@ -208,4 +194,25 @@ public interface Query<ResultElement> {
      *                                  argument is of incorrect type
      */
     Query<ResultElement> setParameter(String name, String value, String language);
+
+    /**
+     * Binds the value of a Parameter object.
+     *
+     * @param parameter parameter object
+     * @param value     parameter value
+     * @return this query instance
+     * @throws IllegalArgumentException If the parameter does not correspond to a parameter of the query
+     */
+    <T> Query<ResultElement> setParameter(Parameter<T> parameter, T value);
+
+    /**
+     * Binds the value of a String Parameter.
+     *
+     * @param parameter parameter object
+     * @param value     parameter value
+     * @param language  language tag for the parameter value
+     * @return this query instance
+     * @throws IllegalArgumentException If the parameter does not correspond to a parameter of the query
+     */
+    Query<ResultElement> setParameter(Parameter<String> parameter, String value, String language);
 }

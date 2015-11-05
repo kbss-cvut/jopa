@@ -1,14 +1,10 @@
-package cz.cvut.kbss.jopa.query.impl;
+package cz.cvut.kbss.jopa.query.parameter;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
-import cz.cvut.kbss.jopa.query.ParameterValue;
 
 import java.util.Objects;
 
-/**
- * Created by kidney on 15.6.15.
- */
-public class BooleanParameterValue extends ParameterValue {
+class BooleanParameterValue extends ParameterValue {
 
     private final boolean value;
 
@@ -17,7 +13,7 @@ public class BooleanParameterValue extends ParameterValue {
     }
 
     @Override
-    public Object getValue() {
+    public Boolean getValue() {
         return value;
     }
 

@@ -1,6 +1,5 @@
-package cz.cvut.kbss.jopa.query;
+package cz.cvut.kbss.jopa.query.parameter;
 
-import cz.cvut.kbss.jopa.query.impl.*;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.net.URI;
@@ -29,6 +28,19 @@ public abstract class ParameterValue {
      * @return Value as query string
      */
     public abstract String getQueryString();
+
+    /**
+     * Returns a new variable parameter specification.
+     * <p>
+     * This is the default implementation, if a parameter is not set, a variable is used in the query to represent an
+     * unbound parameter.
+     *
+     * @param name Parameter (variable) name
+     * @return Parameter value object
+     */
+    public static ParameterValue createVariableValue(String name) {
+        return new VariableParameterValue(name);
+    }
 
     /**
      * Returns new String parameter value specification.

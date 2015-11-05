@@ -113,7 +113,7 @@ public class QueryImpl implements Query<List<String>> {
 	}
 
 	@Override
-	public Object getParameterValue(Parameter<?> parameter) {
+	public <T> T getParameterValue(Parameter<T> parameter) {
 		return null;
 	}
 
@@ -134,6 +134,16 @@ public class QueryImpl implements Query<List<String>> {
 
 	@Override
 	public Query<List<String>> setParameter(String name, String value, String language) {
+		return null;
+	}
+
+	@Override
+	public <T> Query<List<String>> setParameter(Parameter<T> parameter, T value) {
+		return null;
+	}
+
+	@Override
+	public Query<List<String>> setParameter(Parameter<String> parameter, String value, String language) {
 		return null;
 	}
 

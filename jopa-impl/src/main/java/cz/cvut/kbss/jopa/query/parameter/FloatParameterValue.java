@@ -1,14 +1,10 @@
-package cz.cvut.kbss.jopa.query.impl;
+package cz.cvut.kbss.jopa.query.parameter;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
-import cz.cvut.kbss.jopa.query.ParameterValue;
 
 import java.util.Objects;
 
-/**
- * @author kidney
- */
-public class FloatParameterValue extends ParameterValue {
+class FloatParameterValue extends ParameterValue {
 
     private final float value;
 
@@ -17,7 +13,7 @@ public class FloatParameterValue extends ParameterValue {
     }
 
     @Override
-    public Object getValue() {
+    public Float getValue() {
         return value;
     }
 
