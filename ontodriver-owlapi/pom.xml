@@ -17,7 +17,7 @@
 
     <properties>
         <net.sourceforge.owlapi.version>4.1.0</net.sourceforge.owlapi.version>
-        <cz.cvut.kbss.owl2query.version>0.3.1</cz.cvut.kbss.owl2query.version>
+        <cz.cvut.kbss.owl2query.version>0.4.0</cz.cvut.kbss.owl2query.version>
     </properties>
 
     <repositories>
