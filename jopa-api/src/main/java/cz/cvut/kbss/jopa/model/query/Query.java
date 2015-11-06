@@ -120,6 +120,14 @@ public interface Query<ResultElement> {
     Set<Parameter<?>> getParameters();
 
     /**
+     * Returns a boolean indicating whether a value has been bound to the parameter.
+     *
+     * @param parameter parameter object
+     * @return boolean indicating whether parameter has been bound
+     */
+    boolean isBound(Parameter<?> parameter);
+
+    /**
      * Returns the input value bound to the positional parameter.
      *
      * @param position position

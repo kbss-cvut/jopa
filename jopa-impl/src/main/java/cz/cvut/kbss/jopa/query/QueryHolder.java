@@ -1,9 +1,8 @@
 package cz.cvut.kbss.jopa.query;
 
 import cz.cvut.kbss.jopa.model.query.Parameter;
-import cz.cvut.kbss.jopa.query.parameter.ParameterValue;
 
-import java.util.Collection;
+import java.util.Set;
 
 /**
  * Represents a caretaker of a query, enabling parameter setting and final assembly of the query.
@@ -13,11 +12,18 @@ import java.util.Collection;
 public interface QueryHolder {
 
     /**
+     * Gets the original query string.
+     *
+     * @return Gets the original unparsed query
+     */
+    String getQuery();
+
+    /**
      * Gets a collection of parameters in the query.
      *
      * @return Parameter names
      */
-    Collection<Parameter<?>> getParameters();
+    Set<Parameter<?>> getParameters();
 
     /**
      * Gets a parameter with the specified name.

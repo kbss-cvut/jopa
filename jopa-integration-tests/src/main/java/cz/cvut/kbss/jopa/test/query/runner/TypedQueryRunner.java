@@ -158,11 +158,15 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test
     public void askQueryReturnsTrue() {
         logger.config("Test: execute a ASK query which returns true.");
-        final String query = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
-        final Query<Boolean> q = getEntityManager().createNativeQuery(query, Boolean.class);
-        final Boolean res = q.getSingleResult();
-        assertNotNull(res);
-        assertTrue(res);
+//        final String query = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
+//        final Query<Boolean> q = getEntityManager().createNativeQuery(query, Boolean.class);
+//        final Boolean res = q.getSingleResult();
+//        assertNotNull(res);
+//        assertTrue(res);
+        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
+        final Query<OWLClassA> q = getEntityManager().createNativeQuery(query, OWLClassA.class);
+        final List<OWLClassA> res = q.getResultList();
+        assertFalse(res.isEmpty());
     }
 
     @Test

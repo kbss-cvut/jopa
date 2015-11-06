@@ -8,13 +8,17 @@ import java.util.*;
 
 public class SparqlQueryHolder implements QueryHolder {
 
+    // Original query string
+    private final String query;
+
     private final Map<Parameter<?>, QueryParameter<?>> parameterSet;
     private final Map<String, QueryParameter<?>> namesToParameters;
     // These parameters are in order matching the query parts and can appear multiple times in the list
     private final List<QueryParameter<?>> parameters;
     private final List<String> queryParts;
 
-    public SparqlQueryHolder(List<String> parts, List<QueryParameter<?>> parameters) {
+    public SparqlQueryHolder(String query, List<String> parts, List<QueryParameter<?>> parameters) {
+        this.query = query;
         this.parameters = parameters;
         this.queryParts = parts;
         this.parameterSet = new HashMap<>();
@@ -24,7 +28,12 @@ public class SparqlQueryHolder implements QueryHolder {
     }
 
     @Override
-    public Collection<Parameter<?>> getParameters() {
+    public String getQuery() {
+        return query;
+    }
+
+    @Override
+    public Set<Parameter<?>> getParameters() {
         return Collections.unmodifiableSet(parameterSet.keySet());
     }
 

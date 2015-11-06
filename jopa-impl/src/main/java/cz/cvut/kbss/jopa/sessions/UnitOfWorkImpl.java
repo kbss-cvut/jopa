@@ -11,6 +11,7 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -68,7 +69,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.cloneBuilder = new CloneBuilderImpl(this);
         this.cacheManager = parent.getLiveObjectCache();
         this.storage = acquireConnection();
-        this.queryFactory = new QueryFactoryImpl(this, storage);
+        this.queryFactory = new SparqlQueryFactory(this, storage);
         this.mergeManager = new MergeManagerImpl(this);
         this.changeManager = new ChangeManagerImpl(this);
         this.inCommit = false;

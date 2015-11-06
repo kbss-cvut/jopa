@@ -13,8 +13,14 @@ import static org.junit.Assert.*;
 
 public class SparqlQueryHolderTest {
 
+    private static final String QUERY = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+            "SELECT ?craft\n" +
+            "{\n" +
+            "?craft foaf:name \"Apollo 7\" .\n" +
+            "?craft foaf:homepage ?homepage .\n" +
+            "}";
     private static final List<String> PARTS = Arrays.asList("PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
-            "SELECT ", "\n{\n", " foaf:name \"Apollo 7\" .\n", " foaf:homepage ", "\n}");
+            "SELECT ", "\n{\n", " foaf:name \"Apollo 7\" .\n", " foaf:homepage ", " .\n}");
     private static final List<String> PARAMS = Arrays.asList("craft", "craft", "craft", "homepage");
     private static final Set<String> PARAM_NAMES = new HashSet<>(Arrays.asList("craft", "homepage"));
 
@@ -22,9 +28,18 @@ public class SparqlQueryHolderTest {
 
     @Before
     public void setUp() throws Exception {
-        final List<QueryParameter<?>> parameters = PARAMS.stream().map(QueryParameter::new).collect(
-                Collectors.toList());
-        this.holder = new SparqlQueryHolder(PARTS, parameters);
+        final Map<String, QueryParameter<?>> paramsByName = new HashMap<>();
+        for (String n : PARAM_NAMES) {
+            paramsByName.put(n, new QueryParameter<>(n));
+        }
+        final List<QueryParameter<?>> parameters = PARAMS.stream().map(paramsByName::get).collect(Collectors.toList());
+        this.holder = new SparqlQueryHolder(QUERY, PARTS, parameters);
+    }
+
+    @Test
+    public void testGetQuery() throws Exception {
+        final String original = holder.getQuery();
+        assertEquals(QUERY, original);
     }
 
     @Test
@@ -38,7 +53,7 @@ public class SparqlQueryHolderTest {
 
     @Test
     public void testGetParameterByName() throws Exception {
-        final String name = PARAMS.get(0);
+        final String name = PARAM_NAMES.iterator().next();
         final Parameter<?> p = holder.getParameter(name);
         assertNotNull(p);
         assertEquals(name, p.getName());
@@ -106,7 +121,7 @@ public class SparqlQueryHolderTest {
                 "SELECT ?craft\n" +
                 "{\n" +
                 "?craft foaf:name \"Apollo 7\" .\n" +
-                "?craft foaf:homepage <http://kbss.felk.cvut.cz>\n" +
+                "?craft foaf:homepage <http://kbss.felk.cvut.cz> .\n" +
                 "}";
         assertEquals(expected, holder.assembleQuery());
     }
@@ -119,7 +134,7 @@ public class SparqlQueryHolderTest {
                 "SELECT ?craft\n" +
                 "{\n" +
                 "?craft foaf:name \"Apollo 7\" .\n" +
-                "?craft foaf:homepage \"http://kbss.felk.cvut.cz\"\n" +
+                "?craft foaf:homepage \"http://kbss.felk.cvut.cz\" .\n" +
                 "}";
         assertEquals(expected, holder.assembleQuery());
     }
@@ -131,10 +146,18 @@ public class SparqlQueryHolderTest {
                 .asList(new QueryParameter<>("y"), new QueryParameter<>("z"), new QueryParameter<>("x"),
                         new QueryParameter<>("y"), new QueryParameter<>("z"));
         final List<String> parts = Arrays.asList("SELECT ", " ", " WHERE { ", " ", " ", " . }");
-        this.holder = new SparqlQueryHolder(parts, params);
+        this.holder = new SparqlQueryHolder(query, parts, params);
         holder.setParameter(new QueryParameter<>("x"),
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityA"));
         final String result = holder.assembleQuery();
         assertEquals(query, result);
+    }
+
+    @Test
+    public void setParameterReplacesAllOccurrencesOfVariable() throws Exception {
+        final QueryParameter<?> qp = new QueryParameter<>("craft");
+        holder.setParameter(qp, URI.create("http://kbss.felk.cvut.cz/apollo7"));
+        final String result = holder.assembleQuery();
+        assertFalse(result.contains("?craft"));
     }
 }

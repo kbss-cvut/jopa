@@ -18,6 +18,7 @@ public class SparqlQueryParserTest {
         final QueryHolder holder = queryParser.parseQuery(query);
         assertTrue(holder.getParameters().isEmpty());
         assertEquals(query, holder.assembleQuery());
+        assertEquals(query, holder.getQuery());
     }
 
     @Test

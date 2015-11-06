@@ -133,6 +133,11 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
     }
 
     @Override
+    public boolean isBound(Parameter<?> parameter) {
+        return false;
+    }
+
+    @Override
     public Object getParameterValue(int position) {
         return null;
     }

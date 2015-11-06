@@ -5,7 +5,7 @@ import java.util.List;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 
-interface QueryFactory {
+public interface QueryFactory {
 
 	/**
 	 * Creates query object representing a native SPARQL query. </p>
@@ -16,7 +16,7 @@ interface QueryFactory {
 	 * @throws NullPointerException
 	 *             If {@code sparql} is {@code null}
 	 */
-	public Query<List<String>> createNativeQuery(String sparql);
+	Query<List<String>> createNativeQuery(String sparql);
 
 	/**
 	 * Creates typed query object representing a native SPARQL query. </p>
@@ -29,23 +29,23 @@ interface QueryFactory {
 	 * @throws NullPointerException
 	 *             If {@code sparql} or {@code resultClass} is {@code null}
 	 */
-	public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass);
+	<T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass);
 
 	/**
 	 * Creates query object representing a native SPARQL query. </p>
 	 * 
-	 * @param sparql
+	 * @param query
 	 *            The query
 	 * @return Query object
 	 * @throws NullPointerException
 	 *             If {@code sparql} is {@code null}
 	 */
-	public Query createQuery(String query);
+	Query createQuery(String query);
 
 	/**
 	 * Creates typed query object representing a native SPARQL query. </p>
 	 * 
-	 * @param sparql
+	 * @param query
 	 *            The query
 	 * @param resultClass
 	 *            Type of the results param URI of the ontology context against
@@ -54,5 +54,5 @@ interface QueryFactory {
 	 * @throws NullPointerException
 	 *             If {@code sparql} or {@code resultClass} is {@code null}
 	 */
-	public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass);
+	<T> TypedQuery<T> createQuery(String query, Class<T> resultClass);
 }

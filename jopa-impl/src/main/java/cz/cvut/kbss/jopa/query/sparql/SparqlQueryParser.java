@@ -1,17 +1,21 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
-import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SparqlQueryParser implements QueryParser {
 
+    private Map<String, QueryParameter<?>> uniqueParams;
+
     @Override
-    public QueryHolder parseQuery(String query) {
+    public SparqlQueryHolder parseQuery(String query) {
         final List<String> queryParts = new ArrayList<>();
+        this.uniqueParams = new HashMap<>();
         final List<QueryParameter<?>> parameters = new ArrayList<>();
         boolean inSQString = false;
         // In double-quoted string
@@ -46,7 +50,7 @@ public class SparqlQueryParser implements QueryParser {
                         lastParamEndIndex = i;
                         inParam = false;
                         final String param = query.substring(paramStartIndex, i);
-                        parameters.add(new QueryParameter<>(param));
+                        parameters.add(getQueryParameter(param));
                     }
                     break;
                 default:
@@ -54,6 +58,14 @@ public class SparqlQueryParser implements QueryParser {
             }
         }
         queryParts.add(query.substring(lastParamEndIndex));
-        return new SparqlQueryHolder(queryParts, parameters);
+        return new SparqlQueryHolder(query, queryParts, parameters);
+    }
+
+    private QueryParameter<?> getQueryParameter(String name) {
+        // We want to reuse the param instances, so that changes to them apply throughout the whole query
+        if (!uniqueParams.containsKey(name)) {
+            uniqueParams.put(name, new QueryParameter<>(name));
+        }
+        return uniqueParams.get(name);
     }
 }
