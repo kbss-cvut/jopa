@@ -13,6 +13,7 @@ public class QueryParameter<T> implements Parameter<T> {
     public QueryParameter(String name) {
         this.name = name;
         this.position = null;
+        resetValue();
     }
 
     public QueryParameter(Integer position) {
@@ -34,9 +35,18 @@ public class QueryParameter<T> implements Parameter<T> {
         return value;
     }
 
-    public void setValue(ParameterValue value) {
+    public void setValue(Object value) {
         assert value != null;
-        this.value = value;
+        this.value = ParameterValue.create(value);
+    }
+
+    public void setValue(String value, String language) {
+        assert value != null;
+        this.value = ParameterValue.create(value, language);
+    }
+
+    public void resetValue() {
+        this.value = ParameterValue.createVariableValue(this.name);
     }
 
     @Override

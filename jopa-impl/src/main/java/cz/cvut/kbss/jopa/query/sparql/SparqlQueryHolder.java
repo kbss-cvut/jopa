@@ -3,13 +3,13 @@ package cz.cvut.kbss.jopa.query.sparql;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParameter;
-import cz.cvut.kbss.jopa.query.parameter.ParameterValue;
 
 import java.util.*;
 
 public class SparqlQueryHolder implements QueryHolder {
 
-    private final Set<Parameter<?>> parameterSet;
+    private final Map<Parameter<?>, QueryParameter<?>> parameterSet;
+    private final Map<String, QueryParameter<?>> namesToParameters;
     // These parameters are in order matching the query parts and can appear multiple times in the list
     private final List<QueryParameter<?>> parameters;
     private final List<String> queryParts;
@@ -17,17 +17,27 @@ public class SparqlQueryHolder implements QueryHolder {
     public SparqlQueryHolder(List<String> parts, List<QueryParameter<?>> parameters) {
         this.parameters = parameters;
         this.queryParts = parts;
-        this.parameterSet = new HashSet<>(parameters);
+        this.parameterSet = new HashMap<>();
+        parameters.forEach(p -> parameterSet.put(p, p));
+        this.namesToParameters = new HashMap<>(parameterSet.size());
+        parameterSet.values().forEach(p -> namesToParameters.put(p.getName(), p));
     }
 
     @Override
     public Collection<Parameter<?>> getParameters() {
-        return Collections.unmodifiableSet(parameterSet);
+        return Collections.unmodifiableSet(parameterSet.keySet());
     }
 
     @Override
-    public Parameter<?> getParameter(String name) {
-        return null;
+    public QueryParameter<?> getParameter(String name) {
+        if (!namesToParameters.containsKey(name)) {
+            throw unknownParameter(name);
+        }
+        return namesToParameters.get(name);
+    }
+
+    private IllegalArgumentException unknownParameter(Object p) {
+        return new IllegalArgumentException("Parameter '" + p + "' does not exist in this query.");
     }
 
     @Override
@@ -37,22 +47,38 @@ public class SparqlQueryHolder implements QueryHolder {
 
     @Override
     public Object getParameterValue(Parameter<?> parameter) {
-        return null;
+        assert getInternalParameter(parameter).getValue() != null;
+        return getInternalParameter(parameter).getValue().getValue();
+    }
+
+    private QueryParameter<?> getInternalParameter(Parameter<?> p) {
+        Objects.requireNonNull(p);
+        if (!parameterSet.containsKey(p)) {
+            throw unknownParameter(p);
+        }
+        return parameterSet.get(p);
     }
 
     @Override
-    public <T> void setParameter(Parameter<T> parameter, ParameterValue value) {
+    public <T> void setParameter(Parameter<T> parameter, Object value) {
+        Objects.requireNonNull(value);
+        getInternalParameter(parameter).setValue(value);
+    }
 
+    @Override
+    public <T> void setParameter(Parameter<T> parameter, String value, String language) {
+        Objects.requireNonNull(value);
+        getInternalParameter(parameter).setValue(value, language);
     }
 
     @Override
     public void clearParameter(Parameter<?> parameter) {
-
+        getInternalParameter(parameter).resetValue();
     }
 
     @Override
     public void clearParameters() {
-
+        parameterSet.values().forEach(QueryParameter::resetValue);
     }
 
     @Override

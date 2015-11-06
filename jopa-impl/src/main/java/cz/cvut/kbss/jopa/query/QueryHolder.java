@@ -53,7 +53,19 @@ public interface QueryHolder {
      * @param value     Value to use
      * @throws IllegalArgumentException If there is no such parameter in the query
      */
-    <T> void setParameter(Parameter<T> parameter, ParameterValue value);
+    <T> void setParameter(Parameter<T> parameter, Object value);
+
+    /**
+     * Sets value of the specified parameter in the query.
+     * <p>
+     * If a value was already specified for the parameter, it is overwritten by the new one.
+     *
+     * @param parameter Parameter object
+     * @param value     String value to use
+     * @param language  Parameter language
+     * @throws IllegalArgumentException If there is no such parameter in the query
+     */
+    <T> void setParameter(Parameter<T> parameter, String value, String language);
 
     /**
      * Clears any previously set value of the specified parameter.
