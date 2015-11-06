@@ -42,8 +42,7 @@ public class SparqlQueryFactory implements QueryFactory {
         Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
         Objects.requireNonNull(resultClass, ErrorUtils.constructNPXMessage("resultClass"));
 
-        final TypedQueryImpl<T> tq = new TypedQueryImpl<>(sparql, resultClass,
-                connection, uow);
+        final TypedQueryImpl<T> tq = new TypedQueryImpl<>(queryParser.parseQuery(sparql), resultClass, connection, uow);
         tq.setUnitOfWork(uow);
         tq.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
         return tq;

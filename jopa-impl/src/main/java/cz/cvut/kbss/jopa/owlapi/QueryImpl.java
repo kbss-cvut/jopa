@@ -112,15 +112,22 @@ public class QueryImpl implements Query<List<String>> {
 
     @Override
     public Object getParameterValue(String name) {
-        final Object value = query.getParameterValue(query.getParameter(name));
-        if (value == null) {
-            throw new IllegalStateException("Parameter " + name + " is not bound.");
+        final Parameter<?> param = query.getParameter(name);
+        if (!isBound(param)) {
+            throw unboundParam(name);
         }
-        return value;
+        return query.getParameterValue(param);
+    }
+
+    private IllegalStateException unboundParam(Object param) {
+        return new IllegalStateException("Parameter " + param + " is not bound.");
     }
 
     @Override
     public <T> T getParameterValue(Parameter<T> parameter) {
+        if (!isBound(parameter)) {
+            throw unboundParam(parameter);
+        }
         return (T) query.getParameterValue(parameter);
     }
 

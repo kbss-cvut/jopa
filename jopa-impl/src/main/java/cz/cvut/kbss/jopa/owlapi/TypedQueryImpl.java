@@ -1,28 +1,17 @@
 /**
  * Copyright (C) 2011 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 
 package cz.cvut.kbss.jopa.owlapi;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
@@ -31,6 +20,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
@@ -39,11 +29,14 @@ import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
+import java.net.URI;
+import java.util.*;
+
 public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> {
 
-    private final String query;
+    private final QueryHolder query;
     private final Set<URI> contexts;
-    private final Class<ResultElement> classT;
+    private final Class<ResultElement> resultType;
     private final ConnectionWrapper connection;
     private final MetamodelProvider metamodelProvider;
 
@@ -52,10 +45,11 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
     private boolean useBackupOntology;
     private int maxResults;
 
-    public TypedQueryImpl(final String query, final Class<ResultElement> classT, final ConnectionWrapper connection,
+    public TypedQueryImpl(final QueryHolder query, final Class<ResultElement> resultType,
+                          final ConnectionWrapper connection,
                           MetamodelProvider metamodelProvider) {
         this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
-        this.classT = Objects.requireNonNull(classT, ErrorUtils.constructNPXMessage("classT"));
+        this.resultType = Objects.requireNonNull(resultType, ErrorUtils.constructNPXMessage("resultType"));
         this.connection = Objects.requireNonNull(connection,
                 ErrorUtils.constructNPXMessage("connection"));
         this.metamodelProvider = Objects.requireNonNull(metamodelProvider,
@@ -73,7 +67,6 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
         if (maxResults == 0) {
             return Collections.emptyList();
         }
-
         List<ResultElement> list;
         try {
             list = getResultListImpl(maxResults);
@@ -119,67 +112,82 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
 
     @Override
     public Parameter<?> getParameter(int position) {
-        return null;
+        throw new NotYetImplementedException();
     }
 
     @Override
     public Parameter<?> getParameter(String name) {
-        return null;
+        return query.getParameter(name);
     }
 
     @Override
     public Set<Parameter<?>> getParameters() {
-        return null;
+        return query.getParameters();
     }
 
     @Override
     public boolean isBound(Parameter<?> parameter) {
-        return false;
+        return query.getParameterValue(parameter) != null;
     }
 
     @Override
     public Object getParameterValue(int position) {
-        return null;
+        throw new NotYetImplementedException();
     }
 
     @Override
     public Object getParameterValue(String name) {
-        return null;
+        final Parameter<?> param = query.getParameter(name);
+        if (!isBound(param)) {
+            throw unboundParam(name);
+        }
+        return query.getParameterValue(param);
+    }
+
+    private IllegalStateException unboundParam(Object param) {
+        return new IllegalStateException("Parameter " + param + " is not bound.");
     }
 
     @Override
     public <T> T getParameterValue(Parameter<T> parameter) {
-        return null;
+        if (!isBound(parameter)) {
+            throw unboundParam(parameter);
+        }
+        return (T) query.getParameterValue(parameter);
     }
 
     @Override
     public Query<ResultElement> setParameter(int position, Object value) {
-        return null;
+        throw new NotYetImplementedException();
     }
 
     @Override
     public Query<ResultElement> setParameter(int position, String value, String language) {
-        return null;
+        throw new NotYetImplementedException();
     }
 
     @Override
     public Query<ResultElement> setParameter(String name, Object value) {
-        return null;
+        query.setParameter(query.getParameter(name), value);
+        return this;
     }
 
     @Override
     public Query<ResultElement> setParameter(String name, String value, String language) {
-        return null;
+        query.setParameter(query.getParameter(name), value, language);
+        return this;
     }
 
     @Override
     public <T> Query<ResultElement> setParameter(Parameter<T> parameter, T value) {
-        return null;
+        query.setParameter(parameter, value);
+        return this;
     }
 
     @Override
     public Query<ResultElement> setParameter(Parameter<String> parameter, String value, String language) {
-        return null;
+        query.setParameter(parameter, value, language);
+        return this;
     }
 
     private List<ResultElement> getResultListImpl(int maxResults) throws OntoDriverException {
@@ -192,13 +200,13 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
         }
         URI[] arr = new URI[contexts.size()];
         arr = contexts.toArray(arr);
-        final ResultSet rs = stmt.executeQuery(query, arr);
+        final ResultSet rs = stmt.executeQuery(query.assembleQuery(), arr);
         try {
             final List<ResultElement> res = new ArrayList<>();
             // TODO register this as observer on the result set so that additional results can be loaded asynchronously
             int cnt = 0;
             final URI ctx = arr.length > 0 ? arr[0] : null;
-            final boolean isTypeManaged = metamodelProvider.isTypeManaged(classT);
+            final boolean isTypeManaged = metamodelProvider.isTypeManaged(resultType);
             while (rs.hasNext() && cnt < maxResults) {
                 rs.next();
                 if (isTypeManaged) {
@@ -222,7 +230,7 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
         // TODO Setting the context like this won't work for queries over multiple contexts
         final EntityDescriptor descriptor = new EntityDescriptor(context);
 
-        final ResultElement entity = uow.readObject(classT, uri, descriptor);
+        final ResultElement entity = uow.readObject(resultType, uri, descriptor);
         if (entity == null) {
             throw new OWLPersistenceException(
                     "Fatal error, unable to load entity for primary key already found by query "
@@ -233,9 +241,9 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
 
     private ResultElement loadResultValue(ResultSet resultSet) throws OntoDriverException {
         try {
-            return resultSet.getObject(0, classT);
+            return resultSet.getObject(0, resultType);
         } catch (OntoDriverException e) {
-            throw new OWLPersistenceException("Unable to map the query result to class " + classT, e);
+            throw new OWLPersistenceException("Unable to map the query result to class " + resultType, e);
         }
     }
 
@@ -262,8 +270,8 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
     /**
      * Sets ontology used for processing of this query. </p>
      *
-     * @param useBackupOntology If true, the backup (central) ontology is used, otherwise the
-     *                          transactional ontology is used (default)
+     * @param useBackupOntology If true, the backup (central) ontology is used, otherwise the transactional ontology is
+     *                          used (default)
      */
     public void setUseBackupOntology(boolean useBackupOntology) {
         this.useBackupOntology = useBackupOntology;

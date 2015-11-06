@@ -4,58 +4,38 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
-import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
-import cz.cvut.kbss.ontodriver_new.ResultSet;
-import cz.cvut.kbss.ontodriver_new.Statement;
+import cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
-/**
- * @author kidney
- */
-public class TypedQueryImplTest {
+public class TypedQueryImplTest extends QueryTestBase {
 
     private static final String SELECT_ENTITY_QUERY = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
     private static final String ASK_BOOLEAN_QUERY = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
 
-    @Mock
-    private UnitOfWork uowMock;
-
-    @Mock
-    private MetamodelProvider metamodelProviderMock;
-
-    @Mock
-    private ConnectionWrapper connectionMock;
-
-    @Mock
-    private Statement statementMock;
-
-    @Mock
-    private ResultSet resultSetMock;
+    @Override
+    Query<?> createQuery(String query, Class<?> resultType) {
+        return queryFactory.createNativeQuery(query, resultType);
+    }
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        when(connectionMock.createStatement()).thenReturn(statementMock);
-        when(statementMock.executeQuery(anyString())).thenReturn(resultSetMock);
-        when(statementMock.executeQuery(anyString(), anyVararg())).thenReturn(resultSetMock);
-        when(metamodelProviderMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
+        super.setUp();
+        when(uowMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
     }
 
     @Test
@@ -67,9 +47,7 @@ public class TypedQueryImplTest {
     }
 
     private <T> TypedQuery<T> create(Class<T> type, String query) {
-        final TypedQueryImpl<T> tq = new TypedQueryImpl<>(query, type, connectionMock, metamodelProviderMock);
-        tq.setUnitOfWork(uowMock);
-        return tq;
+        return queryFactory.createNativeQuery(query, type);
     }
 
     private List<String> initDataForQuery(int count) throws Exception {
@@ -78,12 +56,15 @@ public class TypedQueryImplTest {
         for (int i = 0; i < count; i++) {
             final String u = "http://uri" + i;
             uris.add(u);
-            when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(u)), any(Descriptor.class))).thenReturn(new OWLClassA(URI.create(u)));
+            when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(u)), any(Descriptor.class)))
+                    .thenReturn(new OWLClassA(URI.create(u)));
             hasNext.add(true);
         }
         hasNext.add(false);
-        when(resultSetMock.getString(0)).thenReturn(uris.get(0), uris.subList(1, uris.size()).toArray(new String[count]));
-        when(resultSetMock.hasNext()).thenReturn(hasNext.get(0), hasNext.subList(1, hasNext.size()).toArray(new Boolean[count]));
+        when(resultSetMock.getString(0))
+                .thenReturn(uris.get(0), uris.subList(1, uris.size()).toArray(new String[count]));
+        when(resultSetMock.hasNext())
+                .thenReturn(hasNext.get(0), hasNext.subList(1, hasNext.size()).toArray(new Boolean[count]));
         return uris;
     }
 
@@ -172,7 +153,8 @@ public class TypedQueryImplTest {
 
     @Test(expected = IllegalStateException.class)
     public void throwsExceptionWhenLoadingEntityWithoutUoWSet() throws Exception {
-        final TypedQueryImpl<OWLClassA> query = new TypedQueryImpl<>(SELECT_ENTITY_QUERY, OWLClassA.class, connectionMock, metamodelProviderMock);
+        final TypedQueryImpl<OWLClassA> query = new TypedQueryImpl<>(mock(SparqlQueryHolder.class), OWLClassA.class,
+                connectionWrapperMock, uowMock);
         initDataForQuery(5);
         query.getResultList();
     }
