@@ -56,9 +56,9 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         final String query =
                 "SELECT ?x WHERE { " +
                         "?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB> ; " +
-                        "<http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> \""
-                        + b.getStringAttribute() + "\"@en . }";
+                        "<http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> ?bString . }";
         final TypedQuery<OWLClassB> q = getEntityManager().createNativeQuery(query, OWLClassB.class);
+        q.setParameter("bString", b.getStringAttribute(), "en");
         final OWLClassB res = q.getSingleResult();
         assertNotNull(res);
         assertEquals(b.getUri(), res.getUri());
@@ -118,9 +118,9 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         logger.config("Test: get single result.");
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
-                "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> \""
-                        + a.getStringAttribute() + "\"@en .}";
+                "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?aString .}";
         final Query<OWLClassA> q = getEntityManager().createNativeQuery(query, OWLClassA.class);
+        q.setParameter("aString", a.getStringAttribute(), "en");
         final OWLClassA res = q.getSingleResult();
         assertNotNull(res);
         assertEquals(a.getUri(), res.getUri());
@@ -158,15 +158,11 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test
     public void askQueryReturnsTrue() {
         logger.config("Test: execute a ASK query which returns true.");
-//        final String query = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
-//        final Query<Boolean> q = getEntityManager().createNativeQuery(query, Boolean.class);
-//        final Boolean res = q.getSingleResult();
-//        assertNotNull(res);
-//        assertTrue(res);
-        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
-        final Query<OWLClassA> q = getEntityManager().createNativeQuery(query, OWLClassA.class);
-        final List<OWLClassA> res = q.getResultList();
-        assertFalse(res.isEmpty());
+        final String query = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
+        final Query<Boolean> q = getEntityManager().createNativeQuery(query, Boolean.class);
+        final Boolean res = q.getSingleResult();
+        assertNotNull(res);
+        assertTrue(res);
     }
 
     @Test

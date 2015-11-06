@@ -75,9 +75,9 @@ public abstract class QueryRunner extends BaseQueryRunner {
     public void testSelectByObjectProperty() {
         logger.config("Test: select object property values.");
         final OWLClassD d = QueryTestEnvironment.getData(OWLClassD.class).get(0);
-        final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> <"
-                + d.getOwlClassA().getUri().toString() + "> . }";
+        final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> ?y . }";
         final Query<List<String>> q = getEntityManager().createNativeQuery(query);
+        q.setParameter("y", d.getOwlClassA().getUri());
 
         final List<List<String>> res = q.getResultList();
 
@@ -93,8 +93,9 @@ public abstract class QueryRunner extends BaseQueryRunner {
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final Set<String> types = a.getTypes();
         types.add(a.getClass().getAnnotation(OWLClass.class).iri());
-        final String query = "SELECT ?x WHERE { <" + a.getUri().toString() + "> a ?x . }";
+        final String query = "SELECT ?x WHERE { ?instance a ?x . }";
         final Query<List<String>> q = getEntityManager().createNativeQuery(query);
+        q.setParameter("instance", a.getUri());
 
         final List<List<String>> res = q.getResultList();
         // The result can contain more types (inference)
@@ -155,9 +156,9 @@ public abstract class QueryRunner extends BaseQueryRunner {
         logger.config("Test: get single result.");
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
-                "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> \""
-                        + a.getStringAttribute() + "\"@en .}";
+                "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?y .}";
         final Query<List<String>> q = getEntityManager().createNativeQuery(query);
+        q.setParameter("y", a.getStringAttribute(), "en");
 
         final List<String> res = q.getSingleResult();
         assertNotNull(res);
