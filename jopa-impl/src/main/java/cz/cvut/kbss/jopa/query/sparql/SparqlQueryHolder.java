@@ -102,4 +102,8 @@ public class SparqlQueryHolder implements QueryHolder {
         return sb.toString();
     }
 
+    @Override
+    public String toString() {
+        return query;
+    }
 }

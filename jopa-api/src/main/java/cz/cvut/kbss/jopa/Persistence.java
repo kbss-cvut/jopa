@@ -87,7 +87,7 @@ public class Persistence {
                     .createEntityManagerFactory(persistenceUnitName, storageProperties, realParams);
         } catch (Exception e) {
             LOG.log(Level.SEVERE, e.getMessage(), e);
-            throw new IllegalArgumentException("Problems with creating EntityManagerFactory.");
+            throw new IllegalArgumentException("Problems with creating EntityManagerFactory.", e);
         }
     }
 

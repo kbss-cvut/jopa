@@ -385,4 +385,14 @@ public class MetamodelImplTest {
         final SingularAttribute<? super OWLClassN, ?> singularString = (SingularAttribute<? super OWLClassN, ?>) att;
         assertTrue(singularString.isNonEmpty());
     }
+
+    @Test
+    public void skipsStaticsFieldsWhenProcessingClass() throws Exception {
+        when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassE.class));
+        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+
+        final EntityType<OWLClassE> et = metamodel.entity(OWLClassE.class);
+        assertNull(et.getFieldSpecification("STR_ATT_FIELD"));
+        assertNull(et.getFieldSpecification("primitiveField"));
+    }
 }

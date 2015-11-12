@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.owlapi.metamodel;
 
+import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.*;
@@ -8,6 +9,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.owlapi.*;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -38,8 +40,15 @@ public class EntityFieldMetamodelProcessor<X> {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("   processing field : " + field);
         }
+        if (Modifier.isStatic(field.getModifiers())) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Skipping static field " + field);
+            }
+            return;
+        }
         if (field.getType().isPrimitive()) {
-            throw new OWLPersistenceException("Primitive types cannot be used for field types");
+            throw new MetamodelInitializationException(
+                    "Primitive types cannot be used for entity fields. Field " + field + " in class " + cls);
         }
 
         final Class<?> fieldValueCls = getFieldValueType(field);

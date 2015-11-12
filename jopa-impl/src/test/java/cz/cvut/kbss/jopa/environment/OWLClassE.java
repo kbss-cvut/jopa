@@ -10,6 +10,9 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE")
 public class OWLClassE {
 
+    // For metamodel building verification
+	private static boolean primitiveField = false;
+
 	private static final String STR_ATT_FIELD = "stringAttribute";
 
 	@Id(generated = true)
