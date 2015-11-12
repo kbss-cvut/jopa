@@ -9,6 +9,7 @@ import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -174,5 +175,23 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         assertNotNull(res);
         assertEquals(1, res.size());
         assertFalse(res.get(0));
+    }
+
+    @Ignore
+    @Test
+    public void askQueryAgainstTransactionalOntologyContainsUncommittedChangesAsWell() throws Exception {
+        logger.config("Test: execute an ASK query which returns changes yet to be committed in transaction.");
+        final OWLClassE e = new OWLClassE();
+        getEntityManager().getTransaction().begin();
+        try {
+            getEntityManager().persist(e);
+            final Query<Boolean> query = getEntityManager().createNativeQuery(
+                    "ASK { ?individual a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }",
+                    Boolean.class).setParameter("individual", e.getUri());
+            final Boolean res = query.getSingleResult();
+            assertTrue(res);
+        } finally {
+            getEntityManager().getTransaction().rollback();
+        }
     }
 }

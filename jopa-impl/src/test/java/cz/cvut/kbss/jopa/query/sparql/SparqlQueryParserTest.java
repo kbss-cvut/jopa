@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
+import cz.cvut.kbss.jopa.exception.QueryParserException;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
@@ -92,5 +93,91 @@ public class SparqlQueryParserTest {
         assertEquals(2, holder.getParameters().size());
         assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
         assertTrue(holder.getParameters().contains(new QueryParameter<>("name")));
+    }
+
+    @Test(expected = QueryParserException.class)
+    public void parserThrowsExceptionWhenParameterNameIsMissing() throws Exception {
+        final String query = "SELECT ?x ?y ?z WHERE { ?x ?y ? . }";
+        queryParser.parseQuery(query);
+    }
+
+    @Test
+    public void testParseQueryWithNumberedPositionalParams() throws Exception {
+        final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                "SELECT ?craft\n" +
+                "{\n" +
+                "?craft foaf:name $1 .\n" +
+                "?craft foaf:homepage $2\n" +
+                "}";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(3, holder.getParameters().size());
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>(1)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>(2)));
+    }
+
+    @Test
+    public void testParseQueryWithUnnumberedPositionalParams() throws Exception {
+        final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                "SELECT ?craft\n" +
+                "{\n" +
+                "?craft foaf:name $ .\n" +
+                "?craft foaf:homepage $\n" +
+                "}";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(3, holder.getParameters().size());
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>(1)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>(2)));
+    }
+
+    @Test
+    public void testParseQueryWithMixedNumberedAndUnnumberedPositionalParams() throws Exception {
+        final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                "SELECT ?craft\n" +
+                "{\n" +
+                "?craft foaf:name $1 .\n" +
+                "?craft foaf:homepage $\n" +
+                "}";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(3, holder.getParameters().size());
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("craft")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>(1)));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>(2)));
+    }
+
+    @Test(expected = QueryParserException.class)
+    public void parsingQueryWithUsedParameterPositionThrowsException() throws Exception {
+        final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                "SELECT ?craft\n" +
+                "{\n" +
+                "?craft foaf:name $1 .\n" +
+                "?craft foaf:homepage $1\n" +
+                "}";
+        queryParser.parseQuery(query);
+    }
+
+    @Test(expected = QueryParserException.class)
+    public void parsingQueryWithIncorrectlyMixedNumberedAndUnnumberedPositionsThrowsException() throws Exception {
+        final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                "SELECT ?craft\n" +
+                "{\n" +
+                "?craft foaf:name $1 .\n" +
+                "?craft foaf:homepage $\n" +    // Missing number here
+                "?craft rdf:label $2\n" +
+                // And here we're trying to use 2, but it will have been assigned to the previous one
+                "}";
+        queryParser.parseQuery(query);
+    }
+
+    @Test(expected = QueryParserException.class)
+    public void parsingQueryWithPositionalParameterNotNumberThrowsException() throws Exception {
+        final String query = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+                "SELECT ?craft\n" +
+                "{\n" +
+                "?craft foaf:name $1 .\n" +
+                "?craft foaf:homepage $notanumber\n" +
+                "}";
+        queryParser.parseQuery(query);
     }
 }
