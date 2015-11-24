@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.owlapi.query;
 
 import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
+import cz.cvut.kbss.ontodriver_new.ResultSet;
 import cz.cvut.kbss.ontodriver_new.Statement;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,9 +37,9 @@ public class LiveOntologyStatementExecutorTest {
 
     @Test
     public void executeQueryPassesFunctionToConnectorForExecutionInReadOnly() throws Exception {
-        final OwlapiResultSet resultSet = mock(OwlapiResultSet.class);
+        final SelectResultSet resultSet = mock(SelectResultSet.class);
         when(connectorMock.executeRead(any(Function.class))).thenReturn(resultSet);
-        final OwlapiResultSet res = executor.executeQuery(QUERY, statementMock);
+        final ResultSet res = executor.executeQuery(QUERY, statementMock);
         assertNotNull(res);
         assertEquals(resultSet, res);
         verify(connectorMock).executeRead(any(Function.class));

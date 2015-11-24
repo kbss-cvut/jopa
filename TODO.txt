@@ -1,5 +1,5 @@
-- Fix most serious issues discovered by SCA
 - Use $ for position parameters in queries
+- Add support for transient fields (c.f. http://www.objectdb.com/java/jpa/entity/fields#Transient_Fields)
 - Use SLF4J for logging
 - Support for data property collections?
 - How to enhance query results with transactional changes?

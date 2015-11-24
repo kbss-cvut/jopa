@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
+import cz.cvut.kbss.ontodriver_new.ResultSet;
 import cz.cvut.kbss.ontodriver_new.Statement;
 
 public interface StatementExecutor {
@@ -13,7 +14,7 @@ public interface StatementExecutor {
      * @return Query result
      * @throws OwlapiDriverException
      */
-    OwlapiResultSet executeQuery(String query, Statement statement) throws OwlapiDriverException;
+    ResultSet executeQuery(String query, Statement statement) throws OwlapiDriverException;
 
     /**
      * Executes the specified update query.

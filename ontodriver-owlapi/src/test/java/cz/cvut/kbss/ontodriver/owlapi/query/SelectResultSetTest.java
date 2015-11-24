@@ -21,7 +21,7 @@ import java.util.NoSuchElementException;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class OwlapiResultSetTest {
+public class SelectResultSetTest {
 
     @Mock
     private Statement statementMock;
@@ -37,20 +37,20 @@ public class OwlapiResultSetTest {
 
     @Test
     public void resultSetContainsCorrectMappingOfIndexesAndLabels() throws Exception {
-        final OwlapiResultSet resultSet = resultSet(generator.generate(Arrays.asList("a", "b"),
+        final SelectResultSet resultSet = resultSet(generator.generate(Arrays.asList("a", "b"),
                 Collections.singletonList(
                         Arrays.asList(false, true))));
         assertEquals(0, resultSet.findColumn("a"));
         assertEquals(1, resultSet.findColumn("b"));
     }
 
-    private OwlapiResultSet resultSet(QueryResult<OWLObject> queryResult) {
-        return new OwlapiResultSet(queryResult, statementMock);
+    private SelectResultSet resultSet(QueryResult<OWLObject> queryResult) {
+        return new SelectResultSet(queryResult, statementMock);
     }
 
     @Test
     public void testGetFirstBooleanResultByIndex() throws Exception {
-        final OwlapiResultSet resultSet = resultSet(generator.generate(Arrays.asList("a", "b"),
+        final SelectResultSet resultSet = resultSet(generator.generate(Arrays.asList("a", "b"),
                 Collections.singletonList(
                         Arrays.asList(false, true))));
         assertTrue(resultSet.hasNext());
@@ -62,7 +62,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void testGetBooleanResultByColumnName() throws Exception {
-        final OwlapiResultSet resultSet = resultSet(
+        final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false))));
@@ -77,7 +77,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void testGetInt() throws Exception {
-        final OwlapiResultSet resultSet = resultSet(
+        final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(100, 117))));
         resultSet.next();
@@ -87,7 +87,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void testGetLong() throws Exception {
-        final OwlapiResultSet resultSet = resultSet(
+        final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(100111111L, 117117117117L))));
         resultSet.next();
@@ -97,7 +97,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void testGetDouble() throws Exception {
-        final OwlapiResultSet resultSet = resultSet(
+        final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(3.14D, 4.13D))));
         resultSet.next();
@@ -107,7 +107,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void getRowIndexReturnCurrentRow() throws Exception {
-        final OwlapiResultSet resultSet = resultSet(
+        final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false))));
@@ -121,7 +121,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void firstReturnsIteratorToBeginning() throws Exception {
-        final OwlapiResultSet resultSet = resultSet(
+        final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false))));
@@ -134,7 +134,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void previousReturnsPreviousRow() throws Exception {
-        final OwlapiResultSet resultSet = resultSet(
+        final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false),
@@ -149,7 +149,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void setRowIndexLargerGoesForwardInResultSet() throws Exception {
-        final OwlapiResultSet resultSet = resultSet(
+        final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false),
@@ -163,7 +163,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void setRowIndexSmallerGoesBackInResultSet() throws Exception {
-        final OwlapiResultSet resultSet = resultSet(
+        final SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false),
@@ -179,7 +179,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void setRowIndexTheSameDoesNothing() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false),
@@ -197,7 +197,7 @@ public class OwlapiResultSetTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void setRowIndexNegativeThrowsException() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false),
@@ -207,7 +207,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void setRowTooLargeGoesToEndOfResultSet() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false),
@@ -219,7 +219,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void relativeWithPositiveIntGoesForward() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false),
@@ -233,7 +233,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void relativeWithNegativeIntGoesBackward() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false),
@@ -248,7 +248,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void relativeTooLargeEndsAtResultSetEnd() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false),
@@ -260,7 +260,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void lastGoesToEndOfResultSet() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Arrays.asList(
                         Arrays.asList(false, true),
                         Arrays.asList(true, false),
@@ -274,7 +274,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void getColumnCountReturnsNumberOfBoundVariables() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(false, true))));
         assertEquals(2, resultSet.getColumnCount());
@@ -282,7 +282,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void findUnknownColumnIndexReturnsMinusOne() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(false, true))));
         assertEquals(-1, resultSet.findColumn("unknown"));
@@ -290,7 +290,7 @@ public class OwlapiResultSetTest {
 
     @Test(expected = IllegalStateException.class)
     public void getValueOnClosedResultSetThrowsException() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(false, true))));
         resultSet.next();
@@ -302,7 +302,7 @@ public class OwlapiResultSetTest {
 
     @Test(expected = BindingValueMismatchException.class)
     public void getIncompatibleValueThrowsMismatchException() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(false, true))));
         resultSet.next();
@@ -311,7 +311,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void testGetString() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList("One", "Two"))));
         resultSet.next();
@@ -321,7 +321,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void getStringCanHandleBooleanAndNumber() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(false, 3.14D))));
         resultSet.next();
@@ -332,7 +332,7 @@ public class OwlapiResultSetTest {
     @Test
     public void getStringCanHandleOWLIndividuals() throws Exception {
         final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(uri, uri))));
         resultSet.next();
@@ -342,7 +342,7 @@ public class OwlapiResultSetTest {
 
     @Test(expected = IllegalStateException.class)
     public void getValueBeforeFirstRowThrowsIllegalState() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList("One", "Two"))));
         resultSet.getString(0);
@@ -350,7 +350,7 @@ public class OwlapiResultSetTest {
 
     @Test(expected = OntoDriverException.class)
     public void getValueWithUnknownIndexThrowsOntoDriverException() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList("One", "Two"))));
         resultSet.next();
@@ -359,7 +359,7 @@ public class OwlapiResultSetTest {
 
     @Test(expected = OntoDriverException.class)
     public void getValueWithUnknownColumnLabelThrowsOntoDriverException() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList("One", "Two"))));
         resultSet.next();
@@ -368,7 +368,7 @@ public class OwlapiResultSetTest {
 
     @Test(expected = NoSuchElementException.class)
     public void nextAfterEndThrowsNoSuchElement() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList("One", "Two"))));
         resultSet.next();
@@ -377,7 +377,7 @@ public class OwlapiResultSetTest {
 
     @Test
     public void getObjectOnOWLLiteralReturnsLiteralValue() throws Exception {
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList("One", 117))));
         resultSet.next();
@@ -390,7 +390,7 @@ public class OwlapiResultSetTest {
     @Test
     public void getObjectOfOWLNamedIndividualReturnsItsUri() throws Exception {
         final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b"), Collections.singletonList(
                         Arrays.asList(uri, uri))));
         resultSet.next();
@@ -401,7 +401,7 @@ public class OwlapiResultSetTest {
     @Test
     public void getTypedObjectOnLiteralReturnsCastedLiteral() throws Exception {
         final Date date = new Date();
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Arrays.asList("a", "b", "c", "d", "e"), Collections.singletonList(
                         Arrays.asList("One", 117, true, 3.14D, date))));
         resultSet.next();
@@ -414,7 +414,7 @@ public class OwlapiResultSetTest {
     @Test
     public void getTypedObjectOnNamedIndividualCastToUri() throws Exception {
         final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Collections.singletonList("a"), Collections.singletonList(
                         Collections.singletonList(uri))));
         resultSet.next();
@@ -424,7 +424,7 @@ public class OwlapiResultSetTest {
     @Test
     public void getTypedObjectOnNamedIndividualCreatesInstanceWhenConstructorTakesMatchingParam() throws Exception {
         final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Collections.singletonList("a"), Collections.singletonList(
                         Collections.singletonList(uri))));
         resultSet.next();
@@ -436,7 +436,7 @@ public class OwlapiResultSetTest {
     @Test(expected = OwlapiDriverException.class)
     public void getTypedObjectWithUnsupportedConversionThrowsDriverException() throws Exception {
         final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Collections.singletonList("a"), Collections.singletonList(
                         Collections.singletonList(uri))));
         resultSet.next();
@@ -446,7 +446,7 @@ public class OwlapiResultSetTest {
     @Test(expected = BindingValueMismatchException.class)
     public void getNamedIndividualAsLiteralValueThrowsException() throws Exception {
         final URI uri = URI.create("http://krizik.felk.cvut.cz/ontologies#Individual");
-        OwlapiResultSet resultSet = resultSet(
+        SelectResultSet resultSet = resultSet(
                 generator.generate(Collections.singletonList("a"), Collections.singletonList(
                         Collections.singletonList(uri))));
         resultSet.next();

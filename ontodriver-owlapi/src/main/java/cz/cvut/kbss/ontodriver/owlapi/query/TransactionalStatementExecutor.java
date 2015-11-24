@@ -3,6 +3,7 @@ package cz.cvut.kbss.ontodriver.owlapi.query;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
+import cz.cvut.kbss.ontodriver_new.ResultSet;
 import cz.cvut.kbss.ontodriver_new.Statement;
 import cz.cvut.kbss.owl2query.engine.OWL2QueryEngine;
 import cz.cvut.kbss.owl2query.model.QueryResult;
@@ -25,7 +26,7 @@ public class TransactionalStatementExecutor implements StatementExecutor {
     }
 
     @Override
-    public OwlapiResultSet executeQuery(String query, Statement statement) throws OwlapiDriverException {
+    public ResultSet executeQuery(String query, Statement statement) throws OwlapiDriverException {
         if (reasoner == null) {
             throw new ReasonerNotAvailableException("Cannot execute query without a reasoner.");
         }
@@ -35,7 +36,7 @@ public class TransactionalStatementExecutor implements StatementExecutor {
         if (res == null) {
             throw new OwlapiDriverException("Unable to evaluate statement " + query);
         }
-        return new OwlapiResultSet(res, statement);
+        return AbstractResultSet.createResultSet(res, statement, query);
     }
 
     @Override

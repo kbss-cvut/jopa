@@ -6,7 +6,6 @@ import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.BindingValueMismatchException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
-import cz.cvut.kbss.ontodriver_new.ResultSet;
 import cz.cvut.kbss.owl2query.model.GroundTerm;
 import cz.cvut.kbss.owl2query.model.QueryResult;
 import cz.cvut.kbss.owl2query.model.ResultBinding;
@@ -20,9 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.*;
 
-public class OwlapiResultSet implements ResultSet {
-
-    private final Statement statement;
+class SelectResultSet extends AbstractResultSet {
 
     private final QueryResult<OWLObject> queryResult;
     private Iterator<ResultBinding<OWLObject>> iterator;
@@ -31,11 +28,10 @@ public class OwlapiResultSet implements ResultSet {
     private final Map<Integer, Variable<OWLObject>> indexesToVariables;
 
     private int currentIndex;
-    private boolean open;
     private ResultBinding<OWLObject> currentRow;
 
-    public OwlapiResultSet(QueryResult<OWLObject> queryResult, Statement statement) {
-        this.statement = statement;
+    public SelectResultSet(QueryResult<OWLObject> queryResult, Statement statement) {
+        super(statement);
         this.queryResult = queryResult;
         this.iterator = queryResult.iterator();
         this.currentIndex = -1;
@@ -43,7 +39,6 @@ public class OwlapiResultSet implements ResultSet {
         this.namesToVariables = new HashMap<>(bindingSize);
         this.indexesToVariables = new HashMap<>(bindingSize);
         resolveVariableNamesAndIndexes();
-        this.open = true;
     }
 
     private void resolveVariableNamesAndIndexes() {
@@ -52,12 +47,6 @@ public class OwlapiResultSet implements ResultSet {
             namesToVariables.put(v.getName(), v);
             indexesToVariables.put(i, v);
             i++;
-        }
-    }
-
-    private void ensureOpen() {
-        if (!open) {
-            throw new IllegalStateException("The result set is closed.");
         }
     }
 
@@ -309,11 +298,6 @@ public class OwlapiResultSet implements ResultSet {
     }
 
     @Override
-    public Statement getStatement() throws OntoDriverException {
-        return statement;
-    }
-
-    @Override
     public String getString(int columnIndex) throws OntoDriverException {
         return owlValueToString(getCurrentValue(columnIndex));
     }
@@ -397,15 +381,5 @@ public class OwlapiResultSet implements ResultSet {
         while (rowIndex > currentIndex && hasNext()) {
             next();
         }
-    }
-
-    @Override
-    public void close() throws OntoDriverException {
-        this.open = false;
-    }
-
-    @Override
-    public boolean isOpen() {
-        return open;
     }
 }
