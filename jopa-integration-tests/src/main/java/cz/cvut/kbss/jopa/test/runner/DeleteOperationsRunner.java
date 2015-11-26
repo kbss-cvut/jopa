@@ -211,4 +211,33 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         final OWLClassE res = em.find(OWLClassE.class, entityE.getUri());
         assertNull(res);
     }
+
+    @Test
+    public void testCascadeMergeAndRemove() {
+        logger.config("Test: merge and remove the merged instance, cascading to another object.");
+        this.em = getEntityManager("CascadeMergeAndRemove", false);
+        em.getTransaction().begin();
+        em.persist(entityG);
+        assertTrue(em.contains(entityA));
+        assertTrue(em.contains(entityG));
+        assertTrue(em.contains(entityH));
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassG toDetach = em.find(OWLClassG.class, entityG.getUri());
+        assertNotNull(toDetach);
+        em.detach(toDetach);
+        assertFalse(em.contains(toDetach));
+        assertFalse(em.contains(toDetach.getOwlClassH()));
+        assertFalse(em.contains(toDetach.getOwlClassH().getOwlClassA()));
+
+        em.getTransaction().begin();
+        final OWLClassG toRemove = em.merge(toDetach);
+        em.remove(toRemove);
+        em.getTransaction().commit();
+
+        assertNull(em.find(OWLClassG.class, entityG.getUri()));
+        assertNull(em.find(OWLClassH.class, entityH.getUri()));
+        assertNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
 }

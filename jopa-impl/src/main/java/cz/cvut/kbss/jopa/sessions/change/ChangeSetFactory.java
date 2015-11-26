@@ -1,8 +1,12 @@
-package cz.cvut.kbss.jopa.sessions;
+package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.UnitOfWorkChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSetImpl;
+import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSetImpl;
 
-class ChangeSetFactory {
+public class ChangeSetFactory {
 
 	private ChangeSetFactory() {
 		throw new AssertionError();
@@ -13,7 +17,7 @@ class ChangeSetFactory {
 	 * 
 	 * @return New change set
 	 */
-	static UnitOfWorkChangeSet createUoWChangeSet() {
+	public static UnitOfWorkChangeSet createUoWChangeSet() {
 		return new UnitOfWorkChangeSetImpl();
 	}
 
@@ -28,8 +32,7 @@ class ChangeSetFactory {
 	 *            Entity descriptor
 	 * @return New object change set
 	 */
-	static ObjectChangeSet createObjectChangeSet(Object original, Object clone,
-			Descriptor descriptor) {
+	public static ObjectChangeSet createObjectChangeSet(Object original, Object clone, Descriptor descriptor) {
 		assert original != null;
 		assert descriptor != null;
 

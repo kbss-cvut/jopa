@@ -1,12 +1,15 @@
-package cz.cvut.kbss.jopa.sessions;
+package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.sessions.ChangeManager;
+import cz.cvut.kbss.jopa.sessions.ChangeRecord;
+import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
+import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,22 +17,18 @@ public class ChangeManagerImpl implements ChangeManager {
 
     private static final Logger LOG = Logger.getLogger(ChangeManagerImpl.class.getName());
 
-    private final MetamodelProvider metamodelProvider;
-
     private final Map<Object, Object> visitedObjects;
 
-    private enum Changed {
-        TRUE, FALSE, UNDETERMINED
-    }
+    private final ChangeDetector changeDetector;
 
     public ChangeManagerImpl(MetamodelProvider metamodelProvider) {
-        this.metamodelProvider = metamodelProvider;
+        this.changeDetector = new ChangeDetectors(metamodelProvider, this);
         visitedObjects = new IdentityHashMap<>();
     }
 
     public boolean hasChanges(Object original, Object clone) {
         if (LOG.isLoggable(Level.FINEST)) {
-            LOG.config("Checking for changes...");
+            LOG.finest("Checking for changes...");
         }
         boolean res = hasChangesInternal(original, clone);
         visitedObjects.clear();
@@ -44,7 +43,7 @@ public class ChangeManagerImpl implements ChangeManager {
      * @param clone    The clone that may have changed.
      * @return True if the clone is in different state than the original.
      */
-    protected boolean hasChangesInternal(Object original, Object clone) {
+    boolean hasChangesInternal(Object original, Object clone) {
         if (clone == null && original == null) {
             return false;
         }
@@ -81,88 +80,8 @@ public class ChangeManagerImpl implements ChangeManager {
         return false;
     }
 
-    private Changed valueChanged(Object orig, Object clone) {
-        if ((clone == null && orig != null) || (clone != null && orig == null)) {
-            return Changed.TRUE;
-        }
-        if (clone == null) {
-            return Changed.FALSE;
-        }
-        boolean changes;
-        if (metamodelProvider.isTypeManaged(clone.getClass())) {
-            return Changed.UNDETERMINED;
-        } else if (clone instanceof Collection) {
-            changes = hasCollectionChanged(clone, orig);
-        } else if (clone instanceof Map) {
-            changes = hasMapChanges(clone, orig);
-        } else {
-            changes = !clone.equals(orig);
-        }
-        return changes ? Changed.TRUE : Changed.FALSE;
-    }
-
-    /**
-     * This method checks for changes in collections. A change may be different size - removed or added element, or
-     * different elements or even different order of elements.
-     *
-     * @param clone    The cloned collection.
-     * @param original The original collection.
-     * @return True if the clone collection contains any modifications compared to the original collection.
-     */
-    private boolean hasCollectionChanged(Object clone, Object original) {
-        boolean hasChanged = false;
-        Collection<?> origCol = (Collection<?>) original;
-        Collection<?> cloneCol = (Collection<?>) clone;
-        if (origCol.size() != cloneCol.size()) {
-            return true;
-        }
-        Iterator<?> itOrig = origCol.iterator();
-        Iterator<?> itClone = cloneCol.iterator();
-        while (itOrig.hasNext() && itClone.hasNext() && !hasChanged) {
-            Object cl = itClone.next();
-            Object orig = itOrig.next();
-            final Changed ch = valueChanged(orig, cl);
-            switch (ch) {
-                case TRUE:
-                    hasChanged = true;
-                    break;
-                case FALSE:
-                    hasChanged = false;
-                    break;
-                case UNDETERMINED:
-                    hasChanged = hasChangesInternal(orig, cl);
-                    break;
-            }
-        }
-        return hasChanged;
-    }
-
-    private boolean hasMapChanges(Object clone, Object original) {
-        final Map<?, ?> cl = (Map<?, ?>) clone;
-        final Map<?, ?> orig = (Map<?, ?>) original;
-        if (orig.size() != cl.size()) {
-            return true;
-        }
-        for (Entry<?, ?> e : orig.entrySet()) {
-            final Object origKey = e.getKey();
-            if (!cl.containsKey(origKey)) {
-                return true;
-            }
-            // TODO Maybe we should check also for key changes
-            final Object origVal = e.getValue();
-            Object clVal = cl.get(origKey);
-
-            final Changed ch = valueChanged(origVal, clVal);
-            switch (ch) {
-                case TRUE:
-                    return true;
-                case FALSE:
-                    break;
-                case UNDETERMINED:
-                    return hasChangesInternal(origVal, clVal);
-            }
-        }
-        return false;
+    Changed valueChanged(Object orig, Object clone) {
+        return changeDetector.hasChanges(clone, orig);
     }
 
     public boolean calculateChanges(ObjectChangeSet changeSet) throws IllegalAccessException,
@@ -184,8 +103,8 @@ public class ChangeManagerImpl implements ChangeManager {
      */
     protected boolean calculateChangesInternal(ObjectChangeSet changeSet)
             throws IllegalArgumentException, IllegalAccessException {
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("Calculating changes for change set " + changeSet);
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.finest("Calculating changes for change set " + changeSet);
         }
         Object original = changeSet.getChangedObject();
         Object clone = changeSet.getCloneObject();

@@ -7,6 +7,8 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
+import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

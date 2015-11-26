@@ -42,12 +42,20 @@ public abstract class BaseRunner {
     }
 
     /**
-     * Initializes the test entities in the following manner: <ul> <li>entityA contains non-empty types</li>
-     * <li>entityB's properties are null</li> <li>entityC's simple and referenced lists are null</li> <li>entityD's
-     * reference to OWLClassA is set to entityA</li> <li>entityE's URI is left null for ID generation</li> <li>entityG's
-     * reference to OWLClassH is set to entityH</li> <li>entityH's reference to OWLClassA is set to entityA</li>
-     * <li>entityI's reference to OWLClassA is set to entityA</li> <li>entityM has all fields set to some values</li>
+     * Initializes the test entities in the following manner:
+     * <pre>
+     * <ul>
+     *     <li>entityA contains non-empty types</li>
+     *     <li>entityB's properties are null</li>
+     *     <li>entityC's simple and referenced lists are null</li>
+     *     <li>entityD's reference to OWLClassA is set to entityA</li>
+     *     <li>entityE's URI is left null for ID generation</li>
+     *     <li>entityG's reference to OWLClassH is set to entityH</li>
+     *     <li>entityH's reference to OWLClassA is set to entityA</li>
+     *     <li>entityI's reference to OWLClassA is set to entityA</li>
+     *     <li>entityM has all fields set to some values</li>
      * </ul>
+     * </pre>
      */
     private void init() {
         this.entityA = new OWLClassA();
@@ -98,7 +106,7 @@ public abstract class BaseRunner {
      */
     protected void persist(Object... entity) {
         em.getTransaction().begin();
-        for (Object ent: entity) {
+        for (Object ent : entity) {
             em.persist(ent);
         }
         em.getTransaction().commit();
