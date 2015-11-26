@@ -13,9 +13,6 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-/**
- * @author ledvima1
- */
 public class EntityLoaderTest {
 
     private static final Set<Class<?>> ENTITY_CLASSES = initEntityClasses();
@@ -36,6 +33,7 @@ public class EntityLoaderTest {
         set.add(OWLClassL.class);
         set.add(OWLClassM.class);
         set.add(OWLClassN.class);
+        set.add(OWLClassO.class);
         return set;
     }
 

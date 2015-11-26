@@ -74,6 +74,11 @@ class CollectionChangeDetector implements ChangeDetector {
         return Changed.fromBoolean(changes);
     }
 
+    /**
+     * When checking for set changes, we have to make sure different element order does not mean a change.
+     * <p>
+     * Therefore, we first order the elements in a predictable way and then compare the elements.
+     */
     private Changed setChanged(Collection<?> clone, Collection<?> original) {
         assert !clone.isEmpty();
         assert !original.isEmpty();
@@ -87,6 +92,9 @@ class CollectionChangeDetector implements ChangeDetector {
         return orderedCollectionChanged(cloneList, originalList);
     }
 
+    /**
+     * For managed types, the comparator uses identifier's hashCode, for all other types hashCode is used directly.
+     */
     private Comparator<Object> getSetComparator(Class<?> elemType) {
         if (metamodelProvider.isTypeManaged(elemType)) {
             return (o1, o2) -> {

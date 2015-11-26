@@ -33,7 +33,7 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 public class OWLAPIPersistenceProvider implements PersistenceProvider, ProviderUtil {
 
-	private static Set<EntityManagerFactoryImpl> emfs = new HashSet<EntityManagerFactoryImpl>();
+	private static Set<EntityManagerFactoryImpl> emfs = new HashSet<>();
 
 	public OWLAPIPersistenceProvider() {
 	}

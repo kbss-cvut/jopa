@@ -26,80 +26,80 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 public aspect BeanListenerAspect {
 
-	private static final Logger LOG = Logger.getLogger(BeanListenerAspect.class.getName());
+    private static final Logger LOG = Logger.getLogger(BeanListenerAspect.class.getName());
 
-	pointcut getter() : get( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
+    pointcut getter(): get( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
 
-	pointcut setter() : set( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
+    pointcut setter(): set( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
 
-	before() : setter() {
-		// Check for inferred field modification
-		final Object object = thisJoinPoint.getTarget();
-		Class<?> cls = object.getClass();
-		Field field = null;
-		final String fieldName = thisJoinPoint.getSignature().getName();
-		try {
-			field = cls.getDeclaredField(fieldName);
-		} catch (NoSuchFieldException e) {
-			Class<?> superCls = cls;
-			while ((superCls = superCls.getSuperclass()) != null) {
-				try {
-					field = superCls.getDeclaredField(fieldName);
-					break;
-				} catch (NoSuchFieldException ex) {
-					// Do nothing, keep trying
-				}
-			}
-			if (field == null) {
-				throw new OWLPersistenceException(e.getMessage());
-			}
-		} catch (SecurityException e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-			throw new OWLPersistenceException(e.getMessage());
-		}
-		OWLAPIPersistenceProvider.verifyInferredAttributeNotModified(object, field);
-	}
-
-	after() returning : setter() {
-		// Persist changes done during transaction
-		final Object entity = thisJoinPoint.getTarget();
-		Field f;
-		try {
-			f = entity.getClass().getDeclaredField(thisJoinPoint.getSignature().getName());
-			if (Modifier.isStatic(f.getModifiers())) {
-				return;
-			}
-			OWLAPIPersistenceProvider.persistEntityChanges(entity, f);
-		} catch (NoSuchFieldException | SecurityException e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-			throw new OWLPersistenceException(e.getMessage());
-		}
+    before(): setter() {
+        // Check for inferred field modification
+        final Object object = thisJoinPoint.getTarget();
+        Class<?> cls = object.getClass();
+        Field field = null;
+        final String fieldName = thisJoinPoint.getSignature().getName();
+        try {
+            field = cls.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            Class<?> superCls = cls;
+            while ((superCls = superCls.getSuperclass()) != null) {
+                try {
+                    field = superCls.getDeclaredField(fieldName);
+                    break;
+                } catch (NoSuchFieldException ex) {
+                    // Do nothing, keep trying
+                }
+            }
+            if (field == null) {
+                throw new OWLPersistenceException(e.getMessage());
+            }
+        } catch (SecurityException e) {
+            LOG.log(Level.SEVERE, e.getMessage(), e);
+            throw new OWLPersistenceException(e.getMessage());
+        }
+        OWLAPIPersistenceProvider.verifyInferredAttributeNotModified(object, field);
     }
 
-	before() : getter()  {
-		// Load lazy loaded entity field
-		try {
-			final Object object = thisJoinPoint.getTarget();
-			final Field field = object.getClass().getDeclaredField(
-					thisJoinPoint.getSignature().getName());
-			if (Modifier.isStatic(field.getModifiers())) {
-				return;
-			}
+    after() returning : setter() {
+        // Persist changes done during transaction
+        final Object entity = thisJoinPoint.getTarget();
+        Field f;
+        try {
+            f = entity.getClass().getDeclaredField(thisJoinPoint.getSignature().getName());
+            if (EntityPropertiesUtils.isFieldTransient(f)) {
+                return;
+            }
+            OWLAPIPersistenceProvider.persistEntityChanges(entity, f);
+        } catch (NoSuchFieldException | SecurityException e) {
+            LOG.log(Level.SEVERE, e.getMessage(), e);
+            throw new OWLPersistenceException(e.getMessage());
+        }
+    }
 
-			field.setAccessible(true);
+    before(): getter()  {
+        // Load lazy loaded entity field
+        try {
+            final Object object = thisJoinPoint.getTarget();
+            final Field field = object.getClass().getDeclaredField(
+                    thisJoinPoint.getSignature().getName());
+            if (EntityPropertiesUtils.isFieldTransient(field)) {
+                return;
+            }
 
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("*** Fetching " + field.getName() + " of " + object.getClass() + ":"
-						+ object.hashCode());
-			}
+            field.setAccessible(true);
 
-			OWLAPIPersistenceProvider.loadReference(object, field);
-		} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-			LOG.log(Level.SEVERE, e.getMessage(), e);
-			throw new OWLPersistenceException();
-		}
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.finest("*** Fetching " + field.getName() + " of " + object.getClass() + ":" + object.hashCode());
+            }
+
+            OWLAPIPersistenceProvider.loadReference(object, field);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            LOG.log(Level.SEVERE, e.getMessage(), e);
+            throw new OWLPersistenceException();
+        }
     }
 }

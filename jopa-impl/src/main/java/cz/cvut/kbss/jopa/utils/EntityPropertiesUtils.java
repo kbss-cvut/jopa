@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.utils;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.annotations.Transient;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
 import cz.cvut.kbss.ontodriver.exceptions.UnassignableIdentifierException;
@@ -12,8 +13,6 @@ import java.util.*;
 
 /**
  * Utility class for entity properties.
- *
- * @author kidney
  */
 public class EntityPropertiesUtils {
 
@@ -23,6 +22,7 @@ public class EntityPropertiesUtils {
      * Private constructor
      */
     private EntityPropertiesUtils() {
+        throw new AssertionError("I am not for instantiation.");
     }
 
     /**
@@ -184,5 +184,32 @@ public class EntityPropertiesUtils {
             throw new PrimaryKeyNotSetException("The id for entity " + instance
                     + " is null and it is not specified as \'generated\' ");
         }
+    }
+
+    /**
+     * Checks whether the specified field should not be persisted, i.e. whether it is transient in the persistence
+     * sense.
+     * <p>
+     * A field is transient if it is:
+     * <pre>
+     * <ul>
+     *     <li>static</li>
+     *     <li>or final</li>
+     *     <li>or transient</li>
+     *     <li>or annotated with the {@link Transient} annotation</li>
+     * </ul>
+     * </pre>
+     *
+     * @param field The field to investigate
+     * @return Whether the field is transient
+     */
+    public static boolean isFieldTransient(Field field) {
+        Objects.requireNonNull(field);
+        final int modifiers = field.getModifiers();
+        if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers) || Modifier.isTransient(modifiers)) {
+            return true;
+        }
+        final Transient transientAnnotation = field.getAnnotation(Transient.class);
+        return transientAnnotation != null;
     }
 }

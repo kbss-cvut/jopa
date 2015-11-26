@@ -7,9 +7,9 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.owlapi.*;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -40,9 +40,9 @@ public class EntityFieldMetamodelProcessor<X> {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("   processing field : " + field);
         }
-        if (Modifier.isStatic(field.getModifiers())) {
+        if (EntityPropertiesUtils.isFieldTransient(field)) {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Skipping static field " + field);
+                LOG.fine("Skipping transient field " + field);
             }
             return;
         }
@@ -70,7 +70,11 @@ public class EntityFieldMetamodelProcessor<X> {
         if (propertyAtt.isKnownOwlProperty()) {
             createAttribute(field, inference, propertyAtt);
         } else {
-            processIdentifierField(field);
+            final boolean success = processIdentifierField(field);
+            if (!success) {
+                throw new MetamodelInitializationException(
+                        "Unable to process field " + field + ". It is not transient but has no mapping information.");
+            }
         }
     }
 
@@ -173,15 +177,16 @@ public class EntityFieldMetamodelProcessor<X> {
         et.addDeclaredAttribute(field.getName(), a);
     }
 
-    private void processIdentifierField(Field field) {
+    private boolean processIdentifierField(Field field) {
         final Id id = field.getAnnotation(Id.class);
         if (id == null) {
-            return;
+            return false;
         }
         if (!VALID_ID_CLASSES.contains(field.getType())) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         }
         et.setIdentifier(new IRIIdentifierImpl(field, id.generated()));
+        return true;
     }
 
     private static class InferenceInfo {
