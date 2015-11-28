@@ -337,4 +337,19 @@ public class MetamodelFactory {
         when(enumAtt.isCollection()).thenReturn(false);
         when(etMock.getFieldSpecification(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
     }
+
+    public static void initOWLClassOMock(EntityType<OWLClassO> et, SingularAttribute stringAtt, Identifier idO)
+            throws Exception {
+        when(et.getIdentifier()).thenReturn(idO);
+        when(idO.getJavaField()).thenReturn(OWLClassO.getUriField());
+        when(et.getIRI()).thenReturn(IRI.create(OWLClassO.getClassIri()));
+        when(et.getAttributes()).thenReturn(Collections.singleton(stringAtt));
+        when(et.getFieldSpecification(stringAtt.getName())).thenReturn(stringAtt);
+        when(stringAtt.getJavaField()).thenReturn(OWLClassO.getStringAttributeField());
+        when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(stringAtt.isCollection()).thenReturn(false);
+        when(stringAtt.getBindableJavaType()).thenReturn(String.class);
+        when(stringAtt.getIRI())
+                .thenReturn(IRI.create(OWLClassO.getStringAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+    }
 }

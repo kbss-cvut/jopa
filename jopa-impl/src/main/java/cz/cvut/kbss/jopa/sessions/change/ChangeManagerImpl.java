@@ -57,6 +57,9 @@ public class ChangeManagerImpl implements ChangeManager {
         List<Field> fields = EntityPropertiesUtils.getAllFields(cls);
         Map<Object, Object> composedObjects = new HashMap<>();
         for (Field f : fields) {
+            if (EntityPropertiesUtils.isFieldTransient(f)) {
+                continue;
+            }
             Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
             Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
             final Changed ch = valueChanged(origVal, clVal);

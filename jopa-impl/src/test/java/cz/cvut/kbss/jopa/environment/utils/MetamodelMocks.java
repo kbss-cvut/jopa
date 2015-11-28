@@ -100,6 +100,13 @@ public class MetamodelMocks {
     @Mock
     private SingularAttribute<OWLClassM, OWLClassM.Severity> mEnumAtt;
 
+    @Mock
+    private EntityType<OWLClassO> etO;
+    @Mock
+    private Identifier idO;
+    @Mock
+    private SingularAttribute<OWLClassO, String> oStringAtt;
+
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
         MetamodelFactory.initOWLClassAMocks(etA, aStringAtt, aTypes, idA);
@@ -112,6 +119,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
         MetamodelFactory
                 .initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt, idM);
+        MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -124,6 +132,7 @@ public class MetamodelMocks {
         when(metamodel.entity(OWLClassK.class)).thenReturn(etK);
         when(metamodel.entity(OWLClassL.class)).thenReturn(etL);
         when(metamodel.entity(OWLClassM.class)).thenReturn(etM);
+        when(metamodel.entity(OWLClassO.class)).thenReturn(etO);
     }
 
     public OWLClassAMetamodel forOwlClassA() {
@@ -329,6 +338,20 @@ public class MetamodelMocks {
 
         public SingularAttribute<OWLClassM, OWLClassM.Severity> enumAttribute() {
             return MetamodelMocks.this.mEnumAtt;
+        }
+    }
+
+    public class OWLClassOMetamodel {
+        public EntityType<OWLClassO> entityType() {
+            return MetamodelMocks.this.etO;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idO;
+        }
+
+        public SingularAttribute<OWLClassO, String> stringAttribute() {
+            return MetamodelMocks.this.oStringAtt;
         }
     }
 }

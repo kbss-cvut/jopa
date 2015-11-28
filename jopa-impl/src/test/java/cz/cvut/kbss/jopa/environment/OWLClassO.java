@@ -5,6 +5,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.Transient;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassO")
@@ -67,5 +68,17 @@ public class OWLClassO {
 
     public String getFinalField() {
         return finalField;
+    }
+
+    public static String getClassIri() throws Exception {
+        return OWLClassO.class.getAnnotation(OWLClass.class).iri();
+    }
+
+    public static Field getUriField() throws Exception {
+        return OWLClassO.class.getDeclaredField("uri");
+    }
+
+    public static Field getStringAttributeField() throws Exception {
+        return OWLClassO.class.getDeclaredField(STR_ATT_FIELD);
     }
 }

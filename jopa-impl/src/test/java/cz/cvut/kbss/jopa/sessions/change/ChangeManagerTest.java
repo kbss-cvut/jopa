@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -122,7 +123,7 @@ public class ChangeManagerTest {
     }
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
         manager = new ChangeManagerImpl(providerMock);
         when(providerMock.isTypeManaged(any(Class.class))).thenAnswer(invocation -> {
@@ -130,6 +131,8 @@ public class ChangeManagerTest {
             return TestEnvironmentUtils.getManagedTypes().contains(cls);
         });
         when(providerMock.getMetamodel()).thenReturn(metamodelMock);
+        final MetamodelMocks mocks = new MetamodelMocks();
+        mocks.setMocks(metamodelMock);
         testAClone.setStringAttribute(null);
         testAClone.setTypes(null);
         testA.setTypes(null);
@@ -485,6 +488,20 @@ public class ChangeManagerTest {
         initMetamodelForClassA();
         final boolean res = manager.hasChanges(testF, cloneF);
         assertTrue(res);
+    }
+
+    @Test
+    public void changeToTransientFieldIsIgnored() throws Exception {
+        final OWLClassO testO = new OWLClassO();
+        testO.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies#testO"));
+        testO.setStringAttribute("String");
+        final OWLClassO testOClone = new OWLClassO();
+        testOClone.setUri(testO.getUri());
+        testOClone.setStringAttribute(testO.getStringAttribute());
+        testOClone.setTransientField("Change!");
+
+        final boolean res = manager.hasChanges(testO, testOClone);
+        assertFalse(res);
     }
 
     private static final class TestEntity {

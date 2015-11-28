@@ -429,6 +429,22 @@ public class CloneBuilderTest {
         assertEquals(m.getDateAttribute(), entityM.getDateAttribute());
     }
 
+    @Test
+    public void cloningSkipsTransientFields() throws Exception {
+        final OWLClassO entityO = new OWLClassO();
+        entityO.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies#entityO"));
+        entityO.setStringAttribute("String");
+        entityO.setTransientField("Transient");
+        entityO.setTransientFieldWithAnnotation("TransientAnnotated");
+
+        final OWLClassO clone = (OWLClassO) builder.buildClone(entityO, defaultDescriptor);
+        assertNotNull(clone);
+        assertEquals(entityO.getUri(), clone.getUri());
+        assertEquals(entityO.getStringAttribute(), clone.getStringAttribute());
+        assertNull(clone.getTransientField());
+        assertNull(clone.getTransientFieldWithAnnotation());
+    }
+
     private static void initManagedTypes() {
         managedTypes = new HashSet<>();
         managedTypes.add(OWLClassA.class);
@@ -436,5 +452,6 @@ public class CloneBuilderTest {
         managedTypes.add(OWLClassC.class);
         managedTypes.add(OWLClassD.class);
         managedTypes.add(OWLClassM.class);
+        managedTypes.add(OWLClassO.class);
     }
 }

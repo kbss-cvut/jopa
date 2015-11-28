@@ -13,7 +13,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.net.URI;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -102,7 +102,7 @@ public class CloneBuilderImpl implements CloneBuilder {
             tmp = tmp.getSuperclass();
         }
         for (Field f : fields) {
-            if (Modifier.isStatic(f.getModifiers())) {
+            if (EntityPropertiesUtils.isFieldTransient(f)) {
                 continue;
             }
             final Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
@@ -203,7 +203,8 @@ public class CloneBuilderImpl implements CloneBuilder {
      */
     public static boolean isPrimitiveOrString(final Class<?> cls) {
         return cls.isPrimitive() || String.class.equals(cls) || cls.isEnum()
-                || WRAPPER_TYPES.contains(cls);
+                || WRAPPER_TYPES.contains(cls) || URI.class.equals(cls);
+        // TODO Check that URI is effectively final. Also consider adding URL here
     }
 
     @Override
