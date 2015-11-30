@@ -34,6 +34,13 @@ public class OWLClassO {
 
     private final String finalField = "I am final, therefore transient.";
 
+    public OWLClassO() {
+    }
+
+    public OWLClassO(URI uri) {
+        this.uri = uri;
+    }
+
     public URI getUri() {
         return uri;
     }

@@ -33,13 +33,16 @@ public class ChangeManagerTest {
     private static final URI DEFAULT_CONTEXT = URI.create("http://defaultContext");
 
     private static OWLClassA testA;
+    private static OWLClassB testB;
     private static OWLClassD testD;
     private static OWLClassC testC;
-    private static OWLClassA testAClone;
-    private static OWLClassD testDClone;
+    private static OWLClassO testO;
+
+    private OWLClassA testAClone;
+    private OWLClassB testBClone;
     private OWLClassC testCClone;
-    private static OWLClassB testB;
-    private static OWLClassB testBClone;
+    private OWLClassD testDClone;
+
     private static Set<String> typesCollection;
     private static TestEntity primitivesTest;
     private static Descriptor defaultDescriptor;
@@ -53,10 +56,11 @@ public class ChangeManagerTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        initAs();
-        initBs();
+        initA();
+        initB();
         initC();
-        initDs();
+        initD();
+        initO();
         typesCollection = new HashSet<>();
         for (int i = 0; i < 10; i++) {
             typesCollection.add(Integer.toString(i));
@@ -68,16 +72,14 @@ public class ChangeManagerTest {
         defaultDescriptor = new EntityDescriptor(DEFAULT_CONTEXT);
     }
 
-    private static void initAs() {
+    private static void initA() {
         testA = new OWLClassA();
         final URI uri = URI.create("http://testA");
         testA.setUri(uri);
         testA.setStringAttribute("TestStringAttribute");
-        testAClone = new OWLClassA();
-        testAClone.setUri(uri);
     }
 
-    private static void initBs() {
+    private static void initB() {
         testB = new OWLClassB();
         testB.setUri(URI.create("http://testB"));
         testB.setStringAttribute("someString");
@@ -89,9 +91,6 @@ public class ChangeManagerTest {
         multiProp.add("valueFour");
         props.put("propertyThree", multiProp);
         testB.setProperties(props);
-        testBClone = new OWLClassB();
-        testBClone.setUri(testB.getUri());
-        testBClone.setStringAttribute(testB.getStringAttribute());
     }
 
     private static void initC() {
@@ -109,7 +108,7 @@ public class ChangeManagerTest {
         testC.setReferencedList(refList);
     }
 
-    private static void initDs() {
+    private static void initD() {
         final URI uri2 = URI.create("http://referencedA");
         final OWLClassA refA = new OWLClassA();
         refA.setUri(uri2);
@@ -118,8 +117,12 @@ public class ChangeManagerTest {
         final URI uri3 = URI.create("http://testD");
         testD.setUri(uri3);
         testD.setOwlClassA(refA);
-        testDClone = new OWLClassD();
-        testDClone.setUri(uri3);
+    }
+
+    private static void initO() {
+        testO = new OWLClassO();
+        testO.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies#testO"));
+        testO.setStringAttribute("String");
     }
 
     @Before
@@ -133,17 +136,8 @@ public class ChangeManagerTest {
         when(providerMock.getMetamodel()).thenReturn(metamodelMock);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
-        testAClone.setStringAttribute(null);
-        testAClone.setTypes(null);
         testA.setTypes(null);
-        final Map<String, Set<String>> cloneProps = new HashMap<>();
-        for (Entry<String, Set<String>> e : testB.getProperties().entrySet()) {
-            final Set<String> set = e.getValue().stream().collect(Collectors.toSet());
-            cloneProps.put(e.getKey(), set);
-        }
-        testBClone.setProperties(cloneProps);
-        testCClone = new OWLClassC();
-        testCClone.setUri(testC.getUri());
+        initClones();
         final List<OWLClassA> clonedList = new ArrayList<>(testC.getReferencedList().size());
         for (OWLClassA a : testC.getReferencedList()) {
             final OWLClassA newA = new OWLClassA();
@@ -152,6 +146,23 @@ public class ChangeManagerTest {
             clonedList.add(newA);
         }
         testCClone.setReferencedList(clonedList);
+    }
+
+    private void initClones() {
+        this.testAClone = new OWLClassA(testA.getUri());
+        testAClone.setStringAttribute(null);
+        testAClone.setTypes(null);
+        final Map<String, Set<String>> cloneProps = new HashMap<>();
+        for (Entry<String, Set<String>> e : testB.getProperties().entrySet()) {
+            final Set<String> set = e.getValue().stream().collect(Collectors.toSet());
+            cloneProps.put(e.getKey(), set);
+        }
+        testBClone = new OWLClassB(testB.getUri());
+        testBClone.setStringAttribute(testB.getStringAttribute());
+        testBClone.setProperties(cloneProps);
+        testCClone = new OWLClassC();
+        testCClone.setUri(testC.getUri());
+        testDClone = new OWLClassD(testD.getUri());
     }
 
     @Test
@@ -491,10 +502,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void changeToTransientFieldIsIgnored() throws Exception {
-        final OWLClassO testO = new OWLClassO();
-        testO.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies#testO"));
-        testO.setStringAttribute("String");
+    public void hasChangesIgnoresTransientFieldChanges() throws Exception {
         final OWLClassO testOClone = new OWLClassO();
         testOClone.setUri(testO.getUri());
         testOClone.setStringAttribute(testO.getStringAttribute());
@@ -503,6 +511,20 @@ public class ChangeManagerTest {
         final boolean res = manager.hasChanges(testO, testOClone);
         assertFalse(res);
     }
+
+    @Test
+    public void calculateChangesIgnoresTransientFieldChanges() throws Exception {
+        final OWLClassO testOClone = new OWLClassO();
+        testOClone.setUri(testO.getUri());
+        testOClone.setStringAttribute(testO.getStringAttribute());
+        testOClone.setTransientFieldWithAnnotation("Change!");
+
+        final ObjectChangeSet changeSet = createChangeSet(testO, testOClone);
+        final boolean res = manager.calculateChanges(changeSet);
+        assertFalse(res);
+        assertTrue(changeSet.getChanges().isEmpty());
+    }
+
 
     private static final class TestEntity {
 

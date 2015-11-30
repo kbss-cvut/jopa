@@ -114,6 +114,9 @@ public class ChangeManagerImpl implements ChangeManager {
         final List<Field> fields = EntityPropertiesUtils.getAllFields(clone.getClass());
         boolean changes = false;
         for (Field f : fields) {
+            if (EntityPropertiesUtils.isFieldTransient(f)) {
+                continue;
+            }
             Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
             Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
             ChangeRecord r = null;

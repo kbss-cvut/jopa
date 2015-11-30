@@ -41,6 +41,13 @@ public class OWLClassB {
 	@Properties(fetchType = FetchType.LAZY)
 	private Map<String, Set<String>> properties;
 
+	public OWLClassB() {
+    }
+
+    public OWLClassB(URI uri) {
+        this.uri = uri;
+    }
+
 	/**
 	 * @param uri
 	 *            the uri to set
