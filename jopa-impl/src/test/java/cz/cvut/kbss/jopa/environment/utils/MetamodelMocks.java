@@ -57,6 +57,22 @@ public class MetamodelMocks {
     private SingularAttribute<OWLClassE, String> eStringAtt;
 
     @Mock
+    private EntityType<OWLClassG> etG;
+    @Mock
+    private Identifier idG;
+    @Mock
+    private SingularAttribute<OWLClassG, OWLClassH> gOwlClassHAtt;
+
+    @Mock
+    private EntityType<OWLClassH> etH;
+    @Mock
+    private Identifier idH;
+    @Mock
+    private SingularAttribute<OWLClassH, OWLClassA> hOwlClassAAtt;
+    @Mock
+    private SingularAttribute<OWLClassH, OWLClassG> hOwlClassGAtt;
+
+    @Mock
     private EntityType<OWLClassJ> etJ;
     @Mock
     private Identifier idJ;
@@ -114,6 +130,8 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, idC);
         MetamodelFactory.initOWLClassDMocks(etD, dOwlClassAAtt, idD);
         MetamodelFactory.initOWLClassEMocks(etE, eStringAtt, idE);
+        MetamodelFactory.iniOWLClassGMocks(etG, gOwlClassHAtt, idG);
+        MetamodelFactory.initOWLClassHMocks(etH, hOwlClassAAtt, hOwlClassGAtt, idH);
         MetamodelFactory.initOWLClassJMocks(etJ, jSetAtt, idJ);
         MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, idK);
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
@@ -128,6 +146,8 @@ public class MetamodelMocks {
         when(metamodel.entity(OWLClassC.class)).thenReturn(etC);
         when(metamodel.entity(OWLClassD.class)).thenReturn(etD);
         when(metamodel.entity(OWLClassE.class)).thenReturn(etE);
+        when(metamodel.entity(OWLClassG.class)).thenReturn(etG);
+        when(metamodel.entity(OWLClassH.class)).thenReturn(etH);
         when(metamodel.entity(OWLClassJ.class)).thenReturn(etJ);
         when(metamodel.entity(OWLClassK.class)).thenReturn(etK);
         when(metamodel.entity(OWLClassL.class)).thenReturn(etL);
@@ -251,6 +271,39 @@ public class MetamodelMocks {
         public SingularAttribute<OWLClassE, String> stringAttribute() {
             return MetamodelMocks.this.eStringAtt;
         }
+    }
+
+    public class OWLClassGMetamodel {
+        public EntityType<OWLClassG> entityType() {
+            return MetamodelMocks.this.etG;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idG;
+        }
+
+        public SingularAttribute<OWLClassG, OWLClassH> owlClassHAtt() {
+            return MetamodelMocks.this.gOwlClassHAtt;
+        }
+    }
+
+    public class OWLClassHMetamodel {
+        public EntityType<OWLClassH> entityType() {
+            return MetamodelMocks.this.etH;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idH;
+        }
+
+        public SingularAttribute<OWLClassH, OWLClassG> owlClassGAtt() {
+            return MetamodelMocks.this.hOwlClassGAtt;
+        }
+
+        public SingularAttribute<OWLClassH, OWLClassA> owlClassAAtt() {
+            return MetamodelMocks.this.hOwlClassAAtt;
+        }
+
     }
 
     public class OWLClassJMetamodel {

@@ -99,16 +99,6 @@ abstract class AbstractInstanceBuilder {
         return constructors[0];
     }
 
-    /**
-     * Checks if the specified field was declared static in its class.
-     *
-     * @param f The field to examine.
-     * @return True when the Field is static.
-     */
-    protected static boolean isFieldStatic(final Field f) {
-        return Modifier.isStatic(f.getModifiers());
-    }
-
     protected static void logConstructorAccessException(Constructor<?> constructor, Exception e) {
         LOG.warning("Exception caught when invoking constructor " + constructor + ". Exception: " + e);
     }

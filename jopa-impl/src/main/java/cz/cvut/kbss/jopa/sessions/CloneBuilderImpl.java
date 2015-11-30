@@ -75,11 +75,12 @@ public class CloneBuilderImpl implements CloneBuilder {
         }
         final AbstractInstanceBuilder builder = getInstanceBuilder(original);
         Object clone = builder.buildClone(cloneOwner, clonedField, original, descriptor);
+        if (managed) {
+            // Register visited object before populating attributes to prevent endless cloning cycles
+            putVisitedEntity(descriptor, original, clone);
+        }
         if (!builder.populatesAttributes() && !isPrimitiveOrString(original.getClass())) {
             populateAttributes(original, clone, descriptor);
-        }
-        if (managed) {
-            putVisitedEntity(descriptor, original, clone);
         }
         return clone;
     }
@@ -124,8 +125,7 @@ public class CloneBuilderImpl implements CloneBuilder {
                 Object[] arr = cloneArray(origVal, fieldDescriptor);
                 EntityPropertiesUtils.setFieldValue(f, clone, arr);
             } else {
-                // Else we have a relationship and we need to clone its
-                // target as well
+                // Else we have a relationship and we need to clone its target as well
                 if (isOriginalInUoW(origVal)) {
                     // If the reference is already managed
                     EntityPropertiesUtils.setFieldValue(f, clone, uow.getCloneForOriginal(origVal));
@@ -231,7 +231,7 @@ public class CloneBuilderImpl implements CloneBuilder {
         }
     }
 
-    private Object getVisitedEntity(Descriptor descriptor, Object original) {
+    Object getVisitedEntity(Descriptor descriptor, Object original) {
         assert descriptor != null;
         assert original != null;
         return visitedEntities.get(descriptor, original);

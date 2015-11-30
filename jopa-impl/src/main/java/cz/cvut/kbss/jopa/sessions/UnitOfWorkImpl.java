@@ -253,7 +253,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.hasDeleted = false;
         this.hasNew = false;
         this.inCommit = false;
-        this.cloneBuilder.reset();
+        cloneBuilder.reset();
         this.repoMap = new RepositoryMap();
         repoMap.initDescriptors();
         this.uowChangeSet = null;

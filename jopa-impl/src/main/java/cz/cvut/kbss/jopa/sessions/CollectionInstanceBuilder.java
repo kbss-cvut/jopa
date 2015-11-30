@@ -156,7 +156,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
      * @param source The collection to clone.
      */
     private void cloneCollectionContent(Object cloneOwner, Field field, Collection<?> source,
-                                        Collection<?> target, Descriptor repository) {
+                                        Collection<?> target, Descriptor descriptor) {
         if (source.isEmpty()) {
             return;
         }
@@ -170,11 +170,11 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                 tg.addAll(source);
                 break;
             }
-            final Object clone;
+            Object clone;
             if (builder.isTypeManaged(obj.getClass())) {
-                clone = uow.registerExistingObject(obj, repository);
+                clone = uow.registerExistingObject(obj, descriptor);
             } else {
-                clone = builder.buildClone(cloneOwner, field, obj, repository);
+                clone = builder.buildClone(cloneOwner, field, obj, descriptor);
             }
             tg.add(clone);
         }

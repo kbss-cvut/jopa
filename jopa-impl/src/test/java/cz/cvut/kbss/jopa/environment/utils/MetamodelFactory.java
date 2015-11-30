@@ -170,6 +170,60 @@ public class MetamodelFactory {
         when(idMock.getJavaField()).thenReturn(OWLClassD.class.getDeclaredField("uri"));
     }
 
+    public static void iniOWLClassGMocks(EntityType<OWLClassG> etMock, Attribute clsHMock, Identifier idMock)
+            throws NoSuchFieldException, SecurityException {
+        when(etMock.getJavaType()).thenReturn(OWLClassG.class);
+        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassG.getClassIri()));
+        when(etMock.getAttribute(OWLClassG.getOwlClassHField().getName())).thenReturn(clsHMock);
+        when(etMock.getAttributes()).thenReturn(
+                Collections.<Attribute<? super OWLClassG, ?>>singleton(clsHMock));
+        when(clsHMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
+        when(clsHMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        final String clsHIri = OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
+                                        .iri();
+        when(clsHMock.getIRI()).thenReturn(IRI.create(clsHIri));
+        when(clsHMock.getJavaType()).thenReturn(OWLClassH.class);
+        when(clsHMock.getName()).thenReturn(OWLClassG.getOwlClassHField().getName());
+        when(clsHMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(clsHMock.getFetchType()).thenReturn(FetchType.EAGER);
+        when(etMock.getFieldSpecification(clsHMock.getName())).thenReturn(clsHMock);
+        when(etMock.getIdentifier()).thenReturn(idMock);
+        when(idMock.getJavaField()).thenReturn(OWLClassG.class.getDeclaredField("uri"));
+    }
+
+    public static void initOWLClassHMocks(EntityType<OWLClassH> etMock, Attribute clsAMock, Attribute clsGMock,
+                                          Identifier idMock) throws NoSuchFieldException, SecurityException {
+        when(etMock.getJavaType()).thenReturn(OWLClassH.class);
+        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassH.getClassIri()));
+        when(etMock.getAttribute(OWLClassH.getOwlClassAField().getName())).thenReturn(clsAMock);
+        when(etMock.getAttributes())
+                .thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassH, ?>>asList(clsAMock, clsGMock)));
+        when(clsAMock.getJavaField()).thenReturn(OWLClassH.getOwlClassAField());
+        when(clsAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        final String clsAIri = OWLClassH.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
+                                        .iri();
+        when(clsAMock.getIRI()).thenReturn(IRI.create(clsAIri));
+        when(clsAMock.getJavaType()).thenReturn(OWLClassA.class);
+        when(clsAMock.getName()).thenReturn(OWLClassH.getOwlClassAField().getName());
+        when(clsAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(clsAMock.getFetchType()).thenReturn(FetchType.EAGER);
+
+        when(clsGMock.getJavaField()).thenReturn(OWLClassH.getOwlClassGField());
+        when(clsGMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        final String clsGIri = OWLClassH.getOwlClassGField().getAnnotation(OWLObjectProperty.class)
+                                        .iri();
+        when(clsGMock.getIRI()).thenReturn(IRI.create(clsGIri));
+        when(clsGMock.getJavaType()).thenReturn(OWLClassG.class);
+        when(clsGMock.getName()).thenReturn(OWLClassH.getOwlClassGField().getName());
+        when(clsGMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(clsGMock.getFetchType()).thenReturn(FetchType.LAZY);
+
+        when(etMock.getFieldSpecification(clsAMock.getName())).thenReturn(clsAMock);
+        when(etMock.getFieldSpecification(clsGMock.getName())).thenReturn(clsGMock);
+        when(etMock.getIdentifier()).thenReturn(idMock);
+        when(idMock.getJavaField()).thenReturn(OWLClassH.class.getDeclaredField("uri"));
+    }
+
     public static void initOWLClassJMocks(EntityType<OWLClassJ> etMock, PluralAttribute setAMock,
                                           Identifier idMock) throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassJ.class);

@@ -46,7 +46,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
             Constructor<?> c;
             try {
                 for (Field f : fields) {
-                    if (isFieldStatic(f)) {
+                    if (EntityPropertiesUtils.isFieldTransient(f)) {
                         continue;
                     }
                     Class<?>[] args = {f.getType()};

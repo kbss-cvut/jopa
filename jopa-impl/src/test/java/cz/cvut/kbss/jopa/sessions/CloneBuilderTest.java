@@ -445,12 +445,44 @@ public class CloneBuilderTest {
         assertNull(clone.getTransientFieldWithAnnotation());
     }
 
+    @Test
+    public void reusesAlreadyClonedInstancesWhenCloningCollections() throws Exception {
+        final OWLClassA cloneA = (OWLClassA) builder.buildClone(entityA, defaultDescriptor);
+        entityC.setReferencedList(new ArrayList<>());
+        entityC.getReferencedList().add(entityA);
+
+        final OWLClassC cloneC = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
+        assertNotNull(cloneC.getReferencedList());
+        assertEquals(1, cloneC.getReferencedList().size());
+        assertSame(cloneA, cloneC.getReferencedList().get(0));
+    }
+
+    @Test
+    public void cloneBuildingHandlesCyclesInObjectGraphByRegisteringAlreadyVisitedObjects() throws Exception {
+        final OWLClassG entityG = initGWithBackwardReference();
+
+        final OWLClassG cloneG = (OWLClassG) builder.buildClone(entityG, defaultDescriptor);
+        assertNotNull(cloneG);
+        assertNotNull(cloneG.getOwlClassH());
+        assertSame(cloneG, cloneG.getOwlClassH().getOwlClassG());
+    }
+
+    private OWLClassG initGWithBackwardReference() {
+        final OWLClassG g = new OWLClassG(URI.create("http://krizik.felk.cvut.cz/ontologies#entityG"));
+        final OWLClassH h = new OWLClassH(URI.create("http://krizik.felk.cvut.cz/ontologies#entityH"));
+        g.setOwlClassH(h);
+        h.setOwlClassG(g);
+        return g;
+    }
+
     private static void initManagedTypes() {
         managedTypes = new HashSet<>();
         managedTypes.add(OWLClassA.class);
         managedTypes.add(OWLClassB.class);
         managedTypes.add(OWLClassC.class);
         managedTypes.add(OWLClassD.class);
+        managedTypes.add(OWLClassG.class);
+        managedTypes.add(OWLClassH.class);
         managedTypes.add(OWLClassM.class);
         managedTypes.add(OWLClassO.class);
     }
