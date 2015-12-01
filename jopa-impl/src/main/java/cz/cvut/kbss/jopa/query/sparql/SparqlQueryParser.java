@@ -63,7 +63,10 @@ public class SparqlQueryParser implements QueryParser {
                 case '>':
                 case ',':
                 case '\n':
+                case ')':
                 case ' ':
+                case '.':
+                case ';':
                     if (inParam) {
                         parameterEnd(i);
                     }

@@ -60,8 +60,13 @@ public class QueryImpl implements Query<List<String>> {
             }
             return getResultListImpl(maxResults);
         } catch (OntoDriverException e) {
-            throw new OWLPersistenceException("Exception caught when evaluating query " + query, e);
+            throw queryEvaluationException(e);
         }
+    }
+
+    private OWLPersistenceException queryEvaluationException(OntoDriverException e) {
+        final String executedQuery = query.assembleQuery();
+        return new OWLPersistenceException("Exception caught when evaluating query " + executedQuery, e);
     }
 
     public List<String> getSingleResult() {
@@ -76,7 +81,7 @@ public class QueryImpl implements Query<List<String>> {
             }
             return list.get(0);
         } catch (OntoDriverException e) {
-            throw new OWLPersistenceException("Exception caught when evaluating query " + query, e);
+            throw queryEvaluationException(e);
         }
     }
 

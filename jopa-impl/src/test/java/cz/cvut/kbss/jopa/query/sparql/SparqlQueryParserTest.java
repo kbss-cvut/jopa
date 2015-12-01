@@ -180,4 +180,22 @@ public class SparqlQueryParserTest {
                 "}";
         queryParser.parseQuery(query);
     }
+
+    @Test
+    public void parsesQueryWithOrderByDescendingAtEnd() throws Exception {
+        final String query = "SELECT ?x WHERE { ?x a <http://a>. } ORDER BY DESC(?x)";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(1, holder.getParameters().size());
+        assertEquals(query, holder.assembleQuery());
+    }
+
+    @Test
+    public void parsesQueryWrittenInCondensedString() throws Exception {
+        final String query = "SELECT ?x WHERE { ?x a ?y. } ORDER BY DESC(?y)";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(2, holder.getParameters().size());
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("x")));
+        assertTrue(holder.getParameters().contains(new QueryParameter<>("y")));
+        assertEquals(query, holder.assembleQuery());
+    }
 }

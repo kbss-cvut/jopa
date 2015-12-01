@@ -71,10 +71,15 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
         try {
             list = getResultListImpl(maxResults);
         } catch (OntoDriverException e) {
-            throw new OWLPersistenceException("Exception caught when evaluating query " + query, e);
+            throw queryEvaluationException(e);
         }
 
         return list;
+    }
+
+    private OWLPersistenceException queryEvaluationException(OntoDriverException e) {
+        final String executedQuery = query.assembleQuery();
+        return new OWLPersistenceException("Exception caught when evaluating query " + executedQuery, e);
     }
 
     @Override
@@ -91,7 +96,7 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
             }
             return res.get(0);
         } catch (OntoDriverException e) {
-            throw new OWLPersistenceException("Exception caught when evaluating query " + query, e);
+            throw queryEvaluationException(e);
         }
     }
 
