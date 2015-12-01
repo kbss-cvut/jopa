@@ -195,4 +195,17 @@ public class TypesFieldStrategyTest {
         assertNull(OOMTestUtils.getTypesToRemove(gatherer));
         assertNull(OOMTestUtils.getTypesToAdd(gatherer));
     }
+
+    @Test
+    public void extractsTypesToAddWhenOriginalTypesAreNull() throws Exception {
+        final int count = 5;
+        entityA.setTypes(TestEnvironmentUtils.generateTypes(count));
+        final OWLClassA original = createOriginal();
+        original.setTypes(null);
+        when(mapperMock.getOriginalInstance(entityA)).thenReturn(original);
+        strategy.buildAxiomValuesFromInstance(entityA, gatherer);
+
+        final Set<URI> toAdd = OOMTestUtils.getTypesToAdd(gatherer);
+        assertEquals(count, toAdd.size());
+    }
 }

@@ -7,6 +7,7 @@ import cz.cvut.kbss.ontodriver_new.model.Assertion;
 import cz.cvut.kbss.ontodriver_new.model.Axiom;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,7 +60,10 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
             if (original == null) {
                 valueBuilder.addTypes(prepareTypes(types), getAttributeContext());
             } else {
-                final Set<?> origTypes = (Set<?>) extractFieldValueFromInstance(original);
+                Set<?> origTypes = (Set<?>) extractFieldValueFromInstance(original);
+                if (origTypes == null) {
+                    origTypes = Collections.emptySet();
+                }
                 extractTypesToAdd(valueBuilder, types, origTypes);
                 extractTypesToRemove(valueBuilder, types, origTypes);
             }
@@ -74,7 +78,7 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
     private Set<URI> typesDiff(Set<?> base, Set<?> difference) {
         final Set<URI> addedDiff = new HashSet<>(base.size());
         addedDiff.addAll(difference.stream().filter(t -> !base.contains(t)).map(t -> URI.create(t.toString()))
-                                .collect(Collectors.toList()));
+                                   .collect(Collectors.toList()));
         return addedDiff;
     }
 
