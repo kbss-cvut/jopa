@@ -1,8 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import org.junit.Test;
 
 import java.io.File;
@@ -34,9 +33,10 @@ public class OwlapiDataSourceTest {
                 System.getProperty("java.io.tmpdir") + File.separator + "datasource_" + System.currentTimeMillis() +
                         ".owl");
         output.deleteOnExit();
-        final OntologyStorageProperties p = OntologyStorageProperties.connectorType(OntologyConnectorType.OWLAPI)
-                                                                     .ontologyUri(URI.create("http://example.com"))
-                                                                     .physicalUri(output.toURI()).build();
+        final OntologyStorageProperties p = OntologyStorageProperties.ontologyUri(URI.create("http://example.com"))
+                                                                     .physicalUri(output.toURI())
+                                                                     .driver(OwlapiDataSource.class.getCanonicalName())
+                                                                     .build();
         dataSource.setStorageProperties(p);
         final Connection connection = dataSource.getConnection();
         assertNotNull(connection);

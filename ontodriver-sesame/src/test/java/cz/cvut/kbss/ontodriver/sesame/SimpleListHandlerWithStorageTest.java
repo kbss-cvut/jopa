@@ -1,13 +1,12 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -36,10 +35,9 @@ public class SimpleListHandlerWithStorageTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        storageProperties = OntologyStorageProperties.connectorType(OntologyConnectorType.SESAME)
-                .physicalUri(URI.create("SesameSimpleListTest"))
-                .ontologyUri(URI.create("http://krizik.felk.cvut.cz/ontologies/simpleList"))
-                .build();
+        storageProperties = OntologyStorageProperties.physicalUri(URI.create("SesameSimpleListTest"))
+                                                     .driver(SesameDataSource.class.getCanonicalName())
+                                                     .build();
         properties = new HashMap<>();
         properties.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         properties.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());

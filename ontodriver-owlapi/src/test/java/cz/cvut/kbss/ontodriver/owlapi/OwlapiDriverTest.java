@@ -1,10 +1,9 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
+import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.ConnectorFactory;
-import cz.cvut.kbss.ontodriver.Connection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,10 +22,9 @@ import static org.mockito.Mockito.when;
 
 public class OwlapiDriverTest {
 
-    private static final OntologyStorageProperties STORAGE_PROPERTIES = OntologyStorageProperties.connectorType(
-            OntologyConnectorType.OWLAPI).ontologyUri(
+    private static final OntologyStorageProperties STORAGE_PROPERTIES = OntologyStorageProperties.ontologyUri(
             URI.create("http://krizik.felk.cvut.cz/ontologies/jopa")).physicalUri(
-            URI.create("http://example.com")).build();
+            URI.create("http://example.com")).driver(OwlapiDataSource.class.getCanonicalName()).build();
 
     @Mock
     private Connector connectorMock;

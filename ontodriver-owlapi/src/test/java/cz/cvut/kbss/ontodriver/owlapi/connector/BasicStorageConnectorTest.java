@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import org.junit.After;
@@ -30,9 +30,8 @@ public class BasicStorageConnectorTest {
     }
 
     private OntologyStorageProperties initStorageProperties(URI filePath, URI logicalUri) {
-        return OntologyStorageProperties.connectorType(
-                OntologyConnectorType.OWLAPI).ontologyUri(logicalUri != null ? logicalUri : ONTOLOGY_URI).physicalUri(
-                filePath).build();
+        return OntologyStorageProperties.ontologyUri(logicalUri != null ? logicalUri : ONTOLOGY_URI).physicalUri(
+                filePath).driver(OwlapiDataSource.class.getCanonicalName()).build();
     }
 
     @Test

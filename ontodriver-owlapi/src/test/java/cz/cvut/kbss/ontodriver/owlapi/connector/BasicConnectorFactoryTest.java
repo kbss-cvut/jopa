@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
-import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,8 +32,8 @@ public class BasicConnectorFactoryTest {
         final OWLOntology o = om.createOntology(IRI.create(ontologyUri));
         om.saveOntology(o, IRI.create(targetFile));
         final URI physicalUri = targetFile.toURI();
-        storageProperties = OntologyStorageProperties.connectorType(OntologyConnectorType.OWLAPI)
-                                                     .ontologyUri(ontologyUri).physicalUri(physicalUri).build();
+        storageProperties = OntologyStorageProperties.ontologyUri(ontologyUri).physicalUri(physicalUri).driver(
+                OwlapiDataSource.class.getCanonicalName()).build();
     }
 
     @Before
