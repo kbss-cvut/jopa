@@ -2,21 +2,21 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver_new.Connection;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.exception.OWLIndividualExistsException;
-import cz.cvut.kbss.ontodriver_new.model.Assertion;
-import cz.cvut.kbss.ontodriver_new.model.NamedResource;
-import cz.cvut.kbss.ontodriver_new.model.Value;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
+import cz.cvut.kbss.ontodriver.exception.OWLIndividualExistsException;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.net.URI;
 import java.util.*;
 
 /**
- * Gathers axiom values in descriptors for persist or update.
+ * Gathers axiom values in descriptor for persist or update.
  *
  * @author ledvima1
  */

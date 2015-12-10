@@ -4,7 +4,7 @@ import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.sesame.query.AskResultSet;
 import cz.cvut.kbss.ontodriver.sesame.query.SelectResultSet;
 import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
-import cz.cvut.kbss.ontodriver_new.ResultSet;
+import cz.cvut.kbss.ontodriver.ResultSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

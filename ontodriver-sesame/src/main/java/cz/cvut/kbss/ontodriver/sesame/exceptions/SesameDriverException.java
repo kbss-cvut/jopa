@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.sesame.exceptions;
 
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 /**
  * This is a generic checked exception thrown by the Sesame driver. </p>

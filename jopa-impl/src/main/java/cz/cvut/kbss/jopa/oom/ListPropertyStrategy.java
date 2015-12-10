@@ -3,9 +3,9 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
-import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.ListValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.util.List;
 

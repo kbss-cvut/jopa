@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver_new.Connection;
+import cz.cvut.kbss.ontodriver.Connection;
 import org.junit.Test;
 
 import java.io.File;

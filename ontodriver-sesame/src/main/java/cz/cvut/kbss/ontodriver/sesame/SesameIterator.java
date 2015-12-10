@@ -3,8 +3,8 @@ package cz.cvut.kbss.ontodriver.sesame;
 import org.openrdf.model.Resource;
 
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 interface SesameIterator {
 

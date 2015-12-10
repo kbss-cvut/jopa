@@ -41,15 +41,15 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver_new.exception.IdentifierGenerationException;
-import cz.cvut.kbss.ontodriver_new.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.model.Assertion;
-import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.AxiomImpl;
-import cz.cvut.kbss.ontodriver_new.model.NamedResource;
-import cz.cvut.kbss.ontodriver_new.model.Value;
+import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
+import cz.cvut.kbss.ontodriver.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.AxiomImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 
 public class SesameAdapterTest {
 

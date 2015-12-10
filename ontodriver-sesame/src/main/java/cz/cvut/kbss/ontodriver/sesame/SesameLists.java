@@ -5,15 +5,15 @@ import static cz.cvut.kbss.jopa.utils.ErrorUtils.constructNPXMessage;
 import java.util.List;
 import java.util.Objects;
 
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver_new.Lists;
-import cz.cvut.kbss.ontodriver_new.descriptors.ListDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.SimpleListValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.model.Axiom;
-import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.Lists;
+import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 
 class SesameLists implements Lists {
 

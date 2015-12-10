@@ -14,7 +14,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl;
 import cz.cvut.kbss.jopa.owlapi.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
-import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
+import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

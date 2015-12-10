@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver;
 
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 /**
  * Interface for closeable resources.
@@ -22,13 +22,13 @@ public interface Closeable {
 	 * @throws OntoDriverException
 	 *             If an ontology access error occurs.
 	 */
-	public void close() throws OntoDriverException;
+	void close() throws OntoDriverException;
 
 	/**
 	 * Retrieves status of this resource. </p>
 	 * 
 	 * @return {@code true} if the resource is open, {@code false} otherwise
 	 */
-	public boolean isOpen();
+	boolean isOpen();
 
 }

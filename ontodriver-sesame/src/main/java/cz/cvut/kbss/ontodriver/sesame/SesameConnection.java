@@ -9,20 +9,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import cz.cvut.kbss.ontodriver.PreparedStatement;
-import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.*;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.query.SesamePreparedStatement;
-import cz.cvut.kbss.ontodriver_new.exception.IdentifierGenerationException;
+import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
-import cz.cvut.kbss.ontodriver_new.Connection;
-import cz.cvut.kbss.ontodriver_new.Lists;
-import cz.cvut.kbss.ontodriver_new.Properties;
-import cz.cvut.kbss.ontodriver_new.Types;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 
 class SesameConnection implements Connection {
 

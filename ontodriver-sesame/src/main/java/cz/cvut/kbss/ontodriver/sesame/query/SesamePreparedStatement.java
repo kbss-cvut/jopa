@@ -1,10 +1,11 @@
 package cz.cvut.kbss.ontodriver.sesame.query;
 
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
-import cz.cvut.kbss.ontodriver_new.PreparedStatement;
-import cz.cvut.kbss.ontodriver_new.util.StatementHolder;
+import cz.cvut.kbss.ontodriver.PreparedStatement;
+import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.util.StatementHolder;
 
 import java.util.Objects;
 
@@ -30,7 +31,7 @@ public class SesamePreparedStatement extends SesameStatement implements Prepared
     }
 
     @Override
-    public cz.cvut.kbss.ontodriver.ResultSet executeQuery() throws OntoDriverException {
+    public ResultSet executeQuery() throws OntoDriverException {
         ensureOpen();
         return executeQuery(statementHolder.assembleStatement());
     }

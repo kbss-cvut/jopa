@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi.util;
 
-import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLLiteral;

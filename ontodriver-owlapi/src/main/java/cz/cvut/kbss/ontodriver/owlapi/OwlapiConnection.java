@@ -1,24 +1,20 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.PreparedStatement;
-import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.*;
+import cz.cvut.kbss.ontodriver.Properties;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.list.OwlapiLists;
-import cz.cvut.kbss.ontodriver_new.Connection;
-import cz.cvut.kbss.ontodriver_new.Lists;
-import cz.cvut.kbss.ontodriver_new.Properties;
-import cz.cvut.kbss.ontodriver_new.Types;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.net.URI;
 import java.util.*;
 
 /**
- * Default implementation of the {@link cz.cvut.kbss.ontodriver_new.Connection} interface for OWLAPI driver.
+ * Default implementation of the {@link Connection} interface for OWLAPI driver.
  */
 public class OwlapiConnection implements Connection {
 

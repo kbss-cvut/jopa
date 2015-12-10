@@ -1,230 +1,187 @@
 package cz.cvut.kbss.ontodriver;
 
-import java.lang.reflect.Field;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+public interface Connection extends AutoCloseable {
 
-/**
- * Represents a connection to the underlying OntoDriver. </p>
- * 
- * A single OntoDriver can manage multiple storages at once. Each of the storage
- * can be of a different type (OWL, RDF) and different profile (OWL 2 RL, OWL 2
- * EL etc.).
- * 
- * @author kidney
- * 
- */
-public interface Connection extends Transactional {
+    /**
+     * Whether this connection is active. </p>
+     */
+    public boolean isOpen();
 
-	/**
-	 * {@inheritDoc} </p>
-	 * 
-	 * Calling {@code commit} in auto-commit mode results in an
-	 * {@code OntoDriverException}.
-	 */
-	public void commit() throws OntoDriverException;
+    /**
+     * Commits this connection. </p> <p/> This effectively makes persistent any changes made since the last
+     * commit/rollback or since this connection was opened. </p>
+     * <p>
+     * If this connection is in auto-commit mode, calling this method has no effect.
+     *
+     * @throws OntoDriverException   If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public void commit() throws OntoDriverException;
 
-	/**
-	 * {@inheritDoc} </p>
-	 * 
-	 * Calling {@code rollback} in auto-commit mode results in an
-	 * {@code OntoDriverException}.
-	 */
-	public void rollback() throws OntoDriverException;
+    /**
+     * Rolls back any changes made in the current transaction. </p>
+     * <p>
+     * If this connection is in auto-commit mode, calling this method has no effect.
+     *
+     * @throws OntoDriverException   If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public void rollback() throws OntoDriverException;
 
-	/**
-	 * Creates a new SPARQL statement.
-	 * 
-	 * @return a {@code Statement} instance
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 */
-	public Statement createStatement() throws OntoDriverException;
+    /**
+     * Sets this connection's auto-commit mode to the specified state.
+     *
+     * @param autoCommit The new auto-commit state
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public void setAutoCommit(boolean autoCommit);
 
-	/**
-	 * Checks whether the specified context is consistent. </p>
-	 * 
-	 * The context URI may be null, meaning that consistency of the whole
-	 * repository should be checked.
-	 * 
-	 * @param context
-	 *            Context URI
-	 * @return {@code true} if the contexts specified by {@code repository} are
-	 *         consistent, {@code false} otherwise
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 */
-	public boolean isConsistent(URI context) throws OntoDriverException;
+    /**
+     * Returns this connection's auto-commit mode.
+     *
+     * @return {@code true} if this connection is in auto-commit mode, {@code false} otherwise
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public boolean isAutoCommit();
 
-	/**
-	 * Checks whether the repository contains an individual with the specified
-	 * primary key. </p>
-	 * 
-	 * The {@code context} may be {@code code}, indicating that the whole
-	 * repository should be searched.
-	 * 
-	 * @param primaryKey
-	 *            Individual primary key
-	 * @param context
-	 *            Context URI
-	 * @return {@code true} if repository contains matching individual,
-	 *         {@code false} otherwise.
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 */
-	public boolean contains(Object primaryKey, URI context) throws OntoDriverException;
+    /**
+     * Creates a new SPARQL statement.
+     *
+     * @return a {@code Statement} instance
+     * @throws OntoDriverException   If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public Statement createStatement() throws OntoDriverException;
 
-	/**
-	 * Finds entity with the specified primary key and returns it as the
-	 * specified type. </p>
-	 * 
-	 * The descriptor specifies in which contexts the entity and its field
-	 * should be searched for. If a field's context is not specified, the value
-	 * is searched for in the same context as the entity.
-	 * 
-	 * @param cls
-	 *            The of the returned instance
-	 * @param primaryKey
-	 *            Primary key
-	 * @param descriptor
-	 *            Entity descriptor
-	 * @return Entity or null if there is none with the specified primary key
-	 * @throws OntoDriverException
-	 *             If called on a closed connection, if the entity cannot be
-	 *             cast to the specified type or an ontology access error occurs
-	 */
-	public <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor)
-			throws OntoDriverException;
+    /**
+     * Creates and returns a new prepared SPARQL statement. </p>
+     *
+     * @param sparql The query to prepare
+     * @return {@code PreparedStatement}
+     * @throws OntoDriverException   If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public PreparedStatement prepareStatement(String sparql) throws OntoDriverException;
 
-	/**
-	 * Retrieves the current auto-commit status of this {@code Connection}.
-	 * 
-	 * @return {@code true} if auto-commit is enabled, {@code false} otherwise
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or if an ontology access
-	 *             error occurs
-	 */
-	public boolean getAutoCommit() throws OntoDriverException;
+    /**
+     * Verifies consistency of ontology context with the specified URI. </p>
+     * <p>
+     * Note that {@code null} argument means checking consistency of the whole repository.
+     *
+     * @param context Context identifier, can be {@code null}
+     * @return Consistency status
+     * @throws OntoDriverException   If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public boolean isConsistent(URI context) throws OntoDriverException;
 
-	/**
-	 * Retrieves a list of all available contexts. </p>
-	 * 
-	 * @return Unmodifiable list of available contexts
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 */
-	public List<URI> getContexts() throws OntoDriverException;
+    /**
+     * Gets a set of currently available contexts in the underlying repository. </p>
+     * <p>
+     * Note that the default context is not included in the result.
+     *
+     * @return List of context URIs
+     * @throws OntoDriverException   If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public List<URI> getContexts() throws OntoDriverException;
 
-	/**
-	 * Loads from ontology and sets value of field {@code fieldName}. </p>
-	 * 
-	 * @param entity
-	 *            Entity to set the field value on
-	 * @param field
-	 *            The field to load
-	 * @param descriptor
-	 *            Identifier of a repository context from which the field value
-	 *            will be loaded
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or if an ontology access
-	 *             error occurs
-	 */
-	public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor)
-			throws OntoDriverException;
+    /**
+     * Checks whether the storage contains the specified axiom. </p>
+     * <p>
+     * The context optionally specifies context in which to look for the axiom.
+     *
+     * @param axiom   The axiom to look for
+     * @param context Optional search context, {@code null} means to look in the default storage context
+     * @return {@code true} if the storage contains matching axiom, {@code false} otherwise
+     * @throws OntoDriverException   If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException;
 
-	/**
-	 * Merges value of the specified field on the specified entity into the
-	 * storage. </p>
-	 * 
-	 * This method is meant only for merging state of existing entities, trying
-	 * to {@code merge} a new entity will result in an exception.
-	 * 
-	 * @param entity
-	 *            The entity to merge
-	 * @param mergedField
-	 *            The field to merge
-	 * @param descriptor
-	 *            Specifies context into which the field value will be merged
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 * @throws NullPointerException
-	 *             If any of the arguments is {@code null}
-	 * @throws IllegalArgumentException
-	 *             If the specified entity is not persistent in the specified
-	 *             repository or if it has no field corresponding to
-	 *             {@code mergedField}
-	 */
-	public <T> void merge(T entity, Field mergedField, Descriptor descriptor)
-			throws OntoDriverException;
+    /**
+     * Finds axioms with the corresponding subject and properties. </p>
+     *
+     * @param descriptor Loading descriptor specifies subject, properties to load and possible contexts to work with
+     * @return Collection of axioms matching the specified criteria
+     * @throws OntoDriverException   If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException;
 
-	/**
-	 * Persists the specified entity into the specified repository. </p>
-	 * 
-	 * The entity and its fields will be saved into contexts specified by the
-	 * descriptor. If a field's context is not specified, it is persisted into
-	 * the same context as the entity.
-	 * 
-	 * @param primaryKey
-	 *            Primary key of the new entity. Optional, if not set, it will
-	 *            be generated
-	 * @param entity
-	 *            The entity to persist
-	 * @param descriptor
-	 *            Entity descriptor
-	 * @throws OntoDriverException
-	 *             If called on a closed connection, if the repository
-	 *             identifier is not valid or an ontology access error occurs
-	 */
-	public <T> void persist(Object primaryKey, T entity, Descriptor descriptor)
-			throws OntoDriverException;
+    /**
+     * Persists new individual and its property values specified by the descriptor.
+     *
+     * @param descriptor Descriptor of the persisted values
+     * @throws OntoDriverException   If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public void persist(AxiomValueDescriptor descriptor) throws OntoDriverException;
 
-	/**
-	 * Creates and returns a new prepared SPARQL statement. </p>
-	 * 
-	 * @param sparql
-	 *            The query to prepare
-	 * @return {@code PreparedStatement}
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 */
-	public PreparedStatement prepareStatement(String sparql) throws OntoDriverException;
+    /**
+     * Generates a new unique identifier based on the specified type. </p>
+     * <p>
+     * The identifier is required to be unique in the whole repository.
+     *
+     * @param classUri OWL class identifier
+     * @return Unique identifier
+     * @throws OntoDriverException If an ontology access error occurs
+     */
+    public URI generateIdentifier(URI classUri) throws OntoDriverException;
 
-	/**
-	 * Removes entity with the specified primary key. </p>
-	 * 
-	 * @param primaryKey
-	 *            Primary key of the entity to be removed
-	 * @param descriptor
-	 *            Identifier of a repository context from which the entity and
-	 *            its fields will be removed
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or if an ontology access
-	 *             error occurs
-	 */
-	public <T> void remove(Object primaryKey, Descriptor descriptor) throws OntoDriverException;
+    /**
+     * Persists the values specified by this descriptor, removing existing property values from the ontology. </p>
+     * <p>
+     * This method removes original values of properties specified in the descriptor and persists new values specified
+     * therein.
+     *
+     * @param descriptor Descriptor of the update values
+     * @throws OntoDriverException   If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public void update(AxiomValueDescriptor descriptor) throws OntoDriverException;
 
-	/**
-	 * Sets auto commit mode on this connection. </p>
-	 * 
-	 * Setting auto commit twice to the same value has no effect. </p>
-	 * 
-	 * Note that when auto-commit is enabled, it is not possible to explicitly
-	 * commit or roll back transactions. Doing so results in an exception.
-	 * 
-	 * @param autoCommit
-	 *            True if setting to auto-commit mode, false otherwise
-	 * @throws OntoDriverException
-	 *             If called on a closed connection or an ontology access error
-	 *             occurs
-	 */
-	public void setAutoCommit(boolean autoCommit) throws OntoDriverException;
+    /**
+     * Removes all axioms related to subject specified by the descriptor. </p> <p/> The descriptor may also specify
+     * contexts from which property assertion axioms should be removed. </p>
+     * <p>
+     * Note that this method will cause also removal of axioms in which the {@link NamedResource} specified by the
+     * argument stands as value.
+     *
+     * @param descriptor Descriptor of contexts and the subject of removal
+     * @throws OntoDriverException   If an ontology access error occurs
+     * @throws IllegalStateException If called on a closed connection
+     */
+    public void remove(AxiomDescriptor descriptor) throws OntoDriverException;
+
+    /**
+     * Gets ontology lists handler.
+     *
+     * @return Lists handler
+     */
+    public Lists lists();
+
+    /**
+     * Gets types handler.
+     *
+     * @return Types handler
+     */
+    public Types types();
+
+    /**
+     * Gets handler for unmapped properties.
+     *
+     * @return Properties handler
+     */
+    public Properties properties();
 }

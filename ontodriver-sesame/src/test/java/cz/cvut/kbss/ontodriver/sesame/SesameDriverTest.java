@@ -23,7 +23,7 @@ import cz.cvut.kbss.ontodriver.OntologyConnectorType;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
-import cz.cvut.kbss.ontodriver_new.Connection;
+import cz.cvut.kbss.ontodriver.Connection;
 
 public class SesameDriverTest {
 

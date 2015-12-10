@@ -4,9 +4,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-/**
- * Created by ledvima1 on 9.4.15.
- */
 public class TestEnvironmentUtils {
 
     private static final Random RAND = new Random();

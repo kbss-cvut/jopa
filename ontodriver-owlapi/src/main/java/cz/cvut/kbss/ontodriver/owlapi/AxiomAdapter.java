@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
-import cz.cvut.kbss.ontodriver_new.model.*;
+import cz.cvut.kbss.ontodriver.model.*;
 import org.semanticweb.owlapi.model.*;
 
 import java.net.URI;

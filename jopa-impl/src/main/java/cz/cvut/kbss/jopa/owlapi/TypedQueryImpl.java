@@ -25,9 +25,9 @@ import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 
 import java.net.URI;
 import java.util.*;
@@ -199,14 +199,13 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
         assert maxResults > 0;
         final Statement stmt = connection.createStatement();
         if (useBackupOntology) {
-            stmt.setUseBackupOntology();
+            stmt.useOntology(Statement.StatementOntology.CENTRAL);
         } else {
-            stmt.setUseTransactionalOntology();
+            stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
         }
         URI[] arr = new URI[contexts.size()];
         arr = contexts.toArray(arr);
-        final ResultSet rs = stmt.executeQuery(query.assembleQuery(), arr);
-        try {
+        try (ResultSet rs = stmt.executeQuery(query.assembleQuery(), arr)) {
             final List<ResultElement> res = new ArrayList<>();
             // TODO register this as observer on the result set so that additional results can be loaded asynchronously
             int cnt = 0;
@@ -222,8 +221,6 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
                 cnt++;
             }
             return res;
-        } finally {
-            rs.close();
         }
     }
 

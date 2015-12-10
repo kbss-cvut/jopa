@@ -12,9 +12,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by ledvima1 on 12.5.15.
- */
 public class PersistenceFactory {
 
     private static EntityManagerFactory emf;

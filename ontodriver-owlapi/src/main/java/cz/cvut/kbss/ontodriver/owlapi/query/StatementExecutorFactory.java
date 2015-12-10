@@ -2,7 +2,7 @@ package cz.cvut.kbss.ontodriver.owlapi.query;
 
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver_new.Statement;
+import cz.cvut.kbss.ontodriver.Statement;
 
 public class StatementExecutorFactory {
 

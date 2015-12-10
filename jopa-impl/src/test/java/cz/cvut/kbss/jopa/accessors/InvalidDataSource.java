@@ -1,9 +1,9 @@
 package cz.cvut.kbss.jopa.accessors;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver_new.Connection;
-import cz.cvut.kbss.ontodriver_new.DataSource;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.DataSource;
 
 import java.util.Map;
 

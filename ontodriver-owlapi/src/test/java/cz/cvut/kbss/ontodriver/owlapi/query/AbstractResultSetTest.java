@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
-import cz.cvut.kbss.ontodriver_new.ResultSet;
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.owl2query.model.QueryResult;
 import cz.cvut.kbss.owl2query.model.Variable;
 import org.junit.Test;

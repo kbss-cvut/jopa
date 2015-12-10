@@ -9,13 +9,13 @@ import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Field;
 
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import cz.cvut.kbss.ontodriver_new.Connection;
+import cz.cvut.kbss.ontodriver.Connection;
 
 public class SesameDataSourceTest {
 

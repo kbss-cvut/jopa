@@ -1,8 +1,8 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
-import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.ReferencedListDescriptorImpl;
-import cz.cvut.kbss.ontodriver_new.model.NamedResource;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.junit.Before;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;

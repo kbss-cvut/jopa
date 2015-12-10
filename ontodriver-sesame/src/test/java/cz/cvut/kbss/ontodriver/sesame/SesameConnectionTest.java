@@ -18,17 +18,17 @@ import java.util.List;
 
 import cz.cvut.kbss.ontodriver.sesame.query.SesamePreparedStatement;
 import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
+import cz.cvut.kbss.ontodriver.PreparedStatement;
+import cz.cvut.kbss.ontodriver.Statement;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import cz.cvut.kbss.ontodriver.PreparedStatement;
-import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver_new.Connection;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver_new.model.Axiom;
+import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.model.Axiom;
 
 public class SesameConnectionTest {
 

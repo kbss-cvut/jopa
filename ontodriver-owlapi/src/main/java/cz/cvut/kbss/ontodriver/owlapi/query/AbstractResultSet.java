@@ -1,8 +1,8 @@
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver_new.ResultSet;
 import cz.cvut.kbss.owl2query.model.QueryResult;
 import org.semanticweb.owlapi.model.OWLObject;
 
@@ -23,7 +23,7 @@ public abstract class AbstractResultSet implements ResultSet {
     }
 
     @Override
-    public cz.cvut.kbss.ontodriver.Statement getStatement() throws OntoDriverException {
+    public Statement getStatement() throws OntoDriverException {
         return statement;
     }
 

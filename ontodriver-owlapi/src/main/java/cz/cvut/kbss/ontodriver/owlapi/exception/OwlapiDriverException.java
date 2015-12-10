@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi.exception;
 
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 /**
  * General exception for the OWLAPI driver.

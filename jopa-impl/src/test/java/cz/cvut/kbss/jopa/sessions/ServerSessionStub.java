@@ -22,8 +22,7 @@ public class ServerSessionStub extends ServerSession {
     }
 
     @Override
-    protected synchronized void registerEntityWithPersistenceContext(Object entity,
-                                                                     UnitOfWorkImpl uow) {
+    protected synchronized void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
         // do nothing
     }
 

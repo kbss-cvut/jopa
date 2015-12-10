@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
 import cz.cvut.kbss.owl2query.model.QueryResult;
 import org.semanticweb.owlapi.model.OWLObject;
 

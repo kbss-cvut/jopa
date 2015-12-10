@@ -3,8 +3,8 @@ package cz.cvut.kbss.jopa.utils;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Transient;
 import cz.cvut.kbss.jopa.model.metamodel.*;
-import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
-import cz.cvut.kbss.ontodriver.exceptions.UnassignableIdentifierException;
+import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
+import cz.cvut.kbss.ontodriver.exception.UnassignableIdentifierException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

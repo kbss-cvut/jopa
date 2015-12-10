@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi.util;
 
-import cz.cvut.kbss.ontodriver_new.exception.IdentifierGenerationException;
+import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 

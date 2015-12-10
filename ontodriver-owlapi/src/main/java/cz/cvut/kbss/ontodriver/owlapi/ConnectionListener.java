@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver_new.Connection;
+import cz.cvut.kbss.ontodriver.Connection;
 
 interface ConnectionListener {
 

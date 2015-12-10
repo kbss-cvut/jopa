@@ -1,8 +1,8 @@
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
-import cz.cvut.kbss.ontodriver_new.ResultSet;
-import cz.cvut.kbss.ontodriver_new.Statement;
+import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.Statement;
 
 public interface StatementExecutor {
 

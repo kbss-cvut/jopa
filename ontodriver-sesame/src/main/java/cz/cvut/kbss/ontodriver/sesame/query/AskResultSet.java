@@ -1,8 +1,8 @@
 package cz.cvut.kbss.ontodriver.sesame.query;
 
-import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import cz.cvut.kbss.ontodriver.Statement;
 
 /**
  * @author kidney

@@ -1,15 +1,12 @@
 package cz.cvut.kbss.ontodriver.sesame.query;
 
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
-import cz.cvut.kbss.ontodriver_new.ResultSet;
 
 import java.util.NoSuchElementException;
 import java.util.Observer;
 
-/**
- * @author kidney
- */
 public abstract class AbstractResultSet implements ResultSet {
 
     private final Statement statement;
@@ -99,17 +96,17 @@ public abstract class AbstractResultSet implements ResultSet {
     }
 
     @Override
-	public void setRowIndex(int rowIndex) throws OntoDriverException {
-		ensureOpen();
-		if (rowIndex < index) {
-			throw new UnsupportedOperationException(
-					"Going back in this result set is not supported.");
-		}
-		if (rowIndex == index) {
-			return;
-		}
-		while (index <= rowIndex) {
-			next();
-		}
-	}
+    public void setRowIndex(int rowIndex) throws OntoDriverException {
+        ensureOpen();
+        if (rowIndex < index) {
+            throw new UnsupportedOperationException(
+                    "Going back in this result set is not supported.");
+        }
+        if (rowIndex == index) {
+            return;
+        }
+        while (index <= rowIndex) {
+            next();
+        }
+    }
 }

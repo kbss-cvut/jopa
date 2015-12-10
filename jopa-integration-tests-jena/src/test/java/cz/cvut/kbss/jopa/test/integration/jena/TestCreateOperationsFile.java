@@ -9,7 +9,7 @@ import cz.cvut.kbss.jopa.test.environment.StorageConfig;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
 import cz.cvut.kbss.jopa.test.runner.CreateOperationsRunner;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
+import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import cz.cvut.kbss.ontodriver.impl.jena.DriverCachingJenaFactory;
 import org.junit.After;
 import org.junit.Before;

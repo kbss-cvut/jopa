@@ -4,7 +4,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
-import cz.cvut.kbss.ontodriver.exceptions.PrimaryKeyNotSetException;
+import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import org.junit.Test;
 
 import java.net.URI;

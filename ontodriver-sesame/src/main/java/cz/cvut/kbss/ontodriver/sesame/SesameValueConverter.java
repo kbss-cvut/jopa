@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver_new.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Assertion;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 
@@ -15,7 +15,7 @@ class SesameValueConverter {
         this.language = language;
     }
 
-    Value toSesameValue(Assertion assertion, cz.cvut.kbss.ontodriver_new.model.Value<?> val)
+    Value toSesameValue(Assertion assertion, cz.cvut.kbss.ontodriver.model.Value<?> val)
             throws SesameDriverException {
         switch (assertion.getType()) {
             case ANNOTATION_PROPERTY:
@@ -32,7 +32,7 @@ class SesameValueConverter {
         }
     }
 
-    private org.openrdf.model.URI getValueAsSesameUri(cz.cvut.kbss.ontodriver_new.model.Value<?> val) throws SesameDriverException {
+    private org.openrdf.model.URI getValueAsSesameUri(cz.cvut.kbss.ontodriver.model.Value<?> val) throws SesameDriverException {
         try {
             return vf.createURI(val.getValue().toString());
         } catch (IllegalArgumentException e) {
@@ -40,7 +40,7 @@ class SesameValueConverter {
         }
     }
 
-    private org.openrdf.model.Value resolvePropertyValue(cz.cvut.kbss.ontodriver_new.model.Value<?> val) {
+    private org.openrdf.model.Value resolvePropertyValue(cz.cvut.kbss.ontodriver.model.Value<?> val) {
         try {
             return getValueAsSesameUri(val);
         } catch (SesameDriverException e) {

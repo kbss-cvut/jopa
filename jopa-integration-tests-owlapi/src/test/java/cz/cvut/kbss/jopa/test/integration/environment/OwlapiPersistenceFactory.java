@@ -33,7 +33,6 @@ public class OwlapiPersistenceFactory {
         map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
         map.put(OWLAPIPersistenceProperties.LANG, "en");
         map.put(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS, PelletReasonerFactory.class.getName());
-        map.put("storage", "new");
         return map;
     }
 }

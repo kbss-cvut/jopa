@@ -1,9 +1,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
-import cz.cvut.kbss.jopa.accessors.NewStorageAccessor;
+import cz.cvut.kbss.jopa.accessors.DefaultStorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
-import cz.cvut.kbss.jopa.accessors.StorageAccessorImpl;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
@@ -11,7 +9,7 @@ import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 import java.net.URI;
 import java.util.HashSet;
@@ -23,8 +21,7 @@ import java.util.stream.Collectors;
 /**
  * The ServerSession is the primary interface for accessing the ontology. </p>
  * <p>
- * It manages an accessor object, which performs the queries. NOTE: In the future there should be a pool of accessors,
- * since we will be dealing with parallel access from many clients.
+ * It manages an accessor object, which performs the queries.
  *
  * @author kidney
  */
@@ -35,7 +32,6 @@ public class ServerSession extends AbstractSession {
 
     private CacheManager liveObjectCache;
     private StorageAccessor storageAccessor;
-    private NewStorageAccessor newStorageAccessor;
 
     private Map<EntityTransaction, AbstractEntityManager> runningTransactions;
     private Map<Object, UnitOfWorkImpl> activePersistenceContexts;
@@ -82,21 +78,11 @@ public class ServerSession extends AbstractSession {
         this.uowsToEntities = new WeakHashMap<>();
         this.liveObjectCache = CacheFactory.createCache(properties);
         liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
-        final String storage = properties.get("storage");
-        if (storage != null && storage.equals("new")) {
-            this.newStorageAccessor = new NewStorageAccessor(storageProperties, properties);
-        } else {
-            this.storageAccessor = new StorageAccessorImpl(metamodel, this, storageProperties,
-                    properties);
-        }
+        this.storageAccessor = new DefaultStorageAccessor(storageProperties, properties);
     }
 
     protected ConnectionWrapper acquireConnection() {
-        if (storageAccessor != null) {
-            return new LegacyConnectionWrapper(storageAccessor.acquireConnection());
-        } else {
-            return new NewConnectionWrapper(newStorageAccessor.acquireConnection());
-        }
+        return new ConnectionWrapper(storageAccessor.acquireConnection());
     }
 
     @Override
@@ -144,10 +130,8 @@ public class ServerSession extends AbstractSession {
             try {
                 storageAccessor.close();
             } catch (OntoDriverException e) {
-                throw new OWLPersistenceException(e);
+                LOG.severe("Exception caught when closing the storage accessor " + e);
             }
-        } else if (newStorageAccessor != null && newStorageAccessor.isOpen()) {
-            newStorageAccessor.close();
         }
         liveObjectCache.close();
     }

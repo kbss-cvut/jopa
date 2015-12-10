@@ -2,11 +2,11 @@ package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.list.OwlapiLists;
-import cz.cvut.kbss.ontodriver_new.Connection;
+import cz.cvut.kbss.ontodriver.Connection;
 
 import java.util.HashSet;
 import java.util.Map;

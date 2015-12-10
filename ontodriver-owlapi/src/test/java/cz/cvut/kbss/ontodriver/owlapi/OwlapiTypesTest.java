@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver_new.model.*;
+import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

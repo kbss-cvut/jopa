@@ -1,9 +1,9 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.sesame.query.SesamePreparedStatement;
-import cz.cvut.kbss.ontodriver_new.PreparedStatement;
+import cz.cvut.kbss.ontodriver.PreparedStatement;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

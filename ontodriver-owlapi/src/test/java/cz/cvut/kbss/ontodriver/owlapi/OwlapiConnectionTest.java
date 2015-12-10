@@ -1,11 +1,11 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.owlapi.list.OwlapiLists;
-import cz.cvut.kbss.ontodriver_new.Lists;
-import cz.cvut.kbss.ontodriver_new.Properties;
-import cz.cvut.kbss.ontodriver_new.Types;
-import cz.cvut.kbss.ontodriver_new.descriptors.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver_new.model.*;
+import cz.cvut.kbss.ontodriver.Lists;
+import cz.cvut.kbss.ontodriver.Properties;
+import cz.cvut.kbss.ontodriver.Types;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

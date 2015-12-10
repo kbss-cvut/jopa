@@ -1,6 +1,6 @@
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.Transaction;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 

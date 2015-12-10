@@ -1,7 +1,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiConnection;
-import cz.cvut.kbss.ontodriver_new.Statement;
+import cz.cvut.kbss.ontodriver.Statement;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

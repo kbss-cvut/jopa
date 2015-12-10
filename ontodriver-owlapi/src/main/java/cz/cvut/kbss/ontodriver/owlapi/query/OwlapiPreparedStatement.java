@@ -1,11 +1,11 @@
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.ResultSet;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiConnection;
-import cz.cvut.kbss.ontodriver_new.PreparedStatement;
-import cz.cvut.kbss.ontodriver_new.util.StatementHolder;
+import cz.cvut.kbss.ontodriver.PreparedStatement;
+import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.util.StatementHolder;
 
 import java.util.Objects;
 

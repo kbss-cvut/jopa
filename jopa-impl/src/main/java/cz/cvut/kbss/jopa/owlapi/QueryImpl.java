@@ -13,15 +13,6 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -30,9 +21,12 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+
+import java.net.URI;
+import java.util.*;
 
 // TODO This class hardcodes the type to List<String>, see JPA Query
 public class QueryImpl implements Query<List<String>> {
@@ -193,14 +187,13 @@ public class QueryImpl implements Query<List<String>> {
         assert maxResults > 0;
         final Statement stmt = connection.createStatement();
         if (useBackupOntology) {
-            stmt.setUseBackupOntology();
+            stmt.useOntology(Statement.StatementOntology.CENTRAL);
         } else {
-            stmt.setUseTransactionalOntology();
+            stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
         }
         URI[] uris = new URI[contexts.size()];
         uris = contexts.toArray(uris);
-        final ResultSet rs = stmt.executeQuery(query.assembleQuery(), uris);
-        try {
+        try (ResultSet rs = stmt.executeQuery(query.assembleQuery(), uris)) {
             final int cols = rs.getColumnCount();
             int cnt = 0;
             final List<List<String>> res = new ArrayList<>();
@@ -216,8 +209,6 @@ public class QueryImpl implements Query<List<String>> {
                 cnt++;
             }
             return res;
-        } finally {
-            rs.close();
         }
     }
 

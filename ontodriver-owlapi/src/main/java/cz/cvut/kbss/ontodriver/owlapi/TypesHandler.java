@@ -3,7 +3,7 @@ package cz.cvut.kbss.ontodriver.owlapi;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableRemoveAxiom;
-import cz.cvut.kbss.ontodriver_new.model.*;
+import cz.cvut.kbss.ontodriver.model.*;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.search.EntitySearcher;

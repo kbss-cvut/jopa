@@ -1,80 +1,69 @@
 package cz.cvut.kbss.ontodriver;
 
-import java.net.URI;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import java.net.URI;
 
 /**
  * This interface represents a SPARQL statement.
- * 
+ *
  * @author kidney
- * 
  */
-public interface Statement {
+public interface Statement extends AutoCloseable {
 
-	/**
-	 * Execute the specified SPARQL query.
-	 * 
-	 * @param sparql
-	 *            The statement to execute
-	 * @param contexts
-	 *            Specifies contexts against which to run the query. Since this
-	 *            parameter is optional, it is defined as varargs.
-	 * @return {@code ResultSet} containing results of the query
-	 * @throws OntoDriverException
-	 *             If an error occurs during query execution
-	 */
-	public ResultSet executeQuery(String sparql, URI... contexts) throws OntoDriverException;
+    /**
+     * Specifies which ontology is used for statement evaluation.
+     */
+    enum StatementOntology {
+        /**
+         * Transactional ontology. May contain uncommitted changes which influence the statement evaluation.
+         */
+        TRANSACTIONAL,
+        /**
+         * The main ontology in the current state. No uncommitted changes are present in it.
+         */
+        CENTRAL
+    }
 
-	/**
-	 * Execute the specified SPARQL update query. </p>
-	 * 
-	 * The return value is optional and implementations may choose to return 0
-	 * by default.
-	 * 
-	 * @param sparql
-	 *            The statement to execute
-	 * @param contexts
-	 *            Specifies contexts against which to run the query. Since this
-	 *            parameter is optional, it is defined as varargs.
-	 * @throws OntoDriverException
-	 *             If an error occurs during query execution
-	 */
-	public void executeUpdate(String sparql, URI... contexts) throws OntoDriverException;
+    /**
+     * Execute the specified SPARQL query.
+     *
+     * @param sparql   The statement to execute
+     * @param contexts Specifies contexts against which to run the query. Since this parameter is optional, it is
+     *                 defined as varargs.
+     * @return {@code ResultSet} containing results of the query
+     * @throws OntoDriverException If an error occurs during query execution
+     */
+    ResultSet executeQuery(String sparql, URI... contexts) throws OntoDriverException;
 
-	/**
-	 * Use the transactional ontology for query processing. </p>
-	 * 
-	 * Using the transactional ontology can produce different results than using
-	 * the central (backup) ontology, since the transactional ontology can
-	 * contain uncommitted changes from the current transaction. </p>
-	 * 
-	 * This is default behavior.
-	 * 
-	 * @see #setUseBackupOntology()
-	 */
-	public void setUseTransactionalOntology();
+    /**
+     * Execute the specified SPARQL update query. </p>
+     * <p>
+     * The return value is optional and implementations may choose to return 0 by default.
+     *
+     * @param sparql   The statement to execute
+     * @param contexts Specifies contexts against which to run the query. Since this parameter is optional, it is
+     *                 defined as varargs.
+     * @throws OntoDriverException If an error occurs during query execution
+     */
+    void executeUpdate(String sparql, URI... contexts) throws OntoDriverException;
 
-	/**
-	 * Returns true if the transactional ontology should be used for query
-	 * processing.
-	 * 
-	 * @return boolean
-	 */
-	public boolean useTransactionalOntology();
+    /**
+     * Sets which ontology is used to evaluate this statement.
+     * <p>
+     * {@link Statement.StatementOntology#TRANSACTIONAL} ontology is the transactional
+     * snapshot. It may contain uncommitted changes and thus the query results may differ from evaluation against {@link
+     * Statement.StatementOntology#CENTRAL}.
+     *
+     * @param ontology Which ontology to use
+     */
+    void useOntology(StatementOntology ontology);
 
-	/**
-	 * Use the backup (central) ontology for query processing.
-	 * 
-	 * @see #useTransactionalOntology()
-	 */
-	public void setUseBackupOntology();
-
-	/**
-	 * Returns true if the backup (central) ontology should be used for query
-	 * processing.
-	 * 
-	 * @return boolean
-	 */
-	public boolean useBackupOntology();
+    /**
+     * Gets information about which ontology will be used to evaluate the statement.
+     *
+     * @return Which ontology will be used for evaluation
+     * @see #useOntology(StatementOntology)
+     */
+    StatementOntology getStatementOntology();
 }

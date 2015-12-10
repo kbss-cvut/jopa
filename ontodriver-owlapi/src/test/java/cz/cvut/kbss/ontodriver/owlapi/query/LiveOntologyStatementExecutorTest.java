@@ -1,9 +1,9 @@
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
-import cz.cvut.kbss.ontodriver_new.ResultSet;
-import cz.cvut.kbss.ontodriver_new.Statement;
+import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.Statement;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

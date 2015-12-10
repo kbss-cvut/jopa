@@ -3,7 +3,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.ontodriver_new.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Assertion;
 
 class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy<X> {
 

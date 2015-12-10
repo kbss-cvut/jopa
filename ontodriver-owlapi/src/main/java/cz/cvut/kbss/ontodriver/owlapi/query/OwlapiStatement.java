@@ -1,9 +1,9 @@
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
-import cz.cvut.kbss.ontodriver.exceptions.OntoDriverException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiConnection;
-import cz.cvut.kbss.ontodriver_new.ResultSet;
-import cz.cvut.kbss.ontodriver_new.Statement;
+import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.Statement;
 
 import java.net.URI;
 import java.util.Objects;
@@ -45,26 +45,6 @@ public class OwlapiStatement implements Statement {
         Objects.requireNonNull(sparql);
         getExecutor().executeUpdate(sparql);
         connection.commitIfAuto();
-    }
-
-    @Override
-    public void setUseTransactionalOntology() {
-        this.targetOntology = StatementOntology.TRANSACTIONAL;
-    }
-
-    @Override
-    public boolean useTransactionalOntology() {
-        return targetOntology == StatementOntology.TRANSACTIONAL;
-    }
-
-    @Override
-    public void setUseBackupOntology() {
-        this.targetOntology = StatementOntology.CENTRAL;
-    }
-
-    @Override
-    public boolean useBackupOntology() {
-        return targetOntology == StatementOntology.CENTRAL;
     }
 
     @Override
