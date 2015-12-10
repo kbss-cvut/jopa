@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.test.query.runner;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.test.OWLClassA;
@@ -12,6 +13,7 @@ import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -193,5 +195,16 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         } finally {
             getEntityManager().getTransaction().rollback();
         }
+    }
+
+    @Test
+    public void askQueryWithPositionParameter() {
+        logger.config("Test: execute an ASK query which returns true, query contains positional parameter.");
+        final String query = "ASK { ?x a $1 . }";
+        final URI paramValue = URI.create(OWLClassA.class.getAnnotation(OWLClass.class).iri());
+        final Query<Boolean> q = getEntityManager().createNativeQuery(query, Boolean.class).setParameter(1, paramValue);
+        final Boolean res = q.getSingleResult();
+        assertNotNull(res);
+        assertTrue(res);
     }
 }

@@ -181,4 +181,19 @@ public abstract class QueryRunner extends BaseQueryRunner {
         final Query<List<String>> q = getEntityManager().createNativeQuery(query);
         q.getSingleResult();
     }
+
+    @Test
+    public void testSelectQueryWithPositionalParameters() {
+        logger.config("Test: select query using positional parameters.");
+        final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
+        final String query =
+                "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> $ .}";
+        final Query<List<String>> q = getEntityManager().createNativeQuery(query);
+        q.setParameter(1, a.getStringAttribute(), "en");
+
+        final List<String> res = q.getSingleResult();
+        assertNotNull(res);
+        assertEquals(1, res.size());
+        assertEquals(a.getUri().toString(), res.get(0));
+    }
 }
