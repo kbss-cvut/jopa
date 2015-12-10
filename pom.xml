@@ -56,7 +56,7 @@
                 <version>3.0</version>
                 <configuration>
                     <excludedArtifacts>
-                        cz.cvut.kbss:jopa-api,cz.cvut.kbss:jopa-impl,cz.cvut.kbss:jopa-owl2java,cz.cvut.kbss:jopa-owlapi-utils,cz.cvut.kbss:ontodriver-impl
+                        cz.cvut.kbss:jopa-api,cz.cvut.kbss:jopa-impl,cz.cvut.kbss:jopa-owl2java,cz.cvut.kbss:jopa-owlapi-utils
                     </excludedArtifacts>
                 </configuration>
             </plugin>

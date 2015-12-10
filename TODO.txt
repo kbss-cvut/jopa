@@ -1,4 +1,5 @@
 - Use $ for position parameters in queries
+- Add more examples - e.g. using OWLAPI driver, using Sesame contexts
 - Perhaps we should use FieldSpecifications instead of Fields when iterating in calculate changes and clone building,
     it would by default skip transient fields
 - Use SLF4J for logging
