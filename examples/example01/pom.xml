@@ -22,7 +22,7 @@
     </repositories>
 
     <properties>
-        <jopa.version>0.5-SNAPSHOT</jopa.version>
+        <jopa.version>0.6-SNAPSHOT</jopa.version>
     </properties>
 
     <dependencies>
@@ -103,7 +103,7 @@
                 <!-- Generate entity classes from OWL integrity constraints -->
                 <groupId>cz.cvut.kbss.jopa</groupId>
                 <artifactId>jopa-maven-plugin</artifactId>
-                <version>0.5-SNAPSHOT</version>
+                <version>0.6-SNAPSHOT</version>
                 <configuration>
                     <package>cz.cvut.kbss.jopa.example01.generated</package>
                     <output-directory>src/main/java/</output-directory>

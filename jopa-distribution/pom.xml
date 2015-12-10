@@ -112,5 +112,11 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-integration-tests-owlapi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 </project>
