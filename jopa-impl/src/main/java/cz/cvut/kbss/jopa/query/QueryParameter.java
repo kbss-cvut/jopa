@@ -19,6 +19,7 @@ public class QueryParameter<T> implements Parameter<T> {
     public QueryParameter(Integer position) {
         this.position = position;
         this.name = null;
+        resetValue();
     }
 
     @Override
@@ -29,6 +30,10 @@ public class QueryParameter<T> implements Parameter<T> {
     @Override
     public Integer getPosition() {
         return position;
+    }
+
+    public Object getIdentifier() {
+        return name != null ? name : position;
     }
 
     public ParameterValue getValue() {
@@ -46,7 +51,8 @@ public class QueryParameter<T> implements Parameter<T> {
     }
 
     public void resetValue() {
-        this.value = ParameterValue.createVariableValue(this.name);
+        this.value =
+                name != null ? ParameterValue.createVariableValue(name) : ParameterValue.createVariableValue(position);
     }
 
     @Override

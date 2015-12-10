@@ -21,9 +21,9 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 import java.net.URI;
 import java.util.*;
@@ -86,7 +86,7 @@ public class QueryImpl implements Query<List<String>> {
 
     @Override
     public Parameter<?> getParameter(int position) {
-        throw new NotYetImplementedException();
+        return query.getParameter(position);
     }
 
     @Override
@@ -106,16 +106,14 @@ public class QueryImpl implements Query<List<String>> {
 
     @Override
     public Object getParameterValue(int position) {
-        throw new NotYetImplementedException();
+        final Parameter<?> param = query.getParameter(position);
+        return getParameterValue(param);
     }
 
     @Override
     public Object getParameterValue(String name) {
         final Parameter<?> param = query.getParameter(name);
-        if (!isBound(param)) {
-            throw unboundParam(name);
-        }
-        return query.getParameterValue(param);
+        return getParameterValue(param);
     }
 
     private IllegalStateException unboundParam(Object param) {
@@ -132,12 +130,14 @@ public class QueryImpl implements Query<List<String>> {
 
     @Override
     public Query<List<String>> setParameter(int position, Object value) {
-        throw new NotYetImplementedException();
+        query.setParameter(query.getParameter(position), value);
+        return this;
     }
 
     @Override
     public Query<List<String>> setParameter(int position, String value, String language) {
-        throw new NotYetImplementedException();
+        query.setParameter(query.getParameter(position), value, language);
+        return this;
     }
 
     @Override

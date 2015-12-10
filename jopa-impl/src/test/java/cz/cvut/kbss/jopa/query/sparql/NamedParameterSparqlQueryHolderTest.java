@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
-public class SparqlQueryHolderTest {
+public class NamedParameterSparqlQueryHolderTest {
 
     private static final String QUERY = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
             "SELECT ?craft\n" +

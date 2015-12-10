@@ -12,7 +12,7 @@ public class SparqlQueryHolder implements QueryHolder {
     private final String query;
 
     private final Map<Parameter<?>, QueryParameter<?>> parameterSet;
-    private final Map<String, QueryParameter<?>> namesToParameters;
+    private final Map<Object, QueryParameter<?>> identifiersToParameters;
     // These parameters are in order matching the query parts and can appear multiple times in the list
     private final List<QueryParameter<?>> parameters;
     private final List<String> queryParts;
@@ -23,8 +23,8 @@ public class SparqlQueryHolder implements QueryHolder {
         this.queryParts = parts;
         this.parameterSet = new HashMap<>();
         parameters.forEach(p -> parameterSet.put(p, p));
-        this.namesToParameters = new HashMap<>(parameterSet.size());
-        parameterSet.values().forEach(p -> namesToParameters.put(p.getName(), p));
+        this.identifiersToParameters = new HashMap<>(parameterSet.size());
+        parameterSet.values().forEach(p -> identifiersToParameters.put(p.getIdentifier(), p));
     }
 
     @Override
@@ -39,10 +39,10 @@ public class SparqlQueryHolder implements QueryHolder {
 
     @Override
     public QueryParameter<?> getParameter(String name) {
-        if (!namesToParameters.containsKey(name)) {
+        if (!identifiersToParameters.containsKey(name)) {
             throw unknownParameter(name);
         }
-        return namesToParameters.get(name);
+        return identifiersToParameters.get(name);
     }
 
     private IllegalArgumentException unknownParameter(Object p) {
@@ -51,7 +51,10 @@ public class SparqlQueryHolder implements QueryHolder {
 
     @Override
     public Parameter<?> getParameter(int position) {
-        return null;
+        if (!identifiersToParameters.containsKey(position)) {
+            throw unknownParameter(position);
+        }
+        return identifiersToParameters.get(position);
     }
 
     @Override

@@ -5,11 +5,11 @@ package cz.cvut.kbss.jopa.query.parameter;
  * <p>
  * All query parameters start out as variable values, until real values are set for them.
  */
-class VariableParameterValue extends ParameterValue {
+class NamedVariableParameterValue extends ParameterValue {
 
     private final String variableName;
 
-    VariableParameterValue(String variableName) {
+    NamedVariableParameterValue(String variableName) {
         this.variableName = variableName;
     }
 

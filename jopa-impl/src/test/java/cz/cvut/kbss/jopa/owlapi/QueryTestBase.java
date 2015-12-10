@@ -19,12 +19,8 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyVararg;
-import static org.mockito.Matchers.eq;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -147,5 +143,28 @@ public abstract class QueryTestBase {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
         final Query<?> q = createQuery(query, Object.class);
         q.getSingleResult();
+    }
+
+    @Test
+    public void setPositionalParameterSetsValueAtCorrectPosition() throws Exception {
+        final String query = "SELECT ?x ?z WHERE { ?x $1 ?z . }";
+        final Query<?> q = createQuery(query, Object.class);
+        final URI paramValue = URI.create("http://krizik.felk.cvut.cz/jopa#property");
+        q.setParameter(1, paramValue);
+        q.getResultList();
+        verify(statementMock).executeQuery(query.replace("$1", "<" + paramValue.toString() + ">"));
+    }
+
+    @Test
+    public void setPositionalParameterWithLanguageTag() throws Exception {
+        final String query = "SELECT ?x WHERE { ?x rdfs:label $ . }";
+        final Query<?> q = createQuery(query, Object.class);
+        final String value = "Hooray";
+        q.setParameter(1, value, "en");
+        assertEquals(value, q.getParameterValue(1));
+        final Parameter<?> p = q.getParameter(1);
+        assertEquals(value, q.getParameterValue(p));
+        q.getResultList();
+        verify(statementMock).executeQuery(query.replace("$", "\"Hooray\"@en"));
     }
 }

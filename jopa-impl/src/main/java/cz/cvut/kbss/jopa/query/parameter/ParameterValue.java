@@ -39,7 +39,20 @@ public abstract class ParameterValue {
      * @return Parameter value object
      */
     public static ParameterValue createVariableValue(String name) {
-        return new VariableParameterValue(name);
+        return new NamedVariableParameterValue(name);
+    }
+
+    /**
+     * Returns a new variable parameter specification.
+     * <p>
+     * This is the default implementation, if a parameter is not set, a variable is used in the query to represent an
+     * unbound parameter.
+     *
+     * @param position Parameter (variable) position
+     * @return Parameter value object
+     */
+    public static ParameterValue createVariableValue(Integer position) {
+        return new PositionalVariableParameterValue(position);
     }
 
     /**
