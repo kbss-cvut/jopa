@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>0.5-SNAPSHOT</version>
+    <version>0.6-SNAPSHOT</version>
     <artifactId>jopa-all</artifactId>
     <packaging>pom</packaging>
     <name>JOPA</name>
@@ -19,7 +19,6 @@
         <module>ontodriver-jena</module>
         <module>ontodriver-owlapi</module>
         <module>jopa-impl</module>
-        <module>ontodriver-impl</module>
         <module>jopa-integration-tests</module>
         <module>jopa-integration-tests-sesame</module>
         <module>jopa-distribution</module>
