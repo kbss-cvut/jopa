@@ -4,6 +4,7 @@ import cz.cvut.kbss.jopa.example01.model.ConferencePaper;
 import cz.cvut.kbss.jopa.example01.model.Course;
 import cz.cvut.kbss.jopa.example01.model.UndergraduateStudent;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,14 +15,21 @@ import java.util.Set;
 
 /**
  * This example uses classes corresponding to those generated, but written by hand with nicer structure.
- * <p/>
+ * <p>
  * The hand-written classes also don't have the rdfs:label, description, types and properties fields.
  */
 public class Example {
 
     private static final Logger LOG = LoggerFactory.getLogger(Example.class);
 
-    private EntityManager em = PersistenceFactory.createEntityManager();
+    private final EntityManager em;
+
+    Example() {
+        // Where to scan for entity classes
+        PersistenceFactory.init(Collections
+                .singletonMap(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.example01.model"));
+        this.em = PersistenceFactory.createEntityManager();
+    }
 
     public static void main(String[] args) {
         new Example().run();
@@ -29,14 +37,14 @@ public class Example {
 
     private void run() {
         try {
-            runImpl();
+            execute();
         } finally {
             em.close();
             PersistenceFactory.close();
         }
     }
 
-    private void runImpl() {
+    private void execute() {
         LOG.info("Persisting example data...");
         em.getTransaction().begin();
         final UndergraduateStudent student = initStudent();
@@ -69,7 +77,7 @@ public class Example {
     private UndergraduateStudent initStudent() {
         final Set<String> types = new HashSet<>();
         types.add("http://www.oni.unsc.org/types#Man");
-        types.add("http://www.oni.unsc.org/types#ManSpartanII");
+        types.add("http://www.oni.unsc.org/types#SpartanII");
         final Set<Course> courses = new HashSet<>();
         courses.add(new Course(URI.create("http://www.Department0.University0.edu/Course45"), "Hand combat"));
         courses.add(new Course(URI.create("http://www.Department0.University0.edu/Course41"), "Special Weapons"));

@@ -2,8 +2,9 @@ package cz.cvut.kbss.jopa.example01;
 
 import cz.cvut.kbss.jopa.example01.generated.model.ConferencePaper;
 import cz.cvut.kbss.jopa.example01.generated.model.Course;
-import cz.cvut.kbss.jopa.example01.model.UndergraduateStudent;
+import cz.cvut.kbss.jopa.example01.generated.model.UndergraduateStudent;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +19,14 @@ public class ExampleGenerated {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExampleGenerated.class);
 
-    private EntityManager em = PersistenceFactory.createEntityManager();
+    private EntityManager em;
+
+    ExampleGenerated() {
+        // Where to scan for entity classes
+        PersistenceFactory.init(Collections
+                .singletonMap(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.example01.generated.model"));
+        this.em = PersistenceFactory.createEntityManager();
+    }
 
     public static void main(String[] args) {
         new ExampleGenerated().run();
@@ -26,25 +34,24 @@ public class ExampleGenerated {
 
     private void run() {
         try {
-            runImpl();
+            execute();
         } finally {
             em.close();
             PersistenceFactory.close();
         }
     }
 
-    private void runImpl() {
+    private void execute() {
         LOG.info("Persisting example data...");
         em.getTransaction().begin();
-        final cz.cvut.kbss.jopa.example01.generated.model.UndergraduateStudent student = initStudent();
+        final UndergraduateStudent student = initStudent();
         em.persist(student);
         student.getTakesCourse().forEach(em::persist);
         student.getIsAuthorOf().forEach(em::persist);
         em.getTransaction().commit();
 
         LOG.info("Loading example data...");
-        final cz.cvut.kbss.jopa.example01.generated.model.UndergraduateStudent loaded = em.find(
-                cz.cvut.kbss.jopa.example01.generated.model.UndergraduateStudent.class, student.getId());
+        final UndergraduateStudent loaded = em.find(UndergraduateStudent.class, student.getId());
         assert loaded != null;
         LOG.info("Loaded {}", loaded);
 
@@ -53,8 +60,7 @@ public class ExampleGenerated {
         loaded.setTelephone("CTN 0452-9");
         em.getTransaction().commit();
 
-        final cz.cvut.kbss.jopa.example01.generated.model.UndergraduateStudent result = em.find(
-                cz.cvut.kbss.jopa.example01.generated.model.UndergraduateStudent.class, student.getId());
+        final UndergraduateStudent result = em.find(UndergraduateStudent.class, student.getId());
         assert loaded.getTelephone().equals(result.getTelephone());
         LOG.info("Loaded {}", result);
 
@@ -66,10 +72,10 @@ public class ExampleGenerated {
         assert em.find(UndergraduateStudent.class, student.getId()) == null;
     }
 
-    private cz.cvut.kbss.jopa.example01.generated.model.UndergraduateStudent initStudent() {
+    private UndergraduateStudent initStudent() {
         final Set<String> types = new HashSet<>();
         types.add("http://www.oni.unsc.org/types#Man");
-        types.add("http://www.oni.unsc.org/types#ManSpartanII");
+        types.add("http://www.oni.unsc.org/types#SpartanII");
         final Set<Course> courses = new HashSet<>();
         Course course = new Course();
         course.setId("http://www.Department0.University0.edu/Course45");
@@ -87,7 +93,7 @@ public class ExampleGenerated {
         course.setId("http://www.Department0.University0.edu/Course11");
         course.setName("Halo");
         courses.add(course);
-        final cz.cvut.kbss.jopa.example01.generated.model.UndergraduateStudent student = new cz.cvut.kbss.jopa.example01.generated.model.UndergraduateStudent();
+        final UndergraduateStudent student = new UndergraduateStudent();
         student.setId("http://www.oni.unsc.org/spartanII/John117");
         student.setFirstName("Master");
         student.setLastName("Chief");

@@ -14,40 +14,41 @@ import java.util.Map;
 
 public class PersistenceFactory {
 
+    private static boolean initialized = false;
+
     private static EntityManagerFactory emf;
 
     private PersistenceFactory() {
         throw new AssertionError();
     }
 
-    static {
+    public static void init(Map<String, String> properties) {
         // Here we set up basic storage access properties - driver class, physical location of the storage
         final OntologyStorageProperties storageProperties = OntologyStorageProperties.physicalUri(
                 URI.create("JOPASesameDemo")).driver("cz.cvut.kbss.ontodriver.sesame.SesameDataSource").build();
-        final Map<String, String> properties = new HashMap<>();
+        final Map<String, String> props = new HashMap<>();
         // View transactional changes during transaction
-        properties.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY,
-                Boolean.TRUE.toString());
+        props.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
         // Use in-memory storage if not remote or local file path specified
-        properties.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE,
-                Boolean.TRUE.toString());
+        props.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         // Don't use Sesame inference
-        properties.put(OntoDriverProperties.SESAME_USE_INFERENCE,
-                Boolean.FALSE.toString());
+        props.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
         // Ontology language
-        properties.put(OWLAPIPersistenceProperties.LANG, "en");
-        // Use the new storage type (this option will not be necessary in the future)
-        properties.put("storage", "new");
-        // Where the entity classes are
-        properties.put(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.example01.model");
+        props.put(OWLAPIPersistenceProperties.LANG, "en");
+        if (properties != null) {
+            props.putAll(properties);
+        }
         // Persistence provider name
-        properties.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
-                OWLAPIPersistenceProvider.class.getName());
-        emf = Persistence.createEntityManagerFactory("jopaExample01PU",
-                storageProperties, properties);
+        props.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER, OWLAPIPersistenceProvider.class.getName());
+
+        emf = Persistence.createEntityManagerFactory("jopaExample01PU", storageProperties, props);
+        initialized = true;
     }
 
     public static EntityManager createEntityManager() {
+        if (!initialized) {
+            throw new IllegalStateException("Factory has not been initialized.");
+        }
         return emf.createEntityManager();
     }
 

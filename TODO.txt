@@ -1,10 +1,9 @@
-- Use $ for position parameters in queries
 - Add more examples - e.g. using OWLAPI driver, using Sesame contexts
 - Perhaps we should use FieldSpecifications instead of Fields when iterating in calculate changes and clone building,
-    it would by default skip transient fields
+    it would by default skip transient fields and it would simplify adding inheritance support
 - Use SLF4J for logging
 - Support for data property collections?
-- How to enhance query results with transactional changes?
+- How to enhance query results with transactional changes? Sesame
 - What about support for lists, that are neither Simple nor Referenced?
 - When an entity is removed, there should be some IC check that verifies it is not referenced from any other entity
 - Revisit the way objects and clones are cached in UoW, CloneBuilder and RepositoryMap
@@ -18,6 +17,5 @@
 - Do some research on how to implement class hierarchies in JOPA
 - Define schema for persistence.xml for JOPA
 - Research whether we could replace aspectj with cglib-generated proxies
-- Consider adding serialization support to some classes - e.g. change sets
 - Consider adding support for JNDI data source lookup
 - IC - SHACL
