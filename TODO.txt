@@ -1,4 +1,5 @@
 - Add more examples - e.g. using OWLAPI driver, using Sesame contexts
+    - Create an ontology with some properties for the OWLAPI example, so that inference can be shown in the demo
 - Perhaps we should use FieldSpecifications instead of Fields when iterating in calculate changes and clone building,
     it would by default skip transient fields and it would simplify adding inheritance support
 - Use SLF4J for logging
