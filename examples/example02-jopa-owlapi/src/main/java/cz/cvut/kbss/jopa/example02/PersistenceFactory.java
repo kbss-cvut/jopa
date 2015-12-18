@@ -58,8 +58,8 @@ public class PersistenceFactory {
     private static URI setupRepository(String ontologyFile) {
         LOG.debug("Setting up repository...");
         final String ontologyFileAbsolute = resolveAbsolutePath(ontologyFile);
-        final String repoFolder = ontologyFileAbsolute
-                .substring(0, ontologyFileAbsolute.lastIndexOf(File.separatorChar));
+        final String repoFolder = ontologyFileAbsolute.substring(0,
+                ontologyFileAbsolute.lastIndexOf(File.separatorChar));
         final File repoFile = new File(repoFolder + File.separator + REPOSITORY_FILE_NAME);
         if (repoFile.exists()) {
             LOG.debug("Repository already exists. Removing it...");

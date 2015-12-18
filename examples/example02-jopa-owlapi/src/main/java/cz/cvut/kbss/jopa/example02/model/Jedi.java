@@ -17,7 +17,7 @@ public class Jedi implements Serializable {
     @OWLDataProperty(iri = Vocabulary.FIRST_NAME)
     private String firstName;
 
-    @ParticipationConstraints(nonEmpty = true)
+    @ParticipationConstraints({@ParticipationConstraint(owlObjectIRI = Vocabulary.JEDI, min = 1, max = 1)})
     @OWLDataProperty(iri = Vocabulary.LAST_NAME)
     private String lastName;
 

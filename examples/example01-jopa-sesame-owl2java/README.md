@@ -1,4 +1,4 @@
-# JOPA Example Sesame + OWL2Java
+# JOPA Example 01 - JOPA + Sesame + OWL2Java
 
 This project is a basic example of JOPA usage. It uses a Sesame in-memory storage and a small model based on the UOBM ontology 
 ([https://www.cs.ox.ac.uk/isg/tools/UOBMGenerator/](https://www.cs.ox.ac.uk/isg/tools/UOBMGenerator/)).
