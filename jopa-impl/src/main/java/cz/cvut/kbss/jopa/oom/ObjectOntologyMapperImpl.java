@@ -12,11 +12,11 @@ import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.*;
 
 import java.lang.reflect.Field;
@@ -218,7 +218,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public <T> void removeEntity(URI primaryKey, Class<T> cls, Descriptor descriptor) {
         final EntityType<T> et = getEntityType(cls);
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(
-                new LoadingParameters<>(cls, primaryKey, descriptor), et);
+                new LoadingParameters<>(cls, primaryKey, descriptor, true), et);
         try {
             storageConnection.remove(axiomDescriptor);
         } catch (OntoDriverException e) {

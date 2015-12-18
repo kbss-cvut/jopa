@@ -1,6 +1,8 @@
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -10,16 +12,15 @@ import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -281,8 +282,10 @@ public class ObjectOntologyMapperTest {
 
     @Test
     public void removesEntityWithEmptyDescriptor() throws Exception {
+        final LoadingParameters<OWLClassA> p = new LoadingParameters<>(OWLClassA.class, ENTITY_PK, aDescriptor, true);
+        when(descriptorFactoryMock.createForEntityLoading(p, etAMock)).thenReturn(axiomDescriptor);
         mapper.removeEntity(ENTITY_PK, OWLClassA.class, aDescriptor);
-        verify(descriptorFactoryMock).createForEntityLoading(loadingParameters, etAMock);
+        verify(descriptorFactoryMock).createForEntityLoading(p, etAMock);
         verify(connectionMock).remove(axiomDescriptor);
     }
 
@@ -303,5 +306,14 @@ public class ObjectOntologyMapperTest {
         verify(entityDeconstructorMock).mapFieldToAxioms(ENTITY_PK, entityA,
                 OWLClassA.getStrAttField(), etAMock, aDescriptor);
         verify(axiomBuilderMock).update(connectionMock);
+    }
+
+    @Test
+    public void removeEntityCreatesDescriptorForRemovalOfAllEntityAttributes() throws Exception {
+        mapper.removeEntity(ENTITY_PK, OWLClassA.class, aDescriptor);
+        final ArgumentCaptor<LoadingParameters> captor = ArgumentCaptor.forClass(LoadingParameters.class);
+        verify(descriptorFactoryMock).createForEntityLoading(captor.capture(), eq(etAMock));
+        final LoadingParameters p = captor.getValue();
+        assertTrue(p.isForceLoad());
     }
 }

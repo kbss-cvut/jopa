@@ -1,11 +1,20 @@
 package cz.cvut.kbss.jopa.test.runner;
 
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
@@ -239,5 +248,46 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         assertNull(em.find(OWLClassG.class, entityG.getUri()));
         assertNull(em.find(OWLClassH.class, entityH.getUri()));
         assertNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
+
+    @Test
+    public void removeDeletesAllPropertyAssertionsMappedByEntity() throws Exception {
+        logger.config(
+                "Test: remove deletes all property assertions mapped by the entity, including the lazily loaded ones.");
+        this.em = getEntityManager("RemoveDeletesAllMappedAttributes", false);
+        em.getTransaction().begin();
+        entityC.setSimpleList(Generators.createSimpleList(5));
+        em.persist(entityC);
+        entityC.getSimpleList().forEach(em::persist);
+        em.getTransaction().commit();
+
+        final OWLClassC toRemove = em.find(OWLClassC.class, entityC.getUri());
+        em.getTransaction().begin();
+        em.remove(toRemove);
+        em.getTransaction().commit();
+
+        final List<String> properties = resolveCProperties();
+        for (String prop : properties) {
+            assertFalse(
+                    em.createNativeQuery("ASK WHERE { ?x ?p ?o .}", Boolean.class).setParameter("x", entityC.getUri())
+                      .setParameter("p", URI.create(prop)).getSingleResult());
+        }
+    }
+
+    private List<String> resolveCProperties() throws Exception {
+        final List<String> lst = new ArrayList<>();
+        for (Field f : OWLClassC.class.getDeclaredFields()) {
+            if (f.getAnnotation(Id.class) != null || EntityPropertiesUtils.isFieldTransient(f)) {
+                continue;
+            }
+            if (f.getAnnotation(OWLDataProperty.class) != null) {
+                lst.add(f.getAnnotation(OWLDataProperty.class).iri());
+            } else if (f.getAnnotation(OWLObjectProperty.class) != null) {
+                lst.add(f.getAnnotation(OWLObjectProperty.class).iri());
+            } else if (f.getAnnotation(OWLAnnotationProperty.class) != null) {
+                lst.add(f.getAnnotation(OWLAnnotationProperty.class).iri());
+            }
+        }
+        return lst;
     }
 }
