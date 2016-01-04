@@ -101,7 +101,9 @@ public class SparqlQueryHolder implements QueryHolder {
             final String paramValue = parameters.get(i).getValue().getQueryString();
             sb.append(paramValue);
         }
-        sb.append(queryParts.get(parameters.size()));
+        if (queryParts.size() > parameters.size()) {
+            sb.append(queryParts.get(parameters.size()));
+        }
         return sb.toString();
     }
 

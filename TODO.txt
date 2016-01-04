@@ -1,5 +1,6 @@
 - Add more examples - e.g. using OWLAPI driver, using Sesame contexts, using OWL2Query, using Spring
     - Create an ontology with some properties for the OWLAPI example, so that inference can be shown in the demo
+- When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact
 - Perhaps we should use FieldSpecifications instead of Fields when iterating in calculate changes and clone building,
     it would by default skip transient fields and it would simplify adding inheritance support
 - Use SLF4J for logging

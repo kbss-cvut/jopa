@@ -198,4 +198,12 @@ public class SparqlQueryParserTest {
         assertTrue(holder.getParameters().contains(new QueryParameter<>("y")));
         assertEquals(query, holder.assembleQuery());
     }
+
+    @Test
+    public void parsesQueryWithOrderByAtEnd() throws Exception {
+        final String query = "SELECT ?x WHERE { ?x a <http://a>. } ORDER BY ?x";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(1, holder.getParameters().size());
+        assertEquals(query, holder.assembleQuery());
+    }
 }

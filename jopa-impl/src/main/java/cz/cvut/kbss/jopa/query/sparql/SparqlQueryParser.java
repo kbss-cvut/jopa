@@ -43,7 +43,8 @@ public class SparqlQueryParser implements QueryParser {
         this.lastParamEndIndex = 0;
         this.paramStartIndex = 0;
         this.currentParamType = null;
-        for (int i = 0; i < query.length(); i++) {
+        int i;
+        for (i = 0; i < query.length(); i++) {
             final char c = query.charAt(i);
             switch (c) {
                 case '\'':
@@ -75,7 +76,11 @@ public class SparqlQueryParser implements QueryParser {
                     break;
             }
         }
-        queryParts.add(query.substring(lastParamEndIndex));
+        if (inParam) {
+            parameterEnd(i);
+        } else {
+            queryParts.add(query.substring(lastParamEndIndex));
+        }
         return new SparqlQueryHolder(query, queryParts, parameters);
     }
 
