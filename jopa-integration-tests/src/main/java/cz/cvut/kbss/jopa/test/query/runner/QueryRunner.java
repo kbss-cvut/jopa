@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.test.query.runner;
 
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
+import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.test.OWLClassA;
@@ -183,5 +184,28 @@ public abstract class QueryRunner extends BaseQueryRunner {
         final Object res = q.getSingleResult();
         assertNotNull(res);
         assertEquals(a.getUri(), res);
+    }
+
+    @Test
+    public void testSelectWithOptionalReturnsNullInUnfilledColumns() throws Exception {
+        logger.config("Test: select query with optional. The result should have nulls in places of empty values.");
+        final String query =
+                "SELECT ?x ?s WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> ." +
+                        " OPTIONAL {?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute> ?s . } }";
+        final OWLClassE e = new OWLClassE();
+        final EntityManager em = getEntityManager();
+        em.getTransaction().begin();
+        em.persist(e);
+        em.getTransaction().commit();
+        final Query q = em.createNativeQuery(query);
+
+        final List result = q.getResultList();
+        assertFalse(result.isEmpty());
+        for (Object row : result) {
+            final Object[] rowArr = (Object[]) row;
+            if (rowArr[0].equals(e.getUri().toString())) {
+                assertNull(rowArr[1]);
+            }
+        }
     }
 }

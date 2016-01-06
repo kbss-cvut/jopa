@@ -15,8 +15,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 public class SelectResultSetTest {
@@ -83,5 +82,21 @@ public class SelectResultSetTest {
 
         resultSet.next();
         assertEquals(x, resultSet.getObject(0, URI.class));
+    }
+
+    @Test
+    public void getObjectReturnsNullWhenOptionalFindsNoBinding() throws Exception {
+        when(bindingSetMock.getValue("x")).thenReturn(null);
+
+        resultSet.next();
+        assertNull(resultSet.getObject("x"));
+    }
+
+    @Test
+    public void getObjectTypedReturnsNullWhenOptionalFindsNoBinding() throws Exception {
+        when(bindingSetMock.getValue("x")).thenReturn(null);
+
+        resultSet.next();
+        assertNull(resultSet.getObject("x", URI.class));
     }
 }

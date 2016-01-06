@@ -197,6 +197,9 @@ public class SelectResultSet extends AbstractResultSet {
     }
 
     private Object toObject(Value val) {
+        if (val == null) {
+            return null;
+        }
         if (val instanceof Literal) {
             return SesameUtils.getDataPropertyValue((Literal) val);
         } else if (val instanceof URI) {
@@ -219,6 +222,9 @@ public class SelectResultSet extends AbstractResultSet {
     }
 
     private <T> T toObject(Value val, Class<T> cls) throws OntoDriverException {
+        if (val == null) {
+            return null;
+        }
         if (cls.isAssignableFrom(val.getClass())) {
             return cls.cast(val);
         }

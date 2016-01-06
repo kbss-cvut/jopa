@@ -6,6 +6,7 @@ import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.QueryRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import java.util.Collections;
 import java.util.logging.Logger;
@@ -38,5 +39,11 @@ public class OwlapiQueryTest extends QueryRunner {
     @Override
     protected EntityManager getEntityManager() {
         return em;
+    }
+
+    @Ignore
+    @Override
+    public void testSelectWithOptionalReturnsNullInUnfilledColumns() throws Exception {
+        // OWL2Query does not support OPTIONAL pattern
     }
 }
