@@ -45,12 +45,12 @@ public abstract class QueryTestBase {
         this.queryFactory = new SparqlQueryFactory(uowMock, connectionWrapperMock);
     }
 
-    abstract Query<?> createQuery(String query, Class<?> resultType);
+    abstract Query createQuery(String query, Class<?> resultType);
 
     @Test
     public void getResultListWithoutParameterSettingJustPassesTheOriginalQuery() throws Exception {
         final String query = "SELECT ?x ?y ?z WHERE { ?x ?y ?z .}";
-        final Query<?> q = createQuery(query, Object.class);
+        final Query q = createQuery(query, Object.class);
         q.getResultList();
         verify(connectionWrapperMock).createStatement();
         verify(statementMock).executeQuery(query);
@@ -59,7 +59,7 @@ public abstract class QueryTestBase {
     @Test
     public void setParameterByNameSetsAllOccurrencesOfVariableInQuery() throws Exception {
         final String query = "SELECT ?y ?z WHERE { ?x ?y ?z . ?z ?y ?x . }";
-        final Query<?> q = createQuery(query, Object.class);
+        final Query q = createQuery(query, Object.class);
         q.setParameter("x", "Individual");
         q.getResultList();
         verify(connectionWrapperMock).createStatement();
@@ -69,7 +69,7 @@ public abstract class QueryTestBase {
     @Test
     public void setParameterByParameterSetsValueWithCorrectType() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query<?> q = createQuery(query, Object.class);
+        final Query q = createQuery(query, Object.class);
         final Parameter<URI> p = (Parameter<URI>) q.getParameter("z");
         q.setParameter(p, URI.create("http://krizik.felk.cvut.cz"));
         q.getResultList();
@@ -79,7 +79,7 @@ public abstract class QueryTestBase {
     @Test
     public void testSetStringParameterWithLanguageTag() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query<?> q = createQuery(query, Object.class);
+        final Query q = createQuery(query, Object.class);
         q.setParameter("z", "Object", "en");
         assertEquals("Object", q.getParameterValue("z"));
         q.getResultList();
@@ -89,7 +89,7 @@ public abstract class QueryTestBase {
     @Test
     public void testSetStringParameterWithLanguageTagUsingParameterMethod() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query<?> q = createQuery(query, Object.class);
+        final Query q = createQuery(query, Object.class);
         final Parameter<String> p = (Parameter<String>) q.getParameter("z");
         q.setParameter(p, "Object", "cs");
         q.getResultList();
@@ -99,14 +99,14 @@ public abstract class QueryTestBase {
     @Test(expected = IllegalStateException.class)
     public void getParameterValueThrowsIllegalStateForUnboundParam() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query<?> q = createQuery(query, Object.class);
+        final Query q = createQuery(query, Object.class);
         q.getParameterValue("z");
     }
 
     @Test
     public void isBoundIndicatesWhetherVariableHasBeenBound() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query<?> q = createQuery(query, Object.class);
+        final Query q = createQuery(query, Object.class);
         final Parameter<?> p = q.getParameter("z");
         assertFalse(q.isBound(p));
         q.setParameter(p.getName(), "Test");
@@ -117,14 +117,14 @@ public abstract class QueryTestBase {
     @Test(expected = IllegalArgumentException.class)
     public void setMaxResultsToLessThanZeroThrowsIllegalArgument() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query<?> q = createQuery(query, Object.class);
+        final Query q = createQuery(query, Object.class);
         q.setMaxResults(-1);
     }
 
     @Test
     public void addingContextsPassesThemToQueryEvaluation() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query<?> q = createQuery(query, Object.class);
+        final Query q = createQuery(query, Object.class);
         q.addContext(URI.create("http://contextOne"));
         q.addContexts(Arrays.asList(URI.create("http://contextTwo"), URI.create("http://contextThree")));
         q.getResultList();
@@ -141,14 +141,14 @@ public abstract class QueryTestBase {
     @Test(expected = NoResultException.class)
     public void getSingleResultWithoutResultThrowsNoResultException() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query<?> q = createQuery(query, Object.class);
+        final Query q = createQuery(query, Object.class);
         q.getSingleResult();
     }
 
     @Test
     public void setPositionalParameterSetsValueAtCorrectPosition() throws Exception {
         final String query = "SELECT ?x ?z WHERE { ?x $1 ?z . }";
-        final Query<?> q = createQuery(query, Object.class);
+        final Query q = createQuery(query, Object.class);
         final URI paramValue = URI.create("http://krizik.felk.cvut.cz/jopa#property");
         q.setParameter(1, paramValue);
         q.getResultList();
@@ -158,7 +158,7 @@ public abstract class QueryTestBase {
     @Test
     public void setPositionalParameterWithLanguageTag() throws Exception {
         final String query = "SELECT ?x WHERE { ?x rdfs:label $ . }";
-        final Query<?> q = createQuery(query, Object.class);
+        final Query q = createQuery(query, Object.class);
         final String value = "Hooray";
         q.setParameter(1, value, "en");
         assertEquals(value, q.getParameterValue(1));

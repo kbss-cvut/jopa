@@ -4,7 +4,6 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder;
 import org.junit.Before;
@@ -28,7 +27,7 @@ public class TypedQueryImplTest extends QueryTestBase {
     private static final String ASK_BOOLEAN_QUERY = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
 
     @Override
-    Query<?> createQuery(String query, Class<?> resultType) {
+    TypedQuery<?> createQuery(String query, Class<?> resultType) {
         return queryFactory.createNativeQuery(query, resultType);
     }
 

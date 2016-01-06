@@ -350,7 +350,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
     }
 
     @Override
-    public Query<List<String>> createNativeQuery(String sqlString) {
+    public Query createNativeQuery(String sqlString) {
         return getCurrentPersistenceContext().createNativeQuery(sqlString);
     }
 

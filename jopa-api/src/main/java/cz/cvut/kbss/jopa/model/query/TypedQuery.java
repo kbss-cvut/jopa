@@ -22,7 +22,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
-public interface TypedQuery<ResultElement> extends Query<ResultElement> {
+public interface TypedQuery<ResultElement> extends Query {
     /**
      * Execute a SELECT query and return the query results as a typed List.
      *
@@ -52,7 +52,7 @@ public interface TypedQuery<ResultElement> extends Query<ResultElement> {
      * @param context Context URI
      * @return This instance
      */
-    Query<ResultElement> addContext(URI context);
+    TypedQuery<ResultElement> addContext(URI context);
 
     /**
      * Adds URIs of contexts against which this query will be executed. </p>
@@ -62,7 +62,7 @@ public interface TypedQuery<ResultElement> extends Query<ResultElement> {
      * @param contexts Context URIs
      * @return This instance
      */
-    Query<ResultElement> addContexts(Collection<URI> contexts);
+    TypedQuery<ResultElement> addContexts(Collection<URI> contexts);
 
     /**
      * Clears the previously set contexts.
@@ -71,7 +71,7 @@ public interface TypedQuery<ResultElement> extends Query<ResultElement> {
      * @see #addContext(URI)
      * @see #addContexts(Collection)
      */
-    Query<ResultElement> clearContexts();
+    TypedQuery<ResultElement> clearContexts();
 
     /**
      * Set the maximum number of results to retrieve.
@@ -80,7 +80,7 @@ public interface TypedQuery<ResultElement> extends Query<ResultElement> {
      * @return the same query instance
      * @throws IllegalArgumentException if the argument is negative
      */
-    Query<ResultElement> setMaxResults(int maxResult);
+    TypedQuery<ResultElement> setMaxResults(int maxResult);
 
     /**
      * Binds an argument value to a positional parameter.
@@ -91,7 +91,7 @@ public interface TypedQuery<ResultElement> extends Query<ResultElement> {
      * @throws IllegalArgumentException If position does not correspond to a positional parameter of the query or if the
      *                                  argument is of incorrect type
      */
-    Query<ResultElement> setParameter(int position, Object value);
+    TypedQuery<ResultElement> setParameter(int position, Object value);
 
     /**
      * Binds a String argument value to a positional parameter.
@@ -103,7 +103,7 @@ public interface TypedQuery<ResultElement> extends Query<ResultElement> {
      * @throws IllegalArgumentException If position does not correspond to a positional parameter of the query or if the
      *                                  argument is of incorrect type
      */
-    Query<ResultElement> setParameter(int position, String value, String language);
+    TypedQuery<ResultElement> setParameter(int position, String value, String language);
 
     /**
      * Binds an argument value to a named parameter.
@@ -114,7 +114,7 @@ public interface TypedQuery<ResultElement> extends Query<ResultElement> {
      * @throws IllegalArgumentException If the parameter name does not correspond to a parameter of the query or if the
      *                                  argument is of incorrect type
      */
-    Query<ResultElement> setParameter(String name, Object value);
+    TypedQuery<ResultElement> setParameter(String name, Object value);
 
     /**
      * Binds a String argument value to a named parameter.
@@ -126,7 +126,7 @@ public interface TypedQuery<ResultElement> extends Query<ResultElement> {
      * @throws IllegalArgumentException If the parameter name does not correspond to a parameter of the query or if the
      *                                  argument is of incorrect type
      */
-    Query<ResultElement> setParameter(String name, String value, String language);
+    TypedQuery<ResultElement> setParameter(String name, String value, String language);
 
     /**
      * Binds the value of a Parameter object.
@@ -136,7 +136,7 @@ public interface TypedQuery<ResultElement> extends Query<ResultElement> {
      * @return this query instance
      * @throws IllegalArgumentException If the parameter does not correspond to a parameter of the query
      */
-    <T> Query<ResultElement> setParameter(Parameter<T> parameter, T value);
+    <T> TypedQuery<ResultElement> setParameter(Parameter<T> parameter, T value);
 
     /**
      * Binds the value of a String Parameter.
@@ -147,5 +147,5 @@ public interface TypedQuery<ResultElement> extends Query<ResultElement> {
      * @return this query instance
      * @throws IllegalArgumentException If the parameter does not correspond to a parameter of the query
      */
-    Query<ResultElement> setParameter(Parameter<String> parameter, String value, String language);
+    TypedQuery<ResultElement> setParameter(Parameter<String> parameter, String value, String language);
 }

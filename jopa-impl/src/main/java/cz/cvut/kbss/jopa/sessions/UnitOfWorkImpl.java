@@ -900,7 +900,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     @Override
-    public Query<List<String>> createNativeQuery(String sparql) {
+    public Query createNativeQuery(String sparql) {
         return queryFactory.createNativeQuery(sparql);
     }
 

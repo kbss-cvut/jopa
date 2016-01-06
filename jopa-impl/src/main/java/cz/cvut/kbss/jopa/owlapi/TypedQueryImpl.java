@@ -18,7 +18,6 @@ import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.query.Parameter;
-import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.QueryHolder;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
@@ -160,37 +159,37 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
     }
 
     @Override
-    public Query<ResultElement> setParameter(int position, Object value) {
+    public TypedQuery<ResultElement> setParameter(int position, Object value) {
         query.setParameter(query.getParameter(position), value);
         return this;
     }
 
     @Override
-    public Query<ResultElement> setParameter(int position, String value, String language) {
+    public TypedQuery<ResultElement> setParameter(int position, String value, String language) {
         query.setParameter(query.getParameter(position), value, language);
         return this;
     }
 
     @Override
-    public Query<ResultElement> setParameter(String name, Object value) {
+    public TypedQuery<ResultElement> setParameter(String name, Object value) {
         query.setParameter(query.getParameter(name), value);
         return this;
     }
 
     @Override
-    public Query<ResultElement> setParameter(String name, String value, String language) {
+    public TypedQuery<ResultElement> setParameter(String name, String value, String language) {
         query.setParameter(query.getParameter(name), value, language);
         return this;
     }
 
     @Override
-    public <T> Query<ResultElement> setParameter(Parameter<T> parameter, T value) {
+    public <T> TypedQuery<ResultElement> setParameter(Parameter<T> parameter, T value) {
         query.setParameter(parameter, value);
         return this;
     }
 
     @Override
-    public Query<ResultElement> setParameter(Parameter<String> parameter, String value, String language) {
+    public TypedQuery<ResultElement> setParameter(Parameter<String> parameter, String value, String language) {
         query.setParameter(parameter, value, language);
         return this;
     }
@@ -250,21 +249,21 @@ public class TypedQueryImpl<ResultElement> implements TypedQuery<ResultElement> 
     }
 
     @Override
-    public Query<ResultElement> addContext(URI context) {
+    public TypedQuery<ResultElement> addContext(URI context) {
         Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
         contexts.add(context);
         return this;
     }
 
     @Override
-    public Query<ResultElement> addContexts(Collection<URI> contexts) {
+    public TypedQuery<ResultElement> addContexts(Collection<URI> contexts) {
         Objects.requireNonNull(contexts, ErrorUtils.constructNPXMessage("contexts"));
         this.contexts.addAll(contexts);
         return this;
     }
 
     @Override
-    public Query<ResultElement> clearContexts() {
+    public TypedQuery<ResultElement> clearContexts() {
         contexts.clear();
         return this;
     }

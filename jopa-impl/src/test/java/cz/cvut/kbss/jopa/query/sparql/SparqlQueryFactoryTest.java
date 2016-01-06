@@ -2,14 +2,13 @@ package cz.cvut.kbss.jopa.query.sparql;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.model.query.Query;
+import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.verify;
@@ -38,33 +37,33 @@ public class SparqlQueryFactoryTest {
 
     @Test
     public void testCreateNativeQuery() {
-        final Query<List<String>> q = factory.createNativeQuery(QUERY);
+        final Query q = factory.createNativeQuery(QUERY);
         assertNotNull(q);
         verify(uowMock).useBackupOntologyForQueryProcessing();
     }
 
     @Test(expected = NullPointerException.class)
     public void testCreateNativeQueryNull() {
-        final Query<List<String>> q = factory.createNativeQuery(null);
+        final Query q = factory.createNativeQuery(null);
         assert q == null;
     }
 
     @Test
     public void testCreateNativeQueryTyped() {
-        final Query<OWLClassA> q = factory.createNativeQuery(QUERY, CLS);
+        final TypedQuery<OWLClassA> q = factory.createNativeQuery(QUERY, CLS);
         assertNotNull(q);
         verify(uowMock).useBackupOntologyForQueryProcessing();
     }
 
     @Test(expected = NullPointerException.class)
     public void testCreateNativeQueryTypedNullQuery() {
-        final Query<OWLClassA> q = factory.createNativeQuery(null, CLS);
+        final TypedQuery<OWLClassA> q = factory.createNativeQuery(null, CLS);
         assert q == null;
     }
 
     @Test(expected = NullPointerException.class)
     public void testCreateNativeQueryTypedNullType() {
-        final Query<OWLClassA> q = factory.createNativeQuery(QUERY, null);
+        final TypedQuery<OWLClassA> q = factory.createNativeQuery(QUERY, null);
         assert q == null;
     }
 
@@ -83,20 +82,20 @@ public class SparqlQueryFactoryTest {
 
     @Test
     public void testCreateQueryTyped() {
-        final Query<OWLClassA> q = factory.createQuery(QUERY, CLS);
+        final TypedQuery<OWLClassA> q = factory.createQuery(QUERY, CLS);
         assertNotNull(q);
         verify(uowMock).useBackupOntologyForQueryProcessing();
     }
 
     @Test(expected = NullPointerException.class)
     public void testCreateQueryTypedNullQuery() {
-        final Query<OWLClassA> q = factory.createQuery(null, CLS);
+        final TypedQuery<OWLClassA> q = factory.createQuery(null, CLS);
         assert q == null;
     }
 
     @Test(expected = NullPointerException.class)
     public void testCreateQueryTypedNullType() {
-        final Query<OWLClassA> q = factory.createQuery(QUERY, null);
+        final TypedQuery<OWLClassA> q = factory.createQuery(QUERY, null);
         assert q == null;
     }
 }

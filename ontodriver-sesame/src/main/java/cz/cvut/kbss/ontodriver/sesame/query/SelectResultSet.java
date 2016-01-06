@@ -1,10 +1,11 @@
 package cz.cvut.kbss.ontodriver.sesame.query;
 
+import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.SesameUtils;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver.Statement;
 import org.openrdf.model.Literal;
+import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -198,8 +199,10 @@ public class SelectResultSet extends AbstractResultSet {
     private Object toObject(Value val) {
         if (val instanceof Literal) {
             return SesameUtils.getDataPropertyValue((Literal) val);
+        } else if (val instanceof URI) {
+            return SesameUtils.toJavaUri((URI) val);
         } else {
-            return val;
+            return val.toString();
         }
     }
 
@@ -219,13 +222,16 @@ public class SelectResultSet extends AbstractResultSet {
         if (cls.isAssignableFrom(val.getClass())) {
             return cls.cast(val);
         }
-        Object ob = val;
+        Object ob = null;
         if (val instanceof Literal) {
             ob = SesameUtils.getDataPropertyValue((Literal) val);
-            if (cls.isAssignableFrom(ob.getClass())) {
-                return cls.cast(ob);
-            }
+        } else if (val instanceof URI) {
+            ob = SesameUtils.toJavaUri((URI) val);
         }
+        if (ob != null && cls.isAssignableFrom(ob.getClass())) {
+            return cls.cast(ob);
+        }
+        ob = val;
         return instantiateUsingConstructor(cls, val, ob);
     }
 

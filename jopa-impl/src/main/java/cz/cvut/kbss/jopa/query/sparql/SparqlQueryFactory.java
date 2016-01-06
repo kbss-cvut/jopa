@@ -10,7 +10,6 @@ import cz.cvut.kbss.jopa.sessions.QueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
-import java.util.List;
 import java.util.Objects;
 
 public class SparqlQueryFactory implements QueryFactory {
@@ -29,7 +28,7 @@ public class SparqlQueryFactory implements QueryFactory {
     }
 
     @Override
-    public Query<List<String>> createNativeQuery(String sparql) {
+    public Query createNativeQuery(String sparql) {
         Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
 
         final QueryImpl q = new QueryImpl(queryParser.parseQuery(sparql), connection);

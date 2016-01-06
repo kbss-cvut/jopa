@@ -364,7 +364,7 @@ public interface EntityManager {
 	 *            a native SPARQL query string
 	 * @return the new query instance
 	 */
-	public Query<List<String>> createNativeQuery(String sqlString);
+	Query createNativeQuery(String sqlString);
 
 	/**
 	 * Create an instance of Query for executing a native SPARQL-DL query
@@ -376,7 +376,7 @@ public interface EntityManager {
 	 *            the class of the resulting instance(s)
 	 * @return the new query instance
 	 */
-	public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass);
+	<T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass);
 
 	// /**
 	// * Create an instance of Query for executing a native SQL query.

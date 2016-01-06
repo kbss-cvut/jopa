@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public interface Query<ResultElement> {
+public interface Query {
     /**
      * Execute a SELECT query and return the query results as an untyped List.
      *
@@ -33,7 +33,7 @@ public interface Query<ResultElement> {
      * @throws OWLPersistenceException      if the query execution exceeds the query timeout value set and the
      *                                      transaction is rolled back
      */
-    List<ResultElement> getResultList();
+    List getResultList();
 
     /**
      * Execute a SELECT query that returns a single result.
@@ -42,7 +42,7 @@ public interface Query<ResultElement> {
      * @throws NoResultException       There is no result
      * @throws NoUniqueResultException There are more than one results
      */
-    ResultElement getSingleResult();
+    Object getSingleResult();
 
     /**
      * Adds URI of context against which this query will be executed. </p>
@@ -52,7 +52,7 @@ public interface Query<ResultElement> {
      * @param context Context URI
      * @return This instance
      */
-    Query<ResultElement> addContext(URI context);
+    Query addContext(URI context);
 
     /**
      * Adds URIs of contexts against which this query will be executed. </p>
@@ -62,7 +62,7 @@ public interface Query<ResultElement> {
      * @param contexts Context URIs
      * @return This instance
      */
-    Query<ResultElement> addContexts(Collection<URI> contexts);
+    Query addContexts(Collection<URI> contexts);
 
     /**
      * Clears the previously set contexts.
@@ -71,7 +71,7 @@ public interface Query<ResultElement> {
      * @see #addContext(URI)
      * @see #addContexts(Collection)
      */
-    Query<ResultElement> clearContexts();
+    Query clearContexts();
 
     /**
      * Set the maximum number of results to retrieve.
@@ -80,7 +80,7 @@ public interface Query<ResultElement> {
      * @return the same query instance
      * @throws IllegalArgumentException if the argument is negative
      */
-    Query<ResultElement> setMaxResults(int maxResult);
+    Query setMaxResults(int maxResult);
 
     /**
      * The maximum number of results the query object was set to retrieve. </p>
@@ -166,7 +166,7 @@ public interface Query<ResultElement> {
      * @throws IllegalArgumentException If position does not correspond to a positional parameter of the query or if the
      *                                  argument is of incorrect type
      */
-    Query<ResultElement> setParameter(int position, Object value);
+    Query setParameter(int position, Object value);
 
     /**
      * Binds a String argument value to a positional parameter.
@@ -178,7 +178,7 @@ public interface Query<ResultElement> {
      * @throws IllegalArgumentException If position does not correspond to a positional parameter of the query or if the
      *                                  argument is of incorrect type
      */
-    Query<ResultElement> setParameter(int position, String value, String language);
+    Query setParameter(int position, String value, String language);
 
     /**
      * Binds an argument value to a named parameter.
@@ -189,7 +189,7 @@ public interface Query<ResultElement> {
      * @throws IllegalArgumentException If the parameter name does not correspond to a parameter of the query or if the
      *                                  argument is of incorrect type
      */
-    Query<ResultElement> setParameter(String name, Object value);
+    Query setParameter(String name, Object value);
 
     /**
      * Binds a String argument value to a named parameter.
@@ -201,7 +201,7 @@ public interface Query<ResultElement> {
      * @throws IllegalArgumentException If the parameter name does not correspond to a parameter of the query or if the
      *                                  argument is of incorrect type
      */
-    Query<ResultElement> setParameter(String name, String value, String language);
+    Query setParameter(String name, String value, String language);
 
     /**
      * Binds the value of a Parameter object.
@@ -211,7 +211,7 @@ public interface Query<ResultElement> {
      * @return this query instance
      * @throws IllegalArgumentException If the parameter does not correspond to a parameter of the query
      */
-    <T> Query<ResultElement> setParameter(Parameter<T> parameter, T value);
+    <T> Query setParameter(Parameter<T> parameter, T value);
 
     /**
      * Binds the value of a String Parameter.
@@ -222,5 +222,5 @@ public interface Query<ResultElement> {
      * @return this query instance
      * @throws IllegalArgumentException If the parameter does not correspond to a parameter of the query
      */
-    Query<ResultElement> setParameter(Parameter<String> parameter, String value, String language);
+    Query setParameter(Parameter<String> parameter, String value, String language);
 }

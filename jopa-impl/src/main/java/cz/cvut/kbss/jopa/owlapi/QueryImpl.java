@@ -29,7 +29,7 @@ import java.net.URI;
 import java.util.*;
 
 // TODO This class hardcodes the type to List<String>, see JPA Query
-public class QueryImpl implements Query<List<String>> {
+public class QueryImpl implements Query {
 
     private final QueryHolder query;
     private final Set<URI> contexts;
@@ -47,7 +47,7 @@ public class QueryImpl implements Query<List<String>> {
         this.maxResults = Integer.MAX_VALUE;
     }
 
-    public List<List<String>> getResultList() {
+    public List getResultList() {
         try {
             if (maxResults == 0) {
                 return Collections.emptyList();
@@ -63,10 +63,10 @@ public class QueryImpl implements Query<List<String>> {
         return new OWLPersistenceException("Exception caught when evaluating query " + executedQuery, e);
     }
 
-    public List<String> getSingleResult() {
+    public Object getSingleResult() {
         try {
             // Call it with maxResults = 2 just to see whether there are more
-            final List<List<String>> list = getResultListImpl(2);
+            final List<?> list = getResultListImpl(2);
             if (list.isEmpty()) {
                 throw new NoResultException("No result found for query " + query);
             }
@@ -129,42 +129,42 @@ public class QueryImpl implements Query<List<String>> {
     }
 
     @Override
-    public Query<List<String>> setParameter(int position, Object value) {
+    public Query setParameter(int position, Object value) {
         query.setParameter(query.getParameter(position), value);
         return this;
     }
 
     @Override
-    public Query<List<String>> setParameter(int position, String value, String language) {
+    public Query setParameter(int position, String value, String language) {
         query.setParameter(query.getParameter(position), value, language);
         return this;
     }
 
     @Override
-    public Query<List<String>> setParameter(String name, Object value) {
+    public Query setParameter(String name, Object value) {
         query.setParameter(query.getParameter(name), value);
         return this;
     }
 
     @Override
-    public Query<List<String>> setParameter(String name, String value, String language) {
+    public Query setParameter(String name, String value, String language) {
         query.setParameter(query.getParameter(name), value, language);
         return this;
     }
 
     @Override
-    public <T> Query<List<String>> setParameter(Parameter<T> parameter, T value) {
+    public <T> Query setParameter(Parameter<T> parameter, T value) {
         query.setParameter(parameter, value);
         return this;
     }
 
     @Override
-    public Query<List<String>> setParameter(Parameter<String> parameter, String value, String language) {
+    public Query setParameter(Parameter<String> parameter, String value, String language) {
         query.setParameter(parameter, value, language);
         return this;
     }
 
-    public Query<List<String>> setMaxResults(int maxResults) {
+    public Query setMaxResults(int maxResults) {
         if (maxResults < 0) {
             throw new IllegalArgumentException(
                     "Cannot set maximum number of results to less than 0.");
@@ -183,28 +183,24 @@ public class QueryImpl implements Query<List<String>> {
         this.useBackupOntology = useBackupOntology;
     }
 
-    private List<List<String>> getResultListImpl(int maxResults) throws OntoDriverException {
+    private List<?> getResultListImpl(int maxResults) throws OntoDriverException {
         assert maxResults > 0;
+
         final Statement stmt = connection.createStatement();
-        if (useBackupOntology) {
-            stmt.useOntology(Statement.StatementOntology.CENTRAL);
-        } else {
-            stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
-        }
+        setTargetOntology(stmt);
         URI[] uris = new URI[contexts.size()];
         uris = contexts.toArray(uris);
         try (ResultSet rs = stmt.executeQuery(query.assembleQuery(), uris)) {
-            final int cols = rs.getColumnCount();
+            final int columnCount = rs.getColumnCount();
             int cnt = 0;
-            final List<List<String>> res = new ArrayList<>();
+            final List<Object> res = new ArrayList<>();
             // TODO register this as observer on the result set so that additional results can be loaded asynchronously
             while (rs.hasNext() && cnt < maxResults) {
                 rs.next();
-                final List<String> row = new ArrayList<>(cols);
-                res.add(row);
-                for (int i = 0; i < cols; i++) {
-                    final String ob = rs.getString(i);
-                    row.add(ob);
+                if (columnCount == 1) {
+                    res.add(rs.getObject(0));
+                } else {
+                    res.add(extractResultRow(rs, columnCount));
                 }
                 cnt++;
             }
@@ -212,22 +208,39 @@ public class QueryImpl implements Query<List<String>> {
         }
     }
 
+    private void setTargetOntology(Statement stmt) {
+        if (useBackupOntology) {
+            stmt.useOntology(Statement.StatementOntology.CENTRAL);
+        } else {
+            stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
+        }
+    }
+
+    private Object[] extractResultRow(ResultSet rs, int columnCount) throws OntoDriverException {
+        final Object[] row = new Object[columnCount];
+        for (int i = 0; i < columnCount; i++) {
+            final Object ob = rs.getObject(i);
+            row[i] = ob;
+        }
+        return row;
+    }
+
     @Override
-    public Query<List<String>> addContext(URI context) {
+    public Query addContext(URI context) {
         Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
         contexts.add(context);
         return this;
     }
 
     @Override
-    public Query<List<String>> addContexts(Collection<URI> contexts) {
+    public Query addContexts(Collection<URI> contexts) {
         Objects.requireNonNull(contexts, ErrorUtils.constructNPXMessage("contexts"));
         this.contexts.addAll(contexts);
         return this;
     }
 
     @Override
-    public Query<List<String>> clearContexts() {
+    public Query clearContexts() {
         contexts.clear();
         return this;
     }

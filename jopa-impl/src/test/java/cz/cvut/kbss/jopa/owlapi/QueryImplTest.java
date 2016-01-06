@@ -15,55 +15,87 @@ import static org.mockito.Mockito.*;
 public class QueryImplTest extends QueryTestBase {
 
     @Override
-    Query<?> createQuery(String query, Class<?> resultType) {
+    Query createQuery(String query, Class<?> resultType) {
         return queryFactory.createNativeQuery(query);
     }
 
     @Test
     public void getSingleResultReturnsUniqueResult() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query<List<String>> q = queryFactory.createNativeQuery(query);
+        final Query q = queryFactory.createNativeQuery(query);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
-        when(resultSetMock.getString(anyInt())).thenReturn("str");
-        final List<String> result = q.getSingleResult();
-        assertEquals(2, result.size()); // Two variables
-        assertEquals("str", result.get(0));
-        assertEquals("str", result.get(1));
+        when(resultSetMock.getObject(anyInt())).thenReturn("str");
+        final Object[] result = (Object[]) q.getSingleResult();
+        assertEquals(2, result.length); // Two variables
+        assertEquals("str", result[0]);
+        assertEquals("str", result[1]);
         verify(resultSetMock).next();
     }
 
     @Test(expected = NoUniqueResultException.class)
     public void getSingleResultWithMultipleResultsThrowsNoUniqueResultException() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query<List<String>> q = queryFactory.createNativeQuery(query);
+        final Query q = queryFactory.createNativeQuery(query);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(false);
-        when(resultSetMock.getString(anyInt())).thenReturn("str");
+        when(resultSetMock.getObject(anyInt())).thenReturn("str");
         q.getSingleResult();
     }
 
     @Test
     public void setMaxResultsConstrainsNumberOfReturnedResults() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query<List<String>> q = queryFactory.createNativeQuery(query);
+        final Query q = queryFactory.createNativeQuery(query);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         // Three results
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
-        when(resultSetMock.getString(anyInt())).thenReturn("str");
+        when(resultSetMock.getObject(anyInt())).thenReturn("str");
         q.setMaxResults(2);
-        final List<List<String>> result = q.getResultList();
+        final List result = q.getResultList();
         assertEquals(2, result.size());
     }
 
     @Test
     public void setMaxResultsToZeroReturnsImmediatelyEmptyResult() throws Exception {
         final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query<List<String>> q = queryFactory.createNativeQuery(query);
+        final Query q = queryFactory.createNativeQuery(query);
         q.setMaxResults(0);
-        final List<List<String>> result = q.getResultList();
+        final List result = q.getResultList();
         assertNotNull(result);
         assertTrue(result.isEmpty());
         verify(statementMock, never()).executeQuery(anyString(), anyVararg());
+    }
+
+    @Test
+    public void queryResultRowIsArrayOfObjectsWhenMultipleColumnsExist() throws Exception {
+        final String query = "SELECT ?x ?y WHERE { ?x ?y ?z . }";
+        final Query q = queryFactory.createNativeQuery(query);
+        when(resultSetMock.getColumnCount()).thenReturn(2);
+        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
+        final String res = "str";
+        when(resultSetMock.getObject(anyInt())).thenReturn(res);
+        final List result = q.getResultList();
+        for (Object row : result) {
+            assertTrue(row instanceof Object[]);
+            final Object[] rowArr = (Object[]) row;
+            for (Object o : rowArr) {
+                assertEquals(res, o);
+            }
+        }
+    }
+
+    @Test
+    public void queryResultRowObjectWhenSingleColumnExists() throws Exception {
+        final String query = "SELECT ?x WHERE { ?x ?y ?z . }";
+        final Query q = queryFactory.createNativeQuery(query);
+        when(resultSetMock.getColumnCount()).thenReturn(1);
+        when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
+        final String res = "str";
+        when(resultSetMock.getObject(anyInt())).thenReturn(res);
+        final List result = q.getResultList();
+        for (Object o : result) {
+            assertEquals(res, o);
+        }
     }
 }

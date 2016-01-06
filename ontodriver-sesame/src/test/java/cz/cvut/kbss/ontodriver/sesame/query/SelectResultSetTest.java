@@ -1,0 +1,87 @@
+package cz.cvut.kbss.ontodriver.sesame.query;
+
+import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.Statement;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.TupleQueryResult;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+public class SelectResultSetTest {
+
+    private static final List<String> BINDINGS = Arrays.asList("x", "y", "z");
+
+    @Mock
+    private TupleQueryResult resultMock;
+    @Mock
+    private BindingSet bindingSetMock;
+    @Mock
+    private Statement statementMock;
+
+    private ValueFactory valueFactory = new ValueFactoryImpl();
+
+    private ResultSet resultSet;
+
+    @Before
+    public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+        when(resultMock.getBindingNames()).thenReturn(BINDINGS);
+        when(resultMock.next()).thenReturn(bindingSetMock);
+        when(resultMock.hasNext()).thenReturn(true);
+
+        this.resultSet = new SelectResultSet(resultMock, statementMock);
+    }
+
+    @Test
+    public void getObjectOnLiteralReturnsCorrespondingJavaLiteral() throws Exception {
+        final String x = "String";
+        when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createLiteral(x));
+        final Boolean y = false;
+        when(bindingSetMock.getValue("y")).thenReturn(valueFactory.createLiteral(y));
+        final Integer z = 117;
+        when(bindingSetMock.getValue("z")).thenReturn(valueFactory.createLiteral(z));
+
+        resultSet.next();
+        assertEquals(x, resultSet.getObject(0));
+        assertEquals(y, resultSet.getObject("y"));
+        assertEquals(z, resultSet.getObject(2));
+    }
+
+    @Test
+    public void getObjectOnSesameUriReturnsJavaUri() throws Exception {
+        final URI x = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#John117");
+        when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createURI(x.toString()));
+
+        resultSet.next();
+        assertEquals(x, resultSet.getObject(0));
+    }
+
+    @Test
+    public void getObjectOnBlankNodeReturnsItAsString() throws Exception {
+        when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createBNode());
+
+        resultSet.next();
+        assertTrue(resultSet.getObject("x") instanceof String);
+    }
+
+    @Test
+    public void getObjectTypedOnUriReturnsUriWhenAskedForUri() throws Exception {
+        final URI x = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#John117");
+        when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createURI(x.toString()));
+
+        resultSet.next();
+        assertEquals(x, resultSet.getObject(0, URI.class));
+    }
+}
