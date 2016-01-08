@@ -31,3 +31,12 @@ The model can be found in the `cz.cvut.kbss.jopa.example01.model` package and th
 The persistence is set up in `cz.cvut.kbss.jopa.example01.PersistenceFactory`. A Sesame volatile (in-memory) storage without
 inference is used.
 
+## Running the Demo
+
+To run the demo, `mvn exec:java` can be used. However, make sure that `mvn package` or `mvn install` is executed first.
+
+- To run the demo with the manually written object model, use `mvn exec:java@manual`*.
+- To run the demo with the generated object model, use `mvn exec:java@generated`*.
+
+*_Note that this requires Apache Maven 3.3.1 or later. If you have an older version, you can specify the object type model as 
+command line argument in the following way:_ `mvn exec:java -Dexec.args=manual/generated`.

@@ -49,6 +49,39 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Run the example -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <executions>
+                    <execution>
+                        <id>default-cli</id>
+                        <configuration>
+                            <mainClass>cz.cvut.kbss.jopa.example01.Example</mainClass>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>manual</id>
+                        <configuration>
+                            <mainClass>cz.cvut.kbss.jopa.example01.Example</mainClass>
+                            <arguments>
+                                <argument>manual</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generated</id>
+                        <configuration>
+                            <mainClass>cz.cvut.kbss.jopa.example01.Example</mainClass>
+                            <arguments>
+                                <argument>generated</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
