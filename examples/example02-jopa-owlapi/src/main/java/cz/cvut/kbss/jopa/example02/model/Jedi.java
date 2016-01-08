@@ -105,7 +105,7 @@ public class Jedi implements Serializable {
 
     @Override
     public String toString() {
-        String value = firstName + " " + lastName + "<" + uri + ">";
+        String value = firstName + " " + lastName + " <" + uri + ">";
         if (nickname != null) {
             return nickname + " - " + value;
         }

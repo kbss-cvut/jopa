@@ -109,7 +109,8 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <!--<version>0.7.5.201505241946</version>-->
-                <version>0.7.4.201502262128</version>   <!-- Using an older version due to issues with SonarQube integration-->
+                <version>0.7.4.201502262128</version>
+                <!-- Using an older version due to issues with SonarQube integration-->
                 <executions>
                     <execution>
                         <goals>
@@ -179,8 +180,9 @@
         <site>
             <id>jopa</id>
             <name>JOPA</name>
-            <url>http://jopa.sourceforge.net</url>
+            <url>https://github.com/kbss-cvut/jopa</url>
         </site>
+        <!-- TODO Does github have a download URL? -->
         <downloadUrl>http://sourceforge.net/projects/jopa/files/</downloadUrl>
     </distributionManagement>
 </project>

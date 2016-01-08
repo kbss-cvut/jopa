@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>cz.cvut.kbss.jopa</groupId>
+    <artifactId>jopa-examples-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <name>JOPA Examples - parent</name>
+    <packaging>pom</packaging>
+    <url>https://github.com/kbss-cvut/jopa</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <jopa.version>0.6-SNAPSHOT</jopa.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>krizik</id>
+            <name>KBSS Maven 2 Repository</name>
+            <url>http://krizik.felk.cvut.cz/m2repo</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-api</artifactId>
+            <version>${jopa.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-impl</artifactId>
+            <version>${jopa.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.7</version>
+                <configuration>
+                    <complianceLevel>1.8</complianceLevel>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <aspectLibraries>
+                        <aspectLibrary>
+                            <groupId>cz.cvut.kbss.jopa</groupId>
+                            <artifactId>jopa-impl</artifactId>
+                        </aspectLibrary>
+                    </aspectLibraries>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <version>1.8.5</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjrt</artifactId>
+                        <version>1.8.5</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>compile</goal>
+                            <!-- use this goal to weave all your main classes -->
+                            <goal>test-compile</goal>
+                            <!-- use this goal to weave all your test classes -->
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <developers>
+        <developer>
+            <name>Petr Křemen</name>
+            <email>petr.kremen@fel.cvut.cz</email>
+            <url>http://cyber.felk.cvut.cz/people</url>
+            <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group
+            </organization>
+            <organizationUrl>http://kbss.felk.cvut.cz</organizationUrl>
+            <roles>
+            </roles>
+        </developer>
+        <developer>
+            <name>Martin Ledvinka</name>
+            <email>martin.ledvinka@fel.cvut.cz</email>
+            <organization>Czech Technical University in Prague, Knowledge Based and Software Systems Group
+            </organization>
+            <organizationUrl>http://kbss.felk.cvut.cz</organizationUrl>
+            <roles>
+            </roles>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>Czech Technical University in Prague, Knowledge Based and Software Systems Group</name>
+        <url>http://kbss.felk.cvut.cz</url>
+    </organization>
+
+    <distributionManagement>
+        <site>
+            <id>jopa</id>
+            <name>JOPA</name>
+            <url>https://github.com/kbss-cvut/jopa</url>
+        </site>
+    </distributionManagement>
+</project>

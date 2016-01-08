@@ -1,12 +1,10 @@
-- Add more examples - e.g. using OWLAPI driver, using Sesame contexts, using OWL2Query, using Spring
-    - Create an ontology with some properties for the OWLAPI example, so that inference can be shown in the demo
+- Add more examples - e.g. using Sesame contexts, using OWL2Query, using Spring
 - When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact
 - Perhaps we should use FieldSpecifications instead of Fields when iterating in calculate changes and clone building,
     it would by default skip transient fields and it would simplify adding inheritance support
 - Use SLF4J for logging
 - Support for data property collections?
 - How to enhance query results with transactional changes? Sesame
-- What about support for lists, that are neither Simple nor Referenced?
 - When an entity is removed, there should be some IC check that verifies it is not referenced from any other entity
 - Revisit the way objects and clones are cached in UoW, CloneBuilder and RepositoryMap
     - There should be some unambiguous workflow
