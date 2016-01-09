@@ -185,8 +185,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     public void clear() {
-        this.cloneMapping.clear();
-        this.cloneToOriginals.clear();
+        cloneMapping.clear();
+        cloneToOriginals.clear();
+        keysToClones.clear();
         this.deletedObjects = null;
         this.newObjectsCloneToOriginal = null;
         this.newObjectsOriginalToClone = null;

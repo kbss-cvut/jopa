@@ -24,6 +24,7 @@ public class PersistenceFactory {
 
     public static void init(String repoPath) {
         // Here we set up basic storage access properties - driver class, physical location of the storage
+        System.out.println("Using repository path: " + repoPath);
         final OntologyStorageProperties storageProperties = OntologyStorageProperties.physicalUri(
                 URI.create(repoPath)).driver("cz.cvut.kbss.ontodriver.sesame.SesameDataSource").build();
         final Map<String, String> props = new HashMap<>();

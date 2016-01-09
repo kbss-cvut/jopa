@@ -9,7 +9,10 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 
+import java.io.File;
 import java.net.URI;
+
+import static org.junit.Assert.*;
 
 public class Example {
 
@@ -18,12 +21,31 @@ public class Example {
 
     private final EntityManager em;
 
-    private final Descriptor aircraftDescriptor = new EntityDescriptor(AIRCRAFT_CONTEXT);
-    private final Descriptor accidentDescriptor = new EntityDescriptor(ACCIDENT_CONTEXT);
-
     public Example(String path) {
+        deleteRepositoryIfExists(path);
         PersistenceFactory.init(path);
         this.em = PersistenceFactory.createEntityManager();
+    }
+
+    private void deleteRepositoryIfExists(String path) {
+        final File repository = new File(path.substring("file:".length()));
+        if (repository.exists()) {
+            deleteDirectory(repository);
+        }
+    }
+
+    private void deleteDirectory(File path) {
+        File[] files = path.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    deleteDirectory(f);
+                } else {
+                    f.delete();
+                }
+            }
+        }
+        path.delete();
     }
 
     public static void main(String[] args) throws Exception {
@@ -45,11 +67,21 @@ public class Example {
 
     private void execute() throws Exception {
         final Flight flight = createFlight();
-        final Accident accident = new Accident();
-        accident.setCause(
-                "After hitting turbulence, the plane began rapidly to descend and then underwent a mid-air break-up.");
-        accident.addAffectedFlight(flight);
-        accidentDescriptor.addAttributeDescriptor(accident.getClass().getDeclaredField("flightsAffected"), aircraftDescriptor);
+        final Accident accident = createAccident(flight);
+
+        tryPersistingWithoutContext(accident);
+        persistCorrectly(accident);
+
+        em.clear();
+        em.getEntityManagerFactory().getCache().evictAll(); // Cleanup the cache
+
+        readFromDefault(accident);
+        readFromAccidentOnly(accident);
+        // Here we need to cleanup the cache, because we are reading from the same context and the cache would return the
+        // instance read in the previous method
+        em.clear();
+        em.getEntityManagerFactory().getCache().evictAll();
+        readFromBothContexts(accident);
     }
 
     private Flight createFlight() {
@@ -61,21 +93,85 @@ public class Example {
         flight.setFlightNumber(815);
         flight.setOperator(operator);
         flight.setPlane(plane);
+        System.out.println("Persisting flight data into context " + AIRCRAFT_CONTEXT);
         em.getTransaction().begin();
-        em.persist(plane, aircraftDescriptor);
-        em.persist(operator, aircraftDescriptor);
-        em.persist(flight, aircraftDescriptor);
+        em.persist(plane, new EntityDescriptor(AIRCRAFT_CONTEXT));
+        em.persist(operator, new EntityDescriptor(AIRCRAFT_CONTEXT));
+        em.persist(flight, new EntityDescriptor(AIRCRAFT_CONTEXT));
         em.getTransaction().commit();
         return flight;
     }
 
+    private Accident createAccident(Flight... flights) {
+        final Accident accident = new Accident();
+        accident.setCause(
+                "After hitting turbulence, the plane began rapidly to descend and then underwent a mid-air break-up.");
+        for (Flight f : flights) {
+            accident.addAffectedFlight(f);
+        }
+        return accident;
+    }
+
+    /**
+     * This won't work, because the referenced flight is in a different context, which the descriptor does not specify.
+     */
     private void tryPersistingWithoutContext(Accident accident) {
         try {
             em.getTransaction().begin();
-            em.persist(accident, accidentDescriptor);
+            em.persist(accident, new EntityDescriptor(ACCIDENT_CONTEXT));
             em.getTransaction().commit();
         } catch (RollbackException e) {
-            System.out.println("Correct, cannot persist accident, because the flight points to a different context.");
+            System.out.println(e.getMessage());
+            System.out.println("\tCorrect, cannot persist accident, because the flight points to a different context.");
         }
+    }
+
+    /**
+     * This will work, because we specify the context in which the referenced flight is persisted.
+     */
+    private void persistCorrectly(Accident accident) throws Exception {
+        System.out.println("Persisting accident into context " + ACCIDENT_CONTEXT);
+        em.getTransaction().begin();
+        final Descriptor descriptor = new EntityDescriptor(ACCIDENT_CONTEXT);
+        descriptor.addAttributeDescriptor(accident.getClass().getDeclaredField("flightsAffected"),
+                new EntityDescriptor(AIRCRAFT_CONTEXT));
+        em.persist(accident, descriptor);
+        em.getTransaction().commit();
+    }
+
+    /**
+     * Default context in Sesame means a union of all context, so all data is available.
+     */
+    private void readFromDefault(Accident accident) {
+        final Accident result = em.find(Accident.class, accident.getUri());
+        assertNotNull(result);
+        assertEquals(accident.getFlightsAffected().size(), result.getFlightsAffected().size());
+        System.out.println("Instance read from the default context: " + result);
+    }
+
+    /**
+     * Here we are reading only from the accidents context, so no flight information will be available.
+     */
+    private void readFromAccidentOnly(Accident accident) {
+        final Descriptor descriptor = new EntityDescriptor(ACCIDENT_CONTEXT);
+
+        final Accident result = em.find(Accident.class, accident.getUri(), descriptor);
+        assertNotNull(result);
+        assertNull(result.getFlightsAffected());
+        System.out.println("Instance read from the accidents context (notice missing affected flights): " + result);
+    }
+
+    /**
+     * Now explicitly specify that flight info should be read from the aircraft context.
+     */
+    private void readFromBothContexts(Accident accident) throws Exception {
+        final Descriptor descriptor = new EntityDescriptor(ACCIDENT_CONTEXT);
+        descriptor.addAttributeDescriptor(accident.getClass().getDeclaredField("flightsAffected"),
+                new EntityDescriptor(AIRCRAFT_CONTEXT));
+
+        final Accident result = em.find(Accident.class, accident.getUri(), descriptor);
+        assertNotNull(result);
+        assertEquals(accident.getFlightsAffected().size(), result.getFlightsAffected().size());
+        System.out.println("Instance read from the accident and aircraft contexts: " + result);
     }
 }

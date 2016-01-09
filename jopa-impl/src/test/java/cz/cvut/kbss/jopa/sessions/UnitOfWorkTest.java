@@ -771,4 +771,46 @@ public class UnitOfWorkTest {
         uow.commit();
         verify(storageMock).commit();
     }
+
+    @Test
+    public void clearCleansUpPersistenceContext() throws Exception {
+        final OWLClassD d = new OWLClassD();
+        d.setUri(URI.create("http://dUri"));
+        uow.registerExistingObject(d, descriptor);
+        final OWLClassB newOne = new OWLClassB();
+        final URI pk = URI.create("http://testObject");
+        newOne.setUri(pk);
+        uow.registerNewObject(newOne, descriptor);
+        final Object toRemove = uow.registerExistingObject(entityA, descriptor);
+        uow.registerExistingObject(entityB, descriptor);
+        uow.removeObject(toRemove);
+
+        uow.clear();
+        assertTrue(getMap("cloneMapping") == null || getMap("cloneMapping").isEmpty());
+        assertTrue(getMap("cloneToOriginals") == null || getMap("cloneToOriginals").isEmpty());
+        assertTrue(getMap("keysToClones") == null || getMap("keysToClones").isEmpty());
+        assertTrue(getMap("deletedObjects") == null || getMap("deletedObjects").isEmpty());
+        assertTrue(getMap("newObjectsCloneToOriginal") == null || getMap("newObjectsCloneToOriginal").isEmpty());
+        assertTrue(getMap("newObjectsOriginalToClone") == null || getMap("newObjectsOriginalToClone").isEmpty());
+        assertTrue(getMap("newObjectsKeyToClone") == null || getMap("newObjectsKeyToClone").isEmpty());
+        assertFalse(getBoolean("hasChanges"));
+        assertFalse(getBoolean("hasNew"));
+        assertFalse(getBoolean("hasDeleted"));
+    }
+
+    private Map<?, ?> getMap(String fieldName) throws Exception {
+        final Field field = uow.getClass().getDeclaredField(fieldName);
+        if (!field.isAccessible()) {
+            field.setAccessible(true);
+        }
+        return (Map<?, ?>) field.get(uow);
+    }
+
+    private boolean getBoolean(String fieldName) throws Exception {
+        final Field field = uow.getClass().getDeclaredField(fieldName);
+        if (!field.isAccessible()) {
+            field.setAccessible(true);
+        }
+        return (boolean) field.get(uow);
+    }
 }

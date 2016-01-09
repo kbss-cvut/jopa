@@ -56,6 +56,7 @@ public class Accident {
     public String toString() {
         return "Accident{" +
                 "cause='" + cause + '\'' +
+                ", flightsAffected=" + (flightsAffected != null ? flightsAffected : "[]") +
                 '}';
     }
 }

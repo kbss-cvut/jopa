@@ -1,4 +1,6 @@
+- Add readme to Example03
 - Add check for no-arg constructor to metamodel building
+- Add addAttributeDescriptor and addAttributeContext methods taking a string - field name
 - Add more examples - e.g. using Sesame contexts, using OWL2Query, using Spring
 - When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact
 - Perhaps we should use FieldSpecifications instead of Fields when iterating in calculate changes and clone building,

@@ -30,4 +30,20 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <!-- Run the example -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <configuration>
+                    <mainClass>cz.cvut.kbss.jopa.example03.Example</mainClass>
+                    <arguments>
+                        <argument>file:${project.basedir}/repositories/example03</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
