@@ -1,4 +1,3 @@
-- Add readme to Example03
 - Add check for no-arg constructor to metamodel building
 - Add addAttributeDescriptor and addAttributeContext methods taking a string - field name
 - Add more examples - e.g. using Sesame contexts, using OWL2Query, using Spring

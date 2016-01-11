@@ -9,7 +9,6 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 
-import java.io.File;
 import java.net.URI;
 
 import static org.junit.Assert.*;
@@ -22,30 +21,9 @@ public class Example {
     private final EntityManager em;
 
     public Example(String path) {
-        deleteRepositoryIfExists(path);
+        Environment.deleteRepositoryIfExists(path);
         PersistenceFactory.init(path);
         this.em = PersistenceFactory.createEntityManager();
-    }
-
-    private void deleteRepositoryIfExists(String path) {
-        final File repository = new File(path.substring("file:".length()));
-        if (repository.exists()) {
-            deleteDirectory(repository);
-        }
-    }
-
-    private void deleteDirectory(File path) {
-        File[] files = path.listFiles();
-        if (files != null) {
-            for (File f : files) {
-                if (f.isDirectory()) {
-                    deleteDirectory(f);
-                } else {
-                    f.delete();
-                }
-            }
-        }
-        path.delete();
     }
 
     public static void main(String[] args) throws Exception {
@@ -114,6 +92,8 @@ public class Example {
 
     /**
      * This won't work, because the referenced flight is in a different context, which the descriptor does not specify.
+     *
+     * Thus, JOPA sees the flight as unpersisted instance and throws an exception on commit.
      */
     private void tryPersistingWithoutContext(Accident accident) {
         try {
@@ -158,7 +138,7 @@ public class Example {
         final Accident result = em.find(Accident.class, accident.getUri(), descriptor);
         assertNotNull(result);
         assertNull(result.getFlightsAffected());
-        System.out.println("Instance read from the accidents context (notice missing affected flights): " + result);
+        System.out.println("Instance read from the accidents context (notice the missing affected flights): " + result);
     }
 
     /**
