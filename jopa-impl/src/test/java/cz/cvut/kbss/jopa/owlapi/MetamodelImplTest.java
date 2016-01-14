@@ -1,7 +1,7 @@
 package cz.cvut.kbss.jopa.owlapi;
 
 import cz.cvut.kbss.jopa.environment.*;
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -303,13 +304,13 @@ public class MetamodelImplTest {
         assertTrue(metamodel.getInferredClasses().contains(OWLClassN.class));
     }
 
-    @Test(expected = OWLPersistenceException.class)
+    @Test(expected = MetamodelInitializationException.class)
     public void throwsExceptionWhenTryingToBuildClassWithoutOWLClassAnnotation() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(String.class));
         new MetamodelImpl(conf, entityLoaderMock);
     }
 
-    @Test(expected = OWLPersistenceException.class)
+    @Test(expected = MetamodelInitializationException.class)
     public void throwsExceptionWhenTypesFieldIsNotASet() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithInvalidTypes.class));
@@ -324,7 +325,7 @@ public class MetamodelImplTest {
         private List<String> types;
     }
 
-    @Test(expected = OWLPersistenceException.class)
+    @Test(expected = MetamodelInitializationException.class)
     public void throwsExceptionWhenPropertiesIsNotAMap() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithInvalidProperties.class));
@@ -352,7 +353,7 @@ public class MetamodelImplTest {
         private Integer id;
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = MetamodelInitializationException.class)
     public void throwsExceptionForClassWithoutIdentifier() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithoutIdentifier.class));
@@ -425,5 +426,24 @@ public class MetamodelImplTest {
         final EntityType<OWLClassO> et = metamodel.entity(OWLClassO.class);
         assertNull(et.getFieldSpecification(OWLClassO.TRANSIENT_FINAL_FIELD_NAME));
         assertEquals(1, et.getDeclaredAttributes().size());
+    }
+
+    @Test(expected = MetamodelInitializationException.class)
+    public void throwsExceptionForEntityWithoutNoArgConstructor() throws Exception {
+        when(entityLoaderMock.discoverEntityClasses(conf))
+                .thenReturn(Collections.singleton(ClassWithoutNoArgConstructor.class));
+
+        new MetamodelImpl(conf, entityLoaderMock);
+    }
+
+    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithoutNoArgConstructor")
+    private static class ClassWithoutNoArgConstructor {
+
+        @Id
+        private URI id;
+
+        public ClassWithoutNoArgConstructor(URI id) {
+            this.id = id;
+        }
     }
 }

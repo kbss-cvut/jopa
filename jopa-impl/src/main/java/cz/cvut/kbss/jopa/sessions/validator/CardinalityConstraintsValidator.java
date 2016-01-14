@@ -33,7 +33,7 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
         }
         final int valueCount = extractValueCount(value);
         for (ParticipationConstraint pc : constraints.value()) {
-            validateParticipationConstraint(field.getName(), valueCount, pc);
+            validateParticipationConstraint(field, valueCount, pc);
         }
         if (constraints.value().length == 0) {
             validateNonEmpty(field, valueCount, constraints);
@@ -49,7 +49,7 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
         final Attribute<?, ?> att = (Attribute<?, ?>) attribute;
         final int valueCount = extractValueCount(attributeValue);
         for (ParticipationConstraint pc : att.getConstraints()) {
-            validateParticipationConstraint(att.getName(), valueCount, pc);
+            validateParticipationConstraint(att.getJavaField(), valueCount, pc);
         }
         if (att.getConstraints().length == 0) {
             validateNonEmpty(att, valueCount);
@@ -63,28 +63,32 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
         return value instanceof Collection ? ((Collection<?>) value).size() : 1;
     }
 
-    private void validateParticipationConstraint(String fieldName, int valueCount, ParticipationConstraint pc) {
+    private void validateParticipationConstraint(Field field, int valueCount, ParticipationConstraint pc) {
         if (valueCount < pc.min()) {
             throw new CardinalityConstraintViolatedException("At least " + pc.min() +
-                    " values of attribute " + fieldName + " expected, but got only " + valueCount);
+                    " values of attribute " + field.getDeclaringClass().getSimpleName() + "." + field.getName() +
+                    " expected, but got only " + valueCount);
         }
         if (pc.max() >= 0 && pc.max() < valueCount) {
             throw new CardinalityConstraintViolatedException("At most " + pc.max() +
-                    " values of attribute " + fieldName + " expected, but got " + valueCount);
+                    " values of attribute " + field.getDeclaringClass().getSimpleName() + "." + field.getName() +
+                    " expected, but got " + valueCount);
         }
     }
 
     private void validateNonEmpty(Field field, int valueCount, ParticipationConstraints constraints) {
         if (valueCount == 0 && constraints.nonEmpty()) {
             throw new CardinalityConstraintViolatedException(
-                    "Attribute " + field.getName() + " was marked as nonEmpty, but contains no value.");
+                    "Attribute " + field.getDeclaringClass() + "." + field.getName() +
+                            " was marked as nonEmpty, but contains no value.");
         }
     }
 
     private void validateNonEmpty(Attribute<?, ?> attribute, int valueCount) {
         if (valueCount == 0 && attribute.isNonEmpty()) {
             throw new CardinalityConstraintViolatedException(
-                    "Attribute " + attribute.getName() + " was marked as nonEmpty, but contains no value.");
+                    "Attribute " + attribute.getDeclaringType().getJavaType().getSimpleName() + "." +
+                            attribute.getName() + " was marked as nonEmpty, but contains no value.");
         }
     }
 }

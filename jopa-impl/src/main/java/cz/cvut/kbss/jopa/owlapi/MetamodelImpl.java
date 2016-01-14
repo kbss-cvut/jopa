@@ -13,14 +13,14 @@
 
 package cz.cvut.kbss.jopa.owlapi;
 
+import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
-import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.metamodel.EmbeddableType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.owlapi.metamodel.EntityClassProcessor;
 import cz.cvut.kbss.jopa.owlapi.metamodel.EntityFieldMetamodelProcessor;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
@@ -94,24 +94,19 @@ public class MetamodelImpl implements Metamodel {
             LOG.config("processing OWL class : " + cls);
         }
 
-        final OWLClass c = cls.getAnnotation(OWLClass.class);
+        final EntityClassProcessor classProcessor = new EntityClassProcessor();
 
-        if (c == null) {
-            throw new OWLPersistenceException("The class " + cls
-                    + " is not an OWLPersistence entity!");
-        }
+        final EntityTypeImpl<X> et = classProcessor.processEntityType(cls);
 
-        final EntityTypeImpl<X> c2 = new EntityTypeImpl<>(cls.getSimpleName(), cls, IRI.create(c.iri()));
-
-        typeMap.put(cls, c2);
-        final EntityFieldMetamodelProcessor<X> fieldProcessor = new EntityFieldMetamodelProcessor<>(cls, c2, this);
+        typeMap.put(cls, et);
+        final EntityFieldMetamodelProcessor<X> fieldProcessor = new EntityFieldMetamodelProcessor<>(cls, et, this);
 
         for (final Field field : cls.getDeclaredFields()) {
             fieldProcessor.processField(field);
         }
 
-        if (c2.getIdentifier() == null) {
-            throw new IllegalArgumentException();
+        if (et.getIdentifier() == null) {
+            throw new MetamodelInitializationException("Missing identifier field in entity class " + cls);
         }
     }
 

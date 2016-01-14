@@ -116,7 +116,7 @@ public class EntityFieldMetamodelProcessor<X> {
     private void processTypesField(Field field, Class<?> fieldValueCls, InferenceInfo inference) {
         Types tt = field.getAnnotation(Types.class);
         if (!Set.class.isAssignableFrom(field.getType())) {
-            throw new OWLPersistenceException("The Types element must be a set of Strings.");
+            throw new MetamodelInitializationException("The Types element must be a set of Strings.");
         }
         et.addDirectTypes(new TypesSpecificationImpl<>(et,
                 tt.fetchType(), field, fieldValueCls, inference.inferred));
@@ -129,7 +129,7 @@ public class EntityFieldMetamodelProcessor<X> {
     private void processPropertiesField(Field field, Class<?> fieldValueCls, InferenceInfo inference) {
         Properties properties = field.getAnnotation(Properties.class);
         if (!Map.class.isAssignableFrom(field.getType())) {
-            throw new OWLPersistenceException("The Types element must be a Map<String,Set<String>>.");
+            throw new MetamodelInitializationException("The Types element must be a Map<String,Set<String>>.");
         }
         et.addOtherProperties(new PropertiesSpecificationImpl<>(et,
                 properties.fetchType(), field, fieldValueCls, inference.inferred));
@@ -141,7 +141,7 @@ public class EntityFieldMetamodelProcessor<X> {
             final Sequence os = field.getAnnotation(Sequence.class);
 
             if (os == null) {
-                throw new OWLPersistenceException("Expected Sequence annotation.");
+                throw new MetamodelInitializationException("Expected Sequence annotation.");
             }
             a = ListAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et).field(field)
                                  .elementType(propertyAttributes.getType())
