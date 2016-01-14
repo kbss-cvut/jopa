@@ -113,7 +113,6 @@ public class MetamodelImpl implements Metamodel {
     @SuppressWarnings("unchecked")
     public <X> EntityType<X> entity(Class<X> cls) {
         if (!typeMap.containsKey(cls)) {
-            // TODO
             processOWLClass(cls);
         }
 

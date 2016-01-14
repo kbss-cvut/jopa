@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 /**
- * Describes an entity. </p>
+ * Describes an entity.
  * <p>
  * Each attribute has a descriptor associated with it.
  *

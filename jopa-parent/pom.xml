@@ -166,16 +166,14 @@
     </organization>
 
     <scm>
-        <connection>scm:svn:https://krizik.felk.cvut.cz/svnkbss/research/jopa/trunk/</connection>
-        <developerConnection>scm:svn:https://krizik.felk.cvut.cz/svnkbss/research/jopa/trunk/</developerConnection>
-        <url>https://krizik.felk.cvut.cz/svnkbss/research/jopa/trunk/</url>
+        <connection>scm:git:https://krizik.felk.cvut.cz/git/jopa.git</connection>
     </scm>
 
     <distributionManagement>
         <repository>
-            <id>krizik</id>
+            <id>kbss</id>
             <name>KBSS Maven 2 Repository</name>
-            <url>sftp://krizik.felk.cvut.cz/var/www/m2repo</url>
+            <url>sftp://kbss.felk.cvut.cz/var/www/m2repo</url>
         </repository>
         <site>
             <id>jopa</id>

@@ -78,9 +78,9 @@
 
     <distributionManagement>
         <repository>
-            <id>krizik</id>
+            <id>kbss</id>
             <name>KBSS Maven 2 Repository</name>
-            <url>sftp://krizik.felk.cvut.cz/var/www/m2repo</url>
+            <url>sftp://kbss.felk.cvut.cz/var/www/m2repo</url>
         </repository>
         <site>
             <id>jopa</id>

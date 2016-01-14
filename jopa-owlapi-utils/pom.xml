@@ -15,9 +15,9 @@
 
 	<repositories>
 		<repository>
-			<id>krizik</id>
+			<id>kbss</id>
 			<name>KBSS Maven 2 Repository</name>
-			<url>http://krizik.felk.cvut.cz/m2repo</url>
+			<url>http://kbss.felk.cvut.cz/m2repo</url>
 		</repository>
 	</repositories>
 

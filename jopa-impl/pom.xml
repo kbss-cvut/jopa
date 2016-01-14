@@ -17,28 +17,6 @@
         <aspectj.version>1.8.5</aspectj.version>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>krizik</id>
-            <name>KBSS Maven 2 Repository</name>
-            <url>http://krizik.felk.cvut.cz/m2repo</url>
-        </repository>
-        <repository>
-            <id>berkeley</id>
-            <name>Berkeley Maven 2 Repository</name>
-            <url>http://code.berkeleybop.org/maven/repository</url>
-        </repository>
-        <repository>
-            <id>jena</id>
-            <url>http://repo1.maven.org/maven2/com/hp/hpl/</url>
-        </repository>
-        <repository>
-            <id>repository.jboss.org-public</id>
-            <name>JBoss.org Maven repository</name>
-            <url>https://repository.jboss.org/nexus/content/groups/public</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
