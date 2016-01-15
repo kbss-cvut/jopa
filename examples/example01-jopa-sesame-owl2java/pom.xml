@@ -11,7 +11,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>example-01</artifactId>
-    <name>Example01-JOPA-Sesame-OWJ2Java</name>
+    <name>Example01-JOPA-Sesame-OWL2Java</name>
     <description>
         Basic demo of JOPA in connection with Sesame driver.
         This example uses the UOBM ontology (https://www.cs.ox.ac.uk/isg/tools/UOBMGenerator/) as base for its small

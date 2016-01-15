@@ -8,7 +8,10 @@
     <artifactId>jopa-examples-parent</artifactId>
     <version>1.0-SNAPSHOT</version>
     <modules>
+        <module>example01-jopa-sesame-owl2java</module>
+        <module>example02-jopa-owlapi</module>
         <module>example03-jopa-sesame-contexts</module>
+        <module>example04-jopa-spring</module>
     </modules>
 
     <name>JOPA Examples - parent</name>

@@ -18,5 +18,4 @@
 - Do some research on how to implement class hierarchies in JOPA
 - Define schema for persistence.xml for JOPA
 - Research whether we could replace aspectj with cglib-generated proxies
-- Consider adding support for JNDI data source lookup
 - IC - SHACL

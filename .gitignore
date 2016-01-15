@@ -5,3 +5,5 @@
 **/testResults
 **/example02-jopa-owlapi/repository.owl
 **/example03-jopa-sesame-contexts/repositories
+**/node_modules
+**/example04-jopa-spring/src/main/webapp/js/bundle.js
