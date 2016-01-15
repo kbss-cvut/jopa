@@ -102,6 +102,8 @@ public class CloneBuilderImpl implements CloneBuilder {
             fields.addAll(Arrays.asList(tmp.getDeclaredFields()));
             tmp = tmp.getSuperclass();
         }
+        // If we use field specifications here, we have to explicitly clone the identifier field as well
+        // because it is not included in the field specs
         for (Field f : fields) {
             if (EntityPropertiesUtils.isFieldTransient(f)) {
                 continue;

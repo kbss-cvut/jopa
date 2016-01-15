@@ -5,8 +5,6 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ChangeManager;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
@@ -25,7 +23,6 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ChangeManagerTest {
@@ -37,6 +34,7 @@ public class ChangeManagerTest {
     private static OWLClassD testD;
     private static OWLClassC testC;
     private static OWLClassO testO;
+    private static OWLClassM testM;
 
     private OWLClassA testAClone;
     private OWLClassB testBClone;
@@ -44,7 +42,6 @@ public class ChangeManagerTest {
     private OWLClassD testDClone;
 
     private static Set<String> typesCollection;
-    private static TestEntity primitivesTest;
     private static Descriptor defaultDescriptor;
 
     @Mock
@@ -67,8 +64,8 @@ public class ChangeManagerTest {
         }
         OWLClassF testF = new OWLClassF();
         testF.setUri(URI.create("http://testF"));
-        primitivesTest = new TestEntity();
-        primitivesTest.setId(0);
+        testM = new OWLClassM();
+        testM.initializeTestValues(false);
         defaultDescriptor = new EntityDescriptor(DEFAULT_CONTEXT);
     }
 
@@ -262,14 +259,14 @@ public class ChangeManagerTest {
 
     @Test
     public void testCalculateChangesPrimitives() throws Exception {
-        final TestEntity primClone = new TestEntity();
-        primClone.setId(primitivesTest.getId() + 10);
-        ObjectChangeSet chSet = createChangeSet(primitivesTest, primClone);
+        final OWLClassM testMClone = new OWLClassM();
+        testMClone.setIntAttribute(testM.getIntAttribute() + 117);
+        ObjectChangeSet chSet = createChangeSet(testM, testMClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertFalse(chSet.getChanges().isEmpty());
-        assertTrue(chSet.getChanges().containsKey("id"));
+        assertTrue(chSet.getChanges().containsKey(OWLClassM.getIntAttributeField().getName()));
     }
 
     @Test
@@ -308,17 +305,14 @@ public class ChangeManagerTest {
         newCollection.remove("8");
         newCollection.add("String");
         testAClone.setTypes(newCollection);
-        final URI newURI = URI.create("http://newACloneURI");
-        testAClone.setUri(newURI);
         testAClone.setStringAttribute("AnotherStringAttribute");
         ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
-        assertEquals(3, chSet.getChanges().size());
+        assertEquals(2, chSet.getChanges().size());
         assertTrue(chSet.getChanges().containsKey("stringAttribute"));
         assertTrue(chSet.getChanges().containsKey("types"));
-        assertTrue(chSet.getChanges().containsKey("uri"));
     }
 
     @Test
@@ -452,18 +446,8 @@ public class ChangeManagerTest {
         final OWLClassF testF = new OWLClassF();
         final OWLClassF cloneF = new OWLClassF();
         initFAndClone(testF, cloneF);
-        initMetamodelForClassA();
         final boolean res = manager.hasChanges(testF, cloneF);
         assertFalse(res);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void initMetamodelForClassA() throws NoSuchFieldException {
-        final EntityType<OWLClassA> etAMock = mock(EntityType.class);
-        final Identifier idMock = mock(Identifier.class);
-        when(idMock.getJavaField()).thenReturn(OWLClassA.class.getDeclaredField("uri"));
-        when(etAMock.getIdentifier()).thenReturn(idMock);
-        when(metamodelMock.entity(OWLClassA.class)).thenReturn(etAMock);
     }
 
     private void initFAndClone(OWLClassF orig, OWLClassF clone) {
@@ -496,7 +480,6 @@ public class ChangeManagerTest {
         remove.next();
         remove.remove();
         cloneF.getSimpleSet().add(added);
-        initMetamodelForClassA();
         final boolean res = manager.hasChanges(testF, cloneF);
         assertTrue(res);
     }
@@ -523,20 +506,5 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(changeSet);
         assertFalse(res);
         assertTrue(changeSet.getChanges().isEmpty());
-    }
-
-
-    private static final class TestEntity {
-
-        private int id;
-
-        public int getId() {
-            return id;
-        }
-
-        public void setId(int id) {
-            this.id = id;
-        }
-
     }
 }

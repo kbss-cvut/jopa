@@ -1,11 +1,11 @@
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.model.annotations.*;
+
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
-
-import cz.cvut.kbss.jopa.model.annotations.*;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassF")
 public class OWLClassF {
@@ -42,7 +42,7 @@ public class OWLClassF {
 
 	public Set<OWLClassA> getSimpleSet() {
 		if (simpleSet == null) {
-			this.simpleSet = new HashSet<OWLClassA>();
+			this.simpleSet = new HashSet<>();
 		}
 		return simpleSet;
 	}

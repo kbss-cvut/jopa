@@ -64,6 +64,15 @@ public class MetamodelMocks {
     private SingularAttribute<OWLClassG, OWLClassH> gOwlClassHAtt;
 
     @Mock
+    private EntityType<OWLClassF> etF;
+    @Mock
+    private Identifier idF;
+    @Mock
+    private SingularAttribute<OWLClassF, String> fStringAtt;
+    @Mock
+    private PluralAttribute<OWLClassF, Set, OWLClassA> fSetAtt;
+
+    @Mock
     private EntityType<OWLClassH> etH;
     @Mock
     private Identifier idH;
@@ -130,6 +139,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassCMocks(etC, cSimpleList, cReferencedList, idC);
         MetamodelFactory.initOWLClassDMocks(etD, dOwlClassAAtt, idD);
         MetamodelFactory.initOWLClassEMocks(etE, eStringAtt, idE);
+        MetamodelFactory.initOWLClassFMocks(etF, fSetAtt, fStringAtt, idF);
         MetamodelFactory.iniOWLClassGMocks(etG, gOwlClassHAtt, idG);
         MetamodelFactory.initOWLClassHMocks(etH, hOwlClassAAtt, hOwlClassGAtt, idH);
         MetamodelFactory.initOWLClassJMocks(etJ, jSetAtt, idJ);
@@ -146,6 +156,7 @@ public class MetamodelMocks {
         when(metamodel.entity(OWLClassC.class)).thenReturn(etC);
         when(metamodel.entity(OWLClassD.class)).thenReturn(etD);
         when(metamodel.entity(OWLClassE.class)).thenReturn(etE);
+        when(metamodel.entity(OWLClassF.class)).thenReturn(etF);
         when(metamodel.entity(OWLClassG.class)).thenReturn(etG);
         when(metamodel.entity(OWLClassH.class)).thenReturn(etH);
         when(metamodel.entity(OWLClassJ.class)).thenReturn(etJ);
@@ -270,6 +281,24 @@ public class MetamodelMocks {
 
         public SingularAttribute<OWLClassE, String> stringAttribute() {
             return MetamodelMocks.this.eStringAtt;
+        }
+    }
+
+    public class OWLClassFMetamodel {
+        public EntityType<OWLClassF> entityType() {
+            return MetamodelMocks.this.etF;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idF;
+        }
+
+        public SingularAttribute<OWLClassF, String> stringAttribute() {
+            return MetamodelMocks.this.fStringAtt;
+        }
+
+        public PluralAttribute<OWLClassF, Set, OWLClassA> setAttribute() {
+            return MetamodelMocks.this.fSetAtt;
         }
     }
 

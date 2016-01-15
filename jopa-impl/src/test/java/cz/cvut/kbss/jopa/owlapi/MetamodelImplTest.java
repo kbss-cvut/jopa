@@ -393,9 +393,17 @@ public class MetamodelImplTest {
         final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
 
         final EntityType<OWLClassO> et = metamodel.entity(OWLClassO.class);
-        assertNull(et.getFieldSpecification("STR_ATT_FIELD"));
-        assertNull(et.getFieldSpecification("primitiveField"));
         assertEquals(1, et.getDeclaredAttributes().size());
+        try {
+            et.getFieldSpecification("STR_ATT_FIELD");
+        } catch (IllegalArgumentException e) {
+            // Do nothing, this is correct
+        }
+        try {
+            et.getFieldSpecification("primitiveField");
+        } catch (IllegalArgumentException e) {
+            // Do nothing, this is correct
+        }
     }
 
     @Test
@@ -404,8 +412,12 @@ public class MetamodelImplTest {
         final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
 
         final EntityType<OWLClassO> et = metamodel.entity(OWLClassO.class);
-        assertNull(et.getFieldSpecification(OWLClassO.TRANSIENT_ANNOTATED_FIELD_NAME));
         assertEquals(1, et.getDeclaredAttributes().size());
+        try {
+            et.getFieldSpecification(OWLClassO.TRANSIENT_ANNOTATED_FIELD_NAME);
+        } catch (IllegalArgumentException e) {
+            // Do nothing, this is correct
+        }
     }
 
     @Test
@@ -414,8 +426,12 @@ public class MetamodelImplTest {
         final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
 
         final EntityType<OWLClassO> et = metamodel.entity(OWLClassO.class);
-        assertNull(et.getFieldSpecification(OWLClassO.TRANSIENT_FIELD_NAME));
         assertEquals(1, et.getDeclaredAttributes().size());
+        try {
+            et.getFieldSpecification(OWLClassO.TRANSIENT_FIELD_NAME);
+        } catch (IllegalArgumentException e) {
+            // Do nothing, this is correct
+        }
     }
 
     @Test
@@ -424,8 +440,12 @@ public class MetamodelImplTest {
         final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
 
         final EntityType<OWLClassO> et = metamodel.entity(OWLClassO.class);
-        assertNull(et.getFieldSpecification(OWLClassO.TRANSIENT_FINAL_FIELD_NAME));
         assertEquals(1, et.getDeclaredAttributes().size());
+        try {
+            et.getFieldSpecification(OWLClassO.TRANSIENT_FINAL_FIELD_NAME);
+        } catch (IllegalArgumentException e) {
+            // Do nothing, this is correct
+        }
     }
 
     @Test(expected = MetamodelInitializationException.class)

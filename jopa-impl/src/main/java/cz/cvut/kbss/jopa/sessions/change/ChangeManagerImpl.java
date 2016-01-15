@@ -1,6 +1,7 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.ChangeManager;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
@@ -19,9 +20,11 @@ public class ChangeManagerImpl implements ChangeManager {
 
     private final Map<Object, Object> visitedObjects;
 
+    private final MetamodelProvider metamodelProvider;
     private final ChangeDetector changeDetector;
 
     public ChangeManagerImpl(MetamodelProvider metamodelProvider) {
+        this.metamodelProvider = metamodelProvider;
         this.changeDetector = new ChangeDetectors(metamodelProvider, this);
         visitedObjects = new IdentityHashMap<>();
     }
@@ -54,12 +57,9 @@ public class ChangeManagerImpl implements ChangeManager {
             return false;
         }
         final Class<?> cls = clone.getClass();
-        List<Field> fields = EntityPropertiesUtils.getAllFields(cls);
         Map<Object, Object> composedObjects = new HashMap<>();
-        for (Field f : fields) {
-            if (EntityPropertiesUtils.isFieldTransient(f)) {
-                continue;
-            }
+        for (FieldSpecification<?, ?> fs : getFields(cls)) {
+            final Field f = fs.getJavaField();
             Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
             Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
             final Changed ch = valueChanged(origVal, clVal);
@@ -81,6 +81,10 @@ public class ChangeManagerImpl implements ChangeManager {
             }
         }
         return false;
+    }
+
+    private <X> Set<FieldSpecification<? super X, ?>> getFields(Class<X> cls) {
+        return metamodelProvider.getMetamodel().entity(cls).getFieldSpecifications();
     }
 
     Changed valueChanged(Object orig, Object clone) {
@@ -111,12 +115,9 @@ public class ChangeManagerImpl implements ChangeManager {
         }
         Object original = changeSet.getChangedObject();
         Object clone = changeSet.getCloneObject();
-        final List<Field> fields = EntityPropertiesUtils.getAllFields(clone.getClass());
         boolean changes = false;
-        for (Field f : fields) {
-            if (EntityPropertiesUtils.isFieldTransient(f)) {
-                continue;
-            }
+        for (FieldSpecification<?, ?> fs : getFields(clone.getClass())) {
+            final Field f = fs.getJavaField();
             Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
             Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
             ChangeRecord r = null;

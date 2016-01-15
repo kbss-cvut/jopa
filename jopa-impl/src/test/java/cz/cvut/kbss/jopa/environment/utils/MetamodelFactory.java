@@ -32,6 +32,8 @@ public class MetamodelFactory {
         when(etMock.getTypes()).thenReturn(typesMock);
         when(etMock.getAttributes()).thenReturn(
                 Collections.<Attribute<? super OWLClassA, ?>>singleton(strAttMock));
+        when(etMock.getFieldSpecifications()).thenReturn(
+                new HashSet<>(Arrays.<FieldSpecification<? super OWLClassA, ?>>asList(strAttMock, typesMock)));
         when(strAttMock.getJavaField()).thenReturn(OWLClassA.getStrAttField());
         when(strAttMock.getDeclaringType()).thenReturn(etMock);
         final String stringAttIri = OWLClassA.getStrAttField().getAnnotation(OWLDataProperty.class)
@@ -63,6 +65,8 @@ public class MetamodelFactory {
         when(etMock.getProperties()).thenReturn(propsMock);
         when(etMock.getAttributes()).thenReturn(
                 Collections.<Attribute<? super OWLClassB, ?>>singleton(strAttMock));
+        when(etMock.getFieldSpecifications()).thenReturn(
+                new HashSet<>(Arrays.<FieldSpecification<? super OWLClassB, ?>>asList(strAttMock, propsMock)));
         when(strAttMock.getJavaField()).thenReturn(OWLClassB.getStrAttField());
         final String stringAttIri = OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class)
                                              .iri();
@@ -87,10 +91,10 @@ public class MetamodelFactory {
         when(etMock.getAttribute(OWLClassC.getSimpleListField().getName())).thenReturn(
                 simpleListMock);
         when(etMock.getAttribute(OWLClassC.getRefListField().getName())).thenReturn(refListMock);
-        final Set<Attribute<? super OWLClassC, ?>> atts = new HashSet<>();
-        atts.add(simpleListMock);
-        atts.add(refListMock);
-        when(etMock.getAttributes()).thenReturn(atts);
+        when(etMock.getAttributes())
+                .thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassC, ?>>asList(simpleListMock, refListMock)));
+        when(etMock.getFieldSpecifications()).thenReturn(
+                new HashSet<>(Arrays.<FieldSpecification<? super OWLClassC, ?>>asList(simpleListMock, refListMock)));
         when(simpleListMock.getJavaField()).thenReturn(OWLClassC.getSimpleListField());
         when(refListMock.getJavaField()).thenReturn(OWLClassC.getRefListField());
         String attIri = OWLClassC.getSimpleListField().getAnnotation(OWLObjectProperty.class).iri();
@@ -143,6 +147,7 @@ public class MetamodelFactory {
         when(etMock.getAttribute(OWLClassE.getStrAttField().getName())).thenReturn(strAttMock);
         when(etMock.getAttributes()).thenReturn(
                 Collections.<Attribute<? super OWLClassE, ?>>singleton(strAttMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Collections.singleton(strAttMock));
         when(strAttMock.getJavaField()).thenReturn(OWLClassB.getStrAttField());
         final String stringAttIri = OWLClassB.getStrAttField().getAnnotation(OWLDataProperty.class)
                                              .iri();
@@ -163,6 +168,7 @@ public class MetamodelFactory {
         when(etMock.getAttribute(OWLClassD.getOwlClassAField().getName())).thenReturn(clsAMock);
         when(etMock.getAttributes()).thenReturn(
                 Collections.<Attribute<? super OWLClassD, ?>>singleton(clsAMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Collections.singleton(clsAMock));
         when(clsAMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
         when(clsAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final String clsAIri = OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
@@ -178,6 +184,42 @@ public class MetamodelFactory {
         when(idMock.getJavaField()).thenReturn(OWLClassD.class.getDeclaredField("uri"));
     }
 
+    public static void initOWLClassFMocks(EntityType<OWLClassF> etMock, PluralAttribute setAMock,
+                                          SingularAttribute strAttMock,
+                                          Identifier idMock) throws NoSuchFieldException, SecurityException {
+        when(etMock.getJavaType()).thenReturn(OWLClassF.class);
+        when(etMock.getIRI()).thenReturn(IRI.create(OWLClassF.getClassIri()));
+        when(etMock.getAttribute(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
+        when(etMock.getAttributes())
+                .thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassF, ?>>asList(setAMock, strAttMock)));
+        when(etMock.getFieldSpecifications())
+                .thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassF, ?>>asList(setAMock, strAttMock)));
+        when(setAMock.getJavaField()).thenReturn(OWLClassF.getSimpleSetField());
+        when(setAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(setAMock.getCascadeTypes())
+                .thenReturn(OWLClassF.getSimpleSetField().getAnnotation(OWLObjectProperty.class).cascade());
+        final String setAIri = OWLClassF.getSimpleSetField().getAnnotation(OWLObjectProperty.class).iri();
+        when(setAMock.getIRI()).thenReturn(IRI.create(setAIri));
+        when(setAMock.getJavaType()).thenReturn(Set.class);
+        when(setAMock.isCollection()).thenReturn(Boolean.TRUE);
+        when(setAMock.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(setAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
+        when(setAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(setAMock.getDeclaringType()).thenReturn(etMock);
+
+        when(strAttMock.getJavaField()).thenReturn(OWLClassF.getStrAttField());
+        when(strAttMock.getDeclaringType()).thenReturn(etMock);
+        final String stringAttIri = OWLClassF.getStrAttField().getAnnotation(OWLDataProperty.class)
+                                             .iri();
+        when(strAttMock.getIRI()).thenReturn(IRI.create(stringAttIri));
+        when(strAttMock.getName()).thenReturn(OWLClassF.getStrAttField().getName());
+        when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+
+        when(etMock.getIdentifier()).thenReturn(idMock);
+        when(idMock.getJavaField()).thenReturn(OWLClassF.class.getDeclaredField("uri"));
+    }
+
     public static void iniOWLClassGMocks(EntityType<OWLClassG> etMock, Attribute clsHMock, Identifier idMock)
             throws NoSuchFieldException, SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassG.class);
@@ -185,6 +227,7 @@ public class MetamodelFactory {
         when(etMock.getAttribute(OWLClassG.getOwlClassHField().getName())).thenReturn(clsHMock);
         when(etMock.getAttributes()).thenReturn(
                 Collections.<Attribute<? super OWLClassG, ?>>singleton(clsHMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Collections.singleton(clsHMock));
         when(clsHMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
         when(clsHMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final String clsHIri = OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
@@ -207,6 +250,8 @@ public class MetamodelFactory {
         when(etMock.getAttribute(OWLClassH.getOwlClassAField().getName())).thenReturn(clsAMock);
         when(etMock.getAttributes())
                 .thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassH, ?>>asList(clsAMock, clsGMock)));
+        when(etMock.getFieldSpecifications())
+                .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassH, ?>>asList(clsAMock, clsGMock)));
         when(clsAMock.getJavaField()).thenReturn(OWLClassH.getOwlClassAField());
         when(clsAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final String clsAIri = OWLClassH.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
@@ -240,8 +285,8 @@ public class MetamodelFactory {
         when(etMock.getJavaType()).thenReturn(OWLClassJ.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassJ.getClassIri()));
         when(etMock.getAttribute(OWLClassJ.getOwlClassAField().getName())).thenReturn(setAMock);
-        when(etMock.getAttributes()).thenReturn(
-                Collections.<Attribute<? super OWLClassJ, ?>>singleton(setAMock));
+        when(etMock.getAttributes()).thenReturn(Collections.<Attribute<? super OWLClassJ, ?>>singleton(setAMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Collections.singleton(setAMock));
         when(setAMock.getJavaField()).thenReturn(OWLClassJ.getOwlClassAField());
         when(setAMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(setAMock.getCascadeTypes())
@@ -264,8 +309,8 @@ public class MetamodelFactory {
         when(etMock.getJavaType()).thenReturn(OWLClassK.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassK.getClassIri()));
         when(etMock.getAttribute(OWLClassK.getOwlClassEField().getName())).thenReturn(clsEMock);
-        when(etMock.getAttributes()).thenReturn(
-                Collections.<Attribute<? super OWLClassK, ?>>singleton(clsEMock));
+        when(etMock.getAttributes()).thenReturn(Collections.<Attribute<? super OWLClassK, ?>>singleton(clsEMock));
+        when(etMock.getFieldSpecifications()).thenReturn(Collections.singleton(clsEMock));
         when(clsEMock.getJavaField()).thenReturn(OWLClassK.getOwlClassEField());
         when(clsEMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final String clsEIri = OWLClassK.getOwlClassEField().getAnnotation(OWLObjectProperty.class)
@@ -287,6 +332,11 @@ public class MetamodelFactory {
         when(idMock.getJavaField()).thenReturn(OWLClassL.class.getDeclaredField("uri"));
         when(etMock.getDeclaredAttributes()).thenReturn(new HashSet<>(
                 Arrays.<Attribute<OWLClassL, ?>>asList(refListMock, simpleListMock, setMock, singleAMock)));
+        when(etMock.getAttributes()).thenReturn(new HashSet<>(
+                Arrays.<Attribute<OWLClassL, ?>>asList(refListMock, simpleListMock, setMock, singleAMock)));
+        when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
+                Arrays.<FieldSpecification<? super OWLClassL, ?>>asList(refListMock, simpleListMock, setMock,
+                        simpleListMock)));
 
         when(refListMock.getJavaField()).thenReturn(OWLClassL.getReferencedListField());
         when(refListMock.getName()).thenReturn(OWLClassL.getReferencedListField().getName());
@@ -364,6 +414,9 @@ public class MetamodelFactory {
         when(etMock.getAttributes()).thenReturn(
                 new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt,
                         dateAtt, enumAtt)));
+        when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
+                Arrays.<FieldSpecification<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt,
+                        enumAtt)));
 
         when(booleanAtt.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
         when(booleanAtt.getIRI()).thenReturn(
@@ -421,6 +474,7 @@ public class MetamodelFactory {
         when(idO.getJavaField()).thenReturn(OWLClassO.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassO.getClassIri()));
         when(et.getAttributes()).thenReturn(Collections.singleton(stringAtt));
+        when(et.getFieldSpecifications()).thenReturn(Collections.singleton(stringAtt));
         when(et.getFieldSpecification(stringAtt.getName())).thenReturn(stringAtt);
         when(stringAtt.getJavaField()).thenReturn(OWLClassO.getStringAttributeField());
         when(stringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
