@@ -9,6 +9,7 @@ import cz.cvut.kbss.jopa.model.annotations.Inferred;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
@@ -93,64 +94,49 @@ public class CloneBuilderImpl implements CloneBuilder {
      * @param clone    Object
      */
     private void populateAttributes(final Object original, Object clone, final Descriptor descriptor) {
-        // TODO This should be refactored
-        Class<?> theClass = original.getClass();
-        List<Field> fields = new ArrayList<>();
-        fields.addAll(Arrays.asList(theClass.getDeclaredFields()));
-        Class<?> tmp = theClass.getSuperclass();
-        while (tmp != null) {
-            fields.addAll(Arrays.asList(tmp.getDeclaredFields()));
-            tmp = tmp.getSuperclass();
-        }
-        // If we use field specifications here, we have to explicitly clone the identifier field as well
-        // because it is not included in the field specs
-        for (Field f : fields) {
-            if (EntityPropertiesUtils.isFieldTransient(f)) {
-                continue;
-            }
+        final Class<?> originalClass = original.getClass();
+        final EntityType<?> et = getMetamodel().entity(originalClass);
+        for (FieldSpecification<?, ?> fs : et.getFieldSpecifications()) {
+            final Field f = fs.getJavaField();
             final Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
             if (origVal == null) {
                 continue;
             }
-            final Class<?> origClass = origVal.getClass();
-            if (isPrimitiveOrString(origClass)) {
+            final Class<?> origValueClass = origVal.getClass();
+            Object clonedValue;
+            if (isPrimitiveOrString(origValueClass)) {
                 // The field is an immutable type
-                EntityPropertiesUtils.setFieldValue(f, clone, origVal);
+                clonedValue = origVal;
             } else if (origVal instanceof Collection || origVal instanceof Map) {
-                final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass, descriptor);
-                // Collection or a Map
-                final Object clonedCollection = getInstanceBuilder(origVal).buildClone(clone,
-                        f, origVal, fieldDescriptor);
-                EntityPropertiesUtils.setFieldValue(f, clone, clonedCollection);
+                final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, descriptor);
+                // Collection or Map
+                clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal, fieldDescriptor);
             } else if (f.getType().isArray()) {
-                final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass, descriptor);
-                Object[] arr = cloneArray(origVal, fieldDescriptor);
-                EntityPropertiesUtils.setFieldValue(f, clone, arr);
+                final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, descriptor);
+                clonedValue = cloneArray(origVal, fieldDescriptor);
             } else {
-                // Else we have a relationship and we need to clone its target as well
+                // Otherwise we have a relationship and we need to clone its target as well
                 if (isOriginalInUoW(origVal)) {
                     // If the reference is already managed
-                    EntityPropertiesUtils.setFieldValue(f, clone, uow.getCloneForOriginal(origVal));
-                    continue;
-                }
-                Object toAssign;
-                if (isTypeManaged(origClass)) {
-                    final Descriptor fieldDescriptor = getFieldDescriptor(f, theClass,
-                            descriptor);
-                    toAssign = getVisitedEntity(descriptor, origVal);
-                    if (toAssign == null) {
-                        toAssign = uow.registerExistingObject(origVal, fieldDescriptor);
-                    }
+                    clonedValue = uow.getCloneForOriginal(origVal);
                 } else {
-                    toAssign = buildClone(origVal, descriptor);
+                    if (isTypeManaged(origValueClass)) {
+                        final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, descriptor);
+                        clonedValue = getVisitedEntity(descriptor, origVal);
+                        if (clonedValue == null) {
+                            clonedValue = uow.registerExistingObject(origVal, fieldDescriptor);
+                        }
+                    } else {
+                        clonedValue = buildClone(origVal, descriptor);
+                    }
                 }
-                EntityPropertiesUtils.setFieldValue(f, clone, toAssign);
             }
+            EntityPropertiesUtils.setFieldValue(f, clone, clonedValue);
         }
+        cloneIdentifier(original, clone, et);
     }
 
-    private Descriptor getFieldDescriptor(Field field, Class<?> entityClass,
-                                          Descriptor entityDescriptor) {
+    private Descriptor getFieldDescriptor(Field field, Class<?> entityClass, Descriptor entityDescriptor) {
         final EntityType<?> et = getMetamodel().entity(entityClass);
         final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(field.getName());
         return entityDescriptor.getAttributeDescriptor(fieldSpec);
@@ -193,6 +179,12 @@ public class CloneBuilderImpl implements CloneBuilder {
             }
         }
         return clonedArr;
+    }
+
+    private void cloneIdentifier(Object original, Object clone, EntityType<?> et) {
+        final Identifier identifier = et.getIdentifier();
+        final Object idValue = EntityPropertiesUtils.getFieldValue(identifier.getJavaField(), original);
+        EntityPropertiesUtils.setFieldValue(identifier.getJavaField(), clone, idValue);
     }
 
     /**

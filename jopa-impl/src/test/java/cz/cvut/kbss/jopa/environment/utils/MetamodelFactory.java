@@ -228,7 +228,7 @@ public class MetamodelFactory {
         when(etMock.getAttributes()).thenReturn(
                 Collections.<Attribute<? super OWLClassG, ?>>singleton(clsHMock));
         when(etMock.getFieldSpecifications()).thenReturn(Collections.singleton(clsHMock));
-        when(clsHMock.getJavaField()).thenReturn(OWLClassD.getOwlClassAField());
+        when(clsHMock.getJavaField()).thenReturn(OWLClassG.getOwlClassHField());
         when(clsHMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         final String clsHIri = OWLClassD.getOwlClassAField().getAnnotation(OWLObjectProperty.class)
                                         .iri();
