@@ -1,13 +1,16 @@
 'use strict';
 
-var React = require('react'),
-    ReactDOM = require('react-dom');
+import React from 'react';
+import ReactDOM from 'react-dom';
 
-var App = React.createClass({
-
-    render: function () {
-        return <h1>JOPA Example04</h1>;
+class App extends React.Component {
+    constructor() {
+        super();
     }
-});
+
+    render() {
+        return <h1>Example04 - JOPA + Spring</h1>;
+    }
+}
 
 ReactDOM.render(<App/>, document.getElementById('content'));

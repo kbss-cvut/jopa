@@ -33,8 +33,7 @@
   },
   "browserify": {
     "transform": [
-      "reactify",
-      "envify"
+      "babelify"
     ]
   },
   "author": "Martin Ledvinka"
