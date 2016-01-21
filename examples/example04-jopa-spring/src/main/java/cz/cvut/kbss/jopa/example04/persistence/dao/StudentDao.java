@@ -29,7 +29,7 @@ public class StudentDao {
         final EntityManager em = entityManager();
         try {
             return em.createNativeQuery("SELECT ?x WHERE { ?x a ?type . }", Student.class).setParameter("type",
-                    URI.create(Vocabulary.URI_BASE)).getResultList();
+                    URI.create(Vocabulary.Student)).getResultList();
         } finally {
             em.close();
         }
@@ -39,7 +39,7 @@ public class StudentDao {
         final EntityManager em = entityManager();
         try {
             return em.createNativeQuery("SELECT ?x WHERE { ?x ?hasKey ?key . }", Student.class)
-                     .setParameter("hasKey", URI.create(Vocabulary.p_key)).setParameter("key", "key").getSingleResult();
+                     .setParameter("hasKey", URI.create(Vocabulary.p_key)).setParameter("key", key, "en").getSingleResult();
         } catch (NoResultException e) {
             LOG.warn("Student with key {} not found.", key);
             return null;

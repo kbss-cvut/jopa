@@ -7,7 +7,6 @@
     "react": "~0.14.3",
     "react-dom": "~0.14.3",
     "react-bootstrap": "~0.27.3",
-    "react-addons-linked-state-mixin": "~0.14.3",
     "object-assign": "~4.0.1",
     "superagent": "~1.2.0",
     "reflux": "~0.3.0"
@@ -17,13 +16,14 @@
     "envify": "^3.4.0",
     "reactify": "^0.15.2",
     "uglify-js": "^2.6.1",
-    "watchify": "^2.1.1",
+    "watchify": "^3.7.0",
     "babelify": "^7.2.0",
     "babel-core": "^6.1.2",
     "babel-loader": "^6.0.1",
     "babel-preset-es2015": "^6.1.2",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.1.3",
-    "babel-preset-react": "^6.1.2"
+    "babel-preset-react": "^6.1.2",
+    "webpack": "^1.12.11"
   },
   "scripts": {
     "start": "watchify -o js/bundle.js -v -d js/app.js",

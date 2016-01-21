@@ -27,6 +27,7 @@ public class StudentRepositoryService {
 
     public void persist(Student student) {
         Objects.requireNonNull(student);
+        student.setKey(Long.toString(System.currentTimeMillis()));
         student.generateUri();
         studentDao.persist(student);
     }

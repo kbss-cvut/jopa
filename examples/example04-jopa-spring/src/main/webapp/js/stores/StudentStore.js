@@ -16,6 +16,26 @@ var StudentStore = Reflux.createStore({
                 this.trigger(resp.body);
             }
         }.bind(this));
+    },
+
+    onSaveStudent: function (student) {
+        request.post('rest/students').type('json').send(student).end(function (err) {
+            if (err) {
+                console.log(err);
+            } else {
+                this.onLoadStudents();
+            }
+        }.bind(this));
+    },
+
+    onDeleteStudent: function (student) {
+        request.del('rest/students/' + student.key).end(function (err) {
+            if (err) {
+                console.log(err);
+            } else {
+                this.onLoadStudents();
+            }
+        }.bind(this));
     }
 });
 

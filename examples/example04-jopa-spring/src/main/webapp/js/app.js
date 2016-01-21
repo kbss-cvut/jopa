@@ -2,6 +2,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import Students from './components/Students';
 
 class App extends React.Component {
     constructor() {
@@ -9,7 +10,10 @@ class App extends React.Component {
     }
 
     render() {
-        return <h1>Example04 - JOPA + Spring</h1>;
+        return (<div>
+            <h1>Example04 - JOPA + Spring</h1>
+            <Students />
+        </div>);
     }
 }
 
