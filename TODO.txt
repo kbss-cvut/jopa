@@ -1,4 +1,4 @@
-- Add more examples - e.g. using OWL2Query, using Spring
+- Add more examples - e.g. using OWL2Query
 - When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact
 - Add support for named native queries
 - Use SLF4J for logging?

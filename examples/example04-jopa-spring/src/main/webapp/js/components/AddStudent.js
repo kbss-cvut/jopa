@@ -4,6 +4,9 @@ import React from 'react';
 import {Button, Input, Well} from 'react-bootstrap';
 import Actions from '../actions/Actions';
 
+/**
+ * Component rendering a form for adding new students into the application.
+ */
 export default class AddStudent extends React.Component {
     constructor() {
         super();

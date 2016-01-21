@@ -4,6 +4,9 @@ import React from 'react';
 import {Button} from 'react-bootstrap';
 import assign from 'object-assign';
 
+/**
+ * Single row in the student list.
+ */
 export default class StudentRow extends React.Component {
     constructor(props) {
         super(props);

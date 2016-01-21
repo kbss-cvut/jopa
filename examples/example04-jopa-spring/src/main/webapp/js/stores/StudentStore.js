@@ -5,6 +5,9 @@ var request = require('superagent');
 
 var Actions = require('../actions/Actions');
 
+/**
+ * Handles communication with the backend and listens to Actions invoked by the application.
+ */
 var StudentStore = Reflux.createStore({
     listenables: [Actions],
 

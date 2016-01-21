@@ -7,6 +7,12 @@ import StudentStore from '../stores/StudentStore';
 import StudentRow from './StudentRow';
 import AddStudent from './AddStudent';
 
+/**
+ * This class acts as a controller for the whole UI.
+ *
+ * It downloads a list of students upon its mount and passes it on to the display components.
+ * It also renders the form for adding new students.
+ */
 export default class Students extends React.Component {
     constructor() {
         super();
