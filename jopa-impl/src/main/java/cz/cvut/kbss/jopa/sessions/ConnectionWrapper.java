@@ -5,9 +5,9 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapper;
 import cz.cvut.kbss.jopa.oom.ObjectOntologyMapperImpl;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Statement;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -28,7 +28,7 @@ public class ConnectionWrapper {
 
     <T> boolean contains(Object primaryKey, Class<T> cls, Descriptor descriptor) {
         final URI pkUri = getPrimaryKeyAsUri(primaryKey);
-        return mapper.containsEntity(cls, pkUri, descriptor);
+        return pkUri != null && mapper.containsEntity(cls, pkUri, descriptor);
     }
 
     <T> T find(LoadingParameters<T> loadingParameters) {
