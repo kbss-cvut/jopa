@@ -1,7 +1,10 @@
 package cz.cvut.kbss.jopa.owlapi;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
@@ -71,5 +74,38 @@ public class EntityManagerImplTest {
         assertSame(j, argumentCaptor.getValue());
         // Check that there is no exception thrown (there was a NPX bug in merging null collections) and that
         // the merged object is correctly passed to merge in UoW
+    }
+
+    @Test
+    public void mergeDetachedWithSingletonSet() throws Exception {
+        final OWLClassJ j = new OWLClassJ();
+        j.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityF"));
+        final OWLClassA a = new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityA"));
+        j.setOwlClassA(Collections.singleton(a));
+        when(uowMock.getState(any(), any())).thenReturn(EntityManagerImpl.State.NOT_MANAGED);
+        when(uowMock.mergeDetached(eq(j), any())).thenReturn(j);
+        when(uowMock.mergeDetached(eq(a), any())).thenReturn(a);
+
+        final OWLClassJ merged = em.merge(j);
+        assertSame(j, merged);
+        verify(uowMock).mergeDetached(eq(j), any());
+        verify(uowMock).mergeDetached(eq(a), any());
+    }
+
+    @Test
+    public void mergeDetachedWithSingletonList() throws Exception {
+        final OWLClassC c = new OWLClassC(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityF"));
+        final OWLClassA a = new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityA"));
+        c.setSimpleList(Collections.singletonList(a));
+        when(uowMock.getState(any(), any())).thenReturn(EntityManagerImpl.State.NOT_MANAGED);
+        when(uowMock.mergeDetached(eq(c), any())).thenReturn(c);
+        when(uowMock.mergeDetached(eq(a), any())).thenReturn(a);
+        // Just for this test
+        when(mocks.forOwlClassC().simpleListAtt().getCascadeTypes()).thenReturn(new CascadeType[] {CascadeType.MERGE});
+
+        final OWLClassC merged = em.merge(c);
+        assertSame(c, merged);
+        verify(uowMock).mergeDetached(eq(c), any());
+        verify(uowMock).mergeDetached(eq(a), any());
     }
 }

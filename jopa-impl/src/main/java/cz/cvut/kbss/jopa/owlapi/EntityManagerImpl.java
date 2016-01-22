@@ -28,12 +28,15 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -203,11 +206,11 @@ public class EntityManagerImpl extends AbstractEntityManager {
         }
         if (at.isCollection()) {
             Collection c = (Collection) attVal;
-            Set set = new HashSet(c);
-            c.clear();
-            for (final Object ox2 : set) {
-                c.add(mergeInternal(ox2, descriptor));
+            Collection merged = CollectionFactory.createInstance(c);
+            for (final Object ox2 : c) {
+                merged.add(mergeInternal(ox2, descriptor));
             }
+            attVal = merged;
         } else {
             attVal = mergeInternal(attVal, descriptor);
         }

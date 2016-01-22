@@ -42,6 +42,7 @@ public class MetamodelFactory {
         when(strAttMock.getName()).thenReturn(OWLClassA.getStrAttField().getName());
         when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(strAttMock.getCascadeTypes()).thenReturn(new CascadeType[0]);
         when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
         when(typesMock.getName()).thenReturn(OWLClassA.getTypesField().getName());
         when(typesMock.getDeclaringType()).thenReturn(etMock);
@@ -115,6 +116,8 @@ public class MetamodelFactory {
         when(simpleListMock.isCollection()).thenReturn(Boolean.TRUE);
         when(simpleListMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(simpleListMock.getDeclaringType()).thenReturn(etMock);
+        when(simpleListMock.getCascadeTypes())
+                .thenReturn(OWLClassC.getSimpleListField().getAnnotation(OWLObjectProperty.class).cascade());
 
         hasListAttIri = OWLClassC.getRefListField().getAnnotation(Sequence.class).ClassOWLListIRI();
         when(refListMock.getSequenceType()).thenReturn(SequenceType.referenced);
@@ -135,6 +138,8 @@ public class MetamodelFactory {
         when(refListMock.isCollection()).thenReturn(Boolean.TRUE);
         when(refListMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(refListMock.getDeclaringType()).thenReturn(etMock);
+        when(refListMock.getCascadeTypes())
+                .thenReturn(OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).cascade());
 
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassC.class.getDeclaredField("uri"));
