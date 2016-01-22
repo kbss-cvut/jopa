@@ -1,9 +1,6 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectCollection;
-import cz.cvut.kbss.jopa.adapters.IndirectList;
-import cz.cvut.kbss.jopa.adapters.IndirectMap;
-import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Inferred;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -262,17 +259,7 @@ public class CloneBuilderImpl implements CloneBuilder {
     }
 
     IndirectCollection<?> createIndirectCollection(Object c, Object owner, Field f) {
-        final IndirectCollection<?> res;
-        if (c instanceof List) {
-            res = new IndirectList<>(owner, f, uow, (List<?>) c);
-        } else if (c instanceof Set) {
-            res = new IndirectSet<>(owner, f, uow, (Set<?>) c);
-        } else if (c instanceof Map) {
-            res = new IndirectMap<>(owner, f, uow, (Map<?, ?>) c);
-        } else {
-            throw new UnsupportedOperationException("Unsupported collection type " + c.getClass());
-        }
-        return res;
+        return uow.createIndirectCollection(c, owner, f);
     }
 
     public static synchronized boolean isFieldInferred(final Field f) {

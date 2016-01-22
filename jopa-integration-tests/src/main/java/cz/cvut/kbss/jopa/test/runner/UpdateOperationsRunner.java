@@ -604,4 +604,32 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassO resO = em.find(OWLClassO.class, entityO.getUri());
         assertEquals(entityO.getOwlClassESet().size() + 1, resO.getOwlClassESet().size());
     }
+
+    @Test
+    public void modificationsOfCollectionAfterCascadeMergeAreWrittenOnCommit() {
+        logger.config(
+                "Test: modify collection after cascade merge and check that the changes have been propagated on commit.");
+        this.em = getEntityManager("ModifyCollectionAfterCascadeMerge", true);
+        em.getTransaction().begin();
+        em.persist(entityJ);
+        em.getTransaction().commit();
+
+        final OWLClassA newA = new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/newEntityA"));
+        em.getTransaction().begin();
+        final OWLClassJ merged = em.merge(entityJ);
+        merged.getOwlClassA().add(newA);
+        em.persist(newA);
+        em.getTransaction().commit();
+
+        final OWLClassJ result = em.find(OWLClassJ.class, entityJ.getUri());
+        assertEquals(merged.getOwlClassA().size(), result.getOwlClassA().size());
+        boolean found = false;
+        for (OWLClassA a : result.getOwlClassA()) {
+            if (a.getUri().equals(newA.getUri())) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found);
+    }
 }

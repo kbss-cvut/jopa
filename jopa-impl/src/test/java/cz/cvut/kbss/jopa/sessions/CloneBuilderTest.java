@@ -9,12 +9,14 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
@@ -91,6 +93,11 @@ public class CloneBuilderTest {
         entityC.setReferencedList(null);
         entityC.setSimpleList(null);
         entityM.initializeTestValues(true);
+        final CollectionFactory cf = new CollectionFactory(uow);
+        when(uow.createIndirectCollection(any(), any(), any(Field.class))).thenAnswer(call -> {
+            final Object[] args = call.getArguments();
+            return cf.createIndirectCollection(args[0], args[1], (Field) args[2]);
+        });
     }
 
     @Test

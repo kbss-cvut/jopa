@@ -210,7 +210,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
             for (final Object ox2 : c) {
                 merged.add(mergeInternal(ox2, descriptor));
             }
-            attVal = merged;
+            attVal = getCurrentPersistenceContext().createIndirectCollection(merged, o, at.getJavaField());
         } else {
             attVal = mergeInternal(attVal, descriptor);
         }

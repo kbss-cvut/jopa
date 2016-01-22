@@ -16,6 +16,7 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
@@ -57,6 +58,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private final CloneBuilder cloneBuilder;
     private final ChangeManager changeManager;
     private final QueryFactory queryFactory;
+    private final CollectionFactory collectionFactory;
     /**
      * This is a shortcut for the second level cache.
      */
@@ -70,6 +72,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.repoMap = new RepositoryMap();
         repoMap.initDescriptors();
         this.cloneBuilder = new CloneBuilderImpl(this);
+        this.collectionFactory = new CollectionFactory(this);
         this.cacheManager = parent.getLiveObjectCache();
         this.storage = acquireConnection();
         this.queryFactory = new SparqlQueryFactory(this, storage);
@@ -952,10 +955,21 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             return;
         }
         if (value instanceof Collection || value instanceof Map) {
-            final Object indirectCollection = ((CloneBuilderImpl) cloneBuilder).createIndirectCollection(
-                    value, entity, field);
-            EntityPropertiesUtils.setFieldValue(field, entity, indirectCollection);
+            EntityPropertiesUtils.setFieldValue(field, entity, createIndirectCollection(value, entity, field));
         }
+    }
+
+    /**
+     * Creates an indirect collection, which wraps the specified collection instance and propagates changes to the
+     * persistence context.
+     *
+     * @param collection Collection to be proxied
+     * @param owner      Collection owner instance
+     * @param field      Field filled with the collection
+     * @return Indirect collection
+     */
+    public IndirectCollection<?> createIndirectCollection(Object collection, Object owner, Field field) {
+        return collectionFactory.createIndirectCollection(collection, owner, field);
     }
 
     /**
