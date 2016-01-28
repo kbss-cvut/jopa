@@ -1,16 +1,18 @@
+- Add Sesame triple dump to Example04 UI - to be able to compare Java representation with the triple store content
 - Add more examples - e.g. using OWL2Query
 - When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact
+- Add support for EntityManager.getReference
 - Add support for named native queries
 - Use SLF4J for logging?
 - Support for data property collections?
 - Add a @Context annotation, which would specify that a field/entity should always be loaded from the specified context.
     This could be overwritten with a descriptor passed to EM
 - How to enhance query results with transactional changes? Sesame
+    - First check how SQL queries in JPA behave
 - When an entity is removed, there should be some IC check that verifies it is not referenced from any other entity
 - Revisit the way objects and clones are cached in UoW, CloneBuilder and RepositoryMap
     - There should be some unambiguous workflow
     - And how they are loaded, especially as attributes of other objects
-- Add support for EntityManager.getReference
 - Add support for orphanRemoval attribute in object properties
 - Add support for namespace definition - on class and package level
 - Add support for Lobs and Blobs

@@ -2,6 +2,7 @@ package cz.cvut.kbss.ontodriver.sesame.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.sesame.SesameDataSource;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryCreationException;
 import org.junit.After;
 import org.junit.Test;
 
@@ -12,9 +13,6 @@ import java.util.Collections;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-/**
- * @author ledvima1
- */
 public class StorageConnectorTest {
 
     private static final String DRIVER = SesameDataSource.class.getName();
@@ -35,8 +33,10 @@ public class StorageConnectorTest {
 
     private void deleteRecursive(File path) {
         if (path.isDirectory()) {
-            for (File f : path.listFiles()) {
-                deleteRecursive(f);
+            if (path.listFiles() != null) {
+                for (File f : path.listFiles()) {
+                    deleteRecursive(f);
+                }
             }
         }
         path.delete();
@@ -44,20 +44,37 @@ public class StorageConnectorTest {
 
     @Test
     public void nonExistingParentFoldersAreCreatedWhenStorageIsInitialized() throws Exception {
-        String projectRootPath = new File("pom.xml").getAbsolutePath();
-        projectRootPath = projectRootPath.substring(0, projectRootPath.lastIndexOf(File.separator));
+        final String projectRootPath = getProjectRootPath();
         final URI fileUri = URI
                 .create("file://" + projectRootPath + File.separator + "internal" + File.separator + "folder" +
                         File.separator +
                         "repositories" + File.separator + "repositoryTest");
         final File parentDir = new File(projectRootPath + File.separator + "internal");
         assertFalse(parentDir.exists());
+        this.repositoryFolder = parentDir;
         final OntologyStorageProperties storageProperties = OntologyStorageProperties.driver(DRIVER)
                                                                                      .physicalUri(fileUri).build();
         connector = new StorageConnector(storageProperties, Collections.emptyMap());
         assertTrue(parentDir.exists());
-        this.repositoryFolder = parentDir;
         final File repositoryDir = new File(fileUri);
         assertTrue(repositoryDir.exists());
+    }
+
+    private String getProjectRootPath() {
+        String projectRootPath = new File("pom.xml").getAbsolutePath();
+        projectRootPath = projectRootPath.substring(0, projectRootPath.lastIndexOf(File.separator));
+        return projectRootPath;
+    }
+
+    @Test(expected = RepositoryCreationException.class)
+    public void invalidLocalRepositoryPathThrowsRepositoryCreationException() throws Exception {
+        final URI invalidUri = URI
+                .create("file://" + getProjectRootPath() + File.separator + "reps" + File.separator + "repositoryTest");
+        final File parentDir = new File(getProjectRootPath() + File.separator + "reps");
+        assertFalse(parentDir.exists());
+        this.repositoryFolder = parentDir;
+        final OntologyStorageProperties storageProperties = OntologyStorageProperties.driver(DRIVER)
+                                                                                     .physicalUri(invalidUri).build();
+        new StorageConnector(storageProperties, Collections.emptyMap());
     }
 }

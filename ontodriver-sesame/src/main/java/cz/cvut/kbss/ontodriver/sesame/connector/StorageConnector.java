@@ -1,33 +1,22 @@
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
+import cz.cvut.kbss.ontodriver.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryCreationException;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryNotFoundException;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import info.aduna.iteration.Iterations;
-
-import java.io.File;
-import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.Update;
-import org.openrdf.query.UpdateExecutionException;
+import org.openrdf.query.*;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
-import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RepositoryManager;
 import org.openrdf.repository.manager.RepositoryProvider;
 import org.openrdf.repository.sail.SailRepository;
@@ -38,11 +27,13 @@ import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerConfig
 import org.openrdf.sail.memory.MemoryStore;
 import org.openrdf.sail.nativerdf.config.NativeStoreConfig;
 
-import cz.cvut.kbss.ontodriver.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryCreationException;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryNotFoundException;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import java.io.File;
+import java.net.URI;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class StorageConnector extends AbstractConnector {
 
@@ -107,8 +98,7 @@ class StorageConnector extends AbstractConnector {
     }
 
     /**
-     * Creates a local in-memory Sesame repository which is disposed when the VM
-     * shuts down.
+     * Creates a local in-memory Sesame repository which is disposed when the VM shuts down.
      */
     private Repository createInMemoryRepository(Map<String, String> props) {
         if (LOG.isLoggable(Level.FINE)) {
@@ -125,8 +115,7 @@ class StorageConnector extends AbstractConnector {
     /**
      * Creates native repository. </p>
      * <p>
-     * This kind of repository stores data in files and is persistent after the
-     * VM shuts down.
+     * This kind of repository stores data in files and is persistent after the VM shuts down.
      */
     private Repository createNativeRepository(Map<String, String> props, final URI localUri) {
         if (LOG.isLoggable(Level.FINE)) {
@@ -134,8 +123,8 @@ class StorageConnector extends AbstractConnector {
         }
         final String[] tmp = localUri.toString().split(LOCAL_NATIVE_REPO);
         if (tmp.length != 2) {
-            throw new IllegalArgumentException(
-                    "Unsupported local Sesame repository path. Expected file:/path/repositories/id but got "
+            throw new RepositoryCreationException(
+                    "Unsupported local Sesame repository path. Expected file:///path/repositories/id but got "
                             + localUri);
         }
         final File f = new File(URI.create(tmp[0]));
@@ -143,10 +132,9 @@ class StorageConnector extends AbstractConnector {
         if (repoId.charAt(repoId.length() - 1) == '/') {
             repoId = repoId.substring(0, repoId.length() - 1);
         }
-        this.manager = new LocalRepositoryManager(f);
-        final RepositoryConfig cfg = createLocalNativeRepositoryConfig(repoId, props);
         try {
-            manager.initialize();
+            this.manager = RepositoryProvider.getRepositoryManager(f);
+            final RepositoryConfig cfg = createLocalNativeRepositoryConfig(repoId, props);
             manager.addRepositoryConfig(cfg);
             return manager.getRepository(repoId);
         } catch (RepositoryConfigException | RepositoryException e) {
@@ -155,8 +143,7 @@ class StorageConnector extends AbstractConnector {
         }
     }
 
-    private RepositoryConfig createLocalNativeRepositoryConfig(String repoId,
-                                                               Map<String, String> props) {
+    private RepositoryConfig createLocalNativeRepositoryConfig(String repoId, Map<String, String> props) {
         SailImplConfig backend = new NativeStoreConfig();
         if (shouldUseInferenceInLocalRepositories(props)) {
             backend = new ForwardChainingRDFSInferencerConfig(backend);
