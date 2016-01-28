@@ -2,7 +2,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Students from './components/Students';
+import MainView from './components/MainView';
 
 /**
  * This is the application's entry point.
@@ -17,7 +17,7 @@ class App extends React.Component {
     render() {
         return (<div>
             <h1>Example04 - JOPA + Spring</h1>
-            <Students />
+            <MainView />
         </div>);
     }
 }

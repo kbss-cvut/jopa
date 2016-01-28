@@ -1,17 +1,14 @@
 'use strict';
 
 import React from 'react';
-import {Table} from 'react-bootstrap';
+import {Panel, Table} from 'react-bootstrap';
 import Actions from '../actions/Actions';
-import StudentStore from '../stores/StudentStore';
 import StudentRow from './StudentRow';
 import AddStudent from './AddStudent';
+import StudentStore from '../stores/StudentStore';
 
 /**
- * This class acts as a controller for the whole UI.
- *
- * It downloads a list of students upon its mount and passes it on to the display components.
- * It also renders the form for adding new students.
+ * Displays application UI - list of students and a form to add new ones.
  */
 export default class Students extends React.Component {
     constructor() {
@@ -21,11 +18,11 @@ export default class Students extends React.Component {
     }
 
     componentDidMount() {
-        this.unsubscribe = StudentStore.listen(this.onStudentsLoaded.bind(this));
+        this.unsubscribeStudents = StudentStore.listen(this.onStudentsLoaded.bind(this));
     }
 
     componentWillUnmount() {
-        this.unsubscribe();
+        this.unsubscribeStudents();
     }
 
     onStudentsLoaded(data) {
@@ -37,15 +34,16 @@ export default class Students extends React.Component {
     }
 
     render() {
-        return (<div>
-            <div className='row col-xs-5'>
-                {this.renderStudents()}
-            </div>
-            <div style={{clear: 'both'}}/>
-            <div className='row col-xs-5'>
-                {this.renderAddForm()}
-            </div>
-        </div>);
+        return (
+            <Panel header={<h3>Students</h3>} bsStyle='info'>
+                <div className='col-xs-12'>
+                    {this.renderStudents()}
+                </div>
+                <div className='col-xs-12'>
+                    {this.renderAddForm()}
+                </div>
+            </Panel>
+        );
     }
 
     renderStudents() {
@@ -60,7 +58,6 @@ export default class Students extends React.Component {
         }
         return (
             <div>
-                <h3>Students</h3>
                 <Table striped condensed hover bordered>
                     <thead>
                     <tr>
