@@ -27,7 +27,6 @@ import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerConfig
 import org.openrdf.sail.memory.MemoryStore;
 import org.openrdf.sail.nativerdf.config.NativeStoreConfig;
 
-import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
@@ -38,7 +37,7 @@ import java.util.logging.Logger;
 class StorageConnector extends AbstractConnector {
 
     private static final String[] KNOWN_REMOTE_SCHEMES = {"http", "https", "ftp"};
-    private static final String LOCAL_NATIVE_REPO = "/repositories/";
+    private static final String LOCAL_NATIVE_REPO = "repositories/";
     private static final String FILE_SCHEME = "file";
 
     private static final Logger LOG = Logger.getLogger(StorageConnector.class.getName());
@@ -124,16 +123,15 @@ class StorageConnector extends AbstractConnector {
         final String[] tmp = localUri.toString().split(LOCAL_NATIVE_REPO);
         if (tmp.length != 2) {
             throw new RepositoryCreationException(
-                    "Unsupported local Sesame repository path. Expected file:///path/repositories/id but got "
+                    "Unsupported local Sesame repository path. Expected file://path/repositories/id but got "
                             + localUri);
         }
-        final File f = new File(URI.create(tmp[0]));
         String repoId = tmp[1];
         if (repoId.charAt(repoId.length() - 1) == '/') {
             repoId = repoId.substring(0, repoId.length() - 1);
         }
         try {
-            this.manager = RepositoryProvider.getRepositoryManager(f);
+            this.manager = RepositoryProvider.getRepositoryManagerOfRepository(localUri.toASCIIString());
             final RepositoryConfig cfg = createLocalNativeRepositoryConfig(repoId, props);
             manager.addRepositoryConfig(cfg);
             return manager.getRepository(repoId);
