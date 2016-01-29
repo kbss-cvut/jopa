@@ -5,6 +5,13 @@ import cz.cvut.kbss.ontodriver.sesame.SesameDataSource;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryCreationException;
 import org.junit.After;
 import org.junit.Test;
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.config.RepositoryConfig;
+import org.openrdf.repository.manager.RepositoryManager;
+import org.openrdf.repository.manager.RepositoryProvider;
+import org.openrdf.repository.sail.config.SailRepositoryConfig;
+import org.openrdf.sail.config.SailImplConfig;
+import org.openrdf.sail.nativerdf.config.NativeStoreConfig;
 
 import java.io.File;
 import java.net.URI;
@@ -76,5 +83,27 @@ public class StorageConnectorTest {
         final OntologyStorageProperties storageProperties = OntologyStorageProperties.driver(DRIVER)
                                                                                      .physicalUri(invalidUri).build();
         new StorageConnector(storageProperties, Collections.emptyMap());
+    }
+
+    @Test
+    public void connectorIsAbleToConnectToAlreadyInitializedLocalNativeStorage() throws Exception {
+        final String repoId = "repositoryTest";
+        final URI repoUri = URI
+                .create("file://" + getProjectRootPath() + File.separator + "repositories" + File.separator + repoId);
+        this.repositoryFolder = new File(getProjectRootPath() + File.separator + "repositories");
+        SailImplConfig backend = new NativeStoreConfig();
+        final SailRepositoryConfig repoType = new SailRepositoryConfig(backend);
+        final RepositoryConfig config = new RepositoryConfig(repoId, repoType);
+        final RepositoryManager repoManager = RepositoryProvider
+                .getRepositoryManagerOfRepository(repoUri.toASCIIString());
+        repoManager.addRepositoryConfig(config);
+        final Repository repo = repoManager.getRepository(repoId);
+        repo.initialize();
+        final OntologyStorageProperties storageProperties = OntologyStorageProperties.driver(DRIVER)
+                                                                                     .physicalUri(repoUri).build();
+
+        final StorageConnector connector = new StorageConnector(storageProperties, Collections.emptyMap());
+        assertTrue(connector.isOpen());
+        connector.close();
     }
 }

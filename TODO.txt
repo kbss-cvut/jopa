@@ -1,4 +1,3 @@
-- Add Sesame triple dump to Example04 UI - to be able to compare Java representation with the triple store content
 - Add more examples - e.g. using OWL2Query
 - When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact
 - Add support for EntityManager.getReference
