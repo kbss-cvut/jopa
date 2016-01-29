@@ -19,6 +19,12 @@ export default class AddStudent extends React.Component {
         this.setState(change);
     }
 
+    onKey(e) {
+        if (e.charCode === 13) {
+            this.onSubmit();
+        }
+    }
+
     onSubmit() {
         Actions.saveStudent(this.state);
         this.setState({
@@ -36,7 +42,8 @@ export default class AddStudent extends React.Component {
                        value={this.state.firstName}/>
                 <Input type='text' name='lastName' label='Last name' onChange={this.onChange.bind(this)}
                        value={this.state.lastName}/>
-                <Input type='text' name='email' label='Email' onChange={this.onChange.bind(this)} value={this.state.email}/>
+                <Input type='text' name='email' label='Email' onChange={this.onChange.bind(this)}
+                       onKeyPress={this.onKey.bind(this)} value={this.state.email}/>
                 <Button onClick={this.onSubmit.bind(this)}>Submit</Button>
             </Well>
         )

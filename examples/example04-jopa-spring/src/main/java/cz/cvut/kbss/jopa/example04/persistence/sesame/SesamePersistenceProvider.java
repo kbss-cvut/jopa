@@ -40,14 +40,29 @@ public class SesamePersistenceProvider {
 
     @PostConstruct
     private void initializeStorage() {
-        // Force JOPA to initialize the storage
-        final EntityManager em = emf.createEntityManager();
-        em.find(Student.class, URI.create("http://noIdea"));
+        forceRepoInitialization();
         final String repoUrl = environment.getProperty(URL_PROPERTY);
         try {
             this.repository = RepositoryProvider.getRepository(repoUrl);
+            assert repository.isInitialized();
         } catch (RepositoryException | RepositoryConfigException e) {
             LOG.error("Unable to connect to Sesame repository at " + repoUrl, e);
+        }
+    }
+
+    /**
+     * Force JOPA to initialize the storage so that we don't have to initialize it ourselves.
+     * <p>
+     * If we were to initialize the storage, we would have to create appropriate {@link
+     * org.openrdf.repository.config.RepositoryConfig} for the repo, so we rather let JOPA do it for us.
+     */
+    private void forceRepoInitialization() {
+        final EntityManager em = emf.createEntityManager();
+        try {
+            // The URI doesn't matter, we just need to trigger repository connection initialization
+            em.find(Student.class, URI.create("http://unknown"));
+        } finally {
+            em.close();
         }
     }
 }
