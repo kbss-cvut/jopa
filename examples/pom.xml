@@ -12,6 +12,7 @@
         <module>example02-jopa-owlapi</module>
         <module>example03-jopa-sesame-contexts</module>
         <module>example04-jopa-spring</module>
+        <module>example05-jopa-owl2query</module>
     </modules>
 
     <name>JOPA Examples - parent</name>

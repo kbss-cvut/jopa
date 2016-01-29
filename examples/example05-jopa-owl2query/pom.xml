@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>jopa-examples-parent</artifactId>
+        <groupId>cz.cvut.kbss.jopa</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>example-05</artifactId>
+
+    <name>Example05-JOPA-OWL2Query</name>
+    <description>
+        JOPA with OWL2Query for query answering on an ontology managed by OWLAPI.
+    </description>
+
+    <properties>
+        <pellet.version>2.4.0-SNAPSHOT</pellet.version>
+    </properties>
+
+    <dependencies>
+        <!-- OWL2Query is already included as a dependency of OWLAPI OntoDriver -->
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>ontodriver-owlapi</artifactId>
+            <version>${jopa.version}</version>
+        </dependency>
+
+        <!-- Pellet -->
+        <dependency>
+            <groupId>com.clarkparsia.pellet</groupId>
+            <artifactId>pellet-core</artifactId>
+            <version>${pellet.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.clarkparsia.pellet</groupId>
+            <artifactId>pellet-owlapi</artifactId>
+            <version>${pellet.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.clarkparsia.pellet</groupId>
+            <artifactId>pellet-explanation</artifactId>
+            <version>${pellet.version}</version>
+        </dependency>
+
+        <!-- JUnit for result verification -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Run the example -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <configuration>
+                    <mainClass>cz.cvut.kbss.jopa.example05.Example</mainClass>
+                    <arguments>
+                        <argument>ontology.owl</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
