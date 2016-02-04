@@ -34,6 +34,8 @@ public class Example {
             dao.persistAll(heroes.values());
 
             executeFindAll();
+            executeFindAssociates();
+            executeFindGoodGuys();
         } finally {
             PersistenceFactory.close(); // Closing EMF closes all entity managers as well
         }
@@ -44,5 +46,15 @@ public class Example {
         assertEquals(heroes.size(), result.size());
         result.forEach(hero -> assertTrue(heroes.containsKey(hero.getNickname())));
         System.out.println("FindAll returned: " + result);
+    }
+
+    private void executeFindAssociates() {
+        final List<Superhero> associates = dao.findAllAssociates(heroes.get("Kick-Ass"));
+        System.out.println("List of Kick-Ass's associates: " + associates);
+    }
+
+    private void executeFindGoodGuys() {
+        final List<Superhero> goodGuys = dao.findGoodGuys();
+        System.out.println("The good guys are: " + goodGuys);
     }
 }

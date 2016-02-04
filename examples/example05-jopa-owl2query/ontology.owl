@@ -33,7 +33,6 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/example05#knows -->
 
     <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/example05#knows">
-        <rdf:type rdf:resource="&owl;ReflexiveProperty"/>
         <rdf:type rdf:resource="&owl;SymmetricProperty"/>
         <rdf:type rdf:resource="&owl;TransitiveProperty"/>
     </owl:ObjectProperty>
@@ -54,6 +53,14 @@
     <!-- http://krizik.felk.cvut.cz/ontologies/jopa/example05#firstName -->
 
     <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/example05#firstName">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/jopa/example05#isGoodGuy -->
+
+    <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/jopa/example05#isGoodGuy">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
     </owl:DatatypeProperty>
     

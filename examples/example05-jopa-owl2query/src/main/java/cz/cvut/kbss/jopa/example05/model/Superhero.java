@@ -1,30 +1,29 @@
 package cz.cvut.kbss.jopa.example05.model;
 
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.Properties;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/example05#Superhero")
+@OWLClass(iri = Vocabulary.Superhero)
 public class Superhero implements Serializable {
 
     @Id
     private URI uri;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/example05#firstName")
+    @OWLDataProperty(iri = Vocabulary.p_firstName)
     private String firstName;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/example05#lastName")
+    @OWLDataProperty(iri = Vocabulary.p_lastName)
     private String lastName;
 
     @ParticipationConstraints(nonEmpty = true)
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/example05#nickname")
+    @OWLDataProperty(iri = Vocabulary.p_nickname)
     private String nickname;
 
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/example05#knows")
+    @OWLObjectProperty(iri = Vocabulary.p_knows)
     private Set<Superhero> associates;
 
     @Properties
@@ -35,6 +34,7 @@ public class Superhero implements Serializable {
 
     public Superhero(String nickname) {
         this.nickname = nickname;
+        generateUri();
     }
 
     public URI getUri() {
@@ -42,10 +42,11 @@ public class Superhero implements Serializable {
     }
 
     public void setUri(URI uri) {
+        Objects.requireNonNull(uri);
         this.uri = uri;
     }
 
-    public void generateUri() {
+    private void generateUri() {
         if (uri == null) {
             assert nickname != null;
             this.uri = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/example05#" + nickname.replace(' ', '_'));
@@ -98,6 +99,32 @@ public class Superhero implements Serializable {
 
     public void setProperties(Map<String, Set<String>> properties) {
         this.properties = properties;
+    }
+
+    public void addPropertyValue(String property, String value) {
+        if (getProperties() == null) {
+            this.properties = new HashMap<>();
+        }
+        if (!properties.containsKey(property)) {
+            properties.put(property, new HashSet<>());
+        }
+        properties.get(property).add(value);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Superhero superhero = (Superhero) o;
+
+        return uri.equals(superhero.uri);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return uri.hashCode();
     }
 
     @Override

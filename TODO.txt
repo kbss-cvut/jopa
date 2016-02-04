@@ -1,5 +1,8 @@
 - Add more examples - e.g. using OWL2Query
 - When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact
+- When persisting a collection of instances without generated ids, how to handle references between them?
+    - It can happen that JOPA will try to insert a referenced individual which has not yet set id, which
+        results in assigning it a generated URI. E.g. foreach(inst -> {inst.generateUri(); em.persist(inst); })
 - Add support for EntityManager.getReference
 - Add support for named native queries
 - Use SLF4J for logging?
