@@ -1,8 +1,6 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
@@ -10,7 +8,8 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
-import cz.cvut.kbss.ontodriver.model.NamedResource;
+import java.util.ArrayList;
+import java.util.List;
 
 class ListHandlerTestBase {
 
@@ -21,9 +20,10 @@ class ListHandlerTestBase {
 	protected static Repository repo;
 	protected static Resource owner;
 
-	protected static void init() {
+	protected static void init() throws Exception {
 		final MemoryStore mStore = new MemoryStore();
 		repo = new SailRepository(mStore);
+		repo.initialize();
 		vf = repo.getValueFactory();
 		owner = vf.createURI(OWNER.toString());
 	}

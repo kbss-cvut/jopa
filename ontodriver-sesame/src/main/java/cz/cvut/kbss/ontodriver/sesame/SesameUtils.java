@@ -1,6 +1,7 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
 import org.openrdf.model.*;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 import java.net.URL;
@@ -31,7 +32,7 @@ public final class SesameUtils {
 
         final URI datatype = literal.getDatatype();
         if (datatype == null || datatype.equals(XMLSchema.STRING)
-                || datatype.equals(XMLSchema.NORMALIZEDSTRING)) {
+                || datatype.equals(XMLSchema.NORMALIZEDSTRING) || datatype.equals(RDF.LANGSTRING)) {
             return literal.stringValue();
         } else if (datatype.equals(XMLSchema.INT) || datatype.equals(XMLSchema.UNSIGNED_INT)) {
             return literal.intValue();

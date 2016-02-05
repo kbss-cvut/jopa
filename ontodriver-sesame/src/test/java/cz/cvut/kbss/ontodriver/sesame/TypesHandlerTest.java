@@ -1,8 +1,8 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -46,6 +46,7 @@ public class TypesHandlerTest {
     public static void setUpBeforeClass() throws Exception {
         final MemoryStore mStore = new MemoryStore();
         repo = new SailRepository(mStore);
+        repo.initialize();
         vf = repo.getValueFactory();
     }
 

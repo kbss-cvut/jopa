@@ -28,6 +28,7 @@ public class SesameUtilsTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         memoryStore = new MemoryStore();
+        memoryStore.initialize();
         vf = memoryStore.getValueFactory();
     }
 

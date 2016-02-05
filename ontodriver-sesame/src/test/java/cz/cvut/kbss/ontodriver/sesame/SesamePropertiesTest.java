@@ -1,11 +1,11 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.Properties;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +46,7 @@ public class SesamePropertiesTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         this.store = new MemoryStore();
+        store.initialize();
         this.vf = store.getValueFactory();
         this.subject = vf.createURI(SUBJECT.getIdentifier().toString());
         final SesameAdapter adapterMock = mock(SesameAdapter.class);
