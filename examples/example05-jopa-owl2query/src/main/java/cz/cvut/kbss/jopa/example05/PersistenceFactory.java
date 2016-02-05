@@ -8,8 +8,6 @@ import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProvider;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,8 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PersistenceFactory {
-
-    private static final Logger LOG = LoggerFactory.getLogger(PersistenceFactory.class);
 
     private static final String REPOSITORY_FILE_NAME = "repository.owl";
     private static final String FILE_SCHEMA = "file://";
@@ -56,21 +52,22 @@ public class PersistenceFactory {
     }
 
     private static URI setupRepository(String ontologyFile) {
-        LOG.debug("Setting up repository...");
+        System.out.println("Setting up repository...");
         final String ontologyFileAbsolute = resolveAbsolutePath(ontologyFile);
         final String repoFolder = ontologyFileAbsolute
                 .substring(0, ontologyFileAbsolute.lastIndexOf(File.separatorChar));
         final File repoFile = new File(repoFolder + File.separator + REPOSITORY_FILE_NAME);
         if (repoFile.exists()) {
-            LOG.debug("Repository already exists. Removing it...");
+            System.out.println("Repository already exists. Removing it...");
             final boolean res = repoFile.delete();
             assert res;
         }
         try {
-            LOG.debug("Copying ontology to the repository...");
+            System.out.println("Copying ontology to the repository...");
             Files.copy(new File(ontologyFileAbsolute).toPath(), repoFile.toPath());
         } catch (IOException e) {
-            LOG.error("Unable to copy ontology into the repository", e);
+            System.err.println("Unable to copy ontology into the repository.");
+            e.printStackTrace();
             System.exit(1);
         }
         return URI.create(FILE_SCHEMA + repoFile.getAbsolutePath());

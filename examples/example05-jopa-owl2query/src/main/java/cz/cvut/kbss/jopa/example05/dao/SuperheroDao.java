@@ -10,6 +10,9 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Data access object for persistence operations.
+ */
 public class SuperheroDao {
 
     private final URI typeUri;
@@ -30,17 +33,6 @@ public class SuperheroDao {
         }
     }
 
-    public void persist(Superhero hero) {
-        final EntityManager em = entityManager();
-        try {
-            em.getTransaction().begin();
-            em.persist(hero);
-            em.getTransaction().commit();
-        } finally {
-            em.close();
-        }
-    }
-
     public void persistAll(Collection<Superhero> heroes) {
         final EntityManager em = entityManager();
         try {
@@ -52,6 +44,15 @@ public class SuperheroDao {
         }
     }
 
+    /**
+     * Finds all associates of the specified superhero.
+     * <p>
+     * Notice that we are relying on inference, although the associates field in {@link Superhero} is not inferred. This
+     * is because we wanted to be able to modify the field value.
+     *
+     * @param hero Superhero, whose associates we want to find
+     * @return List of associates
+     */
     public List<Superhero> findAllAssociates(Superhero hero) {
         final EntityManager em = entityManager();
         try {
@@ -60,8 +61,8 @@ public class SuperheroDao {
                     .setParameter("hero", hero.getUri())
                     .setParameter("knows", URI.create(Vocabulary.p_knows))
                     .getResultList();
-            // Unfortunately, OWL2Query currently does not support complex patterns, so we can't use a FILTER to remove the
-            // hero instance itself (the property can't be irreflexive).
+            // The property cannot be irreflexive and OWL2Query does not support FILTER, so we have to remove
+            // the argument itself manually
             result.remove(hero);
             return result;
         } finally {
@@ -69,12 +70,18 @@ public class SuperheroDao {
         }
     }
 
+    /**
+     * Here we are searching by value of a property that is not mapped by our object model.
+     *
+     * @return List of superheroes matching the 'good guy' definition
+     */
     public List<Superhero> findGoodGuys() {
         final EntityManager em = entityManager();
         try {
             return em.createNativeQuery("SELECT ?x WHERE { ?x a ?superhero; ?isGoodGuy ?goodGuy . }", Superhero.class)
                      .setParameter("superhero", URI.create(Vocabulary.Superhero))
                      .setParameter("isGoodGuy", URI.create(Vocabulary.p_goodGuy))
+                     // Unmapped properties are all saved as string literals, so we need to set the parameter accordingly
                      .setParameter("goodGuy", Boolean.TRUE.toString(), "en").getResultList();
         } finally {
             em.close();

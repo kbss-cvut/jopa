@@ -26,6 +26,9 @@ public class Superhero implements Serializable {
     @OWLObjectProperty(iri = Vocabulary.p_knows)
     private Set<Superhero> associates;
 
+    /**
+     * Contains properties not mapped by the object model.
+     */
     @Properties
     private Map<String, Set<String>> properties;
 

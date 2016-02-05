@@ -6,6 +6,9 @@ import cz.cvut.kbss.jopa.example05.model.Vocabulary;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Prepares some cool data.
+ */
 public class DataGenerator {
 
     private Map<String, Superhero> heroes = new HashMap<>();
