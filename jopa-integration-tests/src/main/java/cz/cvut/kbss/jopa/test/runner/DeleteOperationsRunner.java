@@ -15,6 +15,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
@@ -289,5 +290,53 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
             }
         }
         return lst;
+    }
+
+    @Test
+    public void testRemoveUnmappedPropertyValue() throws Exception {
+        entityB.setProperties(Generators.createProperties());
+        this.em = getEntityManager("RemoveUnmappedPropertyValue", false);
+        em.getTransaction().begin();
+        em.persist(entityB);
+        em.getTransaction().commit();
+
+        final String property = entityB.getProperties().keySet().iterator().next();
+        final Set<String> values = entityB.getProperties().get(property);
+        assertTrue(values.size() > 0);
+        final String valueToRemove = values.iterator().next();
+        em.getTransaction().begin();
+        final OWLClassB toUpdate = em.find(OWLClassB.class, entityB.getUri());
+        assertNotNull(toUpdate.getProperties());
+        assertTrue(toUpdate.getProperties().containsKey(property));
+        assertTrue(toUpdate.getProperties().get(property).contains(valueToRemove));
+        toUpdate.getProperties().get(property).remove(valueToRemove);
+        em.getTransaction().commit();
+
+        final OWLClassB result = em.find(OWLClassB.class, entityB.getUri());
+        assertNotNull(result.getProperties());
+        assertTrue(result.getProperties().containsKey(property));
+        assertEquals(values.size() - 1, result.getProperties().get(property).size());
+        assertFalse(result.getProperties().get(property).contains(valueToRemove));
+    }
+
+    @Test
+    public void testRemoveAllValuesOfUnmappedProperty() throws Exception {
+        entityB.setProperties(Generators.createProperties());
+        this.em = getEntityManager("RemoveAllValuesOfUnmappedProperty", false);
+        em.getTransaction().begin();
+        em.persist(entityB);
+        em.getTransaction().commit();
+
+        final String property = entityB.getProperties().keySet().iterator().next();
+        em.getTransaction().begin();
+        final OWLClassB toUpdate = em.find(OWLClassB.class, entityB.getUri());
+        assertNotNull(toUpdate.getProperties());
+        assertTrue(toUpdate.getProperties().containsKey(property));
+        toUpdate.getProperties().remove(property);
+        em.getTransaction().commit();
+
+        final OWLClassB result = em.find(OWLClassB.class, entityB.getUri());
+        assertNotNull(result.getProperties());
+        assertFalse(result.getProperties().containsKey(property));
     }
 }

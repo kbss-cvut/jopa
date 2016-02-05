@@ -459,10 +459,9 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         for (Map.Entry<String, Set<String>> e : expected.entrySet()) {
             assertTrue(res.getProperties().containsKey(e.getKey()));
             final Set<String> s = e.getValue();
-            assertEquals(1, s.size());
             final Set<String> resS = res.getProperties().get(e.getKey());
             assertEquals(s.size(), resS.size());
-            assertTrue(resS.contains(s.iterator().next()));
+            assertTrue(s.containsAll(resS));
         }
     }
 

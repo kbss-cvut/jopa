@@ -1,19 +1,17 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.semanticweb.owlapi.model.*;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNodeSet;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
@@ -188,6 +186,10 @@ public class PropertiesHandlerTest {
         propertiesHandler.addProperties(INDIVIDUAL, Collections.singletonMap(assertion, values));
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(managerMock).applyChanges(captor.capture());
+        verifyAddedAxioms(values, captor);
+    }
+
+    private void verifyAddedAxioms(Set<Value<?>> values, ArgumentCaptor<List> captor) {
         for (Object ob : captor.getValue()) {
             assertTrue(ob instanceof AddAxiom);
             final AddAxiom ax = (AddAxiom) ob;
@@ -208,13 +210,21 @@ public class PropertiesHandlerTest {
         propertiesHandler.addProperties(INDIVIDUAL, Collections.singletonMap(assertion, values));
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(managerMock).applyChanges(captor.capture());
-        for (Object ob : captor.getValue()) {
-            assertTrue(ob instanceof AddAxiom);
-            final AddAxiom ax = (AddAxiom) ob;
-            assertTrue(ax.getAxiom() instanceof OWLObjectPropertyAssertionAxiom);
-            final OWLObjectPropertyAssertionAxiom dp = (OWLObjectPropertyAssertionAxiom) ax.getAxiom();
-            assertTrue(values.contains(new Value<>(NamedResource.create(
-                    dp.getObject().asOWLNamedIndividual().getIRI().toURI()))));
-        }
+        verifyAddedAxioms(values, captor);
+    }
+
+    @Test
+    public void removePropertiesRemovesSpecifiedPropertyValues() throws Exception {
+        final String prop = "http://krizik.felk.cvut.cz/jopa#property";
+        when(ontologyMock.containsDataPropertyInSignature(IRI.create(prop))).thenReturn(true);
+        final Assertion assertion = Assertion.createPropertyAssertion(URI.create(prop), false);
+        final Map<Assertion, Set<Value<?>>> toRemove = Collections
+                .singletonMap(assertion, Collections.singleton(new Value<>("Test")));
+
+        propertiesHandler.removeProperties(INDIVIDUAL, toRemove);
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(managerMock).applyChanges(captor.capture());
+        final List changes = captor.getValue();
+        assertEquals(1, changes.size());
     }
 }

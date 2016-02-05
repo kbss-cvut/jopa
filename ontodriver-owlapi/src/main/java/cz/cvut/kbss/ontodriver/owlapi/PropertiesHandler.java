@@ -1,11 +1,11 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 
 import java.util.Collection;
 import java.util.Map;
@@ -45,6 +45,6 @@ class PropertiesHandler {
 
     public void removeProperties(NamedResource subject, Map<Assertion, Set<Value<?>>> properties)
             throws OntoDriverException {
-
+        new EpistemicAxiomRemover(adapter, snapshot).removeAxioms(subject, properties);
     }
 }

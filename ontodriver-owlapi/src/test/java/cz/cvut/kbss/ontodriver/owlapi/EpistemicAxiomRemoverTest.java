@@ -1,10 +1,12 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
+import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -238,5 +240,94 @@ public class EpistemicAxiomRemoverTest {
         descriptor.addAssertion(ap);
         initAnnotationAssertions(oap);
         return new HashSet<>(Arrays.asList(odp, opOne, oap));
+    }
+
+    @Test
+    public void removeAxiomsRemovesCorrespondingAssertions() throws Exception {
+        final Map<Assertion, Set<Value<?>>> toRemove = initForRemoveAxiomsTest();
+        axiomRemover.removeAxioms(SUBJECT, toRemove);
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(adapterMock).addTransactionalChanges(captor.capture());
+        final List<?> changes = captor.getValue();
+        final int toRemoveSize = toRemove.values().stream().mapToInt(Set::size).sum();
+        assertEquals(toRemoveSize, changes.size());
+        for (Object change : changes) {
+            final RemoveAxiom ax = (RemoveAxiom) change;
+            final Assertion a;
+            if (!ax.getAxiom().getAnnotationPropertiesInSignature().isEmpty()) {
+                a = Assertion.createPropertyAssertion(
+                        ax.getAxiom().getAnnotationPropertiesInSignature().iterator().next().getIRI().toURI(), false);
+            } else if (!ax.getAxiom().getDataPropertiesInSignature().isEmpty()) {
+                a = Assertion.createPropertyAssertion(
+                        ax.getAxiom().getDataPropertiesInSignature().iterator().next().getIRI().toURI(), false);
+            } else if (!ax.getAxiom().getObjectPropertiesInSignature().isEmpty()) {
+                a = Assertion.createPropertyAssertion(
+                        ax.getAxiom().getObjectPropertiesInSignature().iterator().next().getIRI().toURI(), false);
+            } else {
+                a = Assertion.createPropertyAssertion(URI.create(CommonVocabulary.RDF_TYPE), false);
+            }
+            assertTrue(toRemove.containsKey(a));
+        }
+    }
+
+    private Map<Assertion, Set<Value<?>>> initForRemoveAxiomsTest() {
+        final int valueCount = 5;
+        final Map<Assertion, Set<Value<?>>> map = new HashMap<>();
+        final Assertion op = Assertion
+                .createPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#objectProperty"), false);
+        final OWLObjectProperty owlOp = dataFactory.getOWLObjectProperty(IRI.create(op.getIdentifier()));
+        map.put(op, new HashSet<>());
+        for (int i = 0; i < valueCount; i++) {
+            final String strVal = "http://krizik.felk.cvut.cz/jopa#Individual-" + i;
+            if (i % 2 == 0) {
+                map.get(op).add(new Value<>(strVal));
+            }
+            manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(owlOp, individual,
+                    dataFactory.getOWLNamedIndividual(IRI.create(strVal))));
+        }
+        final Assertion dp = Assertion
+                .createPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#dataProperty"), false);
+        final OWLDataProperty owlDp = dataFactory.getOWLDataProperty(IRI.create(dp.getIdentifier()));
+        map.put(dp, new HashSet<>());
+        for (int i = 0; i < valueCount; i++) {
+            final String strVal = "John117";
+            if (i % 2 == 0) {
+                map.get(dp).add(new Value<>(strVal));
+            }
+            manager.addAxiom(ontology, dataFactory.getOWLDataPropertyAssertionAxiom(owlDp, individual, strVal));
+        }
+        final Assertion ap = Assertion
+                .createPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#annotationProperty"), false);
+        final OWLAnnotationProperty owlAp = dataFactory.getOWLAnnotationProperty(IRI.create(ap.getIdentifier()));
+        map.put(ap, new HashSet<>());
+        for (int i = 0; i < valueCount; i++) {
+            final String strVal = "John117";
+            if (i % 2 == 0) {
+                map.get(ap).add(new Value<>(strVal));
+            }
+            manager.addAxiom(ontology, dataFactory
+                    .getOWLAnnotationAssertionAxiom(owlAp, individual.getIRI(), dataFactory.getOWLLiteral(strVal)));
+        }
+        final Assertion ca = Assertion.createPropertyAssertion(URI.create(CommonVocabulary.RDF_TYPE), false);
+        map.put(ca, new HashSet<>());
+        for (int i = 0; i < valueCount; i++) {
+            final String strVal = "http://krizik.felk.cvut.cz/jopa#OWLClass" + i;
+            if (i % 2 == 0) {
+                map.get(ca).add(new Value<>(strVal));
+            }
+            manager.addAxiom(ontology,
+                    dataFactory.getOWLClassAssertionAxiom(dataFactory.getOWLClass(IRI.create(strVal)), individual));
+        }
+        return map;
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeAxiomsWithUnknownPropertyThrowsIllegalArgumentException() throws Exception {
+        final Map<Assertion, Set<Value<?>>> toRemove = new HashMap<>();
+        final Assertion unknownProperty = Assertion
+                .createPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#unknownProperty"), false);
+        toRemove.put(unknownProperty, Collections.singleton(new Value<>("StringValue")));
+
+        axiomRemover.removeAxioms(SUBJECT, toRemove);
     }
 }
