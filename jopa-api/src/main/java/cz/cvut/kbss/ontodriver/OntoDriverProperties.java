@@ -2,6 +2,10 @@ package cz.cvut.kbss.ontodriver;
 
 public final class OntoDriverProperties {
 
+	private OntoDriverProperties() {
+		throw new AssertionError();
+	}
+
 	/**
 	 * Property for setting default auto-commit strategy for connections.
 	 */
@@ -27,29 +31,6 @@ public final class OntoDriverProperties {
 	public static final String USE_TRANSACTIONAL_ONTOLOGY = "cz.cvut.kbss.ontodriver.use-transactional-onto";
 
 	/**
-	 * Property for setting factory for OWL API based modules and connectors.
-	 * </p>
-	 * 
-	 * If not specified, default factories are used.
-	 */
-	public static final String OWLAPI_DRIVER_FACTORY = "cz.cvut.kbss.ontodriver.owlapi-factory";
-
-	/**
-	 * Property for setting factory for Jena based modules and connectors. </p>
-	 * 
-	 * If not specified, default factories are used.
-	 */
-	public static final String JENA_DRIVER_FACTORY = "cz.cvut.kbss.ontodriver.jena-factory";
-
-	/**
-	 * Property for setting factory for Sesame based modules and connectors.
-	 * </p>
-	 * 
-	 * If not specified, default factories are used.
-	 */
-	public static final String SESAME_DRIVER_FACTORY = "cz.cvut.kbss.ontodriver.sesame-factory";
-
-	/**
 	 * Specifies whether a in-memory storage should be used for local Sesame
 	 * repositories. </p>
 	 * 
@@ -67,7 +48,7 @@ public final class OntoDriverProperties {
 	 * used. </p>
 	 * 
 	 * Note that this setting applies only to local storages (in memory or
-	 * native), remote storages their own inference settings. </p>
+	 * native), remote storages use their own inference settings. </p>
 	 * 
 	 * {@code Boolean} value expected, default is false.
 	 */
@@ -92,9 +73,4 @@ public final class OntoDriverProperties {
 	 * @see #MODULE_EXTRACTION_SIGNATURE
 	 */
 	public static final String SIGNATURE_DELIMITER = "|";
-
-	private OntoDriverProperties() {
-		throw new AssertionError();
-	}
-
 }

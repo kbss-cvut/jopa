@@ -34,7 +34,7 @@ public class OntologyStorageProperties {
      */
     private final String username;
     /**
-     * Password for the storage, if neccessary
+     * Password for the storage, if necessary
      */
     private final String password;
 
