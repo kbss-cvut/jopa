@@ -6,7 +6,7 @@
 
     <groupId>cz.cvut.kbss.jopa</groupId>
     <artifactId>jopa-parent</artifactId>
-    <version>0.7-SNAPSHOT</version>
+    <version>0.7.0</version>
     <name>JOPA - parent</name>
     <packaging>pom</packaging>
     <url>https://github.com/kbss-cvut/jopa</url>
@@ -125,6 +125,12 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.2</version>
             </plugin>
         </plugins>
     </build>

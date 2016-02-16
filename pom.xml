@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>0.7-SNAPSHOT</version>
+    <version>0.7.0</version>
     <artifactId>jopa-all</artifactId>
     <packaging>pom</packaging>
     <name>JOPA</name>
@@ -60,6 +60,12 @@
                         cz.cvut.kbss:jopa-api,cz.cvut.kbss:jopa-impl,cz.cvut.kbss:jopa-owl2java,cz.cvut.kbss:jopa-owlapi-utils
                     </excludedArtifacts>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.2</version>
             </plugin>
         </plugins>
     </build>
