@@ -1,7 +1,7 @@
 package cz.cvut.kbss.jopa.loaders;
 
 import cz.cvut.kbss.jopa.environment.*;
-import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Test;
 

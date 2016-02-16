@@ -1,9 +1,9 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.accessors.DataSourceStub;
+import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
-import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import org.junit.Before;

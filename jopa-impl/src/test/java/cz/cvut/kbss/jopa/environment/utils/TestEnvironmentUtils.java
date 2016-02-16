@@ -1,7 +1,7 @@
 package cz.cvut.kbss.jopa.environment.utils;
 
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
-import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;

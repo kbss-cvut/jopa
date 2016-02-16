@@ -1,11 +1,11 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.Axiom;

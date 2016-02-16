@@ -4,7 +4,7 @@ import cz.cvut.kbss.jopa.example01.model.ConferencePaper;
 import cz.cvut.kbss.jopa.example01.model.Course;
 import cz.cvut.kbss.jopa.example01.model.UndergraduateStudent;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

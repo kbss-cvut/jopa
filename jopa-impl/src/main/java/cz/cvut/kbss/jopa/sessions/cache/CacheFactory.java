@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.sessions.cache;
 
-import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 
 import java.util.Map;

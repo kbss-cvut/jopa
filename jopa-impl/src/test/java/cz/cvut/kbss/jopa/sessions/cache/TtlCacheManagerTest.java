@@ -2,7 +2,7 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
-import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import org.junit.Before;
 import org.junit.BeforeClass;

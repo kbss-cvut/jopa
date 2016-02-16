@@ -2,8 +2,8 @@ package cz.cvut.kbss.jopa.example04.persistence;
 
 import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
-import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProvider;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProvider;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -55,7 +55,7 @@ public class PersistenceFactory {
         final Map<String, String> map = new HashMap<>();
         map.put(OntoDriverProperties.ONTOLOGY_LANGUAGE, "en");
         map.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.example04.model");
-        map.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER, OWLAPIPersistenceProvider.class.getName());
+        map.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER, JOPAPersistenceProvider.class.getName());
         return map;
     }
 }

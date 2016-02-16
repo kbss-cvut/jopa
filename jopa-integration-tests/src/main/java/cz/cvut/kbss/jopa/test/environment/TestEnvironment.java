@@ -15,8 +15,8 @@ package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProvider;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -137,7 +137,7 @@ public class TestEnvironment {
         /* Set location of the entities (package) */
         params.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.test");
         params.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
-                OWLAPIPersistenceProvider.class.getName());
+                JOPAPersistenceProvider.class.getName());
         params.put(JOPAPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);
         return params;
     }

@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.test.environment;
 
-import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 
 import java.util.HashMap;
 import java.util.Map;

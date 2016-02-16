@@ -2,7 +2,7 @@ package cz.cvut.kbss.jopa.test.integration.environment;
 
 import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.test.environment.OwlapiStorageConfig;
 import cz.cvut.kbss.jopa.test.environment.StorageConfig;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;

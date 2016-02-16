@@ -1,20 +1,15 @@
 package cz.cvut.kbss.jopa.transactions;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import cz.cvut.kbss.jopa.exceptions.RollbackException;
+import cz.cvut.kbss.jopa.model.AbstractEntityManager;
+import cz.cvut.kbss.jopa.sessions.UnitOfWork;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import cz.cvut.kbss.jopa.exceptions.RollbackException;
-import cz.cvut.kbss.jopa.owlapi.AbstractEntityManager;
-import cz.cvut.kbss.jopa.sessions.UnitOfWork;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class EntityTransactionImplTest {
 

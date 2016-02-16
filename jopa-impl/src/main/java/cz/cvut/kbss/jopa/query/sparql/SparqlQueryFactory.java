@@ -1,9 +1,9 @@
 package cz.cvut.kbss.jopa.query.sparql;
 
+import cz.cvut.kbss.jopa.model.QueryImpl;
+import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
-import cz.cvut.kbss.jopa.owlapi.QueryImpl;
-import cz.cvut.kbss.jopa.owlapi.TypedQueryImpl;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.QueryFactory;

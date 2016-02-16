@@ -3,8 +3,8 @@ package cz.cvut.kbss.jopa.example03;
 import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
-import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProvider;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProvider;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 
 import java.util.HashMap;
@@ -35,7 +35,7 @@ public class PersistenceFactory {
         // Ontology language
         props.put(JOPAPersistenceProperties.LANG, "en");
         // Persistence provider name
-        props.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER, OWLAPIPersistenceProvider.class.getName());
+        props.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER, JOPAPersistenceProvider.class.getName());
 
         emf = Persistence.createEntityManagerFactory("jopaExample03PU", props);
         initialized = true;
