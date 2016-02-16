@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2011 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -83,6 +81,18 @@ public class CloneBuilderTest {
         entityM = new OWLClassM();
         initManagedTypes();
         defaultDescriptor = new EntityDescriptor();
+    }
+
+    private static void initManagedTypes() {
+        managedTypes = new HashSet<>();
+        managedTypes.add(OWLClassA.class);
+        managedTypes.add(OWLClassB.class);
+        managedTypes.add(OWLClassC.class);
+        managedTypes.add(OWLClassD.class);
+        managedTypes.add(OWLClassG.class);
+        managedTypes.add(OWLClassH.class);
+        managedTypes.add(OWLClassM.class);
+        managedTypes.add(OWLClassO.class);
     }
 
     @Before
@@ -496,15 +506,16 @@ public class CloneBuilderTest {
         return g;
     }
 
-    private static void initManagedTypes() {
-        managedTypes = new HashSet<>();
-        managedTypes.add(OWLClassA.class);
-        managedTypes.add(OWLClassB.class);
-        managedTypes.add(OWLClassC.class);
-        managedTypes.add(OWLClassD.class);
-        managedTypes.add(OWLClassG.class);
-        managedTypes.add(OWLClassH.class);
-        managedTypes.add(OWLClassM.class);
-        managedTypes.add(OWLClassO.class);
+    @Test
+    public void testBuildCloneOfInstanceWithArrayAsListFieldValue() throws Exception {
+        final OWLClassC instance = new OWLClassC(URI.create("http://test"));
+        final OWLClassA another = new OWLClassA(URI.create("http://anotherA"));
+        instance.setSimpleList(Arrays.asList(entityA, another));
+
+        final OWLClassC result = (OWLClassC) builder.buildClone(instance, defaultDescriptor);
+        assertNotNull(result);
+        for (int i = 0; i < instance.getSimpleList().size(); i++) {
+            assertEquals(instance.getSimpleList().get(i).getUri(), result.getSimpleList().get(i).getUri());
+        }
     }
 }

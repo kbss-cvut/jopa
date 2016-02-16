@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2011 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -122,9 +120,6 @@ public class CloneBuilderImpl implements CloneBuilder {
                 final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, descriptor);
                 // Collection or Map
                 clonedValue = getInstanceBuilder(origVal).buildClone(clone, f, origVal, fieldDescriptor);
-            } else if (f.getType().isArray()) {
-                final Descriptor fieldDescriptor = getFieldDescriptor(f, originalClass, descriptor);
-                clonedValue = cloneArray(origVal, fieldDescriptor);
             } else {
                 // Otherwise we have a relationship and we need to clone its target as well
                 if (isOriginalInUoW(origVal)) {
@@ -151,45 +146,6 @@ public class CloneBuilderImpl implements CloneBuilder {
         final EntityType<?> et = getMetamodel().entity(entityClass);
         final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(field.getName());
         return entityDescriptor.getAttributeDescriptor(fieldSpec);
-    }
-
-    /**
-     * Creates a deep copy of the specified array.
-     *
-     * @param array      The array to clone.
-     * @param descriptor Context descriptor
-     * @return Deep copy of the specified array.
-     */
-    Object[] cloneArray(final Object array, Descriptor descriptor) {
-        if (array == null) {
-            return null;
-        }
-        Object[] originalArr = (Object[]) array;
-        Object[] clonedArr = Arrays.copyOf(originalArr, originalArr.length);
-        if (clonedArr.length == 0) {
-            return clonedArr;
-        }
-        Class<?> c = null;
-        int j = 0;
-        while (j < clonedArr.length) {
-            if (clonedArr[j] != null) {
-                c = clonedArr[j].getClass();
-                break;
-            }
-            j++;
-        }
-        if (c == null) {
-            return clonedArr;
-        }
-        if (isPrimitiveOrString(c)) {
-            return clonedArr;
-        } else {
-            for (int i = 0; i < clonedArr.length; i++) {
-                clonedArr[i] = originalArr[i] == null ? null : buildClone(originalArr[i],
-                        descriptor);
-            }
-        }
-        return clonedArr;
     }
 
     private void cloneIdentifier(Object original, Object clone, EntityType<?> et) {
