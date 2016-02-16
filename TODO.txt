@@ -1,4 +1,3 @@
-- Find plugin to add license headers to all files on build
 - When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact
 - When persisting a collection of instances without generated ids, how to handle references between them?
     - It can happen that JOPA will try to insert a referenced individual which has not yet set id, which

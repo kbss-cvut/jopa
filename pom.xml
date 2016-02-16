@@ -11,7 +11,6 @@
     <url>https://github.com/kbss-cvut/jopa</url>
 
     <modules>
-        <!--<module>jopa-parent</module>-->
         <module>jopa-api</module>
         <module>ontodriver-api</module>
         <module>jopa-owlapi-utils</module>
@@ -113,7 +112,7 @@
                         <exclude>**/mapping</exclude>
                         <exclude>license</exclude>
                         <exclude>readme</exclude>
-                        <exclude>*.txt</exclude>
+                        <exclude>**/*.txt</exclude>
                         <exclude>**/bootstrap.min.css</exclude>
                         <exclude>**/fonts/**</exclude>
                         <exclude>**/.babelrc</exclude>
