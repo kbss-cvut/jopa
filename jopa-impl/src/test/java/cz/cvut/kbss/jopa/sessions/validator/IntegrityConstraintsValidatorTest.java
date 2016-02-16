@@ -9,10 +9,10 @@ import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.owlapi.MetamodelImpl;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
-import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
+import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Before;
@@ -30,7 +30,7 @@ public class IntegrityConstraintsValidatorTest {
     @Before
     public void setUp() throws Exception {
         final Configuration config = new Configuration(
-                Collections.singletonMap(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment"));
+                Collections.singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment"));
         this.metamodel = new MetamodelImpl(config, new EntityLoader());
     }
 

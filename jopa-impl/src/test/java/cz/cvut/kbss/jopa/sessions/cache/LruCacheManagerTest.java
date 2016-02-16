@@ -2,7 +2,7 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,7 +55,7 @@ public class LruCacheManagerTest {
     public void testInitWithCustomCapacity() {
         int capacity = 117;
         final Map<String, String> props = Collections
-                .singletonMap(OWLAPIPersistenceProperties.LRU_CACHE_CAPACITY, Integer.toString(capacity));
+                .singletonMap(JOPAPersistenceProperties.LRU_CACHE_CAPACITY, Integer.toString(capacity));
         this.manager = new LruCacheManager(props);
         assertEquals(capacity, manager.getCapacity());
     }
@@ -63,7 +63,7 @@ public class LruCacheManagerTest {
     @Test
     public void initializationWithInvalidCapacityUsesDefaultValue() {
         final Map<String, String> props = Collections
-                .singletonMap(OWLAPIPersistenceProperties.LRU_CACHE_CAPACITY, "-111");
+                .singletonMap(JOPAPersistenceProperties.LRU_CACHE_CAPACITY, "-111");
         this.manager = new LruCacheManager(props);
         assertEquals(LruCacheManager.DEFAULT_CAPACITY, manager.getCapacity());
     }
@@ -225,7 +225,7 @@ public class LruCacheManagerTest {
     @Test
     public void entryGetsEvictedWhenCacheIsFull() throws Exception {
         this.manager = new LruCacheManager(
-                Collections.singletonMap(OWLAPIPersistenceProperties.LRU_CACHE_CAPACITY, "2"));
+                Collections.singletonMap(JOPAPersistenceProperties.LRU_CACHE_CAPACITY, "2"));
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
 
@@ -237,7 +237,7 @@ public class LruCacheManagerTest {
     @Test
     public void leastRecentlyUsedEntryGetsEvictedWhenCacheIsFull() throws Exception {
         this.manager = new LruCacheManager(
-                Collections.singletonMap(OWLAPIPersistenceProperties.LRU_CACHE_CAPACITY, "4"));
+                Collections.singletonMap(JOPAPersistenceProperties.LRU_CACHE_CAPACITY, "4"));
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         manager.add(testB.getUri(), testB, CONTEXT_TWO);
         final OWLClassA aTwo = new OWLClassA(URI.create("http://aTwo"));

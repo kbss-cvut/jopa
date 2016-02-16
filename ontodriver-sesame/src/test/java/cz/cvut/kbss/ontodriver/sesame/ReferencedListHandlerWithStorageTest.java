@@ -1,51 +1,24 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.jopa.model.SequencesVocabulary;
-import cz.cvut.kbss.ontodriver.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-public class ReferencedListHandlerWithStorageTest {
+public class ReferencedListHandlerWithStorageTest extends ListHandlerWithStorageTestBase {
 
-    private static NamedResource OWNER = NamedResource
-            .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#EntityC");
+    protected static final String NODE_CONTENT_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
 
-    protected static final String LIST_PROPERTY = SequencesVocabulary.s_p_hasListProperty;
-    protected static final String NEXT_NODE_PROPERTY = SequencesVocabulary.s_p_hasNext;
-    protected static final String NODE_CONTENT_PROPERTY = SequencesVocabulary.s_p_hasContents;
-
-    private static OntologyStorageProperties storageProperties;
-    private static Map<String, String> properties;
-
-    private Connector connector;
 
     private ReferencedListHandler handler;
-
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        storageProperties = OntologyStorageProperties.physicalUri(URI.create("SesameSimpleListTest"))
-                                                     .driver(SesameDataSource.class.getCanonicalName())
-                                                     .build();
-        properties = new HashMap<>();
-        properties.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        properties.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
-        properties.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-        properties.put("cz.cvut.jopa.lang", "en");
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -53,15 +26,6 @@ public class ReferencedListHandlerWithStorageTest {
                 properties);
         this.handler = new ReferencedListHandler(connector, connector.getValueFactory());
         connector.begin();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        connector.close();
-        ConnectorFactory.getInstance().close();
-        final Field openField = ConnectorFactory.getInstance().getClass().getDeclaredField("open");
-        openField.setAccessible(true);
-        openField.set(ConnectorFactory.getInstance(), true);
     }
 
     @Test
@@ -72,7 +36,7 @@ public class ReferencedListHandlerWithStorageTest {
         handler.persistList(descriptor);
         connector.commit();
         connector.begin();
-        verifyListContent(axioms, descriptor);
+        verifyListContent(axioms, handler.loadList(descriptor));
     }
 
     private ReferencedListValueDescriptor initValues(int count) {
@@ -103,18 +67,6 @@ public class ReferencedListHandlerWithStorageTest {
         return axioms;
     }
 
-    private void verifyListContent(Collection<Axiom<NamedResource>> expected,
-                                   ReferencedListDescriptor listDescriptor) throws Exception {
-        final Collection<Axiom<NamedResource>> actual = handler.loadList(listDescriptor);
-        assertEquals(expected.size(), actual.size());
-        // This is more explicit on failure than just containsAll
-        final Iterator<Axiom<NamedResource>> itExp = expected.iterator();
-        final Iterator<Axiom<NamedResource>> itAct = actual.iterator();
-        while (itExp.hasNext()) {
-            assertEquals(itExp.next(), itAct.next());
-        }
-    }
-
     @Test
     public void persistsEmptyList() throws Exception {
         final ReferencedListValueDescriptor descriptor = initValues(0);
@@ -123,7 +75,7 @@ public class ReferencedListHandlerWithStorageTest {
         handler.persistList(descriptor);
         connector.commit();
         connector.begin();
-        verifyListContent(axioms, descriptor);
+        verifyListContent(axioms, handler.loadList(descriptor));
     }
 
     @Test
@@ -135,7 +87,7 @@ public class ReferencedListHandlerWithStorageTest {
         handler.updateList(descriptor);
         connector.commit();
         connector.begin();
-        verifyListContent(axioms, descriptor);
+        verifyListContent(axioms, handler.loadList(descriptor));
     }
 
     @Test
@@ -178,7 +130,7 @@ public class ReferencedListHandlerWithStorageTest {
         handler.updateList(descriptor);
         connector.commit();
         connector.begin();
-        verifyListContent(axioms, descriptor);
+        verifyListContent(axioms, handler.loadList(descriptor));
     }
 
     @Test

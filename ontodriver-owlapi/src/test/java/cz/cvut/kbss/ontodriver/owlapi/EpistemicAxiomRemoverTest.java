@@ -1,12 +1,12 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
+import cz.cvut.kbss.ontodriver.util.Vocabulary;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -264,7 +264,7 @@ public class EpistemicAxiomRemoverTest {
                 a = Assertion.createPropertyAssertion(
                         ax.getAxiom().getObjectPropertiesInSignature().iterator().next().getIRI().toURI(), false);
             } else {
-                a = Assertion.createPropertyAssertion(URI.create(CommonVocabulary.RDF_TYPE), false);
+                a = Assertion.createPropertyAssertion(URI.create(Vocabulary.RDF_TYPE), false);
             }
             assertTrue(toRemove.containsKey(a));
         }
@@ -308,7 +308,7 @@ public class EpistemicAxiomRemoverTest {
             manager.addAxiom(ontology, dataFactory
                     .getOWLAnnotationAssertionAxiom(owlAp, individual.getIRI(), dataFactory.getOWLLiteral(strVal)));
         }
-        final Assertion ca = Assertion.createPropertyAssertion(URI.create(CommonVocabulary.RDF_TYPE), false);
+        final Assertion ca = Assertion.createPropertyAssertion(URI.create(Vocabulary.RDF_TYPE), false);
         map.put(ca, new HashSet<>());
         for (int i = 0; i < valueCount; i++) {
             final String strVal = "http://krizik.felk.cvut.cz/jopa#OWLClass" + i;

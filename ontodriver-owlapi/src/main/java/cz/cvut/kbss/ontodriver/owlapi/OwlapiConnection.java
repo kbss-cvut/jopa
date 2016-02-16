@@ -1,17 +1,18 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.*;
 import cz.cvut.kbss.ontodriver.Properties;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
-import cz.cvut.kbss.ontodriver.owlapi.list.OwlapiLists;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.list.OwlapiLists;
 
 import java.net.URI;
 import java.util.*;
+
+import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
 
 /**
  * Default implementation of the {@link Connection} interface for OWLAPI driver.
@@ -117,14 +118,14 @@ public class OwlapiConnection implements Connection {
     @Override
     public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(axiom, ErrorUtils.constructNPXMessage("axiom"));
+        Objects.requireNonNull(axiom, npxMessage("axiom"));
         return adapter.containsAxiom(axiom, context);
     }
 
     @Override
     public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        Objects.requireNonNull(descriptor, npxMessage("descriptor"));
         try {
             return adapter.find(descriptor);
         } catch (RuntimeException e) {

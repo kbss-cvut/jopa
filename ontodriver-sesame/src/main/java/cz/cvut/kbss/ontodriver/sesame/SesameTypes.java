@@ -1,8 +1,7 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.Types;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
@@ -10,9 +9,8 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.Set;
 
-/**
- * Created by ledvima1 on 26.11.14.
- */
+import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
+
 public class SesameTypes implements Types {
 
     private final SesameConnection connection;
@@ -24,8 +22,9 @@ public class SesameTypes implements Types {
     }
 
     @Override
-    public Set<Axiom<URI>> getTypes(NamedResource individual, URI context, boolean includeInferred) throws OntoDriverException {
-        Objects.requireNonNull(individual, ErrorUtils.constructNPXMessage("individual"));
+    public Set<Axiom<URI>> getTypes(NamedResource individual, URI context, boolean includeInferred)
+            throws OntoDriverException {
+        Objects.requireNonNull(individual, npxMessage("individual"));
         connection.ensureOpen();
         return adapter.getTypesHandler().getTypes(individual, context, includeInferred);
     }
@@ -40,8 +39,8 @@ public class SesameTypes implements Types {
     }
 
     private void verifyValidity(NamedResource individual, Set<URI> types) {
-        Objects.requireNonNull(individual, ErrorUtils.constructNPXMessage("individual"));
-        Objects.requireNonNull(types, ErrorUtils.constructNPXMessage("types"));
+        Objects.requireNonNull(individual, npxMessage("individual"));
+        Objects.requireNonNull(types, npxMessage("types"));
         connection.ensureOpen();
     }
 

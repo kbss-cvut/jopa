@@ -47,19 +47,18 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         this.em = Collections
                 .newSetFromMap(new ConcurrentHashMap<>());
         this.configuration = new Configuration(properties != null ? properties : Collections.emptyMap());
-        // TODO The storage properties should be read from persistence.xml
-        this.storageProperties = null;
+        this.storageProperties = initStorageProperties();
         initMetamodel();
     }
 
-    public EntityManagerFactoryImpl(OntologyStorageProperties storageProperties, Map<String, String> properties) {
-        if (storageProperties == null) {
-            throw new NullPointerException();
-        }
-        this.em = Collections.newSetFromMap(new ConcurrentHashMap<>());
-        this.configuration = new Configuration(properties != null ? properties : Collections.emptyMap());
-        this.storageProperties = storageProperties;
-        initMetamodel();
+    private OntologyStorageProperties initStorageProperties() {
+        return OntologyStorageProperties.driver(configuration.get(JOPAPersistenceProperties.DATA_SOURCE_CLASS))
+                                        .ontologyUri(configuration.get(JOPAPersistenceProperties.ONTOLOGY_URI_KEY))
+                                        .physicalUri(configuration
+                                                .get(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY))
+                                        .username(configuration.get(JOPAPersistenceProperties.DATA_SOURCE_USERNAME))
+                                        .password(configuration.get(JOPAPersistenceProperties.DATA_SOURCE_PASSWORD))
+                                        .build();
     }
 
     private void initMetamodel() {

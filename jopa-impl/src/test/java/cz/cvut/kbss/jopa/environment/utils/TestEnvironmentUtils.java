@@ -1,7 +1,7 @@
 package cz.cvut.kbss.jopa.environment.utils;
 
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -110,6 +110,6 @@ public final class TestEnvironmentUtils {
 
     private static void initManagedTypes() {
         managedTypes = new EntityLoader().discoverEntityClasses(new Configuration(
-                Collections.singletonMap(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa")));
+                Collections.singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa")));
     }
 }

@@ -4,7 +4,7 @@ import cz.cvut.kbss.jopa.example01.generated.model.ConferencePaper;
 import cz.cvut.kbss.jopa.example01.generated.model.Course;
 import cz.cvut.kbss.jopa.example01.generated.model.UndergraduateStudent;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +24,7 @@ public class GeneratedRunner implements Runner {
     GeneratedRunner() {
         // Where to scan for entity classes
         PersistenceFactory.init(Collections
-                .singletonMap(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.example01.generated.model"));
+                .singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.example01.generated.model"));
         this.em = PersistenceFactory.createEntityManager();
     }
 

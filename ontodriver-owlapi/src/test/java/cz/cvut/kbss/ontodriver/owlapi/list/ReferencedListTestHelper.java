@@ -1,8 +1,9 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
-import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
 
 import java.net.URI;
 import java.util.List;
@@ -22,10 +23,10 @@ public class ReferencedListTestHelper extends ListTestHelper {
     public void persistList(List<URI> items) {
         assert items.size() > 0;
         final OWLObjectProperty hasList = dataFactory.getOWLObjectProperty(
-                IRI.create(SequencesVocabulary.s_p_hasListProperty));
-        final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(SequencesVocabulary.s_p_hasNext));
+                IRI.create(HAS_LIST_PROPERTY));
+        final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(HAS_NEXT_PROPERTY));
         final OWLObjectProperty hasContent = dataFactory.getOWLObjectProperty(
-                IRI.create(SequencesVocabulary.s_p_hasContents));
+                IRI.create(HAS_CONTENT_PROPERTY));
         int i = 0;
         final String sequenceNodeBase = baseUri + "-SEQ_";
         OWLNamedIndividual node = dataFactory.getOWLNamedIndividual(IRI.create(sequenceNodeBase + i));

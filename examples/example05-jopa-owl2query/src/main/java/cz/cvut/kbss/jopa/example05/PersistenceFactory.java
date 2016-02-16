@@ -4,10 +4,9 @@ import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
 import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProvider;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,28 +29,27 @@ public class PersistenceFactory {
     }
 
     public static void init(String ontologyFile) {
-        // Here we set up basic storage access properties - driver class, physical location of the storage
-        final OntologyStorageProperties storageProperties = OntologyStorageProperties
-                .physicalUri(setupRepository(ontologyFile))
-                .ontologyUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/example05")).driver(
-                        "cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource").build();
         final Map<String, String> props = new HashMap<>();
+        // Here we set up basic storage access properties - driver class, physical location of the storage
+        props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, setupRepository(ontologyFile));
+        props.put(JOPAPersistenceProperties.ONTOLOGY_URI_KEY, "http://krizik.felk.cvut.cz/ontologies/jopa/example05");
+        props.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, "cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource");
         // View transactional changes during transaction
         props.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
         // Ontology language
-        props.put(OWLAPIPersistenceProperties.LANG, "en");
+        props.put(JOPAPersistenceProperties.LANG, "en");
         // Where to look for entity classes
-        props.put(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.example05.model");
+        props.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.example05.model");
         // Use Pellet for reasoning
         props.put(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS, PelletReasonerFactory.class.getName());
         // Persistence provider name
-        props.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER, OWLAPIPersistenceProvider.class.getName());
+        props.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER, OWLAPIPersistenceProvider.class.getName());
 
-        emf = Persistence.createEntityManagerFactory("jopaExample05PU", storageProperties, props);
+        emf = Persistence.createEntityManagerFactory("jopaExample05PU", props);
         initialized = true;
     }
 
-    private static URI setupRepository(String ontologyFile) {
+    private static String setupRepository(String ontologyFile) {
         System.out.println("Setting up repository...");
         final String ontologyFileAbsolute = resolveAbsolutePath(ontologyFile);
         final String repoFolder = ontologyFileAbsolute
@@ -70,7 +68,7 @@ public class PersistenceFactory {
             e.printStackTrace();
             System.exit(1);
         }
-        return URI.create(FILE_SCHEMA + repoFile.getAbsolutePath());
+        return URI.create(FILE_SCHEMA + repoFile.getAbsolutePath()).toString();
     }
 
     private static String resolveAbsolutePath(String ontologyFile) {

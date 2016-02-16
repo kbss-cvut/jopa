@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 public class MetamodelImplTest {
 
     private static final Map<String, String> PROPERTIES = Collections
-            .singletonMap(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa");
+            .singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa");
 
     @Mock
     private EntityLoader entityLoaderMock;

@@ -23,7 +23,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jopa.version>0.6-SNAPSHOT</jopa.version>
+        <jopa.version>0.7-SNAPSHOT</jopa.version>
     </properties>
 
     <repositories>

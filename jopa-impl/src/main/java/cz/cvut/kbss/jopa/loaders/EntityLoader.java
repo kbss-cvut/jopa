@@ -1,7 +1,7 @@
 package cz.cvut.kbss.jopa.loaders;
 
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.utils.Configuration;
 
 import java.io.File;
@@ -31,19 +31,19 @@ public class EntityLoader {
      * I.e., it looks for classes annotated with {@link OWLClass}.
      *
      * @param configuration Persistence configuration, should contain value for the {@link
-     *                      OWLAPIPersistenceProperties#SCAN_PACKAGE} property
+     *                      JOPAPersistenceProperties#SCAN_PACKAGE} property
      * @return Set of entity classes
-     * @throws IllegalArgumentException If {@link OWLAPIPersistenceProperties#SCAN_PACKAGE} values is missing
+     * @throws IllegalArgumentException If {@link JOPAPersistenceProperties#SCAN_PACKAGE} values is missing
      */
     public Set<Class<?>> discoverEntityClasses(Configuration configuration) {
         Objects.requireNonNull(configuration);
-        if (!configuration.contains(OWLAPIPersistenceProperties.SCAN_PACKAGE)) {
+        if (!configuration.contains(JOPAPersistenceProperties.SCAN_PACKAGE)) {
             throw new IllegalArgumentException(
-                    "Missing the " + OWLAPIPersistenceProperties.SCAN_PACKAGE + " property.");
+                    "Missing the " + JOPAPersistenceProperties.SCAN_PACKAGE + " property.");
         }
-        String toScan = configuration.get(OWLAPIPersistenceProperties.SCAN_PACKAGE);
+        String toScan = configuration.get(JOPAPersistenceProperties.SCAN_PACKAGE);
         if (toScan.isEmpty()) {
-            throw new IllegalArgumentException(OWLAPIPersistenceProperties.SCAN_PACKAGE + " property cannot be empty.");
+            throw new IllegalArgumentException(JOPAPersistenceProperties.SCAN_PACKAGE + " property cannot be empty.");
         }
         return discoverEntities(toScan);
     }

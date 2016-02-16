@@ -11,6 +11,10 @@ import java.util.List;
 
 abstract class ListTestHelper {
 
+    public static String HAS_LIST_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasListProperty";
+    public static String HAS_NEXT_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasNext";
+    public static String HAS_CONTENT_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContent";
+
     final OWLOntology ontology;
     final OWLOntologyManager manager;
     final OWLDataFactory dataFactory;

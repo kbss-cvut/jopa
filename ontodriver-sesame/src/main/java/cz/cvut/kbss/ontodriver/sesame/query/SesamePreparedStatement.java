@@ -1,13 +1,14 @@
 package cz.cvut.kbss.ontodriver.sesame.query;
 
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.PreparedStatement;
 import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.util.StatementHolder;
 
 import java.util.Objects;
+
+import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
 
 public class SesamePreparedStatement extends SesameStatement implements PreparedStatement {
 
@@ -26,7 +27,7 @@ public class SesamePreparedStatement extends SesameStatement implements Prepared
     @Override
     public void setObject(String binding, Object value) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(value, ErrorUtils.constructNPXMessage("value"));
+        Objects.requireNonNull(value, npxMessage("value"));
         statementHolder.setParameter(binding, value.toString());
     }
 

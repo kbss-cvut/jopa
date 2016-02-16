@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.sessions.cache;
 
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 
 import java.util.Map;
@@ -31,7 +31,7 @@ public abstract class CacheFactory {
      */
     public static CacheManager createCache(Map<String, String> properties) {
         Objects.requireNonNull(properties);
-        final String enabledStr = properties.get(OWLAPIPersistenceProperties.CACHE_ENABLED);
+        final String enabledStr = properties.get(JOPAPersistenceProperties.CACHE_ENABLED);
         if (enabledStr != null && !Boolean.parseBoolean(enabledStr)) {
             LOG.config("Second level cache is disabled.");
             return new DisabledCacheManager();
@@ -40,7 +40,7 @@ public abstract class CacheFactory {
     }
 
     private static CacheManager createEnabledCache(Map<String, String> properties) {
-        final String cacheType = properties.getOrDefault(OWLAPIPersistenceProperties.CACHE_TYPE, LRU_CACHE)
+        final String cacheType = properties.getOrDefault(JOPAPersistenceProperties.CACHE_TYPE, LRU_CACHE)
                                            .toLowerCase();
         switch (cacheType) {
             case LRU_CACHE:

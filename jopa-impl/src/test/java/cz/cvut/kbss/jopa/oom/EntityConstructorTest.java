@@ -11,7 +11,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
@@ -497,7 +497,7 @@ public class EntityConstructorTest {
         axioms.add(getClassAssertionAxiomForType(OWLClassL.getClassIri()));
 
         final Map<String, String> props = Collections
-                .singletonMap(OWLAPIPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD, Boolean.TRUE.toString());
+                .singletonMap(JOPAPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD, Boolean.TRUE.toString());
         final Configuration conf = new Configuration(props);
         when(mapperMock.getConfiguration()).thenReturn(conf);
 
@@ -542,7 +542,7 @@ public class EntityConstructorTest {
         final Set<Axiom<?>> fieldAxiom = initInvalidFieldValuesForICValidation();
 
         final Map<String, String> props = Collections
-                .singletonMap(OWLAPIPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD, Boolean.TRUE.toString());
+                .singletonMap(JOPAPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD, Boolean.TRUE.toString());
         final Configuration conf = new Configuration(props);
         when(mapperMock.getConfiguration()).thenReturn(conf);
 

@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>0.6-SNAPSHOT</version>
+    <version>0.7-SNAPSHOT</version>
     <artifactId>jopa-all</artifactId>
     <packaging>pom</packaging>
     <name>JOPA</name>
@@ -12,6 +12,7 @@
     <modules>
         <module>jopa-parent</module>
         <module>jopa-api</module>
+        <module>ontodriver-api</module>
         <module>jopa-owlapi-utils</module>
         <module>jopa-owl2java</module>
         <module>jopa-maven-plugin</module>

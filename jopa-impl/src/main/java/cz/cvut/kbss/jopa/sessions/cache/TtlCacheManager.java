@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.sessions.cache;
 
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
@@ -70,10 +70,10 @@ public class TtlCacheManager implements CacheManager {
     }
 
     private void initSettings(Map<String, String> properties) {
-        if (!properties.containsKey(OWLAPIPersistenceProperties.CACHE_TTL)) {
+        if (!properties.containsKey(JOPAPersistenceProperties.CACHE_TTL)) {
             this.timeToLive = DEFAULT_TTL;
         } else {
-            final String strCacheTtl = properties.get(OWLAPIPersistenceProperties.CACHE_TTL);
+            final String strCacheTtl = properties.get(JOPAPersistenceProperties.CACHE_TTL);
             try {
                 // The property is in seconds, we need milliseconds
                 this.timeToLive = Long.parseLong(strCacheTtl) * 1000;
@@ -84,11 +84,11 @@ public class TtlCacheManager implements CacheManager {
                 this.timeToLive = DEFAULT_TTL;
             }
         }
-        if (!properties.containsKey(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE)) {
+        if (!properties.containsKey(JOPAPersistenceProperties.CACHE_SWEEP_RATE)) {
             this.sweepRate = DEFAULT_SWEEP_RATE;
         } else {
             final String strSweepRate = properties
-                    .get(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE);
+                    .get(JOPAPersistenceProperties.CACHE_SWEEP_RATE);
             try {
                 // The property is in seconds, we need milliseconds
                 this.sweepRate = Long.parseLong(strSweepRate) * 1000;

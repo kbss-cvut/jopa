@@ -1,14 +1,13 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
-import cz.cvut.kbss.jopa.model.SequencesVocabulary;
-import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.semanticweb.owlapi.model.*;
@@ -29,11 +28,11 @@ public abstract class ListHandlerTestBase<D extends ListDescriptor, V extends Li
     static final NamedResource SUBJECT = NamedResource
             .create("http://krizik.felk.cvut.cz/ontologies/jopa#Owner");
     static final Assertion HAS_LIST = Assertion
-            .createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasListProperty), false);
+            .createObjectPropertyAssertion(URI.create(ListTestHelper.HAS_LIST_PROPERTY), false);
     static final Assertion HAS_NEXT = Assertion
-            .createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasNext), false);
+            .createObjectPropertyAssertion(URI.create(ListTestHelper.HAS_NEXT_PROPERTY), false);
     static final Assertion HAS_CONTENT = Assertion
-            .createObjectPropertyAssertion(URI.create(SequencesVocabulary.s_p_hasContents), false);
+            .createObjectPropertyAssertion(URI.create(ListTestHelper.HAS_CONTENT_PROPERTY), false);
 
     OWLOntology ontology;
     OWLOntologyManager manager;

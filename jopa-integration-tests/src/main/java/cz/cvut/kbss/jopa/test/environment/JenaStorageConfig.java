@@ -1,9 +1,10 @@
 package cz.cvut.kbss.jopa.test.environment;
 
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 
 import java.io.File;
-import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Persistent storage configuration for Jena accessed single-file storage.
@@ -19,19 +20,21 @@ public class JenaStorageConfig extends StorageConfig {
     }
 
     @Override
-    public OntologyStorageProperties createStorageProperties(int index) {
+    public Map<String, String> createStorageConfiguration(int index) {
         assert index >= 0;
         assert name != null;
         assert directory != null;
 
         String base = name + TYPE.toString() + index;
-        final URI ontoUri = URI.create(TestEnvironment.IRI_BASE + base);
         final File url = new File(directory + File.separator + base + ".owl");
         TestEnvironment.removeOldTestFiles(url);
-        final URI physicalUri = url.toURI();
 
-        return OntologyStorageProperties.ontologyUri(ontoUri).physicalUri(physicalUri).driver(TYPE.getDriverClass())
-                                        .build();
+        final Map<String, String> config = new HashMap<>();
+        config.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, TYPE.getDriverClass());
+        config.put(JOPAPersistenceProperties.ONTOLOGY_URI_KEY, TestEnvironment.IRI_BASE + base);
+        config.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, url.toURI().toString());
+        return config;
+
     }
 
 }

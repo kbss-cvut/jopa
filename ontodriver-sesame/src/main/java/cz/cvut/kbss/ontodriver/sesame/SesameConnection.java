@@ -1,23 +1,21 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
-import static cz.cvut.kbss.jopa.utils.ErrorUtils.constructNPXMessage;
-
-import java.net.URI;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
 import cz.cvut.kbss.ontodriver.*;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.sesame.query.SesamePreparedStatement;
-import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
+import cz.cvut.kbss.ontodriver.Properties;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
+import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import cz.cvut.kbss.ontodriver.sesame.query.SesamePreparedStatement;
+import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
+
+import java.net.URI;
+import java.util.*;
+
+import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
+
 
 class SesameConnection implements Connection {
 
@@ -120,7 +118,7 @@ class SesameConnection implements Connection {
     @Override
     public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(sparql, constructNPXMessage("sparql"));
+        Objects.requireNonNull(sparql, npxMessage("sparql"));
         if (sparql.isEmpty()) {
             throw new IllegalArgumentException("The value for prepared statement cannot be empty.");
         }
@@ -142,7 +140,7 @@ class SesameConnection implements Connection {
     @Override
     public URI generateIdentifier(URI classUri) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(classUri, constructNPXMessage("classUri"));
+        Objects.requireNonNull(classUri, npxMessage("classUri"));
         try {
             return adapter.generateIdentifier(classUri);
         } catch (IdentifierGenerationException e) {
@@ -153,14 +151,14 @@ class SesameConnection implements Connection {
     @Override
     public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(axiom, constructNPXMessage("axiom"));
+        Objects.requireNonNull(axiom, npxMessage("axiom"));
         return adapter.contains(axiom, context);
     }
 
     @Override
     public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+        Objects.requireNonNull(descriptor, npxMessage("descriptor"));
         try {
             return adapter.find(descriptor);
         } catch (RuntimeException e) {
@@ -171,7 +169,7 @@ class SesameConnection implements Connection {
     @Override
     public void persist(AxiomValueDescriptor descriptor) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+        Objects.requireNonNull(descriptor, npxMessage("descriptor"));
         try {
             adapter.persist(descriptor);
             commitIfAuto();
@@ -183,7 +181,7 @@ class SesameConnection implements Connection {
     @Override
     public void update(AxiomValueDescriptor descriptor) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+        Objects.requireNonNull(descriptor, npxMessage("descriptor"));
         try {
             adapter.update(descriptor);
             commitIfAuto();
@@ -195,7 +193,7 @@ class SesameConnection implements Connection {
     @Override
     public void remove(AxiomDescriptor descriptor) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(descriptor, constructNPXMessage("descriptor"));
+        Objects.requireNonNull(descriptor, npxMessage("descriptor"));
         try {
             adapter.remove(descriptor);
             commitIfAuto();

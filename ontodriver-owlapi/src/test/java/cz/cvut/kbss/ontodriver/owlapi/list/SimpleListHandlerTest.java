@@ -1,15 +1,14 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
-import cz.cvut.kbss.jopa.model.SequencesVocabulary;
-import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
-import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
+import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -89,7 +88,8 @@ public class SimpleListHandlerTest extends ListHandlerTestBase<SimpleListDescrip
     }
 
     private void addExtraSuccessor(URI target, URI successor) {
-        final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(SequencesVocabulary.s_p_hasNext));
+        final OWLObjectProperty hasNext = dataFactory
+                .getOWLObjectProperty(IRI.create(ListTestHelper.HAS_NEXT_PROPERTY));
         manager.addAxiom(ontology,
                 dataFactory.getOWLObjectPropertyAssertionAxiom(hasNext, dataFactory.getOWLNamedIndividual(
                         IRI.create(target)), dataFactory.getOWLNamedIndividual(IRI.create(successor))));

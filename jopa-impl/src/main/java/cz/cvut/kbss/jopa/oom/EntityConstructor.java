@@ -5,7 +5,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -122,7 +122,7 @@ class EntityConstructor {
     }
 
     private boolean shouldSkipICValidationOnLoad() {
-        return mapper.getConfiguration().is(OWLAPIPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD);
+        return mapper.getConfiguration().is(JOPAPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD);
     }
 
     private <T> void validateIntegrityConstraints(T entity, FieldSpecification<T, ?> fieldSpec) {

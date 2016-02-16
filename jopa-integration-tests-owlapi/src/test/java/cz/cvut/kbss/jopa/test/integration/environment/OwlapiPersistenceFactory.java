@@ -2,7 +2,7 @@ package cz.cvut.kbss.jopa.test.integration.environment;
 
 import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.test.environment.OwlapiStorageConfig;
 import cz.cvut.kbss.jopa.test.environment.StorageConfig;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
@@ -31,7 +31,7 @@ public class OwlapiPersistenceFactory {
     private static Map<String, String> initProperties() {
         final Map<String, String> map = new HashMap<>();
         map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-        map.put(OWLAPIPersistenceProperties.LANG, "en");
+        map.put(JOPAPersistenceProperties.LANG, "en");
         map.put(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS, PelletReasonerFactory.class.getName());
         return map;
     }

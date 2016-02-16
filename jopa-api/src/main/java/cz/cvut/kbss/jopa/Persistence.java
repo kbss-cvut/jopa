@@ -14,7 +14,6 @@
 package cz.cvut.kbss.jopa;
 
 import cz.cvut.kbss.jopa.model.*;
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -23,8 +22,6 @@ import java.util.logging.Logger;
 public class Persistence {
 
     private static final Logger LOG = Logger.getLogger(Persistence.class.getName());
-
-    private static final Map<String, Map<String, String>> mapProp = new HashMap<>();
 
     private static final Set<PersistenceProvider> map = new HashSet<>();
 
@@ -45,29 +42,13 @@ public class Persistence {
      * @return the factory that creates EntityManagers configured according to the specified persistence unit.
      */
     public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName) {
-        return createEntityManagerFactory(persistenceUnitName,
-                Collections.<String, String>emptyMap());
+        return createEntityManagerFactory(persistenceUnitName, Collections.<String, String>emptyMap());
     }
 
     public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName,
                                                                   final Map<String, String> parameters) {
+        final Map<String, String> realParams = new HashMap<>();
 
-        // if (map.containsKey(persistenceUnitName)) {
-        // throw new IllegalArgumentException("Persistent unit of the name '"
-        // + persistenceUnitName + "' already configured.");
-        // }
-
-        return createEntityManagerFactory(persistenceUnitName, null, parameters);
-    }
-
-    public static EntityManagerFactory createEntityManagerFactory(final String persistenceUnitName,
-                                                                  final OntologyStorageProperties storageProperties,
-                                                                  final Map<String, String> parameters) {
-        final Map<String, String> realParams = new HashMap<String, String>();
-
-        if (mapProp.containsKey(persistenceUnitName)) {
-            realParams.putAll(mapProp.get(persistenceUnitName));
-        }
         realParams.putAll(parameters);
 
         final String className = realParams.get(PersistenceProperties.JPA_PERSISTENCE_PROVIDER);
@@ -77,14 +58,12 @@ public class Persistence {
         }
 
         try {
-            final PersistenceProvider pp = ((Class<PersistenceProvider>) Class.forName(className))
-                    .newInstance();
+            final PersistenceProvider pp = ((Class<PersistenceProvider>) Class.forName(className)).newInstance();
 
             // TODO get at runtime
             map.add(pp);
 
-            return pp
-                    .createEntityManagerFactory(persistenceUnitName, storageProperties, realParams);
+            return pp.createEntityManagerFactory(persistenceUnitName, realParams);
         } catch (Exception e) {
             LOG.log(Level.SEVERE, e.getMessage(), e);
             throw new IllegalArgumentException("Problems with creating EntityManagerFactory.", e);

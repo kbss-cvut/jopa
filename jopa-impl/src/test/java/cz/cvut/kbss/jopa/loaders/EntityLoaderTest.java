@@ -1,7 +1,7 @@
 package cz.cvut.kbss.jopa.loaders;
 
 import cz.cvut.kbss.jopa.environment.*;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Test;
 
@@ -48,14 +48,14 @@ public class EntityLoaderTest {
     @Test(expected = IllegalArgumentException.class)
     public void throwsExceptionWhenScanPackageIsEmpty() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
-                OWLAPIPersistenceProperties.SCAN_PACKAGE, "");
+                JOPAPersistenceProperties.SCAN_PACKAGE, "");
         entityLoader.discoverEntityClasses(new Configuration(properties));
     }
 
     @Test
     public void doesNotFailWhenUnknownPackageNameIsPassed() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
-                OWLAPIPersistenceProperties.SCAN_PACKAGE, "com.cvut");
+                JOPAPersistenceProperties.SCAN_PACKAGE, "com.cvut");
         final Set<Class<?>> result = entityLoader.discoverEntityClasses(new Configuration(properties));
         assertTrue(result.isEmpty());
     }
@@ -63,7 +63,7 @@ public class EntityLoaderTest {
     @Test
     public void loadsEntityClassesWhenCorrectPackageIsSet() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
-                OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
+                JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment");
         final Set<Class<?>> result = entityLoader.discoverEntityClasses(new Configuration(properties));
         assertEquals(ENTITY_CLASSES, result);
     }
@@ -71,7 +71,7 @@ public class EntityLoaderTest {
     @Test
     public void loadsEntityClassesWhenAncestorPackageIsSet() throws Exception {
         final Map<String, String> properties = Collections.singletonMap(
-                OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss");
+                JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss");
         final Set<Class<?>> result = entityLoader.discoverEntityClasses(new Configuration(properties));
         assertTrue(result.containsAll(ENTITY_CLASSES));
     }

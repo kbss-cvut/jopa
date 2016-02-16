@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.sessions.cache;
 
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
@@ -46,7 +46,7 @@ public class LruCacheManager implements CacheManager {
 
     public LruCacheManager(Map<String, String> properties) {
         Objects.requireNonNull(properties);
-        this.capacity = properties.containsKey(OWLAPIPersistenceProperties.LRU_CACHE_CAPACITY) ?
+        this.capacity = properties.containsKey(JOPAPersistenceProperties.LRU_CACHE_CAPACITY) ?
                 resolveCapacitySetting(properties) : DEFAULT_CAPACITY;
         final ReadWriteLock rwLock = new ReentrantReadWriteLock();
         this.readLock = rwLock.readLock();
@@ -58,7 +58,7 @@ public class LruCacheManager implements CacheManager {
         int capacitySetting = DEFAULT_CAPACITY;
         try {
             capacitySetting =
-                    Integer.parseInt(properties.get(OWLAPIPersistenceProperties.LRU_CACHE_CAPACITY));
+                    Integer.parseInt(properties.get(JOPAPersistenceProperties.LRU_CACHE_CAPACITY));
             if (capacitySetting <= 0) {
                 LOG.warning("Invalid LRU cache capacity value " + capacitySetting + ". Using default value.");
                 capacitySetting = DEFAULT_CAPACITY;

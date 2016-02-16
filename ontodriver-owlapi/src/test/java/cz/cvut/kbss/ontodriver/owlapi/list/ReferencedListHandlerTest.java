@@ -1,14 +1,13 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
-import cz.cvut.kbss.jopa.model.SequencesVocabulary;
-import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptorImpl;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
+import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -79,7 +78,7 @@ public class ReferencedListHandlerTest
     @Test(expected = IntegrityConstraintViolatedException.class)
     public void loadingListWithItemWithMultipleSuccessorsThrowsException() throws Exception {
         testHelper.persistList(LIST_ITEMS.subList(0, 5));
-        addExtraPropertyValue(SequencesVocabulary.s_p_hasNext, LIST_ITEMS.get(8));
+        addExtraPropertyValue(ListTestHelper.HAS_NEXT_PROPERTY, LIST_ITEMS.get(8));
         listHandler.loadList(descriptor);
     }
 
@@ -96,7 +95,7 @@ public class ReferencedListHandlerTest
     @Test(expected = IntegrityConstraintViolatedException.class)
     public void loadingListWithNodeWithMultipleContentElementsThrowsException() throws Exception {
         testHelper.persistList(LIST_ITEMS.subList(0, 8));
-        addExtraPropertyValue(SequencesVocabulary.s_p_hasContents, LIST_ITEMS.get(0));
+        addExtraPropertyValue(ListTestHelper.HAS_CONTENT_PROPERTY, LIST_ITEMS.get(0));
         listHandler.loadList(descriptor);
     }
 

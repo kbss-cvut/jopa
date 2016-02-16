@@ -2,7 +2,7 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -51,8 +51,8 @@ public class TtlCacheManagerTest {
     @Test
     public void testConstructorNumberInvalid() throws Exception {
         final Map<String, String> m = new HashMap<>();
-        m.put(OWLAPIPersistenceProperties.CACHE_TTL, "1s");
-        m.put(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE, "2");
+        m.put(JOPAPersistenceProperties.CACHE_TTL, "1s");
+        m.put(JOPAPersistenceProperties.CACHE_SWEEP_RATE, "2");
         final CacheManager man = new TtlCacheManager(m);
         assertNotNull(man);
         final Field ttlField = TtlCacheManager.class.getDeclaredField("timeToLive");
@@ -67,8 +67,8 @@ public class TtlCacheManagerTest {
     @Test
     public void testConstructorInvalidSweepRate() throws Exception {
         final Map<String, String> m = new HashMap<>();
-        m.put(OWLAPIPersistenceProperties.CACHE_TTL, "1");
-        m.put(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE, "fdsfa");
+        m.put(JOPAPersistenceProperties.CACHE_TTL, "1");
+        m.put(JOPAPersistenceProperties.CACHE_SWEEP_RATE, "fdsfa");
         final CacheManager man = new TtlCacheManager(m);
         assertNotNull(man);
         final Field sweepRateField = TtlCacheManager.class.getDeclaredField("sweepRate");
@@ -223,8 +223,8 @@ public class TtlCacheManagerTest {
 
     private void initSweepableManager() {
         final Map<String, String> props = new HashMap<>();
-        props.put(OWLAPIPersistenceProperties.CACHE_TTL, "1");
-        props.put(OWLAPIPersistenceProperties.CACHE_SWEEP_RATE, "2");
+        props.put(JOPAPersistenceProperties.CACHE_TTL, "1");
+        props.put(JOPAPersistenceProperties.CACHE_SWEEP_RATE, "2");
         this.manager = new TtlCacheManager(props);
     }
 

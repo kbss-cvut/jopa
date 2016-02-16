@@ -3,12 +3,10 @@ package cz.cvut.kbss.jopa.example01;
 import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.EntityManagerFactory;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProvider;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,10 +21,10 @@ public class PersistenceFactory {
     }
 
     public static void init(Map<String, String> properties) {
-        // Here we set up basic storage access properties - driver class, physical location of the storage
-        final OntologyStorageProperties storageProperties = OntologyStorageProperties.physicalUri(
-                URI.create("JOPASesameDemo")).driver("cz.cvut.kbss.ontodriver.sesame.SesameDataSource").build();
         final Map<String, String> props = new HashMap<>();
+        // Here we set up basic storage access properties - driver class, physical location of the storage
+        props.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, "JOPASesameDemo");
+        props.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, "cz.cvut.kbss.ontodriver.sesame.SesameDataSource");
         // View transactional changes during transaction
         props.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
         // Use in-memory storage if not remote or local file path specified
@@ -34,14 +32,14 @@ public class PersistenceFactory {
         // Don't use Sesame inference
         props.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
         // Ontology language
-        props.put(OWLAPIPersistenceProperties.LANG, "en");
+        props.put(JOPAPersistenceProperties.LANG, "en");
         if (properties != null) {
             props.putAll(properties);
         }
         // Persistence provider name
-        props.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER, OWLAPIPersistenceProvider.class.getName());
+        props.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER, OWLAPIPersistenceProvider.class.getName());
 
-        emf = Persistence.createEntityManagerFactory("jopaExample01PU", storageProperties, props);
+        emf = Persistence.createEntityManagerFactory("jopaExample01PU", props);
         initialized = true;
     }
 

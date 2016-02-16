@@ -16,6 +16,10 @@ class ListHandlerTestBase {
 	protected static final NamedResource OWNER = NamedResource
 			.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityC");
 
+	protected static final String LIST_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSequence";
+	protected static final String NEXT_NODE_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasNext";
+
+
 	protected static ValueFactory vf;
 	protected static Repository repo;
 	protected static Resource owner;

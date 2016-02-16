@@ -1,11 +1,10 @@
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.BindingValueMismatchException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
-import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.owl2query.model.GroundTerm;
 import cz.cvut.kbss.owl2query.model.QueryResult;
 import cz.cvut.kbss.owl2query.model.ResultBinding;
@@ -18,6 +17,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.*;
+
+import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
 
 class SelectResultSet extends AbstractResultSet {
 
@@ -231,7 +232,7 @@ class SelectResultSet extends AbstractResultSet {
 
     @Override
     public <T> T getObject(int columnIndex, Class<T> cls) throws OntoDriverException {
-        Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
+        Objects.requireNonNull(cls, npxMessage("cls"));
         return owlObjectToType(getCurrentValue(columnIndex), cls);
     }
 
@@ -276,7 +277,7 @@ class SelectResultSet extends AbstractResultSet {
 
     @Override
     public <T> T getObject(String columnLabel, Class<T> cls) throws OntoDriverException {
-        Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
+        Objects.requireNonNull(cls, npxMessage("cls"));
         return owlObjectToType(getCurrentValue(columnLabel), cls);
     }
 

@@ -1,8 +1,9 @@
 package cz.cvut.kbss.jopa.test.environment;
 
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 
-import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Persistent storage configuration for Sesame in-memory store.
@@ -18,16 +19,16 @@ public class SesameMemoryStorageConfig extends StorageConfig {
     }
 
     @Override
-    public OntologyStorageProperties createStorageProperties(int index) {
+    public Map<String, String> createStorageConfiguration(int index) {
         assert index >= 0;
         assert name != null;
 
         final String base = name + TYPE.toString() + index;
-        final URI ontoUri = URI.create(TestEnvironment.IRI_BASE + base);
-        final URI physicalUri = URI.create(base);
 
-        return OntologyStorageProperties.ontologyUri(ontoUri).physicalUri(physicalUri).driver(TYPE.getDriverClass())
-                                        .build();
+        final Map<String, String> config = new HashMap<>();
+        config.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, TYPE.getDriverClass());
+        config.put(JOPAPersistenceProperties.ONTOLOGY_URI_KEY, TestEnvironment.IRI_BASE + base);
+        config.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, base);
+        return config;
     }
-
 }

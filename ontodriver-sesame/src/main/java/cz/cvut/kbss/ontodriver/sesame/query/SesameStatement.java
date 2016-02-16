@@ -1,16 +1,17 @@
 package cz.cvut.kbss.ontodriver.sesame.query;
 
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.ontodriver.ResultSet;
+import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver.ResultSet;
-import cz.cvut.kbss.ontodriver.Statement;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 
 import java.net.URI;
 import java.util.Objects;
+
+import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
 
 public class SesameStatement implements Statement {
 
@@ -68,7 +69,7 @@ public class SesameStatement implements Statement {
     }
 
     private void validateQueryParams(String sparql) {
-        Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
+        Objects.requireNonNull(sparql, npxMessage("sparql"));
         if (sparql.isEmpty()) {
             throw new IllegalArgumentException("Query string cannot be empty.");
         }

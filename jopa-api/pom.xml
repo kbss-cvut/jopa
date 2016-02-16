@@ -5,21 +5,11 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-parent</artifactId>
-        <version>0.6-SNAPSHOT</version>
+        <version>0.7-SNAPSHOT</version>
         <relativePath>../jopa-parent/pom.xml</relativePath>
     </parent>
 
     <name>JOPA - API</name>
     <artifactId>jopa-api</artifactId>
     <packaging>jar</packaging>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-            </plugin>
-        </plugins>
-    </build>
 </project>

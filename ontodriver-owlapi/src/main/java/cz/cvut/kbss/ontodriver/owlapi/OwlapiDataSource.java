@@ -1,14 +1,15 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.DataSource;
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+
+import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
 
 /**
  * Main entry point to this OWLAPI-based OntoDriver.
@@ -51,13 +52,12 @@ public class OwlapiDataSource implements DataSource {
 
     @Override
     public void setStorageProperties(OntologyStorageProperties storageProperties) throws OntoDriverException {
-        this.storageProperties = Objects.requireNonNull(storageProperties,
-                ErrorUtils.constructNPXMessage("storageProperties"));
+        this.storageProperties = Objects.requireNonNull(storageProperties, npxMessage("storageProperties"));
     }
 
     @Override
     public void setProperties(Map<String, String> properties) throws OntoDriverException {
-        this.properties = Objects.requireNonNull(properties, ErrorUtils.constructNPXMessage("properties"));
+        this.properties = Objects.requireNonNull(properties, npxMessage("properties"));
     }
 
     @Override

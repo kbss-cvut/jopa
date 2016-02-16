@@ -15,9 +15,8 @@ package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProperties;
+import cz.cvut.kbss.jopa.owlapi.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.owlapi.OWLAPIPersistenceProvider;
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -119,10 +118,10 @@ public class TestEnvironment {
         for (StorageConfig si : storages) {
             si.setName(baseName);
             si.setDirectory(dir);
-            final OntologyStorageProperties p = si.createStorageProperties(i++);
-            assert p != null;
-            final EntityManager em = Persistence.createEntityManagerFactory("context-name_" + i, p,
-                    params).createEntityManager();
+            final Map<String, String> config = si.createStorageConfiguration(i++);
+            config.putAll(params);
+            final EntityManager em = Persistence.createEntityManagerFactory("context-name_" + i, config)
+                                                .createEntityManager();
             managers.add(em);
         }
         return managers;
@@ -131,15 +130,15 @@ public class TestEnvironment {
     private static Map<String, String> initParams(boolean cache) {
         final Map<String, String> params = new HashMap<>();
         if (cache) {
-            params.put(OWLAPIPersistenceProperties.CACHE_ENABLED, "true");
+            params.put(JOPAPersistenceProperties.CACHE_ENABLED, "true");
         } else {
-            params.put(OWLAPIPersistenceProperties.CACHE_ENABLED, "false");
+            params.put(JOPAPersistenceProperties.CACHE_ENABLED, "false");
         }
         /* Set location of the entities (package) */
-        params.put(OWLAPIPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.test");
-        params.put(OWLAPIPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
+        params.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.test");
+        params.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER,
                 OWLAPIPersistenceProvider.class.getName());
-        params.put(OWLAPIPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);
+        params.put(JOPAPersistenceProperties.REASONER_FACTORY_CLASS, REASONER_FACTORY_CLASS);
         return params;
     }
 

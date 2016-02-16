@@ -1,8 +1,9 @@
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
-import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
 
 import java.net.URI;
 import java.util.List;
@@ -17,14 +18,14 @@ class SimpleListTestHelper extends ListTestHelper {
     void persistList(List<URI> items) {
         assert items.size() > 0;
         final OWLObjectProperty hasList = dataFactory
-                .getOWLObjectProperty(IRI.create(SequencesVocabulary.s_p_hasListProperty));
-        final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(SequencesVocabulary.s_p_hasNext));
+                .getOWLObjectProperty(IRI.create(HAS_LIST_PROPERTY));
+        final OWLObjectProperty hasNext = dataFactory.getOWLObjectProperty(IRI.create(HAS_NEXT_PROPERTY));
         manager.addAxiom(ontology, dataFactory.getOWLObjectPropertyAssertionAxiom(hasList, individual,
                 dataFactory.getOWLNamedIndividual(IRI.create(items.get(0)))));
         for (int i = 1; i < items.size(); i++) {
             manager.addAxiom(ontology,
                     dataFactory.getOWLObjectPropertyAssertionAxiom(hasNext, dataFactory.getOWLNamedIndividual(
-                                    IRI.create(items.get(i - 1))),
+                            IRI.create(items.get(i - 1))),
                             dataFactory.getOWLNamedIndividual(IRI.create(items.get(i)))));
 
         }
