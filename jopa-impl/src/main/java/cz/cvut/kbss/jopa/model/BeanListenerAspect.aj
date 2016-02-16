@@ -15,12 +15,17 @@
 
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.model.annotations.Types;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 public aspect BeanListenerAspect {
 
