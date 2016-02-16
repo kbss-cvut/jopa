@@ -4,9 +4,9 @@
 
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
-        <artifactId>jopa-parent</artifactId>
+        <artifactId>jopa-all</artifactId>
         <version>0.7.0</version>
-        <relativePath>../jopa-parent/pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <name>JOPA - OWL2Java</name>

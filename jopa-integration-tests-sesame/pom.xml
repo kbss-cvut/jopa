@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
-        <artifactId>jopa-parent</artifactId>
+        <artifactId>jopa-all</artifactId>
         <version>0.7.0</version>
-        <relativePath>../jopa-parent/pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
     <artifactId>jopa-integration-tests-sesame</artifactId>
     <name>JOPA Integration Tests for Sesame</name>
     <description>Integration tests of JOPA and Sesame OntoDriver implementation</description>

@@ -5,9 +5,9 @@
 
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
-        <artifactId>jopa-parent</artifactId>
+        <artifactId>jopa-all</artifactId>
         <version>0.7.0</version>
-        <relativePath>../jopa-parent/pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>jopa-distribution</artifactId>
@@ -47,7 +47,7 @@
 
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
-            <artifactId>jopa-parent</artifactId>
+            <artifactId>jopa-all</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
         </dependency>
