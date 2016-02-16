@@ -1,5 +1,3 @@
-- Get rid of OWLAPI references in jopa-impl
-- Try to set the project root as parent and remove jopa-parent
 - Find plugin to add license headers to all files on build
 - When OWL2Java generates classes and they already exist, rewrite only the fields and getters and setters, keep any other code intact
 - When persisting a collection of instances without generated ids, how to handle references between them?
