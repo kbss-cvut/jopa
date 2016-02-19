@@ -109,6 +109,11 @@ There are two ways to get JOPA for your project:
 
 More information about JOPA can be found for example in articles [3], [4] and at [https://kbss.felk.cvut.cz/web/portal/jopa](https://kbss.felk.cvut.cz/web/portal/jopa).
 
+JOPA build status and code metrics can be found at:
+
+* KBSS Jenkins [https://kbss.felk.cvut.cz/jenkins](https://kbss.felk.cvut.cz/jenkins)
+* KBSS SonarQube [https://kbss.felk.cvut.cz/sonarqube](https://kbss.felk.cvut.cz/sonarqube)
+
 ## References
   
 * [1] J. Tao and E. Sirin, J. Bao, D. L. McGuinness, Integrity Constraints in OWL, The Twenty-Fourth AAAI Conference on Artiﬁcial Intelligence, 2010, available online at [http://www.aaai.org/ocs/index.php/AAAI/AAAI10/paper/view/1931/2229](http://www.aaai.org/ocs/index.php/AAAI/AAAI10/paper/view/1931/2229)
