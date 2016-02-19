@@ -76,7 +76,6 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.7.5.201505241946</version>
-                <!-- Using an older version due to issues with SonarQube integration-->
                 <executions>
                     <execution>
                         <goals>
