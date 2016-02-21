@@ -1,10 +1,10 @@
 /**
  * Copyright (C) 2011 Czech Technical University in Prague
- * <p>
+ * <p/>
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * <p>
+ * <p/>
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details. You should have received a copy of the GNU General Public License along with this program. If not, see
@@ -16,14 +16,15 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.*;
 import cz.cvut.kbss.jopa.model.annotations.*;
-import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,11 +35,11 @@ public class EntityFieldMetamodelProcessor<X> {
 
     private static final Logger LOG = Logger.getLogger(EntityFieldMetamodelProcessor.class.getName());
 
-    private static Collection<Class<?>> VALID_ID_CLASSES = Arrays.asList(new Class<?>[]{String.class, URI.class});
+    private final FieldMappingValidator mappingValidator = new FieldMappingValidator();
 
-    private Class<X> cls;
-    private EntityTypeImpl<X> et;
-    private MetamodelImpl metamodel;
+    private final Class<X> cls;
+    private final EntityTypeImpl<X> et;
+    private final MetamodelImpl metamodel;
 
     public EntityFieldMetamodelProcessor(Class<X> cls, EntityTypeImpl<X> et, MetamodelImpl metamodel) {
         this.cls = cls;
@@ -127,11 +128,8 @@ public class EntityFieldMetamodelProcessor<X> {
 
     private void processTypesField(Field field, Class<?> fieldValueCls, InferenceInfo inference) {
         Types tt = field.getAnnotation(Types.class);
-        if (!Set.class.isAssignableFrom(field.getType())) {
-            throw new MetamodelInitializationException("The Types element must be a set of Strings.");
-        }
-        et.addDirectTypes(new TypesSpecificationImpl<>(et,
-                tt.fetchType(), field, fieldValueCls, inference.inferred));
+        mappingValidator.validateTypesField(field);
+        et.addDirectTypes(new TypesSpecificationImpl<>(et, tt.fetchType(), field, fieldValueCls, inference.inferred));
     }
 
     private boolean isPropertiesField(Field field) {
@@ -140,11 +138,9 @@ public class EntityFieldMetamodelProcessor<X> {
 
     private void processPropertiesField(Field field, Class<?> fieldValueCls, InferenceInfo inference) {
         Properties properties = field.getAnnotation(Properties.class);
-        if (!Map.class.isAssignableFrom(field.getType())) {
-            throw new MetamodelInitializationException("The Types element must be a Map<String,Set<String>>.");
-        }
-        et.addOtherProperties(new PropertiesSpecificationImpl<>(et,
-                properties.fetchType(), field, fieldValueCls, inference.inferred));
+        mappingValidator.validatePropertiesField(field);
+        et.addOtherProperties(new PropertiesSpecificationImpl<>(et, properties.fetchType(), field, fieldValueCls,
+                inference.inferred));
     }
 
     private void createAttribute(Field field, InferenceInfo inference, PropertyAttributes propertyAttributes) {
@@ -194,7 +190,7 @@ public class EntityFieldMetamodelProcessor<X> {
         if (id == null) {
             return false;
         }
-        if (!VALID_ID_CLASSES.contains(field.getType())) {
+        if (!mappingValidator.isValidIdentifierType(field.getType())) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         }
         et.setIdentifier(new IRIIdentifierImpl(field, id.generated()));

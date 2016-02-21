@@ -48,7 +48,7 @@ public class PropertiesFieldStrategy<X> extends
             return;
         }
         if (!values.containsKey(property)) {
-            values.put(property, new HashSet<String>());
+            values.put(property, new HashSet<>());
         }
         final String value = ax.getValue().stringValue();
         values.get(property).add(value);
