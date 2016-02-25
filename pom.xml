@@ -100,20 +100,13 @@
                 <configuration>
                     <header>header.txt</header>
                     <excludes>
-                        <exclude>**/repositories/**</exclude>
-                        <exclude>**/node_modules/**</exclude>
                         <exclude>**/src/test/resources/**</exclude>
                         <exclude>**/src/main/resources/**</exclude>
                         <exclude>**/testResults/**</exclude>
                         <exclude>**/*.owl</exclude>
-                        <exclude>**/*.js</exclude>
-                        <exclude>**/mapping</exclude>
                         <exclude>license</exclude>
                         <exclude>readme</exclude>
                         <exclude>**/*.txt</exclude>
-                        <exclude>**/bootstrap.min.css</exclude>
-                        <exclude>**/fonts/**</exclude>
-                        <exclude>**/.babelrc</exclude>
                         <exclude>**/pom.xml</exclude>
                     </excludes>
                 </configuration>
@@ -208,7 +201,7 @@
     </organization>
 
     <scm>
-        <connection>scm:git:https://krizik.felk.cvut.cz/git/jopa.git</connection>
+        <connection>scm:git:https://github.com/kbss-cvut/jopa.git</connection>
     </scm>
 
     <distributionManagement>
