@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -152,22 +150,32 @@ public class PropertiesFieldStrategy<X> extends
             return Collections.emptyMap();
         }
         final Map<Assertion, Set<Value<?>>> diff = new HashMap<>();
-        for (Entry<String, Set<String>> entry : base.entrySet()) {
-            if (!updated.containsKey(entry.getKey())
-                    || updated.get(entry.getKey()) == null || updated.get(entry.getKey()).isEmpty()) {
-                // All values of the property are missing
-                diff.put(stringToAssertion(entry.getKey()), stringsToValues(entry.getValue()));
-            } else {
-                final Set<String> currentValues = updated.get(entry.getKey());
-                Set<String> removed = new HashSet<>();
-                // Check which property values are missing
-                removed.addAll(entry.getValue().stream().filter(origVal -> !currentValues.contains(origVal))
-                                    .collect(Collectors.toList()));
-                if (!removed.isEmpty()) {
-                    diff.put(stringToAssertion(entry.getKey()), stringsToValues(removed));
+        if (updated == null || updated.isEmpty()) {
+            diff.putAll(createAssertionsForAll(base));
+        } else {
+            for (Entry<String, Set<String>> entry : base.entrySet()) {
+                if (!updated.containsKey(entry.getKey())
+                        || updated.get(entry.getKey()) == null || updated.get(entry.getKey()).isEmpty()) {
+                    // All values of the property are missing
+                    diff.put(stringToAssertion(entry.getKey()), stringsToValues(entry.getValue()));
+                } else {
+                    final Set<String> currentValues = updated.get(entry.getKey());
+                    Set<String> removed = new HashSet<>();
+                    // Check which property values are missing
+                    removed.addAll(entry.getValue().stream().filter(origVal -> !currentValues.contains(origVal))
+                                        .collect(Collectors.toList()));
+                    if (!removed.isEmpty()) {
+                        diff.put(stringToAssertion(entry.getKey()), stringsToValues(removed));
+                    }
                 }
             }
         }
+        return diff;
+    }
+
+    private Map<Assertion, Set<Value<?>>> createAssertionsForAll(Map<String, Set<String>> map) {
+        final Map<Assertion, Set<Value<?>>> diff = new HashMap<>(map.size());
+        map.forEach((key, value) -> diff.put(stringToAssertion(key), stringsToValues(value)));
         return diff;
     }
 

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -644,5 +642,27 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
             }
         }
         assertTrue(found);
+    }
+
+    @Test
+    public void testAddPropertiesWhenTheyWereNullOriginally() throws Exception {
+        logger.config("Test: add properties on update when the field was originally null.");
+        this.em = getEntityManager("AddPropertiesToNullOriginals", true);
+        em.getTransaction().begin();
+        assertNull(entityB.getProperties());
+        em.persist(entityB);
+        em.getTransaction().commit();
+
+        final OWLClassB update = em.find(OWLClassB.class, entityB.getUri());
+        em.detach(update);
+        final Map<String, Set<String>> properties = Generators.createProperties(2);
+        update.setProperties(properties);
+        em.getTransaction().begin();
+        em.merge(update);
+        em.getTransaction().commit();
+
+        final OWLClassB result = em.find(OWLClassB.class, entityB.getUri());
+        assertNotNull(result.getProperties());
+        assertEquals(properties, result.getProperties());
     }
 }
