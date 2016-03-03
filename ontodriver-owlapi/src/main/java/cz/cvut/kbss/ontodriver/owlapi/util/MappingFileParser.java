@@ -24,15 +24,29 @@ public class MappingFileParser {
     public MappingFileParser(Map<String, String> properties) {
         final String mappingFilePath = properties.get(OwlapiOntoDriverProperties.MAPPING_FILE_LOCATION);
         assert mappingFilePath != null;
-        this.mappingFile = new File(mappingFilePath);
-        if (!mappingFile.exists()) {
-            throw new MappingFileParserException("Mapping file " + mappingFilePath + " does not exist.");
-        }
+        this.mappingFile = resolveMappingFile(mappingFilePath);
         if (properties.containsKey(OwlapiOntoDriverProperties.IRI_MAPPING_DELIMITER)) {
             this.delimiter = properties.get(OwlapiOntoDriverProperties.IRI_MAPPING_DELIMITER);
         } else {
             this.delimiter = OwlapiOntoDriverProperties.DEFAULT_IRI_MAPPING_DELIMITER;
         }
+    }
+
+    private File resolveMappingFile(String path) {
+        File mapping = new File(path);
+        if (mapping.exists()) {
+            return mapping;
+        }
+        try {
+            mapping = new File(URI.create(path));
+            if (mapping.exists()) {
+                return mapping;
+            }
+        } catch (IllegalArgumentException e) {
+            throw new MappingFileParserException(
+                    "Mapping file path " + path + " is neither a valid file path nor a valid URI.");
+        }
+        throw new MappingFileParserException("Mapping file " + path + " does not exist.");
     }
 
     public Map<URI, URI> getMappings() {

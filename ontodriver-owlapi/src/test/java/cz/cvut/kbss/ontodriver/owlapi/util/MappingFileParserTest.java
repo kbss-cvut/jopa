@@ -25,6 +25,17 @@ public class MappingFileParserTest {
     }
 
     @Test
+    public void mappingFileParserAlsoAcceptsURIAsMappingFilePath() throws Exception {
+        final String ontUri = "http://krizik.felk.cvut.cz/ontologies/test";
+        final String content = ontUri + " " +
+                OwlapiOntoDriverProperties.DEFAULT_IRI_MAPPING_DELIMITER + " ./file.owl";
+        final File mappingFile = createMappingFile(content);
+        final Map<URI, URI> mappings = new MappingFileParser(
+                Collections.singletonMap(MAPPING_FILE_LOCATION, mappingFile.toURI().toString())).getMappings();
+        assertEquals(1, mappings.size());
+    }
+
+    @Test
     public void usesDefaultDelimiterWhenNoneIsProvided() throws Exception {
         final String ontUri = "http://krizik.felk.cvut.cz/ontologies/test";
         final String content = ontUri + " " +
