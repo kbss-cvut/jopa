@@ -1,21 +1,19 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import cz.cvut.kbss.ontodriver.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryCreationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryNotFoundException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
@@ -101,8 +99,7 @@ class StorageConnector extends AbstractConnector {
 
     private Repository createLocalRepository(Map<String, String> props) {
         final URI localUri = storageProperties.getPhysicalURI();
-        boolean useVolatile = Boolean.parseBoolean(props
-                .get(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE));
+        boolean useVolatile = Boolean.parseBoolean(props.get(SesameOntoDriverProperties.SESAME_USE_VOLATILE_STORAGE));
         if (!isFileUri(localUri) && useVolatile) {
             return createInMemoryRepository(props);
         } else {
@@ -192,7 +189,7 @@ class StorageConnector extends AbstractConnector {
     private static boolean shouldUseInferenceInLocalRepositories(Map<String, String> properties) {
         assert properties != null;
 
-        return (Boolean.parseBoolean(properties.get(OntoDriverProperties.SESAME_USE_INFERENCE)));
+        return (Boolean.parseBoolean(properties.get(SesameOntoDriverProperties.SESAME_USE_INFERENCE)));
     }
 
     private static boolean isRemoteRepository(URI uri) {

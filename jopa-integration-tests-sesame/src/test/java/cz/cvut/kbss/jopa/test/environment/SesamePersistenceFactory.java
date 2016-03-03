@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.test.environment;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.ontodriver.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,8 +42,8 @@ public class SesamePersistenceFactory {
     private static Map<String, String> initProperties() {
         final Map<String, String> map = new HashMap<>();
         map.put(OntoDriverProperties.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-        map.put(OntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        map.put(OntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
+        map.put(SesameOntoDriverProperties.SESAME_USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
+        map.put(SesameOntoDriverProperties.SESAME_USE_INFERENCE, Boolean.FALSE.toString());
         map.put(JOPAPersistenceProperties.LANG, "en");
         return map;
     }
