@@ -1,26 +1,23 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import com.google.common.base.Optional;
-import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OWLIndividualExistsException;
 import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -111,15 +108,15 @@ public class OwlapiAdapterTest {
         return iri;
     }
 
-    @Test(expected = InvalidOntologyIriException.class)
-    public void isConsistentThrowsExceptionOnInvalidContext() throws Exception {
+    @Test
+    public void isConsistentIgnoresContextInfo() throws Exception {
         setupOntologyIri();
+        final OWLReasoner reasonerMock = mock(OWLReasoner.class);
+        when(snapshotMock.getReasoner()).thenReturn(reasonerMock);
+        when(reasonerMock.isConsistent()).thenReturn(Boolean.TRUE);
         final URI ctx = URI.create("http://krizik.felk.cvut.cz/differentContext");
-        try {
-            adapter.isConsistent(ctx);
-        } finally {
-            verify(snapshotMock, never()).getReasoner();
-        }
+        assertTrue(adapter.isConsistent(ctx));
+        verify(reasonerMock).isConsistent();
     }
 
     @Test
