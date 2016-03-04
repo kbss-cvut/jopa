@@ -19,7 +19,7 @@ import cz.cvut.kbss.ontodriver.owlapi.exception.*;
 import cz.cvut.kbss.ontodriver.owlapi.util.DefaultOntologyIriMapper;
 import cz.cvut.kbss.ontodriver.owlapi.util.MappingFileParser;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAxiomChange;
-import cz.cvut.kbss.ontodriver.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.parameters.OntologyCopy;
@@ -182,6 +182,11 @@ public class BasicStorageConnector extends AbstractConnector {
             changes.stream().filter(ch -> ch instanceof MutableAxiomChange)
                    .forEach(ch -> ((MutableAxiomChange) ch).setOntology(ontology));
             ontologyManager.applyChanges(changes);
+            try {
+                writeToFile();
+            } catch (OntologyStorageException e) {
+                LOG.severe("Unable to write out ontology." + e);
+            }
         } finally {
             WRITE.unlock();
         }
@@ -194,15 +199,19 @@ public class BasicStorageConnector extends AbstractConnector {
         }
         WRITE.lock();
         try {
-            try {
-                ontologyManager.saveOntology(ontology, IRI.create(storageProperties.getPhysicalURI()));
-            } catch (OWLOntologyStorageException e) {
-                throw new OntologyStorageException(
-                        "Error when saving ontology to " + storageProperties.getPhysicalURI(), e);
-            }
+            writeToFile();
             super.close();
         } finally {
             WRITE.unlock();
+        }
+    }
+
+    private void writeToFile() throws OntologyStorageException {
+        try {
+            ontologyManager.saveOntology(ontology, IRI.create(storageProperties.getPhysicalURI()));
+        } catch (OWLOntologyStorageException e) {
+            throw new OntologyStorageException(
+                    "Error when saving ontology to " + storageProperties.getPhysicalURI(), e);
         }
     }
 }

@@ -20,7 +20,7 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.test.environment.OwlapiStorageConfig;
 import cz.cvut.kbss.jopa.test.environment.StorageConfig;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironment;
-import cz.cvut.kbss.ontodriver.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 
 import java.util.HashMap;
 import java.util.Map;

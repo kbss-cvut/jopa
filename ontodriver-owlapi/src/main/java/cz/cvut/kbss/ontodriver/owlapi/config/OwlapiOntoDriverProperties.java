@@ -22,6 +22,11 @@ public abstract class OwlapiOntoDriverProperties {
     public static final String IRI_MAPPING_DELIMITER = "cz.cvut.kbss.ontodriver.owlapi.mapping-delimiter";
 
     /**
+     * When set to true, the driver will write the content of the ontology into its file after commit.
+     */
+    public static final String WRITE_ON_COMMIT = "cz.cvut.kbss.ontodriver.owlapi.writeOnCommit";
+
+    /**
      * Default IRI mapping delimiter.
      *
      * @see #IRI_MAPPING_DELIMITER
