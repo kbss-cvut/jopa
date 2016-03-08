@@ -112,6 +112,40 @@ public class MappingFileParserTest {
         }
     }
 
+    @Test
+    public void mappingFileParserSupportsRemoteUrls() throws Exception {
+        final URI ontoUri = URI.create("http://onto.fel.cvut.cz/ontologies/jopa");
+        final URI mappedTo = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa");
+        final File mappingFile = createMappingFile(ontoUri.toString() + " > " + mappedTo.toString());
+
+        final Map<URI, URI> mappings = new MappingFileParser(
+                Collections.singletonMap(MAPPING_FILE_LOCATION, mappingFile.getPath())).getMappings();
+        assertEquals(1, mappings.size());
+        assertEquals(mappedTo, mappings.get(ontoUri));
+    }
+
+    @Test(expected = MappingFileParserException.class)
+    public void invalidRemoteUrlMappedByMappingFileCausesParserException() throws Exception {
+        final URI ontoUri = URI.create("http://onto.fel.cvut.cz/ontologies/jopa");
+        final String mappedTo = "http:// .krizik.felk.cvut.cz";
+        final File mappingFile = createMappingFile(ontoUri.toString() + " > " + mappedTo);
+
+        new MappingFileParser(
+                Collections.singletonMap(MAPPING_FILE_LOCATION, mappingFile.getPath())).getMappings();
+    }
+
+    @Test
+    public void skipsLinesWithInvalidNumberOfTokens() throws Exception {
+        final URI ontoUri = URI.create("http://onto.fel.cvut.cz/ontologies/jopa");
+        final URI mappedTo = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa");
+        final File mappingFile = createMappingFile(
+                ontoUri.toString() + " > " + mappedTo.toString() + " > " + mappedTo.toString());
+
+        final Map<URI, URI> mappings = new MappingFileParser(
+                Collections.singletonMap(MAPPING_FILE_LOCATION, mappingFile.getPath())).getMappings();
+        assertTrue(mappings.isEmpty());
+    }
+
     private List<URI> generateUris() {
         final List<URI> lst = new ArrayList<>();
         final int cnt = TestUtils.randomInt(10);

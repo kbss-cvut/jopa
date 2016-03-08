@@ -8,14 +8,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MappingFileParser {
 
     private static final Logger LOG = Logger.getLogger(MappingFileParser.class.getName());
+
+    private static final String[] REMOTE_URL_SCHEMES = {"http://", "https://", "ftp://", "sftp://"};
 
     private final File mappingFile;
 
@@ -62,15 +63,33 @@ public class MappingFileParser {
                 }
                 final String uriName = t.nextToken().trim();
                 final String fileName = t.nextToken().trim();
-                final File actualFile =
-                        (new File(fileName).isAbsolute()) ? new File(fileName) : new File(defaultDir, fileName);
+                final URI fileUri = resolveLocation(defaultDir, fileName);
 
-                map.put(URI.create(uriName), actualFile.toURI());
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Mapping ontology " + uriName + " to location " + fileUri);
+                }
+                map.put(URI.create(uriName), fileUri);
             }
         } catch (IOException e) {
             LOG.severe("Unable to parse mapping file." + e);
             throw new MappingFileParserException(e);
         }
         return map;
+    }
+
+    private URI resolveLocation(File defaultDir, String targetUri) {
+        for (String scheme : REMOTE_URL_SCHEMES) {
+            if (targetUri.startsWith(scheme)) {
+                try {
+                    return URI.create(targetUri);
+                } catch (IllegalArgumentException e) {
+                    LOG.severe("Target URI " + targetUri + " looks like a remote URI, but is not valid.");
+                    throw new MappingFileParserException(e);
+                }
+            }
+        }
+        final File actualFile =
+                (new File(targetUri).isAbsolute()) ? new File(targetUri) : new File(defaultDir, targetUri);
+        return actualFile.toURI();
     }
 }
