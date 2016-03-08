@@ -1,22 +1,22 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.loaders;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,12 +29,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class EntityLoader {
 
-    private static final Logger LOG = Logger.getLogger(EntityLoader.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(EntityLoader.class);
 
     private static final String JAR_FILE_SUFFIX = ".jar";
     private static final String CLASS_FILE_SUFFIX = ".class";
@@ -83,7 +81,7 @@ public class EntityLoader {
             throw new JopaInitializationException("Unable to scan packages for entity classes.", e);
         }
         if (all.isEmpty()) {
-            LOG.warning("No entity classes found in package " + scanPath);
+            LOG.warn("No entity classes found in package " + scanPath);
         }
         return all;
     }
@@ -103,9 +101,7 @@ public class EntityLoader {
         final String jarPath = jarResource.getPath().replaceFirst("[.]jar[!].*", JAR_FILE_SUFFIX)
                                           .replaceFirst("file:", "");
 
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Scanning jar file " + jarPath + " for entity classes.");
-        }
+        LOG.trace("Scanning jar file {} for entity classes.", jarPath);
         try (final JarFile jarFile = new JarFile(jarPath)) {
             final Enumeration<JarEntry> entries = jarFile.entries();
             while (entries.hasMoreElements()) {
@@ -136,9 +132,7 @@ public class EntityLoader {
     }
 
     private void processDirectory(File dir, String packageName, Set<Class<?>> entityClasses) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Scanning directory " + dir + " for entity classes.");
-        }
+        LOG.trace("Scanning directory {} for entity classes.", dir);
         // Get the list of the files contained in the package
         final String[] files = dir.list();
         if (files == null) {

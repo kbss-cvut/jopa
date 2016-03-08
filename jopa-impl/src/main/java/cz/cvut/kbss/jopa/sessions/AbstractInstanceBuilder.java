@@ -1,31 +1,28 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.security.PrivilegedActionException;
-import java.util.Arrays;
-import java.util.logging.Logger;
 
 abstract class AbstractInstanceBuilder {
 
-    protected static final Logger LOG = Logger.getLogger(AbstractInstanceBuilder.class.getName());
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractInstanceBuilder.class);
 
     protected boolean populates;
     protected final CloneBuilderImpl builder;
@@ -93,8 +90,7 @@ abstract class AbstractInstanceBuilder {
                 c.setAccessible(true);
             }
         } catch (NoSuchMethodException e) {
-            LOG.finest("Constructor in type " + javaClass + "  taking arguments " + Arrays.toString(args) +
-                    " not found. " + e);
+            LOG.trace("Constructor in type {} taking arguments {} not found. Exception: {}", javaClass, args, e);
             return null;
         }
         return c;
@@ -114,11 +110,11 @@ abstract class AbstractInstanceBuilder {
     }
 
     protected static void logConstructorAccessException(Constructor<?> constructor, Exception e) {
-        LOG.warning("Exception caught when invoking constructor " + constructor + ". Exception: " + e);
+        LOG.warn("Exception caught when invoking constructor " + constructor + ". Exception: " + e);
     }
 
     protected static void logPrivilegedConstructorAccessException(Constructor<?> constructor,
                                                                   PrivilegedActionException e) {
-        LOG.warning("Exception caught on privileged invocation of constructor " + constructor + ". Exception: " + e);
+        LOG.warn("Exception caught on privileged invocation of constructor " + constructor + ". Exception: " + e);
     }
 }

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
@@ -19,6 +17,8 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.*;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -27,15 +27,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author ledvima1
  */
 public class EntityFieldMetamodelProcessor<X> {
 
-    private static final Logger LOG = Logger.getLogger(EntityFieldMetamodelProcessor.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(EntityFieldMetamodelProcessor.class);
 
     private final FieldMappingValidator mappingValidator = new FieldMappingValidator();
 
@@ -50,13 +48,9 @@ public class EntityFieldMetamodelProcessor<X> {
     }
 
     public void processField(Field field) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("   processing field : " + field);
-        }
+        LOG.trace("processing field: {}", field);
         if (EntityPropertiesUtils.isFieldTransient(field)) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Skipping transient field " + field);
-            }
+            LOG.trace("Skipping transient field {}", field);
             return;
         }
         if (field.getType().isPrimitive()) {

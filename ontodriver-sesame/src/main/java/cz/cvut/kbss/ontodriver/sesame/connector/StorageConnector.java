@@ -38,13 +38,13 @@ import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.inferencer.fc.config.ForwardChainingRDFSInferencerConfig;
 import org.openrdf.sail.memory.MemoryStore;
 import org.openrdf.sail.nativerdf.config.NativeStoreConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 class StorageConnector extends AbstractConnector {
 
@@ -52,7 +52,7 @@ class StorageConnector extends AbstractConnector {
     private static final String LOCAL_NATIVE_REPO = "repositories/";
     private static final String FILE_SCHEME = "file";
 
-    private static final Logger LOG = Logger.getLogger(StorageConnector.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(StorageConnector.class);
 
     private final OntologyStorageProperties storageProperties;
 
@@ -72,9 +72,7 @@ class StorageConnector extends AbstractConnector {
 
     private void initialize(Map<String, String> properties) throws SesameDriverException {
         final URI serverUri = storageProperties.getPhysicalURI();
-        if (LOG.isLoggable(Level.CONFIG)) {
-            LOG.config("Initializing connector to repository at " + serverUri);
-        }
+        LOG.debug("Initializing connector to repository at {}", serverUri);
         try {
             final boolean isRemote = isRemoteRepository(serverUri);
             if (isRemote) {
@@ -111,9 +109,7 @@ class StorageConnector extends AbstractConnector {
      * Creates a local in-memory Sesame repository which is disposed when the VM shuts down.
      */
     private Repository createInMemoryRepository(Map<String, String> props) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Creating local in-memory repository.");
-        }
+        LOG.trace("Creating local in-memory repository.");
         final MemoryStore ms = new MemoryStore();
         if (shouldUseInferenceInLocalRepositories(props)) {
             return new SailRepository(new ForwardChainingRDFSInferencer(ms));
@@ -128,9 +124,7 @@ class StorageConnector extends AbstractConnector {
      * This kind of repository stores data in files and is persistent after the VM shuts down.
      */
     private Repository createNativeRepository(Map<String, String> props, final URI localUri) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Creating local native repository at " + localUri);
-        }
+        LOG.trace("Creating local native repository at " + localUri);
         final String[] tmp = localUri.toString().split(LOCAL_NATIVE_REPO);
         if (tmp.length != 2) {
             throw new RepositoryCreationException(
@@ -166,9 +160,7 @@ class StorageConnector extends AbstractConnector {
         if (!open) {
             return;
         }
-        if (LOG.isLoggable(Level.CONFIG)) {
-            LOG.config("Closing connector to repository " + storageProperties.getPhysicalURI());
-        }
+        LOG.debug("Closing connector to repository {}.", storageProperties.getPhysicalURI());
         try {
             repository.shutDown();
             if (manager != null) {

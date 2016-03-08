@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -20,18 +18,17 @@ import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class MetamodelImpl implements Metamodel {
 
-    private static final Logger LOG = Logger.getLogger(Metamodel.class
-            .getName());
+    private static final Logger LOG = LoggerFactory.getLogger(Metamodel.class);
 
     private static final String ASPECTJ_CLASS = "org.aspectj.weaver.loadtime.Agent";
 
@@ -52,9 +49,7 @@ public class MetamodelImpl implements Metamodel {
     }
 
     private void build(EntityLoader entityLoader) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Building metamodel ... ");
-        }
+        LOG.debug("Building metamodel ... ");
         checkForWeaver();
 
         loadEntities(entityLoader);
@@ -71,7 +66,7 @@ public class MetamodelImpl implements Metamodel {
             Class<?> c = MetamodelImpl.class.getClassLoader().loadClass(
                     ASPECTJ_CLASS);
         } catch (ClassNotFoundException e) {
-            LOG.severe("AspectJ not found on classpath. Cannot run without AspectJ.");
+            LOG.error("AspectJ not found on classpath. Cannot run without AspectJ.");
             throw new OWLPersistenceException(e);
         }
     }
@@ -86,9 +81,7 @@ public class MetamodelImpl implements Metamodel {
             return;
         }
 
-        if (LOG.isLoggable(Level.CONFIG)) {
-            LOG.config("processing OWL class : " + cls);
-        }
+        LOG.debug("processing OWL class: {}", cls);
 
         final EntityClassProcessor classProcessor = new EntityClassProcessor();
 

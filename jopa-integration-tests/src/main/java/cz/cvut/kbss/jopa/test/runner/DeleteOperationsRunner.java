@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -24,13 +22,13 @@ import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
@@ -42,7 +40,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveSimple() {
-        logger.config("Test: simple entity removal.");
+        logger.debug("Test: simple entity removal.");
         this.em = getEntityManager("SimpleRemove", false);
         persist(entityA);
 
@@ -59,7 +57,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     @Ignore
     @Test
     public void testRemoveReference() {
-        logger.config("Test: remove entity referenced by another entity.");
+        logger.debug("Test: remove entity referenced by another entity.");
         this.em = getEntityManager("RemoveReference", false);
         persist(entityD, entityA);
 
@@ -76,7 +74,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveCascade() {
-        logger.config("Test: remove cascade.");
+        logger.debug("Test: remove cascade.");
         this.em = getEntityManager("RemoveCascade", false);
         em.getTransaction().begin();
         em.persist(entityG);
@@ -109,7 +107,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test(expected = IllegalArgumentException.class)
     public void testRemoveDetached() {
-        logger.config("Test: try removing detached entity.");
+        logger.debug("Test: try removing detached entity.");
         this.em = getEntityManager("RemoveDetached", false);
         assertNull(entityE.getUri());
         persist(entityE);
@@ -126,7 +124,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveFromSimpleList() {
-        logger.config("Test: remove entity from simple list.");
+        logger.debug("Test: remove entity from simple list.");
         this.em = getEntityManager("RemoveFromSimpleList", false);
         final int size = 5;
         entityC.setSimpleList(Generators.createSimpleList(size));
@@ -161,7 +159,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveFromReferencedList() {
-        logger.config("Test: remove entity from referenced list.");
+        logger.debug("Test: remove entity from referenced list.");
         this.em = getEntityManager("RemoveFromReferencedList", false);
         final int size = 10;
         entityC.setReferencedList(Generators.createReferencedList(size));
@@ -196,7 +194,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveListOwner() {
-        logger.config("Test: remove owner of simple and referenced list.");
+        logger.debug("Test: remove owner of simple and referenced list.");
         this.em = getEntityManager("RemoveListOwner", false);
         entityC.setSimpleList(Generators.createSimpleList());
         entityC.setReferencedList(Generators.createReferencedList());
@@ -223,7 +221,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveNotYetCommitted() {
-        logger.config("Test: persist entity, but remove it before committing the transaction.");
+        logger.debug("Test: persist entity, but remove it before committing the transaction.");
         this.em = getEntityManager("RemoveNotYetCommitted", false);
         em.getTransaction().begin();
         em.persist(entityE);
@@ -238,7 +236,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testCascadeMergeAndRemove() {
-        logger.config("Test: merge and remove the merged instance, cascading to another object.");
+        logger.debug("Test: merge and remove the merged instance, cascading to another object.");
         this.em = getEntityManager("CascadeMergeAndRemove", false);
         em.getTransaction().begin();
         em.persist(entityG);
@@ -267,7 +265,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void removeDeletesAllPropertyAssertionsMappedByEntity() throws Exception {
-        logger.config(
+        logger.debug(
                 "Test: remove deletes all property assertions mapped by the entity, including the lazily loaded ones.");
         this.em = getEntityManager("RemoveDeletesAllMappedAttributes", false);
         em.getTransaction().begin();

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -24,9 +22,9 @@ import cz.cvut.kbss.jopa.test.OWLClassI;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
@@ -38,7 +36,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRetrieveSimilarFromTwoContexts() throws Exception {
-        logger.config(
+        logger.debug(
                 "Test: persist entities with the same URI but different attributes into two contexts and then retrieve them.");
         this.em = getEntityManager("MultiRetrieveSimilarFromTwoContexts", false);
         final OWLClassA entityATwo = new OWLClassA();
@@ -61,7 +59,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRetrieveSimpleListFromContext() throws Exception {
-        logger.config("Test: retrieve simple list and its values from a different context.");
+        logger.debug("Test: retrieve simple list and its values from a different context.");
         this.em = getEntityManager("MultiRetrieveSimpleListFromContext", false);
         entityC.setSimpleList(Generators.createSimpleList(10));
         final Descriptor cDescriptor = new EntityDescriptor();
@@ -89,7 +87,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRetrieveReferencedListFromContext() throws Exception {
-        logger.config("Test: retrieve referenced list and its values from a different context.");
+        logger.debug("Test: retrieve referenced list and its values from a different context.");
         this.em = getEntityManager("MultiRetrieveReferencedListFromContext", false);
         entityC.setReferencedList(Generators.createReferencedList(15));
         final Descriptor cDescriptor = new EntityDescriptor();
@@ -117,7 +115,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRetrieveLazyReferenceFromContext() throws Exception {
-        logger.config("Test: retrieve entity with lazy loaded reference in another context.");
+        logger.debug("Test: retrieve entity with lazy loaded reference in another context.");
         this.em = getEntityManager("MultiRetrieveLazyReferenceFromContext", false);
         final Descriptor iDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
@@ -142,7 +140,7 @@ public abstract class RetrieveOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRetrievePropertiesFromContext() throws Exception {
-        logger.config("Test: retrieve entity properties from a context.");
+        logger.debug("Test: retrieve entity properties from a context.");
         this.em = getEntityManager("MultiRetrievePropertiesFromContext", false);
         entityB.setProperties(Generators.createProperties(50));
         final Descriptor bDescriptor = new EntityDescriptor(CONTEXT_ONE);

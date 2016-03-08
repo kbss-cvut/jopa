@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.query.runner;
 
@@ -25,11 +23,11 @@ import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
@@ -41,7 +39,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test
     public void testFindAll() {
-        logger.config("Test: select all entities of a certain type.");
+        logger.debug("Test: select all entities of a certain type.");
         final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD> .}";
         final List<OWLClassD> ds = new ArrayList<>();
         final TypedQuery<OWLClassD> q = getEntityManager().createNativeQuery(query, OWLClassD.class);
@@ -67,7 +65,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSelectByTypeAndDataPropertyValue() {
-        logger.config("Test: select entity by its type and data property value.");
+        logger.debug("Test: select entity by its type and data property value.");
         final OWLClassB b = QueryTestEnvironment.getData(OWLClassB.class).get(5);
         final String query =
                 "SELECT ?x WHERE { " +
@@ -83,7 +81,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSelectByObjectProperty() {
-        logger.config("Test: select entity by object property value.");
+        logger.debug("Test: select entity by object property value.");
         final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> ?y . }";
         final TypedQuery<OWLClassD> q = getEntityManager().createNativeQuery(query, OWLClassD.class);
         final List<OWLClassD> ds = new ArrayList<>();
@@ -96,7 +94,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSetMaxResults() {
-        logger.config("Test: set maximum number of results.");
+        logger.debug("Test: set maximum number of results.");
         final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
         final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class);
         final int max = 5;
@@ -112,7 +110,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test(expected = IllegalArgumentException.class)
     public void testSetMaxResultsNegative() {
-        logger.config("Test: set maximum number of results. Negative argument.");
+        logger.debug("Test: set maximum number of results. Negative argument.");
         final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
         final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class);
         q.setMaxResults(-1);
@@ -120,7 +118,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSetMaxResultsZero() {
-        logger.config("Test: set maximum number of results. Zero argument.");
+        logger.debug("Test: set maximum number of results. Zero argument.");
         final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
         final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class);
         q.setMaxResults(0);
@@ -131,7 +129,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test
     public void testGetSingleResult() {
-        logger.config("Test: get single result.");
+        logger.debug("Test: get single result.");
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
                 "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?aString .}";
@@ -144,7 +142,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test(expected = NoUniqueResultException.class)
     public void testGetSingleResultMultiples() {
-        logger.config("Test: get single result. No unique result.");
+        logger.debug("Test: get single result. No unique result.");
         final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
         final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class);
         q.getSingleResult();
@@ -152,7 +150,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test(expected = NoResultException.class)
     public void testGetSingleResultNoResult() {
-        logger.config("Test: get single result. No result.");
+        logger.debug("Test: get single result. No result.");
         final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX> . }";
         final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class);
         q.getSingleResult();
@@ -160,20 +158,20 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test(expected = NullPointerException.class)
     public void testCreateQueryNullQuery() {
-        logger.config("Test: create query. Null query passed.");
+        logger.debug("Test: create query. Null query passed.");
         getEntityManager().createNativeQuery(null, OWLClassA.class);
     }
 
     @Test(expected = NullPointerException.class)
     public void testCreateQueryNullClass() {
-        logger.config("Test: create query. Null result class passed.");
+        logger.debug("Test: create query. Null result class passed.");
         final String query = "SELECT ?x WHERE { ?x ?y ?z .}";
         getEntityManager().createNativeQuery(query, (Class<OWLClassA>) null);
     }
 
     @Test
     public void askQueryReturnsTrue() {
-        logger.config("Test: execute a ASK query which returns true.");
+        logger.debug("Test: execute a ASK query which returns true.");
         final String query = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
         final TypedQuery<Boolean> q = getEntityManager().createNativeQuery(query, Boolean.class);
         final Boolean res = q.getSingleResult();
@@ -183,7 +181,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test
     public void askQueryReturnsFalse() {
-        logger.config("Test: execute a ASK query which returns false.");
+        logger.debug("Test: execute a ASK query which returns false.");
         final String query = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX> . }";
         final TypedQuery<Boolean> q = getEntityManager().createNativeQuery(query, Boolean.class);
         final List<Boolean> res = q.getResultList();
@@ -195,7 +193,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Ignore
     @Test
     public void askQueryAgainstTransactionalOntologyContainsUncommittedChangesAsWell() throws Exception {
-        logger.config("Test: execute an ASK query which returns changes yet to be committed in transaction.");
+        logger.debug("Test: execute an ASK query which returns changes yet to be committed in transaction.");
         final OWLClassE e = new OWLClassE();
         getEntityManager().getTransaction().begin();
         try {
@@ -212,7 +210,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test
     public void askQueryWithPositionParameter() {
-        logger.config("Test: execute an ASK query which returns true, query contains positional parameter.");
+        logger.debug("Test: execute an ASK query which returns true, query contains positional parameter.");
         final String query = "ASK { ?x a $1 . }";
         final URI paramValue = URI.create(OWLClassA.class.getAnnotation(OWLClass.class).iri());
         final TypedQuery<Boolean> q = getEntityManager().createNativeQuery(query, Boolean.class)

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -23,16 +21,16 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class CloneBuilderImpl implements CloneBuilder {
 
-    private static final Logger LOG = Logger.getLogger(CloneBuilderImpl.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(CloneBuilderImpl.class);
 
     private static final Set<Class<?>> WRAPPER_TYPES = getWrapperTypes();
 
@@ -54,9 +52,7 @@ public class CloneBuilderImpl implements CloneBuilder {
         if (original == null || descriptor == null) {
             throw new NullPointerException();
         }
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("Cloning object " + original);
-        }
+        LOG.trace("Cloning object {}.", original);
         return buildCloneImpl(null, null, original, descriptor);
     }
 
@@ -66,9 +62,7 @@ public class CloneBuilderImpl implements CloneBuilder {
         if (cloneOwner == null || original == null || descriptor == null) {
             throw new NullPointerException();
         }
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("Cloning object " + original + " with owner " + cloneOwner);
-        }
+        LOG.trace("Cloning object {} with owner {}", original, cloneOwner);
         return buildCloneImpl(cloneOwner, clonedField, original, descriptor);
     }
 

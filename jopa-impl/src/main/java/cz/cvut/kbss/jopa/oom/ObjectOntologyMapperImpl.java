@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -32,6 +30,8 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -39,12 +39,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMappingHelper {
 
-    private static final Logger LOG = Logger.getLogger(ObjectOntologyMapperImpl.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(ObjectOntologyMapperImpl.class);
 
     private final UnitOfWorkImpl uow;
     private final Connection storageConnection;
@@ -99,7 +97,9 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
             if (axioms.isEmpty()) {
                 return null;
             }
-            return entityBuilder.reconstructEntity(loadingParameters.getIdentifier(), et, loadingParameters.getDescriptor(), axioms);
+            return entityBuilder
+                    .reconstructEntity(loadingParameters.getIdentifier(), et, loadingParameters.getDescriptor(),
+                            axioms);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
         } catch (InstantiationException | IllegalAccessException e) {
@@ -118,9 +118,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         assert field != null;
         assert descriptor != null;
 
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("Lazily loading value of field " + field + " of entity " + entity);
-        }
+        LOG.trace("Lazily loading value of field {} of entity ", field, entity);
 
         final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI primaryKey = EntityPropertiesUtils.getPrimaryKey(entity, et);

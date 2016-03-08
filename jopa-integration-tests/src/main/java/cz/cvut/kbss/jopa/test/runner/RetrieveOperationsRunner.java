@@ -1,27 +1,25 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.test.*;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
@@ -33,7 +31,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
     @Test
     public void testRetrieveSimple() {
-        logger.config("Test: retrieve a simple entity.");
+        logger.debug("Test: retrieve a simple entity.");
         this.em = getEntityManager("RetrieveSimple", false);
         persist(entityA);
 
@@ -48,14 +46,14 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
     @Test(expected = NullPointerException.class)
     public void testRetrieveNull() {
-        logger.config("Test: retrieve null.");
+        logger.debug("Test: retrieve null.");
         this.em = getEntityManager("RetrieveNull", false);
         em.find(OWLClassA.class, null);
     }
 
     @Test
     public void testRetrieveLazy() throws Exception {
-        logger.config("Test: retrieve entity with lazy loaded attribute.");
+        logger.debug("Test: retrieve entity with lazy loaded attribute.");
         this.em = getEntityManager("RetrieveLazy", false);
         persist(entityI);
 
@@ -74,7 +72,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
     @Test
     public void testRetrieveGenerated() throws Exception {
-        logger.config("Test: persist and retrieve several entities with generated identifiers.");
+        logger.debug("Test: persist and retrieve several entities with generated identifiers.");
         this.em = getEntityManager("RetrieveGenerated", false);
         em.getTransaction().begin();
         final int size = 10;
@@ -99,7 +97,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
     @Test
     public void testRetrieveNotExisting() {
-        logger.config("Test: retrieve entity which does not exist in the specified context.");
+        logger.debug("Test: retrieve entity which does not exist in the specified context.");
         this.em = getEntityManager("RetrieveNotExisting", false);
         final OWLClassB res = em.find(OWLClassB.class, entityB.getUri());
         assertNull(res);
@@ -107,7 +105,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
     @Test
     public void testRefresh() {
-        logger.config("Test: refresh entity.");
+        logger.debug("Test: refresh entity.");
         this.em = getEntityManager("Refresh", false);
         persist(entityD, entityA);
 
@@ -124,7 +122,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
     @Test(expected = IllegalArgumentException.class)
     public void testRefreshNotManaged() {
-        logger.config("Test: refresh entity which is not managed.");
+        logger.debug("Test: refresh entity which is not managed.");
         this.em = getEntityManager("RefreshNotManaged", false);
         persist(entityA);
 
@@ -138,7 +136,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
     @Test
     public void testRetrieveDifferentType() {
-        logger.config("Test: persist entity but try to retrieve it as a different type.");
+        logger.debug("Test: persist entity but try to retrieve it as a different type.");
         this.em = getEntityManager("RetrieveDifferentType", false);
         persist(entityA);
 

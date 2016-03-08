@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.environment;
 
@@ -20,14 +18,9 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProvider;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 public class TestEnvironment {
-
-    private static final Logger LOG = Logger.getLogger(TestEnvironment.class.getName());
 
     public static final String dir = "testResults";
 
@@ -42,16 +35,6 @@ public class TestEnvironment {
 
     // private static final String REASONER_FACTORY_CLASS =
     // "org.semanticweb.HermiT.Reasoner$ReasonerFactory";
-
-    static {
-        try {
-            // Load java.util.logging configuration
-            LogManager.getLogManager().readConfiguration(
-                    TestEnvironment.class.getResourceAsStream("/logging.properties"));
-        } catch (SecurityException | IOException e) {
-            LOG.severe(e.toString());
-        }
-    }
 
     /**
      * Creates persistence connector, with enabled second level cache, for OWLAPI accessed ontology stored in a file.

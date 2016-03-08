@@ -16,11 +16,11 @@ import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
@@ -59,7 +59,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testUpdateDataLeaveLazy() throws Exception {
-        logger.config(
+        logger.debug(
                 "Test: update data property. Leaves lazily loaded field empty and checks that after commit the field's value hasn't changed.");
         this.em = getEntityManager("UpdateDataProperty", false);
         entityB.setProperties(Generators.createProperties());
@@ -84,7 +84,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testUpdateDataPropertySetNull() {
-        logger.config("Test: update data property. Set it to null.");
+        logger.debug("Test: update data property. Set it to null.");
         this.em = getEntityManager("UpdateDataPropertyToNull", true);
         persist(entityA);
 
@@ -103,7 +103,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testUpdateReference() {
-        logger.config("Test: update reference to entity.");
+        logger.debug("Test: update reference to entity.");
         this.em = getEntityManager("UpdateReference", true);
         persist(entityD, entityI);
         // em.persist(entityA, ctx);
@@ -136,7 +136,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testMergeSet() throws Exception {
-        logger.config("Test: merge set property.");
+        logger.debug("Test: merge set property.");
         this.em = getEntityManager("MergeSet", false);
         persist(entityJ);
         em.clear();
@@ -154,7 +154,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testMergeDetachedWithChanges() {
-        logger.config("Test: merge detached entity with changes.");
+        logger.debug("Test: merge detached entity with changes.");
         this.em = getEntityManager("UpdateDetached", true);
         persist(entityA);
 
@@ -176,7 +176,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testMergeDetachedCascade() {
-        logger.config("Test: merge detached with cascade.");
+        logger.debug("Test: merge detached with cascade.");
         this.em = getEntityManager("UpdateCascade", true);
         em.getTransaction().begin();
         em.persist(entityH);
@@ -202,7 +202,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testMergeDetachedWithObjectPropertyChange() {
-        logger.config("Test: merge detached with object property change.");
+        logger.debug("Test: merge detached with object property change.");
         this.em = getEntityManager("UpdateDetachedWithOPChange", true);
         persist(entityD, entityA);
 
@@ -226,7 +226,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveFromSimpleList() {
-        logger.config("Test: remove entity from simple list. (But keep it in the ontology.)");
+        logger.debug("Test: remove entity from simple list. (But keep it in the ontology.)");
         this.em = getEntityManager("UpdateRemoveFromSimpleList", true);
         entityC.setSimpleList(Generators.createSimpleList());
         persistEntityWithList();
@@ -262,7 +262,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testAddToSimpleList() {
-        logger.config("Test: add entity to simple list.");
+        logger.debug("Test: add entity to simple list.");
         this.em = getEntityManager("UpdateAddToSimpleList", true);
         entityC.setSimpleList(Generators.createSimpleList());
         em.getTransaction().begin();
@@ -290,7 +290,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testClearSimpleList() {
-        logger.config("Test: clear a simple list (but keep the entities in ontology).");
+        logger.debug("Test: clear a simple list (but keep the entities in ontology).");
         this.em = getEntityManager("UpdateClearSimpleList", true);
         entityC.setSimpleList(Generators.createSimpleList());
         persistEntityWithList();
@@ -312,7 +312,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testReplaceSimpleList() {
-        logger.config("Test: replace simple list with a new one.");
+        logger.debug("Test: replace simple list with a new one.");
         this.em = getEntityManager("UpdateReplaceSimpleList", true);
         entityC.setSimpleList(Generators.createSimpleList());
         persistEntityWithList();
@@ -346,7 +346,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveFromReferencedList() {
-        logger.config("Test: remove entity from referenced list. (But keep it in the ontology.");
+        logger.debug("Test: remove entity from referenced list. (But keep it in the ontology.");
         this.em = getEntityManager("UpdateRemoveFromReferencedList", true);
         entityC.setReferencedList(Generators.createReferencedList());
         persistEntityWithList();
@@ -370,7 +370,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testAddToReferencedList() {
-        logger.config("Test: add entity to Referenced list.");
+        logger.debug("Test: add entity to Referenced list.");
         this.em = getEntityManager("UpdateAddToReferencedList", true);
         entityC.setReferencedList(Generators.createReferencedList());
         persistEntityWithList();
@@ -392,7 +392,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testClearReferencedList() {
-        logger.config("Test: clear referenced list (but keep the entities in ontology).");
+        logger.debug("Test: clear referenced list (but keep the entities in ontology).");
         this.em = getEntityManager("UpdateClearReferencedList", true);
         entityC.setReferencedList(Generators.createReferencedList());
         persistEntityWithList();
@@ -414,7 +414,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testReplaceReferencedList() {
-        logger.config("Test: replace referenced list with a new one.");
+        logger.debug("Test: replace referenced list with a new one.");
         this.em = getEntityManager("UpdateReplaceReferencedList", true);
         entityC.setReferencedList(Generators.createReferencedList());
         persistEntityWithList();
@@ -448,7 +448,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testAddNewToProperties() {
-        logger.config("Test: add a new property value to entity's properties.");
+        logger.debug("Test: add a new property value to entity's properties.");
         this.em = getEntityManager("UpdateAddNewToProperties", false);
         entityB.setProperties(Generators.createProperties());
         final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
@@ -479,7 +479,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testAddPropertyValue() {
-        logger.config("Test: add another value to an existing property.");
+        logger.debug("Test: add another value to an existing property.");
         this.em = getEntityManager("UpdateAddPropertyValue", false);
         entityB.setProperties(Generators.createProperties());
         final Map<String, Set<String>> expected = new HashMap<>(entityB.getProperties().size() + 3);
@@ -517,7 +517,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testAddPropertyValueDetached() {
-        logger.config("Test: add another value to an existing property.");
+        logger.debug("Test: add another value to an existing property.");
         this.em = getEntityManager("UpdateAddPropertyValueDetached", false);
         entityB.setProperties(Generators.createProperties());
         final String prop = entityB.getProperties().keySet().iterator().next();
@@ -539,7 +539,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test(expected = OWLInferredAttributeModifiedException.class)
     public void testModifyInferredAttribute() {
-        logger.config("Test: modify an inferred attribute.");
+        logger.debug("Test: modify an inferred attribute.");
         this.em = getEntityManager("ModifyInferredAttribute", false);
         persist(entityF);
 
@@ -552,7 +552,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testModifyAttributesOfBasicTypes() {
-        logger.config("Test: modify attributes of basic Java types (Integer, Boolean etc.).");
+        logger.debug("Test: modify attributes of basic Java types (Integer, Boolean etc.).");
         this.em = getEntityManager("ModifyBasicTypeAttributes", false);
         persist(entityM);
 
@@ -573,7 +573,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testModifyEnumAttribute() {
-        logger.config("Test: modify enum attribute.");
+        logger.debug("Test: modify enum attribute.");
         this.em = getEntityManager("ModifyEnumAttribute", false);
         assertNotNull(entityM.getEnumAttribute());
         persist(entityM);
@@ -591,7 +591,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testCascadeOfNewlyPersistedOnMerge() {
-        logger.config("Test: cascade merging of an object that has been just persisted.");
+        logger.debug("Test: cascade merging of an object that has been just persisted.");
         this.em = getEntityManager("CascadeMergeWithNewlyPersisted", true);
         em.getTransaction().begin();
         em.persist(entityO);
@@ -618,7 +618,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void modificationsOfCollectionAfterCascadeMergeAreWrittenOnCommit() {
-        logger.config(
+        logger.debug(
                 "Test: modify collection after cascade merge and check that the changes have been propagated on commit.");
         this.em = getEntityManager("ModifyCollectionAfterCascadeMerge", true);
         em.getTransaction().begin();
@@ -646,7 +646,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
     @Test
     public void testAddPropertiesWhenTheyWereNullOriginally() throws Exception {
-        logger.config("Test: add properties on update when the field was originally null.");
+        logger.debug("Test: add properties on update when the field was originally null.");
         this.em = getEntityManager("AddPropertiesToNullOriginals", true);
         em.getTransaction().begin();
         assertNull(entityB.getProperties());

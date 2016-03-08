@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -24,13 +22,13 @@ import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
@@ -42,7 +40,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testUpdateDataPropertyInContext() throws Exception {
-        logger.config("Test: update data property value which is stored in a different context that the owner.");
+        logger.debug("Test: update data property value which is stored in a different context that the owner.");
         this.em = getEntityManager("MultiUpdateDataPropertyInContext", false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
         aDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("stringAttribute"), CONTEXT_TWO);
@@ -65,7 +63,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testUpdateObjectPropertyToDifferentContext() throws Exception {
-        logger.config("Test: update object property with value from different context than the previous.");
+        logger.debug("Test: update object property with value from different context than the previous.");
         this.em = getEntityManager("MultiUpdateObjectPropertyToDifferent", false);
         final Descriptor dDescriptor = new EntityDescriptor();
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -99,7 +97,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testUpdateAddToPropertiesInContext() throws Exception {
-        logger.config("Test: add new property value, properties are stored in a different context.");
+        logger.debug("Test: add new property value, properties are stored in a different context.");
         this.em = getEntityManager("MultiUpdateAddToPropertiesInContext", false);
         entityB.setProperties(Generators.createProperties());
         final Descriptor bDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -127,7 +125,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testUpdateAddToSimpleListInContext() throws Exception {
-        logger.config("Test: add new element into a simple list stored in different context than its owner.");
+        logger.debug("Test: add new element into a simple list stored in different context than its owner.");
         this.em = getEntityManager("MultiUpdateAddToSimpleListInContext", false);
         entityC.setSimpleList(Generators.createSimpleList(15));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -164,7 +162,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testUpdateAddToReferencedListInContext() throws Exception {
-        logger.config("Test: add new element into a referenced list stored in different context than its owner.");
+        logger.debug("Test: add new element into a referenced list stored in different context than its owner.");
         this.em = getEntityManager("MultiUpdateAddToReferencedListInContext", false);
         entityC.setReferencedList(Generators.createReferencedList(10));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -201,7 +199,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testUpdateRemoveFromSimpleListInContext() throws Exception {
-        logger.config("Test: remove element from simple list stored in a different context than its owner.");
+        logger.debug("Test: remove element from simple list stored in a different context than its owner.");
         this.em = getEntityManager("MultiUpdateRemoveFromSimpleListInContext", false);
         entityC.setSimpleList(Generators.createSimpleList(15));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -230,7 +228,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testUpdateRemoveFromReferencedListInContext() throws Exception {
-        logger.config("Test: remove elements from referenced list stored in a different context than its owner.");
+        logger.debug("Test: remove elements from referenced list stored in a different context than its owner.");
         this.em = getEntityManager("MultiUpdateRemoveFromReferencedListInContext", false);
         entityC.setReferencedList(Generators.createReferencedList(10));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);

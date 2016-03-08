@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -21,8 +19,7 @@ import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassG;
 import cz.cvut.kbss.jopa.test.OWLClassH;
 import org.junit.Test;
-
-import java.util.logging.Logger;
+import org.slf4j.Logger;
 
 import static org.junit.Assert.*;
 
@@ -34,7 +31,7 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRemoveFromContext() throws Exception {
-        logger.config("Test: remove entity from a context.");
+        logger.debug("Test: remove entity from a context.");
         this.em = getEntityManager("MultiRemoveFromContext", false);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
         em.getTransaction().begin();
@@ -54,7 +51,7 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRemoveFromOneKeepInTheOther() throws Exception {
-        logger.config("Test: persist an entity into two contexts and then remove it from one of them.");
+        logger.debug("Test: persist an entity into two contexts and then remove it from one of them.");
         this.em = getEntityManager("MultiRemoveFromOneContextAndKeepInTheOther", false);
         final Descriptor aDescriptorOne = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptorTwo = new EntityDescriptor(CONTEXT_TWO);
@@ -79,7 +76,7 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRemoveObjectPropertyFromContext() throws Exception {
-        logger.config("Test: remove object property value from a context.");
+        logger.debug("Test: remove object property value from a context.");
         this.em = getEntityManager("MultiRemoveObjectPropertyFromContext", false);
         final Descriptor dDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
@@ -107,7 +104,7 @@ public abstract class DeleteOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testRemoveCascadeOverContexts() throws Exception {
-        logger.config("Test: remove entities through cascade, each in a different context.");
+        logger.debug("Test: remove entities through cascade, each in a different context.");
         this.em = getEntityManager("MultiRemoveCascadeOverContexts", false);
         final Descriptor gDescriptor = new EntityDescriptor();
         final Descriptor hDescriptor = new EntityDescriptor(CONTEXT_ONE);

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.query.runner;
 
@@ -25,11 +23,11 @@ import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -42,7 +40,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSelectByType() {
-        logger.config("Test: get URIs of individuals of a certain type.");
+        logger.debug("Test: get URIs of individuals of a certain type.");
         final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         final List<OWLClassA> as = QueryTestEnvironment.getDataByContext(null, OWLClassA.class);
@@ -68,7 +66,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSelectByDataProperty() {
-        logger.config("Test: select data property values.");
+        logger.debug("Test: select data property values.");
         final String query = "SELECT ?y WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> ?y . }";
         final Query q = getEntityManager().createNativeQuery(query);
         final Set<String> exp = QueryTestEnvironment.getDataByContext(null, OWLClassB.class).stream()
@@ -88,7 +86,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSelectByObjectProperty() {
-        logger.config("Test: select object property values.");
+        logger.debug("Test: select object property values.");
         final OWLClassD d = QueryTestEnvironment.getData(OWLClassD.class).get(0);
         final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> ?y . }";
         final Query q = getEntityManager().createNativeQuery(query);
@@ -103,7 +101,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSelectTypes() {
-        logger.config("Test: select individual's types.");
+        logger.debug("Test: select individual's types.");
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final Set<String> types = a.getTypes();
         types.add(a.getClass().getAnnotation(OWLClass.class).iri());
@@ -121,7 +119,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSetMaxResults() {
-        logger.config("Test: set maximum number of results.");
+        logger.debug("Test: set maximum number of results.");
         final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         final int max = 5;
@@ -138,7 +136,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     @Test(expected = IllegalArgumentException.class)
     public void testSetMaxResultsNegative() {
-        logger.config("Test: set maximum number of results. Negative argument.");
+        logger.debug("Test: set maximum number of results. Negative argument.");
         final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         q.setMaxResults(-1);
@@ -146,7 +144,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSetMaxResultsZero() {
-        logger.config("Test: set maximum number of results. Zero argument.");
+        logger.debug("Test: set maximum number of results. Zero argument.");
         final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         q.setMaxResults(0);
@@ -158,7 +156,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     @Test
     public void testGetSingleResult() {
-        logger.config("Test: get single result.");
+        logger.debug("Test: get single result.");
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
                 "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?y .}";
@@ -172,7 +170,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     @Test(expected = NoUniqueResultException.class)
     public void testGetSingleResultMultiples() {
-        logger.config("Test: get single result. No unique result.");
+        logger.debug("Test: get single result. No unique result.");
         final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         q.getSingleResult();
@@ -180,7 +178,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     @Test(expected = NoResultException.class)
     public void testGetSingleResultNoResult() {
-        logger.config("Test: get single result. No result.");
+        logger.debug("Test: get single result. No result.");
         final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         q.getSingleResult();
@@ -188,7 +186,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSelectQueryWithPositionalParameters() {
-        logger.config("Test: select query using positional parameters.");
+        logger.debug("Test: select query using positional parameters.");
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
                 "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> $ .}";
@@ -202,7 +200,7 @@ public abstract class QueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSelectWithOptionalReturnsNullInUnfilledColumns() throws Exception {
-        logger.config("Test: select query with optional. The result should have nulls in places of empty values.");
+        logger.debug("Test: select query with optional. The result should have nulls in places of empty values.");
         final String query =
                 "SELECT ?x ?s WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> ." +
                         " OPTIONAL {?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#E-stringAttribute> ?s . } }";

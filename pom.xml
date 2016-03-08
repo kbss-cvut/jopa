@@ -32,11 +32,20 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
+        <org.slf4j.version>1.7.18</org.slf4j.version>
         <junit.version>4.12</junit.version>
         <org.mockito.version>1.10.19</org.mockito.version>
     </properties>
 
     <dependencies>
+        <!-- Logging facade -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${org.slf4j.version}</version>
+        </dependency>
+
+        <!-- Testing dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

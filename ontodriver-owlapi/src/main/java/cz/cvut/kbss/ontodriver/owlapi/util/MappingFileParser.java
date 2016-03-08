@@ -2,19 +2,21 @@ package cz.cvut.kbss.ontodriver.owlapi.util;
 
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.owlapi.exception.MappingFileParserException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 public class MappingFileParser {
 
-    private static final Logger LOG = Logger.getLogger(MappingFileParser.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(MappingFileParser.class);
 
     private static final String[] REMOTE_URL_SCHEMES = {"http://", "https://", "ftp://", "sftp://"};
 
@@ -58,20 +60,18 @@ public class MappingFileParser {
             while ((line = r.readLine()) != null) {
                 final StringTokenizer t = new StringTokenizer(line, delimiter);
                 if (t.countTokens() != 2) {
-                    LOG.warning("Ignoring line '" + line + "' - invalid number of tokens = " + t.countTokens());
+                    LOG.warn("Ignoring line '" + line + "' - invalid number of tokens = " + t.countTokens());
                     continue;
                 }
                 final String uriName = t.nextToken().trim();
                 final String fileName = t.nextToken().trim();
                 final URI fileUri = resolveLocation(defaultDir, fileName);
 
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Mapping ontology " + uriName + " to location " + fileUri);
-                }
+                LOG.trace("Mapping ontology {} to location {}.", uriName, fileUri);
                 map.put(URI.create(uriName), fileUri);
             }
         } catch (IOException e) {
-            LOG.severe("Unable to parse mapping file." + e);
+            LOG.error("Unable to parse mapping file." + e);
             throw new MappingFileParserException(e);
         }
         return map;
@@ -83,7 +83,7 @@ public class MappingFileParser {
                 try {
                     return URI.create(targetUri);
                 } catch (IllegalArgumentException e) {
-                    LOG.severe("Target URI " + targetUri + " looks like a remote URI, but is not valid.");
+                    LOG.error("Target URI {} looks like a remote URI, but is not valid.", targetUri);
                     throw new MappingFileParserException(e);
                 }
             }

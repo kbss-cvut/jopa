@@ -1,22 +1,22 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.*;
@@ -27,23 +27,21 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Manages the second level cache shared by all persistence contexts. </p>
  * <p>
- * This implementation of CacheManager uses cache-wide locking, i. e. the whole
- * cache is locked when an entity is being put in it, no matter that only one
- * context is affected by the change.
+ * This implementation of CacheManager uses cache-wide locking, i. e. the whole cache is locked when an entity is being
+ * put in it, no matter that only one context is affected by the change.
  * <p>
- * This cache is sweeped regularly by a dedicated thread, which removes all entries whose time-to-live (TTL) has expired.
+ * This cache is sweeped regularly by a dedicated thread, which removes all entries whose time-to-live (TTL) has
+ * expired.
  *
  * @author kidney
  */
 public class TtlCacheManager implements CacheManager {
 
-    private static final Logger LOG = Logger.getLogger(TtlCacheManager.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(TtlCacheManager.class);
 
     /**
      * Default time to live in millis
@@ -92,9 +90,7 @@ public class TtlCacheManager implements CacheManager {
                 // The property is in seconds, we need milliseconds
                 this.timeToLive = Long.parseLong(strCacheTtl) * 1000;
             } catch (NumberFormatException e) {
-                LOG.log(Level.SEVERE,
-                        "Unable to parse cache time to live setting value {0}, using default value.",
-                        strCacheTtl);
+                LOG.warn("Unable to parse cache time to live setting value {}, using default value.", strCacheTtl);
                 this.timeToLive = DEFAULT_TTL;
             }
         }
@@ -107,9 +103,7 @@ public class TtlCacheManager implements CacheManager {
                 // The property is in seconds, we need milliseconds
                 this.sweepRate = Long.parseLong(strSweepRate) * 1000;
             } catch (NumberFormatException e) {
-                LOG.log(Level.SEVERE,
-                        "Unable to parse sweep rate setting value {0}, using default value.",
-                        strSweepRate);
+                LOG.warn("Unable to parse sweep rate setting value {}, using default value.", strSweepRate);
                 this.sweepRate = DEFAULT_SWEEP_RATE;
             }
         }
@@ -119,9 +113,7 @@ public class TtlCacheManager implements CacheManager {
     @Override
     public void close() {
         if (sweeperFuture != null) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Stopping cache sweeper.");
-            }
+            LOG.debug("Stopping cache sweeper.");
             sweeperFuture.cancel(true);
             sweeperScheduler.shutdown();
         }
@@ -179,8 +171,8 @@ public class TtlCacheManager implements CacheManager {
     /**
      * Get the set of inferred classes.
      * <p>
-     * Inferred classes (i. e. classes with inferred attributes) are tracked
-     * separately since they require special behavior.
+     * Inferred classes (i. e. classes with inferred attributes) are tracked separately since they require special
+     * behavior.
      *
      * @return Set of inferred classes
      */
@@ -194,8 +186,7 @@ public class TtlCacheManager implements CacheManager {
     /**
      * Set the inferred classes.
      * <p>
-     * For more information about inferred classes see
-     * {@link #getInferredClasses()}.
+     * For more information about inferred classes see {@link #getInferredClasses()}.
      *
      * @param inferredClasses The set of inferred classes
      */
@@ -288,17 +279,14 @@ public class TtlCacheManager implements CacheManager {
     }
 
     /**
-     * Sweeps the second level cache and removes entities with no more time to
-     * live.
+     * Sweeps the second level cache and removes entities with no more time to live.
      *
      * @author kidney
      */
     private final class CacheSweeper implements Runnable {
 
         public void run() {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Running cache sweep.");
-            }
+            LOG.trace("Running cache sweep.");
             TtlCacheManager.this.acquireWriteLock();
             try {
                 if (TtlCacheManager.this.sweepRunning) {

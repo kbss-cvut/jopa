@@ -1,22 +1,22 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Collections;
@@ -27,7 +27,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 /**
  * This is a fixed-size second level cache implementation with LRU eviction policy.
@@ -38,7 +37,7 @@ import java.util.logging.Logger;
  */
 public class LruCacheManager implements CacheManager {
 
-    private static final Logger LOG = Logger.getLogger(LruCacheManager.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(LruCacheManager.class);
 
     /**
      * Default cache size limit in number of entries.
@@ -61,7 +60,7 @@ public class LruCacheManager implements CacheManager {
     public LruCacheManager(Map<String, String> properties) {
         Objects.requireNonNull(properties);
         this.capacity = properties.containsKey(JOPAPersistenceProperties.LRU_CACHE_CAPACITY) ?
-                resolveCapacitySetting(properties) : DEFAULT_CAPACITY;
+                        resolveCapacitySetting(properties) : DEFAULT_CAPACITY;
         final ReadWriteLock rwLock = new ReentrantReadWriteLock();
         this.readLock = rwLock.readLock();
         this.writeLock = rwLock.writeLock();
@@ -74,11 +73,11 @@ public class LruCacheManager implements CacheManager {
             capacitySetting =
                     Integer.parseInt(properties.get(JOPAPersistenceProperties.LRU_CACHE_CAPACITY));
             if (capacitySetting <= 0) {
-                LOG.warning("Invalid LRU cache capacity value " + capacitySetting + ". Using default value.");
+                LOG.warn("Invalid LRU cache capacity value {}. Using default value.", capacitySetting);
                 capacitySetting = DEFAULT_CAPACITY;
             }
         } catch (NumberFormatException e) {
-            LOG.severe("Unable to parse LRU cache capacity setting. Using default capacity " + DEFAULT_CAPACITY);
+            LOG.error("Unable to parse LRU cache capacity setting. Using default capacity {}.", DEFAULT_CAPACITY);
         }
         return capacitySetting;
     }

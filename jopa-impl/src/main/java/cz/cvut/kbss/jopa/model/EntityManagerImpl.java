@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -33,17 +31,17 @@ import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class EntityManagerImpl extends AbstractEntityManager {
 
-    private static final Logger LOG = Logger.getLogger(EntityManagerImpl.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(EntityManagerImpl.class);
 
     private EntityManagerFactoryImpl emf;
 
@@ -77,9 +75,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
 
     @Override
     public void persist(final Object entity, final Descriptor descriptor) {
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("Persisting " + entity);
-        }
+        LOG.trace("Persisting {}", entity);
         ensureOpen();
         Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
         Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
@@ -100,10 +96,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
                     protected void exploreCascaded(Attribute<?, ?> at, Object o) {
                         try {
                             Object ox = EntityPropertiesUtils.getAttributeValue(at, o);
-                            if (LOG.isLoggable(Level.FINEST)) {
-                                LOG.finest("object=" + o + ", attribute=" + at.getName() + ", value="
-                                        + ox);
-                            }
+                            LOG.trace("object={}, attribute={}, value={}", o, at.getName(), ox);
                             if (ox == null) {
                                 return;
                             }
@@ -159,9 +152,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
     private <T> T mergeInternal(final T entity, final Descriptor descriptor) {
         assert entity != null;
         assert descriptor != null;
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("Merging " + entity);
-        }
+        LOG.trace("Merging {}", entity);
         ensureOpen();
 
         Class<T> clz = (Class<T>) entity.getClass();
@@ -253,9 +244,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
         Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
         ensureOpen();
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.config("Finding " + cls + " with key " + primaryKey + " in context " + descriptor);
-        }
+        LOG.trace("Finding instance of {} with identifier {} in context ", cls, primaryKey, descriptor);
         final URI uri = (primaryKey instanceof URI) ? (URI) primaryKey : URI.create(primaryKey.toString());
 
         return getCurrentPersistenceContext().readObject(cls, uri, descriptor);
@@ -264,9 +253,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
     public void flush() {
         ensureOpen();
 
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.config("Flushing ...");
-        }
+        LOG.trace("Flushing changes...");
         if (!getTransaction().isActive()) {
             throw new TransactionRequiredException();
         }

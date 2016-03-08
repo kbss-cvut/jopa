@@ -20,13 +20,13 @@ import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
 
@@ -38,7 +38,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistWithGenerated() {
-        logger.config("Test: persist into all contexts, also with generated id.");
+        logger.debug("Test: persist into all contexts, also with generated id.");
         this.em = getEntityManager("PersistWithGenerated", false);
         persist(entityA, entityE);
 
@@ -56,7 +56,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test(expected = PrimaryKeyNotSetException.class)
     public void testPersistWithoutId() {
-        logger.config("Test: persist without id. No ID generation specified.");
+        logger.debug("Test: persist without id. No ID generation specified.");
         this.em = getEntityManager("PersistWithoutId", false);
         final OWLClassB b = new OWLClassB();
         b.setStringAttribute("someValue");
@@ -65,7 +65,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test(expected = NullPointerException.class)
     public void testPersistNull() {
-        logger.config("Test: persist null.");
+        logger.debug("Test: persist null.");
         this.em = getEntityManager("PersistNull", false);
         em.getTransaction().begin();
         em.persist(null);
@@ -73,7 +73,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistRollback() {
-        logger.config("Test: persist and then rollback the transaction.");
+        logger.debug("Test: persist and then rollback the transaction.");
         this.em = getEntityManager("PersistRollback", false);
         em.getTransaction().begin();
         em.persist(entityE);
@@ -86,7 +86,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test(expected = RollbackException.class)
     public void testPersistRollbackOnly() {
-        logger.config("Test: set transaction as rollback only and the try persisting an entity.");
+        logger.debug("Test: set transaction as rollback only and the try persisting an entity.");
         this.em = getEntityManager("PersistRollbackOnly", false);
         em.getTransaction().begin();
         em.getTransaction().setRollbackOnly();
@@ -96,7 +96,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistCascade() {
-        logger.config("Test: persist with cascade over two relationships.");
+        logger.debug("Test: persist with cascade over two relationships.");
         this.em = getEntityManager("PersistWithCascade", false);
         persist(entityG);
 
@@ -113,21 +113,21 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test(expected = OWLEntityExistsException.class)
     public void testPersistTwiceInOne() {
-        logger.config("Test: persist twice into one context.");
+        logger.debug("Test: persist twice into one context.");
         this.em = getEntityManager("PersistTwice", false);
         persist(entityB, entityB);
     }
 
     @Test(expected = RollbackException.class)
     public void testPersistWithoutCascade() {
-        logger.config("Test: try persisting relationship not marked as cascade.");
+        logger.debug("Test: try persisting relationship not marked as cascade.");
         this.em = getEntityManager("PersistWithoutCascade", false);
         persist(entityD);
     }
 
     @Test(expected = OWLEntityExistsException.class)
     public void testPersistDetached() {
-        logger.config("Test: persist detached entity. Should throw entity exists exception.");
+        logger.debug("Test: persist detached entity. Should throw entity exists exception.");
         this.em = getEntityManager("PersistDetached", false);
         persist(entityA);
 
@@ -139,7 +139,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistSimpleList() {
-        logger.config("Test: persist entity with simple list.");
+        logger.debug("Test: persist entity with simple list.");
         this.em = getEntityManager("PersistSimpleList", false);
         entityC.setSimpleList(Generators.createSimpleList(10));
         em.getTransaction().begin();
@@ -159,7 +159,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test(expected = RollbackException.class)
     public void testPersistSimpleListNoCascade() {
-        logger.config("Test: persist entity with simple list, but don't persist the referenced entities.");
+        logger.debug("Test: persist entity with simple list, but don't persist the referenced entities.");
         this.em = getEntityManager("PersistSimpleListNoCascade", false);
         entityC.setSimpleList(Generators.createSimpleList(10));
         persist(entityC);
@@ -167,7 +167,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistReferencedList() {
-        logger.config("Test: persist entity with referenced list.");
+        logger.debug("Test: persist entity with referenced list.");
         this.em = getEntityManager("PersistReferencedList", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
         em.getTransaction().begin();
@@ -192,7 +192,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test(expected = RollbackException.class)
     public void testPersistReferencedListNoCascade() {
-        logger.config("Test: persist entity with referenced list. Don't persist the referenced entities.");
+        logger.debug("Test: persist entity with referenced list. Don't persist the referenced entities.");
         this.em = getEntityManager("PersistReferencedListNoCascade", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
         persist(entityC);
@@ -200,7 +200,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistSimpleAndReferencedList() {
-        logger.config("Test: persist entity with both simple and referenced list.");
+        logger.debug("Test: persist entity with both simple and referenced list.");
         this.em = getEntityManager("PersistSimpleAndReferencedList", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
         entityC.setSimpleList(Generators.createSimpleList(5));
@@ -230,7 +230,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistProperties() {
-        logger.config("Test: persist entity with properties.");
+        logger.debug("Test: persist entity with properties.");
         this.em = getEntityManager("PersistWithProperties", false);
         final Map<String, Set<String>> props = new HashMap<>(3);
         props.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyOne", Collections
@@ -263,7 +263,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistPropertiesEmpty() {
-        logger.config("Test: persist entity with properties. The properties will be an empty map.");
+        logger.debug("Test: persist entity with properties. The properties will be an empty map.");
         this.em = getEntityManager("PersistWithPropertiesEmpty", false);
         entityB.setProperties(Collections.emptyMap());
         em.getTransaction().begin();
@@ -281,7 +281,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test(expected = OWLEntityExistsException.class)
     public void persistURITwiceInDifferentClasses() {
-        logger.config("Test: persist two different entities (of different types) with the same URI.");
+        logger.debug("Test: persist two different entities (of different types) with the same URI.");
         this.em = getEntityManager("PersistURITwiceInDifferentClasses", false);
         final URI pk = URI.create("http://krizik.felk.cvut.cz/jopa/onto/sameEntity");
         final OWLClassA a = new OWLClassA();
@@ -296,7 +296,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistEntityWithBasicTypeAttributes() {
-        logger.config("Test: persist entity with attributes of basic types (Integer, Boolean etc.).");
+        logger.debug("Test: persist entity with attributes of basic types (Integer, Boolean etc.).");
         this.em = getEntityManager("PersistEntityWithBasicTypeAttributes", false);
         persist(entityM);
         em.clear();
@@ -313,7 +313,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistAndUpdateAttributeBeforeCommit() {
-        logger.config("Test: persist entity, set attribute value and then commit.");
+        logger.debug("Test: persist entity, set attribute value and then commit.");
         this.em = getEntityManager("PersistAndUpdateBeforeCommit", false);
         final String updatedValue = "updatedStringAttributeValue";
         em.getTransaction().begin();
@@ -329,7 +329,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistEntityWithEnumAttribute() {
-        logger.config("Test: persist entity with enum attribute.");
+        logger.debug("Test: persist entity with enum attribute.");
         this.em = getEntityManager("PersistEntityWithEnum", false);
         persist(entityM);
 

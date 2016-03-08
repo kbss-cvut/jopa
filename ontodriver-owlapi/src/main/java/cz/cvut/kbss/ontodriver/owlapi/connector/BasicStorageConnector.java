@@ -13,18 +13,20 @@
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.owlapi.exception.*;
 import cz.cvut.kbss.ontodriver.owlapi.util.DefaultOntologyIriMapper;
 import cz.cvut.kbss.ontodriver.owlapi.util.MappingFileParser;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAxiomChange;
-import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.model.parameters.OntologyCopy;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -32,8 +34,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Default file-based storage connector.
@@ -45,7 +45,7 @@ import java.util.logging.Logger;
  */
 public class BasicStorageConnector extends AbstractConnector {
 
-    private static final Logger LOG = Logger.getLogger(BasicStorageConnector.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(BasicStorageConnector.class);
 
     private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
     private static Lock READ = LOCK.readLock();
@@ -66,10 +66,8 @@ public class BasicStorageConnector extends AbstractConnector {
         if (isOpen()) {
             return;
         }
-        if (LOG.isLoggable(Level.CONFIG)) {
-            LOG.config("Loading ontology " + storageProperties.getOntologyURI() + " from " +
-                    storageProperties.getPhysicalURI());
-        }
+        LOG.debug("Loading ontology {} from {}.", storageProperties.getOntologyURI(),
+                storageProperties.getPhysicalURI());
         this.ontologyManager = OWLManager.createOWLOntologyManager();
         if (properties.containsKey(OwlapiOntoDriverProperties.MAPPING_FILE_LOCATION)) {
             ontologyManager.getIRIMappers().add(new DefaultOntologyIriMapper(new MappingFileParser(properties)));
@@ -92,9 +90,7 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     private void tryCreatingOntology() throws OwlapiDriverException {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Creating new ontology in " + storageProperties.getPhysicalURI());
-        }
+        LOG.trace("Creating new ontology in {}.", storageProperties.getPhysicalURI());
         try {
             this.ontology = ontologyManager.createOntology(IRI.create(storageProperties.getOntologyURI()));
             ontology.saveOntology(IRI.create(storageProperties.getPhysicalURI()));
@@ -106,18 +102,18 @@ public class BasicStorageConnector extends AbstractConnector {
     private void initializeReasonerFactory() {
         final String reasonerFactoryClass = properties.get(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS);
         if (reasonerFactoryClass == null) {
-            LOG.warning("Reasoner factory class not found. Reasoner won't be available.");
+            LOG.warn("Reasoner factory class not found. Reasoner won't be available.");
             return;
         }
         try {
             this.reasonerFactory = (OWLReasonerFactory) Class.forName(reasonerFactoryClass).newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             final String msg = "Unable to instantiate reasoner factory class " + reasonerFactoryClass;
-            LOG.severe(msg);
+            LOG.error(msg);
             throw new ReasonerNotAvailableException(msg);
         } catch (ClassNotFoundException e) {
             final String msg = "Reasoner factory class " + reasonerFactoryClass + " not found!";
-            LOG.severe(msg);
+            LOG.error(msg);
             throw new ReasonerNotAvailableException(msg, e);
         }
     }
@@ -166,7 +162,7 @@ public class BasicStorageConnector extends AbstractConnector {
 
     private OWLReasoner getReasoner(OWLOntology ontology) {
         if (reasonerFactory == null) {
-            LOG.warning(
+            LOG.warn(
                     "Creating ontology snapshot without reasoner, because reasoner factory class was not specified.");
             return null;
         }
@@ -185,7 +181,7 @@ public class BasicStorageConnector extends AbstractConnector {
             try {
                 writeToFile();
             } catch (OntologyStorageException e) {
-                LOG.severe("Unable to write out ontology." + e);
+                LOG.error("Unable to write out ontology." + e);
             }
         } finally {
             WRITE.unlock();
