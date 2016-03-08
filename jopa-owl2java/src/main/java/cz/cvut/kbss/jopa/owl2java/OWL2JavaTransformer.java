@@ -12,54 +12,31 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import com.sun.codemodel.*;
+import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAnnotation;
-import org.semanticweb.owlapi.model.OWLAnnotationValueVisitor;
-import org.semanticweb.owlapi.model.OWLAnonymousIndividual;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLLiteral;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.util.OWLOntologyMerger;
-
-import com.sun.codemodel.JAnnotationArrayMember;
-import com.sun.codemodel.JAnnotationUse;
-import com.sun.codemodel.JClass;
-import com.sun.codemodel.JClassAlreadyExistsException;
-import com.sun.codemodel.JCodeModel;
-import com.sun.codemodel.JDefinedClass;
-import com.sun.codemodel.JDocComment;
-import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JFieldRef;
-import com.sun.codemodel.JFieldVar;
-import com.sun.codemodel.JMethod;
-import com.sun.codemodel.JMod;
-import com.sun.codemodel.JType;
-import com.sun.codemodel.JVar;
-
-import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.model.ic.DataParticipationConstraint;
 import cz.cvut.kbss.jopa.model.ic.ObjectParticipationConstraint;
 import cz.cvut.kbss.jopa.owl2java.IntegrityConstraintParserImpl.ClassDataPropertyComputer;
 import cz.cvut.kbss.jopa.owl2java.IntegrityConstraintParserImpl.ClassObjectPropertyComputer;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import cz.cvut.kbss.jopa.util.MappingFileParser;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.util.OWLOntologyMerger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.*;
 
 class ContextDefinition {
     final String name;
@@ -80,8 +57,7 @@ class ContextDefinition {
 
 public class OWL2JavaTransformer {
 
-    private static final Logger LOG = Logger
-            .getLogger(OWL2JavaTransformer.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
 
     private static final List<IRI> skipped = Arrays
             .asList(IRI.create(SequencesVocabulary.c_Collection), IRI.create(SequencesVocabulary.c_List),
@@ -157,7 +133,7 @@ public class OWL2JavaTransformer {
                     contexts.put(icContextName, ctx);
                 }
 
-                LOG.config("Found IC " + a + " for context " + icContextName);
+                LOG.debug("Found IC {} for context {}", a, icContextName);
 
                 for (final OWLEntity e : a.getSignature()) {
                     if (e.isOWLClass() && !skipped.contains(e.getIRI())) {
@@ -182,7 +158,7 @@ public class OWL2JavaTransformer {
             ctx.parser.parse();
         }
 
-        LOG.info("Integrity constraints succesfully parsed.");
+        LOG.info("Integrity constraints successfully parsed.");
     }
 
     public void setOntology(final String owlOntologyName,
@@ -191,7 +167,7 @@ public class OWL2JavaTransformer {
         final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
 
         if (mappingFile != null) {
-            LOG.info("Using mapping file '" + mappingFile + "'.");
+            LOG.info("Using mapping file '{}'.", mappingFile);
 
             final Map<URI, URI> map = MappingFileParser.getMappings(new File(
                     mappingFile));
@@ -204,10 +180,10 @@ public class OWL2JavaTransformer {
                     return IRI.create(value);
                 }
             });
-            LOG.info("Mapping file succesfully parsed.");
+            LOG.info("Mapping file successfully parsed.");
         }
 
-        LOG.info("Loading ontology " + owlOntologyName + " ... ");
+        LOG.info("Loading ontology {} ... ", owlOntologyName);
         m.setSilentMissingImportsHandling(false);
 
         try {
@@ -217,7 +193,7 @@ public class OWL2JavaTransformer {
                     .createMergedOntology(m, org.semanticweb.owlapi.model.IRI
                             .create(owlOntologyName + "-generated"));
         } catch (OWLOntologyCreationException e) {
-            LOG.log(Level.SEVERE, e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             throw new IllegalArgumentException(e);
         }
 
@@ -667,7 +643,7 @@ public class OWL2JavaTransformer {
         context.classes.add(f.getOWLThing());
 
         for (final OWLClass clazz : context.classes) {
-            LOG.info("  Generating class '" + clazz + "'.");
+            LOG.info("  Generating class '{}'.", clazz);
             final JDefinedClass subj = ensureCreated(context, pkg, cm, clazz);
 
             for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
@@ -805,9 +781,9 @@ public class OWL2JavaTransformer {
             cm.build(file);
             LOG.info("Transformation SUCCESFUL.");
         } catch (JClassAlreadyExistsException e1) {
-            LOG.log(Level.SEVERE, "Transformation FAILED.", e1);
+            LOG.error("Transformation FAILED.", e1);
         } catch (IOException e) {
-            LOG.log(Level.SEVERE, "File generation FAILED.", e);
+            LOG.error("File generation FAILED.", e);
         }
     }
 }

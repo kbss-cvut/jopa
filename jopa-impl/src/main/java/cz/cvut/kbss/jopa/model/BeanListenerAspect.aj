@@ -15,8 +15,6 @@
 package cz.cvut.kbss.jopa.model;
 
 import java.lang.reflect.Field;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
@@ -25,10 +23,12 @@ import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public aspect BeanListenerAspect {
 
-    private static final Logger LOG = Logger.getLogger(BeanListenerAspect.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(BeanListenerAspect.class);
 
     pointcut getter(): get( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
 
@@ -56,7 +56,7 @@ public aspect BeanListenerAspect {
                 throw new OWLPersistenceException(e.getMessage());
             }
         } catch (SecurityException e) {
-            LOG.log(Level.SEVERE, e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             throw new OWLPersistenceException(e.getMessage());
         }
         JOPAPersistenceProvider.verifyInferredAttributeNotModified(object, field);
@@ -73,7 +73,7 @@ public aspect BeanListenerAspect {
             }
             JOPAPersistenceProvider.persistEntityChanges(entity, f);
         } catch (NoSuchFieldException | SecurityException e) {
-            LOG.log(Level.SEVERE, e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             throw new OWLPersistenceException(e.getMessage());
         }
     }
@@ -90,13 +90,11 @@ public aspect BeanListenerAspect {
 
             field.setAccessible(true);
 
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.finest("*** Fetching " + field.getName() + " of " + object.getClass() + ":" + object.hashCode());
-            }
+            LOG.trace("*** Fetching {} of {}: {}", field.getName(), object.getClass(), object.hashCode());
 
             JOPAPersistenceProvider.loadReference(object, field);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            LOG.log(Level.SEVERE, e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
             throw new OWLPersistenceException();
         }
     }

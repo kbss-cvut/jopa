@@ -6,7 +6,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.7.2</version>
+        <version>0.7.3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -17,6 +17,7 @@
     <properties>
         <org.aspectj.version>1.8.5</org.aspectj.version>
         <pellet.version>2.3.0</pellet.version>
+        <ch.qos.logback.version>1.1.6</ch.qos.logback.version>
     </properties>
 
     <repositories>
@@ -58,6 +59,11 @@
             <artifactId>jopa-impl</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${ch.qos.logback.version}</version>
         </dependency>
     </dependencies>
 

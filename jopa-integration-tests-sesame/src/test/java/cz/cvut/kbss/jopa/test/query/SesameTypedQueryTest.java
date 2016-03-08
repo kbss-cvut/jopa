@@ -18,13 +18,14 @@ import cz.cvut.kbss.jopa.test.query.runner.TypedQueryRunner;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.logging.Logger;
 
 public class SesameTypedQueryTest extends TypedQueryRunner {
 
-    private static final Logger LOG = Logger.getLogger(SesameTypedQueryTest.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(SesameTypedQueryTest.class);
 
     private static EntityManager em;
 
