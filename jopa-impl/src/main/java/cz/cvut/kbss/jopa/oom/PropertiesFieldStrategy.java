@@ -1,10 +1,10 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ * <p/>
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * <p>
+ * <p/>
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details. You should have received a copy of the GNU General Public License along with this program. If not, see
@@ -19,17 +19,17 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.Value;
 
-import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 public class PropertiesFieldStrategy<X> extends
-        FieldStrategy<PropertiesSpecification<? super X, ?>, X> {
+                                        FieldStrategy<PropertiesSpecification<? super X, ?>, X> {
 
     private final Map<String, Set<String>> values;
 
@@ -86,7 +86,7 @@ public class PropertiesFieldStrategy<X> extends
             if (original == null) {
                 return;
             }
-            final Map<String, Set<String>> origProps = (Map<String, Set<String>>) extractFieldValueFromInstance(
+            final Map<?, Set<?>> origProps = (Map<?, Set<?>>) extractFieldValueFromInstance(
                     original);
             if (origProps == null || origProps.isEmpty()) {
                 return;
@@ -95,11 +95,11 @@ public class PropertiesFieldStrategy<X> extends
             return;
         }
         assert val instanceof Map;
-        final Map<String, Set<String>> props = (Map<String, Set<String>>) val;
+        final Map<?, Set<?>> props = (Map<?, Set<?>>) val;
         if (original == null) {
             valueBuilder.addProperties(prepareProperties(props), getAttributeContext());
         } else {
-            final Map<String, Set<String>> origProps = (Map<String, Set<String>>) extractFieldValueFromInstance(
+            final Map<?, Set<?>> origProps = (Map<?, Set<?>>) extractFieldValueFromInstance(
                     original);
             final Map<Assertion, Set<Value<?>>> toRemove = resolvePropertiesToRemove(props, origProps);
             if (!toRemove.isEmpty()) {
@@ -112,40 +112,39 @@ public class PropertiesFieldStrategy<X> extends
         }
     }
 
-    private Map<Assertion, Set<Value<?>>> prepareProperties(Map<String, Set<String>> props) {
+    private Map<Assertion, Set<Value<?>>> prepareProperties(Map<?, Set<?>> props) {
         final Map<Assertion, Set<Value<?>>> result = new HashMap<>(props.size());
-        for (Entry<String, Set<String>> entry : props.entrySet()) {
-            result.put(stringToAssertion(entry.getKey()), stringsToValues(entry.getValue()));
+        for (Entry<?, Set<?>> entry : props.entrySet()) {
+            result.put(propertyToAssertion(entry.getKey()), objectsToValues(entry.getValue()));
         }
         return result;
     }
 
-    private Assertion stringToAssertion(String property) {
-        final Assertion assertion;
+    private Assertion propertyToAssertion(Object property) {
         try {
-            assertion = Assertion.createPropertyAssertion(URI.create(property), attribute.isInferred());
+            return Assertion
+                    .createPropertyAssertion(EntityPropertiesUtils.getValueAsURI(property), attribute.isInferred());
         } catch (IllegalArgumentException e) {
-            throw new InvalidAssertionIdentifierException(property + " is not a valid URI.", e);
+            throw new InvalidAssertionIdentifierException(property + " is not a valid identifier.", e);
         }
-        return assertion;
     }
 
-    private Set<Value<?>> stringsToValues(Set<String> strValues) {
+    private Set<Value<?>> objectsToValues(Collection<?> strValues) {
         final Set<Value<?>> ontoValues = new HashSet<>(strValues.size());
         ontoValues.addAll(strValues.stream().map(Value::new).collect(Collectors.toList()));
         return ontoValues;
     }
 
-    private Map<Assertion, Set<Value<?>>> resolvePropertiesToRemove(Map<String, Set<String>> current,
-                                                                    Map<String, Set<String>> original) {
+    private Map<Assertion, Set<Value<?>>> resolvePropertiesToRemove(Map<?, Set<?>> current,
+                                                                    Map<?, Set<?>> original) {
         return propertyDiff(original, current);
     }
 
     /**
      * The difference is counted as the properties and values which were in base but are not in the updated version.
      */
-    private Map<Assertion, Set<Value<?>>> propertyDiff(Map<String, Set<String>> base,
-                                                       Map<String, Set<String>> updated) {
+    private Map<Assertion, Set<Value<?>>> propertyDiff(Map<?, Set<?>> base,
+                                                       Map<?, Set<?>> updated) {
         if (base == null || base.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -153,19 +152,19 @@ public class PropertiesFieldStrategy<X> extends
         if (updated == null || updated.isEmpty()) {
             diff.putAll(createAssertionsForAll(base));
         } else {
-            for (Entry<String, Set<String>> entry : base.entrySet()) {
-                if (!updated.containsKey(entry.getKey())
-                        || updated.get(entry.getKey()) == null || updated.get(entry.getKey()).isEmpty()) {
+            for (Entry<?, Set<?>> entry : base.entrySet()) {
+                final Object key = entry.getKey();
+                if (!updated.containsKey(key) || updated.get(key) == null || updated.get(key).isEmpty()) {
                     // All values of the property are missing
-                    diff.put(stringToAssertion(entry.getKey()), stringsToValues(entry.getValue()));
+                    diff.put(propertyToAssertion(key), objectsToValues(entry.getValue()));
                 } else {
-                    final Set<String> currentValues = updated.get(entry.getKey());
-                    Set<String> removed = new HashSet<>();
+                    final Set<?> currentValues = updated.get(key);
                     // Check which property values are missing
-                    removed.addAll(entry.getValue().stream().filter(origVal -> !currentValues.contains(origVal))
-                                        .collect(Collectors.toList()));
+                    final List<?> removed =
+                            entry.getValue().stream().filter(origVal -> !currentValues.contains(origVal))
+                                 .collect(Collectors.toList());
                     if (!removed.isEmpty()) {
-                        diff.put(stringToAssertion(entry.getKey()), stringsToValues(removed));
+                        diff.put(propertyToAssertion(key), objectsToValues(removed));
                     }
                 }
             }
@@ -173,14 +172,14 @@ public class PropertiesFieldStrategy<X> extends
         return diff;
     }
 
-    private Map<Assertion, Set<Value<?>>> createAssertionsForAll(Map<String, Set<String>> map) {
+    private Map<Assertion, Set<Value<?>>> createAssertionsForAll(Map<?, Set<?>> map) {
         final Map<Assertion, Set<Value<?>>> diff = new HashMap<>(map.size());
-        map.forEach((key, value) -> diff.put(stringToAssertion(key), stringsToValues(value)));
+        map.forEach((key, value) -> diff.put(propertyToAssertion(key), objectsToValues(value)));
         return diff;
     }
 
-    private Map<Assertion, Set<Value<?>>> resolvePropertiesToAdd(Map<String, Set<String>> current,
-                                                                 Map<String, Set<String>> original) {
+    private Map<Assertion, Set<Value<?>>> resolvePropertiesToAdd(Map<?, Set<?>> current,
+                                                                 Map<?, Set<?>> original) {
         return propertyDiff(current, original);
     }
 

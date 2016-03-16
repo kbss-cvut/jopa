@@ -1,10 +1,10 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ * <p/>
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * <p>
+ * <p/>
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details. You should have received a copy of the GNU General Public License along with this program. If not, see
@@ -32,9 +32,9 @@ import java.util.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
-public class PropertiesFieldStrategyTest {
+public class StringPropertiesFieldStrategyTest {
 
-    private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityB");
+    private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entity");
 
     @Mock
     private EntityMappingHelper mapperMock;
@@ -42,16 +42,16 @@ public class PropertiesFieldStrategyTest {
     private PropertiesFieldStrategy<OWLClassB> strategy;
     private AxiomValueGatherer gatherer;
 
-    private OWLClassB entityB;
+    private OWLClassB entity;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         MetamodelMocks mocks = new MetamodelMocks();
 
-        this.entityB = new OWLClassB();
-        entityB.setUri(PK);
-        entityB.setStringAttribute("someString");
+        this.entity = new OWLClassB();
+        entity.setUri(PK);
+        entity.setStringAttribute("someString");
         final Descriptor descriptor = new EntityDescriptor();
 
         this.strategy = new PropertiesFieldStrategy<>(mocks.forOwlClassB().entityType(),
@@ -63,21 +63,21 @@ public class PropertiesFieldStrategyTest {
     @Test
     public void extractsValuesForPersist() throws Exception {
         final int propCount = 5;
-        entityB.setProperties(TestEnvironmentUtils.generateProperties(propCount, propCount));
-        when(mapperMock.getOriginalInstance(entityB)).thenReturn(null);
+        entity.setProperties(TestEnvironmentUtils.generateStringProperties(propCount, propCount));
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(null);
 
-        strategy.buildAxiomValuesFromInstance(entityB, gatherer);
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
 
         final Map<Assertion, Set<Value<?>>> res = OOMTestUtils.getPropertiesToAdd(gatherer);
-        assertTrue(collectionsAreEqual(entityB.getProperties(), res));
+        assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(entity.getProperties(), res));
         assertNull(OOMTestUtils.getPropertiesToRemove(gatherer));
     }
 
     @Test
     public void extractsNothingWhenThereAreNoPropertiesForPersist() throws Exception {
-        when(mapperMock.getOriginalInstance(entityB)).thenReturn(null);
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(null);
 
-        strategy.buildAxiomValuesFromInstance(entityB, gatherer);
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
 
         assertNull(OOMTestUtils.getPropertiesToAdd(gatherer));
         assertNull(OOMTestUtils.getPropertiesToRemove(gatherer));
@@ -85,9 +85,9 @@ public class PropertiesFieldStrategyTest {
 
     @Test
     public void extractsNothingWhenThereAreNotPropertiesToAddAndNoneInOriginal() throws Exception {
-        when(mapperMock.getOriginalInstance(entityB)).thenReturn(createOriginal());
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
 
-        strategy.buildAxiomValuesFromInstance(entityB, gatherer);
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
 
         assertNull(OOMTestUtils.getPropertiesToAdd(gatherer));
         assertNull(OOMTestUtils.getPropertiesToRemove(gatherer));
@@ -96,10 +96,10 @@ public class PropertiesFieldStrategyTest {
     private OWLClassB createOriginal() {
         final OWLClassB original = new OWLClassB();
         original.setUri(PK);
-        original.setStringAttribute(entityB.getStringAttribute());
-        if (entityB.getProperties() != null) {
+        original.setStringAttribute(entity.getStringAttribute());
+        if (entity.getProperties() != null) {
             final Map<String, Set<String>> copy = new HashMap<>();
-            for (Map.Entry<String, Set<String>> e : entityB.getProperties().entrySet()) {
+            for (Map.Entry<String, Set<String>> e : entity.getProperties().entrySet()) {
                 copy.put(e.getKey(), new HashSet<>(e.getValue()));
             }
             original.setProperties(copy);
@@ -109,61 +109,62 @@ public class PropertiesFieldStrategyTest {
 
     @Test(expected = InvalidAssertionIdentifierException.class)
     public void throwsExceptionWhenPropertyIsNotAValidURI() throws Exception {
-        entityB.setProperties(TestEnvironmentUtils.generateProperties(1, 1));
-        entityB.getProperties().put("blabla^", Collections.<String>emptySet());
-        when(mapperMock.getOriginalInstance(entityB)).thenReturn(null);
+        entity.setProperties(TestEnvironmentUtils.generateStringProperties(1, 1));
+        entity.getProperties().put("blabla^", Collections.<String>emptySet());
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(null);
 
-        strategy.buildAxiomValuesFromInstance(entityB, gatherer);
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
     }
 
     @Test
     public void removesAllPropertiesWhenSetToNull() throws Exception {
-        final Map<String, Set<String>> properties = TestEnvironmentUtils.generateProperties(5, 5);
-        entityB.setProperties(properties);
-        when(mapperMock.getOriginalInstance(entityB)).thenReturn(createOriginal());
-        entityB.setProperties(null);
+        final Map<String, Set<String>> properties = TestEnvironmentUtils.generateStringProperties(5, 5);
+        entity.setProperties(properties);
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
+        entity.setProperties(null);
 
-        strategy.buildAxiomValuesFromInstance(entityB, gatherer);
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
         final Map<Assertion, Set<Value<?>>> result = OOMTestUtils.getPropertiesToRemove(gatherer);
-        assertTrue(collectionsAreEqual(properties, result));
+        assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(properties, result));
         assertNull(OOMTestUtils.getPropertiesToAdd(gatherer));
     }
 
     @Test
     public void removesAllPropertiesWhenCleared() throws Exception {
-        final Map<String, Set<String>> properties = TestEnvironmentUtils.generateProperties(5, 5);
-        entityB.setProperties(properties);
-        when(mapperMock.getOriginalInstance(entityB)).thenReturn(createOriginal());
-        entityB.setProperties(Collections.<String, Set<String>>emptyMap());
+        final Map<String, Set<String>> properties = TestEnvironmentUtils.generateStringProperties(5, 5);
+        entity.setProperties(properties);
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
+        entity.setProperties(Collections.<String, Set<String>>emptyMap());
 
-        strategy.buildAxiomValuesFromInstance(entityB, gatherer);
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
         final Map<Assertion, Set<Value<?>>> result = OOMTestUtils.getPropertiesToRemove(gatherer);
-        assertTrue(collectionsAreEqual(properties, result));
+        assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(properties, result));
         assertNull(OOMTestUtils.getPropertiesToAdd(gatherer));
     }
 
     @Test
     public void removesSeveralWholeProperties() throws Exception {
-        entityB.setProperties(TestEnvironmentUtils.generateProperties(5, 5));
-        when(mapperMock.getOriginalInstance(entityB)).thenReturn(createOriginal());
+        entity.setProperties(TestEnvironmentUtils.generateStringProperties(5, 5));
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         // Remove one property with values
-        final String property = entityB.getProperties().keySet().iterator().next();
-        final Set<String> values = entityB.getProperties().get(property);
-        entityB.getProperties().remove(property);
+        final String property = entity.getProperties().keySet().iterator().next();
+        final Set<String> values = entity.getProperties().get(property);
+        entity.getProperties().remove(property);
 
-        strategy.buildAxiomValuesFromInstance(entityB, gatherer);
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
         final Map<Assertion, Set<Value<?>>> result = OOMTestUtils.getPropertiesToRemove(gatherer);
-        assertTrue(collectionsAreEqual(Collections.singletonMap(property, values), result));
+        assertTrue(TestEnvironmentUtils
+                .assertionsCorrespondToProperties(Collections.singletonMap(property, values), result));
         assertNull(OOMTestUtils.getPropertiesToAdd(gatherer));
     }
 
     @Test
     public void removesValuesOfSomeProperties() throws Exception {
-        entityB.setProperties(TestEnvironmentUtils.generateProperties(5, 5));
-        when(mapperMock.getOriginalInstance(entityB)).thenReturn(createOriginal());
+        entity.setProperties(TestEnvironmentUtils.generateStringProperties(5, 5));
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         final Map<String, Set<String>> toRemove = new HashMap<>();
         int propIndex = 0;
-        for (Map.Entry<String, Set<String>> e : entityB.getProperties().entrySet()) {
+        for (Map.Entry<String, Set<String>> e : entity.getProperties().entrySet()) {
             if (propIndex++ % 2 != 0) {
                 toRemove.put(e.getKey(), new HashSet<>());
                 int valueIndex = 0;
@@ -178,82 +179,82 @@ public class PropertiesFieldStrategyTest {
             }
         }
 
-        strategy.buildAxiomValuesFromInstance(entityB, gatherer);
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
         final Map<Assertion, Set<Value<?>>> result = OOMTestUtils.getPropertiesToRemove(gatherer);
-        assertTrue(collectionsAreEqual(toRemove, result));
+        assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(toRemove, result));
         assertNull(OOMTestUtils.getPropertiesToAdd(gatherer));
     }
 
     @Test
     public void addsPropertyWithValues() throws Exception {
-        entityB.setProperties(TestEnvironmentUtils.generateProperties(3, 3));
-        when(mapperMock.getOriginalInstance(entityB)).thenReturn(createOriginal());
+        entity.setProperties(TestEnvironmentUtils.generateStringProperties(3, 3));
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         final Map<String, Set<String>> added = new HashMap<>();
         added.put("http://krizik.felk.cvut.cz/ontologies/jopa#added",
                 new HashSet<>(Arrays.asList("one", "two", "http://three")));
-        entityB.getProperties().putAll(added);
+        entity.getProperties().putAll(added);
 
-        strategy.buildAxiomValuesFromInstance(entityB, gatherer);
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
 
         final Map<Assertion, Set<Value<?>>> result = OOMTestUtils.getPropertiesToAdd(gatherer);
-        assertTrue(collectionsAreEqual(added, result));
+        assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(added, result));
         assertNull(OOMTestUtils.getPropertiesToRemove(gatherer));
     }
 
     @Test
     public void addsValuesForExistingProperty() throws Exception {
-        entityB.setProperties(TestEnvironmentUtils.generateProperties(3, 3));
-        when(mapperMock.getOriginalInstance(entityB)).thenReturn(createOriginal());
+        entity.setProperties(TestEnvironmentUtils.generateStringProperties(3, 3));
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         final Map<String, Set<String>> added = new HashMap<>();
-        final String property = entityB.getProperties().keySet().iterator().next();
+        final String property = entity.getProperties().keySet().iterator().next();
         final Set<String> newValues = new HashSet<>(Arrays.asList("one", "seven", "http://krizik.felk.cvut.cz/valueS"));
         added.put(property, newValues);
-        entityB.getProperties().get(property).addAll(newValues);
+        entity.getProperties().get(property).addAll(newValues);
 
-        strategy.buildAxiomValuesFromInstance(entityB, gatherer);
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
 
         final Map<Assertion, Set<Value<?>>> result = OOMTestUtils.getPropertiesToAdd(gatherer);
-        assertTrue(collectionsAreEqual(added, result));
+        assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(added, result));
         assertNull(OOMTestUtils.getPropertiesToRemove(gatherer));
     }
 
     // This is a mix of the previous tests
     @Test
     public void addsAndRemovesSomePropertiesWithValuesAndPropertyValues() throws Exception {
-        entityB.setProperties(TestEnvironmentUtils.generateProperties(3, 3));
-        when(mapperMock.getOriginalInstance(entityB)).thenReturn(createOriginal());
+        entity.setProperties(TestEnvironmentUtils.generateStringProperties(3, 3));
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         final Map<String, Set<String>> removed = prepareForRemove();
         final Map<String, Set<String>> added = prepareForAdd();
 
-        strategy.buildAxiomValuesFromInstance(entityB, gatherer);
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
 
         final Map<Assertion, Set<Value<?>>> resultAdded = OOMTestUtils.getPropertiesToAdd(gatherer);
         final Map<Assertion, Set<Value<?>>> resultRemoved = OOMTestUtils.getPropertiesToRemove(gatherer);
-        assertTrue(collectionsAreEqual(added, resultAdded));
-        assertTrue(collectionsAreEqual(removed, resultRemoved));
+        assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(added, resultAdded));
+        assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(removed, resultRemoved));
     }
 
     @Test
     public void extractsAllPropertiesForAddWhenThereWereNoneInOriginal() throws Exception {
-        when(mapperMock.getOriginalInstance(entityB)).thenReturn(createOriginal());
-        assertNull(mapperMock.getOriginalInstance(entityB).getProperties());
-        entityB.setProperties(TestEnvironmentUtils.generateProperties(3, 3));
-        strategy.buildAxiomValuesFromInstance(entityB, gatherer);
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
+        assertNull(mapperMock.getOriginalInstance(entity).getProperties());
+        entity.setProperties(TestEnvironmentUtils.generateStringProperties(3, 3));
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
         final Map<Assertion, Set<Value<?>>> resultAdded = OOMTestUtils.getPropertiesToAdd(gatherer);
-        assertTrue(collectionsAreEqual(entityB.getProperties(), resultAdded));
+        assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(entity.getProperties(), resultAdded));
     }
 
     private Map<String, Set<String>> prepareForAdd() {
         final Map<String, Set<String>> added = new HashMap<>();
-        final String property = entityB.getProperties().keySet().iterator().next();
+        final String property = entity.getProperties().keySet().iterator().next();
         final Set<String> newValues = new HashSet<>(Arrays.asList("one", "seven", "http://krizik.felk.cvut.cz/valueS"));
         added.put(property, newValues);
-        entityB.getProperties().get(property).addAll(newValues);
+        entity.getProperties().get(property).addAll(newValues);
         final Map<String, Set<String>> newProperty = Collections
                 .<String, Set<String>>singletonMap("http://krizik.felk.cvut.cz/ontologies/jopa#newProperty",
                         new HashSet<>(Arrays.asList("blablaOne", "blablaTwo", "http://blabla.org")));
         added.putAll(newProperty);
-        entityB.getProperties().putAll(newProperty);
+        entity.getProperties().putAll(newProperty);
         return added;
     }
 
@@ -261,15 +262,15 @@ public class PropertiesFieldStrategyTest {
         final Map<String, Set<String>> removed = new HashMap<>();
         String propertyToUpdate = null;
         String propertyToRemove = null;
-        Iterator<String> it = entityB.getProperties().keySet().iterator();
+        Iterator<String> it = entity.getProperties().keySet().iterator();
         while (it.hasNext()) {
             propertyToUpdate = propertyToRemove;
             propertyToRemove = it.next();
         }
-        removed.put(propertyToRemove, entityB.getProperties().get(propertyToRemove));
-        entityB.getProperties().remove(propertyToRemove);
+        removed.put(propertyToRemove, entity.getProperties().get(propertyToRemove));
+        entity.getProperties().remove(propertyToRemove);
         final Set<String> removedValues = new HashSet<>();
-        it = entityB.getProperties().get(propertyToUpdate).iterator();
+        it = entity.getProperties().get(propertyToUpdate).iterator();
         int ind = 0;
         while (it.hasNext()) {
             String val = it.next();
@@ -280,26 +281,5 @@ public class PropertiesFieldStrategyTest {
         }
         removed.put(propertyToUpdate, removedValues);
         return removed;
-    }
-
-    private static boolean collectionsAreEqual(Map<String, Set<String>> expected,
-                                               Map<Assertion, Set<Value<?>>> actual) {
-        if (expected.size() != actual.size()) {
-            return false;
-        }
-        for (Map.Entry<String, Set<String>> entry : expected.entrySet()) {
-            final Set<Value<?>> values = actual
-                    .get(Assertion.createPropertyAssertion(URI.create(entry.getKey()), false));
-            if (values == null) {
-                return false;
-            }
-            assertEquals(entry.getValue().size(), values.size());
-            for (Value<?> val : values) {
-                if (!entry.getValue().contains(val.stringValue())) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 }

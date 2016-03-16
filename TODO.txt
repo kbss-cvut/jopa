@@ -2,12 +2,13 @@
     - It can happen that JOPA will try to insert a referenced individual which has not yet set id, which
         results in assigning it a generated URI. E.g. foreach(inst -> {inst.generateUri(); em.persist(inst); })
 - Change properties values to be Objects and try to infer value type in the driver, so that e.g. boolean is not saved as a string
+    - Modify property type resolution in the OWLAPI driver (for persist), can't just assume OP when the property does not exist, yet.
+    The type has to be resolved based on the value value
 - Add support for plain URI as value of an object (or annotation) property, i.e. instead of object reference, have just URI of the individual
 - MappingFileParser should be able to handle file references when called from a different hierarchy
     - e. g. when the examples project is built from parent, the OWL2Java transform fails because it does not find the target OWL file
 - Add support for EntityManager.getReference
 - Add support for named native queries
-- Use SLF4J for logging?
 - Support for data property collections?
 - Add a @Context annotation, which would specify that a field/entity should always be loaded from the specified context.
     This could be overwritten with a descriptor passed to EM

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p/>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p/>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -146,6 +146,13 @@ public class MetamodelMocks {
     @Mock
     private SingularAttribute<OWLClassO, String> oStringAtt;
 
+    @Mock
+    private EntityType<OWLClassP> etP;
+    @Mock
+    private Identifier idP;
+    @Mock
+    private PropertiesSpecification<OWLClassP, Object> pProperties;
+
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
         MetamodelFactory.initOWLClassAMocks(etA, aStringAtt, aTypes, idA);
@@ -162,6 +169,7 @@ public class MetamodelMocks {
         MetamodelFactory
                 .initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt, idM);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
+        MetamodelFactory.initOWLClassPMock(etP, pProperties, idP);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -178,6 +186,7 @@ public class MetamodelMocks {
         when(metamodel.entity(OWLClassL.class)).thenReturn(etL);
         when(metamodel.entity(OWLClassM.class)).thenReturn(etM);
         when(metamodel.entity(OWLClassO.class)).thenReturn(etO);
+        when(metamodel.entity(OWLClassP.class)).thenReturn(etP);
     }
 
     public OWLClassAMetamodel forOwlClassA() {
@@ -214,6 +223,14 @@ public class MetamodelMocks {
 
     public OWLClassMMetamodel forOwlClassM() {
         return new OWLClassMMetamodel();
+    }
+
+    public OWLClassOMetamodel forOwlClassO() {
+        return new OWLClassOMetamodel();
+    }
+
+    public OWLClassPMetamodel forOwlClassP() {
+        return new OWLClassPMetamodel();
     }
 
     public class OWLClassAMetamodel {
@@ -448,6 +465,20 @@ public class MetamodelMocks {
 
         public SingularAttribute<OWLClassO, String> stringAttribute() {
             return MetamodelMocks.this.oStringAtt;
+        }
+    }
+
+    public class OWLClassPMetamodel {
+        public EntityType<OWLClassP> entityType() {
+            return MetamodelMocks.this.etP;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idP;
+        }
+
+        public PropertiesSpecification<OWLClassP, Object> properties() {
+            return MetamodelMocks.this.pProperties;
         }
     }
 }

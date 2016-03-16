@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p/>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p/>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,12 +19,16 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSetImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Value;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
+
+import static org.junit.Assert.assertEquals;
 
 public final class TestEnvironmentUtils {
 
@@ -48,18 +52,32 @@ public final class TestEnvironmentUtils {
         return random.nextInt(max);
     }
 
-    public static boolean arePropertiesEqual(Map<String, Set<String>> pOne,
-                                             Map<String, Set<String>> pTwo) {
-        if (pOne.size() != pTwo.size()) {
+    /**
+     * Returns true if the specified assertions correspond to all properties in the {@code properties} parameter.
+     * <p/>
+     * Works for both string-based and typed properties.
+     *
+     * @param properties Expected properties
+     * @param assertions Actual assertions
+     * @return Equality status.
+     */
+    public static boolean assertionsCorrespondToProperties(Map properties, Map<Assertion, Set<Value<?>>> assertions) {
+        if (properties.size() != assertions.size()) {
             return false;
         }
-        for (Entry<String, Set<String>> e : pOne.entrySet()) {
-            if (!pTwo.containsKey(e.getKey())) {
+        for (Object entry : properties.entrySet()) {
+            @SuppressWarnings("unchecked")
+            Entry<?, Set<?>> e = (Entry<?, Set<?>>) entry;
+            final Set<Value<?>> values = assertions
+                    .get(Assertion.createPropertyAssertion(URI.create(e.getKey().toString()), false));
+            if (values == null) {
                 return false;
             }
-            final Set<String> set = pTwo.get(e.getKey());
-            if (!e.getValue().equals(set)) {
-                return false;
+            assertEquals(e.getValue().size(), values.size());
+            for (Value<?> val : values) {
+                if (!e.getValue().contains(val.getValue())) {
+                    return false;
+                }
             }
         }
         return true;
@@ -67,7 +85,7 @@ public final class TestEnvironmentUtils {
 
     /**
      * Sets value of field {@code field} on the {@code target} object to the specified {@code mock}. </p>
-     * <p>
+     * <p/>
      * This method also works for final fields. Note that in case static fields are set, it is the responsibility of the
      * client to reset the field to the original value in test cleanup.
      *
@@ -97,7 +115,7 @@ public final class TestEnvironmentUtils {
         return types;
     }
 
-    public static Map<String, Set<String>> generateProperties(int propCount, int valCount) {
+    public static Map<String, Set<String>> generateStringProperties(int propCount, int valCount) {
         int valueCounter = 0;
         final Map<String, Set<String>> properties = new HashMap<>(propCount);
         for (int i = 0; i < propCount; i++) {
@@ -113,6 +131,42 @@ public final class TestEnvironmentUtils {
             }
         }
         return properties;
+    }
+
+    public static Map<URI, Set<Object>> generateTypedProperties(int propCount, int valCount) {
+        int valueCounter = 0;
+        final Map<URI, Set<Object>> properties = new HashMap<>(propCount);
+        for (int i = 0; i < propCount; i++) {
+            final Set<Object> values = new HashSet<>(valCount);
+            properties.put(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#property_" + i), values);
+            boolean objectProperty = i % 2 != 0;
+            for (int j = 0; j < valCount; j++) {
+                if (objectProperty) {
+                    values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#value_" + valueCounter++));
+                } else {
+                    values.add(generateDataPropertyValue(j));
+                }
+            }
+        }
+        return properties;
+    }
+
+    private static Object generateDataPropertyValue(int counter) {
+        final int index = counter % 5;
+        switch (index) {
+            case 0:
+                return "StringValue_" + counter;
+            case 1:
+                return true;
+            case 2:
+                return counter;
+            case 3:
+                return (double) counter;
+            case 4:
+                return new Date();
+            default:
+                return null;
+        }
     }
 
     public static Set<Class<?>> getManagedTypes() {
