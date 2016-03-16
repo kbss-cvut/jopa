@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p/>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p/>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -31,7 +31,9 @@ import org.semanticweb.owlapi.reasoner.impl.OWLNamedIndividualNodeSet;
 import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -190,6 +192,29 @@ public class PropertiesHandlerTest {
     }
 
     @Test
+    public void addPropertiesForExistingDataPropertyAddsValuesOfCorrespondingTypes() throws Exception {
+        final Assertion assertion = Assertion.createDataPropertyAssertion(DP_ONE, false);
+        final Set<Object> baseValues = new HashSet<>(Arrays.asList(false, 1, new Date()));
+        final Set<Value<?>> values = baseValues.stream().map(Value::new).collect(Collectors.toSet());
+        when(ontologyMock.containsDataPropertyInSignature(IRI.create(DP_ONE))).thenReturn(true);
+
+        propertiesHandler.addProperties(INDIVIDUAL, Collections.singletonMap(assertion, values));
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(managerMock).applyChanges(captor.capture());
+        verifyAddedDataPropertyAxioms(baseValues, captor);
+    }
+
+    private void verifyAddedDataPropertyAxioms(Collection<Object> expectedValues, ArgumentCaptor<List> captor) {
+        for (Object ob : captor.getValue()) {
+            assertTrue(ob instanceof AddAxiom);
+            final AddAxiom ax = (AddAxiom) ob;
+            assertTrue(ax.getAxiom() instanceof OWLDataPropertyAssertionAxiom);
+            final OWLDataPropertyAssertionAxiom dp = (OWLDataPropertyAssertionAxiom) ax.getAxiom();
+            assertTrue(expectedValues.contains(OwlapiUtils.owlLiteralToValue(dp.getObject())));
+        }
+    }
+
+    @Test
     public void addPropertiesForExistingObjectPropertyAddsAssertionsToOntology() throws Exception {
         final Assertion assertion = Assertion.createObjectPropertyAssertion(OP_ONE, false);
         final Set<Value<?>> values = new HashSet<>(Arrays.asList(
@@ -200,31 +225,90 @@ public class PropertiesHandlerTest {
         propertiesHandler.addProperties(INDIVIDUAL, Collections.singletonMap(assertion, values));
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(managerMock).applyChanges(captor.capture());
-        verifyAddedAxioms(values, captor);
+        verifyAddedAxioms(values.stream().map(v -> URI.create(v.stringValue())).collect(Collectors.toSet()), captor);
     }
 
-    private void verifyAddedAxioms(Set<Value<?>> values, ArgumentCaptor<List> captor) {
+    @Test
+    public void addPropertiesForExistingObjectPropertyHandlesIndividualsAsStringAndUri() throws Exception {
+        final Assertion assertion = Assertion.createObjectPropertyAssertion(OP_ONE, false);
+        final Set<Value<?>> values = new HashSet<>(Arrays.asList(
+                new Value<>("http://individualOne"),
+                new Value<>(URI.create("http://individualTwo"))));
+        when(ontologyMock.containsObjectPropertyInSignature(IRI.create(OP_ONE))).thenReturn(true);
+
+        propertiesHandler.addProperties(INDIVIDUAL, Collections.singletonMap(assertion, values));
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(managerMock).applyChanges(captor.capture());
+        verifyAddedAxioms(values.stream().map(v -> URI.create(v.stringValue())).collect(Collectors.toSet()), captor);
+    }
+
+    private void verifyAddedAxioms(Set<URI> values, ArgumentCaptor<List> captor) {
         for (Object ob : captor.getValue()) {
             assertTrue(ob instanceof AddAxiom);
             final AddAxiom ax = (AddAxiom) ob;
             assertTrue(ax.getAxiom() instanceof OWLObjectPropertyAssertionAxiom);
             final OWLObjectPropertyAssertionAxiom dp = (OWLObjectPropertyAssertionAxiom) ax.getAxiom();
-            assertTrue(values.contains(new Value<>(NamedResource.create(
-                    dp.getObject().asOWLNamedIndividual().getIRI().toURI()))));
+            assertTrue(values.contains(dp.getObject().asOWLNamedIndividual().getIRI().toURI()));
         }
     }
 
     @Test
-    public void addPropertiesAddsObjectPropertyAssertionsForUnknownAssertions() throws Exception {
-        final Assertion assertion = Assertion.createObjectPropertyAssertion(OP_ONE, false);
-        final Set<Value<?>> values = new HashSet<>(Arrays.asList(
-                new Value<>(NamedResource.create("http://individualOne")),
-                new Value<>(NamedResource.create("http://individualTwo"))));
+    public void addPropertiesInfersDataPropertyAndLiteralsFromValuesForUnknownProperty() throws Exception {
+        final Assertion assertion = Assertion.createPropertyAssertion(DP_ONE, false);
+        final Set<Object> typedValues = new HashSet<>(Arrays.asList(true, 117L, new Date()));
+        final Set<Value<?>> values = typedValues.stream().map(Value::new).collect(Collectors.toSet());
+        when(ontologyMock.containsObjectPropertyInSignature(IRI.create(DP_ONE))).thenReturn(false);
+        when(ontologyMock.containsDataPropertyInSignature(IRI.create(DP_ONE))).thenReturn(false);
+        when(ontologyMock.containsAnnotationPropertyInSignature(IRI.create(DP_ONE))).thenReturn(false);
 
         propertiesHandler.addProperties(INDIVIDUAL, Collections.singletonMap(assertion, values));
         final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
         verify(managerMock).applyChanges(captor.capture());
-        verifyAddedAxioms(values, captor);
+        verifyAddedDataPropertyAxioms(typedValues, captor);
+    }
+
+    @Test
+    public void addPropertiesInfersObjectPropertyAndIrisFromValuesForUnknownProperty() throws Exception {
+        final Assertion assertion = Assertion.createPropertyAssertion(OP_ONE, false);
+        final Set<Object> typedValues = new HashSet<>(
+                Arrays.asList("http://individualOne", URI.create("http://individualTwo"),
+                        new URL("http://individualThree")));
+        final Set<Value<?>> values = typedValues.stream().map(Value::new).collect(Collectors.toSet());
+        when(ontologyMock.containsObjectPropertyInSignature(IRI.create(OP_ONE))).thenReturn(false);
+        when(ontologyMock.containsDataPropertyInSignature(IRI.create(OP_ONE))).thenReturn(false);
+        when(ontologyMock.containsAnnotationPropertyInSignature(IRI.create(OP_ONE))).thenReturn(false);
+
+        propertiesHandler.addProperties(INDIVIDUAL, Collections.singletonMap(assertion, values));
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(managerMock).applyChanges(captor.capture());
+        verifyAddedAxioms(typedValues.stream().map(v -> URI.create(v.toString())).collect(Collectors.toSet()), captor);
+    }
+
+    @Test
+    public void addPropertiesAddsValuesOfKnownAnnotationProperty() throws Exception {
+        final Assertion assertion = Assertion.createPropertyAssertion(OP_ONE, false);
+        final Set<Object> individualValues = new HashSet<>(Collections.singletonList("http://individualOne"));
+        final Set<Object> literalValues = new HashSet<>(Arrays.asList("label", 1));
+        final Set<Value<?>> values = literalValues.stream().map(Value::new).collect(Collectors.toSet());
+        values.addAll(individualValues.stream().map(Value::new).collect(Collectors.toSet()));
+        when(ontologyMock.containsAnnotationPropertyInSignature(IRI.create(OP_ONE))).thenReturn(true);
+
+        propertiesHandler.addProperties(INDIVIDUAL, Collections.singletonMap(assertion, values));
+        final ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+        verify(managerMock).applyChanges(captor.capture());
+        assertEquals(values.size(), captor.getValue().size());
+        for (Object ob : captor.getValue()) {
+            assertTrue(ob instanceof AddAxiom);
+            final AddAxiom ax = (AddAxiom) ob;
+            assertTrue(ax.getAxiom() instanceof OWLAnnotationAssertionAxiom);
+            final OWLAnnotationAssertionAxiom ap = (OWLAnnotationAssertionAxiom) ax.getAxiom();
+            final OWLAnnotationValue val = ap.getValue();
+            if (val instanceof IRI) {
+                assertTrue(individualValues.contains(val.asIRI().get().toString()));
+            } else {
+                assertTrue(literalValues.contains(OwlapiUtils.owlLiteralToValue((OWLLiteral) val)));
+            }
+        }
     }
 
     @Test

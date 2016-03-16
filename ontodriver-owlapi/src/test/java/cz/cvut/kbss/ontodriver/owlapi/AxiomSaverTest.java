@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p/>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p/>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,14 +14,14 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
-import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
-import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
+import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
+import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;

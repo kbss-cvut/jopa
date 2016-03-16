@@ -46,6 +46,7 @@ public abstract class BaseRunner {
     // Lazy reference to OWLClassA
     protected OWLClassI entityI;
     protected OWLClassM entityM;
+    protected OWLClassP entityP;
 
     public BaseRunner(Logger logger) {
         assert logger != null;
@@ -66,6 +67,7 @@ public abstract class BaseRunner {
      *     <li>entityH's reference to OWLClassA is set to entityA</li>
      *     <li>entityI's reference to OWLClassA is set to entityA</li>
      *     <li>entityM has all fields set to some values</li>
+     *     <li>entityP's properties and uri are null</li>
      * </ul>
      * </pre>
      */
@@ -97,6 +99,7 @@ public abstract class BaseRunner {
         entityI.setOwlClassA(entityA);
         this.entityM = new OWLClassM();
         entityM.initializeTestValues(true);
+        this.entityP = new OWLClassP();
     }
 
     @After
@@ -112,7 +115,7 @@ public abstract class BaseRunner {
     }
 
     /**
-     * Persists the specified instance in a separate transaction.
+     * Persists the specified instance(s) in a separate transaction.
      *
      * @param entity Entity to persist
      */

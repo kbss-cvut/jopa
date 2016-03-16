@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p/>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p/>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,6 +22,7 @@ import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.net.URI;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -114,10 +115,34 @@ public class OwlapiUtils {
      * Gets OWLNamedIndividual for the specified named resource.
      *
      * @param subject     Named resource to transform to individual
-     * @param dataFactory OWL data factor
+     * @param dataFactory OWL data factory
      * @return OWLNamedIndividual
      */
     public static OWLNamedIndividual getIndividual(NamedResource subject, OWLDataFactory dataFactory) {
         return dataFactory.getOWLNamedIndividual(IRI.create(subject.getIdentifier()));
+    }
+
+    /**
+     * Checks whether the specified value is a valid IRI.
+     * <p/>
+     * Only absolute IRIs are accepted.
+     *
+     * @param value The value to check
+     * @return {@code true} for instances of {@link NamedResource}, {@link URI}, {@link URL} or {@link IRI} and for
+     * Strings parsable by {@link URI#create(String)}.
+     */
+    public static boolean isIndividualIri(Object value) {
+        if (value instanceof NamedResource || value instanceof URI || value instanceof URL || value instanceof IRI) {
+            return true;
+        }
+        if (!(value instanceof String)) {
+            return false;
+        }
+        try {
+            final IRI iri = IRI.create(value.toString());
+            return iri.isAbsolute();
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

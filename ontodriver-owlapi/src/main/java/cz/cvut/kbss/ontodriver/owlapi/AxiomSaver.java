@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p/>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p/>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -21,16 +21,11 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.AxiomImpl;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
+import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
+import org.semanticweb.owlapi.model.*;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -130,12 +125,25 @@ class AxiomSaver {
         final IRI property = IRI.create(assertion.getIdentifier());
         if (ontology.containsDataPropertyInSignature(property)) {
             persistDataPropertyValues(subject, assertion, values);
+        } else if (ontology.containsObjectPropertyInSignature(property)) {
+            persistObjectPropertyValues(subject, assertion, values);
         } else if (ontology.containsAnnotationPropertyInSignature(property)) {
             persistAnnotationPropertyValues(subject, assertion, values);
         } else {
-            // The property is: 1) known to be an object property, 2) unknown, we just try object property
-            persistObjectPropertyValues(subject, assertion, values);
+            persistUnknownPropertyValues(subject, assertion, values);
         }
+    }
+
+    private void persistUnknownPropertyValues(NamedResource subject, Assertion assertion, Collection<Value<?>> values) {
+        final List<OWLAxiom> axioms = new ArrayList<>();
+        for (Value<?> v : values) {
+            if (OwlapiUtils.isIndividualIri(v.getValue())) {
+                axioms.add(axiomAdapter.toOwlObjectPropertyAssertionAxiom(new AxiomImpl<>(subject, assertion, v)));
+            } else {
+                axioms.add(axiomAdapter.toOwlDataPropertyAssertionAxiom(new AxiomImpl<>(subject, assertion, v)));
+            }
+        }
+        addAxioms(axioms);
     }
 
     void persistAxioms(NamedResource subject, Map<Assertion, Set<Value<?>>> properties) {
