@@ -44,13 +44,12 @@ class FieldMappingValidator {
         if (isRawType(field.getGenericType())) {
             throw new InvalidFieldMappingException("@Properties field cannot be a raw map.");
         }
-        final ParameterizedType typeSpec = (ParameterizedType) field.getGenericType();
-        assert typeSpec.getActualTypeArguments().length == 2;
-        if (!isValidIdentifierType(typeSpec.getActualTypeArguments()[0])) {
+        final PropertiesParametersResolver parametersResolver = new PropertiesParametersResolver(field);
+        if (!isValidIdentifierType(parametersResolver.getKeyType())) {
             throw new InvalidFieldMappingException(
                     "@Properties key type is not a valid identifier type. Expected one of " + VALID_ID_TYPES);
         }
-        validatePropertiesValueType(typeSpec.getActualTypeArguments()[1]);
+        validatePropertiesValueType(parametersResolver.getValueType());
     }
 
     private boolean isRawType(Type type) {

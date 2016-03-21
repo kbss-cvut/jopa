@@ -45,9 +45,9 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         if (att instanceof TypesSpecification) {
             return new TypesFieldStrategy<>(et,
                     (TypesSpecification<? super X, ?>) att, fieldDescriptor, mapper);
-        } else if (att instanceof PropertiesSpecification<?, ?>) {
+        } else if (att instanceof PropertiesSpecification) {
             return new PropertiesFieldStrategy<>(et,
-                    (PropertiesSpecification<? super X, ?>) att, fieldDescriptor,
+                    (PropertiesSpecification<? super X, ?, ?, ?>) att, fieldDescriptor,
                     mapper);
         }
         final Attribute<? super X, ?> attribute = (Attribute<? super X, ?>) att;

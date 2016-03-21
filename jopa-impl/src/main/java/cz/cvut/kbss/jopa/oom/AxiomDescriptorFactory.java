@@ -66,7 +66,7 @@ class AxiomDescriptorFactory {
     }
 
     private void addForProperties(LoadingParameters<?> loadingParams, EntityType<?> et, AxiomDescriptor descriptor) {
-        final PropertiesSpecification<?, ?> props = et.getProperties();
+        final PropertiesSpecification<?, ?, ?, ?> props = et.getProperties();
         if (props != null && shouldLoad(props.getFetchType(), loadingParams.isForceLoad())) {
             final Assertion propsAssertion = Assertion.createUnspecifiedPropertyAssertion(props.isInferred());
             addAssertionToDescriptor(loadingParams.getDescriptor(), props, descriptor,

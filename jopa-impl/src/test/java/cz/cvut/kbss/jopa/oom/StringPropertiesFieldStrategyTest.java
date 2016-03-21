@@ -1,10 +1,10 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p/>
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * <p/>
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details. You should have received a copy of the GNU General Public License along with this program. If not, see
@@ -13,14 +13,13 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.exceptions.InvalidAssertionIdentifierException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -28,8 +27,11 @@ import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 public class StringPropertiesFieldStrategyTest {
@@ -63,7 +65,7 @@ public class StringPropertiesFieldStrategyTest {
     @Test
     public void extractsValuesForPersist() throws Exception {
         final int propCount = 5;
-        entity.setProperties(TestEnvironmentUtils.generateStringProperties(propCount, propCount));
+        entity.setProperties(Generators.generateStringProperties(propCount, propCount));
         when(mapperMock.getOriginalInstance(entity)).thenReturn(null);
 
         strategy.buildAxiomValuesFromInstance(entity, gatherer);
@@ -109,7 +111,7 @@ public class StringPropertiesFieldStrategyTest {
 
     @Test(expected = InvalidAssertionIdentifierException.class)
     public void throwsExceptionWhenPropertyIsNotAValidURI() throws Exception {
-        entity.setProperties(TestEnvironmentUtils.generateStringProperties(1, 1));
+        entity.setProperties(Generators.generateStringProperties(1, 1));
         entity.getProperties().put("blabla^", Collections.<String>emptySet());
         when(mapperMock.getOriginalInstance(entity)).thenReturn(null);
 
@@ -118,7 +120,7 @@ public class StringPropertiesFieldStrategyTest {
 
     @Test
     public void removesAllPropertiesWhenSetToNull() throws Exception {
-        final Map<String, Set<String>> properties = TestEnvironmentUtils.generateStringProperties(5, 5);
+        final Map<String, Set<String>> properties = Generators.generateStringProperties();
         entity.setProperties(properties);
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         entity.setProperties(null);
@@ -131,7 +133,7 @@ public class StringPropertiesFieldStrategyTest {
 
     @Test
     public void removesAllPropertiesWhenCleared() throws Exception {
-        final Map<String, Set<String>> properties = TestEnvironmentUtils.generateStringProperties(5, 5);
+        final Map<String, Set<String>> properties = Generators.generateStringProperties();
         entity.setProperties(properties);
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         entity.setProperties(Collections.<String, Set<String>>emptyMap());
@@ -144,7 +146,7 @@ public class StringPropertiesFieldStrategyTest {
 
     @Test
     public void removesSeveralWholeProperties() throws Exception {
-        entity.setProperties(TestEnvironmentUtils.generateStringProperties(5, 5));
+        entity.setProperties(Generators.generateStringProperties(5, 5));
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         // Remove one property with values
         final String property = entity.getProperties().keySet().iterator().next();
@@ -160,7 +162,7 @@ public class StringPropertiesFieldStrategyTest {
 
     @Test
     public void removesValuesOfSomeProperties() throws Exception {
-        entity.setProperties(TestEnvironmentUtils.generateStringProperties(5, 5));
+        entity.setProperties(Generators.generateStringProperties());
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         final Map<String, Set<String>> toRemove = new HashMap<>();
         int propIndex = 0;
@@ -187,7 +189,7 @@ public class StringPropertiesFieldStrategyTest {
 
     @Test
     public void addsPropertyWithValues() throws Exception {
-        entity.setProperties(TestEnvironmentUtils.generateStringProperties(3, 3));
+        entity.setProperties(Generators.generateStringProperties(3, 3));
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         final Map<String, Set<String>> added = new HashMap<>();
         added.put("http://krizik.felk.cvut.cz/ontologies/jopa#added",
@@ -203,7 +205,7 @@ public class StringPropertiesFieldStrategyTest {
 
     @Test
     public void addsValuesForExistingProperty() throws Exception {
-        entity.setProperties(TestEnvironmentUtils.generateStringProperties(3, 3));
+        entity.setProperties(Generators.generateStringProperties(3, 3));
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         final Map<String, Set<String>> added = new HashMap<>();
         final String property = entity.getProperties().keySet().iterator().next();
@@ -221,7 +223,7 @@ public class StringPropertiesFieldStrategyTest {
     // This is a mix of the previous tests
     @Test
     public void addsAndRemovesSomePropertiesWithValuesAndPropertyValues() throws Exception {
-        entity.setProperties(TestEnvironmentUtils.generateStringProperties(3, 3));
+        entity.setProperties(Generators.generateStringProperties(3, 3));
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         final Map<String, Set<String>> removed = prepareForRemove();
         final Map<String, Set<String>> added = prepareForAdd();
@@ -238,7 +240,7 @@ public class StringPropertiesFieldStrategyTest {
     public void extractsAllPropertiesForAddWhenThereWereNoneInOriginal() throws Exception {
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         assertNull(mapperMock.getOriginalInstance(entity).getProperties());
-        entity.setProperties(TestEnvironmentUtils.generateStringProperties(3, 3));
+        entity.setProperties(Generators.generateStringProperties(3, 3));
         strategy.buildAxiomValuesFromInstance(entity, gatherer);
         final Map<Assertion, Set<Value<?>>> resultAdded = OOMTestUtils.getPropertiesToAdd(gatherer);
         assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(entity.getProperties(), resultAdded));
@@ -281,5 +283,26 @@ public class StringPropertiesFieldStrategyTest {
         }
         removed.put(propertyToUpdate, removedValues);
         return removed;
+    }
+
+    @Test
+    public void buildsInstanceFieldFroAxiomValues() throws Exception {
+        final Map<String, Set<String>> properties = Generators.generateStringProperties();
+        final Collection<Axiom<?>> axioms = createAxiomsForProperties(properties);
+        axioms.forEach(ax -> strategy.addValueFromAxiom(ax));
+        strategy.buildInstanceFieldValue(entity);
+        assertEquals(properties, entity.getProperties());
+    }
+
+    private Collection<Axiom<?>> createAxiomsForProperties(Map<String, Set<String>> data) {
+        final NamedResource subject = NamedResource.create(PK);
+        final Collection<Axiom<?>> axioms = new ArrayList<>();
+        for (Map.Entry<String, Set<String>> e : data.entrySet()) {
+            axioms.addAll(e.getValue().stream()
+                           .map(val -> new AxiomImpl<>(subject,
+                                   Assertion.createPropertyAssertion(URI.create(e.getKey()), false), new Value<>(val)))
+                           .collect(Collectors.toList()));
+        }
+        return axioms;
     }
 }

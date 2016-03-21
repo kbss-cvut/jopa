@@ -53,7 +53,7 @@ public class IndirectMapTest {
 		owner = new OWLClassB();
 		owner.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityB"));
 		ownerField = OWLClassB.getPropertiesField();
-		backupMap = Generators.createProperties(15);
+		backupMap = Generators.generateStringProperties(15, 15);
 	}
 
 	@Before
@@ -95,7 +95,7 @@ public class IndirectMapTest {
 
 	@Test
 	public void testPutAll() {
-		final Map<String, Set<String>> newMap = Generators.createProperties();
+		final Map<String, Set<String>> newMap = Generators.generateStringProperties();
 		indirectMap.putAll(newMap);
 		verify(uow).attributeChanged(owner, ownerField);
 		for (String key : newMap.keySet()) {

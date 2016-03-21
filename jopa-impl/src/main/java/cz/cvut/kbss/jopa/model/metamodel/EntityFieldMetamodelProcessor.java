@@ -135,8 +135,12 @@ public class EntityFieldMetamodelProcessor<X> {
     private void processPropertiesField(Field field, Class<?> fieldValueCls, InferenceInfo inference) {
         Properties properties = field.getAnnotation(Properties.class);
         mappingValidator.validatePropertiesField(field);
-        et.addOtherProperties(new PropertiesSpecificationImpl<>(et, properties.fetchType(), field, fieldValueCls,
-                inference.inferred));
+        final PropertiesParametersResolver paramsResolver = new PropertiesParametersResolver(field);
+        et.addOtherProperties(
+                PropertiesSpecificationImpl.declaringType(et).fetchType(properties.fetchType()).javaField(field)
+                                           .javaType(fieldValueCls).inferred(inference.inferred)
+                                           .propertyIdType(paramsResolver.getPropertyIdentifierType())
+                                           .propertyValueType(paramsResolver.getPropertyValueType()).build());
     }
 
     private void createAttribute(Field field, InferenceInfo inference, PropertyAttributes propertyAttributes) {

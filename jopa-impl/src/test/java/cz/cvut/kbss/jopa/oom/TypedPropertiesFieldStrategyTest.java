@@ -1,13 +1,12 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassP;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -15,9 +14,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 public class TypedPropertiesFieldStrategyTest {
@@ -50,7 +49,7 @@ public class TypedPropertiesFieldStrategyTest {
     @Test
     public void extractsValuesForPersist() throws Exception {
         final int propCount = 5;
-        entity.setProperties(TestEnvironmentUtils.generateTypedProperties(propCount, propCount));
+        entity.setProperties(Generators.generateTypedProperties(propCount, propCount));
         when(mapperMock.getOriginalInstance(entity)).thenReturn(null);
 
         strategy.buildAxiomValuesFromInstance(entity, gatherer);
@@ -75,7 +74,7 @@ public class TypedPropertiesFieldStrategyTest {
 
     @Test
     public void removesSeveralWholeProperties() throws Exception {
-        entity.setProperties(TestEnvironmentUtils.generateTypedProperties(5, 5));
+        entity.setProperties(Generators.generateTypedProperties(5, 5));
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         // Remove one property with values
         final URI property = entity.getProperties().keySet().iterator().next();
@@ -91,7 +90,7 @@ public class TypedPropertiesFieldStrategyTest {
 
     @Test
     public void removesValuesOfSomeProperties() throws Exception {
-        entity.setProperties(TestEnvironmentUtils.generateTypedProperties(5, 5));
+        entity.setProperties(Generators.generateTypedProperties(5, 5));
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         final Map<URI, Set<Object>> toRemove = new HashMap<>();
         int propIndex = 0;
@@ -118,7 +117,7 @@ public class TypedPropertiesFieldStrategyTest {
 
     @Test
     public void addsPropertyWithValues() throws Exception {
-        entity.setProperties(TestEnvironmentUtils.generateTypedProperties(3, 3));
+        entity.setProperties(Generators.generateTypedProperties(3, 3));
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         final Map<URI, Set<Object>> added = new HashMap<>();
         added.put(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#added"),
@@ -134,7 +133,7 @@ public class TypedPropertiesFieldStrategyTest {
 
     @Test
     public void addsValuesForExistingProperty() throws Exception {
-        entity.setProperties(TestEnvironmentUtils.generateTypedProperties(3, 3));
+        entity.setProperties(Generators.generateTypedProperties(3, 3));
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         final Map<URI, Set<Object>> added = new HashMap<>();
         final URI property = entity.getProperties().keySet().iterator().next();
@@ -152,7 +151,7 @@ public class TypedPropertiesFieldStrategyTest {
     // This is a mix of the previous tests
     @Test
     public void addsAndRemovesSomePropertiesWithValuesAndPropertyValues() throws Exception {
-        entity.setProperties(TestEnvironmentUtils.generateTypedProperties(3, 3));
+        entity.setProperties(Generators.generateTypedProperties(3, 3));
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         final Map<URI, Set<Object>> removed = prepareForRemove();
         final Map<URI, Set<Object>> added = prepareForAdd();
@@ -169,7 +168,7 @@ public class TypedPropertiesFieldStrategyTest {
     public void extractsAllPropertiesForAddWhenThereWereNoneInOriginal() throws Exception {
         when(mapperMock.getOriginalInstance(entity)).thenReturn(createOriginal());
         assertNull(mapperMock.getOriginalInstance(entity).getProperties());
-        entity.setProperties(TestEnvironmentUtils.generateTypedProperties(3, 3));
+        entity.setProperties(Generators.generateTypedProperties(3, 3));
         strategy.buildAxiomValuesFromInstance(entity, gatherer);
         final Map<Assertion, Set<Value<?>>> resultAdded = OOMTestUtils.getPropertiesToAdd(gatherer);
         assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(entity.getProperties(), resultAdded));
@@ -213,5 +212,25 @@ public class TypedPropertiesFieldStrategyTest {
         }
         removed.put(propertyToUpdate, removedValues);
         return removed;
+    }
+
+    @Test
+    public void buildsInstanceFieldFromTypedAxiomValues() throws Exception {
+        final Map<URI, Set<Object>> properties = Generators.generateTypedProperties();
+        final Collection<Axiom<?>> axioms = createAxiomsForProperties(properties);
+        axioms.forEach(ax -> strategy.addValueFromAxiom(ax));
+        strategy.buildInstanceFieldValue(entity);
+        assertEquals(properties, entity.getProperties());
+    }
+
+    private Collection<Axiom<?>> createAxiomsForProperties(Map<URI, Set<Object>> data) {
+        final NamedResource subject = NamedResource.create(PK);
+        final Collection<Axiom<?>> axioms = new ArrayList<>();
+        for (Map.Entry<URI, Set<Object>> e : data.entrySet()) {
+            axioms.addAll(e.getValue().stream()
+                           .map(val -> new AxiomImpl<>(subject, Assertion.createPropertyAssertion(e.getKey(), false),
+                                   new Value<>(val))).collect(Collectors.toList()));
+        }
+        return axioms;
     }
 }

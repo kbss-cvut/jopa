@@ -12,12 +12,14 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
+import cz.cvut.kbss.ontodriver.model.NamedResource;
 import org.openrdf.model.*;
+import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.slf4j.LoggerFactory;
 
-import java.net.URL;
+import java.net.*;
 import java.util.Date;
 
 /**
@@ -126,7 +128,18 @@ public final class SesameUtils {
      * @return {@code true} if the value is either an URI or an URL
      */
     public static boolean isResourceIdentifier(Object value) {
-        return value instanceof java.net.URI || value instanceof URL || value instanceof URI;
+        if (value instanceof NamedResource || value instanceof java.net.URI || value instanceof URL) {
+            return true;
+        }
+        if (!(value instanceof String)) {
+            return false;
+        }
+        try {
+            final java.net.URI uri = java.net.URI.create(value.toString());
+            return uri.isAbsolute();
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     /**

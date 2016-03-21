@@ -272,7 +272,7 @@ public class MetamodelImplTest {
         final EntityType<OWLClassB> et = metamodel.entity(OWLClassB.class);
         assertNotNull(et);
         final Field propertiesField = OWLClassB.getPropertiesField();
-        final PropertiesSpecification<? super OWLClassB, ?> propertiesSpec = et.getProperties();
+        final PropertiesSpecification<? super OWLClassB, ?, ?, ?> propertiesSpec = et.getProperties();
         assertNotNull(propertiesSpec);
         checkBasicProperties(propertiesSpec, et, propertiesField.getName(), propertiesField, FetchType.LAZY, false);
     }
@@ -312,7 +312,7 @@ public class MetamodelImplTest {
                 Attribute.PersistentAttributeType.ANNOTATION, annotationField, FetchType.EAGER, false,
                 annotationField.getAnnotation(OWLAnnotationProperty.class).iri(), String.class, new CascadeType[]{});
 
-        final PropertiesSpecification<?, ?> propsSpec = et.getProperties();
+        final PropertiesSpecification<?, ?, ?, ?> propsSpec = et.getProperties();
         assertNotNull(propsSpec);
         assertTrue(propsSpec.isInferred());
         assertTrue(metamodel.getInferredClasses().contains(OWLClassN.class));

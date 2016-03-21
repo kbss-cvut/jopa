@@ -115,60 +115,6 @@ public final class TestEnvironmentUtils {
         return types;
     }
 
-    public static Map<String, Set<String>> generateStringProperties(int propCount, int valCount) {
-        int valueCounter = 0;
-        final Map<String, Set<String>> properties = new HashMap<>(propCount);
-        for (int i = 0; i < propCount; i++) {
-            final Set<String> values = new HashSet<>(valCount);
-            properties.put("http://krizik.felk.cvut.cz/ontologies/jopa#property_" + i, values);
-            boolean objectProperty = i % 2 != 0;
-            for (int j = 0; j < valCount; j++) {
-                if (objectProperty) {
-                    values.add("http://krizik.felk.cvut.cz/ontologies/jopa#value_" + valueCounter++);
-                } else {
-                    values.add(j % 2 != 0 ? "value" + valueCounter++ : Integer.toString(valueCounter++));
-                }
-            }
-        }
-        return properties;
-    }
-
-    public static Map<URI, Set<Object>> generateTypedProperties(int propCount, int valCount) {
-        int valueCounter = 0;
-        final Map<URI, Set<Object>> properties = new HashMap<>(propCount);
-        for (int i = 0; i < propCount; i++) {
-            final Set<Object> values = new HashSet<>(valCount);
-            properties.put(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#property_" + i), values);
-            boolean objectProperty = i % 2 != 0;
-            for (int j = 0; j < valCount; j++) {
-                if (objectProperty) {
-                    values.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#value_" + valueCounter++));
-                } else {
-                    values.add(generateDataPropertyValue(j));
-                }
-            }
-        }
-        return properties;
-    }
-
-    private static Object generateDataPropertyValue(int counter) {
-        final int index = counter % 5;
-        switch (index) {
-            case 0:
-                return "StringValue_" + counter;
-            case 1:
-                return true;
-            case 2:
-                return counter;
-            case 3:
-                return (double) counter;
-            case 4:
-                return new Date();
-            default:
-                return null;
-        }
-    }
-
     public static Set<Class<?>> getManagedTypes() {
         if (managedTypes == null) {
             initManagedTypes();

@@ -19,7 +19,9 @@ import cz.cvut.kbss.jopa.model.metamodel.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.net.URI;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 
 import static org.mockito.Mockito.when;
@@ -45,7 +47,7 @@ public class MetamodelMocks {
     @Mock
     private SingularAttribute<OWLClassB, String> bStringAtt;
     @Mock
-    private PropertiesSpecification<OWLClassB, ?> bProperties;
+    private PropertiesSpecification<OWLClassB, Map, String, String> bProperties;
 
     @Mock
     private EntityType<OWLClassC> etC;
@@ -151,7 +153,7 @@ public class MetamodelMocks {
     @Mock
     private Identifier idP;
     @Mock
-    private PropertiesSpecification<OWLClassP, Object> pProperties;
+    private PropertiesSpecification<OWLClassP, Map, URI, Object> pProperties;
 
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -264,7 +266,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.bStringAtt;
         }
 
-        public PropertiesSpecification<OWLClassB, ?> propertiesSpec() {
+        public PropertiesSpecification<OWLClassB, Map, String, String> propertiesSpec() {
             return MetamodelMocks.this.bProperties;
         }
     }
@@ -477,7 +479,7 @@ public class MetamodelMocks {
             return MetamodelMocks.this.idP;
         }
 
-        public PropertiesSpecification<OWLClassP, Object> properties() {
+        public PropertiesSpecification<OWLClassP, Map, URI, Object> properties() {
             return MetamodelMocks.this.pProperties;
         }
     }

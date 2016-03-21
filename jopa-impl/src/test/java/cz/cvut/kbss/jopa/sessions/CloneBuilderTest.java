@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -237,7 +235,7 @@ public class CloneBuilderTest {
 
     @Test
     public void testCloneProperties() {
-        entityB.setProperties(Generators.createProperties(5));
+        entityB.setProperties(Generators.generateStringProperties());
         OWLClassB res = (OWLClassB) builder.buildClone(entityB, defaultDescriptor);
         assertNotNull(res);
         assertEquals(entityB.getUri(), res.getUri());
@@ -391,7 +389,7 @@ public class CloneBuilderTest {
     public void testMergeChangesPropertiesFromNull() throws Exception {
         final OWLClassB b = (OWLClassB) builder.buildClone(entityB, defaultDescriptor);
         assertNull(b.getProperties());
-        b.setProperties(Generators.createProperties());
+        b.setProperties(Generators.generateStringProperties());
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityB, b,
                 defaultDescriptor);
         chSet.addChangeRecord(new ChangeRecordImpl(OWLClassB.getPropertiesField().getName(), b
