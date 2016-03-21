@@ -110,9 +110,8 @@ public class PropertiesFieldStrategy<X> extends
 
     private Map<Assertion, Set<Value<?>>> prepareProperties(Map<?, Set<?>> props) {
         final Map<Assertion, Set<Value<?>>> result = new HashMap<>(props.size());
-        for (Entry<?, Set<?>> entry : props.entrySet()) {
-            result.put(propertyToAssertion(entry.getKey()), objectsToValues(entry.getValue()));
-        }
+        props.entrySet().stream().filter(e -> e.getKey() != null && e.getValue() != null)
+             .forEach(e -> result.put(propertyToAssertion(e.getKey()), objectsToValues(e.getValue())));
         return result;
     }
 
@@ -127,7 +126,7 @@ public class PropertiesFieldStrategy<X> extends
 
     private Set<Value<?>> objectsToValues(Collection<?> strValues) {
         final Set<Value<?>> ontoValues = new HashSet<>(strValues.size());
-        ontoValues.addAll(strValues.stream().map(Value::new).collect(Collectors.toList()));
+        ontoValues.addAll(strValues.stream().filter(v -> v != null).map(Value::new).collect(Collectors.toList()));
         return ontoValues;
     }
 

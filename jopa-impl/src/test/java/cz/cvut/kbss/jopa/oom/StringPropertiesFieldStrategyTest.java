@@ -95,6 +95,51 @@ public class StringPropertiesFieldStrategyTest {
         assertNull(OOMTestUtils.getPropertiesToRemove(gatherer));
     }
 
+    @Test
+    public void extractFieldValueSkipsNullPropertyIdentifier() throws Exception {
+        final int propCount = 5;
+        final Map<String, Set<String>> props = Generators.generateStringProperties(propCount, propCount);
+        entity.setProperties(new HashMap<>(props));
+        entity.getProperties().put(null, Collections.singleton("Test"));
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(null);
+
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
+
+        final Map<Assertion, Set<Value<?>>> res = OOMTestUtils.getPropertiesToAdd(gatherer);
+        assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(props, res));
+        assertNull(OOMTestUtils.getPropertiesToRemove(gatherer));
+    }
+
+    @Test
+    public void extractFieldValueSkipsNullSetOfPropertyValues() throws Exception {
+        final Map<String, Set<String>> props = Generators.generateStringProperties();
+        entity.setProperties(new HashMap<>(props));
+        entity.getProperties().put("http://krizik.felk.cvut.cz/ontologies/nullProperty", null);
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(null);
+
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
+
+        final Map<Assertion, Set<Value<?>>> res = OOMTestUtils.getPropertiesToAdd(gatherer);
+        assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(props, res));
+        assertNull(OOMTestUtils.getPropertiesToRemove(gatherer));
+    }
+
+    @Test
+    public void extractFieldValueSkipsNullPropertyValue() throws Exception {
+        final Map<String, Set<String>> props = Generators.generateStringProperties();
+        entity.setProperties(new HashMap<>());
+        props.forEach((key, val) -> entity.getProperties().put(key, new HashSet<>(val)));
+        final String property = entity.getProperties().keySet().iterator().next();
+        entity.getProperties().get(property).add(null);
+        when(mapperMock.getOriginalInstance(entity)).thenReturn(null);
+
+        strategy.buildAxiomValuesFromInstance(entity, gatherer);
+
+        final Map<Assertion, Set<Value<?>>> res = OOMTestUtils.getPropertiesToAdd(gatherer);
+        assertTrue(TestEnvironmentUtils.assertionsCorrespondToProperties(props, res));
+        assertNull(OOMTestUtils.getPropertiesToRemove(gatherer));
+    }
+
     private OWLClassB createOriginal() {
         final OWLClassB original = new OWLClassB();
         original.setUri(PK);
