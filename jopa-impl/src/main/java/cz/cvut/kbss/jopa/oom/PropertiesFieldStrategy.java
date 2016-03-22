@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -179,7 +180,6 @@ public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecific
 
     private class PropertiesValueHolder {
 
-        // TODO Make this class more generic, the if/else conditions for property id and value are not a good solution
         private final Map<Object, Set<Object>> map = new HashMap<>();
 
         void addValue(Axiom<?> ax) {
@@ -194,30 +194,26 @@ public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecific
         private Object mapPropertyIdentifier(Assertion a) {
             final URI id = a.getIdentifier();
             final Class<?> propertyIdType = PropertiesFieldStrategy.this.attribute.getPropertyIdentifierType();
-            if (propertyIdType.isAssignableFrom(id.getClass())) {
-                return id;
-            } else {
-                if (propertyIdType.equals(String.class)) {
-                    return id.toString();
-                } else {
-                    throw new InvalidAssertionIdentifierException("URI cannot be mapped to type " + propertyIdType);
-                }
-            }
+            assert IdentifierTransformer.isValidIdentifierType(propertyIdType);
+
+            return IdentifierTransformer.transformToIdentifier(id, propertyIdType);
         }
 
         private Object mapPropertyValue(Value<?> value) {
             final Class<?> propertyValueType = PropertiesFieldStrategy.this.attribute.getPropertyValueType();
             Object val = value.getValue();
             if (val.getClass().equals(NamedResource.class)) {
+                // Value is an object property value
                 val = ((NamedResource) val).getIdentifier();
             }
             if (propertyValueType.isAssignableFrom(val.getClass())) {
                 return val;
             } else {
+                // String value type was always default
                 if (propertyValueType.equals(String.class)) {
                     return val.toString();
                 } else {
-                    throw new IllegalArgumentException("Invalid property value type " + propertyValueType);
+                    throw new IllegalArgumentException("Cannot return value " + val + " as type " + propertyValueType);
                 }
             }
         }

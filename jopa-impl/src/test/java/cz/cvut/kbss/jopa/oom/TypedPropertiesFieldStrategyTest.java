@@ -6,6 +6,7 @@ import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.PropertiesSpecification;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class TypedPropertiesFieldStrategyTest {
@@ -232,5 +234,26 @@ public class TypedPropertiesFieldStrategyTest {
                                    new Value<>(val))).collect(Collectors.toList()));
         }
         return axioms;
+    }
+
+    @Test
+    public void buildInstanceFieldFromEmptyAxiomsLeavesItNull() throws Exception {
+        strategy.buildInstanceFieldValue(entity);
+        assertNull(entity.getProperties());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(expected = IllegalArgumentException.class)
+    public void buildInstanceFieldFromAxiomsWithIncompatibleValueTypeThrowsIllegalArgumentException() throws Exception {
+        final PropertiesSpecification<OWLClassP, ?, URI, Integer> spec = mock(PropertiesSpecification.class);
+        when(spec.getPropertyIdentifierType()).thenReturn(URI.class);
+        when(spec.getPropertyValueType()).thenReturn(Integer.class);
+        final Axiom<?> axiom = new AxiomImpl<>(NamedResource.create(PK),
+                Assertion.createPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/test"), false),
+                new Value<>(new Date()));
+        MetamodelMocks mocks = new MetamodelMocks();
+        final PropertiesFieldStrategy<OWLClassP> s = new PropertiesFieldStrategy<>(mocks.forOwlClassP().entityType(),
+                spec, new EntityDescriptor(), mapperMock);
+        s.addValueFromAxiom(axiom);
     }
 }

@@ -1,39 +1,30 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.net.URI;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Verifies that a field's mapping metadata and declaration are valid.
  */
 class FieldMappingValidator {
-
-    private static final Set<Type> VALID_ID_TYPES = initIdClasses();
-
-    private static Set<Type> initIdClasses() {
-        final Set<Type> set = new HashSet<>(4);
-        set.add(String.class);
-        set.add(URI.class);
-        return set;
-    }
 
     void validatePropertiesField(Field field) {
         assert field != null;
@@ -47,7 +38,8 @@ class FieldMappingValidator {
         final PropertiesParametersResolver parametersResolver = new PropertiesParametersResolver(field);
         if (!isValidIdentifierType(parametersResolver.getKeyType())) {
             throw new InvalidFieldMappingException(
-                    "@Properties key type is not a valid identifier type. Expected one of " + VALID_ID_TYPES);
+                    "@Properties key type is not a valid identifier type. Expected one of " +
+                            IdentifierTransformer.getValidIdentifierTypes());
         }
         validatePropertiesValueType(parametersResolver.getValueType());
     }
@@ -77,11 +69,12 @@ class FieldMappingValidator {
         final ParameterizedType typeSpec = (ParameterizedType) field.getGenericType();
         if (!isValidIdentifierType(typeSpec.getActualTypeArguments()[0])) {
             throw new InvalidFieldMappingException(
-                    "@Types field value is not a valid identifier type. Expected one of " + VALID_ID_TYPES);
+                    "@Types field value is not a valid identifier type. Expected one of " +
+                            IdentifierTransformer.getValidIdentifierTypes());
         }
     }
 
     boolean isValidIdentifierType(Type type) {
-        return VALID_ID_TYPES.contains(type);
+        return type instanceof Class && IdentifierTransformer.isValidIdentifierType((Class<?>) type);
     }
 }

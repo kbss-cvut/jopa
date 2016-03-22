@@ -122,7 +122,9 @@ public final class SesameUtils {
     }
 
     /**
-     * Resolves whether the specified value is a resource identifier. </p>
+     * Resolves whether the specified value is a resource identifier.
+     * <p>
+     * Only absolute IRIs are supported (i.e. no blank node identifiers).
      *
      * @param value The value to check
      * @return {@code true} if the value is either an URI or an URL
