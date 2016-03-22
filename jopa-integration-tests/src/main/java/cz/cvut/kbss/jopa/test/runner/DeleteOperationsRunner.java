@@ -26,9 +26,7 @@ import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -350,5 +348,50 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         final OWLClassB result = em.find(OWLClassB.class, entityB.getUri());
         assertNotNull(result.getProperties());
         assertFalse(result.getProperties().containsKey(property));
+    }
+
+    @Test
+    public void testRemoveTypedUnmappedPropertyValue() throws Exception {
+        logger.debug("Test: remove unmapped property value. Typed.");
+        this.em = getEntityManager("RemoveUnmappedPropertyValueTyped", false);
+        entityP.setProperties(Generators.createTypedProperties(10));
+        persist(entityP);
+
+        em.getTransaction().begin();
+        final OWLClassP toUpdate = em.find(OWLClassP.class, entityP.getUri());
+        for (Set<Object> set : toUpdate.getProperties().values()) {
+            final Iterator<Object> it = set.iterator();
+            while (it.hasNext()) {
+                it.next();
+                if (TestEnvironmentUtils.randomBoolean()) {
+                    it.remove();
+                }
+            }
+        }
+        em.getTransaction().commit();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertEquals(toUpdate.getProperties(), res.getProperties());
+    }
+
+    @Test
+    public void testRemoveAllValuesOfTypedUnmappedProperty() throws Exception {
+        logger.debug("Test: remove all values of an unmapped property. Typed.");
+        this.em = getEntityManager("RemoveAllValuesOfUnmappedPropertyTyped", false);
+        entityP.setProperties(Generators.createTypedProperties(15));
+        persist(entityP);
+
+        final OWLClassP toUpdate = em.find(OWLClassP.class, entityP.getUri());
+        em.detach(toUpdate);
+        // Copy the keys to prevent concurrent modification
+        final Set<URI> keys = new HashSet<>(toUpdate.getProperties().keySet());
+        keys.stream().filter(k -> TestEnvironmentUtils.randomBoolean())
+            .forEach(key -> toUpdate.getProperties().remove(key));
+        em.getTransaction().begin();
+        em.merge(toUpdate);
+        em.getTransaction().commit();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertEquals(toUpdate.getProperties(), res.getProperties());
     }
 }

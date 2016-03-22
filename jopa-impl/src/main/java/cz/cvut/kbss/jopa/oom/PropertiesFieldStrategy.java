@@ -30,8 +30,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-public class PropertiesFieldStrategy<X> extends
-        FieldStrategy<PropertiesSpecification<? super X, ?, ?, ?>, X> {
+public class PropertiesFieldStrategy<X> extends FieldStrategy<PropertiesSpecification<? super X, ?, ?, ?>, X> {
 
     private final PropertiesValueHolder value = new PropertiesValueHolder();
 
@@ -82,8 +81,7 @@ public class PropertiesFieldStrategy<X> extends
             if (original == null) {
                 return;
             }
-            final Map<?, Set<?>> origProps = (Map<?, Set<?>>) extractFieldValueFromInstance(
-                    original);
+            final Map<?, Set<?>> origProps = (Map<?, Set<?>>) extractFieldValueFromInstance(original);
             if (origProps == null || origProps.isEmpty()) {
                 return;
             }
@@ -95,8 +93,7 @@ public class PropertiesFieldStrategy<X> extends
         if (original == null) {
             valueBuilder.addProperties(prepareProperties(props), getAttributeContext());
         } else {
-            final Map<?, Set<?>> origProps = (Map<?, Set<?>>) extractFieldValueFromInstance(
-                    original);
+            final Map<?, Set<?>> origProps = (Map<?, Set<?>>) extractFieldValueFromInstance(original);
             final Map<Assertion, Set<Value<?>>> toRemove = resolvePropertiesToRemove(props, origProps);
             if (!toRemove.isEmpty()) {
                 valueBuilder.removeProperties(toRemove, getAttributeContext());

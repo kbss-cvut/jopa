@@ -537,6 +537,58 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertTrue(res.getProperties().get(prop).contains(newPropertyValue));
     }
 
+    @Test
+    public void testAddNewTypedPropertyWithValues() {
+        logger.debug("Test: add a new property with values. Typed.");
+        this.em = getEntityManager("UpdateAddNewToPropertiesTyped", false);
+        entityP.setProperties(Generators.createTypedProperties());
+        persist(entityP);
+        em.clear();
+
+        final OWLClassP p = em.find(OWLClassP.class, entityP.getUri());
+        em.getTransaction().begin();
+        final URI property = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newProperty");
+        p.getProperties().put(property, new HashSet<>(Arrays.asList(1, "Two", new Date())));
+        em.getTransaction().commit();
+
+        em.clear();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertNotNull(res);
+        assertTrue(res.getProperties().containsKey(property));
+        assertEquals(p.getProperties(), res.getProperties());
+    }
+
+    @Test
+    public void testAddTypedPropertyValue() {
+        logger.debug("Test: add an existing property value. Typed.");
+        this.em = getEntityManager("UpdateAddPropertyValueTyped", false);
+        entityP.setProperties(Generators.createTypedProperties());
+        persist(entityP);
+        em.clear();
+
+        final OWLClassP p = em.find(OWLClassP.class, entityP.getUri());
+        em.getTransaction().begin();
+        final URI property = p.getProperties().keySet().iterator().next();
+        final Object value = generateValueForProperty(p, property);
+        p.getProperties().get(property).add(value);
+        em.getTransaction().commit();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertTrue(res.getProperties().get(property).contains(value));
+        assertEquals(p.getProperties(), res.getProperties());
+    }
+
+    private Object generateValueForProperty(OWLClassP instance, URI property) {
+        final Set<Object> values = instance.getProperties().get(property);
+        assert values != null && !values.isEmpty();
+        if (values.iterator().next() instanceof URI) {
+            return URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newPropertyValue");
+        } else {
+            return "StringValue";
+        }
+    }
+
     @Test(expected = OWLInferredAttributeModifiedException.class)
     public void testModifyInferredAttribute() {
         logger.debug("Test: modify an inferred attribute.");

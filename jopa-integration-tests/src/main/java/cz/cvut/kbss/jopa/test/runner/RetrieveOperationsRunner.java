@@ -13,13 +13,13 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.Generators;
 import org.junit.Test;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -142,5 +142,22 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
         final OWLClassB res = em.find(OWLClassB.class, entityA.getUri());
         assertNull(res);
+    }
+
+    @Test
+    public void testRefreshInstanceWithUnmappedProperties() {
+        logger.debug("Test: refresh entity with @Properties field.");
+        this.em = getEntityManager("RefreshEntityWithProperties", false);
+        final Map<URI, Set<Object>> properties = Generators.createTypedProperties();
+        entityP.setProperties(properties);
+        persist(entityP);
+
+        final OWLClassP p = em.find(OWLClassP.class, entityP.getUri());
+        assertNotNull(p);
+        p.getProperties().put(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#addedProperty"),
+                Collections.singleton("Test"));
+        assertNotEquals(properties, p.getProperties());
+        em.refresh(p);
+        assertEquals(properties, p.getProperties());
     }
 }

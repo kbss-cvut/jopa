@@ -101,7 +101,14 @@ public abstract class Generators {
         for (int i = 0; i < size; i++) {
             final Set<Object> value = new HashSet<>();
             for (int j = 0; j < size; j++) {
-                value.add(generateRandomPropertyValue(j, counter));
+                // Generate either an individual's URI or random data value. But same type for a property
+                // (so that the property is either object or data, but not both)
+                if (counter % 2 == 0) {
+                    value.add(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/Property_" + counter +
+                            "Individual_" + j));
+                } else {
+                    value.add(generateRandomPropertyValue(j, counter));
+                }
             }
             props.put(URI.create(PROPERTY_URI_BASE + counter), value);
             counter++;
@@ -110,7 +117,7 @@ public abstract class Generators {
     }
 
     private static Object generateRandomPropertyValue(int valueIndex, int propertyIndex) {
-        final int random = TestEnvironmentUtils.randomInt(7);
+        final int random = TestEnvironmentUtils.randomInt(6);
         switch (random) {
             case 0: // boolean
                 return valueIndex % 2 == 0;
@@ -124,9 +131,6 @@ public abstract class Generators {
                 return new Date();
             case 5: // String
                 return "TypedProperty_" + propertyIndex + "Value_" + valueIndex;
-            case 6: // URI to an individual
-                return URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/Property_" + propertyIndex +
-                        "Individual_" + valueIndex);
             default:
                 throw new IllegalArgumentException();
         }
