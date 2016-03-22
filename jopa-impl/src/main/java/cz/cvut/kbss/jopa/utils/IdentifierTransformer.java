@@ -18,9 +18,6 @@ import java.net.URL;
 import java.util.*;
 import java.util.function.Function;
 
-/**
- * @author ledvima1
- */
 public class IdentifierTransformer {
 
     private static final Set<Class<?>> ID_CLASSES = new HashSet<>(Arrays.asList(URI.class, URL.class, String.class));

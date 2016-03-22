@@ -21,7 +21,6 @@ import java.util.*;
  * Generators of test data.
  *
  * @author ledvima1
- *
  */
 public abstract class Generators {
 
@@ -34,10 +33,7 @@ public abstract class Generators {
 
     public static List<OWLClassA> createReferencedList(int size) {
         assert size > 0;
-        final List<OWLClassA> lst = new ArrayList<>(size);
-        generateInstances(lst,
-                "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAReferenced", size);
-        return lst;
+        return generateInstances("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAReferenced", size);
     }
 
     public static Map<String, Set<String>> generateStringProperties() {
@@ -102,17 +98,23 @@ public abstract class Generators {
         }
     }
 
-    private static void generateInstances(Collection<OWLClassA> col, String uriBase, int size) {
+    public static List<OWLClassA> generateInstances(int size) {
+        return generateInstances("http://krizik.felk.cvut.cz/ontologies/jopa/tests/instance_", size);
+    }
+
+    public static List<OWLClassA> generateInstances(String uriBase, int size) {
         assert size > 0;
         int counter = TestEnvironmentUtils.randomInt(1000);
+        final List<OWLClassA> lst = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             final OWLClassA a = new OWLClassA();
             a.setUri(URI.create(uriBase + counter));
             a.setStringAttribute("stringAttributeeee" + counter);
             counter++;
             a.setTypes(TYPES);
-            col.add(a);
+            lst.add(a);
         }
+        return lst;
     }
 
     private static Set<String> getTypes() {
