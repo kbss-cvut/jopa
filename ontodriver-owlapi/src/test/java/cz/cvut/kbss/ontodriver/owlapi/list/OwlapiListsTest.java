@@ -1,23 +1,21 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi.list;
 
-import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
-import cz.cvut.kbss.ontodriver.owlapi.OwlapiConnection;
 import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.owlapi.OwlapiAdapter;
+import cz.cvut.kbss.ontodriver.owlapi.util.Procedure;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -33,7 +31,7 @@ public class OwlapiListsTest {
     @Mock
     private OwlapiAdapter adapterMock;
     @Mock
-    private OwlapiConnection connectionMock;
+    private Procedure afterMock;
     @Mock
     private SimpleListHandler simpleListHandlerMock;
     @Mock
@@ -46,7 +44,7 @@ public class OwlapiListsTest {
         MockitoAnnotations.initMocks(this);
         when(adapterMock.getSimpleListHandler()).thenReturn(simpleListHandlerMock);
         when(adapterMock.getReferencedListHandler()).thenReturn(refListHandlerMock);
-        this.lists = new OwlapiLists(connectionMock, adapterMock);
+        this.lists = new OwlapiLists(adapterMock, () -> {}, afterMock);
     }
 
     @Test
@@ -63,7 +61,7 @@ public class OwlapiListsTest {
         descriptor.addValue(NamedResource.create("http://test"));
         lists.persistSimpleList(descriptor);
         verify(simpleListHandlerMock).persistList(descriptor);
-        verify(connectionMock).commitIfAuto();
+        verify(afterMock).execute();
     }
 
     @Test
@@ -72,7 +70,7 @@ public class OwlapiListsTest {
         descriptor.addValue(NamedResource.create("http://test"));
         lists.updateSimpleList(descriptor);
         verify(simpleListHandlerMock).updateList(descriptor);
-        verify(connectionMock).commitIfAuto();
+        verify(afterMock).execute();
     }
 
     @Test
@@ -90,7 +88,7 @@ public class OwlapiListsTest {
         descriptor.addValue(NamedResource.create("http://test"));
         lists.persistReferencedList(descriptor);
         verify(refListHandlerMock).persistList(descriptor);
-        verify(connectionMock).commitIfAuto();
+        verify(afterMock).execute();
     }
 
     @Test
@@ -100,6 +98,6 @@ public class OwlapiListsTest {
         descriptor.addValue(NamedResource.create("http://test"));
         lists.updateReferencedList(descriptor);
         verify(refListHandlerMock).updateList(descriptor);
-        verify(connectionMock).commitIfAuto();
+        verify(afterMock).execute();
     }
 }

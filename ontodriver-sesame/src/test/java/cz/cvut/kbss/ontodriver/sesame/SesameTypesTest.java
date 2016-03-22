@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -32,8 +30,6 @@ public class SesameTypesTest {
     private static final NamedResource INDIVIDUAL = NamedResource.create("http://krizik.felk.cvut.cz/jopa#individual");
 
     @Mock
-    private SesameConnection connectionMock;
-    @Mock
     private SesameAdapter adapterMock;
     @Mock
     private TypesHandler handlerMock;
@@ -45,14 +41,17 @@ public class SesameTypesTest {
         MockitoAnnotations.initMocks(this);
         when(adapterMock.getTypesHandler()).thenReturn(handlerMock);
 
-        this.types = new SesameTypes(connectionMock, adapterMock);
+        this.types = new SesameTypes(adapterMock, () -> {}, () -> {});
     }
 
     @Test
     public void testGetTypes() throws Exception {
         when(handlerMock.getTypes(INDIVIDUAL, null, false)).
-                thenReturn(Collections.<Axiom<URI>>singleton(
-                        new AxiomImpl<>(INDIVIDUAL, Assertion.createClassAssertion(false), new Value<>(INDIVIDUAL.getIdentifier()))));
+                                                                   thenReturn(Collections.<Axiom<URI>>singleton(
+                                                                           new AxiomImpl<>(INDIVIDUAL, Assertion
+                                                                                   .createClassAssertion(false),
+                                                                                   new Value<>(INDIVIDUAL
+                                                                                           .getIdentifier()))));
         final Set<Axiom<URI>> res = types.getTypes(INDIVIDUAL, null, false);
         assertEquals(1, res.size());
         assertEquals(INDIVIDUAL.getIdentifier(), res.iterator().next().getValue().getValue());

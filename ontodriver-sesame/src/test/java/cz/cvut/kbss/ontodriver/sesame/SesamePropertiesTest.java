@@ -46,8 +46,6 @@ public class SesamePropertiesTest {
 
     @Mock
     private Connector connectorMock;
-    @Mock
-    private SesameConnection connectionMock;
 
     private URI subject;
 
@@ -67,7 +65,7 @@ public class SesamePropertiesTest {
         when(adapterMock.getConnector()).thenReturn(connectorMock);
         when(adapterMock.getValueFactory()).thenReturn(vf);
         when(adapterMock.getLanguage()).thenReturn(LANG);
-        this.properties = new SesameProperties(connectionMock, adapterMock);
+        this.properties = new SesameProperties(adapterMock, () -> {}, () -> {});
     }
 
     @After

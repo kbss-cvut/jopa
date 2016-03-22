@@ -1,20 +1,19 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.owlapi.util.Procedure;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -38,7 +37,7 @@ public class OwlapiTypesTest {
     private OwlapiAdapter adapterMock;
 
     @Mock
-    private OwlapiConnection connectionMock;
+    private Procedure beforeMock;
 
     private OwlapiTypes types;
 
@@ -46,7 +45,7 @@ public class OwlapiTypesTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(adapterMock.getTypesHandler()).thenReturn(typesHandlerMock);
-        this.types = new OwlapiTypes(connectionMock, adapterMock);
+        this.types = new OwlapiTypes(adapterMock, beforeMock, () -> {});
     }
 
     @Test
@@ -71,7 +70,7 @@ public class OwlapiTypesTest {
 
     @Test(expected = IllegalStateException.class)
     public void addTypesOnClosedThrowsException() throws Exception {
-        doThrow(IllegalStateException.class).when(connectionMock).ensureOpen();
+        doThrow(IllegalStateException.class).when(beforeMock).execute();
 
         final URI type = URI.create("http://addedType");
         try {

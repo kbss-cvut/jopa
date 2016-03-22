@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
@@ -18,6 +16,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.owlapi.util.Procedure;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -45,7 +44,9 @@ public class OwlapiPropertiesTest {
     private OwlapiAdapter adapterMock;
 
     @Mock
-    private OwlapiConnection connectionMock;
+    private Procedure beforeMock;
+    @Mock
+    private Procedure afterMock;
 
     private OwlapiProperties properties;
 
@@ -53,7 +54,7 @@ public class OwlapiPropertiesTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(adapterMock.getPropertiesHandler()).thenReturn(handlerMock);
-        this.properties = new OwlapiProperties(connectionMock, adapterMock);
+        this.properties = new OwlapiProperties(adapterMock, beforeMock, afterMock);
     }
 
     @Test
@@ -62,7 +63,7 @@ public class OwlapiPropertiesTest {
         when(handlerMock.getProperties(eq(INDIVIDUAL), anyBoolean())).thenReturn(props);
         final Collection<Axiom<?>> result = properties.getProperties(INDIVIDUAL, null, true);
         assertSame(props, result);
-        verify(connectionMock).ensureOpen();
+        verify(beforeMock).execute();
     }
 
     @Test
@@ -72,14 +73,14 @@ public class OwlapiPropertiesTest {
                 Collections.singleton(new Value<>("String")));
         properties.addProperties(INDIVIDUAL, null, props);
         verify(handlerMock).addProperties(INDIVIDUAL, props);
-        verify(connectionMock).commitIfAuto();
+        verify(afterMock).execute();
     }
 
     @Test
     public void addPropertiesDoesNothingWhenPropertiesAreEmpty() throws Exception {
         properties.addProperties(INDIVIDUAL, null, Collections.emptyMap());
         verify(handlerMock, never()).addProperties(any(NamedResource.class), anyMap());
-        verify(connectionMock).commitIfAuto();
+        verify(afterMock).execute();
     }
 
     @Test
@@ -89,13 +90,13 @@ public class OwlapiPropertiesTest {
                 Collections.singleton(new Value<>("String")));
         properties.removeProperties(INDIVIDUAL, null, props);
         verify(handlerMock).removeProperties(INDIVIDUAL, props);
-        verify(connectionMock).commitIfAuto();
+        verify(afterMock).execute();
     }
 
     @Test
     public void removePropertiesDoesNothingWhenPropertiesAreEmpty() throws Exception {
         properties.removeProperties(INDIVIDUAL, null, Collections.emptyMap());
         verify(handlerMock, never()).removeProperties(any(NamedResource.class), anyMap());
-        verify(connectionMock).commitIfAuto();
+        verify(afterMock).execute();
     }
 }

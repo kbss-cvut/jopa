@@ -28,7 +28,10 @@ import static org.mockito.Mockito.*;
 public class SesameListsTest {
 
 	@Mock
-	private SesameConnection connectionMock;
+	private Procedure beforeMock;
+
+	@Mock
+    private Procedure afterMock;
 
 	@Mock
 	private SesameAdapter adapterMock;
@@ -47,7 +50,7 @@ public class SesameListsTest {
 		when(adapterMock.getSimpleListHandler()).thenReturn(simpleListHandlerMock);
 		when(adapterMock.getReferencedListHandler()).thenReturn(referencedListHandlerMock);
 
-		this.lists = new SesameLists(connectionMock, adapterMock);
+		this.lists = new SesameLists(adapterMock, beforeMock, afterMock);
 	}
 
 	@Test
@@ -56,7 +59,7 @@ public class SesameListsTest {
 
 		lists.loadSimpleList(descriptor);
 
-		verify(connectionMock).ensureOpen();
+		verify(beforeMock).execute();
 		verify(adapterMock).getSimpleListHandler();
 		verify(simpleListHandlerMock).loadList(descriptor);
 	}
@@ -67,10 +70,10 @@ public class SesameListsTest {
 
 		lists.persistSimpleList(descriptor);
 
-		verify(connectionMock).ensureOpen();
+		verify(beforeMock).execute();
 		verify(adapterMock).getSimpleListHandler();
 		verify(simpleListHandlerMock).persistList(descriptor);
-		verify(connectionMock).commitIfAuto();
+		verify(afterMock).execute();
 	}
 
 	@Test
@@ -79,10 +82,10 @@ public class SesameListsTest {
 
 		lists.updateSimpleList(descriptor);
 
-		verify(connectionMock).ensureOpen();
+		verify(beforeMock).execute();
 		verify(adapterMock).getSimpleListHandler();
 		verify(simpleListHandlerMock).updateList(descriptor);
-		verify(connectionMock).commitIfAuto();
+		verify(afterMock).execute();
 	}
 
 	@Test
@@ -91,7 +94,7 @@ public class SesameListsTest {
 
 		lists.loadReferencedList(descriptor);
 
-		verify(connectionMock).ensureOpen();
+		verify(beforeMock).execute();
 		verify(adapterMock).getReferencedListHandler();
 		verify(referencedListHandlerMock).loadList(descriptor);
 	}
@@ -102,10 +105,10 @@ public class SesameListsTest {
 
 		lists.persistReferencedList(descriptor);
 
-		verify(connectionMock).ensureOpen();
+		verify(beforeMock).execute();
 		verify(adapterMock).getReferencedListHandler();
 		verify(referencedListHandlerMock).persistList(descriptor);
-		verify(connectionMock).commitIfAuto();
+		verify(afterMock).execute();
 	}
 
 	@Test
@@ -114,9 +117,9 @@ public class SesameListsTest {
 
 		lists.updateReferencedList(descriptor);
 
-		verify(connectionMock).ensureOpen();
+		verify(beforeMock).execute();
 		verify(adapterMock).getReferencedListHandler();
 		verify(referencedListHandlerMock).updateList(descriptor);
-		verify(connectionMock).commitIfAuto();
+		verify(afterMock).execute();
 	}
 }
