@@ -130,8 +130,8 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         entityC.setSimpleList(Generators.createSimpleList(15));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor lstDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
-                OWLClassC.class.getDeclaredField("simpleList"));
-        cDescriptor.addAttributeDescriptor(OWLClassC.class.getDeclaredField("simpleList"), lstDescriptor);
+                OWLClassC.getSimpleListField());
+        cDescriptor.addAttributeDescriptor(OWLClassC.getSimpleListField(), lstDescriptor);
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
         entityC.getSimpleList().forEach(a -> em.persist(a, lstDescriptor));
@@ -167,8 +167,8 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         entityC.setReferencedList(Generators.createReferencedList(10));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor lstDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
-                OWLClassC.class.getDeclaredField("referencedList"));
-        cDescriptor.addAttributeDescriptor(OWLClassC.class.getDeclaredField("referencedList"), lstDescriptor);
+                OWLClassC.getReferencedListField());
+        cDescriptor.addAttributeDescriptor(OWLClassC.getReferencedListField(), lstDescriptor);
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
         entityC.getReferencedList().forEach(a -> em.persist(a, lstDescriptor));
@@ -204,8 +204,8 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         entityC.setSimpleList(Generators.createSimpleList(15));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor lstDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
-                OWLClassC.class.getDeclaredField("simpleList"));
-        cDescriptor.addAttributeDescriptor(OWLClassC.class.getDeclaredField("simpleList"), lstDescriptor);
+                OWLClassC.getSimpleListField());
+        cDescriptor.addAttributeDescriptor(OWLClassC.getSimpleListField(), lstDescriptor);
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
         entityC.getSimpleList().forEach(a -> em.persist(a, lstDescriptor));
@@ -233,8 +233,8 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         entityC.setReferencedList(Generators.createReferencedList(10));
         final Descriptor cDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor lstDescriptor = new ObjectPropertyCollectionDescriptor(CONTEXT_TWO,
-                OWLClassC.class.getDeclaredField("referencedList"));
-        cDescriptor.addAttributeDescriptor(OWLClassC.class.getDeclaredField("referencedList"), lstDescriptor);
+                OWLClassC.getReferencedListField());
+        cDescriptor.addAttributeDescriptor(OWLClassC.getReferencedListField(), lstDescriptor);
         em.getTransaction().begin();
         em.persist(entityC, cDescriptor);
         entityC.getReferencedList().forEach(a -> em.persist(a, lstDescriptor));

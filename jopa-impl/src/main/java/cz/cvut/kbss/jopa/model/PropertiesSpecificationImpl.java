@@ -37,25 +37,27 @@ public class PropertiesSpecificationImpl<X, Y, K, V> implements PropertiesSpecif
         this.propertyValueType = builder.propertyValueType;
     }
 
+    @Override
     public ManagedType<X> getDeclaringType() {
         return declaringType;
     }
 
-
+    @Override
     public FetchType getFetchType() {
         return fetchType;
     }
 
-
+    @Override
     public Field getJavaField() {
         return javaField;
     }
 
-
+    @Override
     public Class<Y> getJavaType() {
         return javaType;
     }
 
+    @Override
     public boolean isInferred() {
         return inferred;
     }

@@ -56,7 +56,7 @@ public class Value<T> {
      * @return Value as string
      */
     public String stringValue() {
-        return (value != null ? value.toString() : "");
+        return value != null ? value.toString() : "";
     }
 
     /**

@@ -50,7 +50,7 @@ class InferredReferencedListIterator extends ReferencedListIterator {
         if (next == null) {
             doStep();
         }
-        return !next.isEmpty();
+        return next != null && !next.isEmpty();
     }
 
     @Override

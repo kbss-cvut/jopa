@@ -128,28 +128,25 @@ public class ChangeManagerImpl implements ChangeManager {
             final Field f = fs.getJavaField();
             Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
             Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
-            ChangeRecord r = null;
             if (clVal == null && origVal == null) {
                 continue;
             }
             final String attName = f.getName();
             Changed changed = valueChanged(origVal, clVal);
             switch (changed) {
-                case FALSE:
-                    continue;
                 case TRUE:
-                    r = new ChangeRecordImpl(attName, clVal);
+                    changeSet.addChangeRecord(new ChangeRecordImpl(attName, clVal));
                     changes = true;
                     break;
                 case UNDETERMINED:
                     if (hasChanges(origVal, clVal)) {
+                        changeSet.addChangeRecord(new ChangeRecordImpl(attName, clVal));
                         changes = true;
-                        r = new ChangeRecordImpl(attName, clVal);
-                    } else {
-                        continue;
                     }
+                    break;
+                default:
+                    break;
             }
-            changeSet.addChangeRecord(r);
         }
         return changes;
     }
