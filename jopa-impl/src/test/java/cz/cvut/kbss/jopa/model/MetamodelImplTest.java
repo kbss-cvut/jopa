@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -482,7 +480,7 @@ public class MetamodelImplTest {
     }
 
     @Test(expected = MetamodelInitializationException.class)
-    public void throwsExceptionForEntityWithPersistentField() throws Exception {
+    public void throwsExceptionForEntityWithPersistentArray() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithArrayAttribute.class));
 
@@ -497,5 +495,29 @@ public class MetamodelImplTest {
 
         @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa#objectProperty")
         private OWLClassA[] arr;
+    }
+
+    @Test
+    public void buildsEntityWithObjectPropertyAttributeAsUri() throws Exception {
+        when(entityLoaderMock.discoverEntityClasses(conf))
+                .thenReturn(Collections.singleton(ClassWithOPUri.class));
+
+        final Metamodel m = new MetamodelImpl(conf, entityLoaderMock);
+        final EntityType<ClassWithOPUri> et = m.entity(ClassWithOPUri.class);
+        assertNotNull(et);
+        final Attribute<? super ClassWithOPUri, ?> att = et.getAttribute("op");
+        assertNotNull(att);
+        assertEquals(URI.class, att.getJavaType());
+        assertEquals(Attribute.PersistentAttributeType.OBJECT, att.getPersistentAttributeType());
+    }
+
+    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithOPUri")
+    private static class ClassWithOPUri {
+
+        @Id
+        private URI id;
+
+        @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa#objectProperty")
+        private URI op;
     }
 }

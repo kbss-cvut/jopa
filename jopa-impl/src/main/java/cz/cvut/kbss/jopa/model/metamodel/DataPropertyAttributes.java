@@ -21,10 +21,11 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
 import java.lang.reflect.Field;
 
-/**
- * @author ledvima1
- */
 class DataPropertyAttributes extends PropertyAttributes {
+
+    DataPropertyAttributes(FieldMappingValidator validator) {
+        super(validator);
+    }
 
     @Override
     void resolve(Field field, MetamodelImpl metamodel, Class<?> fieldValueCls) {

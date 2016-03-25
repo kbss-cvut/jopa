@@ -71,7 +71,7 @@ public class EntityFieldMetamodelProcessor<X> {
             return;
         }
 
-        final PropertyAttributes propertyAtt = PropertyAttributes.create(field);
+        final PropertyAttributes propertyAtt = PropertyAttributes.create(field, mappingValidator);
         propertyAtt.resolve(field, metamodel, fieldValueCls);
 
         if (propertyAtt.isKnownOwlProperty()) {
@@ -190,9 +190,7 @@ public class EntityFieldMetamodelProcessor<X> {
         if (id == null) {
             return false;
         }
-        if (!mappingValidator.isValidIdentifierType(field.getType())) {
-            throw new IllegalArgumentException("NOT YET SUPPORTED");
-        }
+        mappingValidator.validateIdentifierType(field.getType());
         et.setIdentifier(new IRIIdentifierImpl(field, id.generated()));
         return true;
     }
