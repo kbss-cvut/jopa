@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,7 @@ import static org.mockito.Mockito.when;
 /**
  * Provides metamodel mock objects for the test classes.
  */
+@SuppressWarnings("unused")
 public class MetamodelMocks {
 
     @Mock
@@ -153,6 +155,8 @@ public class MetamodelMocks {
     @Mock
     private SingularAttribute<OWLClassP, URI> pUriAtt;
     @Mock
+    private PluralAttribute<OWLClassP, Set, URL> pUrlsAtt;
+    @Mock
     private PropertiesSpecification<OWLClassP, Map, URI, Object> pProperties;
 
     public MetamodelMocks() throws Exception {
@@ -171,7 +175,7 @@ public class MetamodelMocks {
         MetamodelFactory
                 .initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt, idM);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
-        MetamodelFactory.initOWLClassPMock(etP, pProperties, pUriAtt, idP);
+        MetamodelFactory.initOWLClassPMock(etP, pProperties, pUriAtt, pUrlsAtt, idP);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -481,6 +485,10 @@ public class MetamodelMocks {
 
         public SingularAttribute<OWLClassP, URI> pUriAttribute() {
             return MetamodelMocks.this.pUriAtt;
+        }
+
+        public PluralAttribute<OWLClassP, Set, URL> pUrlsAttribute() {
+            return MetamodelMocks.this.pUrlsAtt;
         }
 
         public PropertiesSpecification<OWLClassP, Map, URI, Object> properties() {

@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -38,7 +39,7 @@ public class MetamodelFactory {
      */
     public static void initOWLClassAMocks(EntityType<OWLClassA> etMock, Attribute strAttMock,
                                           TypesSpecification typesMock, Identifier idMock) throws NoSuchFieldException,
-            SecurityException {
+                                                                                                  SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
         when(etMock.getAttribute(OWLClassA.getStrAttField().getName())).thenReturn(strAttMock);
@@ -71,8 +72,8 @@ public class MetamodelFactory {
      */
     public static void initOWLClassBMocks(EntityType<OWLClassB> etMock, Attribute strAttMock,
                                           PropertiesSpecification propsMock, Identifier idMock) throws
-            NoSuchFieldException,
-            SecurityException {
+                                                                                                NoSuchFieldException,
+                                                                                                SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassB.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
         when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
@@ -506,13 +507,16 @@ public class MetamodelFactory {
     }
 
     public static void initOWLClassPMock(EntityType<OWLClassP> et, PropertiesSpecification props,
-                                         SingularAttribute uriAtt, Identifier idP) throws
-            Exception {
+                                         SingularAttribute uriAtt, PluralAttribute urlsAtt, Identifier idP) throws
+                                                                                                            Exception {
         when(et.getIdentifier()).thenReturn(idP);
         when(idP.getJavaField()).thenReturn(OWLClassP.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassP.getClassIri()));
         when(et.getFieldSpecifications())
-                .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassP, ?>>asList(uriAtt, props)));
+                .thenReturn(
+                        new HashSet<>(Arrays.<FieldSpecification<? super OWLClassP, ?>>asList(uriAtt, urlsAtt, props)));
+        when(et.getAttributes())
+                .thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassP, ?>>asList(uriAtt, urlsAtt)));
         when(et.getFieldSpecification(props.getName())).thenReturn(props);
         when(et.getProperties()).thenReturn(props);
         when(props.getJavaField()).thenReturn(OWLClassP.getPropertiesField());
@@ -521,6 +525,7 @@ public class MetamodelFactory {
         when(props.getPropertyIdentifierType()).thenReturn(URI.class);
         when(props.getPropertyValueType()).thenReturn(Object.class);
         when(et.getFieldSpecification(uriAtt.getName())).thenReturn(uriAtt);
+        when(uriAtt.getName()).thenReturn(OWLClassP.getIndividualUriField().getName());
         when(uriAtt.getJavaField()).thenReturn(OWLClassP.getIndividualUriField());
         when(uriAtt.getDeclaringType()).thenReturn(et);
         when(uriAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
@@ -529,5 +534,15 @@ public class MetamodelFactory {
                 .thenReturn(IRI.create(OWLClassP.getIndividualUriField().getAnnotation(OWLObjectProperty.class).iri()));
         when(uriAtt.getBindableJavaType()).thenReturn(URI.class);
         when(uriAtt.getJavaType()).thenReturn(OWLClassP.getIndividualUriField().getType());
+        when(et.getFieldSpecification(urlsAtt.getName())).thenReturn(urlsAtt);
+        when(urlsAtt.getName()).thenReturn(OWLClassP.getIndividualUrlsField().getName());
+        when(urlsAtt.getJavaField()).thenReturn(OWLClassP.getIndividualUrlsField());
+        when(urlsAtt.isCollection()).thenReturn(true);
+        when(urlsAtt.getDeclaringType()).thenReturn(et);
+        when(urlsAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(urlsAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(urlsAtt.getBindableJavaType()).thenReturn(URL.class);
+        when(urlsAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassP.getIndividualUrlsField().getAnnotation(OWLObjectProperty.class).iri()));
     }
 }

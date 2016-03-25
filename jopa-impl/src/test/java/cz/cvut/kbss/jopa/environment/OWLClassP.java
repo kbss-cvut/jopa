@@ -7,6 +7,7 @@ import cz.cvut.kbss.jopa.model.annotations.Properties;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,6 +19,9 @@ public class OWLClassP {
 
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA")
     private URI individualUri;
+
+    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasIndividual")
+    private Set<URL> individualUrls;
 
     @Properties
     private Map<URI, Set<Object>> properties;
@@ -38,6 +42,14 @@ public class OWLClassP {
         this.individualUri = individualUri;
     }
 
+    public Set<URL> getIndividualUrls() {
+        return individualUrls;
+    }
+
+    public void setIndividualUrls(Set<URL> individualUrls) {
+        this.individualUrls = individualUrls;
+    }
+
     public Map<URI, Set<Object>> getProperties() {
         return properties;
     }
@@ -56,6 +68,10 @@ public class OWLClassP {
 
     public static Field getIndividualUriField() throws Exception {
         return OWLClassP.class.getDeclaredField("individualUri");
+    }
+
+    public static Field getIndividualUrlsField() throws Exception {
+        return OWLClassP.class.getDeclaredField("individualUrls");
     }
 
     public static Field getPropertiesField() throws Exception {

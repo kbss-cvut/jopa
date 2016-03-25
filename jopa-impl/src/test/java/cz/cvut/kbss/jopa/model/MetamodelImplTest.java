@@ -27,6 +27,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -394,8 +395,7 @@ public class MetamodelImplTest {
         final Field strAttField = OWLClassN.getStringAttributeField();
         final FieldSpecification<? super OWLClassN, ?> att = et.getFieldSpecification(strAttField.getName());
         assertTrue(att instanceof SingularAttribute);
-        final SingularAttribute<? super OWLClassN, ?> singularString = (SingularAttribute<? super OWLClassN, ?>) att;
-        assertTrue(singularString.isNonEmpty());
+        assertTrue(((SingularAttribute) att).isNonEmpty());
     }
 
     @Test
@@ -519,5 +519,33 @@ public class MetamodelImplTest {
 
         @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa#objectProperty")
         private URI op;
+    }
+
+    @Test
+    public void buildsEntityWithPluralObjectPropertyAttributeAsUrls() throws Exception {
+        when(entityLoaderMock.discoverEntityClasses(conf))
+                .thenReturn(Collections.singleton(ClassWithPluralOPUrls.class));
+
+        final Metamodel m = new MetamodelImpl(conf, entityLoaderMock);
+        final EntityType<ClassWithPluralOPUrls> et = m.entity(ClassWithPluralOPUrls.class);
+        assertNotNull(et);
+        final Attribute<? super ClassWithPluralOPUrls, ?> att = et.getAttribute("op");
+        assertNotNull(att);
+        assertTrue(att.isCollection());
+        assertTrue(att instanceof PluralAttribute);
+        assertEquals(Attribute.PersistentAttributeType.OBJECT, att.getPersistentAttributeType());
+        assertArrayEquals(new CascadeType[0], att.getCascadeTypes());
+        assertEquals(URL.class, ((PluralAttribute) att).getBindableJavaType());
+        assertEquals(PluralAttribute.CollectionType.SET, ((PluralAttribute) att).getCollectionType());
+    }
+
+    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithOPUri")
+    private static class ClassWithPluralOPUrls {
+
+        @Id
+        private URI id;
+
+        @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa#objectProperty")
+        private Set<URL> op;
     }
 }
