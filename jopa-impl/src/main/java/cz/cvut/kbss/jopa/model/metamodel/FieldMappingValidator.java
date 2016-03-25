@@ -74,6 +74,12 @@ class FieldMappingValidator {
         }
     }
 
+    void validateIdentifierType(Type type) {
+        if (!isValidIdentifierType(type)) {
+            throw new InvalidFieldMappingException(type + " is not a valid identifier type.");
+        }
+    }
+
     boolean isValidIdentifierType(Type type) {
         return type instanceof Class && IdentifierTransformer.isValidIdentifierType((Class<?>) type);
     }

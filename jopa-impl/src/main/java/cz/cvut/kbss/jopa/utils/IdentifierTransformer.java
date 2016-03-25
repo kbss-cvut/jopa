@@ -72,7 +72,7 @@ public class IdentifierTransformer {
         return TRANSFORMERS.get(targetType).apply(value);
     }
 
-    static URI valueAsUri(Object value) {
+    public static URI valueAsUri(Object value) {
         return (URI) TRANSFORMERS.get(URI.class).apply(value);
     }
 

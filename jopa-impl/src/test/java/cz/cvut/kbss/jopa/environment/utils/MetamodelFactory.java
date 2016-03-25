@@ -505,12 +505,14 @@ public class MetamodelFactory {
         when(stringAtt.getDeclaringType()).thenReturn(et);
     }
 
-    public static void initOWLClassPMock(EntityType<OWLClassP> et, PropertiesSpecification props, Identifier idP) throws
+    public static void initOWLClassPMock(EntityType<OWLClassP> et, PropertiesSpecification props,
+                                         SingularAttribute uriAtt, Identifier idP) throws
             Exception {
         when(et.getIdentifier()).thenReturn(idP);
         when(idP.getJavaField()).thenReturn(OWLClassP.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassP.getClassIri()));
-        when(et.getFieldSpecifications()).thenReturn(Collections.singleton(props));
+        when(et.getFieldSpecifications())
+                .thenReturn(new HashSet<>(Arrays.<FieldSpecification<? super OWLClassP, ?>>asList(uriAtt, props)));
         when(et.getFieldSpecification(props.getName())).thenReturn(props);
         when(et.getProperties()).thenReturn(props);
         when(props.getJavaField()).thenReturn(OWLClassP.getPropertiesField());
@@ -518,5 +520,14 @@ public class MetamodelFactory {
         when(props.getDeclaringType()).thenReturn(et);
         when(props.getPropertyIdentifierType()).thenReturn(URI.class);
         when(props.getPropertyValueType()).thenReturn(Object.class);
+        when(et.getFieldSpecification(uriAtt.getName())).thenReturn(uriAtt);
+        when(uriAtt.getJavaField()).thenReturn(OWLClassP.getIndividualUriField());
+        when(uriAtt.getDeclaringType()).thenReturn(et);
+        when(uriAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(uriAtt.isCollection()).thenReturn(false);
+        when(uriAtt.getIRI())
+                .thenReturn(IRI.create(OWLClassP.getIndividualUriField().getAnnotation(OWLObjectProperty.class).iri()));
+        when(uriAtt.getBindableJavaType()).thenReturn(URI.class);
+        when(uriAtt.getJavaType()).thenReturn(OWLClassP.getIndividualUriField().getType());
     }
 }

@@ -13,6 +13,7 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.annotations.*;
@@ -31,9 +32,7 @@ import java.util.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
-/**
- * @author ledvima1
- */
+@SuppressWarnings("unused")
 public class MetamodelImplTest {
 
     private static final Map<String, String> PROPERTIES = Collections
@@ -352,7 +351,7 @@ public class MetamodelImplTest {
         private List<String> properties;
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InvalidFieldMappingException.class)
     public void throwExceptionWhenForClassWithInvalidIdentifier() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithInvalidIdentifier.class));
@@ -509,6 +508,7 @@ public class MetamodelImplTest {
         assertNotNull(att);
         assertEquals(URI.class, att.getJavaType());
         assertEquals(Attribute.PersistentAttributeType.OBJECT, att.getPersistentAttributeType());
+        assertArrayEquals(new CascadeType[0], att.getCascadeTypes());
     }
 
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithOPUri")

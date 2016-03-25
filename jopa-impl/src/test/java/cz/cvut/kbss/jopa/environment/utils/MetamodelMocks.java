@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p/>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p/>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
@@ -153,6 +151,8 @@ public class MetamodelMocks {
     @Mock
     private Identifier idP;
     @Mock
+    private SingularAttribute<OWLClassP, URI> pUriAtt;
+    @Mock
     private PropertiesSpecification<OWLClassP, Map, URI, Object> pProperties;
 
     public MetamodelMocks() throws Exception {
@@ -171,7 +171,7 @@ public class MetamodelMocks {
         MetamodelFactory
                 .initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt, idM);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
-        MetamodelFactory.initOWLClassPMock(etP, pProperties, idP);
+        MetamodelFactory.initOWLClassPMock(etP, pProperties, pUriAtt, idP);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -477,6 +477,10 @@ public class MetamodelMocks {
 
         public Identifier identifier() {
             return MetamodelMocks.this.idP;
+        }
+
+        public SingularAttribute<OWLClassP, URI> pUriAttribute() {
+            return MetamodelMocks.this.pUriAtt;
         }
 
         public PropertiesSpecification<OWLClassP, Map, URI, Object> properties() {

@@ -199,7 +199,7 @@ public class EntityFieldMetamodelProcessor<X> {
         private final boolean inferred;
         private final boolean includeExplicit;
 
-        public InferenceInfo(Inferred inferredAnnotation) {
+        InferenceInfo(Inferred inferredAnnotation) {
             this.inferred = inferredAnnotation != null;
             this.includeExplicit = inferredAnnotation == null || inferredAnnotation.includeExplicit();
         }

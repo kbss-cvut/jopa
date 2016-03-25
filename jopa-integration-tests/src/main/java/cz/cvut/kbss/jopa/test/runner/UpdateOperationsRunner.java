@@ -717,4 +717,42 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertNotNull(result.getProperties());
         assertEquals(properties, result.getProperties());
     }
+
+    @Test
+    public void testUpdatePlainLiteralObjectPropertyValueToAnotherIndividual() throws Exception {
+        logger.debug("Test: update plain literal object property value to a different individual.");
+        this.em = getEntityManager("UpdatePlainLiteralObjectPropertyValue", true);
+        em.getTransaction().begin();
+        entityP.setIndividualUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#oldIndividual"));
+        em.persist(entityP);
+        em.getTransaction().commit();
+
+        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        final URI newValue = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newIndividual");
+        em.getTransaction().begin();
+        update.setIndividualUri(newValue);
+        em.getTransaction().commit();
+
+        final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
+        assertEquals(newValue, result.getIndividualUri());
+    }
+
+    @Test
+    public void testUpdatePlainLiteralObjectPropertyValueToNull() throws Exception {
+        logger.debug("Test: update plain literal object property value to null.");
+        this.em = getEntityManager("UpdatePlainLiteralObjectPropertyValueToNull", true);
+        em.getTransaction().begin();
+        entityP.setIndividualUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#SomeIndividual"));
+        em.persist(entityP);
+        em.getTransaction().commit();
+
+        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        assertNotNull(update.getIndividualUri());
+        em.getTransaction().begin();
+        update.setIndividualUri(null);
+        em.getTransaction().commit();
+
+        final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
+        assertNull(result.getIndividualUri());
+    }
 }

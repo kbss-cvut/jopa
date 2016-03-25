@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -19,6 +17,7 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -39,9 +38,15 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
     void addValueFromAxiom(Axiom<?> ax) {
         assert ax.getValue().getValue() instanceof NamedResource;
         final NamedResource valueIdentifier = (NamedResource) ax.getValue().getValue();
-        final Object newValue = mapper
-                .getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier.getIdentifier(),
-                        attributeDescriptor);
+        final Object newValue;
+        if (IdentifierTransformer.isValidIdentifierType(attribute.getJavaType())) {
+            newValue = IdentifierTransformer
+                    .transformToIdentifier(valueIdentifier.getIdentifier(), attribute.getJavaType());
+        } else {
+            newValue = mapper
+                    .getEntityFromCacheOrOntology(attribute.getJavaType(), valueIdentifier.getIdentifier(),
+                            attributeDescriptor);
+        }
         if (value != null) {
             throw new CardinalityConstraintViolatedException(
                     "Expected single value of attribute " + attribute.getName() + " but got multiple.");
@@ -62,6 +67,9 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
     }
 
     private <V> Value<NamedResource> extractReferenceIdentifier(final V value) {
+        if (IdentifierTransformer.isValidIdentifierType(attribute.getJavaType())) {
+            return new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(value)));
+        }
         final EntityType<V> valEt = (EntityType<V>) mapper.getEntityType(value.getClass());
         if (valEt == null) {
             throw new EntityDeconstructionException("Value of field " + attribute.getJavaField()
@@ -74,7 +82,6 @@ class SingularObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super 
 
     @Override
     Assertion createAssertion() {
-        return Assertion.createObjectPropertyAssertion(attribute.getIRI().toURI(),
-                attribute.isInferred());
+        return Assertion.createObjectPropertyAssertion(attribute.getIRI().toURI(), attribute.isInferred());
     }
 }

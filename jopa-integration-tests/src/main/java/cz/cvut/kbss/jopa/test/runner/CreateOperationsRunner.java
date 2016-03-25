@@ -350,4 +350,20 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertNotNull(res);
         assertEquals(entityP.getProperties(), res.getProperties());
     }
+
+    @Test
+    public void testPersistInstanceWithPlainIdentifierObjectPropertyValue() {
+        logger.debug("Test: persist entity with plain identifier (URI) object property value.");
+        this.em = getEntityManager("PersistInstanceWithIdentifierObjectPropertyValue", false);
+        final URI value = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#individualAAA");
+        entityP.setIndividualUri(value);
+        em.getTransaction().begin();
+        em.persist(entityP);
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertNotNull(res);
+        assertEquals(value, res.getIndividualUri());
+    }
 }
