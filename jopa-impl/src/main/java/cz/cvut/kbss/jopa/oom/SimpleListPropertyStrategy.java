@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -13,10 +13,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
-
-import java.net.URI;
-import java.util.Collection;
-import java.util.List;
 
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
@@ -28,8 +24,11 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
+import java.util.Collection;
+import java.util.List;
+
 class SimpleListPropertyStrategy<X> extends
-        ListPropertyStrategy<SimpleListDescriptor, SimpleListValueDescriptor, X> {
+                                    ListPropertyStrategy<SimpleListDescriptor, SimpleListValueDescriptor, X> {
 
     public SimpleListPropertyStrategy(EntityType<X> et, ListAttribute<? super X, ?> att,
                                       Descriptor descriptor, EntityMappingHelper mapper) {
@@ -59,15 +58,7 @@ class SimpleListPropertyStrategy<X> extends
     @Override
     <K> void extractListValues(List<K> list, X instance, AxiomValueGatherer valueBuilder) {
         final SimpleListValueDescriptor listDescriptor = createListValueDescriptor(instance);
-        final Class<K> elemType = (Class<K>) listAttribute.getBindableJavaType();
-        final EntityType<K> valueType = mapper.getEntityType(elemType);
-        if (list != null) {
-            for (K item : list) {
-                final URI id = resolveValueIdentifier(item, valueType);
-                cascadeResolver.resolveFieldCascading(listAttribute, item, getAttributeContext());
-                listDescriptor.addValue(NamedResource.create(id));
-            }
-        }
+        addListElementsToListValueDescriptor(listDescriptor, list);
         valueBuilder.addSimpleListValues(listDescriptor);
     }
 

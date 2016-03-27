@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,12 +19,22 @@ import java.net.URI;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 abstract class CascadeResolver {
-	
-	protected ObjectOntologyMapperImpl mapper;
 
-	protected CascadeResolver(ObjectOntologyMapperImpl mapper) {
-		this.mapper = mapper;
-	}
+    protected ObjectOntologyMapperImpl mapper;
 
-	protected abstract void resolveFieldCascading(FieldSpecification<?, ?> fieldSpec, Object fieldValue, URI context);
+    CascadeResolver(ObjectOntologyMapperImpl mapper) {
+        this.mapper = mapper;
+    }
+
+    /**
+     * Resolves cascading that may be necessary when performing operation with the specified field value.
+     * <p>
+     * E.g. for persist, this may lead to registering a persist pending instance when cascade persist is not set up and the referenced
+     * value is a new instance.
+     *
+     * @param fieldSpec  Field specification
+     * @param fieldValue Value of the field
+     * @param context    Ontology context identifier
+     */
+    protected abstract void resolveFieldCascading(FieldSpecification<?, ?> fieldSpec, Object fieldValue, URI context);
 }

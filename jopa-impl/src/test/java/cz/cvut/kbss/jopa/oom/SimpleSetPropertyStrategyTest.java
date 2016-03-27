@@ -31,8 +31,10 @@ import org.mockito.MockitoAnnotations;
 
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,6 +54,8 @@ public class SimpleSetPropertyStrategyTest {
     @Mock
     private CascadeResolver cascadeResolverMock;
 
+    private AxiomValueGatherer gatherer;
+
     private MetamodelMocks mocks;
     private Descriptor descriptor = new EntityDescriptor();
 
@@ -59,6 +63,7 @@ public class SimpleSetPropertyStrategyTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
+        this.gatherer = new AxiomValueGatherer(NamedResource.create(PK), null);
         this.mocks = new MetamodelMocks();
         when(mapperMock.getEntityType(OWLClassA.class)).thenReturn(mocks.forOwlClassA().entityType());
     }
@@ -71,9 +76,8 @@ public class SimpleSetPropertyStrategyTest {
         strategy.setCascadeResolver(cascadeResolverMock);
         final OWLClassJ j = new OWLClassJ(PK);
         j.setOwlClassA(generateSet());
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
-        strategy.buildAxiomValuesFromInstance(j, builder);
-        final AxiomValueDescriptor res = OOMTestUtils.getAxiomValueDescriptor(builder);
+        strategy.buildAxiomValuesFromInstance(j, gatherer);
+        final AxiomValueDescriptor res = OOMTestUtils.getAxiomValueDescriptor(gatherer);
         assertEquals(NamedResource.create(PK), res.getSubject());
         final OWLObjectProperty op = OWLClassJ.getOwlClassAField().getAnnotation(
                 OWLObjectProperty.class);
@@ -96,7 +100,7 @@ public class SimpleSetPropertyStrategyTest {
     }
 
     @Test
-    public void extractsValuesFromInstanceSetIsNull() throws Exception {
+    public void extractValuesFromInstanceWhenSetIsNullCreatesNullValueAxiom() throws Exception {
         final SimpleSetPropertyStrategy<OWLClassJ> strategy =
                 new SimpleSetPropertyStrategy<>(mocks.forOwlClassJ().entityType(),
                         mocks.forOwlClassJ().setAttribute(), descriptor, mapperMock);
@@ -144,5 +148,33 @@ public class SimpleSetPropertyStrategyTest {
                 e.printStackTrace();
             }
         });
+    }
+
+    @Test
+    public void extractsValuesFromFieldWithSetOfPlainIdentifiers() throws Exception {
+        final SimpleSetPropertyStrategy<OWLClassP> strategy =
+                new SimpleSetPropertyStrategy<>(mocks.forOwlClassP().entityType(),
+                        mocks.forOwlClassP().pUrlsAttribute(), descriptor, mapperMock);
+        final OWLClassP p = new OWLClassP();
+        p.setUri(PK);
+        final Set<OWLClassA> aSet = generateSet();
+        p.setIndividualUrls(aSet.stream().map(a -> {
+            try {
+                return a.getUri().toURL();
+            } catch (MalformedURLException e) {
+                throw new IllegalStateException(e);
+            }
+        }).collect(Collectors.toSet()));
+        strategy.buildAxiomValuesFromInstance(p, gatherer);
+        final AxiomValueDescriptor axiomDescriptor = OOMTestUtils.getAxiomValueDescriptor(gatherer);
+        final URI property =
+                URI.create(OWLClassP.getIndividualUrlsField().getAnnotation(OWLObjectProperty.class).iri());
+        final List<Value<?>>
+                values = axiomDescriptor.getAssertionValues(Assertion.createObjectPropertyAssertion(property, false));
+        assertEquals(p.getIndividualUrls().size(), values.size());
+        for (Value<?> v : values) {
+            assertTrue(v.getValue() instanceof NamedResource);
+            assertTrue(p.getIndividualUrls().contains(new URL(v.stringValue())));
+        }
     }
 }

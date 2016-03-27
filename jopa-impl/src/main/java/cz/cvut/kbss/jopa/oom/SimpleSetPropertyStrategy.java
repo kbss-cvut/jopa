@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,21 +14,22 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
+
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.model.Value;
-
 class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
 
-    public SimpleSetPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att,
-                                     Descriptor descriptor, EntityMappingHelper mapper) {
+    public SimpleSetPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att, Descriptor descriptor,
+                                     EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
     }
 
@@ -37,11 +38,10 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
         final Object value = extractFieldValueFromInstance(instance);
         assert value instanceof Collection || value == null;
         final Collection<?> valueCollection = (Collection<?>) value;
-        extractValues(instance, valueCollection, valueBuilder);
+        extractValues(valueCollection, valueBuilder);
     }
 
-    private <T> void extractValues(X instance, Collection<T> valueCollection,
-                                   AxiomValueGatherer valueBuilder) {
+    private <T> void extractValues(Collection<T> valueCollection, AxiomValueGatherer valueBuilder) {
         if (valueCollection == null) {
             valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
             return;
@@ -51,9 +51,14 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
             if (val == null) {
                 continue;
             }
-            final EntityType<T> et = (EntityType<T>) mapper.getEntityType(val.getClass());
-            final URI id = resolveValueIdentifier(val, et);
-            cascadeResolver.resolveFieldCascading(attribute, val, getAttributeContext());
+            final URI id;
+            if (IdentifierTransformer.isValidIdentifierType(pluralAtt.getBindableJavaType())) {
+                id = IdentifierTransformer.valueAsUri(val);
+            } else {
+                final EntityType<T> et = (EntityType<T>) mapper.getEntityType(val.getClass());
+                id = resolveValueIdentifier(val, et);
+                cascadeResolver.resolveFieldCascading(attribute, val, getAttributeContext());
+            }
             assertionValues.add(new Value<>(NamedResource.create(id)));
         }
         valueBuilder.addValues(createAssertion(), assertionValues, getAttributeContext());
