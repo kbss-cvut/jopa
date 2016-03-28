@@ -394,4 +394,20 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
         assertEquals(toUpdate.getProperties(), res.getProperties());
     }
+
+    @Test
+    public void testRemoveAllValuesOfPluralPlainIdentifierObjectProperty() throws Exception {
+        logger.debug("Test: remove all values of a plural plain identifier object property.");
+        this.em = getEntityManager("RemoveAllValuesOfPluralPlainIdentifierOP", false);
+        entityP.setIndividuals(Generators.createUrls());
+        persist(entityP);
+
+        final OWLClassP toUpdate = em.find(OWLClassP.class, entityP.getUri());
+        em.getTransaction().begin();
+        toUpdate.getIndividuals().clear();
+        em.getTransaction().commit();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertNull(res.getIndividuals());
+    }
 }

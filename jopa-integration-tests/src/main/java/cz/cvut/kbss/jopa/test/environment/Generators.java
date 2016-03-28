@@ -14,8 +14,11 @@ package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.test.OWLClassA;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Generators of test data.
@@ -155,5 +158,15 @@ public abstract class Generators {
         types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX");
         types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassZ");
         return types;
+    }
+
+    public static Set<URL> createUrls() {
+        return Generators.createSimpleList().stream().map(a -> {
+            try {
+                return a.getUri().toURL();
+            } catch (MalformedURLException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }).collect(Collectors.toSet());
     }
 }

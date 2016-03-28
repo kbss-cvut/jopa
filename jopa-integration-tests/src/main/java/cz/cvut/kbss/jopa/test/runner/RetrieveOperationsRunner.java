@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -159,5 +160,22 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertNotEquals(properties, p.getProperties());
         em.refresh(p);
         assertEquals(properties, p.getProperties());
+    }
+
+    @Test
+    public void plainIdentifierAttributeIsAlwaysLoadedEagerly() throws Exception {
+        logger.debug("Test: plain identifier attributes are loaded eagerly.");
+        this.em = getEntityManager("PlainIdentifiersAreLoadedEagerly", false);
+        entityP.setIndividualUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#plainIdentifier"));
+        entityP.setIndividuals(Collections.singleton(new URL("http://krizik.felk.cvut.cz/ontologies/jopa#url")));
+        persist(entityP);
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        final Field singularField = OWLClassP.class.getDeclaredField("individualUri");
+        singularField.setAccessible(true);
+        assertNotNull(singularField.get(res));
+        final Field pluralField = OWLClassP.class.getDeclaredField("individuals");
+        pluralField.setAccessible(true);
+        assertNotNull(pluralField.get(res));
     }
 }

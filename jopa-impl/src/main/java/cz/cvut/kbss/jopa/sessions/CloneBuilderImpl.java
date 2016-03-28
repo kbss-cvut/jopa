@@ -26,13 +26,14 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
 
 public class CloneBuilderImpl implements CloneBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(CloneBuilderImpl.class);
 
-    private static final Set<Class<?>> WRAPPER_TYPES = getWrapperTypes();
+    private static final Set<Class<?>> IMMUTABLE_TYPES = getImmutableTypes();
 
     // Contains entities that are already cloned, so that we don't clone them again
     private final RepositoryMap visitedEntities;
@@ -85,7 +86,7 @@ public class CloneBuilderImpl implements CloneBuilder {
             // Register visited object before populating attributes to prevent endless cloning cycles
             putVisitedEntity(descriptor, original, clone);
         }
-        if (!builder.populatesAttributes() && !isPrimitiveOrString(original.getClass())) {
+        if (!builder.populatesAttributes() && !isImmutable(original.getClass())) {
             populateAttributes(original, clone, descriptor);
         }
         return clone;
@@ -109,7 +110,7 @@ public class CloneBuilderImpl implements CloneBuilder {
             }
             final Class<?> origValueClass = origVal.getClass();
             Object clonedValue;
-            if (isPrimitiveOrString(origValueClass)) {
+            if (isImmutable(origValueClass)) {
                 // The field is an immutable type
                 clonedValue = origVal;
             } else if (origVal instanceof Collection || origVal instanceof Map) {
@@ -151,17 +152,15 @@ public class CloneBuilderImpl implements CloneBuilder {
     }
 
     /**
-     * Check if the given class is of primitive, String or Enum type. This is used by the {@link
+     * Check if the given class is an immutable type. This is used by the {@link
      * #populateAttributes(Object, Object, Descriptor)} method. If this returns true, the populateAttributes can simply
      * assign the value.
      *
-     * @param cls Class<?>
-     * @return boolean
+     * @param cls the class to check
+     * @return Whether the class represents immutable objects
      */
-    public static boolean isPrimitiveOrString(final Class<?> cls) {
-        return cls.isPrimitive() || String.class.equals(cls) || cls.isEnum()
-                || WRAPPER_TYPES.contains(cls) || URI.class.equals(cls);
-        // TODO Check that URI is effectively final. Also consider adding URL here
+    public static boolean isImmutable(final Class<?> cls) {
+        return cls.isPrimitive() || cls.isEnum()|| IMMUTABLE_TYPES.contains(cls);
     }
 
     @Override
@@ -171,7 +170,7 @@ public class CloneBuilderImpl implements CloneBuilder {
             for (String att : changes.keySet()) {
                 ChangeRecord change = changes.get(att);
                 Field f = original.getClass().getDeclaredField(att);
-                if (isPrimitiveOrString(f.getType())) {
+                if (isImmutable(f.getType())) {
                     EntityPropertiesUtils.setFieldValue(f, original, change.getNewValue());
                     continue;
                 }
@@ -232,7 +231,7 @@ public class CloneBuilderImpl implements CloneBuilder {
         return f.getAnnotation(Inferred.class) != null;
     }
 
-    private static Set<Class<?>> getWrapperTypes() {
+    private static Set<Class<?>> getImmutableTypes() {
         HashSet<Class<?>> ret = new HashSet<>();
         ret.add(Boolean.class);
         ret.add(Character.class);
@@ -243,6 +242,9 @@ public class CloneBuilderImpl implements CloneBuilder {
         ret.add(Float.class);
         ret.add(Double.class);
         ret.add(Void.class);
+        ret.add(String.class);
+        ret.add(URI.class);
+        ret.add(URL.class);
         return ret;
     }
 

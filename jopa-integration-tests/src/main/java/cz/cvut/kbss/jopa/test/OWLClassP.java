@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.test;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,6 +15,9 @@ public class OWLClassP {
 
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasIndividual")
     private URI individualUri;
+
+    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasOtherIndividual")
+    private Set<URL> individuals;
 
     @Properties(fetchType = FetchType.EAGER)
     private Map<URI, Set<Object>> properties;
@@ -32,6 +36,14 @@ public class OWLClassP {
 
     public void setIndividualUri(URI individualUri) {
         this.individualUri = individualUri;
+    }
+
+    public Set<URL> getIndividuals() {
+        return individuals;
+    }
+
+    public void setIndividuals(Set<URL> individuals) {
+        this.individuals = individuals;
     }
 
     public Map<URI, Set<Object>> getProperties() {

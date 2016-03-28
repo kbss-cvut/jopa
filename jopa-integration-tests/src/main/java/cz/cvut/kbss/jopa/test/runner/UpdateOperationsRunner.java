@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -754,5 +755,25 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
         assertNull(result.getIndividualUri());
+    }
+
+    @Test
+    public void testUpdatePluralPlainLiteralObjectPropertyAttribute() throws Exception {
+        logger.debug("Test: update plural plain literal object property attribute.");
+        this.em = getEntityManager("UpdatePluralPlainLiteralObjectPropertyValue", true);
+        entityP.setIndividuals(Generators.createUrls());
+        persist(entityP);
+
+        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        em.getTransaction().begin();
+        final URL added = new URL("http://krizik.felk.cvut.cz/ontologies/jopa#added");
+        final URL removed = entityP.getIndividuals().iterator().next();
+        update.getIndividuals().add(added);
+        update.getIndividuals().remove(removed);
+        em.getTransaction().commit();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertNotNull(res);
+        assertEquals(update.getIndividuals(), res.getIndividuals());
     }
 }

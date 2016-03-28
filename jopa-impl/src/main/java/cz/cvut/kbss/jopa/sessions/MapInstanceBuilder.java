@@ -109,9 +109,9 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
             c.setAccessible(true);
         }
         Entry<?, ?> e = orig.entrySet().iterator().next();
-        Object key = CloneBuilderImpl.isPrimitiveOrString(e.getKey().getClass()) ? e.getKey()
+        Object key = CloneBuilderImpl.isImmutable(e.getKey().getClass()) ? e.getKey()
                 : cloneObject(cloneOwner, field, e.getKey(), repository);
-        Object value = CloneBuilderImpl.isPrimitiveOrString(e.getValue().getClass()) ? e.getValue()
+        Object value = CloneBuilderImpl.isImmutable(e.getValue().getClass()) ? e.getValue()
                 : cloneObject(cloneOwner, field, e.getValue(), repository);
         if (value instanceof Collection || value instanceof Map) {
             value = builder.createIndirectCollection(value, cloneOwner, field);
@@ -138,8 +138,8 @@ class MapInstanceBuilder extends AbstractInstanceBuilder {
         }
         Map<Object, Object> m = (Map<Object, Object>) target;
         Entry<?, ?> tmp = source.entrySet().iterator().next();
-        boolean keyPrimitive = CloneBuilderImpl.isPrimitiveOrString(tmp.getKey().getClass());
-        boolean valuePrimitive = CloneBuilderImpl.isPrimitiveOrString(tmp.getValue().getClass());
+        boolean keyPrimitive = CloneBuilderImpl.isImmutable(tmp.getKey().getClass());
+        boolean valuePrimitive = CloneBuilderImpl.isImmutable(tmp.getValue().getClass());
         for (Entry<?, ?> e : source.entrySet()) {
             Object key;
             Object value;

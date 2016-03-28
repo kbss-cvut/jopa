@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -365,5 +366,21 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
         assertNotNull(res);
         assertEquals(value, res.getIndividualUri());
+    }
+
+    @Test
+    public void testPersistInstanceWithPluralObjectPropertyAttributeRepresentedByUrls() {
+        logger.debug("Test: persist entity with plain identifiers (URL) object property values.");
+        this.em = getEntityManager("PersistInstanceWithPluralIdentifierObjectPropertyValue", false);
+        final Set<URL> urls = Generators.createUrls();
+        entityP.setIndividuals(urls);
+        em.getTransaction().begin();
+        em.persist(entityP);
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertNotNull(res);
+        assertEquals(urls, res.getIndividuals());
     }
 }

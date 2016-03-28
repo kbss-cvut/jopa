@@ -48,7 +48,7 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
             return null;
         }
         final Class<?> javaClass = original.getClass();
-        if (CloneBuilderImpl.isPrimitiveOrString(javaClass)) {
+        if (CloneBuilderImpl.isImmutable(javaClass)) {
             return original;
         }
         Object newInstance = buildNewInstanceUsingDefaultConstructor(javaClass);

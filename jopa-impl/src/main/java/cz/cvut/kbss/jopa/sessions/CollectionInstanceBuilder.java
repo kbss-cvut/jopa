@@ -75,7 +75,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             Constructor<?> c;
             Object element = container.iterator().next();
             Object[] params = new Object[1];
-            if (!CloneBuilderImpl.isPrimitiveOrString(element.getClass())) {
+            if (!CloneBuilderImpl.isImmutable(element.getClass())) {
                 element = builder.buildClone(element, repository);
                 if (element instanceof Collection || element instanceof Map) {
                     element = builder.createIndirectCollection(element, cloneOwner, field);
@@ -182,7 +182,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                 tg.add(null);
                 continue;
             }
-            if (CloneBuilderImpl.isPrimitiveOrString(obj.getClass())) {
+            if (CloneBuilderImpl.isImmutable(obj.getClass())) {
                 tg.addAll(source);
                 break;
             }
