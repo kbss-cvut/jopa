@@ -59,7 +59,7 @@ public class ParameterValueTest {
     public void createIntegerValue() {
         final ParameterValue value = ParameterValue.create(117);
         assertEquals(117, value.getValue());
-        assertEquals("\"117\"^^<http://www.w3.org/2001/XMLSchema#integer>", value.getQueryString());
+        assertEquals("\"117\"^^<http://www.w3.org/2001/XMLSchema#int>", value.getQueryString());
     }
 
     @Test

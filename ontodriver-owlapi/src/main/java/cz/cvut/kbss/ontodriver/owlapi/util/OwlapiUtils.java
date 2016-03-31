@@ -45,7 +45,8 @@ public class OwlapiUtils {
     public static OWLLiteral createOWLLiteralFromValue(Object value, OWLDataFactory dataFactory, String lang) {
         Objects.requireNonNull(value);
         if (value instanceof Integer) {
-            return dataFactory.getOWLLiteral((Integer) value);
+            // Java implementations map int/Integer to xsd:int, because xsd:integer is unbounded, whereas xsd:int is 32-bit signed, same as Java
+            return dataFactory.getOWLLiteral(value.toString(), OWL2Datatype.XSD_INT);
         } else if (value instanceof Long) {
             return dataFactory.getOWLLiteral(value.toString(), OWL2Datatype.XSD_LONG);
         } else if (value instanceof Boolean) {

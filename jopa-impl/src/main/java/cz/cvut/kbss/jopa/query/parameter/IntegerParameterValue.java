@@ -33,6 +33,6 @@ class IntegerParameterValue extends ParameterValue {
 
     @Override
     public String getQueryString() {
-        return "\"" + value + "\"^^<" + CommonVocabulary.XSD_INTEGER + ">";
+        return "\"" + value + "\"^^<" + CommonVocabulary.XSD_INT + ">";
     }
 }

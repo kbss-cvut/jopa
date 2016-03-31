@@ -39,7 +39,7 @@ public class CommonVocabulary {
     /**
      * Integer XML Schema data type.
      */
-    public static final String XSD_INTEGER = "http://www.w3.org/2001/XMLSchema#integer";
+    public static final String XSD_INT = "http://www.w3.org/2001/XMLSchema#int";
 
     /**
      * Long XML Schema data type.
