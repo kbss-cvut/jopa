@@ -6,7 +6,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.7.4</version>
+        <version>0.7.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>jopa-integration-tests-sesame</artifactId>
