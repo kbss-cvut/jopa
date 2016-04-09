@@ -17,6 +17,7 @@ import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
@@ -507,16 +508,20 @@ public class MetamodelFactory {
     }
 
     public static void initOWLClassPMock(EntityType<OWLClassP> et, PropertiesSpecification props,
-                                         SingularAttribute uriAtt, PluralAttribute urlsAtt, Identifier idP) throws
-                                                                                                            Exception {
+                                         SingularAttribute uriAtt, PluralAttribute urlsAtt,
+                                         ListAttribute simpleListAtt, ListAttribute refListAtt, Identifier idP) throws
+                                                                                                                Exception {
         when(et.getIdentifier()).thenReturn(idP);
         when(idP.getJavaField()).thenReturn(OWLClassP.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassP.getClassIri()));
         when(et.getFieldSpecifications())
                 .thenReturn(
-                        new HashSet<>(Arrays.<FieldSpecification<? super OWLClassP, ?>>asList(uriAtt, urlsAtt, props)));
+                        new HashSet<>(
+                                Arrays.<FieldSpecification<? super OWLClassP, ?>>asList(uriAtt, urlsAtt, simpleListAtt,
+                                        refListAtt, props)));
         when(et.getAttributes())
-                .thenReturn(new HashSet<>(Arrays.<Attribute<? super OWLClassP, ?>>asList(uriAtt, urlsAtt)));
+                .thenReturn(new HashSet<>(
+                        Arrays.<Attribute<? super OWLClassP, ?>>asList(uriAtt, urlsAtt, simpleListAtt, refListAtt)));
         when(et.getFieldSpecification(props.getName())).thenReturn(props);
         when(et.getProperties()).thenReturn(props);
         when(props.getJavaField()).thenReturn(OWLClassP.getPropertiesField());
@@ -544,5 +549,39 @@ public class MetamodelFactory {
         when(urlsAtt.getBindableJavaType()).thenReturn(URL.class);
         when(urlsAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassP.getIndividualUrlsField().getAnnotation(OWLObjectProperty.class).iri()));
+        when(simpleListAtt.getName()).thenReturn(OWLClassP.getSimpleListField().getName());
+        when(simpleListAtt.getJavaField()).thenReturn(OWLClassP.getSimpleListField());
+        when(et.getFieldSpecification(OWLClassP.getSimpleListField().getName())).thenReturn(simpleListAtt);
+        when(simpleListAtt.isCollection()).thenReturn(true);
+        when(simpleListAtt.getDeclaringType()).thenReturn(et);
+        when(simpleListAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.LIST);
+        when(simpleListAtt.getBindableJavaType()).thenReturn(URI.class);
+        when(simpleListAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(simpleListAtt.getSequenceType()).thenReturn(SequenceType.simple);
+        final Field simpleListField = OWLClassP.getSimpleListField();
+        when(simpleListAtt.getIRI())
+                .thenReturn(IRI.create(simpleListField.getAnnotation(OWLObjectProperty.class).iri()));
+        when(simpleListAtt.getOWLListClass())
+                .thenReturn(IRI.create(simpleListField.getAnnotation(Sequence.class).ClassOWLListIRI()));
+        when(simpleListAtt.getOWLObjectPropertyHasNextIRI())
+                .thenReturn(IRI.create(simpleListField.getAnnotation(Sequence.class).ObjectPropertyHasNextIRI()));
+
+        when(refListAtt.getName()).thenReturn(OWLClassP.getReferencedListField().getName());
+        when(refListAtt.getJavaField()).thenReturn(OWLClassP.getReferencedListField());
+        when(et.getFieldSpecification(OWLClassP.getReferencedListField().getName())).thenReturn(refListAtt);
+        when(refListAtt.isCollection()).thenReturn(true);
+        when(refListAtt.getDeclaringType()).thenReturn(et);
+        when(refListAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.LIST);
+        when(refListAtt.getBindableJavaType()).thenReturn(URI.class);
+        when(refListAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(refListAtt.getSequenceType()).thenReturn(SequenceType.referenced);
+        final Field refListField = OWLClassP.getReferencedListField();
+        when(refListAtt.getIRI()).thenReturn(IRI.create(refListField.getAnnotation(OWLObjectProperty.class).iri()));
+        when(refListAtt.getOWLListClass())
+                .thenReturn(IRI.create(refListField.getAnnotation(Sequence.class).ClassOWLListIRI()));
+        when(refListAtt.getOWLObjectPropertyHasNextIRI())
+                .thenReturn(IRI.create(refListField.getAnnotation(Sequence.class).ObjectPropertyHasNextIRI()));
+        when(refListAtt.getOWLPropertyHasContentsIRI())
+                .thenReturn(IRI.create(refListField.getAnnotation(Sequence.class).ObjectPropertyHasContentsIRI()));
     }
 }

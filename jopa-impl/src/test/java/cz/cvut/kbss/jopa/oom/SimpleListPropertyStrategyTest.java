@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
+import cz.cvut.kbss.jopa.environment.OWLClassP;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
@@ -40,7 +41,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class SimpleListPropertyStrategyTest extends
-        ListPropertyStrategyTestBase {
+                                            ListPropertyStrategyTestBase {
 
     private ListAttribute<OWLClassC, OWLClassA> simpleList;
 
@@ -51,38 +52,20 @@ public class SimpleListPropertyStrategyTest extends
         MockitoAnnotations.initMocks(this);
         super.setUp();
         this.simpleList = mocks.forOwlClassC().simpleListAtt();
-        this.strategy = new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(), simpleList,
-                descriptor, mapperMock);
+        this.strategy =
+                new SimpleListPropertyStrategy<>(mocks.forOwlClassC().entityType(), simpleList, descriptor, mapperMock);
         strategy.setCascadeResolver(cascadeResolverMock);
     }
 
     @Test
     public void buildsInstanceFieldFromAxioms() throws Exception {
         final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(PK),
-                Assertion.createObjectPropertyAssertion(simpleList.getIRI()
-                                                                  .toURI(), false), new Value<>(
+                Assertion.createObjectPropertyAssertion(simpleList.getIRI().toURI(), false), new Value<>(
                 URI.create("http://someSequence.org")));
-        final Collection<Axiom<NamedResource>> axioms = new ArrayList<>();
-        final List<OWLClassA> entitiesA = new ArrayList<>();
-        URI previous = PK;
-        for (int i = 0; i < 5; i++) {
-            final URI uri = URI.create("http://entity" + i);
-            final Axiom<NamedResource> a = new AxiomImpl<>(
-                    NamedResource.create(previous),
-                    Assertion.createObjectPropertyAssertion(simpleList
-                            .getOWLObjectPropertyHasNextIRI().toURI(), false),
-                    new Value<>(NamedResource.create(uri)));
-            axioms.add(a);
-            final OWLClassA entityA = new OWLClassA();
-            entityA.setUri(uri);
-            entitiesA.add(entityA);
-            when(
-                    mapperMock.getEntityFromCacheOrOntology(OWLClassA.class,
-                            uri, descriptor)).thenReturn(entityA);
-            previous = uri;
-        }
-        when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class)))
-                .thenReturn(axioms);
+        final List<OWLClassA> entitiesA = generateList();
+        final Collection<Axiom<NamedResource>> axioms = buildAxiomsForList(simpleList, entitiesA);
+
+        when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class))).thenReturn(axioms);
 
         strategy.addValueFromAxiom(ax);
         final OWLClassC instance = new OWLClassC();
@@ -91,6 +74,45 @@ public class SimpleListPropertyStrategyTest extends
         assertEquals(entitiesA.size(), instance.getSimpleList().size());
         for (OWLClassA a : entitiesA) {
             assertTrue(instance.getSimpleList().contains(a));
+        }
+    }
+
+    private Collection<Axiom<NamedResource>> buildAxiomsForList(ListAttribute<?, ?> la, List<OWLClassA> lst) {
+        final Collection<Axiom<NamedResource>> axioms = new ArrayList<>();
+        URI previous = PK;
+        for (OWLClassA item : lst) {
+            final Axiom<NamedResource> a = new AxiomImpl<>(
+                    NamedResource.create(previous),
+                    Assertion.createObjectPropertyAssertion(la.getOWLObjectPropertyHasNextIRI().toURI(), false),
+                    new Value<>(NamedResource.create(item.getUri())));
+            axioms.add(a);
+            when(
+                    mapperMock.getEntityFromCacheOrOntology(OWLClassA.class,
+                            item.getUri(), descriptor)).thenReturn(item);
+            previous = item.getUri();
+        }
+        return axioms;
+    }
+
+    @Test
+    public void buildsInstanceFieldOfPlainIdentifiersFromAxioms() throws Exception {
+        final ListAttribute<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
+        final SimpleListPropertyStrategy<OWLClassP> strategy =
+                new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
+        final Axiom<URI> ax = new AxiomImpl<>(NamedResource.create(PK),
+                Assertion.createObjectPropertyAssertion(simpleList.getIRI().toURI(), false), new Value<>(
+                URI.create("http://someSequence.org")));
+        final List<OWLClassA> as = generateList();
+        final Collection<Axiom<NamedResource>> axioms = buildAxiomsForList(simpleList, as);
+        when(mapperMock.loadSimpleList(any(SimpleListDescriptor.class))).thenReturn(axioms);
+
+        strategy.addValueFromAxiom(ax);
+        final OWLClassP instance = new OWLClassP();
+        instance.setUri(PK);
+        strategy.buildInstanceFieldValue(instance);
+        assertEquals(as.size(), instance.getSimpleList().size());
+        for (int i = 0; i < as.size(); i++) {
+            assertEquals(as.get(i).getUri(), instance.getSimpleList().get(i));
         }
     }
 
@@ -122,11 +144,9 @@ public class SimpleListPropertyStrategyTest extends
         final OWLClassC c = new OWLClassC();
         c.setUri(PK);
         c.setSimpleList(generateList());
-        final AxiomValueGatherer builder = new AxiomValueGatherer(
-                NamedResource.create(PK), null);
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
         strategy.buildAxiomValuesFromInstance(c, builder);
-        final List<SimpleListValueDescriptor> descriptors = OOMTestUtils
-                .getSimpleListValueDescriptors(builder);
+        final List<SimpleListValueDescriptor> descriptors = OOMTestUtils.getSimpleListValueDescriptors(builder);
         assertEquals(1, descriptors.size());
         final SimpleListValueDescriptor res = descriptors.get(0);
         assertEquals(PK, res.getListOwner().getIdentifier());
@@ -175,8 +195,7 @@ public class SimpleListPropertyStrategyTest extends
         final OWLClassC c = new OWLClassC();
         c.setUri(PK);
         c.setSimpleList(null);
-        final AxiomValueGatherer builder = new AxiomValueGatherer(
-                NamedResource.create(PK), null);
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
         strategy.buildAxiomValuesFromInstance(c, builder);
         final List<SimpleListValueDescriptor> descriptors = OOMTestUtils
                 .getSimpleListValueDescriptors(builder);
@@ -192,5 +211,23 @@ public class SimpleListPropertyStrategyTest extends
         assertTrue(res.getValues().isEmpty());
         verify(cascadeResolverMock, never()).resolveFieldCascading(
                 eq(simpleList), any(Object.class), eq((URI) null));
+    }
+
+    @Test
+    public void extractsValuesFromListOfPlainIdentifiersForPersist() throws Exception {
+        final OWLClassP p = new OWLClassP();
+        p.setUri(PK);
+        p.setSimpleList(generateListOfIdentifiers());
+        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
+        final ListAttribute<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
+        final SimpleListPropertyStrategy<OWLClassP> strategy =
+                new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
+
+        strategy.buildAxiomValuesFromInstance(p, builder);
+        final SimpleListValueDescriptor valueDescriptor = OOMTestUtils.getSimpleListValueDescriptors(builder).get(0);
+        assertEquals(p.getSimpleList().size(), valueDescriptor.getValues().size());
+        for (int i = 0; i < p.getSimpleList().size(); i++) {
+            assertEquals(p.getSimpleList().get(i), valueDescriptor.getValues().get(i).getIdentifier());
+        }
     }
 }

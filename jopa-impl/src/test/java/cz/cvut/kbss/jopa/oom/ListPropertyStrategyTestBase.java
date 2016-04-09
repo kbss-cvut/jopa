@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.when;
 
@@ -51,5 +52,9 @@ class ListPropertyStrategyTestBase {
             lst.add(a);
         }
         return lst;
+    }
+
+    static List<URI> generateListOfIdentifiers() {
+        return generateList().stream().map(OWLClassA::getUri).collect(Collectors.toList());
     }
 }

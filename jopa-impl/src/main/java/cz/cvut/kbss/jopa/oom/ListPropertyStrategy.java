@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.descriptor.ListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -48,12 +49,18 @@ abstract class ListPropertyStrategy<L extends ListDescriptor, V extends ListValu
         if (list == null) {
             return;
         }
-        final Class<K> elemType = (Class<K>) listAttribute.getBindableJavaType();
-        final EntityType<K> valueType = mapper.getEntityType(elemType);
-        for (K item : list) {
-            final URI itemUri = resolveValueIdentifier(item, valueType);
-            cascadeResolver.resolveFieldCascading(pluralAtt, item, getAttributeContext());
-            listDescriptor.addValue(NamedResource.create(itemUri));
+        if (IdentifierTransformer.isValidIdentifierType(pluralAtt.getBindableJavaType())) {
+            for (K item : list) {
+                listDescriptor.addValue(NamedResource.create(IdentifierTransformer.valueAsUri(item)));
+            }
+        } else {
+            final Class<K> elemType = (Class<K>) listAttribute.getBindableJavaType();
+            final EntityType<K> valueType = mapper.getEntityType(elemType);
+            for (K item : list) {
+                final URI itemUri = resolveValueIdentifier(item, valueType);
+                cascadeResolver.resolveFieldCascading(pluralAtt, item, getAttributeContext());
+                listDescriptor.addValue(NamedResource.create(itemUri));
+            }
         }
     }
 

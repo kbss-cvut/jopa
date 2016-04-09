@@ -47,19 +47,23 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
             return;
         }
         final Set<Value<?>> assertionValues = new HashSet<>(valueCollection.size());
-        for (T val : valueCollection) {
-            if (val == null) {
-                continue;
+        if (IdentifierTransformer.isValidIdentifierType(pluralAtt.getBindableJavaType())) {
+            for (T val : valueCollection) {
+                if (val == null) {
+                    continue;
+                }
+                assertionValues.add(new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(val))));
             }
-            final URI id;
-            if (IdentifierTransformer.isValidIdentifierType(pluralAtt.getBindableJavaType())) {
-                id = IdentifierTransformer.valueAsUri(val);
-            } else {
-                final EntityType<T> et = (EntityType<T>) mapper.getEntityType(val.getClass());
-                id = resolveValueIdentifier(val, et);
+        } else {
+            final EntityType<T> et = (EntityType<T>) mapper.getEntityType(pluralAtt.getBindableJavaType());
+            for (T val : valueCollection) {
+                if (val == null) {
+                    continue;
+                }
+                final URI id = resolveValueIdentifier(val, et);
                 cascadeResolver.resolveFieldCascading(attribute, val, getAttributeContext());
+                assertionValues.add(new Value<>(NamedResource.create(id)));
             }
-            assertionValues.add(new Value<>(NamedResource.create(id)));
         }
         valueBuilder.addValues(createAssertion(), assertionValues, getAttributeContext());
     }

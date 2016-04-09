@@ -157,6 +157,10 @@ public class MetamodelMocks {
     @Mock
     private PluralAttribute<OWLClassP, Set, URL> pUrlsAtt;
     @Mock
+    private ListAttribute<OWLClassP, URI> pSimpleList;
+    @Mock
+    private ListAttribute<OWLClassP, URI> pReferencedList;
+    @Mock
     private PropertiesSpecification<OWLClassP, Map, URI, Object> pProperties;
 
     public MetamodelMocks() throws Exception {
@@ -175,7 +179,7 @@ public class MetamodelMocks {
         MetamodelFactory
                 .initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt, idM);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
-        MetamodelFactory.initOWLClassPMock(etP, pProperties, pUriAtt, pUrlsAtt, idP);
+        MetamodelFactory.initOWLClassPMock(etP, pProperties, pUriAtt, pUrlsAtt, pSimpleList, pReferencedList, idP);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -489,6 +493,14 @@ public class MetamodelMocks {
 
         public PluralAttribute<OWLClassP, Set, URL> pUrlsAttribute() {
             return MetamodelMocks.this.pUrlsAtt;
+        }
+
+        public ListAttribute<OWLClassP, URI> pSimpleListAttribute() {
+            return MetamodelMocks.this.pSimpleList;
+        }
+
+        public ListAttribute<OWLClassP, URI> pReferencedListAttribute() {
+            return MetamodelMocks.this.pReferencedList;
         }
 
         public PropertiesSpecification<OWLClassP, Map, URI, Object> properties() {

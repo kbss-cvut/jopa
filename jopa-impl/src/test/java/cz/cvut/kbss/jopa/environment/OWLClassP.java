@@ -1,13 +1,11 @@
 package cz.cvut.kbss.jopa.environment;
 
-import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.jopa.model.annotations.Properties;
+import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,6 +20,14 @@ public class OWLClassP {
 
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasIndividual")
     private Set<URL> individualUrls;
+
+    @Sequence(type = SequenceType.simple)
+    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence")
+    private List<URI> simpleList;
+
+    @Sequence
+    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence")
+    private List<URI> referencedList;
 
     @Properties
     private Map<URI, Set<Object>> properties;
@@ -50,6 +56,22 @@ public class OWLClassP {
         this.individualUrls = individualUrls;
     }
 
+    public List<URI> getSimpleList() {
+        return simpleList;
+    }
+
+    public void setSimpleList(List<URI> simpleList) {
+        this.simpleList = simpleList;
+    }
+
+    public List<URI> getReferencedList() {
+        return referencedList;
+    }
+
+    public void setReferencedList(List<URI> referencedList) {
+        this.referencedList = referencedList;
+    }
+
     public Map<URI, Set<Object>> getProperties() {
         return properties;
     }
@@ -76,5 +98,13 @@ public class OWLClassP {
 
     public static Field getPropertiesField() throws Exception {
         return OWLClassP.class.getDeclaredField("properties");
+    }
+
+    public static Field getSimpleListField() throws Exception {
+        return OWLClassP.class.getDeclaredField("simpleList");
+    }
+
+    public static Field getReferencedListField() throws Exception {
+        return OWLClassP.class.getDeclaredField("referencedList");
     }
 }
