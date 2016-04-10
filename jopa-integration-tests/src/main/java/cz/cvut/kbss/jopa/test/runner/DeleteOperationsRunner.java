@@ -18,7 +18,6 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
-import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -131,7 +130,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         entityC.getSimpleList().forEach(em::persist);
         em.getTransaction().commit();
 
-        final int randIndex = TestEnvironmentUtils.randomInt(size);
+        final int randIndex = Generators.randomInt(size);
         final OWLClassA a = em.find(OWLClassA.class, entityC.getSimpleList().get(randIndex).getUri());
         assertNotNull(a);
         final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
@@ -166,7 +165,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         entityC.getReferencedList().forEach(em::persist);
         em.getTransaction().commit();
 
-        final int randIndex = TestEnvironmentUtils.randomInt(size);
+        final int randIndex = Generators.randomInt(size);
         final OWLClassA a = em.find(OWLClassA.class, entityC.getReferencedList().get(randIndex).getUri());
         assertNotNull(a);
         final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
@@ -363,7 +362,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
             final Iterator<Object> it = set.iterator();
             while (it.hasNext()) {
                 it.next();
-                if (TestEnvironmentUtils.randomBoolean()) {
+                if (Generators.randomBoolean()) {
                     it.remove();
                 }
             }
@@ -385,7 +384,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         em.detach(toUpdate);
         // Copy the keys to prevent concurrent modification
         final Set<URI> keys = new HashSet<>(toUpdate.getProperties().keySet());
-        keys.stream().filter(k -> TestEnvironmentUtils.randomBoolean())
+        keys.stream().filter(k -> Generators.randomBoolean())
             .forEach(key -> toUpdate.getProperties().remove(key));
         em.getTransaction().begin();
         em.merge(toUpdate);

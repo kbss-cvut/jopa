@@ -13,20 +13,9 @@
 package cz.cvut.kbss.jopa.test.environment;
 
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 public class TestEnvironmentUtils {
-
-    private static final Random RAND = new Random();
-
-    public static int randomInt(int max) {
-        return RAND.nextInt(max);
-    }
-
-    public static boolean randomBoolean() {
-        return RAND.nextBoolean();
-    }
 
     public static boolean arePropertiesEqual(Map<String, Set<String>> pOne,
                                              Map<String, Set<String>> pTwo) {

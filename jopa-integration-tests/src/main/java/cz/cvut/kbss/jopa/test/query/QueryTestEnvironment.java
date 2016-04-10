@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.OWLClassD;
 import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -204,7 +205,7 @@ public final class QueryTestEnvironment {
         final OWLClass ann = OWLClassA.class.getAnnotation(OWLClass.class);
         final List<OWLClassA> aa = new ArrayList<>(count);
         m.put(OWLClassA.class, aa);
-        int randomNum = TestEnvironmentUtils.randomInt(1000);
+        int randomNum = Generators.randomInt(1000);
         for (int i = 0; i < count; i++) {
             final OWLClassA a = new OWLClassA();
             a.setUri(URI.create(BASE_A + randomNum));
@@ -218,7 +219,7 @@ public final class QueryTestEnvironment {
         }
         final List<OWLClassB> bb = new ArrayList<>(count);
         m.put(OWLClassB.class, bb);
-        randomNum = TestEnvironmentUtils.randomInt(1000);
+        randomNum = Generators.randomInt(1000);
         for (int i = 0; i < count; i++) {
             final OWLClassB b = new OWLClassB();
             b.setUri(URI.create(BASE_B + randomNum));
@@ -240,7 +241,7 @@ public final class QueryTestEnvironment {
         // }
         final List<OWLClassD> dd = new ArrayList<>();
         m.put(OWLClassD.class, dd);
-        randomNum = TestEnvironmentUtils.randomInt(1000);
+        randomNum = Generators.randomInt(1000);
         for (int i = 0; i < count; i++) {
             final OWLClassD d = new OWLClassD();
             d.setUri(URI.create(BASE_D + randomNum));

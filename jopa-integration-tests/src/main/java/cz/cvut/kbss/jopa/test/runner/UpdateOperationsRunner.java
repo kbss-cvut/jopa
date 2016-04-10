@@ -355,7 +355,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassC c = em.find(OWLClassC.class, entityC.getUri());
         assertNotNull(c);
         em.getTransaction().begin();
-        final OWLClassA a = c.getReferencedList().get(3);
+        final OWLClassA a = c.getReferencedList().get(Generators.randomInt(c.getReferencedList().size()));
         c.getReferencedList().remove(a);
         em.getTransaction().commit();
 
@@ -775,5 +775,45 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
         assertNotNull(res);
         assertEquals(update.getIndividuals(), res.getIndividuals());
+    }
+
+    @Test
+    public void testUpdateSimpleListOfIdentifiersByAddingNewItems() throws Exception {
+        this.em = getEntityManager("UpdateSimpleListOfIdentifiersByAddingItems", true);
+        entityP.setSimpleList(Generators.createListOfIdentifiers());
+        persist(entityP);
+
+        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        em.getTransaction().begin();
+        for (int i = 0; i < Generators.randomPositiveInt(10); i++) {
+            final URI u = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Added-" + i);
+            // Insert at random position
+            update.getSimpleList().add(Generators.randomInt(update.getSimpleList().size()), u);
+        }
+        em.getTransaction().commit();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertNotNull(res);
+        assertEquals(update.getSimpleList(), res.getSimpleList());
+    }
+
+    @Test
+    public void testUpdateReferencedListByRemovingAndAddingItems() throws Exception {
+        this.em = getEntityManager("UpdateReferencedListByRemovingAndAddingItems", true);
+        entityP.setReferencedList(Generators.createListOfIdentifiers());
+        persist(entityP);
+
+        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        em.getTransaction().begin();
+        for (int i = 0; i < Generators.randomPositiveInt(10); i++) {
+            final URI u = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Added-" + i);
+            // We might even overwrite items set in previous iterations, but it does not matter. JOPA should handle it
+            update.getReferencedList().set(Generators.randomInt(update.getReferencedList().size()), u);
+        }
+        em.getTransaction().commit();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertNotNull(res);
+        assertEquals(update.getReferencedList(), res.getReferencedList());
     }
 }

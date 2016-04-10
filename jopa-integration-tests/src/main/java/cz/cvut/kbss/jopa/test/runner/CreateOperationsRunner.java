@@ -383,4 +383,32 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertNotNull(res);
         assertEquals(urls, res.getIndividuals());
     }
+
+    @Test
+    public void testPersistInstanceWithSimpleListOfIdentifiers() {
+        this.em = getEntityManager("PersistInstanceWithSimpleListOfIdentifiers", false);
+        entityP.setSimpleList(Generators.createListOfIdentifiers());
+        em.getTransaction().begin();
+        em.persist(entityP);
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertNotNull(res);
+        assertEquals(entityP.getSimpleList(), res.getSimpleList());
+    }
+
+    @Test
+    public void testPersistInstanceWithReferencedListOfIdentifiers() {
+        this.em = getEntityManager("PersistInstanceWithReferencedListOfIdentifiers", false);
+        entityP.setReferencedList(Generators.createListOfIdentifiers());
+        em.getTransaction().begin();
+        em.persist(entityP);
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertNotNull(res);
+        assertEquals(entityP.getReferencedList(), res.getReferencedList());
+    }
 }

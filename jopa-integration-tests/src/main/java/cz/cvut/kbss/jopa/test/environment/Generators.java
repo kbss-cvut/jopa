@@ -22,22 +22,22 @@ import java.util.stream.Collectors;
 
 /**
  * Generators of test data.
- *
- * @author ledvima1
  */
 public abstract class Generators {
 
-    private static final int DEFAULT_SIZE = 5;
+    private static final int DEFAULT_SIZE = 10;
     private static final Set<String> TYPES = getTypes();
 
     private static final String PROPERTY_URI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#property";
+
+    private static final Random RANDOM = new Random();
 
     private Generators() {
         // Private constructor
     }
 
     public static List<OWLClassA> createSimpleList() {
-        return createSimpleList(DEFAULT_SIZE);
+        return createSimpleList(randomPositiveInt(DEFAULT_SIZE));
     }
 
     public static List<OWLClassA> createSimpleList(int size) {
@@ -49,7 +49,7 @@ public abstract class Generators {
     }
 
     public static List<OWLClassA> createReferencedList() {
-        return createReferencedList(DEFAULT_SIZE);
+        return createReferencedList(randomPositiveInt(DEFAULT_SIZE));
     }
 
     public static List<OWLClassA> createReferencedList(int size) {
@@ -60,8 +60,12 @@ public abstract class Generators {
         return lst;
     }
 
+    public static List<URI> createListOfIdentifiers() {
+        return createSimpleList().stream().map(OWLClassA::getUri).collect(Collectors.toList());
+    }
+
     public static Set<OWLClassA> createSimpleSet() {
-        return createSimpleSet(DEFAULT_SIZE);
+        return createSimpleSet(randomPositiveInt(DEFAULT_SIZE));
     }
 
     public static Set<OWLClassA> createSimpleSet(int size) {
@@ -73,13 +77,13 @@ public abstract class Generators {
     }
 
     public static Map<String, Set<String>> createProperties() {
-        return createProperties(DEFAULT_SIZE);
+        return createProperties(randomPositiveInt(DEFAULT_SIZE));
     }
 
     public static Map<String, Set<String>> createProperties(int size) {
         assert size > 0;
         final Map<String, Set<String>> m = new HashMap<>(size);
-        int counter = TestEnvironmentUtils.randomInt(1000);
+        int counter = randomInt(1000);
         for (int i = 0; i < size; i++) {
             final Set<String> value = new HashSet<>(4);
             for (int j = 0; j < size; j++) {
@@ -94,13 +98,13 @@ public abstract class Generators {
     }
 
     public static Map<URI, Set<Object>> createTypedProperties() {
-        return createTypedProperties(DEFAULT_SIZE);
+        return createTypedProperties(randomPositiveInt(DEFAULT_SIZE));
     }
 
     public static Map<URI, Set<Object>> createTypedProperties(int size) {
         assert size > 0;
         final Map<URI, Set<Object>> props = new HashMap<>(size);
-        int counter = TestEnvironmentUtils.randomInt(1000);
+        int counter = randomInt(1000);
         for (int i = 0; i < size; i++) {
             final Set<Object> value = new HashSet<>();
             for (int j = 0; j < size; j++) {
@@ -120,7 +124,7 @@ public abstract class Generators {
     }
 
     private static Object generateRandomPropertyValue(int valueIndex, int propertyIndex) {
-        final int random = TestEnvironmentUtils.randomInt(6);
+        final int random = randomInt(6);
         switch (random) {
             case 0: // boolean
                 return valueIndex % 2 == 0;
@@ -141,7 +145,7 @@ public abstract class Generators {
 
     private static void generateInstances(Collection<OWLClassA> col, String uriBase, int size) {
         assert size > 0;
-        int counter = TestEnvironmentUtils.randomInt(1000);
+        int counter = randomInt(1000);
         for (int i = 0; i < size; i++) {
             final OWLClassA a = new OWLClassA();
             a.setUri(URI.create(uriBase + counter));
@@ -168,5 +172,27 @@ public abstract class Generators {
                 throw new IllegalArgumentException(e);
             }
         }).collect(Collectors.toSet());
+    }
+
+    public static int randomInt(int max) {
+        return RANDOM.nextInt(max);
+    }
+
+    /**
+     * Gets a random int greater than 0.
+     *
+     * @param max upper bound (exclusive)
+     * @return Random positive integer
+     */
+    public static int randomPositiveInt(int max) {
+        int rand;
+        do {
+            rand = RANDOM.nextInt(max);
+        } while (rand == 0);
+        return rand;
+    }
+
+    public static boolean randomBoolean() {
+        return RANDOM.nextBoolean();
     }
 }

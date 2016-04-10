@@ -22,11 +22,11 @@ public class OWLClassP {
     private Set<URL> individualUrls;
 
     @Sequence(type = SequenceType.simple)
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasSimpleSequence")
+    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#P-hasSimpleSequence")
     private List<URI> simpleList;
 
     @Sequence
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#C-hasReferencedSequence")
+    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#P-hasReferencedSequence")
     private List<URI> referencedList;
 
     @Properties
