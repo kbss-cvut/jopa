@@ -213,4 +213,32 @@ public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTest
         }
         updateAndCheck(updated);
     }
+
+    @Test
+    public void updatesByInsertingElementsMultipleTimesInOneTransaction() throws Exception {
+        final SimpleListValueDescriptor original = persistOriginalList();
+
+        final SimpleListValueDescriptor updatedFirst = initValues(0);
+        for (int i = 0; i < original.getValues().size(); i++) {
+            if (original.getValues().size() / 2 == i) {
+                updatedFirst.addValue(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/added"));
+            }
+            updatedFirst.addValue(original.getValues().get(i));
+        }
+
+        Collection<Axiom<NamedResource>> axioms = generateAxiomsForList(updatedFirst);
+        handler.updateList(updatedFirst);
+        verifyListContent(axioms, handler.loadList(updatedFirst));
+
+        final SimpleListValueDescriptor updatedSecond = initValues(0);
+        for (int i = 0; i < original.getValues().size() -1; i++) {
+            updatedSecond.addValue(original.getValues().get(i));
+        }
+        updatedSecond.addValue(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/addedSecond"));
+        updatedSecond.addValue(original.getValues().get(original.getValues().size() - 1));
+
+        axioms = generateAxiomsForList(updatedSecond);
+        handler.updateList(updatedSecond);
+        verifyListContent(axioms, handler.loadList(updatedSecond));
+    }
 }
