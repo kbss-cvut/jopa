@@ -13,6 +13,7 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -27,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 class ListPropertyStrategyTestBase {
 
-    protected static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityC");
+    protected static final URI PK = Generators.createIndividualIdentifier();
 
     @Mock
     protected EntityMappingHelper mapperMock;

@@ -15,13 +15,56 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.Value;
 
 class SingularAnnotationPropertyStrategy<X> extends SingularDataPropertyStrategy<X> {
 
-    public SingularAnnotationPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att,
-                                              Descriptor descriptor, EntityMappingHelper mapper) {
+    SingularAnnotationPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att, Descriptor descriptor,
+                                       EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
+    }
+
+    @Override
+    void addValueFromAxiom(Axiom<?> ax) {
+        final Value<?> val = ax.getValue();
+        if (!isValidRange(val.getValue())) {
+            return;
+        }
+        verifyCardinalityConstraint();
+        if (super.isValidRange(val.getValue())) {
+            this.value = val.getValue();
+        } else {
+            this.value = IdentifierTransformer.transformToIdentifier(val.getValue(), attribute.getJavaType());
+        }
+    }
+
+    @Override
+    boolean isValidRange(Object value) {
+        assert value != null;
+
+        return attribute.getJavaType().isAssignableFrom(value.getClass()) ||
+                value instanceof NamedResource && IdentifierTransformer.isValidIdentifierType(attribute.getJavaType());
+    }
+
+    @Override
+    void buildAxiomValuesFromInstance(X instance, AxiomValueGatherer valueBuilder) throws IllegalAccessException {
+        final Object value = extractFieldValueFromInstance(instance);
+        if (value == null) {
+            valueBuilder.addValue(createAssertion(), Value.nullValue(), getAttributeContext());
+            return;
+        }
+
+        if (IdentifierTransformer.isValidIdentifierType(attribute.getJavaType()) &&
+                !attribute.getJavaType().isAssignableFrom(String.class)) {
+            valueBuilder.addValue(createAssertion(),
+                    new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(value))), getAttributeContext());
+        } else {
+            valueBuilder.addValue(createAssertion(), new Value<>(value), getAttributeContext());
+        }
     }
 
     @Override

@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 
 public class TypedPropertiesFieldStrategyTest {
 
-    private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entity");
+    private static final URI PK = Generators.createIndividualIdentifier();
 
     @Mock
     private EntityMappingHelper mapperMock;

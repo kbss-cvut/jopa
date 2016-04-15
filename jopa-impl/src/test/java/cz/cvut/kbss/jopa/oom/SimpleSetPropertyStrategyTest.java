@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
 import cz.cvut.kbss.jopa.environment.OWLClassP;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.annotations.Inferred;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
@@ -45,7 +46,7 @@ import static org.mockito.Mockito.*;
 
 public class SimpleSetPropertyStrategyTest {
 
-    private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityC");
+    private static final URI PK = Generators.createIndividualIdentifier();
 
 
     @Mock

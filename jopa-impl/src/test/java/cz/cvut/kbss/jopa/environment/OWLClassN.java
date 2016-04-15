@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.environment;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,6 +29,9 @@ public class OWLClassN {
 
     @OWLAnnotationProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationProperty")
     private String annotationProperty;
+
+    @OWLAnnotationProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#annotationUri")
+    private URI annotationUri;
 
     @ParticipationConstraints(nonEmpty = true)
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
@@ -53,6 +57,14 @@ public class OWLClassN {
         this.annotationProperty = annotationProperty;
     }
 
+    public URI getAnnotationUri() {
+        return annotationUri;
+    }
+
+    public void setAnnotationUri(URI annotationUri) {
+        this.annotationUri = annotationUri;
+    }
+
     public String getStringAttribute() {
         return stringAttribute;
     }
@@ -73,8 +85,16 @@ public class OWLClassN {
         return OWLClassN.class.getAnnotation(OWLClass.class).iri();
     }
 
+    public static Field getUriField() throws Exception {
+        return OWLClassN.class.getDeclaredField("id");
+    }
+
     public static Field getAnnotationPropertyField() throws Exception {
         return OWLClassN.class.getDeclaredField("annotationProperty");
+    }
+
+    public static Field getAnnotationUriField() throws Exception {
+        return OWLClassN.class.getDeclaredField("annotationUri");
     }
 
     public static Field getStringAttributeField() throws Exception {

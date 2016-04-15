@@ -142,6 +142,19 @@ public class MetamodelMocks {
     private SingularAttribute<OWLClassM, OWLClassM.Severity> mEnumAtt;
 
     @Mock
+    private EntityType<OWLClassN> etN;
+    @Mock
+    private Identifier idN;
+    @Mock
+    private SingularAttribute<OWLClassN, String> nAnnotationAtt;
+    @Mock
+    private SingularAttribute<OWLClassN, URI> nAnnotationUriAtt;
+    @Mock
+    private SingularAttribute<OWLClassN, String> nStringAtt;
+    @Mock
+    private PropertiesSpecification<OWLClassN, Map, String, String> nProperties;
+
+    @Mock
     private EntityType<OWLClassO> etO;
     @Mock
     private Identifier idO;
@@ -178,6 +191,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
         MetamodelFactory
                 .initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt, idM);
+        MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nProperties, idN);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
         MetamodelFactory.initOWLClassPMock(etP, pProperties, pUriAtt, pUrlsAtt, pSimpleList, pReferencedList, idP);
     }
@@ -195,6 +209,7 @@ public class MetamodelMocks {
         when(metamodel.entity(OWLClassK.class)).thenReturn(etK);
         when(metamodel.entity(OWLClassL.class)).thenReturn(etL);
         when(metamodel.entity(OWLClassM.class)).thenReturn(etM);
+        when(metamodel.entity(OWLClassN.class)).thenReturn(etN);
         when(metamodel.entity(OWLClassO.class)).thenReturn(etO);
         when(metamodel.entity(OWLClassP.class)).thenReturn(etP);
     }
@@ -233,6 +248,10 @@ public class MetamodelMocks {
 
     public OWLClassMMetamodel forOwlClassM() {
         return new OWLClassMMetamodel();
+    }
+
+    public OWLClassNMetamodel forOwlClassN() {
+        return new OWLClassNMetamodel();
     }
 
     public OWLClassOMetamodel forOwlClassO() {
@@ -461,6 +480,32 @@ public class MetamodelMocks {
 
         public SingularAttribute<OWLClassM, OWLClassM.Severity> enumAttribute() {
             return MetamodelMocks.this.mEnumAtt;
+        }
+    }
+
+    public class OWLClassNMetamodel {
+        public EntityType<OWLClassN> entityType() {
+            return MetamodelMocks.this.etN;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idN;
+        }
+
+        public SingularAttribute<OWLClassN, String> annotationAttribute() {
+            return MetamodelMocks.this.nAnnotationAtt;
+        }
+
+        public SingularAttribute<OWLClassN, URI> annotationUriAttribute() {
+            return MetamodelMocks.this.nAnnotationUriAtt;
+        }
+
+        public SingularAttribute<OWLClassN, String> stringAttribute() {
+            return MetamodelMocks.this.nStringAtt;
+        }
+
+        public PropertiesSpecification<OWLClassN, Map, String, String> properties() {
+            return MetamodelMocks.this.nProperties;
         }
     }
 

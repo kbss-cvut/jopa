@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 
 public class StringPropertiesFieldStrategyTest {
 
-    private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entity");
+    private static final URI PK = Generators.createIndividualIdentifier();
 
     @Mock
     private EntityMappingHelper mapperMock;

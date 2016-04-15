@@ -27,8 +27,24 @@ public abstract class Generators {
     private static final int DEFAULT_SIZE = 5;
     private static final Set<String> TYPES = getTypes();
 
+    private static final Random RAND = new Random();
+
     private Generators() {
         // Private constructor
+    }
+
+    public static int randomInt(int max) {
+        return RAND.nextInt(max);
+    }
+
+    public static URI createIndividualIdentifier() {
+        return URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/individuals#instance-" +
+                randomInt(Integer.MAX_VALUE));
+    }
+
+    public static URI createPropertyIdentifier() {
+        return URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#property-" +
+                randomInt(Integer.MAX_VALUE));
     }
 
     public static List<OWLClassA> createReferencedList(int size) {
@@ -104,7 +120,7 @@ public abstract class Generators {
 
     public static List<OWLClassA> generateInstances(String uriBase, int size) {
         assert size > 0;
-        int counter = TestEnvironmentUtils.randomInt(1000);
+        int counter = randomInt(1000);
         final List<OWLClassA> lst = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             final OWLClassA a = new OWLClassA();

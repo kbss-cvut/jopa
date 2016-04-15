@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
@@ -49,8 +50,7 @@ import static org.mockito.Mockito.*;
 
 public class ObjectOntologyMapperTest {
 
-    private static final URI ENTITY_PK = URI
-            .create("http://krizik.felk.cvut.cz/ontologies/entityA");
+    private static final URI ENTITY_PK = Generators.createIndividualIdentifier();
 
     private static OWLClassA entityA;
     private static Descriptor aDescriptor;
@@ -145,7 +145,7 @@ public class ObjectOntologyMapperTest {
 
     @Test
     public void testLoadEntityUnknown() throws Exception {
-        when(connectionMock.find(axiomDescriptor)).thenReturn(Collections.<Axiom<?>>emptyList());
+        when(connectionMock.find(axiomDescriptor)).thenReturn(Collections.emptyList());
         final OWLClassA res = mapper.loadEntity(loadingParameters);
         assertNull(res);
         verify(connectionMock).find(axiomDescriptor);
