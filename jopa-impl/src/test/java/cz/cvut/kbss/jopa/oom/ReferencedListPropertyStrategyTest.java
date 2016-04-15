@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -160,12 +158,9 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
     public void extractsValuesIntoAxiomsForSave() throws Exception {
         final OWLClassC c = new OWLClassC(PK);
         c.setReferencedList(list);
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), descriptor.getContext());
         strategy.buildAxiomValuesFromInstance(c, builder);
 
-        final List<ReferencedListValueDescriptor> descriptors = OOMTestUtils.getReferencedListValueDescriptors(builder);
-        assertEquals(1, descriptors.size());
-        final ReferencedListValueDescriptor res = descriptors.get(0);
+        final ReferencedListValueDescriptor res = listValueDescriptor();
         assertEquals(res.getListOwner(), NamedResource.create(PK));
         assertEquals(
                 res.getListProperty(),
@@ -177,23 +172,37 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
                 .getOWLObjectPropertyHasNextIRI().toURI(), refListMock.isInferred()));
         assertEquals(res.getNodeContent(), Assertion.createObjectPropertyAssertion(refListMock
                 .getOWLPropertyHasContentsIRI().toURI(), refListMock.isInferred()));
-        assertEquals(list.size(), res.getValues().size());
-        for (OWLClassA a : list) {
-            assertTrue(res.getValues().contains(NamedResource.create(a.getUri())));
-        }
+        final List<URI> expected = list.stream().map(OWLClassA::getUri).collect(Collectors.toList());
+        verifyListItems(expected, res);
+    }
+
+    private ReferencedListValueDescriptor listValueDescriptor() throws Exception {
+        final List<ReferencedListValueDescriptor> descriptors = OOMTestUtils.getReferencedListValueDescriptors(builder);
+        assertEquals(1, descriptors.size());
+        return descriptors.get(0);
+    }
+
+    @Test
+    public void extractValuesSkipsNullItems() throws Exception {
+        final OWLClassC c = new OWLClassC(PK);
+        c.setReferencedList(generateList());
+        setRandomListItemsToNull(c.getReferencedList());
+
+        strategy.buildAxiomValuesFromInstance(c, builder);
+        final ReferencedListValueDescriptor res = listValueDescriptor();
+        final List<URI> expected = c.getReferencedList().stream().filter(item -> item != null).map(OWLClassA::getUri)
+                                    .collect(
+                                            Collectors.toList());
+        verifyListItems(expected, res);
     }
 
     @Test
     public void extractsValuesIntoAxiomsForSaveFromEmptyList() throws Exception {
         final OWLClassC c = new OWLClassC(PK);
         c.setReferencedList(Collections.emptyList());
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK),
-                descriptor.getContext());
         strategy.buildAxiomValuesFromInstance(c, builder);
 
-        final List<ReferencedListValueDescriptor> descriptors = OOMTestUtils.getReferencedListValueDescriptors(builder);
-        assertEquals(1, descriptors.size());
-        final ReferencedListValueDescriptor res = descriptors.get(0);
+        final ReferencedListValueDescriptor res = listValueDescriptor();
         assertTrue(res.getValues().isEmpty());
     }
 
@@ -201,12 +210,9 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
     public void extractsValuesIntoAxiomsForSaveFromNullList() throws Exception {
         final OWLClassC c = new OWLClassC(PK);
         c.setReferencedList(null);
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), descriptor.getContext());
         strategy.buildAxiomValuesFromInstance(c, builder);
 
-        final List<ReferencedListValueDescriptor> descriptors = OOMTestUtils.getReferencedListValueDescriptors(builder);
-        assertEquals(1, descriptors.size());
-        final ReferencedListValueDescriptor res = descriptors.get(0);
+        final ReferencedListValueDescriptor res = listValueDescriptor();
         assertTrue(res.getValues().isEmpty());
     }
 
@@ -219,11 +225,26 @@ public class ReferencedListPropertyStrategyTest extends ListPropertyStrategyTest
         final OWLClassP p = new OWLClassP();
         p.setUri(PK);
         p.setReferencedList(list.stream().map(OWLClassA::getUri).collect(Collectors.toList()));
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK),
-                descriptor.getContext());
         strategy.buildAxiomValuesFromInstance(p, builder);
 
-        final ReferencedListValueDescriptor res = OOMTestUtils.getReferencedListValueDescriptors(builder).get(0);
+        final ReferencedListValueDescriptor res = listValueDescriptor();
         p.getReferencedList().forEach(uri -> assertTrue(res.getValues().contains(NamedResource.create(uri))));
+    }
+
+    @Test
+    public void extractValuesFromListSkipsNullItemsInListOfPlainIdentifiers() throws Exception {
+        final OWLClassP p = new OWLClassP();
+        p.setUri(PK);
+        p.setReferencedList(generateListOfIdentifiers());
+        setRandomListItemsToNull(p.getReferencedList());
+        final List<URI> nonNulls = p.getReferencedList().stream().filter(i -> i != null).collect(Collectors.toList());
+        final ListAttribute<OWLClassP, URI> refList = mocks.forOwlClassP().pReferencedListAttribute();
+        final ReferencedListPropertyStrategy<OWLClassP> strategy =
+                new ReferencedListPropertyStrategy<>(mocks.forOwlClassP().entityType(), refList, descriptor,
+                        mapperMock);
+
+        strategy.buildAxiomValuesFromInstance(p, builder);
+        final ReferencedListValueDescriptor valueDescriptor = listValueDescriptor();
+        verifyListItems(nonNulls, valueDescriptor);
     }
 }

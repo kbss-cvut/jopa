@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -78,18 +76,39 @@ public class SimpleSetPropertyStrategyTest {
         final OWLClassJ j = new OWLClassJ(PK);
         j.setOwlClassA(generateSet());
         strategy.buildAxiomValuesFromInstance(j, gatherer);
+        final Set<URI> expected = j.getOwlClassA().stream().map(OWLClassA::getUri).collect(Collectors.toSet());
+        verifyExtractedValues(expected);
+    }
+
+    private void verifyExtractedValues(Set<URI> expected) throws Exception {
         final AxiomValueDescriptor res = OOMTestUtils.getAxiomValueDescriptor(gatherer);
         assertEquals(NamedResource.create(PK), res.getSubject());
         final OWLObjectProperty op = OWLClassJ.getOwlClassAField().getAnnotation(
                 OWLObjectProperty.class);
         final Assertion ass = Assertion.createObjectPropertyAssertion(URI.create(op.iri()),
                 OWLClassJ.getOwlClassAField().getAnnotation(Inferred.class) != null);
-        assertEquals(j.getOwlClassA().size(), res.getAssertionValues(ass).size());
-        for (OWLClassA aa : j.getOwlClassA()) {
-            assertTrue(res.getAssertionValues(ass).contains(new Value<>(NamedResource.create(aa.getUri()))));
+        assertEquals(expected.size(), res.getAssertionValues(ass).size());
+        for (URI u : expected) {
+            assertTrue(res.getAssertionValues(ass).contains(new Value<>(NamedResource.create(u))));
         }
-        verify(cascadeResolverMock, times(j.getOwlClassA().size())).resolveFieldCascading(
+        verify(cascadeResolverMock, times(expected.size())).resolveFieldCascading(
                 eq(mocks.forOwlClassJ().setAttribute()), any(Object.class), eq((URI) null));
+    }
+
+    @Test
+    public void extractValuesSkipsNullItem() throws Exception {
+        final SimpleSetPropertyStrategy<OWLClassJ> strategy =
+                new SimpleSetPropertyStrategy<>(mocks.forOwlClassJ().entityType(),
+                        mocks.forOwlClassJ().setAttribute(), descriptor, mapperMock);
+        strategy.setCascadeResolver(cascadeResolverMock);
+        final OWLClassJ j = new OWLClassJ(PK);
+        j.setOwlClassA(generateSet());
+        j.getOwlClassA().add(null);
+
+        strategy.buildAxiomValuesFromInstance(j, gatherer);
+        final Set<URI> expected = j.getOwlClassA().stream().filter(item -> item != null).map(OWLClassA::getUri)
+                                   .collect(Collectors.toSet());
+        verifyExtractedValues(expected);
     }
 
     private Set<OWLClassA> generateSet() {
@@ -158,6 +177,25 @@ public class SimpleSetPropertyStrategyTest {
                         mocks.forOwlClassP().pUrlsAttribute(), descriptor, mapperMock);
         final OWLClassP p = new OWLClassP();
         p.setUri(PK);
+        setIndividualUrls(p);
+        strategy.buildAxiomValuesFromInstance(p, gatherer);
+        verifyExtractedValuesForP(p.getIndividualUrls());
+    }
+
+    private void verifyExtractedValuesForP(Set<URL> expected) throws Exception {
+        final AxiomValueDescriptor axiomDescriptor = OOMTestUtils.getAxiomValueDescriptor(gatherer);
+        final URI property =
+                URI.create(OWLClassP.getIndividualUrlsField().getAnnotation(OWLObjectProperty.class).iri());
+        final List<Value<?>>
+                values = axiomDescriptor.getAssertionValues(Assertion.createObjectPropertyAssertion(property, false));
+        assertEquals(expected.size(), values.size());
+        for (Value<?> v : values) {
+            assertTrue(v.getValue() instanceof NamedResource);
+            assertTrue(expected.contains(new URL(v.stringValue())));
+        }
+    }
+
+    private void setIndividualUrls(OWLClassP p) {
         final Set<OWLClassA> aSet = generateSet();
         p.setIndividualUrls(aSet.stream().map(a -> {
             try {
@@ -166,16 +204,21 @@ public class SimpleSetPropertyStrategyTest {
                 throw new IllegalStateException(e);
             }
         }).collect(Collectors.toSet()));
+    }
+
+    @Test
+    public void extractValuesSkipsNullItems() throws Exception {
+        final SimpleSetPropertyStrategy<OWLClassP> strategy =
+                new SimpleSetPropertyStrategy<>(mocks.forOwlClassP().entityType(),
+                        mocks.forOwlClassP().pUrlsAttribute(), descriptor, mapperMock);
+        final OWLClassP p = new OWLClassP();
+        p.setUri(PK);
+        setIndividualUrls(p);
+        p.getIndividualUrls().add(null);
         strategy.buildAxiomValuesFromInstance(p, gatherer);
-        final AxiomValueDescriptor axiomDescriptor = OOMTestUtils.getAxiomValueDescriptor(gatherer);
-        final URI property =
-                URI.create(OWLClassP.getIndividualUrlsField().getAnnotation(OWLObjectProperty.class).iri());
-        final List<Value<?>>
-                values = axiomDescriptor.getAssertionValues(Assertion.createObjectPropertyAssertion(property, false));
-        assertEquals(p.getIndividualUrls().size(), values.size());
-        for (Value<?> v : values) {
-            assertTrue(v.getValue() instanceof NamedResource);
-            assertTrue(p.getIndividualUrls().contains(new URL(v.stringValue())));
-        }
+        final Set<URL> expected = p.getIndividualUrls().stream().filter(item -> item != null)
+                                   .collect(Collectors.toSet());
+        // Added null should be skipped and the original set of values prepared for save
+        verifyExtractedValuesForP(expected);
     }
 }

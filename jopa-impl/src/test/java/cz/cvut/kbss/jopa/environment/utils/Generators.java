@@ -39,6 +39,10 @@ public abstract class Generators {
         return RAND.nextInt(max);
     }
 
+    public static boolean randomBoolean() {
+        return RAND.nextBoolean();
+    }
+
     public static URI createIndividualIdentifier() {
         return URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/individuals#instance-" +
                 randomInt(Integer.MAX_VALUE));

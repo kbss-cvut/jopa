@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -34,14 +32,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class SimpleListPropertyStrategyTest extends
-                                            ListPropertyStrategyTestBase {
+public class SimpleListPropertyStrategyTest extends ListPropertyStrategyTestBase {
 
     private ListAttribute<OWLClassC, OWLClassA> simpleList;
 
@@ -141,14 +139,10 @@ public class SimpleListPropertyStrategyTest extends
 
     @Test
     public void extractsListValuesForSave() throws Exception {
-        final OWLClassC c = new OWLClassC();
-        c.setUri(PK);
+        final OWLClassC c = new OWLClassC(PK);
         c.setSimpleList(generateList());
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
         strategy.buildAxiomValuesFromInstance(c, builder);
-        final List<SimpleListValueDescriptor> descriptors = OOMTestUtils.getSimpleListValueDescriptors(builder);
-        assertEquals(1, descriptors.size());
-        final SimpleListValueDescriptor res = descriptors.get(0);
+        final SimpleListValueDescriptor res = listValueDescriptor();
         assertEquals(PK, res.getListOwner().getIdentifier());
         final Field simpleListField = OWLClassC.getSimpleListField();
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class)
@@ -166,18 +160,19 @@ public class SimpleListPropertyStrategyTest extends
                         eq((URI) null));
     }
 
+    private SimpleListValueDescriptor listValueDescriptor() throws Exception {
+        final List<SimpleListValueDescriptor> descriptors = OOMTestUtils.getSimpleListValueDescriptors(builder);
+        assertEquals(1, descriptors.size());
+        return descriptors.get(0);
+    }
+
     @Test
     public void extractsListValuesForSaveListIsEmpty() throws Exception {
-        final OWLClassC c = new OWLClassC();
-        c.setUri(PK);
+        final OWLClassC c = new OWLClassC(PK);
         c.setSimpleList(new ArrayList<>());
-        final AxiomValueGatherer builder = new AxiomValueGatherer(
-                NamedResource.create(PK), null);
         strategy.buildAxiomValuesFromInstance(c, builder);
-        final List<SimpleListValueDescriptor> descriptors = OOMTestUtils
-                .getSimpleListValueDescriptors(builder);
-        assertEquals(1, descriptors.size());
-        final SimpleListValueDescriptor res = descriptors.get(0);
+
+        final SimpleListValueDescriptor res = listValueDescriptor();
         assertEquals(PK, res.getListOwner().getIdentifier());
         final Field simpleListField = OWLClassC.getSimpleListField();
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class)
@@ -192,15 +187,10 @@ public class SimpleListPropertyStrategyTest extends
 
     @Test
     public void extractsListValuesForSaveListIsNull() throws Exception {
-        final OWLClassC c = new OWLClassC();
-        c.setUri(PK);
+        final OWLClassC c = new OWLClassC(PK);
         c.setSimpleList(null);
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
         strategy.buildAxiomValuesFromInstance(c, builder);
-        final List<SimpleListValueDescriptor> descriptors = OOMTestUtils
-                .getSimpleListValueDescriptors(builder);
-        assertEquals(1, descriptors.size());
-        final SimpleListValueDescriptor res = descriptors.get(0);
+        final SimpleListValueDescriptor res = listValueDescriptor();
         assertEquals(PK, res.getListOwner().getIdentifier());
         final Field simpleListField = OWLClassC.getSimpleListField();
         assertEquals(simpleListField.getAnnotation(OWLObjectProperty.class)
@@ -214,20 +204,46 @@ public class SimpleListPropertyStrategyTest extends
     }
 
     @Test
+    public void extractListValuesSkipsNullItems() throws Exception {
+        final OWLClassC c = new OWLClassC(PK);
+        c.setSimpleList(generateList());
+        setRandomListItemsToNull(c.getSimpleList());
+
+        strategy.buildAxiomValuesFromInstance(c, builder);
+        final SimpleListValueDescriptor res = listValueDescriptor();
+        final List<URI> expected = c.getSimpleList().stream().filter(item -> item != null).map(OWLClassA::getUri)
+                                    .collect(
+                                            Collectors.toList());
+        verifyListItems(expected, res);
+    }
+
+    @Test
     public void extractsValuesFromListOfPlainIdentifiersForPersist() throws Exception {
         final OWLClassP p = new OWLClassP();
         p.setUri(PK);
         p.setSimpleList(generateListOfIdentifiers());
-        final AxiomValueGatherer builder = new AxiomValueGatherer(NamedResource.create(PK), null);
         final ListAttribute<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
         final SimpleListPropertyStrategy<OWLClassP> strategy =
                 new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
 
         strategy.buildAxiomValuesFromInstance(p, builder);
-        final SimpleListValueDescriptor valueDescriptor = OOMTestUtils.getSimpleListValueDescriptors(builder).get(0);
-        assertEquals(p.getSimpleList().size(), valueDescriptor.getValues().size());
-        for (int i = 0; i < p.getSimpleList().size(); i++) {
-            assertEquals(p.getSimpleList().get(i), valueDescriptor.getValues().get(i).getIdentifier());
-        }
+        final SimpleListValueDescriptor valueDescriptor = listValueDescriptor();
+        verifyListItems(p.getSimpleList(), valueDescriptor);
+    }
+
+    @Test
+    public void extractValuesFromListSkipsNullItemsInListOfPlainIdentifiers() throws Exception {
+        final OWLClassP p = new OWLClassP();
+        p.setUri(PK);
+        p.setSimpleList(generateListOfIdentifiers());
+        setRandomListItemsToNull(p.getSimpleList());
+        final List<URI> nonNulls = p.getSimpleList().stream().filter(i -> i != null).collect(Collectors.toList());
+        final ListAttribute<OWLClassP, URI> simpleList = mocks.forOwlClassP().pSimpleListAttribute();
+        final SimpleListPropertyStrategy<OWLClassP> strategy =
+                new SimpleListPropertyStrategy<>(mocks.forOwlClassP().entityType(), simpleList, descriptor, mapperMock);
+
+        strategy.buildAxiomValuesFromInstance(p, builder);
+        final SimpleListValueDescriptor valueDescriptor = listValueDescriptor();
+        verifyListItems(nonNulls, valueDescriptor);
     }
 }
