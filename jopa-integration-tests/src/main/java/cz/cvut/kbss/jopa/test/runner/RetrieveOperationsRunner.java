@@ -71,7 +71,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRetrieveWithGeneratedId() throws Exception {
+    public void testRetrieveWithGeneratedId() {
         this.em = getEntityManager("RetrieveGenerated", false);
         em.getTransaction().begin();
         final int size = 10;

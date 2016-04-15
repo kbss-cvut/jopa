@@ -293,7 +293,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRemoveUnmappedPropertyValue() throws Exception {
+    public void testRemoveUnmappedPropertyValue() {
         entityB.setProperties(Generators.createProperties());
         this.em = getEntityManager("RemoveUnmappedPropertyValue", false);
         em.getTransaction().begin();
@@ -320,7 +320,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRemoveAllValuesOfUnmappedProperty() throws Exception {
+    public void testRemoveAllValuesOfUnmappedProperty() {
         entityB.setProperties(Generators.createProperties());
         this.em = getEntityManager("RemoveAllValuesOfUnmappedProperty", false);
         em.getTransaction().begin();
@@ -341,7 +341,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRemoveTypedUnmappedPropertyValue() throws Exception {
+    public void testRemoveTypedUnmappedPropertyValue() {
         this.em = getEntityManager("RemoveUnmappedPropertyValueTyped", false);
         entityP.setProperties(Generators.createTypedProperties(10));
         persist(entityP);
@@ -364,7 +364,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRemoveAllValuesOfTypedUnmappedProperty() throws Exception {
+    public void testRemoveAllValuesOfTypedUnmappedProperty() {
         this.em = getEntityManager("RemoveAllValuesOfUnmappedPropertyTyped", false);
         entityP.setProperties(Generators.createTypedProperties(15));
         persist(entityP);
@@ -384,7 +384,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRemoveAllValuesOfPluralPlainIdentifierObjectProperty() throws Exception {
+    public void testRemoveAllValuesOfPluralPlainIdentifierObjectProperty() {
         this.em = getEntityManager("RemoveAllValuesOfPluralPlainIdentifierOP", false);
         entityP.setIndividuals(Generators.createUrls());
         persist(entityP);
@@ -399,7 +399,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testSetAnnotationPropertyValueToNull() throws Exception {
+    public void testSetAnnotationPropertyValueToNull() {
         this.em = getEntityManager("SetAnnotationPropertyValueToNull", false);
         entityN.setAnnotationProperty("annotationPropertyValue");
         persist(entityN);
@@ -415,7 +415,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testSetAnnotationPropertyValueContainingUriToNull() throws Exception {
+    public void testSetAnnotationPropertyValueContainingUriToNull() {
         this.em = getEntityManager("SetAnnotationPropertyValueContainingUriToNull", false);
         entityN.setAnnotationUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationPropertyValue"));
         persist(entityN);

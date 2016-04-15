@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
@@ -700,7 +701,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testAddPropertiesWhenTheyWereNullOriginally() throws Exception {
+    public void testAddPropertiesWhenTheyWereNullOriginally() {
         logger.debug("Test: add properties on update when the field was originally null.");
         this.em = getEntityManager("AddPropertiesToNullOriginals", true);
         em.getTransaction().begin();
@@ -722,7 +723,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdatePlainLiteralObjectPropertyValueToAnotherIndividual() throws Exception {
+    public void testUpdatePlainLiteralObjectPropertyValueToAnotherIndividual() {
         logger.debug("Test: update plain literal object property value to a different individual.");
         this.em = getEntityManager("UpdatePlainLiteralObjectPropertyValue", true);
         em.getTransaction().begin();
@@ -741,7 +742,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdatePlainLiteralObjectPropertyValueToNull() throws Exception {
+    public void testUpdatePlainLiteralObjectPropertyValueToNull() {
         logger.debug("Test: update plain literal object property value to null.");
         this.em = getEntityManager("UpdatePlainLiteralObjectPropertyValueToNull", true);
         em.getTransaction().begin();
@@ -760,7 +761,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdatePluralPlainLiteralObjectPropertyAttribute() throws Exception {
+    public void testUpdatePluralPlainLiteralObjectPropertyAttribute() throws MalformedURLException {
         logger.debug("Test: update plural plain literal object property attribute.");
         this.em = getEntityManager("UpdatePluralPlainLiteralObjectPropertyValue", true);
         entityP.setIndividuals(Generators.createUrls());
@@ -780,7 +781,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateSimpleListOfIdentifiersByAddingNewItems() throws Exception {
+    public void testUpdateSimpleListOfIdentifiersByAddingNewItems() {
         this.em = getEntityManager("UpdateSimpleListOfIdentifiersByAddingItems", true);
         entityP.setSimpleList(Generators.createListOfIdentifiers());
         persist(entityP);
@@ -800,7 +801,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateReferencedListByRemovingAndAddingItems() throws Exception {
+    public void testUpdateReferencedListByRemovingAndAddingItems() {
         this.em = getEntityManager("UpdateReferencedListByRemovingAndAddingItems", true);
         entityP.setReferencedList(Generators.createListOfIdentifiers());
         persist(entityP);
@@ -820,7 +821,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateStringAnnotationPropertyValue() throws Exception {
+    public void testUpdateStringAnnotationPropertyValue() {
         this.em = getEntityManager("UpdateStringAnnotationPropertyValue", true);
         entityN.setAnnotationProperty("PropertyValue");
         persist(entityN);
@@ -837,7 +838,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateAnnotationPropertyWithUriValueToDifferentValue() throws Exception {
+    public void testUpdateAnnotationPropertyWithUriValueToDifferentValue() {
         this.em = getEntityManager("UpdateAnnotationPropertyWithUriValueToDifferentValue", true);
         entityN.setAnnotationUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#value"));
         persist(entityN);
