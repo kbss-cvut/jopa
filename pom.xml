@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>0.7.5</version>
+    <version>0.7.6</version>
     <artifactId>jopa-all</artifactId>
     <packaging>pom</packaging>
     <name>JOPA</name>
@@ -166,7 +166,7 @@
             </plugin>
 
             <!-- Set project version (recursively) -->
-            <!-- Usage mvn versions:set -DnewVersion=$version and the n mvn versions:commit to confirm changes -->
+            <!-- Usage mvn versions:set -DnewVersion=$version and then mvn versions:commit to confirm changes -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>

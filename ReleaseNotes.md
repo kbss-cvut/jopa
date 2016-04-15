@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.7.6 - April 15, 2016
+- Added support for plain identifiers as values of Annotation and Object properties
+    - E.g. when an entity has an object property pointing to another individual, but that individual is not mapped by any class in the object model, its URI can now be used as the property value
+
 ## 0.7.5 - March 31, 2016
 - Use xsd:int for mapping Java Integer/int values to RDF. Most Java implementations (including JAXB) do it this way.
 
