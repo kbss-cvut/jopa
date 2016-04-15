@@ -141,7 +141,6 @@ class AxiomLoader {
 
     private Value<?> createValue(AssertionType assertionType, org.openrdf.model.Value value) {
         switch (assertionType) {
-            case ANNOTATION_PROPERTY:
             case DATA_PROPERTY:
                 if (!(value instanceof Literal)) {
                     return null;
@@ -157,6 +156,7 @@ class AxiomLoader {
                     return null;
                 }
                 return new Value<>(NamedResource.create(value.stringValue()));
+            case ANNOTATION_PROPERTY:   // Intentional fall-through
             case PROPERTY:
                 return resolveValue(value);
         }

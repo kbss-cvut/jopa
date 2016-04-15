@@ -30,12 +30,12 @@ class SesameValueConverter {
     Value toSesameValue(Assertion assertion, cz.cvut.kbss.ontodriver.model.Value<?> val)
             throws SesameDriverException {
         switch (assertion.getType()) {
-            case ANNOTATION_PROPERTY:
             case DATA_PROPERTY:
                 return SesameUtils.createDataPropertyLiteral(val.getValue(), language, vf);
             case CLASS:
             case OBJECT_PROPERTY:
                 return getValueAsSesameUri(val);
+            case ANNOTATION_PROPERTY:   // Intentional fall-through
             case PROPERTY:
                 return resolvePropertyValue(val);
             default:

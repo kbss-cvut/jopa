@@ -409,4 +409,36 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
         assertNull(res.getIndividuals());
     }
+
+    @Test
+    public void testSetAnnotationPropertyValueToNull() throws Exception {
+        this.em = getEntityManager("SetAnnotationPropertyValueToNull", false);
+        entityN.setAnnotationProperty("annotationPropertyValue");
+        persist(entityN);
+
+        final OWLClassN update = em.find(OWLClassN.class, entityN.getId());
+        assertNotNull(update.getAnnotationProperty());
+        em.getTransaction().begin();
+        update.setAnnotationProperty(null);
+        em.getTransaction().commit();
+
+        final OWLClassN res = em.find(OWLClassN.class, entityN.getId());
+        assertNull(res.getAnnotationProperty());
+    }
+
+    @Test
+    public void testSetAnnotationPropertyValueContainingUriToNull() throws Exception {
+        this.em = getEntityManager("SetAnnotationPropertyValueContainingUriToNull", false);
+        entityN.setAnnotationUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationPropertyValue"));
+        persist(entityN);
+
+        final OWLClassN update = em.find(OWLClassN.class, entityN.getId());
+        assertNotNull(update.getAnnotationUri());
+        em.getTransaction().begin();
+        update.setAnnotationUri(null);
+        em.getTransaction().commit();
+
+        final OWLClassN res = em.find(OWLClassN.class, entityN.getId());
+        assertNull(res.getAnnotationUri());
+    }
 }

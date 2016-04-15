@@ -411,4 +411,22 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertNotNull(res);
         assertEquals(entityP.getReferencedList(), res.getReferencedList());
     }
+
+    @Test
+    public void testPersistInstanceWithAnnotationProperties() {
+        this.em = getEntityManager("PersistInstanceWithAnnotationPropertyValues", false);
+        final String apValue = "annotationPropertyValue";
+        final URI apUriValue = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationPropertyValue");
+        entityN.setAnnotationProperty(apValue);
+        entityN.setAnnotationUri(apUriValue);
+        em.getTransaction().begin();
+        em.persist(entityN);
+        em.getTransaction().commit();
+        em.clear();
+        assertNotNull(entityN.getId());
+
+        final OWLClassN res = em.find(OWLClassN.class, entityN.getId());
+        assertEquals(apValue, res.getAnnotationProperty());
+        assertEquals(apUriValue, res.getAnnotationUri());
+    }
 }

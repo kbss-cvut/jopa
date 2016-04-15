@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -30,9 +31,9 @@ public aspect BeanListenerAspect {
 
     private static final Logger LOG = LoggerFactory.getLogger(BeanListenerAspect.class);
 
-    pointcut getter(): get( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
+    pointcut getter(): get( @(OWLObjectProperty || OWLDataProperty || OWLAnnotationProperty || Types || Properties ) * * ) && within(@OWLClass *);
 
-    pointcut setter(): set( @(OWLObjectProperty || OWLDataProperty || Types || Properties ) * * ) && within(@OWLClass *);
+    pointcut setter(): set( @(OWLObjectProperty || OWLDataProperty || OWLAnnotationProperty || Types || Properties ) * * ) && within(@OWLClass *);
 
     before(): setter() {
         // Check for inferred field modification

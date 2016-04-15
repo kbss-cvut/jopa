@@ -816,4 +816,38 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         assertNotNull(res);
         assertEquals(update.getReferencedList(), res.getReferencedList());
     }
+
+    @Test
+    public void testUpdateStringAnnotationPropertyValue() throws Exception {
+        this.em = getEntityManager("UpdateStringAnnotationPropertyValue", true);
+        entityN.setAnnotationProperty("PropertyValue");
+        persist(entityN);
+
+        final String newValue = "newValue";
+        final OWLClassN update = em.find(OWLClassN.class, entityN.getId());
+        assertNotNull(update);
+        em.getTransaction().begin();
+        update.setAnnotationProperty(newValue);
+        em.getTransaction().commit();
+
+        final OWLClassN res = em.find(OWLClassN.class, entityN.getId());
+        assertEquals(newValue, res.getAnnotationProperty());
+    }
+
+    @Test
+    public void testUpdateAnnotationPropertyWithUriValueToDifferentValue() throws Exception {
+        this.em = getEntityManager("UpdateAnnotationPropertyWithUriValueToDifferentValue", true);
+        entityN.setAnnotationUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#value"));
+        persist(entityN);
+
+        final OWLClassN update = em.find(OWLClassN.class, entityN.getId());
+        assertNotNull(update);
+        em.getTransaction().begin();
+        final URI newUri = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newValue");
+        update.setAnnotationUri(newUri);
+        em.getTransaction().commit();
+
+        final OWLClassN res = em.find(OWLClassN.class, entityN.getId());
+        assertEquals(newUri, res.getAnnotationUri());
+    }
 }
