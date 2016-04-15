@@ -365,6 +365,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistInstanceWithSimpleListOfIdentifiers() {
+        this.em = getEntityManager("PersistInstanceWithSimpleListOfIdentifiers", false);
         entityP.setSimpleList(Generators.createListOfIdentifiers());
         em.getTransaction().begin();
         em.persist(entityP);
@@ -378,6 +379,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistInstanceWithReferencedListOfIdentifiers() {
+        this.em = getEntityManager("PersistInstanceWithReferencedListOfIdentifiers", false);
         entityP.setReferencedList(Generators.createListOfIdentifiers());
         em.getTransaction().begin();
         em.persist(entityP);
@@ -391,6 +393,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistInstanceWithAnnotationProperties() {
+        this.em = getEntityManager("PersistInstanceWithAnnotationPropertyValues", false);
         final String apValue = "annotationPropertyValue";
         final URI apUriValue = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationPropertyValue");
         entityN.setAnnotationProperty(apValue);

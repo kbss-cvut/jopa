@@ -181,16 +181,19 @@ public abstract class Generators {
     }
 
     /**
-     * Gets a random int greater than 0.
+     * Gets a random int greater than <b>2</b>.
      *
-     * @param max upper bound (exclusive)
+     * @param max upper bound (exclusive). Has to be greater than 2.
      * @return Random positive integer
      */
     public static int randomPositiveInt(int max) {
+        if (max <= 2) {
+            throw new IllegalArgumentException("Upper bound has to be greater than 2.");
+        }
         int rand;
         do {
             rand = RANDOM.nextInt(max);
-        } while (rand == 0);
+        } while (rand < 2);
         return rand;
     }
 

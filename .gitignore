@@ -7,3 +7,4 @@
 **/example03-jopa-sesame-contexts/repositories
 **/example05-jopa-owl2query/repository.owl
 **/node_modules
+build.out

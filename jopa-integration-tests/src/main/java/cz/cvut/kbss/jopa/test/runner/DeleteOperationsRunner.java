@@ -400,6 +400,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testSetAnnotationPropertyValueToNull() throws Exception {
+        this.em = getEntityManager("SetAnnotationPropertyValueToNull", false);
         entityN.setAnnotationProperty("annotationPropertyValue");
         persist(entityN);
 
@@ -415,6 +416,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testSetAnnotationPropertyValueContainingUriToNull() throws Exception {
+        this.em = getEntityManager("SetAnnotationPropertyValueContainingUriToNull", false);
         entityN.setAnnotationUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationPropertyValue"));
         persist(entityN);
 
