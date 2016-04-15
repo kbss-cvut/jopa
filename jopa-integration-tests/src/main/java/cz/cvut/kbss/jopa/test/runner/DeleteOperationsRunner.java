@@ -37,7 +37,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveSimple() {
-        logger.debug("Test: simple entity removal.");
         this.em = getEntityManager("SimpleRemove", false);
         persist(entityA);
 
@@ -54,7 +53,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     @Ignore
     @Test
     public void testRemoveReference() {
-        logger.debug("Test: remove entity referenced by another entity.");
         this.em = getEntityManager("RemoveReference", false);
         persist(entityD, entityA);
 
@@ -71,7 +69,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveCascade() {
-        logger.debug("Test: remove cascade.");
         this.em = getEntityManager("RemoveCascade", false);
         em.getTransaction().begin();
         em.persist(entityG);
@@ -104,7 +101,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test(expected = IllegalArgumentException.class)
     public void testRemoveDetached() {
-        logger.debug("Test: try removing detached entity.");
         this.em = getEntityManager("RemoveDetached", false);
         assertNull(entityE.getUri());
         persist(entityE);
@@ -121,7 +117,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveFromSimpleList() {
-        logger.debug("Test: remove entity from simple list.");
         this.em = getEntityManager("RemoveFromSimpleList", false);
         final int size = 5;
         entityC.setSimpleList(Generators.createSimpleList(size));
@@ -156,7 +151,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveFromReferencedList() {
-        logger.debug("Test: remove entity from referenced list.");
         this.em = getEntityManager("RemoveFromReferencedList", false);
         final int size = 10;
         entityC.setReferencedList(Generators.createReferencedList(size));
@@ -191,7 +185,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveListOwner() {
-        logger.debug("Test: remove owner of simple and referenced list.");
         this.em = getEntityManager("RemoveListOwner", false);
         entityC.setSimpleList(Generators.createSimpleList());
         entityC.setReferencedList(Generators.createReferencedList());
@@ -218,7 +211,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveNotYetCommitted() {
-        logger.debug("Test: persist entity, but remove it before committing the transaction.");
         this.em = getEntityManager("RemoveNotYetCommitted", false);
         em.getTransaction().begin();
         em.persist(entityE);
@@ -232,8 +224,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testCascadeMergeAndRemove() {
-        logger.debug("Test: merge and remove the merged instance, cascading to another object.");
+    public void testRemoveMergedWithCascading() {
         this.em = getEntityManager("CascadeMergeAndRemove", false);
         em.getTransaction().begin();
         em.persist(entityG);
@@ -262,8 +253,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void removeDeletesAllPropertyAssertionsMappedByEntity() throws Exception {
-        logger.debug(
-                "Test: remove deletes all property assertions mapped by the entity, including the lazily loaded ones.");
         this.em = getEntityManager("RemoveDeletesAllMappedAttributes", false);
         em.getTransaction().begin();
         entityC.setSimpleList(Generators.createSimpleList(5));
@@ -351,7 +340,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveTypedUnmappedPropertyValue() throws Exception {
-        logger.debug("Test: remove unmapped property value. Typed.");
         this.em = getEntityManager("RemoveUnmappedPropertyValueTyped", false);
         entityP.setProperties(Generators.createTypedProperties(10));
         persist(entityP);
@@ -375,7 +363,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveAllValuesOfTypedUnmappedProperty() throws Exception {
-        logger.debug("Test: remove all values of an unmapped property. Typed.");
         this.em = getEntityManager("RemoveAllValuesOfUnmappedPropertyTyped", false);
         entityP.setProperties(Generators.createTypedProperties(15));
         persist(entityP);
@@ -396,7 +383,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testRemoveAllValuesOfPluralPlainIdentifierObjectProperty() throws Exception {
-        logger.debug("Test: remove all values of a plural plain identifier object property.");
         this.em = getEntityManager("RemoveAllValuesOfPluralPlainIdentifierOP", false);
         entityP.setIndividuals(Generators.createUrls());
         persist(entityP);
@@ -412,7 +398,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testSetAnnotationPropertyValueToNull() throws Exception {
-        this.em = getEntityManager("SetAnnotationPropertyValueToNull", false);
         entityN.setAnnotationProperty("annotationPropertyValue");
         persist(entityN);
 
@@ -428,7 +413,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
     @Test
     public void testSetAnnotationPropertyValueContainingUriToNull() throws Exception {
-        this.em = getEntityManager("SetAnnotationPropertyValueContainingUriToNull", false);
         entityN.setAnnotationUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationPropertyValue"));
         persist(entityN);
 

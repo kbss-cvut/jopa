@@ -36,8 +36,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testPersistWithGenerated() {
-        logger.debug("Test: persist into all contexts, also with generated id.");
+    public void testPersistWithGeneratedId() {
         this.em = getEntityManager("PersistWithGenerated", false);
         persist(entityA, entityE);
 
@@ -54,8 +53,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test(expected = PrimaryKeyNotSetException.class)
-    public void testPersistWithoutId() {
-        logger.debug("Test: persist without id. No ID generation specified.");
+    public void persistingEntityWithoutIdAndWithoutGeneratedIdThrowsException() {
         this.em = getEntityManager("PersistWithoutId", false);
         final OWLClassB b = new OWLClassB();
         b.setStringAttribute("someValue");
@@ -63,16 +61,14 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testPersistNull() {
-        logger.debug("Test: persist null.");
+    public void persistNullThrowsNPX() {
         this.em = getEntityManager("PersistNull", false);
         em.getTransaction().begin();
         em.persist(null);
     }
 
     @Test
-    public void testPersistRollback() {
-        logger.debug("Test: persist and then rollback the transaction.");
+    public void testPersistAndRollbackChanges() {
         this.em = getEntityManager("PersistRollback", false);
         em.getTransaction().begin();
         em.persist(entityE);
@@ -84,8 +80,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test(expected = RollbackException.class)
-    public void testPersistRollbackOnly() {
-        logger.debug("Test: set transaction as rollback only and the try persisting an entity.");
+    public void persistingInRollbackOnlyThrowsExceptionOnCommit() {
         this.em = getEntityManager("PersistRollbackOnly", false);
         em.getTransaction().begin();
         em.getTransaction().setRollbackOnly();
@@ -94,8 +89,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testPersistCascade() {
-        logger.debug("Test: persist with cascade over two relationships.");
+    public void testPersistWithCascade() {
         this.em = getEntityManager("PersistWithCascade", false);
         persist(entityG);
 
@@ -111,22 +105,19 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test(expected = OWLEntityExistsException.class)
-    public void testPersistTwiceInOne() {
-        logger.debug("Test: persist twice into one context.");
+    public void persistingInstanceMultipleTimesIsNotAllowed() {
         this.em = getEntityManager("PersistTwice", false);
         persist(entityB, entityB);
     }
 
     @Test(expected = RollbackException.class)
-    public void testPersistWithoutCascade() {
-        logger.debug("Test: try persisting relationship not marked as cascade.");
+    public void persistingOnlyOnePartOfRelationWithoutCascadeThrowsRollbackException() {
         this.em = getEntityManager("PersistWithoutCascade", false);
         persist(entityD);
     }
 
     @Test(expected = OWLEntityExistsException.class)
-    public void testPersistDetached() {
-        logger.debug("Test: persist detached entity. Should throw entity exists exception.");
+    public void persistingDetachedEntityIsIllegal() {
         this.em = getEntityManager("PersistDetached", false);
         persist(entityA);
 
@@ -137,8 +128,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testPersistSimpleList() {
-        logger.debug("Test: persist entity with simple list.");
+    public void testPersistWithSimpleList() {
         this.em = getEntityManager("PersistSimpleList", false);
         entityC.setSimpleList(Generators.createSimpleList(10));
         em.getTransaction().begin();
@@ -157,16 +147,14 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test(expected = RollbackException.class)
-    public void testPersistSimpleListNoCascade() {
-        logger.debug("Test: persist entity with simple list, but don't persist the referenced entities.");
+    public void persistingEntityWithSimpleListWithoutCascadeIsIllegal() {
         this.em = getEntityManager("PersistSimpleListNoCascade", false);
         entityC.setSimpleList(Generators.createSimpleList(10));
         persist(entityC);
     }
 
     @Test
-    public void testPersistReferencedList() {
-        logger.debug("Test: persist entity with referenced list.");
+    public void testPersistWithReferencedList() {
         this.em = getEntityManager("PersistReferencedList", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
         em.getTransaction().begin();
@@ -190,8 +178,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test(expected = RollbackException.class)
-    public void testPersistReferencedListNoCascade() {
-        logger.debug("Test: persist entity with referenced list. Don't persist the referenced entities.");
+    public void persistingEntityWithReferencedListWithoutCascadeIsIllegal() {
         this.em = getEntityManager("PersistReferencedListNoCascade", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
         persist(entityC);
@@ -199,7 +186,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistSimpleAndReferencedList() {
-        logger.debug("Test: persist entity with both simple and referenced list.");
         this.em = getEntityManager("PersistSimpleAndReferencedList", false);
         entityC.setReferencedList(Generators.createReferencedList(5));
         entityC.setSimpleList(Generators.createSimpleList(5));
@@ -228,8 +214,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testPersistProperties() {
-        logger.debug("Test: persist entity with properties.");
+    public void testPersistWithProperties() {
         this.em = getEntityManager("PersistWithProperties", false);
         final Map<String, Set<String>> props = new HashMap<>(3);
         props.put("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#propertyOne", Collections
@@ -261,8 +246,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testPersistPropertiesEmpty() {
-        logger.debug("Test: persist entity with properties. The properties will be an empty map.");
+    public void testPersistWithEmptyProperties() {
         this.em = getEntityManager("PersistWithPropertiesEmpty", false);
         entityB.setProperties(Collections.emptyMap());
         em.getTransaction().begin();
@@ -279,8 +263,7 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test(expected = OWLEntityExistsException.class)
-    public void persistURITwiceInDifferentClasses() {
-        logger.debug("Test: persist two different entities (of different types) with the same URI.");
+    public void persistingTwoInstancesOfDifferentClassesWithSameUriIsIllegal() {
         this.em = getEntityManager("PersistURITwiceInDifferentClasses", false);
         final URI pk = URI.create("http://krizik.felk.cvut.cz/jopa/onto/sameEntity");
         final OWLClassA a = new OWLClassA();
@@ -295,7 +278,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistEntityWithBasicTypeAttributes() {
-        logger.debug("Test: persist entity with attributes of basic types (Integer, Boolean etc.).");
         this.em = getEntityManager("PersistEntityWithBasicTypeAttributes", false);
         persist(entityM);
         em.clear();
@@ -312,7 +294,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistAndUpdateAttributeBeforeCommit() {
-        logger.debug("Test: persist entity, set attribute value and then commit.");
         this.em = getEntityManager("PersistAndUpdateBeforeCommit", false);
         final String updatedValue = "updatedStringAttributeValue";
         em.getTransaction().begin();
@@ -328,7 +309,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistEntityWithEnumAttribute() {
-        logger.debug("Test: persist entity with enum attribute.");
         this.em = getEntityManager("PersistEntityWithEnum", false);
         persist(entityM);
 
@@ -339,7 +319,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistTypedProperties() {
-        logger.debug("Test: persist entity with typed properties.");
         this.em = getEntityManager("PersistTypedProperties", false);
         entityP.setProperties(Generators.createTypedProperties());
         em.getTransaction().begin();
@@ -354,7 +333,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistInstanceWithPlainIdentifierObjectPropertyValue() {
-        logger.debug("Test: persist entity with plain identifier (URI) object property value.");
         this.em = getEntityManager("PersistInstanceWithIdentifierObjectPropertyValue", false);
         final URI value = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#individualAAA");
         entityP.setIndividualUri(value);
@@ -370,7 +348,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistInstanceWithPluralObjectPropertyAttributeRepresentedByUrls() {
-        logger.debug("Test: persist entity with plain identifiers (URL) object property values.");
         this.em = getEntityManager("PersistInstanceWithPluralIdentifierObjectPropertyValue", false);
         final Set<URL> urls = Generators.createUrls();
         entityP.setIndividuals(urls);
@@ -386,7 +363,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistInstanceWithSimpleListOfIdentifiers() {
-        this.em = getEntityManager("PersistInstanceWithSimpleListOfIdentifiers", false);
         entityP.setSimpleList(Generators.createListOfIdentifiers());
         em.getTransaction().begin();
         em.persist(entityP);
@@ -400,7 +376,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistInstanceWithReferencedListOfIdentifiers() {
-        this.em = getEntityManager("PersistInstanceWithReferencedListOfIdentifiers", false);
         entityP.setReferencedList(Generators.createListOfIdentifiers());
         em.getTransaction().begin();
         em.persist(entityP);
@@ -414,7 +389,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
     @Test
     public void testPersistInstanceWithAnnotationProperties() {
-        this.em = getEntityManager("PersistInstanceWithAnnotationPropertyValues", false);
         final String apValue = "annotationPropertyValue";
         final URI apUriValue = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#annotationPropertyValue");
         entityN.setAnnotationProperty(apValue);

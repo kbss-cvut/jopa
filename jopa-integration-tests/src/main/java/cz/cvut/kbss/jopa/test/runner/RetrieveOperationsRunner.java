@@ -32,7 +32,6 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
     @Test
     public void testRetrieveSimple() {
-        logger.debug("Test: retrieve a simple entity.");
         this.em = getEntityManager("RetrieveSimple", false);
         persist(entityA);
 
@@ -46,15 +45,13 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testRetrieveNull() {
-        logger.debug("Test: retrieve null.");
+    public void findWithNullIdentifierThrowsNPX() {
         this.em = getEntityManager("RetrieveNull", false);
         em.find(OWLClassA.class, null);
     }
 
     @Test
-    public void testRetrieveLazy() throws Exception {
-        logger.debug("Test: retrieve entity with lazy loaded attribute.");
+    public void testRetrieveWithLazyAttribute() throws Exception {
         this.em = getEntityManager("RetrieveLazy", false);
         persist(entityI);
 
@@ -72,8 +69,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRetrieveGenerated() throws Exception {
-        logger.debug("Test: persist and retrieve several entities with generated identifiers.");
+    public void testRetrieveWithGeneratedId() throws Exception {
         this.em = getEntityManager("RetrieveGenerated", false);
         em.getTransaction().begin();
         final int size = 10;
@@ -97,16 +93,14 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRetrieveNotExisting() {
-        logger.debug("Test: retrieve entity which does not exist in the specified context.");
+    public void findByUnknownIdReturnsNull() {
         this.em = getEntityManager("RetrieveNotExisting", false);
         final OWLClassB res = em.find(OWLClassB.class, entityB.getUri());
         assertNull(res);
     }
 
     @Test
-    public void testRefresh() {
-        logger.debug("Test: refresh entity.");
+    public void testRefreshInstance() {
         this.em = getEntityManager("Refresh", false);
         persist(entityD, entityA);
 
@@ -122,8 +116,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testRefreshNotManaged() {
-        logger.debug("Test: refresh entity which is not managed.");
+    public void refreshingNotManagedIsIllegal() {
         this.em = getEntityManager("RefreshNotManaged", false);
         persist(entityA);
 
@@ -136,8 +129,7 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testRetrieveDifferentType() {
-        logger.debug("Test: persist entity but try to retrieve it as a different type.");
+    public void findOfEntityWithExistingIdButDifferentTypeReturnsNull() {
         this.em = getEntityManager("RetrieveDifferentType", false);
         persist(entityA);
 
@@ -147,7 +139,6 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
     @Test
     public void testRefreshInstanceWithUnmappedProperties() {
-        logger.debug("Test: refresh entity with @Properties field.");
         this.em = getEntityManager("RefreshEntityWithProperties", false);
         final Map<URI, Set<Object>> properties = Generators.createTypedProperties();
         entityP.setProperties(properties);
@@ -164,7 +155,6 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
 
     @Test
     public void plainIdentifierAttributeIsAlwaysLoadedEagerly() throws Exception {
-        logger.debug("Test: plain identifier attributes are loaded eagerly.");
         this.em = getEntityManager("PlainIdentifiersAreLoadedEagerly", false);
         entityP.setIndividualUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#plainIdentifier"));
         entityP.setIndividuals(Collections.singleton(new URL("http://krizik.felk.cvut.cz/ontologies/jopa#url")));
