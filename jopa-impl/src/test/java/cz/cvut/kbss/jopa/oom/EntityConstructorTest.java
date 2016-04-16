@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -443,7 +443,7 @@ public class EntityConstructorTest {
 
     private Collection<Axiom<?>> createAxiomsForValues(Boolean b, Integer i, Long lng, Double d, Date date,
                                                        OWLClassM.Severity severity) throws
-            Exception {
+                                                                                    Exception {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         if (b != null) {
             final String boolAttIri = OWLClassM.getBooleanAttributeField().getAnnotation(OWLDataProperty.class).iri();
@@ -563,5 +563,20 @@ public class EntityConstructorTest {
         final OWLClassL instance = new OWLClassL();
         constructor.setFieldValue(instance, OWLClassL.getReferencedListField(), fieldAxiom,
                 mocks.forOwlClassL().entityType(), descriptor);
+    }
+
+    @Test
+    public void instanceReconstructionSkipsAxiomsForWhichNoAttributeCanBeFound() throws Exception {
+        final Set<Axiom<?>> axioms = new HashSet<>();
+        axioms.add(getClassAssertionAxiomForType(OWLClassA.getClassIri()));
+        axioms.add(getStringAttAssertionAxiom(OWLClassA.getStrAttField()));
+        final Assertion unknown =
+                Assertion.createAnnotationPropertyAssertion(Generators.createPropertyIdentifier(), false);
+        axioms.add(new AxiomImpl<>(PK_RESOURCE, unknown, new Value<>("UnknownPropertyValue")));
+        final OWLClassA res = constructor.reconstructEntity(PK, mocks.forOwlClassA().entityType(), descriptor, axioms);
+        assertNotNull(res);
+        assertEquals(PK, res.getUri());
+        assertNotNull(res.getStringAttribute());
+        assertNull(res.getTypes());
     }
 }

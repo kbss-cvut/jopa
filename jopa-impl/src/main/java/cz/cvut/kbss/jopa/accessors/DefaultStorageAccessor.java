@@ -51,6 +51,7 @@ public class DefaultStorageAccessor implements StorageAccessor {
         }
     }
 
+    @Override
     public Connection acquireConnection() {
         try {
             final Connection conn = dataSource.getConnection();
@@ -69,7 +70,7 @@ public class DefaultStorageAccessor implements StorageAccessor {
         try {
             dataSource.close();
         } catch (OntoDriverException e) {
-            throw new StorageAccessException(e);
+            throw new StorageAccessException("Error when closing the data source.", e);
         } finally {
             this.open = false;
         }

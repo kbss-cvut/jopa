@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -23,6 +23,8 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -32,9 +34,11 @@ import java.util.Map;
 
 class EntityConstructor {
 
+    private static final Logger LOG = LoggerFactory.getLogger(EntityConstructor.class);
+
     private final ObjectOntologyMapperImpl mapper;
 
-    public EntityConstructor(ObjectOntologyMapperImpl mapper) {
+    EntityConstructor(ObjectOntologyMapperImpl mapper) {
         this.mapper = mapper;
     }
 
@@ -73,7 +77,8 @@ class EntityConstructor {
                                         Descriptor entityDescriptor, Collection<Axiom<?>> axioms)
             throws IllegalAccessException {
         final Map<URI, FieldSpecification<? super T, ?>> attributes = indexEntityAttributes(et);
-        final Map<FieldSpecification<? super T, ?>, FieldStrategy<? extends FieldSpecification<? super T, ?>, T>> fieldLoaders = new HashMap<>(
+        final Map<FieldSpecification<? super T, ?>, FieldStrategy<? extends FieldSpecification<? super T, ?>, T>>
+                fieldLoaders = new HashMap<>(
                 et.getAttributes().size());
         for (Axiom<?> ax : axioms) {
             if (MappingUtils.isEntityClassAssertion(ax, et)) {
@@ -81,11 +86,12 @@ class EntityConstructor {
             }
             final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = getFieldLoader(
                     ax, attributes, fieldLoaders, et, entityDescriptor);
-            if (fs == null && MappingUtils.isClassAssertion(ax)) {
-                // This means the axiom is class assertion but the entity contains no types field
+            if (fs == null) {
+                if (!MappingUtils.isClassAssertion(ax)) {
+                    LOG.warn("No attribute found for property {}. Axiom {} will be skipped.", ax.getAssertion(), ax);
+                }
                 continue;
             }
-            assert fs != null;
             fs.addValueFromAxiom(ax);
         }
         // We need to build the field values separately because some may be
@@ -149,22 +155,12 @@ class EntityConstructor {
 
     <T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,
                            Descriptor entityDescriptor) throws IllegalArgumentException, IllegalAccessException {
-        final FieldSpecification<? super T, ?> fieldSpec = getFieldSpecification(field, et);
+        final FieldSpecification<? super T, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
                 .createFieldStrategy(et, fieldSpec,
                         entityDescriptor.getAttributeDescriptor(fieldSpec), mapper);
         axioms.forEach(fs::addValueFromAxiom);
         fs.buildInstanceFieldValue(entity);
         validateIntegrityConstraints(entity, fieldSpec);
-    }
-
-    private <T> FieldSpecification<? super T, ?> getFieldSpecification(Field field, EntityType<T> et) {
-        if (et.getTypes() != null && et.getTypes().getJavaField().equals(field)) {
-            return et.getTypes();
-        } else if (et.getProperties() != null && et.getProperties().getJavaField().equals(field)) {
-            return et.getProperties();
-        } else {
-            return et.getAttribute(field.getName());
-        }
     }
 }

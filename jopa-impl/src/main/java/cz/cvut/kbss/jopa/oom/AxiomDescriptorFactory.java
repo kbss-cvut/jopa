@@ -93,7 +93,7 @@ class AxiomDescriptorFactory {
     AxiomDescriptor createForFieldLoading(URI primaryKey, Field field, Descriptor entityDescriptor,
                                           EntityType<?> et) {
         final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(primaryKey));
-        FieldSpecification<?, ?> fieldSpec = getFieldSpecification(field, et);
+        FieldSpecification<?, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
         Assertion assertion;
         if (et.getTypes() != null && fieldSpec.equals(et.getTypes())) {
             assertion = Assertion.createClassAssertion(et.getTypes().isInferred());
@@ -105,15 +105,5 @@ class AxiomDescriptorFactory {
         }
         addAssertionToDescriptor(entityDescriptor, fieldSpec, descriptor, assertion);
         return descriptor;
-    }
-
-    private FieldSpecification<?, ?> getFieldSpecification(Field field, EntityType<?> et) {
-        if (et.getTypes() != null && et.getTypes().getJavaField().equals(field)) {
-            return et.getTypes();
-        } else if (et.getProperties() != null && et.getProperties().getJavaField().equals(field)) {
-            return et.getProperties();
-        } else {
-            return et.getAttribute(field.getName());
-        }
     }
 }

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -29,8 +29,18 @@ public class DataSourceStub implements DataSource {
 
     private boolean open = true;
 
+    private boolean exceptionOnGetConnection;
+    private boolean exceptionOnClose;
+
+    void throwExceptionOnGetConnection() {
+        this.exceptionOnGetConnection = true;
+    }
+
     @Override
     public Connection getConnection() throws OntoDriverException {
+        if (exceptionOnGetConnection) {
+            throw new OntoDriverException("Exception when getting connection.");
+        }
         return new ConnectionStub();
     }
 
@@ -44,8 +54,15 @@ public class DataSourceStub implements DataSource {
         // Do nothing
     }
 
+    void throwExceptionOnClose() {
+        this.exceptionOnClose = true;
+    }
+
     @Override
     public void close() throws OntoDriverException {
+        if (exceptionOnClose) {
+            throw new OntoDriverException("Exception when closing the data source.");
+        }
         open = false;
     }
 

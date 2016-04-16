@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -59,7 +59,7 @@ public class BasicStorageConnector extends AbstractConnector {
     private OWLReasonerFactory reasonerFactory;
 
     public BasicStorageConnector(OntologyStorageProperties storageProperties, Map<String, String> properties) throws
-            OwlapiDriverException {
+                                                                                                              OwlapiDriverException {
         super(storageProperties, properties);
     }
 
@@ -85,6 +85,7 @@ public class BasicStorageConnector extends AbstractConnector {
                                 " but the loaded ontology has IRI " + ontology.getOntologyID().getOntologyIRI());
             }
         } catch (OWLOntologyCreationException e) {
+            LOG.trace("Unable to load ontology from document.", e);
             tryCreatingOntology();
         }
         initializeReasonerFactory();
@@ -112,7 +113,7 @@ public class BasicStorageConnector extends AbstractConnector {
         } catch (InstantiationException | IllegalAccessException e) {
             final String msg = "Unable to instantiate reasoner factory class " + reasonerFactoryClass;
             LOG.error(msg);
-            throw new ReasonerNotAvailableException(msg);
+            throw new ReasonerNotAvailableException(msg, e);
         } catch (ClassNotFoundException e) {
             final String msg = "Reasoner factory class " + reasonerFactoryClass + " not found!";
             LOG.error(msg);
