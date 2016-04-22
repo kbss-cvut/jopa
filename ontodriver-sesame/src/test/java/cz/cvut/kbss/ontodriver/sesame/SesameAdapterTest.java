@@ -1,20 +1,19 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.config.ConfigParam;
+import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
@@ -74,8 +73,9 @@ public class SesameAdapterTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(connectorMock.getValueFactory()).thenReturn(vf);
-        this.adapter = new SesameAdapter(connectorMock, Collections.singletonMap(
-                OntoDriverProperties.ONTOLOGY_LANGUAGE, LANGUAGE));
+        final Configuration configuration = new Configuration();
+        configuration.setProperty(ConfigParam.ONTOLOGY_LANGUAGE, LANGUAGE);
+        this.adapter = new SesameAdapter(connectorMock, configuration);
 
     }
 
@@ -86,7 +86,7 @@ public class SesameAdapterTest {
 
     @Test
     public void testSesameAdapter() throws Exception {
-        this.adapter = new SesameAdapter(connectorMock, Collections.<String, String>emptyMap());
+        this.adapter = new SesameAdapter(connectorMock, new Configuration());
         final Field langField = SesameAdapter.class.getDeclaredField("language");
         langField.setAccessible(true);
         final String lang = (String) langField.get(adapter);
@@ -137,11 +137,11 @@ public class SesameAdapterTest {
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
-                new Value<URI>(URI
+                new Value<>(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         ad.addAssertionValue(Assertion.createDataPropertyAssertion(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute"),
-                false), new Value<String>("StringValue"));
+                false), new Value<>("StringValue"));
         adapter.persist(ad);
         final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
         verify(connectorMock).addStatements(captor.capture());
@@ -186,20 +186,20 @@ public class SesameAdapterTest {
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
-                new Value<URI>(URI
+                new Value<>(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
-                new Value<URI>(URI
+                new Value<>(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassC")));
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
-                new Value<URI>(URI
+                new Value<>(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD")));
         final Assertion dataAssertion = Assertion.createDataPropertyAssertion(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute"),
                 false);
-        ad.addAssertionValue(dataAssertion, new Value<String>("StringValue"));
+        ad.addAssertionValue(dataAssertion, new Value<>("StringValue"));
         ad.setAssertionContext(dataAssertion,
                 URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne"));
         adapter.persist(ad);
@@ -240,17 +240,17 @@ public class SesameAdapterTest {
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
-                new Value<URI>(URI
+                new Value<>(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         final Assertion objectAssertion = Assertion.createPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-owlclassY"),
                 false);
         ad.addAssertionValue(objectAssertion,
-                new Value<URI>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityY")));
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityY")));
         final Assertion dataAssertion = Assertion.createPropertyAssertion(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute"),
                 false);
-        ad.addAssertionValue(dataAssertion, new Value<String>("stringValue"));
+        ad.addAssertionValue(dataAssertion, new Value<>("stringValue"));
         adapter.persist(ad);
         final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
         verify(connectorMock).addStatements(captor.capture());
@@ -273,7 +273,7 @@ public class SesameAdapterTest {
         final Assertion dataAssertion = Assertion.createAnnotationPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-annotation"),
                 false);
-        ad.addAssertionValue(dataAssertion, new Value<String>("StringValue"));
+        ad.addAssertionValue(dataAssertion, new Value<>("StringValue"));
         ad.setAssertionContext(dataAssertion, propertyCtx);
         adapter.persist(ad);
         final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
@@ -369,7 +369,7 @@ public class SesameAdapterTest {
         verify(connectorMock, times(3)).findStatements(any(Resource.class),
                 any(org.openrdf.model.URI.class), any(org.openrdf.model.Value.class), anyBoolean());
         verify(connectorMock, times(1)).findStatements(eq(subjectUri),
-                eq(vf.createURI(anProperty)), (org.openrdf.model.Value) eq(null), eq(true));
+                eq(vf.createURI(anProperty)), eq(null), eq(true));
         assertEquals(statements.size(), res.size());
         for (Axiom<?> ax : res) {
             assertTrue(statements.containsKey(ax.getAssertion()));
@@ -673,7 +673,7 @@ public class SesameAdapterTest {
     @Test
     public void testContainsClassAssertion() throws Exception {
         final Axiom<URI> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
-                new Value<URI>(URI
+                new Value<>(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         final Set<Statement> result = new HashSet<>();
         result.add(mock(Statement.class));
@@ -691,7 +691,7 @@ public class SesameAdapterTest {
     public void testContainsClassAssertionInContext() throws Exception {
         final URI context = URI.create("http://context");
         final Axiom<URI> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
-                new Value<URI>(URI
+                new Value<>(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         final Set<Statement> result = new HashSet<>();
         result.add(mock(Statement.class));
@@ -710,7 +710,7 @@ public class SesameAdapterTest {
         final URI context = URI.create("http://context");
         final int val = 10;
         final Axiom<Integer> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
-                new Value<Integer>(val));
+                new Value<>(val));
         final Set<Statement> result = new HashSet<>();
         when(
                 connectorMock.findStatements(eq(subjectUri), eq(RDF.TYPE),
@@ -732,7 +732,7 @@ public class SesameAdapterTest {
         final String oldValue = "oldValue";
         final String newValue = "newValue";
         desc.addAssertion(assertion);
-        desc.addAssertionValue(assertion, new Value<String>(newValue));
+        desc.addAssertionValue(assertion, new Value<>(newValue));
         final Collection<Statement> statements = Collections.singleton(vf.createStatement(
                 subjectUri, sesameProperty, vf.createLiteral(oldValue, "en")));
         when(
@@ -759,7 +759,7 @@ public class SesameAdapterTest {
         final org.openrdf.model.URI oldValue = vf.createURI("http://www.old-value.org");
         final org.openrdf.model.URI newValue = vf.createURI("http://www.new-value.org");
         desc.addAssertion(assertion);
-        desc.addAssertionValue(assertion, new Value<URI>(URI.create(newValue.stringValue())));
+        desc.addAssertionValue(assertion, new Value<>(URI.create(newValue.stringValue())));
         final Collection<Statement> statements = Collections.singleton(vf.createStatement(
                 subjectUri, sesameProperty, oldValue));
         when(
@@ -811,7 +811,7 @@ public class SesameAdapterTest {
                 "http://krizik.felk.cvut.cz/ontologies/types#tFive"};
         desc.addAssertion(assertion);
         for (String t : newTypes) {
-            desc.addAssertionValue(assertion, new Value<URI>(URI.create(t)));
+            desc.addAssertionValue(assertion, new Value<>(URI.create(t)));
         }
         final Collection<Statement> statements = initOldTypes();
         when(

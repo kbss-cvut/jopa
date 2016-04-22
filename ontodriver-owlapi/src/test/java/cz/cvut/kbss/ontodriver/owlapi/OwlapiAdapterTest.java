@@ -15,6 +15,7 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import com.google.common.base.Optional;
+import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OWLIndividualExistsException;
 import cz.cvut.kbss.ontodriver.model.*;
@@ -66,7 +67,7 @@ public class OwlapiAdapterTest {
         when(snapshotMock.getDataFactory()).thenReturn(factory);
         when(snapshotMock.getReasoner()).thenReturn(reasonerMock);
 
-        this.adapter = spy(new OwlapiAdapter(connectorMock, Collections.emptyMap()));
+        this.adapter = spy(new OwlapiAdapter(connectorMock, new Configuration()));
     }
 
     @Test

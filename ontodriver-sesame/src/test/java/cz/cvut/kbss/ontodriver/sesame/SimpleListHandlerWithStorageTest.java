@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -34,8 +32,7 @@ public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTest
 
     @Before
     public void setUp() throws Exception {
-        connector = ConnectorFactory.getInstance().createStorageConnector(storageProperties,
-                properties);
+        connector = ConnectorFactory.getInstance().createStorageConnector(storageProperties, configuration);
         this.handler = new SimpleListHandler(connector, connector.getValueFactory());
         connector.begin();
     }
@@ -231,7 +228,7 @@ public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTest
         verifyListContent(axioms, handler.loadList(updatedFirst));
 
         final SimpleListValueDescriptor updatedSecond = initValues(0);
-        for (int i = 0; i < original.getValues().size() -1; i++) {
+        for (int i = 0; i < original.getValues().size() - 1; i++) {
             updatedSecond.addValue(original.getValues().get(i));
         }
         updatedSecond.addValue(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/addedSecond"));

@@ -1,20 +1,19 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.config.ConfigParam;
+import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.exception.OWLIndividualExistsException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
@@ -31,7 +30,10 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Adapter between OntoDriver API and OWLAPI.
@@ -53,9 +55,9 @@ public class OwlapiAdapter {
         INITIAL, RUNNING
     }
 
-    public OwlapiAdapter(Connector connector, Map<String, String> properties) {
+    public OwlapiAdapter(Connector connector, Configuration configuration) {
         this.connector = connector;
-        this.language = properties.get(OntoDriverProperties.ONTOLOGY_LANGUAGE);
+        this.language = configuration.getProperty(ConfigParam.ONTOLOGY_LANGUAGE, "en");
     }
 
     private void startTransactionIfNotActive() {

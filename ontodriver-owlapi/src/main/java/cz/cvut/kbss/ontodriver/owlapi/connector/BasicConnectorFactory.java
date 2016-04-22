@@ -15,6 +15,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 
@@ -32,19 +33,19 @@ public class BasicConnectorFactory extends ConnectorFactory {
 
     @Override
     public synchronized AbstractConnector getConnector(OntologyStorageProperties storageProperties,
-                                                       Map<String, String> properties) throws OwlapiDriverException {
+                                                       Configuration configuration) throws OwlapiDriverException {
         if (!open) {
             throw new IllegalStateException("The factory is closed.");
         }
         if (connector == null) {
-            initConnector(storageProperties, properties);
+            initConnector(storageProperties, configuration);
         }
         return connector;
     }
 
-    private void initConnector(OntologyStorageProperties storageProperties, Map<String, String> properties)
+    private void initConnector(OntologyStorageProperties storageProperties, Configuration configuration)
             throws OwlapiDriverException {
-        this.connector = new BasicStorageConnector(storageProperties, properties);
+        this.connector = new BasicStorageConnector(storageProperties, configuration);
     }
 
     @Override

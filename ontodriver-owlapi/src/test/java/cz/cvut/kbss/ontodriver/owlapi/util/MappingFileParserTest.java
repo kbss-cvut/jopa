@@ -1,19 +1,19 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi.util;
 
+import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.owlapi.exception.MappingFileParserException;
@@ -23,19 +23,22 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import static cz.cvut.kbss.ontodriver.owlapi.config.OwlapiOntoDriverProperties.IRI_MAPPING_DELIMITER;
-import static cz.cvut.kbss.ontodriver.owlapi.config.OwlapiOntoDriverProperties.MAPPING_FILE_LOCATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class MappingFileParserTest {
 
+    private Configuration configuration = new Configuration();
+
     @Test(expected = MappingFileParserException.class)
     public void throwsExceptionWhenMappingFileCannotBeFound() throws Exception {
         final String someFilePath = "thisFile/does/not/exist";
-        new MappingFileParser(Collections.singletonMap(MAPPING_FILE_LOCATION, someFilePath));
+        configuration.setProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION, someFilePath);
+        new MappingFileParser(configuration);
     }
 
     @Test
@@ -44,8 +47,8 @@ public class MappingFileParserTest {
         final String content = ontUri + " " +
                 OwlapiOntoDriverProperties.DEFAULT_IRI_MAPPING_DELIMITER + " ./file.owl";
         final File mappingFile = createMappingFile(content);
-        final Map<URI, URI> mappings = new MappingFileParser(
-                Collections.singletonMap(MAPPING_FILE_LOCATION, mappingFile.toURI().toString())).getMappings();
+        configuration.setProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION, mappingFile.toURI().toString());
+        final Map<URI, URI> mappings = new MappingFileParser(configuration).getMappings();
         assertEquals(1, mappings.size());
     }
 
@@ -55,8 +58,8 @@ public class MappingFileParserTest {
         final String content = ontUri + " " +
                 OwlapiOntoDriverProperties.DEFAULT_IRI_MAPPING_DELIMITER + " ./file.owl";
         final File mappingFile = createMappingFile(content);
-        final Map<URI, URI> mappings = new MappingFileParser(
-                Collections.singletonMap(MAPPING_FILE_LOCATION, mappingFile.getPath())).getMappings();
+        configuration.setProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION, mappingFile.getPath());
+        final Map<URI, URI> mappings = new MappingFileParser(configuration).getMappings();
         assertEquals(1, mappings.size());
         assertTrue(mappings.get(URI.create(ontUri)).toASCIIString().endsWith("file.owl"));
     }
@@ -66,10 +69,9 @@ public class MappingFileParserTest {
         final String ontUri = "http://krizik.felk.cvut.cz/ontologies/test";
         final String content = ontUri + " - ./file.owl";
         final File mappingFile = createMappingFile(content);
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(MAPPING_FILE_LOCATION, mappingFile.getPath());
-        properties.put(IRI_MAPPING_DELIMITER, "-");
-        final Map<URI, URI> mappings = new MappingFileParser(properties).getMappings();
+        configuration.setProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION, mappingFile.getPath());
+        configuration.setProperty(OwlapiConfigParam.IRI_MAPPING_DELIMITER, "-");
+        final Map<URI, URI> mappings = new MappingFileParser(configuration).getMappings();
         assertEquals(1, mappings.size());
         assertTrue(mappings.get(URI.create(ontUri)).toASCIIString().endsWith("file.owl"));
     }
@@ -79,8 +81,8 @@ public class MappingFileParserTest {
         final String ontUri = "http://krizik.felk.cvut.cz/ontologies/test";
         final String content = ontUri + " " + OwlapiOntoDriverProperties.DEFAULT_IRI_MAPPING_DELIMITER + " file.owl";
         final File mappingFile = createMappingFile(content);
-        final Map<URI, URI> mappings = new MappingFileParser(
-                Collections.singletonMap(MAPPING_FILE_LOCATION, mappingFile.getPath())).getMappings();
+        configuration.setProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION, mappingFile.getPath());
+        final Map<URI, URI> mappings = new MappingFileParser(configuration).getMappings();
         assertEquals(1, mappings.size());
         final URI targetPath = new File(mappingFile.getParent() + "/file.owl").toURI();
         assertEquals(targetPath, mappings.get(URI.create(ontUri)));
@@ -93,8 +95,8 @@ public class MappingFileParserTest {
         final String content =
                 ontUri + " " + OwlapiOntoDriverProperties.DEFAULT_IRI_MAPPING_DELIMITER + " " + targetPath;
         final File mappingFile = createMappingFile(content);
-        final Map<URI, URI> mappings = new MappingFileParser(
-                Collections.singletonMap(MAPPING_FILE_LOCATION, mappingFile.getPath())).getMappings();
+        configuration.setProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION, mappingFile.getPath());
+        final Map<URI, URI> mappings = new MappingFileParser(configuration).getMappings();
         assertEquals(1, mappings.size());
         assertEquals(new File(targetPath).toURI(), mappings.get(URI.create(ontUri)));
     }
@@ -111,9 +113,9 @@ public class MappingFileParserTest {
             sb.append('\n');
         }
         final File mappingFile = createMappingFile(sb.toString());
+        configuration.setProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION, mappingFile.getPath());
 
-        final Map<URI, URI> mappings = new MappingFileParser(
-                Collections.singletonMap(MAPPING_FILE_LOCATION, mappingFile.getPath())).getMappings();
+        final Map<URI, URI> mappings = new MappingFileParser(configuration).getMappings();
         assertEquals(uris.size(), mappings.size());
         for (int i = 0; i < uris.size(); i++) {
             final URI file = mappings.get(uris.get(i));
@@ -131,9 +133,9 @@ public class MappingFileParserTest {
         final URI ontoUri = URI.create("http://onto.fel.cvut.cz/ontologies/jopa");
         final URI mappedTo = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa");
         final File mappingFile = createMappingFile(ontoUri.toString() + " > " + mappedTo.toString());
+        configuration.setProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION, mappingFile.getPath());
 
-        final Map<URI, URI> mappings = new MappingFileParser(
-                Collections.singletonMap(MAPPING_FILE_LOCATION, mappingFile.getPath())).getMappings();
+        final Map<URI, URI> mappings = new MappingFileParser(configuration).getMappings();
         assertEquals(1, mappings.size());
         assertEquals(mappedTo, mappings.get(ontoUri));
     }
@@ -143,9 +145,9 @@ public class MappingFileParserTest {
         final URI ontoUri = URI.create("http://onto.fel.cvut.cz/ontologies/jopa");
         final String mappedTo = "http:// .krizik.felk.cvut.cz";
         final File mappingFile = createMappingFile(ontoUri.toString() + " > " + mappedTo);
+        configuration.setProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION, mappingFile.getPath());
 
-        new MappingFileParser(
-                Collections.singletonMap(MAPPING_FILE_LOCATION, mappingFile.getPath())).getMappings();
+        new MappingFileParser(configuration).getMappings();
     }
 
     @Test
@@ -154,9 +156,9 @@ public class MappingFileParserTest {
         final URI mappedTo = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa");
         final File mappingFile = createMappingFile(
                 ontoUri.toString() + " > " + mappedTo.toString() + " > " + mappedTo.toString());
+        configuration.setProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION, mappingFile.getPath());
 
-        final Map<URI, URI> mappings = new MappingFileParser(
-                Collections.singletonMap(MAPPING_FILE_LOCATION, mappingFile.getPath())).getMappings();
+        final Map<URI, URI> mappings = new MappingFileParser(configuration).getMappings();
         assertTrue(mappings.isEmpty());
     }
 

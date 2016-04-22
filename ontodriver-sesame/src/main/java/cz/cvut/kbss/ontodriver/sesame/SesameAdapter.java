@@ -1,30 +1,29 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.Closeable;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.config.ConfigParam;
+import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.exception.OWLIndividualExistsException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
@@ -32,7 +31,10 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
 
 class SesameAdapter implements Closeable {
 
@@ -48,19 +50,14 @@ class SesameAdapter implements Closeable {
     private boolean open;
     private final Transaction transaction;
 
-    public SesameAdapter(Connector connector, Map<String, String> properties) {
+    public SesameAdapter(Connector connector, Configuration configuration) {
         assert connector != null;
 
         this.connector = connector;
         this.valueFactory = connector.getValueFactory();
-        this.language = resolveLanguage(properties);
+        this.language = configuration.getProperty(ConfigParam.ONTOLOGY_LANGUAGE);
         this.open = true;
         this.transaction = new Transaction();
-    }
-
-    private String resolveLanguage(Map<String, String> properties) {
-        return properties.containsKey(OntoDriverProperties.ONTOLOGY_LANGUAGE) ? properties
-                .get(OntoDriverProperties.ONTOLOGY_LANGUAGE) : null;
     }
 
     Connector getConnector() {

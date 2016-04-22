@@ -1,42 +1,48 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.config.ConfigParam;
+import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.config.ConfigurationParameter;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
 import cz.cvut.kbss.ontodriver.owlapi.connector.ConnectorFactory;
 import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.list.OwlapiLists;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 class OwlapiDriver implements Closeable, ConnectionListener {
 
+    private static final List<ConfigurationParameter> CONFIGS = Arrays
+            .asList(ConfigParam.AUTO_COMMIT, ConfigParam.MODULE_EXTRACTION_SIGNATURE, ConfigParam.ONTOLOGY_LANGUAGE,
+                    ConfigParam.REASONER_FACTORY_CLASS,
+                    OwlapiConfigParam.IRI_MAPPING_DELIMITER, OwlapiConfigParam.MAPPING_FILE_LOCATION,
+                    OwlapiConfigParam.WRITE_ON_COMMIT);
+
     private final OntologyStorageProperties storageProperties;
-    private final Map<String, String> properties;
+    private final Configuration configuration = new Configuration();
     private boolean open = true;
 
     private final Set<OwlapiConnection> openConnections = new HashSet<>();
 
     OwlapiDriver(OntologyStorageProperties storageProperties, Map<String, String> properties) {
         this.storageProperties = storageProperties;
-        this.properties = properties;
+        configuration.addConfiguration(properties, CONFIGS);
     }
 
     @Override
@@ -68,7 +74,7 @@ class OwlapiDriver implements Closeable, ConnectionListener {
     Connection acquireConnection() throws OntoDriverException {
         assert open;
         final OwlapiAdapter adapter = new OwlapiAdapter(
-                ConnectorFactory.getInstance().getConnector(storageProperties, properties), properties);
+                ConnectorFactory.getInstance().getConnector(storageProperties, configuration), configuration);
         final OwlapiConnection c = new OwlapiConnection(adapter);
         c.setTypes(new OwlapiTypes(adapter, c::ensureOpen, c::commitIfAuto));
         c.setProperties(new OwlapiProperties(adapter, c::ensureOpen, c::commitIfAuto));

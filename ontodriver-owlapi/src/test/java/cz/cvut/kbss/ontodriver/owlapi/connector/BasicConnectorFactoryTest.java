@@ -1,20 +1,19 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
+import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -27,7 +26,6 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
-import java.util.Collections;
 
 import static org.junit.Assert.*;
 
@@ -57,16 +55,16 @@ public class BasicConnectorFactoryTest {
 
     @Test
     public void getConnectorReturnsTheSameCentralConnectorForAllCalls() throws Exception {
-        final Connector connectorOne = factory.getConnector(storageProperties, Collections.emptyMap());
+        final Connector connectorOne = factory.getConnector(storageProperties, new Configuration());
         assertNotNull(connectorOne);
-        final Connector connectorTwo = factory.getConnector(storageProperties, Collections.emptyMap());
+        final Connector connectorTwo = factory.getConnector(storageProperties, new Configuration());
         assertNotNull(connectorTwo);
         assertSame(connectorOne, connectorTwo);
     }
 
     @Test
     public void closesConnectorOnFactoryClose() throws Exception {
-        final AbstractConnector connector = factory.getConnector(storageProperties, Collections.emptyMap());
+        final AbstractConnector connector = factory.getConnector(storageProperties, new Configuration());
         assertTrue(connector.isOpen());
         factory.close();
         assertFalse(connector.isOpen());

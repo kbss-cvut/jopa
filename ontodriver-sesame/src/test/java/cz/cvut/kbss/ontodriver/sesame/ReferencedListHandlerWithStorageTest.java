@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -29,15 +27,14 @@ import static org.junit.Assert.assertTrue;
 
 public class ReferencedListHandlerWithStorageTest extends ListHandlerWithStorageTestBase {
 
-    protected static final String NODE_CONTENT_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
+    private static final String NODE_CONTENT_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
 
 
     private ReferencedListHandler handler;
 
     @Before
     public void setUp() throws Exception {
-        connector = ConnectorFactory.getInstance().createStorageConnector(storageProperties,
-                properties);
+        connector = ConnectorFactory.getInstance().createStorageConnector(storageProperties, configuration);
         this.handler = new ReferencedListHandler(connector, connector.getValueFactory());
         connector.begin();
     }

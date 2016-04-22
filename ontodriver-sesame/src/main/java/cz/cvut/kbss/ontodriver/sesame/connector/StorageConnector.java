@@ -1,21 +1,20 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
+import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryCreationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryNotFoundException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
@@ -46,7 +45,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 class StorageConnector extends AbstractConnector {
 
@@ -62,17 +60,17 @@ class StorageConnector extends AbstractConnector {
     private RepositoryManager manager;
     private RepositoryConnection connection;
 
-    public StorageConnector(OntologyStorageProperties storageProperties,
-                            Map<String, String> properties) throws SesameDriverException {
+    StorageConnector(OntologyStorageProperties storageProperties, Configuration configuration)
+            throws SesameDriverException {
         assert storageProperties != null;
-        assert properties != null;
+        assert configuration != null;
 
         this.storageProperties = storageProperties;
-        initialize(properties);
+        initialize(configuration);
         this.open = true;
     }
 
-    private void initialize(Map<String, String> properties) throws SesameDriverException {
+    private void initialize(Configuration configuration) throws SesameDriverException {
         final URI serverUri = storageProperties.getPhysicalURI();
         LOG.debug("Initializing connector to repository at {}", serverUri);
         try {
@@ -80,7 +78,7 @@ class StorageConnector extends AbstractConnector {
             if (isRemote) {
                 this.repository = RepositoryProvider.getRepository(serverUri.toString());
             } else {
-                this.repository = createLocalRepository(properties);
+                this.repository = createLocalRepository(configuration);
             }
             if (repository == null) {
                 if (isRemote) {
@@ -97,23 +95,22 @@ class StorageConnector extends AbstractConnector {
         }
     }
 
-    private Repository createLocalRepository(Map<String, String> props) {
+    private Repository createLocalRepository(Configuration configuration) {
         final URI localUri = storageProperties.getPhysicalURI();
-        boolean useVolatile = Boolean.parseBoolean(props.get(SesameOntoDriverProperties.SESAME_USE_VOLATILE_STORAGE));
-        if (!isFileUri(localUri) && useVolatile) {
-            return createInMemoryRepository(props);
+        if (!isFileUri(localUri) && configuration.is(SesameConfigParam.USE_VOLATILE_STORAGE)) {
+            return createInMemoryRepository(configuration);
         } else {
-            return createNativeRepository(props, localUri);
+            return createNativeRepository(configuration, localUri);
         }
     }
 
     /**
      * Creates a local in-memory Sesame repository which is disposed when the VM shuts down.
      */
-    private Repository createInMemoryRepository(Map<String, String> props) {
+    private Repository createInMemoryRepository(Configuration configuration) {
         LOG.trace("Creating local in-memory repository.");
         final MemoryStore ms = new MemoryStore();
-        if (shouldUseInferenceInLocalRepositories(props)) {
+        if (configuration.is(SesameConfigParam.USE_INFERENCE)) {
             return new SailRepository(new ForwardChainingRDFSInferencer(ms));
         } else {
             return new SailRepository(ms);
@@ -125,7 +122,7 @@ class StorageConnector extends AbstractConnector {
      * <p>
      * This kind of repository stores data in files and is persistent after the VM shuts down.
      */
-    private Repository createNativeRepository(Map<String, String> props, final URI localUri) {
+    private Repository createNativeRepository(Configuration configuration, final URI localUri) {
         LOG.trace("Creating local native repository at " + localUri);
         final String[] tmp = localUri.toString().split(LOCAL_NATIVE_REPO);
         if (tmp.length != 2) {
@@ -139,7 +136,7 @@ class StorageConnector extends AbstractConnector {
         }
         try {
             this.manager = RepositoryProvider.getRepositoryManagerOfRepository(localUri.toASCIIString());
-            final RepositoryConfig cfg = createLocalNativeRepositoryConfig(repoId, props);
+            final RepositoryConfig cfg = createLocalNativeRepositoryConfig(repoId, configuration);
             manager.addRepositoryConfig(cfg);
             return manager.getRepository(repoId);
         } catch (RepositoryConfigException | RepositoryException e) {
@@ -148,9 +145,9 @@ class StorageConnector extends AbstractConnector {
         }
     }
 
-    private RepositoryConfig createLocalNativeRepositoryConfig(String repoId, Map<String, String> props) {
+    private RepositoryConfig createLocalNativeRepositoryConfig(String repoId, Configuration configuration) {
         SailImplConfig backend = new NativeStoreConfig();
-        if (shouldUseInferenceInLocalRepositories(props)) {
+        if (configuration.is(SesameConfigParam.USE_INFERENCE)) {
             backend = new ForwardChainingRDFSInferencerConfig(backend);
         }
         final SailRepositoryConfig repoType = new SailRepositoryConfig(backend);
@@ -178,12 +175,6 @@ class StorageConnector extends AbstractConnector {
 
     private static boolean isFileUri(URI uri) {
         return (uri.getScheme() != null && uri.getScheme().equals(FILE_SCHEME));
-    }
-
-    private static boolean shouldUseInferenceInLocalRepositories(Map<String, String> properties) {
-        assert properties != null;
-
-        return (Boolean.parseBoolean(properties.get(SesameOntoDriverProperties.SESAME_USE_INFERENCE)));
     }
 
     private static boolean isRemoteRepository(URI uri) {

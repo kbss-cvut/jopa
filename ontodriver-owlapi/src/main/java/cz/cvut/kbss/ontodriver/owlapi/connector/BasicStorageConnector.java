@@ -1,23 +1,22 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
+import cz.cvut.kbss.ontodriver.config.ConfigParam;
+import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiOntoDriverProperties;
+import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
 import cz.cvut.kbss.ontodriver.owlapi.exception.*;
 import cz.cvut.kbss.ontodriver.owlapi.util.DefaultOntologyIriMapper;
 import cz.cvut.kbss.ontodriver.owlapi.util.MappingFileParser;
@@ -31,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -58,9 +56,9 @@ public class BasicStorageConnector extends AbstractConnector {
     private OWLReasoner reasoner;
     private OWLReasonerFactory reasonerFactory;
 
-    public BasicStorageConnector(OntologyStorageProperties storageProperties, Map<String, String> properties) throws
-                                                                                                              OwlapiDriverException {
-        super(storageProperties, properties);
+    public BasicStorageConnector(OntologyStorageProperties storageProperties, Configuration configuration)
+            throws OwlapiDriverException {
+        super(storageProperties, configuration);
     }
 
     @Override
@@ -71,9 +69,7 @@ public class BasicStorageConnector extends AbstractConnector {
         LOG.debug("Loading ontology {} from {}.", storageProperties.getOntologyURI(),
                 storageProperties.getPhysicalURI());
         this.ontologyManager = OWLManager.createOWLOntologyManager();
-        if (properties.containsKey(OwlapiOntoDriverProperties.MAPPING_FILE_LOCATION)) {
-            ontologyManager.getIRIMappers().add(new DefaultOntologyIriMapper(new MappingFileParser(properties)));
-        }
+        setIriMapper();
         try {
             this.ontology = ontologyManager.loadOntologyFromOntologyDocument(
                     IRI.create(storageProperties.getPhysicalURI()));
@@ -92,6 +88,12 @@ public class BasicStorageConnector extends AbstractConnector {
         this.reasoner = getReasoner(ontology);
     }
 
+    private void setIriMapper() {
+        if (configuration.isSet(OwlapiConfigParam.MAPPING_FILE_LOCATION)) {
+            ontologyManager.getIRIMappers().add(new DefaultOntologyIriMapper(new MappingFileParser(configuration)));
+        }
+    }
+
     private void tryCreatingOntology() throws OwlapiDriverException {
         LOG.trace("Creating new ontology in {}.", storageProperties.getPhysicalURI());
         try {
@@ -103,7 +105,7 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     private void initializeReasonerFactory() {
-        final String reasonerFactoryClass = properties.get(OntoDriverProperties.OWLAPI_REASONER_FACTORY_CLASS);
+        final String reasonerFactoryClass = configuration.getProperty(ConfigParam.REASONER_FACTORY_CLASS);
         if (reasonerFactoryClass == null) {
             LOG.warn("Reasoner factory class not found. Reasoner won't be available.");
             return;

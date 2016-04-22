@@ -1,19 +1,19 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi.util;
 
+import cz.cvut.kbss.ontodriver.config.Configuration;
+import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.owlapi.exception.MappingFileParserException;
 import org.slf4j.Logger;
@@ -38,15 +38,12 @@ public class MappingFileParser {
 
     private final String delimiter;
 
-    public MappingFileParser(Map<String, String> properties) {
-        final String mappingFilePath = properties.get(OwlapiOntoDriverProperties.MAPPING_FILE_LOCATION);
+    public MappingFileParser(Configuration configuration) {
+        final String mappingFilePath = configuration.getProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION);
         assert mappingFilePath != null;
         this.mappingFile = resolveMappingFile(mappingFilePath);
-        if (properties.containsKey(OwlapiOntoDriverProperties.IRI_MAPPING_DELIMITER)) {
-            this.delimiter = properties.get(OwlapiOntoDriverProperties.IRI_MAPPING_DELIMITER);
-        } else {
-            this.delimiter = OwlapiOntoDriverProperties.DEFAULT_IRI_MAPPING_DELIMITER;
-        }
+        this.delimiter = configuration.getProperty(OwlapiConfigParam.IRI_MAPPING_DELIMITER,
+                OwlapiOntoDriverProperties.DEFAULT_IRI_MAPPING_DELIMITER);
     }
 
     private File resolveMappingFile(String path) {
