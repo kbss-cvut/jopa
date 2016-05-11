@@ -28,54 +28,66 @@ public class OWL2Java {
     static final String VERSION = "0.7.6";
 
     // CLI map
-    private static final Map<COMMAND, OptionParser> map = new HashMap<>();
+    private static final Map<Command, OptionParser> map = new HashMap<>();
 
     static {
-        map.put(COMMAND.help, new OptionParser() {
+        map.put(Command.help, new OptionParser() {
             {
                 // no options
             }
         });
-        map.put(COMMAND.transform, new OptionParser() {
+        map.put(Command.transform, new OptionParser() {
             {
-                accepts("m", "mapping file").withRequiredArg().ofType(
-                        String.class);
-                accepts("p", "package").withRequiredArg().ofType(String.class)
-                                       .defaultsTo("generated");
-                accepts("c", "context name").withRequiredArg().ofType(
-                        String.class);
-                accepts("w", "with owlapi IRIs").withRequiredArg().ofType(
-                        Boolean.class).defaultsTo(false);
-                accepts("d", "output directory").withRequiredArg()
-                                                .ofType(String.class).defaultsTo("");
+                accepts(Param.MAPPING_FILE.arg, Param.MAPPING_FILE.description).withRequiredArg().ofType(String.class);
+                accepts(Param.PACKAGE.arg, Param.PACKAGE.description).withRequiredArg().ofType(String.class)
+                                                                     .defaultsTo("generated");
+                accepts(Param.CONTEXT.arg, Param.CONTEXT.description).withRequiredArg().ofType(String.class);
+                accepts(Param.WITH_IRIS.arg, Param.WITH_IRIS.description).withRequiredArg().ofType(Boolean.class)
+                                                                         .defaultsTo(false);
+                accepts(Param.TARGET_DIR.arg, Param.TARGET_DIR.description).withRequiredArg().ofType(String.class)
+                                                                           .defaultsTo("");
             }
         });
-        map.put(COMMAND.vocabulary, new OptionParser() {
+        map.put(Command.vocabulary, new OptionParser() {
             {
-                accepts("m", "mapping file").withRequiredArg().ofType(String.class);
-                accepts("c", "context name").withRequiredArg().ofType(String.class);
-                accepts("w", "with owlapi IRIs").withRequiredArg().ofType(Boolean.class).defaultsTo(false);
-                accepts("d", "output directory").withRequiredArg().ofType(String.class).defaultsTo("");
+                accepts(Param.MAPPING_FILE.arg, Param.MAPPING_FILE.description).withRequiredArg().ofType(String.class);
+                accepts(Param.CONTEXT.arg, Param.CONTEXT.description).withRequiredArg().ofType(String.class);
+                accepts(Param.WITH_IRIS.arg, Param.WITH_IRIS.description).withRequiredArg().ofType(Boolean.class)
+                                                                         .defaultsTo(false);
+                accepts(Param.TARGET_DIR.arg, Param.TARGET_DIR.description).withRequiredArg().ofType(String.class)
+                                                                           .defaultsTo("");
             }
         });
-        map.put(COMMAND.list, new OptionParser() {
+        map.put(Command.list, new OptionParser() {
             {
-                accepts("m", "mapping file").withRequiredArg().ofType(
-                        String.class);
+                accepts(Param.MAPPING_FILE.arg, Param.MAPPING_FILE.description).withRequiredArg().ofType(String.class);
             }
         });
-        map.put(COMMAND.version, new OptionParser() {
+        map.put(Command.version, new OptionParser() {
             {
                 // no options
             }
         });
     }
 
-    private enum COMMAND {
+    private enum Command {
         help, list, transform, vocabulary, version
     }
 
-    private static void printHelp(COMMAND cc) {
+    private enum Param {
+        MAPPING_FILE("m", "mapping file"), CONTEXT("c", "context name"), WITH_IRIS("w", "with OWLAPI IRIs"), TARGET_DIR(
+                "d", "output directory"), PACKAGE("p", "package");
+
+        private final String arg;
+        private final String description;
+
+        Param(String arg, String description) {
+            this.arg = arg;
+            this.description = description;
+        }
+    }
+
+    private static void printHelp(Command cc) {
         switch (cc) {
             case help:
                 System.out
@@ -120,9 +132,9 @@ public class OWL2Java {
         }
     }
 
-    private static COMMAND getCommandOrNull(String s) {
+    private static Command getCommandOrNull(String s) {
         try {
-            return COMMAND.valueOf(s);
+            return Command.valueOf(s);
         } catch (IllegalArgumentException e) {
             return null;
         }
@@ -131,18 +143,15 @@ public class OWL2Java {
     public static void main(String[] args) {
 
         if (args.length == 0) {
-            System.out
-                    .println("Syntax: OWL2Java <command> <args>. Run 'OWL2Java help' for more details");
+            System.out.println("Syntax: OWL2Java <command> <args>. Run 'OWL2Java help' for more details");
             return;
         }
 
-        final COMMAND c;
+        final Command c;
 
         if ((c = getCommandOrNull(args[0])) == null) {
             System.out
-                    .println("Invalid command "
-                            + args[0]
-                            + ", try 'OWL2Java help' for the list of available commands");
+                    .println("Invalid command " + args[0] + ", try 'OWL2Java help' for the list of available commands");
             return;
         }
 
@@ -154,41 +163,31 @@ public class OWL2Java {
         switch (c) {
             case help:
                 if (args.length != 1) {
-                    final COMMAND cc;
+                    final Command cc;
                     if ((cc = getCommandOrNull(args[1])) != null) {
                         printHelp(cc);
                     } else {
-                        System.out
-                                .println("Invalid command "
-                                        + args[0]
-                                        + " "
-                                        + args[1]
-                                        + ", try 'OWL2Java help' for the list of available commands");
+                        System.out.println("Invalid command " + args[0] + " " + args[1] +
+                                ", try 'OWL2Java help' for the list of available commands");
                         return;
                     }
                 } else {
-                    System.out.println("Available commands : "
-                            + Arrays.asList(COMMAND.values()));
+                    System.out.println("Available commands : " + Arrays.asList(Command.values()));
                 }
-
                 break;
             case list:
                 if (!verifyArgumentCount(os)) {
                     break;
                 }
-
-                oj = new OWL2JavaTransformer();
-                if (os.has("m")) {
-                    oj.setOntology(os.nonOptionArguments().get(1), os.valueOf("m")
-                                                                     .toString(), true);
-                } else {
-                    oj.setOntology(os.nonOptionArguments().get(1), null, true);
-                }
+                oj = getTransformer(os);
 
                 System.out.println("Available contexts: " + oj.listContexts());
                 break;
             case transform:
                 transformOwlToJava(os);
+                break;
+            case vocabulary:
+                generateVocabulary(os);
                 break;
             case version:
                 System.out.println("OWL2Java version " + VERSION);
@@ -197,6 +196,17 @@ public class OWL2Java {
                 System.out.println("Unknown command '" + args[0]
                         + "', try 'OWL2Java help.'");
         }
+    }
+
+    private static OWL2JavaTransformer getTransformer(OptionSet os) {
+        OWL2JavaTransformer oj;
+        oj = new OWL2JavaTransformer();
+        if (os.has(Param.MAPPING_FILE.arg)) {
+            oj.setOntology(os.nonOptionArguments().get(1), os.valueOf(Param.MAPPING_FILE.arg).toString(), true);
+        } else {
+            oj.setOntology(os.nonOptionArguments().get(1), null, true);
+        }
+        return oj;
     }
 
     private static boolean verifyArgumentCount(OptionSet os) {
@@ -211,18 +221,15 @@ public class OWL2Java {
     }
 
     private static void transformOwlToJava(OptionSet os) {
-        if (!verifyTransformOptions(os)) return;
-
-        final OWL2JavaTransformer oj = new OWL2JavaTransformer();
-        if (os.has("m")) {
-            oj.setOntology(os.nonOptionArguments().get(1), os.valueOf("m")
-                                                             .toString(), true);
-        } else {
-            oj.setOntology(os.nonOptionArguments().get(1), null, true);
+        if (!verifyTransformOptions(os)) {
+            return;
         }
 
-        oj.transform(os.valueOf("c").toString(),
-                os.valueOf("p").toString(), os.valueOf("d").toString(), (Boolean) os.valueOf("w"));
+        final OWL2JavaTransformer oj = getTransformer(os);
+
+        oj.transform(os.valueOf(Param.CONTEXT.arg).toString(),
+                os.valueOf(Param.PACKAGE.arg).toString(), os.valueOf(Param.TARGET_DIR.arg).toString(),
+                (Boolean) os.valueOf(Param.WITH_IRIS.arg));
     }
 
     private static boolean verifyTransformOptions(OptionSet os) {
@@ -230,10 +237,20 @@ public class OWL2Java {
             return false;
         }
 
-        if (!os.has("c")) {
-            LOG.error("The parameter '-c' is obligatory. Try the 'help' command for more details.");
+        if (!os.has(Param.CONTEXT.arg)) {
+            LOG.error("The parameter '-{}' is obligatory. Try the 'help' command for more details.", Param.CONTEXT.arg);
             return false;
         }
         return true;
+    }
+
+    private static void generateVocabulary(OptionSet os) {
+        if (!verifyTransformOptions(os)) {
+            return;
+        }
+        final OWL2JavaTransformer transformer = getTransformer(os);
+
+        transformer.generateVocabulary(os.valueOf(Param.CONTEXT.arg).toString(),
+                os.valueOf(Param.TARGET_DIR.arg).toString(), (Boolean) os.valueOf(Param.WITH_IRIS.arg));
     }
 }
