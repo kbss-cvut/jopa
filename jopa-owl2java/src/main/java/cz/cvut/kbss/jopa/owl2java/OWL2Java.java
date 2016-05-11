@@ -25,8 +25,6 @@ public class OWL2Java {
 
     private static final Logger LOG = LoggerFactory.getLogger(OWL2Java.class);
 
-    static final String VERSION = "0.7.6";
-
     // CLI map
     private static final Map<Command, OptionParser> map = new HashMap<>();
 
@@ -150,7 +148,7 @@ public class OWL2Java {
         final Command c;
 
         if ((c = getCommandOrNull(args[0])) == null) {
-            System.out
+            System.err
                     .println("Invalid command " + args[0] + ", try 'OWL2Java help' for the list of available commands");
             return;
         }
@@ -167,8 +165,8 @@ public class OWL2Java {
                     if ((cc = getCommandOrNull(args[1])) != null) {
                         printHelp(cc);
                     } else {
-                        System.out.println("Invalid command " + args[0] + " " + args[1] +
-                                ", try 'OWL2Java help' for the list of available commands");
+                        System.err.println("Invalid command " + args[0] + " " + args[1] +
+                                ", try 'OWL2Java help' for the list of available commands.");
                         return;
                     }
                 } else {
@@ -190,11 +188,10 @@ public class OWL2Java {
                 generateVocabulary(os);
                 break;
             case version:
-                System.out.println("OWL2Java version " + VERSION);
+                System.out.println("OWL2Java version " + Constants.VERSION);
                 break;
             default:
-                System.out.println("Unknown command '" + args[0]
-                        + "', try 'OWL2Java help.'");
+                System.err.println("Unknown command '" + args[0] + "', try 'OWL2Java help.'");
         }
     }
 
@@ -211,7 +208,7 @@ public class OWL2Java {
 
     private static boolean verifyArgumentCount(OptionSet os) {
         if (os.nonOptionArguments().size() != 2) {
-            System.out
+            System.err
                     .println("Exactly one ontology IRI has to be specified, got "
                             + (os.nonOptionArguments().size() - 1)
                             + ", try 'OWL2Java help' for the list of available commands");
@@ -238,7 +235,8 @@ public class OWL2Java {
         }
 
         if (!os.has(Param.CONTEXT.arg)) {
-            LOG.error("The parameter '-{}' is obligatory. Try the 'help' command for more details.", Param.CONTEXT.arg);
+            System.err.println("The parameter '-" + Param.CONTEXT.arg +
+                    "' is obligatory. Try the 'help' command for more details.");
             return false;
         }
         return true;

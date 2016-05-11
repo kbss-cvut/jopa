@@ -20,4 +20,9 @@ public class Constants {
      * Java package name separator.
      */
     public static final char PACKAGE_SEPARATOR = '.';
+
+    /**
+     * Tool version.
+     */
+    public static final String VERSION = "$VERSION$";
 }

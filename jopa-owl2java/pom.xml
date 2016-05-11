@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
@@ -11,99 +11,120 @@
     </parent>
 
     <name>JOPA - OWL2Java</name>
-	<artifactId>jopa-owl2java</artifactId>
-	<packaging>jar</packaging>
+    <artifactId>jopa-owl2java</artifactId>
+    <packaging>jar</packaging>
 
-	<repositories>
-		<repository>
-			<releases>
-			</releases>
-			<id>kbss</id>
-			<name>KBSS Maven 2 Repository</name>
-			<url>http://kbss.felk.cvut.cz/m2repo</url>
-		</repository>
+    <repositories>
+        <repository>
+            <releases>
+            </releases>
+            <id>kbss</id>
+            <name>KBSS Maven 2 Repository</name>
+            <url>http://kbss.felk.cvut.cz/m2repo</url>
+        </repository>
 
-		<repository>
-			<id>jena</id>
-			<url>http://repo1.maven.org/maven2</url>
-		</repository>
-	</repositories>
+        <repository>
+            <id>jena</id>
+            <url>http://repo1.maven.org/maven2</url>
+        </repository>
+    </repositories>
 
-	<dependencies>
-		<dependency>
-			<groupId>net.sf.jopt-simple</groupId>
-			<artifactId>jopt-simple</artifactId>
-			<version>3.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.codemodel</groupId>
-			<artifactId>codemodel</artifactId>
-			<version>2.6</version>
-		</dependency>
-		<dependency>
-			<groupId>org.semanticweb</groupId>
-			<artifactId>owlapi</artifactId>
-			<version>3.2.2</version>
-			<type>jar</type>
-		</dependency>
-		<dependency>
-			<groupId>cz.cvut.kbss.jopa</groupId>
-			<artifactId>jopa-api</artifactId>
-			<version>${project.version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>cz.cvut.kbss.jopa</groupId>
-			<artifactId>jopa-owlapi-utils</artifactId>
-			<version>${project.version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>net.sf.jopt-simple</groupId>
+            <artifactId>jopt-simple</artifactId>
+            <version>3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.codemodel</groupId>
+            <artifactId>codemodel</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.semanticweb</groupId>
+            <artifactId>owlapi</artifactId>
+            <version>3.2.2</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-api</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>cz.cvut.kbss.jopa</groupId>
+            <artifactId>jopa-owlapi-utils</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.1.6</version>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.6</version>
+        </dependency>
+    </dependencies>
 
-	<build>
-		<resources>
-			<resource>
-				<directory>src/main/sh</directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/sh</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
 
-		<plugins>
-			<!-- plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-antrun-plugin</artifactId>
-				<version>1.3</version> <executions> <execution> <goals> <goal>run</goal> 
-				</goals> <phase>package</phase> <configuration> <tasks> <echo file="${project.basedir}/owl2javax.sh" 
-				message="java -jar jopa-owl2java-${project.version}.jar transform -m $1 -p 
-				$2 -c $3 -d $4 $5" /> </tasks> </configuration> </execution> </executions> 
-				</plugin -->
+        <plugins>
+            <!-- plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.3</version> <executions> <execution> <goals> <goal>run</goal>
+                </goals> <phase>package</phase> <configuration> <tasks> <echo file="${project.basedir}/owl2javax.sh"
+                message="java -jar jopa-owl2java-${project.version}.jar transform -m $1 -p
+                $2 -c $3 -d $4 $5" /> </tasks> </configuration> </execution> </executions>
+                </plugin -->
 
-			<plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
+                <artifactId>maven-jar-plugin</artifactId>
                 <version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>cz.cvut.kbss.jopa.owl2java.OWL2Java</mainClass>
-							<addClasspath>true</addClasspath>
-							<!-- classpathPrefix>lib/</classpathPrefix -->
-						</manifest>
-					</archive>
-					<excludes>
-						<exclude>
-							owl2java.sh
-						</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-		</plugins>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>cz.cvut.kbss.jopa.owl2java.OWL2Java</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <!-- classpathPrefix>lib/</classpathPrefix -->
+                        </manifest>
+                    </archive>
+                    <excludes>
+                        <exclude>
+                            owl2java.sh
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
 
-	</build>
+            <!-- Inserts application version into constants -->
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <ignoreMissingFile>false</ignoreMissingFile>
+                    <file>${project.basedir}/src/main/java/cz/cvut/kbss/jopa/owl2java/Constants.java</file>
+                    <regex>false</regex>
+                    <token>$VERSION$</token>
+                    <value>${project.version}</value>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

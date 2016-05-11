@@ -1,13 +1,18 @@
 package cz.cvut.kbss.jopa.owl2java;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.MAPPING_FILE_NAME;
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.VOCABULARY_FILE;
@@ -18,17 +23,28 @@ public class OWL2JavaTest {
 
     private String mappingFilePath;
 
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() {
         this.mappingFilePath = resolveMappingFilePath();
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
     }
 
     private String resolveMappingFilePath() {
         final File mf = new File(getClass().getClassLoader().getResource(MAPPING_FILE_NAME).getFile());
         return mf.getAbsolutePath();
+    }
+
+    @After
+    public void tearDown() {
+        System.setOut(null);
+        System.setErr(null);
     }
 
     @Test
@@ -62,5 +78,46 @@ public class OWL2JavaTest {
                 targetDir.getAbsolutePath()};
         OWL2Java.main(args);
         assertTrue(targetDir.list().length > 0);
+    }
+
+    @Test
+    public void transformPrintsErrorAndQuitsWhenContextIsMissing() throws Exception {
+        final File targetDir = TestUtils.getTempDirectory();
+        final String packageName = "cz.cvut.kbss.jopa.owl2java";
+        final String[] args = new String[]{"transform", TestUtils.IC_ONTOLOGY_IRI,
+                "-m",
+                mappingFilePath,
+                "-p",
+                packageName,
+                "-d",
+                targetDir.getAbsolutePath()};
+        OWL2Java.main(args);
+        assertEquals(0, targetDir.list().length);
+        verifyErrorContent("The parameter '-[a-z]' is obligatory");
+    }
+
+    private void verifyErrorContent(String regexp) {
+        final String err = errContent.toString();
+        final Pattern p = Pattern.compile(regexp);
+        final Matcher m = p.matcher(err);
+        assertTrue(m.find());
+    }
+
+    @Test
+    public void transformPrintsErrorAndQuitesWhenOntologyIriIsMissing() throws Exception {
+        final File targetDir = TestUtils.getTempDirectory();
+        final String packageName = "cz.cvut.kbss.jopa.owl2java";
+        final String[] args = new String[]{"transform",
+                "-m",
+                mappingFilePath,
+                "-p",
+                packageName,
+                "-c",
+                TestUtils.CONTEXT,
+                "-d",
+                targetDir.getAbsolutePath()};
+        OWL2Java.main(args);
+        assertEquals(0, targetDir.list().length);
+        verifyErrorContent("Exactly one ontology IRI has to be specified, got 0");
     }
 }
