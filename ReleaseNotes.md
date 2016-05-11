@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.7.7 - May 11, 2016
+- Added the possibility to generate only vocabulary using OWL2Java, without the Java object model itself.
+
 ## 0.7.6 - April 15, 2016
 - Added support for plain identifiers as values of Annotation and Object properties
     - E.g. when an entity has an object property pointing to another individual, but that individual is not mapped by any class in the object model, its URI can now be used as the property value
