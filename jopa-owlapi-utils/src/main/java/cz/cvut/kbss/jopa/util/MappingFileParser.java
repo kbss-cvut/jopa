@@ -25,6 +25,9 @@ public class MappingFileParser {
     public static Map<URI, URI> getMappings(final File mf) {
         final Map<URI, URI> map = new HashMap<>();
         String line;
+        if (!mf.exists()) {
+            throw new IllegalArgumentException("Mapping file " + mf.getPath() + " not found.");
+        }
         final File defaultDir = mf.getParentFile();
         try (final BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(mf)))) {
             while ((line = r.readLine()) != null) {

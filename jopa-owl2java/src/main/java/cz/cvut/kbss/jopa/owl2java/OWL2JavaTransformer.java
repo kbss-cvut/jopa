@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
@@ -87,11 +85,10 @@ public class OWL2JavaTransformer {
         return contexts.keySet();
     }
 
-    class ValidContextAnnotationValueVisitor implements
-            OWLAnnotationValueVisitor {
+    private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {
         private String name = null;
 
-        public String getName() {
+        String getName() {
             return name;
         }
 
@@ -171,8 +168,7 @@ public class OWL2JavaTransformer {
         if (mappingFile != null) {
             LOG.info("Using mapping file '{}'.", mappingFile);
 
-            final Map<URI, URI> map = MappingFileParser.getMappings(new File(
-                    mappingFile));
+            final Map<URI, URI> map = MappingFileParser.getMappings(new File(mappingFile));
             m.addIRIMapper(ontologyIRI -> {
                 final URI value = map.get(ontologyIRI.toURI());
 
@@ -196,7 +192,7 @@ public class OWL2JavaTransformer {
                             .create(owlOntologyName + "-generated"));
         } catch (OWLOntologyCreationException e) {
             LOG.error(e.getMessage(), e);
-            throw new IllegalArgumentException(e);
+            throw new IllegalArgumentException("Unable to load ontology " + owlOntologyName, e);
         }
 
         setOntology(merged, m.getOntologies(), includeImports);
@@ -317,7 +313,7 @@ public class OWL2JavaTransformer {
     }
 
     private void generateVocabulary(final JCodeModel cm, boolean withOWLAPI) {
-        LOG.info("Generating Vocabulary");
+        LOG.debug("Generating vocabulary...");
 
         final Collection<OWLEntity> col = new HashSet<>();
         col.add(f.getOWLThing());
@@ -699,11 +695,11 @@ public class OWL2JavaTransformer {
                             // ic.getPredicate().getIRI().toString()).param(
                             "owlObjectIRI", entities.get(ic.getObject()));
                     if (ic.getMin() != 0) {
-                        u = u.param("min", ic.getMin());
+                        u.param("min", ic.getMin());
                     }
 
                     if (ic.getMax() != -1) {
-                        u = u.param("max", ic.getMax());
+                        u.param("max", ic.getMax());
                     }
                 }
             }
@@ -767,8 +763,10 @@ public class OWL2JavaTransformer {
         NO, ONE, MULTIPLE, LIST, SIMPLELIST, REFERENCEDLIST
     }
 
-    public void transform(String context, String p, String dir, Boolean withOWLAPI) {
-        LOG.info("Transforming context '" + p + "'.");
+    public void transform(String context, String p, String dir, boolean withOWLAPI) {
+        LOG.info("Transforming context '{}'.", context);
+
+        checkContextExistence(context);
 
         final JCodeModel cm = new JCodeModel();
 
@@ -778,14 +776,48 @@ public class OWL2JavaTransformer {
             generateVocabulary(cm, withOWLAPI);
             generateModel(cm, contexts.get(context), p + ".model.");
 
-            final File file = new File(dir);
-            file.mkdirs();
-            cm.build(file);
+            writeOutModel(cm, dir);
             LOG.info("Transformation SUCCESFUL.");
         } catch (JClassAlreadyExistsException e1) {
             LOG.error("Transformation FAILED.", e1);
         } catch (IOException e) {
             LOG.error("File generation FAILED.", e);
+        }
+    }
+
+    private void checkContextExistence(String context) {
+        if (!contexts.containsKey(context)) {
+            throw new IllegalArgumentException("Context " + context + " not found. Existing contexts: " + listContexts());
+        }
+    }
+
+    private void writeOutModel(JCodeModel cm, String targetDir) throws IOException {
+        final File file = new File(targetDir);
+        file.mkdirs();
+        cm.build(file);
+    }
+
+    /**
+     * Generates only vocabulary of the loaded ontology.
+     *
+     * @param context    Integrity constraints context
+     * @param targetDir  Directory into which the vocabulary file will be generated
+     * @param withOwlapi Whether OWLAPI-based IRIs of the generated vocabulary items should be created as well
+     */
+    public void generateVocabulary(String context, String targetDir, boolean withOwlapi) {
+        LOG.info("Generating vocabulary for context '{}'.", context);
+
+        checkContextExistence(context);
+
+        final JCodeModel cm = new JCodeModel();
+        try {
+            this.voc = cm._class("Vocabulary");
+            generateVocabulary(cm, withOwlapi);
+            writeOutModel(cm, targetDir);
+        } catch (JClassAlreadyExistsException e) {
+            LOG.error("Vocabulary generation FAILED, because the Vocabulary class already exists.", e);
+        } catch (IOException e) {
+            LOG.error("Vocabulary file generation FAILED.", e);
         }
     }
 }

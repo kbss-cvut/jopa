@@ -1,0 +1,197 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+]>
+
+
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl">
+        <rdfs:label xml:lang="en">OWL2Java test ontology</rdfs:label>
+        <rdfs:comment xml:lang="en">An ontology used for testing of the OWL2Java tool.</rdfs:comment>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#createdBy -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#createdBy">
+        <rdfs:range rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasAnswer -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasAnswer">
+        <rdfs:range rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Answer"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasPart -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasPart"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasParticipant -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasParticipant">
+        <rdfs:range rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Agent"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasQuestion -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasQuestion">
+        <rdfs:domain rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Question"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModifiedBy -->
+
+    <owl:ObjectProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModifiedBy">
+        <rdfs:range rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#created -->
+
+    <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#created"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasID -->
+
+    <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasID">
+        <rdfs:comment xml:lang="en">Identification number. E.g. ICO for organizations.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasName -->
+
+    <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasName"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasValue -->
+
+    <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasValue"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModified -->
+
+    <owl:DatatypeProperty rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModified"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Agent -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Agent"/>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Answer -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Answer">
+        <rdfs:label xml:lang="en">Answer</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#LogicalRecord"/>
+    </owl:Class>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#LogicalRecord -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#LogicalRecord">
+        <rdfs:label xml:lang="en">Logical record</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Organization -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Organization">
+        <rdfs:label xml:lang="en">Organization</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Agent"/>
+    </owl:Class>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person">
+        <rdfs:label xml:lang="en">Person</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Agent"/>
+    </owl:Class>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Question -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Question">
+        <rdfs:label xml:lang="en">Question</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#LogicalRecord"/>
+    </owl:Class>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report -->
+
+    <owl:Class rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report">
+        <rdfs:label xml:lang="en">Report</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#LogicalRecord"/>
+    </owl:Class>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.5.1) http://owlapi.sourceforge.net -->
+

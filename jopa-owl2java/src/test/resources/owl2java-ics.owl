@@ -1,0 +1,485 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY ic "http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#" >
+]>
+
+
+<rdf:RDF xmlns="http://krizik.felk.cvut.cz/ontologies/owl2java-ics.owl#"
+     xml:base="http://krizik.felk.cvut.cz/ontologies/owl2java-ics.owl"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:ic="http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-ics.owl">
+        <owl:imports rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl"/>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#isIntegrityConstraintFor -->
+
+    <owl:AnnotationProperty rdf:about="&ic;isIntegrityConstraintFor"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Answer -->
+
+    <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Answer">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasQuestion"/>
+                <owl:allValuesFrom rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Question"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasQuestion"/>
+                <owl:onClass rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Question"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasValue"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasValue"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </rdf:Description>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Answer"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasValue"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Answer"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasQuestion"/>
+                <owl:onClass rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Question"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Answer"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasQuestion"/>
+                <owl:allValuesFrom rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Question"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Answer"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasValue"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Organization -->
+
+    <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Organization">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasName"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasID"/>
+                <owl:allValuesFrom rdf:resource="&xsd;long"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasID"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;long"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasName"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </rdf:Description>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Organization"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasName"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Organization"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasID"/>
+                <owl:allValuesFrom rdf:resource="&xsd;long"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Organization"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasID"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;long"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Organization"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasName"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person -->
+
+    <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasName"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasName"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </rdf:Description>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasName"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasName"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Question -->
+
+    <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Question">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasValue"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasValue"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </rdf:Description>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Question"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasValue"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Question"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasValue"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    
+
+
+    <!-- http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report -->
+
+    <rdf:Description rdf:about="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModifiedBy"/>
+                <owl:allValuesFrom rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModified"/>
+                <owl:allValuesFrom rdf:resource="&xsd;dateTime"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#created"/>
+                <owl:allValuesFrom rdf:resource="&xsd;dateTime"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#createdBy"/>
+                <owl:allValuesFrom rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModified"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;dateTime"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#createdBy"/>
+                <owl:onClass rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasAnswer"/>
+                <owl:allValuesFrom rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Answer"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModifiedBy"/>
+                <owl:onClass rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#created"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;dateTime"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasParticipant"/>
+                <owl:allValuesFrom rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Agent"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </rdf:Description>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasParticipant"/>
+                <owl:allValuesFrom rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Agent"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModifiedBy"/>
+                <owl:onClass rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModified"/>
+                <owl:allValuesFrom rdf:resource="&xsd;dateTime"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModifiedBy"/>
+                <owl:allValuesFrom rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#created"/>
+                <owl:allValuesFrom rdf:resource="&xsd;dateTime"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#createdBy"/>
+                <owl:onClass rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#hasAnswer"/>
+                <owl:allValuesFrom rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Answer"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#createdBy"/>
+                <owl:allValuesFrom rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Person"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#created"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;dateTime"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+    <owl:Axiom>
+        <ic:isIntegrityConstraintFor>owl2java-ic</ic:isIntegrityConstraintFor>
+        <owl:annotatedSource rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#Report"/>
+        <owl:annotatedProperty rdf:resource="&rdfs;subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://krizik.felk.cvut.cz/ontologies/owl2java-onto.owl#lastModified"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="&xsd;dateTime"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+    </owl:Axiom>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.5.1) http://owlapi.sourceforge.net -->
+
