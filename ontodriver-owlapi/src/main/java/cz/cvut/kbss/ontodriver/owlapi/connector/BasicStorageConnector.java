@@ -31,6 +31,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -83,7 +84,11 @@ public class BasicStorageConnector extends AbstractConnector {
                                 " but the loaded ontology has IRI " + ontology.getOntologyID().getOntologyIRI());
             }
         } catch (OWLOntologyCreationException e) {
-            LOG.trace("Unable to load ontology from document.", e);
+            if (e.getCause() instanceof FileNotFoundException) {
+                LOG.trace("Ontology file {} does not exist.", storageProperties.getPhysicalURI());
+            } else {
+                LOG.trace("Unable to load ontology from document.", e);
+            }
             tryCreatingOntology();
         }
         initializeReasonerFactory();
