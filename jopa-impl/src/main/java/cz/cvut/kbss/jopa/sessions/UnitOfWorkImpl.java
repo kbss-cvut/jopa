@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -30,17 +28,14 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
-import cz.cvut.kbss.jopa.utils.CollectionFactory;
-import cz.cvut.kbss.jopa.utils.Configuration;
-import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.jopa.utils.*;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory, ConfigurationHolder {
+public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, QueryFactory, ConfigurationHolder, Wrapper {
 
     private final Map<Object, Object> cloneMapping;
     private final Map<Object, Object> cloneToOriginals;
@@ -1064,5 +1059,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     @Override
     public Configuration getConfiguration() {
         return entityManager.getConfiguration();
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> cls) {
+        if (cls.isAssignableFrom(getClass())) {
+            return cls.cast(this);
+        }
+        return storage.unwrap(cls);
     }
 }

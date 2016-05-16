@@ -847,4 +847,14 @@ public class SesameAdapterTest {
         }
         return stmts;
     }
+
+    @Test
+    public void unwrapReturnsItselfWhenClassMatches() throws Exception {
+        assertSame(adapter, adapter.unwrap(SesameAdapter.class));
+    }
+
+    @Test
+    public void unwrapReturnValueFactoryWhenItMatches() throws Exception {
+        assertSame(vf, adapter.unwrap(ValueFactory.class));
+    }
 }

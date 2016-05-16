@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -29,10 +27,7 @@ import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.transactions.EntityTransactionWrapper;
 import cz.cvut.kbss.jopa.transactions.TransactionWrapper;
-import cz.cvut.kbss.jopa.utils.CollectionFactory;
-import cz.cvut.kbss.jopa.utils.Configuration;
-import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.jopa.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +36,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-public class EntityManagerImpl extends AbstractEntityManager {
+public class EntityManagerImpl extends AbstractEntityManager implements Wrapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(EntityManagerImpl.class);
 
@@ -211,6 +206,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
         EntityPropertiesUtils.setFieldValue(at.getJavaField(), o, attVal);
     }
 
+    @Override
     public void remove(Object object) {
         ensureOpen();
 
@@ -252,6 +248,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
         return getCurrentPersistenceContext().readObject(cls, uri, descriptor);
     }
 
+    @Override
     public void flush() {
         ensureOpen();
 
@@ -276,10 +273,12 @@ public class EntityManagerImpl extends AbstractEntityManager {
         }.start(this, entity, CascadeType.REFRESH);
     }
 
+    @Override
     public void clear() {
         getCurrentPersistenceContext().clear();
     }
 
+    @Override
     public void detach(Object entity) {
         ensureOpen();
 
@@ -299,11 +298,13 @@ public class EntityManagerImpl extends AbstractEntityManager {
         }
     }
 
+    @Override
     public boolean contains(Object entity) {
         ensureOpen();
         return getCurrentPersistenceContext().contains(entity);
     }
 
+    @Override
     public void close() {
         ensureOpen();
         removeCurrentPersistenceContext();
@@ -319,14 +320,17 @@ public class EntityManagerImpl extends AbstractEntityManager {
         return transaction.getTransaction();
     }
 
+    @Override
     public EntityManagerFactoryImpl getEntityManagerFactory() {
         return emf;
     }
 
+    @Override
     public Metamodel getMetamodel() {
         return emf.getMetamodel();
     }
 
+    @Override
     public boolean isLoaded(final Object object, final String attributeName) {
         // TODO
         return false;
@@ -382,14 +386,15 @@ public class EntityManagerImpl extends AbstractEntityManager {
         return getCurrentPersistenceContext().useBackupOntologyForQueryProcessing();
     }
 
+    @Override
     public <T> T unwrap(Class<T> cls) {
-        if (cls.equals(this.getClass())) {
+        if (cls.isAssignableFrom(this.getClass())) {
             return cls.cast(this);
         }
-
-        throw new OWLPersistenceException();
+        return getCurrentPersistenceContext().unwrap(cls);
     }
 
+    @Override
     public Object getDelegate() {
         return unwrap(EntityManagerImpl.class);
     }
@@ -416,6 +421,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
         super.finalize();
     }
 
+    @Override
     public UnitOfWorkImpl getCurrentPersistenceContext() {
         if (this.persistenceContext == null) {
             this.persistenceContext = (UnitOfWorkImpl) this.serverSession.acquireUnitOfWork();
@@ -427,6 +433,7 @@ public class EntityManagerImpl extends AbstractEntityManager {
     /**
      * Called from EntityTransaction in case of a rollback. Releasing the UoW is up to the EntityTransaction.
      */
+    @Override
     public void removeCurrentPersistenceContext() {
         if (persistenceContext != null && persistenceContext.isActive()) {
             persistenceContext.release();
@@ -434,10 +441,12 @@ public class EntityManagerImpl extends AbstractEntityManager {
         this.persistenceContext = null;
     }
 
+    @Override
     public void transactionStarted(EntityTransaction t) {
         this.serverSession.transactionStarted(t, this);
     }
 
+    @Override
     public void transactionFinished(EntityTransaction t) {
         this.serverSession.transactionFinished(t);
     }

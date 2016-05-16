@@ -15,6 +15,7 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.Closeable;
+import cz.cvut.kbss.ontodriver.Wrapper;
 import cz.cvut.kbss.ontodriver.config.ConfigParam;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.*;
@@ -38,7 +39,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-class SesameAdapter implements Closeable {
+class SesameAdapter implements Closeable, Wrapper {
 
     /**
      * Maximum number of attempts to generate a unique identifier
@@ -229,5 +230,15 @@ class SesameAdapter implements Closeable {
 
     TypesHandler getTypesHandler() {
         return new TypesHandler(connector, valueFactory);
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> cls) throws OntoDriverException {
+        if (cls.isAssignableFrom(this.getClass())) {
+            return cls.cast(this);
+        } else if (cls.isAssignableFrom(valueFactory.getClass())) {
+            return cls.cast(valueFactory);
+        }
+        return connector.unwrap(cls);
     }
 }

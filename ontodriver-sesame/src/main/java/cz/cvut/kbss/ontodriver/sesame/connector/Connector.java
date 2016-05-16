@@ -17,6 +17,7 @@ package cz.cvut.kbss.ontodriver.sesame.connector;
 import java.util.Collection;
 import java.util.List;
 
+import cz.cvut.kbss.ontodriver.Wrapper;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -26,7 +27,7 @@ import org.openrdf.model.ValueFactory;
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
-public interface Connector extends Closeable, StatementExecutor {
+public interface Connector extends Closeable, StatementExecutor, Wrapper {
 
 	/**
 	 * Explicitly starts a transaction.

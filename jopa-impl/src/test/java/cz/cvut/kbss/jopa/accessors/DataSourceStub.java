@@ -167,5 +167,10 @@ public class DataSourceStub implements DataSource {
         public void close() throws Exception {
 
         }
+
+        @Override
+        public <T> T unwrap(Class<T> cls) throws OntoDriverException {
+            return null;
+        }
     }
 }

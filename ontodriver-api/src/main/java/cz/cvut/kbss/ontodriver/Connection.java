@@ -24,7 +24,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
-public interface Connection extends AutoCloseable {
+public interface Connection extends AutoCloseable, Wrapper {
 
     /**
      * Whether this connection is active. </p>

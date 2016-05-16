@@ -14,9 +14,7 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -224,4 +222,8 @@ public class PoolingStorageConnectorTest {
         assertFalse(connector.isOpen());
     }
 
+    @Test
+    public void unwrapReturnsItselfWhenClassMatches() throws Exception {
+        assertSame(connector, connector.unwrap(PoolingStorageConnector.class));
+    }
 }
