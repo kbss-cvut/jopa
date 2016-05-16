@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.7.8 - May 16, 2016
+- Implemented support for `EntityManager.unwrap`. Using unwrap, it is possible to get a hold of for example the Sesame 
+    in-memory repository used by the Sesame driver (which is otherwise, due to the Sesame API architecture, inaccessible 
+    through the `RepositoryProvider`.
+
 ## 0.7.7 - May 11, 2016
 - Added the possibility to generate only vocabulary using OWL2Java, without the Java object model itself.
 
