@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -145,12 +143,14 @@ class EntityConstructor {
         return mapper.getConfiguration().is(JOPAPersistenceProperties.DISABLE_IC_VALIDATION_ON_LOAD);
     }
 
-    private <T> void validateIntegrityConstraints(T entity, FieldSpecification<T, ?> fieldSpec) {
+    private <T> void validateIntegrityConstraints(T entity, FieldSpecification<? super T, ?> fieldSpec,
+                                                  EntityType<T> et) {
         if (shouldSkipICValidationOnLoad()) {
             return;
         }
+        final Object id = EntityPropertiesUtils.getPrimaryKey(entity, et);
         final Object value = EntityPropertiesUtils.getAttributeValue(fieldSpec, entity);
-        IntegrityConstraintsValidator.getValidator().validate(fieldSpec, value);
+        IntegrityConstraintsValidator.getValidator().validate(id, fieldSpec, value);
     }
 
     <T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,
@@ -161,6 +161,6 @@ class EntityConstructor {
                         entityDescriptor.getAttributeDescriptor(fieldSpec), mapper);
         axioms.forEach(fs::addValueFromAxiom);
         fs.buildInstanceFieldValue(entity);
-        validateIntegrityConstraints(entity, fieldSpec);
+        validateIntegrityConstraints(entity, fieldSpec, et);
     }
 }

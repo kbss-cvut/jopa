@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.validator;
 
@@ -36,10 +34,11 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
     /**
      * Validates cardinality constraints defined in the {@link ParticipationConstraints} annotation.
      *
-     * @param field Field on which the constraints are defined
-     * @param value The value to validate
+     * @param identifier Field owner identifier (individual URI)
+     * @param field      Field on which the constraints are defined
+     * @param value      The value to validate
      */
-    public void validate(Field field, Object value) {
+    public void validate(Object identifier, Field field, Object value) {
         Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
         final ParticipationConstraints constraints = field.getAnnotation(ParticipationConstraints.class);
         if (constraints == null) {
@@ -47,15 +46,15 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
         }
         final int valueCount = extractValueCount(value);
         for (ParticipationConstraint pc : constraints.value()) {
-            validateParticipationConstraint(field, valueCount, pc);
+            validateParticipationConstraint(identifier, field, valueCount, pc);
         }
         if (constraints.value().length == 0) {
-            validateNonEmpty(field, valueCount, constraints);
+            validateNonEmpty(identifier, field, valueCount, constraints);
         }
     }
 
     @Override
-    public void validate(FieldSpecification<?, ?> attribute, Object attributeValue) {
+    public void validate(Object identifier, FieldSpecification<?, ?> attribute, Object attributeValue) {
         if (!(attribute instanceof Attribute)) {
             // Only proper attributes can have cardinality constraints
             return;
@@ -63,10 +62,10 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
         final Attribute<?, ?> att = (Attribute<?, ?>) attribute;
         final int valueCount = extractValueCount(attributeValue);
         for (ParticipationConstraint pc : att.getConstraints()) {
-            validateParticipationConstraint(att.getJavaField(), valueCount, pc);
+            validateParticipationConstraint(identifier, att.getJavaField(), valueCount, pc);
         }
         if (att.getConstraints().length == 0) {
-            validateNonEmpty(att, valueCount);
+            validateNonEmpty(identifier, att, valueCount);
         }
     }
 
@@ -77,32 +76,34 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
         return value instanceof Collection ? ((Collection<?>) value).size() : 1;
     }
 
-    private void validateParticipationConstraint(Field field, int valueCount, ParticipationConstraint pc) {
+    private void validateParticipationConstraint(Object id, Field field, int valueCount, ParticipationConstraint pc) {
         if (valueCount < pc.min()) {
             throw new CardinalityConstraintViolatedException("At least " + pc.min() +
                     " values of attribute " + field.getDeclaringClass().getSimpleName() + "." + field.getName() +
-                    " expected, but got only " + valueCount);
+                    " expected in instance " + id + ", but got only " + valueCount);
         }
         if (pc.max() >= 0 && pc.max() < valueCount) {
             throw new CardinalityConstraintViolatedException("At most " + pc.max() +
                     " values of attribute " + field.getDeclaringClass().getSimpleName() + "." + field.getName() +
-                    " expected, but got " + valueCount);
+                    " expected in instance " + id + ", but got " + valueCount);
         }
     }
 
-    private void validateNonEmpty(Field field, int valueCount, ParticipationConstraints constraints) {
+    private void validateNonEmpty(Object id, Field field, int valueCount, ParticipationConstraints constraints) {
         if (valueCount == 0 && constraints.nonEmpty()) {
-            throw new CardinalityConstraintViolatedException(
-                    "Attribute " + field.getDeclaringClass() + "." + field.getName() +
-                            " was marked as nonEmpty, but contains no value.");
+            throw nonEmptyError(id, field.getDeclaringClass().getSimpleName(), field.getName());
         }
     }
 
-    private void validateNonEmpty(Attribute<?, ?> attribute, int valueCount) {
+    private CardinalityConstraintViolatedException nonEmptyError(Object id, String className, String fieldName) {
+        return new CardinalityConstraintViolatedException(
+                "Attribute " + className + "." + fieldName + " of instance " + id +
+                        " was marked as nonEmpty, but contains no value.");
+    }
+
+    private void validateNonEmpty(Object id, Attribute<?, ?> attribute, int valueCount) {
         if (valueCount == 0 && attribute.isNonEmpty()) {
-            throw new CardinalityConstraintViolatedException(
-                    "Attribute " + attribute.getDeclaringType().getJavaType().getSimpleName() + "." +
-                            attribute.getName() + " was marked as nonEmpty, but contains no value.");
+            throw nonEmptyError(id, attribute.getDeclaringType().getJavaType().getSimpleName(), attribute.getName());
         }
     }
 }

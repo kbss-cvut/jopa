@@ -103,7 +103,7 @@ public class IntegrityConstraintsValidatorTest {
         final OWLClassN n = createInstanceWithMissingRequiredField();
         final Attribute<?, ?> att = metamodel.entity(OWLClassN.class)
                                              .getDeclaredAttribute(OWLClassN.getStringAttributeField().getName());
-        validator.validate(att, n.getStringAttribute());
+        validator.validate(n.getId(), att, n.getStringAttribute());
     }
 
     @Test(expected = CardinalityConstraintViolatedException.class)

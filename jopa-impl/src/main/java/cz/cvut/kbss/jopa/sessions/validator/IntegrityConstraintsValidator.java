@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.validator;
 
@@ -54,12 +52,13 @@ public abstract class IntegrityConstraintsValidator {
         Objects.requireNonNull(instance, ErrorUtils.constructNPXMessage("instance"));
         Objects.requireNonNull(et, ErrorUtils.constructNPXMessage("et"));
 
+        final Object id = EntityPropertiesUtils.getPrimaryKey(instance, et);
         for (Attribute<T, ?> att : et.getDeclaredAttributes()) {
             if (skipLazy && att.getFetchType() == FetchType.LAZY) {
                 continue;
             }
             final Object value = EntityPropertiesUtils.getAttributeValue(att, instance);
-            validate(att, value);
+            validate(id, att, value);
         }
     }
 
@@ -71,18 +70,21 @@ public abstract class IntegrityConstraintsValidator {
     public void validate(ObjectChangeSet changeSet, Metamodel metamodel) {
         Objects.requireNonNull(changeSet, ErrorUtils.constructNPXMessage("changeSet"));
         Objects.requireNonNull(metamodel, ErrorUtils.constructNPXMessage("metamodel"));
+
+        final EntityType<?> et = metamodel.entity(changeSet.getObjectClass());
+        final Object id = EntityPropertiesUtils.getPrimaryKey(changeSet.getCloneObject(), et);
         for (Map.Entry<String, ChangeRecord> entry : changeSet.getChanges().entrySet()) {
-            final EntityType<?> et = metamodel.entity(changeSet.getObjectClass());
             final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(entry.getKey());
-            validate(fieldSpec, entry.getValue().getNewValue());
+            validate(id, fieldSpec, entry.getValue().getNewValue());
         }
     }
 
     /**
      * Validates whether the specified value conforms to the attribute integrity constraints.
      *
+     * @param identifier     Instance identifier
      * @param attribute      Attribute metadata with integrity constraints
      * @param attributeValue Value to be validated
      */
-    public abstract void validate(FieldSpecification<?, ?> attribute, Object attributeValue);
+    public abstract void validate(Object identifier, FieldSpecification<?, ?> attribute, Object attributeValue);
 }
