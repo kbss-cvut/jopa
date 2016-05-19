@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -679,14 +677,12 @@ public class SesameAdapterTest {
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         final Set<Statement> result = new HashSet<>();
         result.add(mock(Statement.class));
-        when(
-                connectorMock.findStatements(eq(subjectUri), eq(RDF.TYPE),
-                        eq(vf.createURI(ax.getValue().stringValue())), anyBoolean(),
-                        eq((org.openrdf.model.URI[]) null))).thenReturn(result);
+        when(connectorMock.findStatements(eq(subjectUri), eq(RDF.TYPE), eq(vf.createURI(ax.getValue().stringValue())),
+                anyBoolean())).thenReturn(result);
 
         assertTrue(adapter.contains(ax, null));
         verify(connectorMock).findStatements(subjectUri, RDF.TYPE,
-                vf.createURI(ax.getValue().stringValue()), true, (org.openrdf.model.URI[]) null);
+                vf.createURI(ax.getValue().stringValue()), ax.getAssertion().isInferred());
     }
 
     @Test
@@ -704,7 +700,8 @@ public class SesameAdapterTest {
 
         assertTrue(adapter.contains(ax, context));
         verify(connectorMock).findStatements(subjectUri, RDF.TYPE,
-                vf.createURI(ax.getValue().stringValue()), true, vf.createURI(context.toString()));
+                vf.createURI(ax.getValue().stringValue()), ax.getAssertion().isInferred(),
+                vf.createURI(context.toString()));
     }
 
     @Test
@@ -720,8 +717,9 @@ public class SesameAdapterTest {
                 .thenReturn(result);
 
         assertFalse(adapter.contains(ax, context));
-        verify(connectorMock).findStatements(subjectUri, RDF.TYPE, vf.createLiteral(val), true,
-                vf.createURI(context.toString()));
+        verify(connectorMock)
+                .findStatements(subjectUri, RDF.TYPE, vf.createLiteral(val), ax.getAssertion().isInferred(),
+                        vf.createURI(context.toString()));
     }
 
     @Test
@@ -856,5 +854,17 @@ public class SesameAdapterTest {
     @Test
     public void unwrapReturnValueFactoryWhenItMatches() throws Exception {
         assertSame(vf, adapter.unwrap(ValueFactory.class));
+    }
+
+    @Test
+    public void containsOnDefaultContextCallsConnectorWithoutContextArgument() throws Exception {
+        when(connectorMock
+                .findStatements(any(Resource.class), any(org.openrdf.model.URI.class),
+                        any(org.openrdf.model.Value.class), anyBoolean(), anyVararg()))
+                .thenReturn(Collections.emptyList());
+        final String cls = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA";
+        adapter.contains(new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
+                new Value<>(URI.create(cls))), null);
+        verify(connectorMock).findStatements(vf.createURI(SUBJECT.toString()), RDF.TYPE, vf.createURI(cls), false);
     }
 }

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -100,6 +98,25 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         assertNotNull(res);
         assertEquals(entityE.getUri(), res.getUri());
         assertEquals(entityE.getStringAttribute(), res.getStringAttribute());
+    }
+
+    @Test
+    public void testPersistReferenceIntoContextAndThenOwnerIntoDefault() {
+        this.em = getEntityManager("ReferenceIntoContextThenOwnerIntoDefault", false);
+        final Descriptor eDescriptor = new EntityDescriptor(CONTEXT_ONE);
+        em.getTransaction().begin();
+        em.persist(entityA, eDescriptor);
+        em.getTransaction().commit();
+
+        em.clear();
+        em.getTransaction().begin();
+        entityD.setOwlClassA(entityA);
+        em.persist(entityD);
+        em.getTransaction().commit();
+
+        final OWLClassD res = em.find(OWLClassD.class, entityD.getUri());
+        assertNotNull(res);
+        assertNotNull(res.getOwlClassA());
     }
 
     @Test(expected = OWLEntityExistsException.class)

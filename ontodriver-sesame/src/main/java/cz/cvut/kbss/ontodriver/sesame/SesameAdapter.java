@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -175,10 +173,21 @@ class SesameAdapter implements Closeable, Wrapper {
             value = SesameUtils.createDataPropertyLiteral(axiom.getValue().getValue(), language,
                     valueFactory);
         }
-        return !(connector.findStatements(
+        final org.openrdf.model.URI sesameContext = SesameUtils.toSesameUri(context, valueFactory);
+        return !findStatements(
                 SesameUtils.toSesameUri(axiom.getSubject().getIdentifier(), valueFactory),
                 SesameUtils.toSesameUri(axiom.getAssertion().getIdentifier(), valueFactory), value,
-                true, SesameUtils.toSesameUri(context, valueFactory)).isEmpty());
+                axiom.getAssertion().isInferred(), sesameContext).isEmpty();
+    }
+
+    private Collection<Statement> findStatements(Resource subject, org.openrdf.model.URI property, Value value,
+                                                 boolean includeInferred, org.openrdf.model.URI context)
+            throws SesameDriverException {
+        if (context != null) {
+            return connector.findStatements(subject, property, value, includeInferred, context);
+        } else {
+            return connector.findStatements(subject, property, value, includeInferred);
+        }
     }
 
     Collection<Axiom<?>> find(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
@@ -200,9 +209,8 @@ class SesameAdapter implements Closeable, Wrapper {
             throws SesameDriverException {
         final org.openrdf.model.URI sesameSubject = SesameUtils.toSesameUri(
                 subject.getIdentifier(), valueFactory);
-        final Collection<Statement> result = connector.findStatements(sesameSubject, RDF.TYPE,
-                null, true, SesameUtils.toSesameUri(subjectContext, valueFactory));
-        return !result.isEmpty();
+        return !findStatements(sesameSubject, RDF.TYPE,
+                null, true, SesameUtils.toSesameUri(subjectContext, valueFactory)).isEmpty();
     }
 
     void update(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {
