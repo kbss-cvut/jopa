@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.7.9 - May 22, 2016
+- Fixed issue with running multiple persistence units in the same VM.
+
 ## 0.7.8 - May 16, 2016
 - Implemented support for `EntityManager.unwrap`. Using unwrap, it is possible to get a hold of for example the Sesame 
     in-memory repository used by the Sesame driver (which is otherwise, due to the Sesame API architecture, inaccessible 

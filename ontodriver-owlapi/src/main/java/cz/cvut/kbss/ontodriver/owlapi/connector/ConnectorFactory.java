@@ -21,21 +21,16 @@ import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 
 import java.util.Map;
 
-public abstract class ConnectorFactory {
+public interface ConnectorFactory {
 
-    private static ConnectorFactory instance = new BasicConnectorFactory();
-
-    public static synchronized ConnectorFactory getInstance() {
-        if (!instance.isOpen()) {
-            instance = new BasicConnectorFactory();
-        }
-        return instance;
-    }
-
-    public abstract Connector getConnector(OntologyStorageProperties storageProperties,
+    Connector getConnector(OntologyStorageProperties storageProperties,
                                            Configuration configuration) throws OwlapiDriverException;
 
-    public abstract void close() throws OntoDriverException;
+    void close() throws OntoDriverException;
 
-    public abstract boolean isOpen();
+    boolean isOpen();
+
+    public static ConnectorFactory createFactory() {
+        return new BasicConnectorFactory();
+    }
 }

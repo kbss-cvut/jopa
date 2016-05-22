@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,24 +19,36 @@ import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
-public abstract class ConnectorFactory {
+public interface ConnectorFactory {
 
-    private static ConnectorFactory instance = new ConnectorFactoryImpl();
+    /**
+     * Creates a storage connector.
+     * <p>
+     * It is possible that the underlying implementation will return some sort of proxy for a single storage connector.
+     *
+     * @param storageProperties Storage connection properties
+     * @param configuration     Connector configuration
+     * @return New storage connector
+     * @throws SesameDriverException
+     */
+    Connector createStorageConnector(OntologyStorageProperties storageProperties,
+                                     Configuration configuration) throws SesameDriverException;
 
-    ConnectorFactory() {
+    /**
+     * Closes this factory
+     *
+     * @throws OntoDriverException
+     */
+    void close() throws OntoDriverException;
+
+    /**
+     * Whether this factory is open.
+     *
+     * @return Factory status
+     */
+    boolean isOpen();
+
+    static ConnectorFactory getInstance() {
+        return new ConnectorFactoryImpl();
     }
-
-    public static synchronized ConnectorFactory getInstance() {
-        if (!instance.isOpen()) {
-            instance = new ConnectorFactoryImpl();
-        }
-        return instance;
-    }
-
-    public abstract Connector createStorageConnector(OntologyStorageProperties storageProperties,
-                                                     Configuration configuration) throws SesameDriverException;
-
-    public abstract void close() throws OntoDriverException;
-
-    public abstract boolean isOpen();
 }

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,7 +19,6 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.ConnectorFactory;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -48,20 +47,14 @@ public class OwlapiDriverTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        final Field instanceField = ConnectorFactory.class.getDeclaredField("instance");
+        final Field instanceField = OwlapiDriver.class.getDeclaredField("connectorFactory");
         instanceField.setAccessible(true);
         final ConnectorFactory mockFactory = mock(ConnectorFactory.class);
         when(mockFactory.getConnector(any(OntologyStorageProperties.class), any(Configuration.class)))
                 .thenReturn(connectorMock);
         when(mockFactory.isOpen()).thenReturn(true);
-        instanceField.set(null, mockFactory);
-
         this.driver = new OwlapiDriver(STORAGE_PROPERTIES, Collections.emptyMap());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        when(ConnectorFactory.getInstance().isOpen()).thenReturn(false);
+        instanceField.set(driver, mockFactory);
     }
 
     @Test

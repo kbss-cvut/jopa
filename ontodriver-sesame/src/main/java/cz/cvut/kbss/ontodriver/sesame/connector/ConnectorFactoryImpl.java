@@ -19,7 +19,7 @@ import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
-final class ConnectorFactoryImpl extends ConnectorFactory {
+public final class ConnectorFactoryImpl implements ConnectorFactory {
 
     private boolean open;
 

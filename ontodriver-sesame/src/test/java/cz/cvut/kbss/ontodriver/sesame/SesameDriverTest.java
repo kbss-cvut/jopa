@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,7 +19,6 @@ import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -39,8 +38,6 @@ public class SesameDriverTest {
 
     private static OntologyStorageProperties storageProperties;
 
-    private ConnectorFactory originalFactory;
-
     @Mock
     private ConnectorFactory connectorFactoryMock;
 
@@ -52,29 +49,20 @@ public class SesameDriverTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         storageProperties = OntologyStorageProperties.physicalUri(URI.create("http://krizik.felk.cvut.cz/repo"))
-                                                     .driver(SesameDataSource.class.getCanonicalName())
-                                                     .build();
+                .driver(SesameDataSource.class.getCanonicalName())
+                .build();
     }
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        this.driver = new SesameDriver(storageProperties, Collections.emptyMap());
         when(connectorFactoryMock.isOpen()).thenReturn(Boolean.TRUE);
         when(connectorFactoryMock.createStorageConnector(storageProperties, new Configuration()))
                 .thenReturn(connectorMock);
-        final Field instanceField = ConnectorFactory.class.getDeclaredField("instance");
-        instanceField.setAccessible(true);
-        this.originalFactory = (ConnectorFactory) instanceField.get(null);
-        instanceField.set(null, connectorFactoryMock);
-
-        this.driver = new SesameDriver(storageProperties, Collections.emptyMap());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        final Field instanceField = ConnectorFactory.class.getDeclaredField("instance");
-        instanceField.setAccessible(true);
-        instanceField.set(null, originalFactory);
+        final Field factoryField = SesameDriver.class.getDeclaredField("connectorFactory");
+        factoryField.setAccessible(true);
+        factoryField.set(driver, connectorFactoryMock);
     }
 
     @Test
