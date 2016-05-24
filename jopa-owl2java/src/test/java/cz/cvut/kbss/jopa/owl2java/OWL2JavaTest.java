@@ -64,9 +64,12 @@ public class OWL2JavaTest {
     @Test
     public void vocabularyCommandGeneratesVocabularyFromICs() throws Exception {
         final File targetDir = TestUtils.getTempDirectory();
+        final String packageName = "";
         final String[] args = new String[]{"vocabulary", TestUtils.IC_ONTOLOGY_IRI,
                 "-m",
                 mappingFilePath,
+                "-p",
+                packageName,
                 "-c",
                 TestUtils.CONTEXT,
                 "-d",

@@ -110,6 +110,15 @@ public class OWL2JavaTransformerTest {
     }
 
     @Test
+    public void transformGeneratesVocabularyFileForTheWholeFile() throws Exception {
+        final File targetDir = getTempDirectory();
+        transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
+        transformer.transform(null, "", targetDir.getAbsolutePath(), true);
+        final List<String> fileNames = Arrays.asList(targetDir.list());
+        assertTrue(fileNames.contains(VOCABULARY_FILE));
+    }
+
+    @Test
     public void transformThrowsIllegalArgumentForUnknownContext() throws Exception {
         final String unknownContext = "someUnknownContext";
         thrown.expect(IllegalArgumentException.class);
@@ -139,7 +148,17 @@ public class OWL2JavaTransformerTest {
     public void generateVocabularyGeneratesOnlyVocabularyFile() throws Exception {
         final File targetDir = getTempDirectory();
         transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
-        transformer.generateVocabulary(CONTEXT, targetDir.getAbsolutePath(), false);
+        transformer.generateVocabulary(CONTEXT, "", targetDir.getAbsolutePath(), false);
+        final List<String> fileNames = Arrays.asList(targetDir.list());
+        assertEquals(1, fileNames.size());
+        assertEquals(VOCABULARY_FILE, fileNames.get(0));
+    }
+
+    @Test
+    public void generateVocabularyGeneratesOnlyVocabularyFileForTheWholeFile() throws Exception {
+        final File targetDir = getTempDirectory();
+        transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
+        transformer.generateVocabulary(null, "", targetDir.getAbsolutePath(), false);
         final List<String> fileNames = Arrays.asList(targetDir.list());
         assertEquals(1, fileNames.size());
         assertEquals(VOCABULARY_FILE, fileNames.get(0));

@@ -49,14 +49,14 @@
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>jopa-api</artifactId>
-            <version>${project.version}</version>
+            <version>${project.parent.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>cz.cvut.kbss.jopa</groupId>
             <artifactId>jopa-owlapi-utils</artifactId>
-            <version>${project.version}</version>
+            <version>${project.parent.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
@@ -122,7 +122,7 @@
                     <file>${project.basedir}/src/main/java/cz/cvut/kbss/jopa/owl2java/Constants.java</file>
                     <regex>false</regex>
                     <token>$VERSION$</token>
-                    <value>${project.version}</value>
+                    <value>${project.parent.version}</value>
                 </configuration>
             </plugin>
         </plugins>

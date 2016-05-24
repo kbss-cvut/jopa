@@ -42,15 +42,23 @@ public class OWL2JavaMojo extends AbstractMojo {
     @Parameter(alias = "with-owlapi",defaultValue = "false")
     private Boolean pWithOWLAPI;
 
+    @Parameter(alias = "whole-ontology-as-ics",defaultValue = "false")
+    private Boolean pWholeOntologyAsICS;
+
+    @Parameter(alias = "vocabulary-only",defaultValue = "false")
+    private Boolean pVocabularyOnly;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         OWL2JavaTransformer owl2java = new OWL2JavaTransformer();
 
-        System.out.println(pMappingFile + ","
+        System.out.println(pWholeOntologyAsICS + ","
+                + pMappingFile + ","
                 + pPackage + ","
                 + pContextName + ","
                 + pOntologyIRI + ","
                 + pOutputDirectory + ","
+                + pVocabularyOnly + ","
         );
 
         if ( pOntologyIRI == null ) {
@@ -65,15 +73,13 @@ public class OWL2JavaMojo extends AbstractMojo {
             owl2java.setOntology(pOntologyIRI, null, true);
         }
 
-        if (!owl2java.listContexts().contains(pContextName)) {
-            getLog().error("The parameter '-c' is invalid. Found contexts: "
-                    + owl2java.listContexts());
-            getLog().error("Skipping OWL2Java transformation.");
-            return;
+        if ( pVocabularyOnly ) {
+            owl2java.generateVocabulary(pWholeOntologyAsICS ? null : pContextName,
+                    pPackage, pOutputDirectory, pWithOWLAPI);
+        } else {
+            owl2java.transform(pWholeOntologyAsICS ? null : pContextName,
+                    pPackage, pOutputDirectory, pWithOWLAPI);
         }
-
-        owl2java.transform(pContextName,
-                pPackage, pOutputDirectory, pWithOWLAPI);
 
         getLog().info( "OWL2Java successfully generated!" );
     }

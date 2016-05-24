@@ -41,21 +41,27 @@ public class OWL2Java {
                 accepts(Param.MAPPING_FILE.arg, Param.MAPPING_FILE.description).withRequiredArg().ofType(String.class);
                 accepts(Param.PACKAGE.arg, Param.PACKAGE.description).withRequiredArg().ofType(String.class)
                                                                      .defaultsTo("generated");
-                accepts(Param.CONTEXT.arg, Param.CONTEXT.description).withRequiredArg().ofType(String.class);
+                accepts(Param.CONTEXT.arg, Param.CONTEXT.description).withOptionalArg().ofType(String.class);
                 accepts(Param.WITH_IRIS.arg, Param.WITH_IRIS.description).withRequiredArg().ofType(Boolean.class)
                                                                          .defaultsTo(false);
                 accepts(Param.TARGET_DIR.arg, Param.TARGET_DIR.description).withRequiredArg().ofType(String.class)
-                                                                           .defaultsTo("");
+                        .defaultsTo("");
+                accepts(Param.WHOLE_ONTOLOGY_AS_IC.arg, Param.WHOLE_ONTOLOGY_AS_IC.description).withOptionalArg().ofType(Boolean.class)
+                        .defaultsTo(false);
             }
         });
         map.put(Command.vocabulary, new OptionParser() {
             {
                 accepts(Param.MAPPING_FILE.arg, Param.MAPPING_FILE.description).withRequiredArg().ofType(String.class);
+                accepts(Param.PACKAGE.arg, Param.PACKAGE.description).withRequiredArg().ofType(String.class)
+                        .defaultsTo("generated");
                 accepts(Param.CONTEXT.arg, Param.CONTEXT.description).withRequiredArg().ofType(String.class);
                 accepts(Param.WITH_IRIS.arg, Param.WITH_IRIS.description).withRequiredArg().ofType(Boolean.class)
                                                                          .defaultsTo(false);
                 accepts(Param.TARGET_DIR.arg, Param.TARGET_DIR.description).withRequiredArg().ofType(String.class)
                                                                            .defaultsTo("");
+                accepts(Param.WHOLE_ONTOLOGY_AS_IC.arg, Param.WHOLE_ONTOLOGY_AS_IC.description).withOptionalArg().ofType(Boolean.class)
+                        .defaultsTo(false);
             }
         });
         map.put(Command.list, new OptionParser() {
@@ -76,7 +82,7 @@ public class OWL2Java {
 
     private enum Param {
         MAPPING_FILE("m", "mapping file"), CONTEXT("c", "context name"), WITH_IRIS("w", "with OWLAPI IRIs"), TARGET_DIR(
-                "d", "output directory"), PACKAGE("p", "package");
+                "d", "output directory"), PACKAGE("p", "package"), WHOLE_ONTOLOGY_AS_IC("i","interpret whole ontology as integrity constraints; this option supersedes the '-c' option.");
 
         private final String arg;
         private final String description;
@@ -220,13 +226,15 @@ public class OWL2Java {
     }
 
     private static void transformOwlToJava(OptionSet os) {
-        if (!verifyTransformOptions(os)) {
+        boolean whole = (Boolean) os.valueOf(Param.WHOLE_ONTOLOGY_AS_IC.arg);
+
+        if (!whole && !verifyTransformOptions(os)) {
             return;
         }
 
         final OWL2JavaTransformer oj = getTransformer(os);
 
-        oj.transform(os.valueOf(Param.CONTEXT.arg).toString(),
+        oj.transform(whole ? null : os.valueOf(Param.CONTEXT.arg).toString(),
                 os.valueOf(Param.PACKAGE.arg).toString(), os.valueOf(Param.TARGET_DIR.arg).toString(),
                 (Boolean) os.valueOf(Param.WITH_IRIS.arg));
     }
@@ -245,12 +253,14 @@ public class OWL2Java {
     }
 
     private static void generateVocabulary(OptionSet os) {
-        if (!verifyTransformOptions(os)) {
+        boolean whole = (Boolean) os.valueOf(Param.WHOLE_ONTOLOGY_AS_IC.arg);
+        if (!whole && !verifyTransformOptions(os)) {
             return;
         }
         final OWL2JavaTransformer transformer = getTransformer(os);
 
-        transformer.generateVocabulary(os.valueOf(Param.CONTEXT.arg).toString(),
+
+        transformer.generateVocabulary(whole ? null : os.valueOf(Param.CONTEXT.arg).toString(), os.valueOf(Param.PACKAGE.arg).toString(),
                 os.valueOf(Param.TARGET_DIR.arg).toString(), (Boolean) os.valueOf(Param.WITH_IRIS.arg));
     }
 }
