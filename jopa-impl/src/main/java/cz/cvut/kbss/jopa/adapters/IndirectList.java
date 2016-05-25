@@ -31,7 +31,6 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
      * No-arg constructor to allow clone building.
      */
     IndirectList() {
-        super();
         this.internalList = new ArrayList<>();
     }
 

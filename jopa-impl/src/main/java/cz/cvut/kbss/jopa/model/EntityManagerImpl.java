@@ -154,8 +154,6 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         LOG.trace("Merging {}", entity);
         ensureOpen();
 
-        Class<T> clz = (Class<T>) entity.getClass();
-
         switch (getState(entity, descriptor)) {
             case MANAGED_NEW:
             case MANAGED:
