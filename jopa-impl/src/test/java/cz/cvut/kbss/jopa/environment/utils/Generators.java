@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.environment.OWLClassA;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Generators of test data.
@@ -26,8 +27,8 @@ import java.util.*;
  */
 public abstract class Generators {
 
-    private static final int DEFAULT_SIZE = 5;
-    private static final Set<String> TYPES = getTypes();
+    public static final int DEFAULT_SIZE = 5;
+    private static final Set<String> TYPES = generateTypes(DEFAULT_SIZE);
 
     private static final Random RAND = new Random();
 
@@ -139,11 +140,15 @@ public abstract class Generators {
         return lst;
     }
 
-    private static Set<String> getTypes() {
-        final Set<String> types = new HashSet<>(3);
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA");
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX");
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassZ");
+    public static Set<String> generateTypes(int count) {
+        final Set<String> types = new HashSet<>(count);
+        for (int i = 0; i < count; i++) {
+            types.add("http://krizik.felk.cvut.cz/ontologies/jopa#type_" + i);
+        }
         return types;
+    }
+
+    public static Set<URI> generateUriTypes(int count) {
+        return generateTypes(count).stream().map(URI::create).collect(Collectors.toSet());
     }
 }

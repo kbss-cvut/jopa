@@ -853,4 +853,27 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassN res = em.find(OWLClassN.class, entityN.getId());
         assertEquals(newUri, res.getAnnotationUri());
     }
+
+    @Test
+    public void testUpdateUriTypes() {
+        this.em = getEntityManager("UpdateUriTypes", true);
+        entityP.setTypes(Generators.createUriTypes());
+        persist(entityP);
+
+        em.getTransaction().begin();
+        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        final Iterator<URI> it = update.getTypes().iterator();
+        while (it.hasNext()) {
+            it.next();
+            if (Generators.randomBoolean()) {
+                it.remove();
+            }
+        }
+        update.getTypes().addAll(Generators.createUriTypes());
+        em.getTransaction().commit();
+
+        final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
+        assertEquals(update.getTypes().size(), result.getTypes().size());
+        assertTrue(update.getTypes().containsAll(result.getTypes()));
+    }
 }

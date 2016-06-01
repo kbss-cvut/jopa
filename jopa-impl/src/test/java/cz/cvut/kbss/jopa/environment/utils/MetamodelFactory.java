@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -42,7 +42,7 @@ public class MetamodelFactory {
      */
     public static void initOWLClassAMocks(EntityType<OWLClassA> etMock, Attribute strAttMock,
                                           TypesSpecification typesMock, Identifier idMock) throws NoSuchFieldException,
-            SecurityException {
+                                                                                                  SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
         when(etMock.getAttribute(OWLClassA.getStrAttField().getName())).thenReturn(strAttMock);
@@ -64,6 +64,7 @@ public class MetamodelFactory {
         when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
         when(typesMock.getName()).thenReturn(OWLClassA.getTypesField().getName());
         when(typesMock.getDeclaringType()).thenReturn(etMock);
+        when(typesMock.getJavaType()).thenReturn(String.class);
         when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(etMock.getFieldSpecification(typesMock.getName())).thenReturn(typesMock);
 
@@ -76,8 +77,8 @@ public class MetamodelFactory {
      */
     public static void initOWLClassBMocks(EntityType<OWLClassB> etMock, Attribute strAttMock,
                                           PropertiesSpecification propsMock, Identifier idMock) throws
-            NoSuchFieldException,
-            SecurityException {
+                                                                                                NoSuchFieldException,
+                                                                                                SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassB.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
         when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
@@ -567,10 +568,11 @@ public class MetamodelFactory {
         when(stringAtt.getDeclaringType()).thenReturn(et);
     }
 
-    public static void initOWLClassPMock(EntityType<OWLClassP> et, PropertiesSpecification props,
+    public static void initOWLClassPMock(EntityType<OWLClassP> et, TypesSpecification types,
+                                         PropertiesSpecification props,
                                          SingularAttribute uriAtt, PluralAttribute urlsAtt,
                                          ListAttribute simpleListAtt, ListAttribute refListAtt, Identifier idP) throws
-            Exception {
+                                                                                                                Exception {
         when(et.getIdentifier()).thenReturn(idP);
         when(idP.getJavaField()).thenReturn(OWLClassP.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassP.getClassIri()));
@@ -578,7 +580,7 @@ public class MetamodelFactory {
                 .thenReturn(
                         new HashSet<>(
                                 Arrays.<FieldSpecification<? super OWLClassP, ?>>asList(uriAtt, urlsAtt, simpleListAtt,
-                                        refListAtt, props)));
+                                        refListAtt, props, types)));
         when(et.getAttributes())
                 .thenReturn(new HashSet<>(
                         Arrays.<Attribute<? super OWLClassP, ?>>asList(uriAtt, urlsAtt, simpleListAtt, refListAtt)));
@@ -589,6 +591,12 @@ public class MetamodelFactory {
         when(props.getDeclaringType()).thenReturn(et);
         when(props.getPropertyIdentifierType()).thenReturn(URI.class);
         when(props.getPropertyValueType()).thenReturn(Object.class);
+        when(et.getFieldSpecification(types.getName())).thenReturn(types);
+        when(et.getTypes()).thenReturn(types);
+        when(types.getJavaField()).thenReturn(OWLClassP.getTypesField());
+        when(types.getName()).thenReturn(OWLClassP.getTypesField().getName());
+        when(types.getDeclaringType()).thenReturn(et);
+        when(types.getJavaType()).thenReturn(URI.class);
         when(et.getFieldSpecification(uriAtt.getName())).thenReturn(uriAtt);
         when(uriAtt.getName()).thenReturn(OWLClassP.getIndividualUriField().getName());
         when(uriAtt.getJavaField()).thenReturn(OWLClassP.getIndividualUriField());

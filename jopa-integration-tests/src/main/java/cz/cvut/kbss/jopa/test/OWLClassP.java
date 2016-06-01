@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -41,6 +41,9 @@ public class OWLClassP {
     @Sequence
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#P-hasReferencedSequence")
     private List<URI> referencedList;
+
+    @Types
+    private Set<URI> types;
 
     @Properties(fetchType = FetchType.EAGER)
     private Map<URI, Set<Object>> properties;
@@ -85,6 +88,14 @@ public class OWLClassP {
         this.referencedList = referencedList;
     }
 
+    public Set<URI> getTypes() {
+        return types;
+    }
+
+    public void setTypes(Set<URI> types) {
+        this.types = types;
+    }
+
     public Map<URI, Set<Object>> getProperties() {
         return properties;
     }
@@ -97,6 +108,7 @@ public class OWLClassP {
     public String toString() {
         return "OWLClassP{" +
                 "uri=" + uri +
+                ", types=" + types +
                 ", properties=" + properties +
                 '}';
     }

@@ -446,4 +446,18 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertNotNull(resE);
         assertEquals(uE, resE.getUri());
     }
+
+    @Test
+    public void testPersistEntityWithUriTypes() {
+        this.em = getEntityManager("PersistEntityWithUriTypes", false);
+        entityP.setTypes(Generators.createUriTypes());
+        em.getTransaction().begin();
+        em.persist(entityP);
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
+        assertEquals(entityP.getTypes().size(), result.getTypes().size());
+        assertTrue(entityP.getTypes().containsAll(result.getTypes()));
+    }
 }

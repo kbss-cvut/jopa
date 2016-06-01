@@ -26,7 +26,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -98,14 +97,6 @@ public final class TestEnvironmentUtils {
         Field modifiersField = Field.class.getDeclaredField("modifiers");
         modifiersField.setAccessible(true);
         modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-    }
-
-    public static Set<String> generateTypes(int count) {
-        final Set<String> types = new HashSet<>(count);
-        for (int i = 0; i < count; i++) {
-            types.add("http://krizik.felk.cvut.cz/ontologies/jopa#type_" + i);
-        }
-        return types;
     }
 
     public static Set<Class<?>> getManagedTypes() {

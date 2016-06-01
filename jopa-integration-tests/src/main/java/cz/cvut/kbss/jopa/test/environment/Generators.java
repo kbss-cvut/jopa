@@ -31,6 +31,7 @@ public abstract class Generators {
     private static final Set<String> TYPES = getTypes();
 
     private static final String PROPERTY_URI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#property";
+    private static final String TYPE_URI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#Entity";
 
     private static final Random RANDOM = new Random();
 
@@ -199,5 +200,14 @@ public abstract class Generators {
 
     public static boolean randomBoolean() {
         return RANDOM.nextBoolean();
+    }
+
+    public static Set<URI> createUriTypes() {
+        final int count = randomPositiveInt(DEFAULT_SIZE);
+        final Set<URI> result = new HashSet<>();
+        for (int i = 0; i < count; i++) {
+            result.add(URI.create(TYPE_URI_BASE + randomInt(Integer.MAX_VALUE)));
+        }
+        return result;
     }
 }
