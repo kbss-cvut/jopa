@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.7.10 - June 1, 2016
+- Added support for URI-based types, i.e. now it is possible to use `@Types Set<URI> types` in entities
+
 ## 0.7.9 - May 22, 2016
 - Fixed issue with running multiple persistence units in the same VM.
 
