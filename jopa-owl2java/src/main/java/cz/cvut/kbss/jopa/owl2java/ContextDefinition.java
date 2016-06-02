@@ -13,6 +13,7 @@ class ContextDefinition {
     final Set<org.semanticweb.owlapi.model.OWLObjectProperty> objectProperties = new HashSet<>();
     final Set<org.semanticweb.owlapi.model.OWLDataProperty> dataProperties = new HashSet<>();
     final Set<org.semanticweb.owlapi.model.OWLAnnotationProperty> annotationProperties = new HashSet<>();
+    final Set<org.semanticweb.owlapi.model.OWLNamedIndividual> individuals = new HashSet<>();
 
     ContextDefinition(String name) {
         this.name = name;

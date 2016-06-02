@@ -114,6 +114,9 @@ public class OWL2JavaTransformer {
             if (e.isOWLAnnotationProperty() && !skipped.contains(e.getIRI())) {
                 ctx.annotationProperties.add(e.asOWLAnnotationProperty());
             }
+            if (e.isOWLNamedIndividual() && !skipped.contains(e.getIRI())) {
+                ctx.individuals.add(e.asOWLNamedIndividual());
+            }
         }
         ctx.axioms.add(axiom);
     }

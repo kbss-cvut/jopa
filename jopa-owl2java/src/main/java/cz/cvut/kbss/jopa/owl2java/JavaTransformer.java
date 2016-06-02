@@ -238,6 +238,7 @@ public class JavaTransformer {
         col.addAll(context.objectProperties);
         col.addAll(context.dataProperties);
         col.addAll(context.annotationProperties);
+        col.addAll(context.individuals);
 
         for (final OWLOntology s : o.getOWLOntologyManager().getOntologies()) {
             IRI iri = s.getOntologyID().getOntologyIRI();
