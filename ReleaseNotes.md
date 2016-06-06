@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.7.11 - June 6, 2016
+- Generation of Vocabularies improvements - individuals, whole file processing.
+
 ## 0.7.10 - June 1, 2016
 - Added support for URI-based types, i.e. now it is possible to use `@Types Set<URI> types` in entities
 
