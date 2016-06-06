@@ -26,7 +26,8 @@ package cz.cvut.kbss.jopa.model.metamodel;
  *            The element type of the represented collection
  */
 public interface PluralAttribute<X, C, E> extends Attribute<X, C>, Bindable<E> {
-	public static enum CollectionType {
+
+	enum CollectionType {
 		COLLECTION, SET, LIST, MAP
 	}
 

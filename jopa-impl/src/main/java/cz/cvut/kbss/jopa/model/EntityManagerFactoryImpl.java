@@ -63,6 +63,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         this.metamodel = new MetamodelImpl(configuration, new EntityLoader());
     }
 
+    @Override
     public void close() {
         if (!open) {
             return;
@@ -86,10 +87,12 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         }
     }
 
+    @Override
     public EntityManager createEntityManager() {
         return this.createEntityManager(Collections.<String, String>emptyMap());
     }
 
+    @Override
     public EntityManager createEntityManager(Map<String, String> map) {
         if (!open) {
             throw new IllegalStateException("The OWLEntityManager has been closed.");
@@ -126,10 +129,12 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         return serverSession;
     }
 
+    @Override
     public boolean isOpen() {
         return open;
     }
 
+    @Override
     public Map<String, String> getProperties() {
         return configuration.getProperties();
     }
@@ -138,19 +143,23 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         return Collections.unmodifiableSet(em);
     }
 
+    @Override
     public Metamodel getMetamodel() {
         return metamodel;
     }
 
+    @Override
     public PersistenceUnitUtil getPersistenceUnitUtil() {
         return this;
     }
 
+    @Override
     public Object getIdentifier(Object entity) {
         final EntityType<?> et = getMetamodel().entity(entity.getClass());
         return EntityPropertiesUtils.getFieldValue(et.getIdentifier().getJavaField(), entity);
     }
 
+    @Override
     public boolean isLoaded(Object entity, String attributeName) {
         for (final AbstractEntityManager emi : em) {
             if (emi.contains(entity)) {
@@ -162,12 +171,14 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
         return false;
     }
 
+    @Override
     public boolean isLoaded(Object entity) {
         // TODO
         return false;
         // return isLoaded(entity);
     }
 
+    @Override
     public Cache getCache() {
         if (!isOpen()) {
             throw new IllegalStateException("The entity manager factory is closed.");

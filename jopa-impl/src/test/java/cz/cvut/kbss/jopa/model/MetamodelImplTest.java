@@ -550,4 +550,23 @@ public class MetamodelImplTest {
         @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa#objectProperty")
         private Set<URL> op;
     }
+
+    @Test
+    public void buildsEntityWithUriTypesField() throws Exception {
+        when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(ClassWithUriTypes.class));
+
+        final Metamodel m = new MetamodelImpl(conf, entityLoaderMock);
+        final EntityType<ClassWithUriTypes> et = m.entity(ClassWithUriTypes.class);
+        assertNotNull(et);
+        assertEquals(URI.class, et.getTypes().getJavaType());
+    }
+
+    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithUriTypes")
+    private static class ClassWithUriTypes {
+        @Id
+        private URI id;
+
+        @Types
+        private Set<URI> types;
+    }
 }

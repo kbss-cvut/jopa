@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -407,5 +405,59 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         final OWLClassN res = em.find(OWLClassN.class, entityN.getId());
         assertEquals(apValue, res.getAnnotationProperty());
         assertEquals(apUriValue, res.getAnnotationUri());
+    }
+
+    @Test
+    public void persistEntityWithNonNullGeneratedIdentifierDoesNotRewriteIdentifier() {
+        this.em = getEntityManager("PersistEntityWithNonNullGeneratedIdentifiersDoesNotRewriteIdentifier", false);
+        final URI u = URI.create("http://krizik.felk.cvut.cz/ontolgoies/jopa#EntityELives");
+        entityE.setUri(u);
+        em.getTransaction().begin();
+        em.persist(entityE);
+        em.getTransaction().commit();
+
+        assertEquals(u, entityE.getUri());
+        final OWLClassE res = em.find(OWLClassE.class, u);
+        assertNotNull(res);
+        assertEquals(u, res.getUri());
+        assertEquals(entityE.getStringAttribute(), res.getStringAttribute());
+    }
+
+    @Test
+    public void persistEntityAndReferenceWithNonNullGeneratedIdentifiersDoesNotRewriteThem() {
+        this.em = getEntityManager("PersistEntityAndReferenceWithNonNullGeneratedIdentifiersDoesNotRewriteThem", false);
+        final URI uK = URI.create("http://krizik.felk.cvut.cz/ontolgoies/jopa#EntityKLives");
+        final URI uE = URI.create("http://krizik.felk.cvut.cz/ontolgoies/jopa#EntityELives");
+        final OWLClassK entityK = new OWLClassK();
+        entityK.setUri(uK);
+        entityK.setOwlClassE(entityE);
+        entityE.setUri(uE);
+        em.getTransaction().begin();
+        em.persist(entityK);
+        em.persist(entityE);
+        em.getTransaction().commit();
+
+        assertEquals(uK, entityK.getUri());
+        assertEquals(uE, entityE.getUri());
+        final OWLClassK resK = em.find(OWLClassK.class, uK);
+        assertNotNull(resK);
+        assertEquals(uE, resK.getOwlClassE().getUri());
+        final OWLClassE resE = em.find(OWLClassE.class, uE);
+        assertNotNull(resE);
+        assertEquals(uE, resE.getUri());
+    }
+
+    @Test
+    public void testPersistEntityWithUriTypes() {
+        this.em = getEntityManager("PersistEntityWithUriTypes", false);
+        entityP.setTypes(Generators.createUriTypes());
+        em.getTransaction().begin();
+        em.persist(entityP);
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
+        assertEquals(entityP.getTypes().size(), result.getTypes().size());
+        assertTrue(entityP.getTypes().containsAll(result.getTypes()));
     }
 }

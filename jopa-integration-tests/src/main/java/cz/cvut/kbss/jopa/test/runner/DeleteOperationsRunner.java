@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -428,5 +428,20 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
         final OWLClassN res = em.find(OWLClassN.class, entityN.getId());
         assertNull(res.getAnnotationUri());
+    }
+
+    @Test
+    public void testClearUriTypes() {
+        this.em = getEntityManager("ClearUriTypes", false);
+        entityP.setTypes(Generators.createUriTypes());
+        persist(entityP);
+
+        em.getTransaction().begin();
+        final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
+        update.getTypes().clear();
+        em.getTransaction().commit();
+
+        final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
+        assertNull(result.getTypes());
     }
 }

@@ -16,10 +16,6 @@ package cz.cvut.kbss.jopa;
 
 public class CommonVocabulary {
 
-    private CommonVocabulary() {
-        throw new AssertionError();
-    }
-
     public static final String RDFS_LABEL = "http://www.w3.org/2000/01/rdf-schema#label";
 
     public static final String DC_DESCRIPTION = "http://purl.org/dc/elements/1.1/description";
@@ -60,4 +56,8 @@ public class CommonVocabulary {
      * Date XML Schema data type.
      */
     public static final String XSD_DATETIME = "http://www.w3.org/2001/XMLSchema#dateTime";
+
+    private CommonVocabulary() {
+        throw new AssertionError();
+    }
 }

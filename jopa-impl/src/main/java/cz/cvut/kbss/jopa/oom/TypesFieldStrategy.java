@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
+import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 
 public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? super X, ?>, X> {
 
-    private final Set<String> values = new HashSet<>();
+    private final Set<Object> values = new HashSet<>();
 
     public TypesFieldStrategy(EntityType<X> et, TypesSpecification<? super X, ?> att,
                               Descriptor descriptor, EntityMappingHelper mapper) {
@@ -40,13 +41,14 @@ public class TypesFieldStrategy<X> extends FieldStrategy<TypesSpecification<? su
         if (MappingUtils.isEntityClassAssertion(ax, et)) {
             return;
         }
-        final String typeAsString = ax.getValue().stringValue();
-        values.add(typeAsString);
+        final Object type =
+                IdentifierTransformer.transformToIdentifier(ax.getValue().getValue(), attribute.getJavaType());
+        values.add(type);
     }
 
     @Override
     void buildInstanceFieldValue(Object instance) throws IllegalArgumentException,
-            IllegalAccessException {
+                                                         IllegalAccessException {
         assert attribute.getJavaField().getType().isAssignableFrom(Set.class);
 
         if (values.isEmpty()) {

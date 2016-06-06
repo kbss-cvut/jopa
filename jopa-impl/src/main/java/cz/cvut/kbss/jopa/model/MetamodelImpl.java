@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -56,7 +54,7 @@ public class MetamodelImpl implements Metamodel {
 
         loadEntities(entityLoader);
 
-        entities.forEach(cls -> processOWLClass(cls));
+        entities.forEach(c -> processOWLClass(c));
     }
 
     /**
@@ -64,9 +62,7 @@ public class MetamodelImpl implements Metamodel {
      */
     private void checkForWeaver() {
         try {
-            @SuppressWarnings("unused")
-            Class<?> c = MetamodelImpl.class.getClassLoader().loadClass(
-                    ASPECTJ_CLASS);
+            MetamodelImpl.class.getClassLoader().loadClass(ASPECTJ_CLASS);
         } catch (ClassNotFoundException e) {
             LOG.error("AspectJ not found on classpath. Cannot run without AspectJ.");
             throw new OWLPersistenceException(e);
@@ -102,6 +98,7 @@ public class MetamodelImpl implements Metamodel {
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public <X> EntityType<X> entity(Class<X> cls) {
         if (!typeMap.containsKey(cls)) {
             processOWLClass(cls);
@@ -110,26 +107,32 @@ public class MetamodelImpl implements Metamodel {
         return (EntityType<X>) typeMap.get(cls);
     }
 
+    @Override
     public <X> EmbeddableType<X> embeddable(Class<X> cls) {
         throw new IllegalArgumentException("Embeddable entities not supported.");
     }
 
+    @Override
     public Set<EmbeddableType<?>> getEmbeddables() {
         return Collections.emptySet();
     }
 
+    @Override
     public Set<EntityType<?>> getEntities() {
         return new HashSet<>(typeMap.values());
     }
 
+    @Override
     public Set<ManagedType<?>> getManagedTypes() {
         return new HashSet<>(typeMap.values());
     }
 
+    @Override
     public <X> ManagedType<X> managedType(Class<X> cls) {
         return entity(cls);
     }
 
+    @Override
     public Set<Class<?>> getInferredClasses() {
         return Collections.unmodifiableSet(inferredClasses);
     }
