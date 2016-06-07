@@ -21,26 +21,26 @@ import java.lang.reflect.Field;
 
 public class IRIIdentifierImpl implements IRIIdentifier {
 
-	final Field javaField;
+	private final Field javaField;
 	
-	final boolean generated;
+	private final boolean generated;
 
 	public IRIIdentifierImpl(final Field javaField, final boolean generated) {
 		this.javaField = javaField;
 		this.generated = generated;
 	}
 
-	
+	@Override
 	public Field getJavaField() {
 		return javaField;
 	}
 
-	
+	@Override
 	public void accept(IdentifierVisitor i) {
 		i.visit(this);
 	}
 
-	
+	@Override
 	public boolean isGenerated() {
 		return generated;
 	}

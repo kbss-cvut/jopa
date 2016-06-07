@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -74,47 +72,48 @@ public class PluralAttributeImpl<X, C, E> implements PluralAttribute<X, C, E> {
         this.constraints = builder.constraints;
     }
 
+    @Override
     public ManagedType<X> getDeclaringType() {
         return declaringType;
     }
 
-
+    @Override
     public Member getJavaMember() {
         return member;
     }
 
-
+    @Override
     public String getName() {
         return name;
     }
 
-
+    @Override
     public cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType getPersistentAttributeType() {
         return pat;
     }
 
-
+    @Override
     public boolean isAssociation() {
         return getPersistentAttributeType().equals(
                 PersistentAttributeType.OBJECT);
     }
 
-
+    @Override
     public boolean isCollection() {
         return true;
     }
 
-
+    @Override
     public Class<E> getBindableJavaType() {
         return elementType.getJavaType();
     }
 
-
+    @Override
     public cz.cvut.kbss.jopa.model.metamodel.Bindable.BindableType getBindableType() {
         return BindableType.PLURAL_ATTRIBUTE;
     }
 
-
+    @Override
     public cz.cvut.kbss.jopa.model.metamodel.PluralAttribute.CollectionType getCollectionType() {
         if (getJavaType().isAssignableFrom(Collection.class)) {
             return CollectionType.COLLECTION;
@@ -125,22 +124,22 @@ public class PluralAttributeImpl<X, C, E> implements PluralAttribute<X, C, E> {
         }
     }
 
-
+    @Override
     public Type<E> getElementType() {
         return elementType;
     }
 
-
+    @Override
     public Class<C> getJavaType() {
         return collectionType;
     }
 
-
+    @Override
     public Field getJavaField() {
         return member;
     }
 
-
+    @Override
     public IRI getIRI() {
         return iri;
     }
@@ -154,11 +153,12 @@ public class PluralAttributeImpl<X, C, E> implements PluralAttribute<X, C, E> {
         return cascadeTypes;
     }
 
-
+    @Override
     public FetchType getFetchType() {
         return fetchType;
     }
 
+    @Override
     public boolean isInferred() {
         return inferred;
     }
@@ -178,6 +178,7 @@ public class PluralAttributeImpl<X, C, E> implements PluralAttribute<X, C, E> {
         return nonEmpty;
     }
 
+    @Override
     public ParticipationConstraint[] getConstraints() {
         return constraints;
     }

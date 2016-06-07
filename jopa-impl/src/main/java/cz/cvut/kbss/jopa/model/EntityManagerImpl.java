@@ -311,6 +311,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         open = false;
     }
 
+    @Override
     public boolean isOpen() {
         return open;
     }

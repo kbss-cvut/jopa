@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
@@ -29,7 +27,6 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import java.net.URI;
 import java.util.*;
 
-// TODO This class hardcodes the type to List<String>, see JPA Query
 public class QueryImpl implements Query {
 
     private final QueryHolder query;
@@ -48,6 +45,7 @@ public class QueryImpl implements Query {
         this.maxResults = Integer.MAX_VALUE;
     }
 
+    @Override
     public List getResultList() {
         try {
             if (maxResults == 0) {
@@ -64,6 +62,7 @@ public class QueryImpl implements Query {
         return new OWLPersistenceException("Exception caught when evaluating query " + executedQuery, e);
     }
 
+    @Override
     public Object getSingleResult() {
         try {
             // Call it with maxResults = 2 just to see whether there are more
