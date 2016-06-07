@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -831,5 +829,29 @@ public class UnitOfWorkTest {
     @Test
     public void unwrapReturnsItselfWhenClassMatches() {
         assertSame(uow, uow.unwrap(UnitOfWork.class));
+    }
+
+    @Test
+    public void mergeRegistersChangesInUoWChangeSet() throws Exception {
+        final OWLClassA clone = new OWLClassA();
+        clone.setUri(entityA.getUri());
+        // These two attributes will be changed
+        clone.setStringAttribute("changedStringAttribute");
+        clone.setTypes(Collections.emptySet());
+        when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
+        when(cacheManagerMock.get(OWLClassA.class, entityA.getUri(), CONTEXT_URI)).thenReturn(entityA);
+        uow.mergeDetached(clone, descriptor);
+
+        assertTrue(uow.hasChanges());
+        final UnitOfWorkChangeSet changeSet = uow.getUowChangeSet();
+        final ObjectChangeSet objectChanges = changeSet.getExistingObjectChanges(entityA);
+        assertNotNull(objectChanges);
+        assertEquals(2, objectChanges.getChanges().size());
+        final ChangeRecord rOne = objectChanges.getChanges().get(OWLClassA.getStrAttField().getName());
+        assertNotNull(rOne);
+        assertEquals(clone.getStringAttribute(), rOne.getNewValue());
+        final ChangeRecord rTwo = objectChanges.getChanges().get(OWLClassA.getTypesField().getName());
+        assertNotNull(rTwo);
+        assertEquals(clone.getTypes(), rTwo.getNewValue());
     }
 }

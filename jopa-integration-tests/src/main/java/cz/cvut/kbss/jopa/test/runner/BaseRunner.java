@@ -15,6 +15,8 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.*;
 import org.junit.After;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 
 import java.net.URI;
@@ -48,6 +50,9 @@ public abstract class BaseRunner {
     protected OWLClassM entityM;
     protected OWLClassN entityN;
     protected OWLClassP entityP;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     public BaseRunner(Logger logger) {
         assert logger != null;

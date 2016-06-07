@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -538,12 +536,18 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         if (orig == null) {
             return;
         }
+        final ChangeRecord record = new ChangeRecordImpl(field.getName(),
+                EntityPropertiesUtils.getFieldValue(field, clone));
+        registerChangeRecord(clone, orig, descriptor, record);
+    }
+
+    private void registerChangeRecord(Object clone, Object orig, Descriptor descriptor, ChangeRecord record) {
         ObjectChangeSet chSet = getUowChangeSet().getExistingObjectChanges(orig);
         if (chSet == null) {
             chSet = ChangeSetFactory.createObjectChangeSet(orig, clone, descriptor);
             getUowChangeSet().addObjectChangeSet(chSet);
         }
-        chSet.addChangeRecord(new ChangeRecordImpl(field.getName(), EntityPropertiesUtils.getFieldValue(field, clone)));
+        chSet.addChangeRecord(record);
     }
 
     /**
@@ -591,6 +595,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                 final Field field = et.getFieldSpecification(record.getAttributeName()).getJavaField();
                 storage.merge(entity, field, descriptor);
             }
+            getUowChangeSet().addObjectChangeSet(chSet);
         } catch (OWLEntityExistsException e) {
             unregisterObject(entity);
             throw e;
