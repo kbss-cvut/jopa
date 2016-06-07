@@ -1,18 +1,20 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
+
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -22,10 +24,6 @@ import java.security.PrivilegedActionException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 /**
  * This class has responsibility for creating new instances of various kinds of objects. It handles security
@@ -132,6 +130,14 @@ class DefaultInstanceBuilder extends AbstractInstanceBuilder {
             return;
         }
         Class<?> cls = originalValue.getClass();
+        if (builder.isTypeManaged(cls) && builder.getOriginal(cloneValue) != null) {
+            EntityPropertiesUtils.setFieldValue(field, target, builder.getOriginal(cloneValue));
+        } else {
+            mergeFieldChanges(originalValue, cloneValue, cls);
+        }
+    }
+
+    private void mergeFieldChanges(Object originalValue, Object cloneValue, Class<?> cls) {
         List<Field> fields = EntityPropertiesUtils.getAllFields(cls);
         for (Field f : fields) {
             Object clVal = EntityPropertiesUtils.getFieldValue(f, cloneValue);

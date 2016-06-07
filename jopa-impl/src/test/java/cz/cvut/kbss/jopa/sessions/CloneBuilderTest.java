@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -18,6 +16,7 @@ import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
@@ -41,14 +40,13 @@ import static org.mockito.Mockito.when;
 
 public class CloneBuilderTest {
 
-    CloneBuilderImpl builder;
+    private CloneBuilderImpl builder;
 
-    private static OWLClassA entityA;
-    private static OWLClassB entityB;
-    private static OWLClassC entityC;
-    private static OWLClassD entityD;
-    private static OWLClassM entityM;
-    private static Set<String> types;
+    private OWLClassA entityA;
+    private OWLClassB entityB;
+    private OWLClassC entityC;
+    private OWLClassD entityD;
+    private OWLClassM entityM;
     private static Set<Class<?>> managedTypes;
     private static EntityDescriptor defaultDescriptor;
 
@@ -59,28 +57,7 @@ public class CloneBuilderTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        entityA = new OWLClassA();
-        final URI pk = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA");
-        entityA.setUri(pk);
-        entityA.setStringAttribute("TEST");
-        types = new HashSet<>();
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA");
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityU");
-        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityX");
-        entityA.setTypes(types);
-        OWLClassA t2 = new OWLClassA();
-        final URI pk2 = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAA");
-        t2.setUri(pk2);
-        t2.setStringAttribute("TEST2");
-        entityB = new OWLClassB();
-        entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
-        entityB.setStringAttribute("someString");
-        entityC = new OWLClassC();
-        entityC.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
-        entityD = new OWLClassD();
-        entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
-        entityD.setOwlClassA(entityA);
-        entityM = new OWLClassM();
+
         initManagedTypes();
         defaultDescriptor = new EntityDescriptor();
     }
@@ -114,16 +91,38 @@ public class CloneBuilderTest {
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodel);
         this.builder = new CloneBuilderImpl(uow);
-        entityA.setTypes(types);
-        entityB.setProperties(null);
-        entityC.setReferencedList(null);
-        entityC.setSimpleList(null);
-        entityM.initializeTestValues(true);
+        initValues();
         final CollectionFactory cf = new CollectionFactory(uow);
         when(uow.createIndirectCollection(any(), any(), any(Field.class))).thenAnswer(call -> {
             final Object[] args = call.getArguments();
             return cf.createIndirectCollection(args[0], args[1], (Field) args[2]);
         });
+    }
+
+    private void initValues() {
+        entityA = new OWLClassA();
+        final URI pk = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA");
+        entityA.setUri(pk);
+        entityA.setStringAttribute("TEST");
+        Set<String> types = new HashSet<>();
+        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA");
+        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityU");
+        types.add("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityX");
+        entityA.setTypes(types);
+        OWLClassA t2 = new OWLClassA();
+        final URI pk2 = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAA");
+        t2.setUri(pk2);
+        t2.setStringAttribute("TEST2");
+        entityB = new OWLClassB();
+        entityB.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB"));
+        entityB.setStringAttribute("someString");
+        entityC = new OWLClassC();
+        entityC.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
+        entityD = new OWLClassD();
+        entityD.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD"));
+        entityD.setOwlClassA(entityA);
+        entityM = new OWLClassM();
+        entityM.initializeTestValues(true);
     }
 
     @Test
@@ -519,5 +518,28 @@ public class CloneBuilderTest {
         for (int i = 0; i < instance.getSimpleList().size(); i++) {
             assertEquals(instance.getSimpleList().get(i).getUri(), result.getSimpleList().get(i).getUri());
         }
+    }
+
+    @Test
+    public void mergeOfFieldOfManagedTypeUsesOriginalValueForMerge() throws Exception {
+        entityD.setOwlClassA(entityA);
+        final OWLClassD dClone = new OWLClassD();
+        dClone.setUri(entityD.getUri());
+
+        final OWLClassA newValue = new OWLClassA();
+        newValue.setUri(URI.create(OWLClassA.getClassIri() + Generators.randomInt(1000)));
+        newValue.setStringAttribute("SomeValue");
+        final OWLClassA newValueClone = new OWLClassA();
+        newValueClone.setUri(newValue.getUri());
+        newValueClone.setStringAttribute(newValue.getStringAttribute());
+        dClone.setOwlClassA(newValueClone);
+
+        final ObjectChangeSet chSet = TestEnvironmentUtils.createObjectChangeSet(entityD, dClone, null);
+        chSet.addChangeRecord(new ChangeRecordImpl(OWLClassD.getOwlClassAField().getName(), newValueClone));
+        when(uow.getOriginal(newValueClone)).thenReturn(newValue);
+        builder.mergeChanges(entityD, chSet);
+        assertSame(newValue, entityD.getOwlClassA());
+        assertEquals(newValue.getUri(), entityD.getOwlClassA().getUri());
+        assertEquals(newValue.getStringAttribute(), entityD.getOwlClassA().getStringAttribute());
     }
 }
