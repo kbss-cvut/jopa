@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.7.12 - June 8, 2016
+- Fixed issue with updating value in context,
+- Verify integrity constraints on merge
+
 ## 0.7.11 - June 6, 2016
 - Generation of Vocabularies improvements - individuals, whole file processing.
 
