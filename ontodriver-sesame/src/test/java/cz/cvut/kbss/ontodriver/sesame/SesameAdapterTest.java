@@ -658,14 +658,12 @@ public class SesameAdapterTest {
                 .values());
         when(
                 connectorMock.findStatements(eq(subjectUri), any(org.openrdf.model.URI.class),
-                        any(org.openrdf.model.Value.class), eq(false),
-                        any(org.openrdf.model.URI.class))).thenReturn(statements);
+                        any(org.openrdf.model.Value.class), eq(false))).thenReturn(statements);
 
         adapter.remove(desc);
         for (Assertion ass : desc.getAssertions()) {
             verify(connectorMock).findStatements(subjectUri,
-                    vf.createURI(ass.getIdentifier().toString()), null, false,
-                    (org.openrdf.model.URI[]) null);
+                    vf.createURI(ass.getIdentifier().toString()), null, false);
         }
         verify(connectorMock).removeStatements(statements);
     }
@@ -737,12 +735,10 @@ public class SesameAdapterTest {
                 subjectUri, sesameProperty, vf.createLiteral(oldValue, "en")));
         when(
                 connectorMock.findStatements(eq(subjectUri), eq(sesameProperty),
-                        any(org.openrdf.model.Value.class), eq(inferred),
-                        any(org.openrdf.model.URI.class))).thenReturn(statements);
+                        any(org.openrdf.model.Value.class), eq(inferred))).thenReturn(statements);
 
         adapter.update(desc);
-        verify(connectorMock).findStatements(subjectUri, sesameProperty, null, inferred,
-                (org.openrdf.model.URI) null);
+        verify(connectorMock).findStatements(subjectUri, sesameProperty, null, inferred);
         verify(connectorMock).removeStatements(statements);
         final Collection<Statement> inserted = Collections.singletonList(vf.createStatement(
                 subjectUri, sesameProperty, vf.createLiteral(newValue, "en")));
@@ -764,12 +760,10 @@ public class SesameAdapterTest {
                 subjectUri, sesameProperty, oldValue));
         when(
                 connectorMock.findStatements(eq(subjectUri), eq(sesameProperty),
-                        any(org.openrdf.model.Value.class), eq(inferred),
-                        any(org.openrdf.model.URI.class))).thenReturn(statements);
+                        any(org.openrdf.model.Value.class), eq(inferred))).thenReturn(statements);
 
         adapter.update(desc);
-        verify(connectorMock).findStatements(subjectUri, sesameProperty, null, inferred,
-                (org.openrdf.model.URI) null);
+        verify(connectorMock).findStatements(subjectUri, sesameProperty, null, inferred);
         verify(connectorMock).removeStatements(statements);
         final Collection<Statement> inserted = Collections.singletonList(vf.createStatement(
                 subjectUri, sesameProperty, newValue));
@@ -790,12 +784,10 @@ public class SesameAdapterTest {
                 subjectUri, sesameProperty, oldValue));
         when(
                 connectorMock.findStatements(eq(subjectUri), eq(sesameProperty),
-                        any(org.openrdf.model.Value.class), eq(inferred),
-                        any(org.openrdf.model.URI.class))).thenReturn(statements);
+                        any(org.openrdf.model.Value.class), eq(inferred))).thenReturn(statements);
 
         adapter.update(desc);
-        verify(connectorMock).findStatements(subjectUri, sesameProperty, null, inferred,
-                (org.openrdf.model.URI) null);
+        verify(connectorMock).findStatements(subjectUri, sesameProperty, null, inferred);
         verify(connectorMock).removeStatements(statements);
         verify(connectorMock, never()).addStatements(any(Collection.class));
     }
@@ -816,12 +808,10 @@ public class SesameAdapterTest {
         final Collection<Statement> statements = initOldTypes();
         when(
                 connectorMock.findStatements(eq(subjectUri), eq(RDF.TYPE),
-                        any(org.openrdf.model.Value.class), eq(inferred),
-                        any(org.openrdf.model.URI.class))).thenReturn(statements);
+                        any(org.openrdf.model.Value.class), eq(inferred))).thenReturn(statements);
 
         adapter.update(desc);
-        verify(connectorMock).findStatements(subjectUri, RDF.TYPE, null, inferred,
-                (org.openrdf.model.URI) null);
+        verify(connectorMock).findStatements(subjectUri, RDF.TYPE, null, inferred);
         verify(connectorMock).removeStatements(statements);
         final Collection<Statement> inserted = initNewTypes(newTypes);
         verify(connectorMock).addStatements(inserted);

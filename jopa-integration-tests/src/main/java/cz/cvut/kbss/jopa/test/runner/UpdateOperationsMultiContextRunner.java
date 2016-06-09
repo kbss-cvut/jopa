@@ -1,26 +1,22 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
+import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassC;
-import cz.cvut.kbss.jopa.test.OWLClassD;
+import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import org.junit.Test;
@@ -268,5 +264,27 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
             final OWLClassA resA = em.find(OWLClassA.class, a.getUri(), lstDescriptor);
             assertNotNull(resA);
         }
+    }
+
+    @Test
+    public void testUpdatePlainIdentifierObjectPropertyValueInContext() {
+        final Descriptor pDescriptor = new EntityDescriptor(CONTEXT_ONE);
+        entityP.setIndividualUri(URI.create("http://krizik.felk.cvut.cz/originalIndividual"));
+        final EntityManager em = getEntityManager("UpdatePlainIdentifierObjectPropertyValueInContext", true);
+        em.getTransaction().begin();
+        em.persist(entityP, pDescriptor);
+        em.getTransaction().commit();
+
+        final OWLClassP toUpdate = em.find(OWLClassP.class, entityP.getUri());
+        em.detach(toUpdate);
+        final URI newUri = URI.create("http://krizik.felk.cvut.cz/newIndividual");
+        toUpdate.setIndividualUri(newUri);
+        em.getTransaction().begin();
+        em.merge(toUpdate);
+        em.getTransaction().commit();
+
+        final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
+        assertNotNull(res);
+        assertEquals(newUri, res.getIndividualUri());
     }
 }

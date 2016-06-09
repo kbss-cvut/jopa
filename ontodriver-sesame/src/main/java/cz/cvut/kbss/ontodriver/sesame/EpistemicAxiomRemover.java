@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -37,8 +35,6 @@ import java.util.*;
  * descriptor contains an unspecified property assertion, all property
  * assertions related to the subject individual are removed from the property's
  * context.
- *
- * @author ledvima1
  */
 class EpistemicAxiomRemover {
 
@@ -54,20 +50,26 @@ class EpistemicAxiomRemover {
 
     void remove(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
         final Resource individual = SesameUtils.toSesameUri(axiomDescriptor.getSubject()
-                .getIdentifier(), valueFactory);
+                                                                           .getIdentifier(), valueFactory);
         final Collection<Statement> toRemove = new HashSet<>();
         for (Assertion a : axiomDescriptor.getAssertions()) {
             if (a.isInferred()) {
                 continue;
             }
-            toRemove.addAll(connector.findStatements(individual,
-                    SesameUtils.toSesameUri(a.getIdentifier(), valueFactory), null, a.isInferred(),
-                    SesameUtils.toSesameUri(axiomDescriptor.getAssertionContext(a), valueFactory)));
+            final URI contextUri = SesameUtils.toSesameUri(axiomDescriptor.getAssertionContext(a), valueFactory);
+            if (contextUri != null) {
+                toRemove.addAll(connector.findStatements(individual,
+                        SesameUtils.toSesameUri(a.getIdentifier(), valueFactory), null, a.isInferred(), contextUri));
+            } else {
+                toRemove.addAll(connector.findStatements(individual,
+                        SesameUtils.toSesameUri(a.getIdentifier(), valueFactory), null, a.isInferred()));
+            }
         }
         connector.removeStatements(toRemove);
     }
 
-    void remove(NamedResource individual, Map<Assertion, Set<Value<?>>> values, java.net.URI context) throws SesameDriverException {
+    void remove(NamedResource individual, Map<Assertion, Set<Value<?>>> values, java.net.URI context)
+            throws SesameDriverException {
         final URI sesameContext = SesameUtils.toSesameUri(context, valueFactory);
         final Resource subject = SesameUtils.toSesameUri(individual.getIdentifier(), valueFactory);
         final Collection<Statement> toRemove = new ArrayList<>();
