@@ -21,7 +21,6 @@ import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -54,7 +53,9 @@ public class MetamodelImpl implements Metamodel {
 
         loadEntities(entityLoader);
 
-        entities.forEach(c -> processOWLClass(c));
+        final EntityFieldSeeker fieldSeeker = new EntityFieldSeeker();
+
+        entities.forEach(c -> processOWLClass(c, fieldSeeker));
     }
 
     /**
@@ -74,7 +75,7 @@ public class MetamodelImpl implements Metamodel {
         entities.addAll(discoveredEntities);
     }
 
-    private <X> void processOWLClass(final Class<X> cls) {
+    private <X> void processOWLClass(final Class<X> cls, EntityFieldSeeker fieldSeeker) {
         if (typeMap.containsKey(cls)) {
             return;
         }
@@ -88,9 +89,7 @@ public class MetamodelImpl implements Metamodel {
         typeMap.put(cls, et);
         final EntityFieldMetamodelProcessor<X> fieldProcessor = new EntityFieldMetamodelProcessor<>(cls, et, this);
 
-        for (final Field field : cls.getDeclaredFields()) {
-            fieldProcessor.processField(field);
-        }
+        fieldSeeker.discoverFields(cls).forEach(fieldProcessor::processField);
 
         if (et.getIdentifier() == null) {
             throw new MetamodelInitializationException("Missing identifier field in entity class " + cls);
@@ -101,7 +100,7 @@ public class MetamodelImpl implements Metamodel {
     @Override
     public <X> EntityType<X> entity(Class<X> cls) {
         if (!typeMap.containsKey(cls)) {
-            processOWLClass(cls);
+            processOWLClass(cls, new EntityFieldSeeker());
         }
 
         return (EntityType<X>) typeMap.get(cls);
