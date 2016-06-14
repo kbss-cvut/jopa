@@ -72,6 +72,7 @@ public class CloneBuilderTest {
         managedTypes.add(OWLClassH.class);
         managedTypes.add(OWLClassM.class);
         managedTypes.add(OWLClassO.class);
+        managedTypes.add(OWLClassQ.class);
     }
 
     @Before
@@ -541,5 +542,25 @@ public class CloneBuilderTest {
         assertSame(newValue, entityD.getOwlClassA());
         assertEquals(newValue.getUri(), entityD.getOwlClassA().getUri());
         assertEquals(newValue.getStringAttribute(), entityD.getOwlClassA().getStringAttribute());
+    }
+
+    @Test
+    public void buildCloneClonesMappedSuperclassFieldsAsWell() throws Exception {
+        final OWLClassQ orig = new OWLClassQ();
+        orig.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/QInstance"));
+        orig.setStringAttribute("stringAtt");
+        orig.setParentString("parentStringAtt");
+        orig.setLabel("OWLClassQ - instance");
+        orig.setOwlClassA(entityA);
+
+        final OWLClassQ clone = (OWLClassQ) builder.buildClone(orig, defaultDescriptor);
+        assertNotNull(clone);
+        assertEquals(orig.getUri(), clone.getUri());
+        assertEquals(orig.getStringAttribute(), clone.getStringAttribute());
+        assertEquals(orig.getParentString(), clone.getParentString());
+        assertEquals(orig.getLabel(), clone.getLabel());
+        assertNotNull(clone.getOwlClassA());
+        assertEquals(orig.getOwlClassA().getUri(), clone.getOwlClassA().getUri());
+        assertNotSame(orig.getOwlClassA(), clone.getOwlClassA());
     }
 }

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -180,6 +180,19 @@ public class MetamodelMocks {
     @Mock
     private PropertiesSpecification<OWLClassP, Map, URI, Object> pProperties;
 
+    @Mock
+    private EntityType<OWLClassQ> etQ;
+    @Mock
+    private Identifier idQ;
+    @Mock
+    private SingularAttribute<OWLClassQ, String> qStringAtt;
+    @Mock
+    private SingularAttribute<OWLClassQ, String> qLabelAtt;
+    @Mock
+    private SingularAttribute<OWLClassQ, String> qParentStringAtt;
+    @Mock
+    private SingularAttribute<OWLClassQ, OWLClassA> qOwlClassAAtt;
+
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
         MetamodelFactory.initOWLClassAMocks(etA, aStringAtt, aTypes, idA);
@@ -197,7 +210,9 @@ public class MetamodelMocks {
                 .initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt, idM);
         MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nProperties, idN);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
-        MetamodelFactory.initOWLClassPMock(etP, pTypes, pProperties, pUriAtt, pUrlsAtt, pSimpleList, pReferencedList, idP);
+        MetamodelFactory
+                .initOWLClassPMock(etP, pTypes, pProperties, pUriAtt, pUrlsAtt, pSimpleList, pReferencedList, idP);
+        MetamodelFactory.initOwlClassQMock(etQ, qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -216,6 +231,7 @@ public class MetamodelMocks {
         when(metamodel.entity(OWLClassN.class)).thenReturn(etN);
         when(metamodel.entity(OWLClassO.class)).thenReturn(etO);
         when(metamodel.entity(OWLClassP.class)).thenReturn(etP);
+        when(metamodel.entity(OWLClassQ.class)).thenReturn(etQ);
     }
 
     public OWLClassAMetamodel forOwlClassA() {
@@ -558,6 +574,32 @@ public class MetamodelMocks {
 
         public PropertiesSpecification<OWLClassP, Map, URI, Object> properties() {
             return MetamodelMocks.this.pProperties;
+        }
+    }
+
+    public class OWLClassQMetamodel {
+        public EntityType<OWLClassQ> entityType() {
+            return MetamodelMocks.this.etQ;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idQ;
+        }
+
+        public SingularAttribute<OWLClassQ, String> qStringAtt() {
+            return MetamodelMocks.this.qStringAtt;
+        }
+
+        public SingularAttribute<OWLClassQ, String> qParentStringAtt() {
+            return MetamodelMocks.this.qParentStringAtt;
+        }
+
+        public SingularAttribute<OWLClassQ, String> qLabelAtt() {
+            return MetamodelMocks.this.qLabelAtt;
+        }
+
+        public SingularAttribute<OWLClassQ, OWLClassA> qOwlClassAAtt() {
+            return MetamodelMocks.this.qOwlClassAAtt;
         }
     }
 }

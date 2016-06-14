@@ -652,4 +652,64 @@ public class MetamodelFactory {
         when(refListAtt.getOWLPropertyHasContentsIRI())
                 .thenReturn(IRI.create(refListField.getAnnotation(Sequence.class).ObjectPropertyHasContentsIRI()));
     }
+
+    public static void initOwlClassQMock(EntityType<OWLClassQ> et, SingularAttribute qStringAtt,
+                                         SingularAttribute qParentStringAtt,
+                                         SingularAttribute qLabelAtt,
+                                         SingularAttribute qOwlClassAAtt, Identifier idQ) throws Exception {
+        when(et.getIdentifier()).thenReturn(idQ);
+        when(idQ.getJavaField()).thenReturn(OWLClassQ.getUriField());
+        when(et.getIRI()).thenReturn(IRI.create(OWLClassQ.getClassIri()));
+        when(et.getFieldSpecifications())
+                .thenReturn(
+                        new HashSet<>(
+                                Arrays.<FieldSpecification<? super OWLClassQ, ?>>asList(qStringAtt, qParentStringAtt,
+                                        qLabelAtt,
+                                        qOwlClassAAtt)));
+        when(et.getAttributes())
+                .thenReturn(new HashSet<>(
+                        Arrays.<Attribute<? super OWLClassQ, ?>>asList(qStringAtt, qParentStringAtt, qLabelAtt,
+                                qOwlClassAAtt)));
+
+        when(qStringAtt.getJavaField()).thenReturn(OWLClassQ.getStringAttributeField());
+        when(qStringAtt.getJavaType()).thenReturn(OWLClassQ.getStringAttributeField().getType());
+        when(et.getAttribute(OWLClassQ.getStringAttributeField().getName())).thenReturn(qStringAtt);
+        when(qStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(qStringAtt.isCollection()).thenReturn(false);
+        when(qStringAtt.getBindableJavaType()).thenReturn(String.class);
+        when(qStringAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassQ.getStringAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(qStringAtt.getDeclaringType()).thenReturn(et);
+
+        when(qParentStringAtt.getJavaField()).thenReturn(OWLClassQ.getParentStringField());
+        when(qParentStringAtt.getJavaType()).thenReturn(OWLClassQ.getParentStringField().getType());
+        when(et.getAttribute(OWLClassQ.getParentStringField().getName())).thenReturn(qParentStringAtt);
+        when(qParentStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(qParentStringAtt.isCollection()).thenReturn(false);
+        when(qParentStringAtt.getBindableJavaType()).thenReturn(String.class);
+        when(qParentStringAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassQ.getParentStringField().getAnnotation(OWLDataProperty.class).iri()));
+        when(qParentStringAtt.getDeclaringType()).thenReturn(et);
+
+        when(qLabelAtt.getJavaField()).thenReturn(OWLClassQ.getLabelField());
+        when(qLabelAtt.getJavaType()).thenReturn(OWLClassQ.getLabelField().getType());
+        when(et.getAttribute(OWLClassQ.getLabelField().getName())).thenReturn(qLabelAtt);
+        when(qLabelAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(qLabelAtt.isCollection()).thenReturn(false);
+        when(qLabelAtt.getBindableJavaType()).thenReturn(String.class);
+        when(qLabelAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassQ.getLabelField().getAnnotation(OWLAnnotationProperty.class).iri()));
+        when(qLabelAtt.getDeclaringType()).thenReturn(et);
+
+        when(qOwlClassAAtt.getIRI())
+                .thenReturn(IRI.create(OWLClassQ.getOwlClassAField().getAnnotation(OWLObjectProperty.class).iri()));
+        when(qOwlClassAAtt.getJavaType()).thenReturn(OWLClassA.class);
+        when(qOwlClassAAtt.getJavaField()).thenReturn(OWLClassQ.getOwlClassAField());
+        when(qOwlClassAAtt.getName()).thenReturn(OWLClassQ.getOwlClassAField().getName());
+        when(qOwlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(qOwlClassAAtt.getFetchType()).thenReturn(FetchType.EAGER);
+        when(qOwlClassAAtt.getDeclaringType()).thenReturn(et);
+        when(qOwlClassAAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(et.getFieldSpecification(qOwlClassAAtt.getName())).thenReturn(qOwlClassAAtt);
+    }
 }

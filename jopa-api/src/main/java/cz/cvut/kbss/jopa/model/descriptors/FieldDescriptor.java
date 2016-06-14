@@ -47,7 +47,7 @@ public class FieldDescriptor extends Descriptor {
 
     @Override
     public Collection<Descriptor> getAttributeDescriptors() {
-        return Collections.<Descriptor>singleton(this);
+        return Collections.singleton(this);
     }
 
     @Override
