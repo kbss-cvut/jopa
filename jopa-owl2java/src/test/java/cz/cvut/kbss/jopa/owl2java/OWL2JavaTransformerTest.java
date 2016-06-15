@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
@@ -18,8 +16,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -27,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static cz.cvut.kbss.jopa.owl2java.TestUtils.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class OWL2JavaTransformerTest {
@@ -37,6 +43,8 @@ public class OWL2JavaTransformerTest {
 
     private String mappingFilePath;
 
+    private OWLDataFactory dataFactory;
+
     private OWL2JavaTransformer transformer;
 
     @Rule
@@ -45,6 +53,7 @@ public class OWL2JavaTransformerTest {
     @Before
     public void setUp() {
         this.mappingFilePath = resolveMappingFilePath();
+        this.dataFactory = new OWLDataFactoryImpl();
         this.transformer = new OWL2JavaTransformer();
     }
 
@@ -162,5 +171,32 @@ public class OWL2JavaTransformerTest {
         final List<String> fileNames = Arrays.asList(targetDir.list());
         assertEquals(1, fileNames.size());
         assertEquals(VOCABULARY_FILE, fileNames.get(0));
+    }
+
+    @Test
+    public void generateVocabularyTransformsInvalidCharactersInIrisToValid() throws Exception {
+        final File targetDir = getTempDirectory();
+        transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
+        // contains a ',', which will result in invalid Java identifier
+        final String invalidIri = "http://onto.fel.cvut.cz/ontologies/aviation-safety/accident,_incident_or_emergency";
+        final OWLAxiom axiom = dataFactory.getOWLDeclarationAxiom(dataFactory.getOWLClass(IRI.create(invalidIri)));
+        TestUtils.addAxiom(axiom, transformer);
+
+        transformer.generateVocabulary(null, "", targetDir.getAbsolutePath(), false);
+        final File vocabularyFile = targetDir.listFiles()[0];
+        final String fileContents = readFile(vocabularyFile);
+        assertFalse(fileContents.contains(invalidIri.substring(invalidIri.lastIndexOf('/') + 1) + " ="));
+        assertTrue(fileContents.contains(invalidIri.substring(invalidIri.lastIndexOf(',') + 1) + " ="));
+    }
+
+    private String readFile(File file) throws IOException {
+        final StringBuilder sb = new StringBuilder();
+        try (final BufferedReader in = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                sb.append(line).append('\n');
+            }
+        }
+        return sb.toString();
     }
 }

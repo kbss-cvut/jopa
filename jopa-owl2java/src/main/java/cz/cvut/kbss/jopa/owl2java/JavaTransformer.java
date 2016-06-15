@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.owl2java;
 
@@ -34,7 +32,6 @@ import java.io.IOException;
 import java.util.*;
 
 import static cz.cvut.kbss.jopa.owl2java.Constants.*;
-import static cz.cvut.kbss.jopa.owl2java.Constants.PACKAGE_SEPARATOR;
 
 public class JavaTransformer {
 
@@ -64,7 +61,7 @@ public class JavaTransformer {
     }
 
     public void generateModel(final OWLOntology ontology,
-                               final ContextDefinition context, final String pkg, String targetDir, boolean withOWLAPI) {
+                              final ContextDefinition context, final String pkg, String targetDir, boolean withOWLAPI) {
 
         try {
             final JCodeModel cm = new JCodeModel();
@@ -87,7 +84,8 @@ public class JavaTransformer {
      * @param pkg  Package
      * @param withOWLAPI Whether OWLAPI-based IRIs of the generated vocabulary items should be created as well
      */
-    public void generateVocabulary(final OWLOntology ontology,ContextDefinition context, String pkg, String targetDir, boolean withOWLAPI) {
+    public void generateVocabulary(final OWLOntology ontology, ContextDefinition context, String pkg, String targetDir,
+                                   boolean withOWLAPI) {
         try {
             final JCodeModel cm = new JCodeModel();
             this.voc = cm._class(pkg + PACKAGE_SEPARATOR + VOCABULARY_CLASS);
@@ -99,6 +97,7 @@ public class JavaTransformer {
             LOG.error("Vocabulary file generation FAILED.", e);
         }
     }
+
     private void writeOutModel(JCodeModel cm, String targetDir) throws IOException {
         final File file = new File(targetDir);
         file.mkdirs();
@@ -106,7 +105,7 @@ public class JavaTransformer {
     }
 
     private void _generateModel(final OWLOntology ontology, final JCodeModel cm,
-                               final ContextDefinition context, final String pkg) {
+                                final ContextDefinition context, final String pkg) {
         LOG.info("Generating model ...");
 
         context.classes.add(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
@@ -117,7 +116,8 @@ public class JavaTransformer {
 
             for (final org.semanticweb.owlapi.model.OWLObjectProperty prop : context.objectProperties) {
 
-                final IntegrityConstraintParserImpl.ClassObjectPropertyComputer comp = context.parser.new ClassObjectPropertyComputer(clazz, prop,
+                final IntegrityConstraintParserImpl.ClassObjectPropertyComputer comp = context.parser.new ClassObjectPropertyComputer(
+                        clazz, prop,
                         ontology);
 
                 if (OWL2JavaTransformer.Card.NO.equals(comp.getCard())) {
@@ -125,7 +125,7 @@ public class JavaTransformer {
                 }
 
                 JClass filler = ensureCreated(context, pkg, cm,
-                        comp.getObject(),ontology);
+                        comp.getObject(), ontology);
                 final String fieldName = validJavaIDForIRI(prop.getIRI());
 
                 switch (comp.getCard()) {
@@ -144,7 +144,7 @@ public class JavaTransformer {
 
                 if (comp.getCard().equals(OWL2JavaTransformer.Card.SIMPLELIST)) {
                     fv.annotate(Sequence.class)
-                            .param("type", SequenceType.simple);
+                      .param("type", SequenceType.simple);
                 }
 
 
@@ -193,7 +193,7 @@ public class JavaTransformer {
 
                 if (OWL2JavaTransformer.Card.MULTIPLE.equals(comp.getCard())) {
                     fv = addField(fieldName, subj, cm.ref(java.util.Set.class)
-                            .narrow(obj));
+                                                     .narrow(obj));
                 } else if (OWL2JavaTransformer.Card.ONE.equals(comp.getCard())) {
                     fv = addField(fieldName, subj, obj);
                 } else {
@@ -231,7 +231,9 @@ public class JavaTransformer {
             }
         }
     }
-    private void generateVocabulary(final OWLOntology o, final JCodeModel cm, ContextDefinition context, boolean withOWLAPI) {
+
+    private void generateVocabulary(final OWLOntology o, final JCodeModel cm, ContextDefinition context,
+                                    boolean withOWLAPI) {
         final Collection<OWLEntity> col = new HashSet<>();
         col.add(o.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
         col.addAll(context.classes);
@@ -289,8 +291,9 @@ public class JavaTransformer {
             return validJavaID(iri.toString().substring(x + 1));
         }
     }
+
     private static String validJavaID(final String s) {
-        String res = s.trim().replace("-", "_").replace("'", "_quote_").replace(".", "_dot_");
+        String res = s.trim().replace("-", "_").replace("'", "_quote_").replace(".", "_dot_").replace(',', '_');
         if (Arrays.binarySearch(keywords, res) >= 0) {
             res = "_" + res;
         }
@@ -362,7 +365,8 @@ public class JavaTransformer {
     }
 
     private JDefinedClass ensureCreated(final ContextDefinition ctx,
-                                        final String pkg, final JCodeModel cm, final OWLClass clazz, final OWLOntology ontology) {
+                                        final String pkg, final JCodeModel cm, final OWLClass clazz,
+                                        final OWLOntology ontology) {
         if (classes.containsKey(clazz)) {
             return classes.get(clazz);
         }
@@ -376,7 +380,7 @@ public class JavaTransformer {
 
             cls.annotate(
                     cz.cvut.kbss.jopa.model.annotations.OWLClass.class)
-                    .param("iri", entities.get(clazz));
+               .param("iri", entities.get(clazz));
 
             final JDocComment dc = cls.javadoc();
             dc.add("This class was generated by the OWL2Java tool version " + VERSION);
