@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -58,10 +58,8 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
 
     @Override
     public boolean add(E arg0) {
-        boolean res = internalList.add(arg0);
-        if (res) {
-            persistChange();
-        }
+        final boolean res = internalList.add(arg0);
+        persistChange();    // There is always a change
         return res;
     }
 
@@ -72,8 +70,8 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
     }
 
     @Override
-    public boolean addAll(Collection<? extends E> arg0) {
-        boolean res = internalList.addAll(arg0);
+    public boolean addAll(Collection<? extends E> c) {
+        boolean res = internalList.addAll(c);
         if (res) {
             persistChange();
         }
@@ -81,8 +79,8 @@ public class IndirectList<E> extends IndirectCollection<List<E>> implements List
     }
 
     @Override
-    public boolean addAll(int arg0, Collection<? extends E> arg1) {
-        boolean res = internalList.addAll(arg0, arg1);
+    public boolean addAll(int index, Collection<? extends E> c) {
+        boolean res = internalList.addAll(index, c);
         if (res) {
             persistChange();
         }

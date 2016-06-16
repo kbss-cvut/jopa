@@ -24,10 +24,12 @@ public class BasicTypeImpl<X> implements BasicType<X> {
 		this.c = c;
 	}
 
+	@Override
 	public Class<X> getJavaType() {
 		return c;
 	}
 
+    @Override
 	public cz.cvut.kbss.jopa.model.metamodel.Type.PersistenceType getPersistenceType() {
 		return PersistenceType.BASIC;
 	}

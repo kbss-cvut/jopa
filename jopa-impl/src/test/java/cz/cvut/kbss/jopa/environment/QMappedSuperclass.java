@@ -17,6 +17,7 @@ public class QMappedSuperclass {
     @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#QParent-stringAttribute")
     private String parentString;
 
+    @ParticipationConstraints(nonEmpty = true)
     @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA", fetch = FetchType.EAGER)
     private OWLClassA owlClassA;
 

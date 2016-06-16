@@ -47,6 +47,7 @@ public class CloneBuilderTest {
     private OWLClassC entityC;
     private OWLClassD entityD;
     private OWLClassM entityM;
+    private OWLClassQ entityQ;
     private static Set<Class<?>> managedTypes;
     private static EntityDescriptor defaultDescriptor;
 
@@ -124,6 +125,12 @@ public class CloneBuilderTest {
         entityD.setOwlClassA(entityA);
         entityM = new OWLClassM();
         entityM.initializeTestValues(true);
+        this.entityQ = new OWLClassQ();
+        entityQ.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC"));
+        entityQ.setStringAttribute("stringAtt");
+        entityQ.setParentString("parentStringAtt");
+        entityQ.setLabel("OWLClassQ - instance");
+        entityQ.setOwlClassA(entityA);
     }
 
     @Test
@@ -546,21 +553,37 @@ public class CloneBuilderTest {
 
     @Test
     public void buildCloneClonesMappedSuperclassFieldsAsWell() throws Exception {
-        final OWLClassQ orig = new OWLClassQ();
-        orig.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/QInstance"));
-        orig.setStringAttribute("stringAtt");
-        orig.setParentString("parentStringAtt");
-        orig.setLabel("OWLClassQ - instance");
-        orig.setOwlClassA(entityA);
 
-        final OWLClassQ clone = (OWLClassQ) builder.buildClone(orig, defaultDescriptor);
+        final OWLClassQ clone = (OWLClassQ) builder.buildClone(entityQ, defaultDescriptor);
         assertNotNull(clone);
-        assertEquals(orig.getUri(), clone.getUri());
-        assertEquals(orig.getStringAttribute(), clone.getStringAttribute());
-        assertEquals(orig.getParentString(), clone.getParentString());
-        assertEquals(orig.getLabel(), clone.getLabel());
+        assertEquals(entityQ.getUri(), clone.getUri());
+        assertEquals(entityQ.getStringAttribute(), clone.getStringAttribute());
+        assertEquals(entityQ.getParentString(), clone.getParentString());
+        assertEquals(entityQ.getLabel(), clone.getLabel());
         assertNotNull(clone.getOwlClassA());
-        assertEquals(orig.getOwlClassA().getUri(), clone.getOwlClassA().getUri());
-        assertNotSame(orig.getOwlClassA(), clone.getOwlClassA());
+        assertEquals(entityQ.getOwlClassA().getUri(), clone.getOwlClassA().getUri());
+        assertNotSame(entityQ.getOwlClassA(), clone.getOwlClassA());
+    }
+
+    @Test
+    public void mergeChangesMergesChangesOnMappedSuperclassFields() throws Exception {
+        final OWLClassQ qClone = new OWLClassQ();
+        qClone.setUri(entityQ.getUri());
+        qClone.setStringAttribute("newStringAtt");
+        qClone.setParentString("anotherStringAtt");
+        final OWLClassA newA = new OWLClassA();
+        newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/newA"));
+        qClone.setOwlClassA(newA);
+        final ObjectChangeSet changeSet = TestEnvironmentUtils.createObjectChangeSet(entityQ, qClone, null);
+        changeSet.addChangeRecord(
+                new ChangeRecordImpl(OWLClassQ.getStringAttributeField().getName(), qClone.getStringAttribute()));
+        changeSet.addChangeRecord(
+                new ChangeRecordImpl(OWLClassQ.getParentStringField().getName(), qClone.getParentString()));
+        changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassQ.getOwlClassAField().getName(), qClone.getOwlClassA()));
+
+        builder.mergeChanges(entityQ, changeSet);
+        assertEquals(qClone.getStringAttribute(), entityQ.getStringAttribute());
+        assertEquals(qClone.getParentString(), entityQ.getParentString());
+        assertEquals(qClone.getOwlClassA().getUri(), entityQ.getOwlClassA().getUri());
     }
 }

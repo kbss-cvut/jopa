@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,7 +17,6 @@ package cz.cvut.kbss.jopa.sessions.change;
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.ChangeManager;
-import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -99,12 +98,13 @@ public class ChangeManagerImpl implements ChangeManager {
         return metamodelProvider.getMetamodel().entity(cls).getFieldSpecifications();
     }
 
-    Changed valueChanged(Object orig, Object clone) {
+    private Changed valueChanged(Object orig, Object clone) {
         return changeDetector.hasChanges(clone, orig);
     }
 
     public boolean calculateChanges(ObjectChangeSet changeSet) throws IllegalAccessException,
-            IllegalArgumentException, OWLInferredAttributeModifiedException {
+                                                                      IllegalArgumentException,
+                                                                      OWLInferredAttributeModifiedException {
         Objects.requireNonNull(changeSet, ErrorUtils.constructNPXMessage("changeSet"));
 
         return calculateChangesInternal(changeSet);
@@ -120,7 +120,7 @@ public class ChangeManagerImpl implements ChangeManager {
      * @throws IllegalAccessException
      * @throws OWLInferredAttributeModifiedException
      */
-    protected boolean calculateChangesInternal(ObjectChangeSet changeSet)
+    private boolean calculateChangesInternal(ObjectChangeSet changeSet)
             throws IllegalArgumentException, IllegalAccessException {
         LOG.trace("Calculating changes for change set {}.", changeSet);
         Object original = changeSet.getChangedObject();

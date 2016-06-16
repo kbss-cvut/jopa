@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -134,6 +135,13 @@ public class IndirectSetTest {
     }
 
     @Test
+    public void addingExistingElementDoesNotTriggerAttributeChange() {
+        final OWLClassA toAdd = backupSet.iterator().next();
+        target.add(toAdd);
+        verify(uow, never()).attributeChanged(owner, ownerField);
+    }
+
+    @Test
     public void testRemove() {
         final OWLClassA toRemove = set.iterator().next();
         target.remove(toRemove);
@@ -205,5 +213,10 @@ public class IndirectSetTest {
     @Test
     public void equalsWorksForIndirectSetAndRegularSet() {
         assertEquals(backupSet, target);
+    }
+
+    @Test
+    public void hashCodeReturnsInternalSetHashCode() {
+        assertEquals(backupSet.hashCode(), target.hashCode());
     }
 }
