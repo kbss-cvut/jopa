@@ -480,7 +480,7 @@ public class MetamodelFactory {
         when(doubleAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(doubleAtt.isCollection()).thenReturn(false);
         when(doubleAtt.getDeclaringType()).thenReturn(etMock);
-        when(etMock.getFieldSpecification(OWLClassM.getIntAttributeField().getName())).thenReturn(doubleAtt);
+        when(etMock.getFieldSpecification(OWLClassM.getDoubleAttributeField().getName())).thenReturn(doubleAtt);
 
         when(dateAtt.getJavaField()).thenReturn(OWLClassM.getDateAttributeField());
         when(dateAtt.getJavaType()).thenReturn(OWLClassM.getDateAttributeField().getType());
@@ -673,6 +673,7 @@ public class MetamodelFactory {
 
         when(qStringAtt.getJavaField()).thenReturn(OWLClassQ.getStringAttributeField());
         when(qStringAtt.getJavaType()).thenReturn(OWLClassQ.getStringAttributeField().getType());
+        when(qStringAtt.getName()).thenReturn(OWLClassQ.getStringAttributeField().getName());
         when(et.getAttribute(OWLClassQ.getStringAttributeField().getName())).thenReturn(qStringAtt);
         when(qStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(qStringAtt.isCollection()).thenReturn(false);
@@ -680,9 +681,11 @@ public class MetamodelFactory {
         when(qStringAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassQ.getStringAttributeField().getAnnotation(OWLDataProperty.class).iri()));
         when(qStringAtt.getDeclaringType()).thenReturn(et);
+        when(et.getFieldSpecification(qStringAtt.getName())).thenReturn(qStringAtt);
 
         when(qParentStringAtt.getJavaField()).thenReturn(OWLClassQ.getParentStringField());
         when(qParentStringAtt.getJavaType()).thenReturn(OWLClassQ.getParentStringField().getType());
+        when(qParentStringAtt.getName()).thenReturn(OWLClassQ.getParentStringField().getName());
         when(et.getAttribute(OWLClassQ.getParentStringField().getName())).thenReturn(qParentStringAtt);
         when(qParentStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(qParentStringAtt.isCollection()).thenReturn(false);
@@ -690,9 +693,11 @@ public class MetamodelFactory {
         when(qParentStringAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassQ.getParentStringField().getAnnotation(OWLDataProperty.class).iri()));
         when(qParentStringAtt.getDeclaringType()).thenReturn(et);
+        when(et.getFieldSpecification(qParentStringAtt.getName())).thenReturn(qParentStringAtt);
 
         when(qLabelAtt.getJavaField()).thenReturn(OWLClassQ.getLabelField());
         when(qLabelAtt.getJavaType()).thenReturn(OWLClassQ.getLabelField().getType());
+        when(qLabelAtt.getName()).thenReturn(OWLClassQ.getLabelField().getName());
         when(et.getAttribute(OWLClassQ.getLabelField().getName())).thenReturn(qLabelAtt);
         when(qLabelAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(qLabelAtt.isCollection()).thenReturn(false);
@@ -700,6 +705,7 @@ public class MetamodelFactory {
         when(qLabelAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassQ.getLabelField().getAnnotation(OWLAnnotationProperty.class).iri()));
         when(qLabelAtt.getDeclaringType()).thenReturn(et);
+        when(et.getFieldSpecification(qLabelAtt.getName())).thenReturn(qLabelAtt);
 
         when(qOwlClassAAtt.getIRI())
                 .thenReturn(IRI.create(OWLClassQ.getOwlClassAField().getAnnotation(OWLObjectProperty.class).iri()));

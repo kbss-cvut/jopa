@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -161,17 +161,19 @@ public class CloneBuilderImpl implements CloneBuilder {
      * @param cls the class to check
      * @return Whether the class represents immutable objects
      */
-    public static boolean isImmutable(final Class<?> cls) {
-        return cls.isPrimitive() || cls.isEnum()|| IMMUTABLE_TYPES.contains(cls);
+    static boolean isImmutable(final Class<?> cls) {
+        return cls.isPrimitive() || cls.isEnum() || IMMUTABLE_TYPES.contains(cls);
     }
 
     @Override
     public void mergeChanges(Object original, ObjectChangeSet changeSet) {
         Map<String, ChangeRecord> changes = changeSet.getChanges();
+        final EntityType<?> et = getMetamodel().entity(original.getClass());
         try {
             for (String att : changes.keySet()) {
-                ChangeRecord change = changes.get(att);
-                Field f = original.getClass().getDeclaredField(att);
+                final ChangeRecord change = changes.get(att);
+                final FieldSpecification<?, ?> fs = et.getFieldSpecification(att);
+                Field f = fs.getJavaField();
                 if (isImmutable(f.getType())) {
                     EntityPropertiesUtils.setFieldValue(f, original, change.getNewValue());
                     continue;
@@ -184,12 +186,12 @@ public class CloneBuilderImpl implements CloneBuilder {
                 }
                 getInstanceBuilder(newVal).mergeChanges(f, original, origVal, newVal);
             }
-        } catch (NoSuchFieldException | SecurityException e) {
+        } catch (SecurityException e) {
             throw new OWLPersistenceException(e);
         }
     }
 
-    Object getVisitedEntity(Descriptor descriptor, Object original) {
+    private Object getVisitedEntity(Descriptor descriptor, Object original) {
         assert descriptor != null;
         assert original != null;
         return visitedEntities.get(descriptor, original);

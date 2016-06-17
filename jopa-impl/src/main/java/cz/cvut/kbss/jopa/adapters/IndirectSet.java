@@ -28,7 +28,6 @@ public class IndirectSet<E> extends IndirectCollection<Set<E>> implements Set<E>
      * No-arg constructor to allow clone building.
      */
     IndirectSet() {
-        super();
         this.internalSet = new HashSet<>();
     }
 

@@ -1,3 +1,4 @@
+- Consider using FieldSpecification instead of attribute name in ChangeRecord
 - When persisting a collection of instances without generated ids, how to handle references between them?
     - It can happen that JOPA will try to insert a referenced individual which has not yet set id, which
         results in assigning it a generated URI. E.g. foreach(inst -> {inst.generateUri(); em.persist(inst); })

@@ -34,12 +34,12 @@ public class IndirectMap<K, V> extends IndirectCollection<Map<K, V>> implements 
 	}
 
 	public IndirectMap(Object owner, Field f, UnitOfWorkImpl persistenceContext, Map<K, V> map) {
-		super(owner, f, persistenceContext);
-		if (map == null) {
-			throw new NullPointerException();
-		}
-		this.internalMap = map;
-	}
+        super(owner, f, persistenceContext);
+        if (map == null) {
+            throw new NullPointerException();
+        }
+        this.internalMap = map;
+    }
 
 	@Override
 	public Map<K, V> getReferencedCollection() {

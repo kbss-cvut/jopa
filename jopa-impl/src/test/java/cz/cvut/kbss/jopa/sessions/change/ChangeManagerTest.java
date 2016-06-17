@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -49,6 +49,7 @@ public class ChangeManagerTest {
     private static OWLClassC testC;
     private static OWLClassO testO;
     private static OWLClassM testM;
+    private static OWLClassQ testQ;
 
     private OWLClassA testAClone;
     private OWLClassB testBClone;
@@ -72,6 +73,7 @@ public class ChangeManagerTest {
         initC();
         initD();
         initO();
+        initQ();
         typesCollection = new HashSet<>();
         for (int i = 0; i < 10; i++) {
             typesCollection.add(Integer.toString(i));
@@ -134,6 +136,15 @@ public class ChangeManagerTest {
         testO = new OWLClassO();
         testO.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies#testO"));
         testO.setStringAttribute("String");
+    }
+
+    private static void initQ() {
+        testQ = new OWLClassQ();
+        testQ.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies#testQ"));
+        testQ.setStringAttribute("someString");
+        testQ.setParentString("parentString");
+        testQ.setLabel("label");
+        testQ.setOwlClassA(testA);
     }
 
     @Before
@@ -520,5 +531,49 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(changeSet);
         assertFalse(res);
         assertTrue(changeSet.getChanges().isEmpty());
+    }
+
+    @Test
+    public void calculateChangesDetectsChangesInMappedSuperclassFields() throws Exception {
+        final OWLClassQ testQClone = new OWLClassQ();
+        testQClone.setUri(testQ.getUri());
+        testQClone.setLabel("differentLabel");
+        testQClone.setParentString("differentParentString");
+        testQClone.setStringAttribute("differentString");
+        testQClone.setOwlClassA(testA);
+
+        final ObjectChangeSet changeSet = createChangeSet(testQ, testQClone);
+        final boolean res = manager.calculateChanges(changeSet);
+        assertTrue(res);
+        final Map<String, ChangeRecord> changes = changeSet.getChanges();
+        assertEquals(3, changes.size());
+        assertTrue(changes.containsKey(OWLClassQ.getLabelField().getName()));
+        assertEquals(testQClone.getLabel(), changes.get(OWLClassQ.getLabelField().getName()).getNewValue());
+        assertTrue(changes.containsKey(OWLClassQ.getStringAttributeField().getName()));
+        assertEquals(testQClone.getStringAttribute(),
+                changes.get(OWLClassQ.getStringAttributeField().getName()).getNewValue());
+        assertTrue(changes.containsKey(OWLClassQ.getParentStringField().getName()));
+        assertEquals(testQClone.getParentString(),
+                changes.get(OWLClassQ.getParentStringField().getName()).getNewValue());
+    }
+
+    @Test
+    public void calculateChangesDetectsChangesInMappedSuperclassObjectPropertyField() throws Exception {
+        final OWLClassQ testQClone = new OWLClassQ();
+        testQClone.setUri(testQ.getUri());
+        testQClone.setStringAttribute(testQ.getStringAttribute());
+        testQClone.setParentString(testQ.getParentString());
+        testQClone.setLabel(testQ.getLabel());
+        final OWLClassA newA = new OWLClassA();
+        newA.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#newA"));
+        testQClone.setOwlClassA(newA);
+
+        final ObjectChangeSet changeSet = createChangeSet(testQ, testQClone);
+        final boolean res = manager.calculateChanges(changeSet);
+        assertTrue(res);
+        final Map<String, ChangeRecord> changes = changeSet.getChanges();
+        assertEquals(1, changes.size());
+        assertTrue(changes.containsKey(OWLClassQ.getOwlClassAField().getName()));
+        assertEquals(newA, changes.get(OWLClassQ.getOwlClassAField().getName()).getNewValue());
     }
 }
