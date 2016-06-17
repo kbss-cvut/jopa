@@ -26,10 +26,8 @@ import java.util.Set;
 
 public abstract class BaseRunner {
 
-    protected static final URI CONTEXT_ONE = URI
-            .create("http://krizik.felk.cvut.cz/jopa/contexts#One");
-    protected static final URI CONTEXT_TWO = URI
-            .create("http://krizik.felk.cvut.cz/jopa/contexts#Two");
+    protected static final URI CONTEXT_ONE = URI.create("http://krizik.felk.cvut.cz/jopa/contexts#One");
+    protected static final URI CONTEXT_TWO = URI.create("http://krizik.felk.cvut.cz/jopa/contexts#Two");
 
 
     protected final Logger logger;
@@ -50,6 +48,8 @@ public abstract class BaseRunner {
     protected OWLClassM entityM;
     protected OWLClassN entityN;
     protected OWLClassP entityP;
+    // Mapped superclass
+    protected OWLClassQ entityQ;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -75,6 +75,7 @@ public abstract class BaseRunner {
      *     <li>entityM has all fields set to some values</li>
      *     <li>entityN has required fields set</li>
      *     <li>entityP's properties and uri are null</li>
+     *     <li>entityQ's reference to OWLClassA is set to entityA</li>
      * </ul>
      * </pre>
      */
@@ -109,6 +110,11 @@ public abstract class BaseRunner {
         this.entityN = new OWLClassN();
         entityN.setStringAttribute("entityNStringAttribute");
         this.entityP = new OWLClassP();
+        this.entityQ = new OWLClassQ();
+        entityQ.setStringAttribute("entityQStringAttribute");
+        entityQ.setParentString("entityQParentStringAttribute");
+        entityQ.setLabel("entityQLabel");
+        entityQ.setOwlClassA(entityA);
     }
 
     @After

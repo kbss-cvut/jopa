@@ -255,4 +255,27 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         assertNotNull(resK);
         assertEquals(resE, resK.getOwlClassE());
     }
+
+    @Test
+    public void testPersistEntityWithMappedSuperclassPuttingReferenceIntoDifferentContext() throws Exception {
+        this.em = getEntityManager("PersistEntityWithMappedSuperclassReferenceInContext", true);
+        final Descriptor qDescriptor = new EntityDescriptor(CONTEXT_ONE);
+        final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
+        qDescriptor.addAttributeDescriptor(OWLClassQ.getOWlClassAField(), aDescriptor);
+        qDescriptor.addAttributeDescriptor(OWLClassQ.getOWlClassAField(), aDescriptor);
+        em.getTransaction().begin();
+        em.persist(entityQ, qDescriptor);
+        em.persist(entityA, aDescriptor);
+        em.getTransaction().commit();
+
+        final OWLClassA resA = em.find(OWLClassA.class, entityA.getUri(), aDescriptor);
+        assertNotNull(resA);
+        final OWLClassQ resQ = em.find(OWLClassQ.class, entityQ.getUri(), qDescriptor);
+        assertNotNull(resQ);
+        assertEquals(entityQ.getStringAttribute(), resQ.getStringAttribute());
+        assertEquals(entityQ.getParentString(), resQ.getParentString());
+        assertEquals(entityQ.getLabel(), resQ.getLabel());
+        assertNotNull(resQ.getOwlClassA());
+        assertEquals(resA, resQ.getOwlClassA());
+    }
 }

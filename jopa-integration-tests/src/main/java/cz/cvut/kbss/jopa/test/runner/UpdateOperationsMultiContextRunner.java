@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
+import sun.security.krb5.internal.crypto.Des;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -270,7 +271,7 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
     public void testUpdatePlainIdentifierObjectPropertyValueInContext() {
         final Descriptor pDescriptor = new EntityDescriptor(CONTEXT_ONE);
         entityP.setIndividualUri(URI.create("http://krizik.felk.cvut.cz/originalIndividual"));
-        final EntityManager em = getEntityManager("UpdatePlainIdentifierObjectPropertyValueInContext", true);
+        this.em = getEntityManager("UpdatePlainIdentifierObjectPropertyValueInContext", true);
         em.getTransaction().begin();
         em.persist(entityP, pDescriptor);
         em.getTransaction().commit();
@@ -286,5 +287,38 @@ public abstract class UpdateOperationsMultiContextRunner extends BaseRunner {
         final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
         assertNotNull(res);
         assertEquals(newUri, res.getIndividualUri());
+    }
+
+    @Test
+    public void testUpdateFieldInMappedSuperclassInContext() throws Exception {
+        final Descriptor qDescriptor = new EntityDescriptor(CONTEXT_ONE);
+        final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
+        qDescriptor.addAttributeDescriptor(OWLClassQ.getOWlClassAField(), aDescriptor);
+        this.em = getEntityManager("UpdateFieldInMappedSuperclassInContext", true);
+        em.getTransaction().begin();
+        em.persist(entityQ, qDescriptor);
+        em.persist(entityA, aDescriptor);
+        em.getTransaction().commit();
+
+        entityQ.setStringAttribute("newStringAttribute");
+        entityQ.setParentString("newParentStringAttribute");
+        entityQ.setLabel("newLabel");
+        final OWLClassA newA = new OWLClassA(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA2"));
+        newA.setStringAttribute("newAString");
+        entityQ.setOwlClassA(newA);
+        em.getTransaction().begin();
+        em.merge(entityQ, qDescriptor);
+        em.persist(newA, aDescriptor);
+        em.getTransaction().commit();
+
+        final OWLClassQ res = em.find(OWLClassQ.class, entityQ.getUri(), qDescriptor);
+        assertNotNull(res);
+        assertEquals(entityQ.getStringAttribute(), res.getStringAttribute());
+        assertEquals(entityQ.getParentString(), res.getParentString());
+        assertEquals(entityQ.getLabel(), res.getLabel());
+        assertNotNull(res.getOwlClassA());
+        assertEquals(newA.getUri(), res.getOwlClassA().getUri());
+        assertNotNull(em.find(OWLClassA.class, newA.getUri()));
+        assertNotNull(em.find(OWLClassA.class, entityA.getUri(), aDescriptor));
     }
 }

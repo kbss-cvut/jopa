@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
@@ -443,5 +441,24 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
         final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
         assertNull(result.getTypes());
+    }
+
+    @Test
+    public void testRemoveEntityWithMappedSuperclass() {
+        this.em = getEntityManager("RemoveEntityWithMappedSuperclass", false);
+        persist(entityQ, entityA);
+
+        em.getTransaction().begin();
+        final OWLClassQ toRemove = em.find(OWLClassQ.class, entityQ.getUri());
+        assertNotNull(toRemove);
+        em.remove(toRemove);
+        em.getTransaction().commit();
+
+        assertNull(em.find(OWLClassQ.class, entityQ.getUri()));
+        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
+        final boolean remains = em.createNativeQuery("ASK WHERE { ?instance ?y ?z . }", Boolean.class)
+                                  .setParameter("instance",
+                                          entityQ.getUri()).getSingleResult();
+        assertFalse(remains);
     }
 }
