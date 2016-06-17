@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.8.0 - June 17, 2016
+- Added support for Mapped superclass (`@MappedSuperclass` annotation)
+
 ## 0.7.12 - June 8, 2016
 - Fixed issue with updating value in context,
 - Verify integrity constraints on merge
