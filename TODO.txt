@@ -1,4 +1,6 @@
 - Consider using FieldSpecification instead of attribute name in ChangeRecord
+- Do not allow working with entities which are not part of the metamodel
+    - e.g. when a entity class was not found by EntityLoader, trying to persist it should result in exception, not in adding it to metamodel
 - When persisting a collection of instances without generated ids, how to handle references between them?
     - It can happen that JOPA will try to insert a referenced individual which has not yet set id, which
         results in assigning it a generated URI. E.g. foreach(inst -> {inst.generateUri(); em.persist(inst); })

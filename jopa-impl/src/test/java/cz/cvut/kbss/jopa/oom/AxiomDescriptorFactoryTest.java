@@ -1,46 +1,43 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-
-import java.net.URI;
-
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.environment.OWLClassQ;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
-import cz.cvut.kbss.jopa.sessions.LoadingParameters;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute.PersistentAttributeType;
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassB;
-import cz.cvut.kbss.jopa.environment.OWLClassD;
+import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.net.URI;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
 public class AxiomDescriptorFactoryTest {
 
@@ -217,7 +214,31 @@ public class AxiomDescriptorFactoryTest {
         assertEquals(1, res.getAssertions().size());
         final Assertion as = res.getAssertions().iterator().next();
         assertEquals(Assertion
-                .createUnspecifiedPropertyAssertion(metamodelMocks.forOwlClassB().propertiesSpec().isInferred()),
+                        .createUnspecifiedPropertyAssertion(metamodelMocks.forOwlClassB().propertiesSpec().isInferred()),
                 as);
+    }
+
+    @Test
+    public void createForEntityLoadingIncludesMappedSuperclassAttributes() throws Exception {
+        final Descriptor desc = new EntityDescriptor();
+        final AxiomDescriptor res = factory.createForEntityLoading(new LoadingParameters<>(OWLClassQ.class, PK, desc),
+                metamodelMocks.forOwlClassQ().entityType());
+        final Set<String> propertyIris = OWLClassQ.getPersistentFields().stream().map(f -> {
+            if (f.getAnnotation(OWLDataProperty.class) != null) {
+                return f.getAnnotation(OWLDataProperty.class).iri();
+            } else if (f.getAnnotation(OWLObjectProperty.class) != null) {
+                return f.getAnnotation(OWLObjectProperty.class).iri();
+            } else {
+                return f.getAnnotation(OWLAnnotationProperty.class).iri();
+            }
+        }).collect(Collectors.toSet());
+        final Set<Assertion> assertions = res.getAssertions();
+        // + class assertion
+        assertEquals(OWLClassQ.getPersistentFields().size() + 1, assertions.size());
+        for (Assertion a : assertions) {
+            if (a.getType() != Assertion.AssertionType.CLASS) {
+                assertTrue(propertyIris.contains(a.getIdentifier().toString()));
+            }
+        }
     }
 }

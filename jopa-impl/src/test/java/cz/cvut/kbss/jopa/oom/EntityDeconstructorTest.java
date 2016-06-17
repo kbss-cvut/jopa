@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -18,6 +16,7 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.annotations.Inferred;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
@@ -113,9 +112,8 @@ public class EntityDeconstructorTest {
         assertEquals(entityA.getUri(), res.getSubject().getIdentifier());
         // Class assertion and the data property assertion
         assertEquals(2, res.getAssertions().size());
-        assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
-        assertTrue(res.getAssertions().contains(
-                Assertion.createDataPropertyAssertion(strAttAIdentifier, false)));
+        assertTrue(containsInstanceClassAssertion(res, OWLClassA.getClassIri()));
+        assertTrue(containsDPAssertion(res, OWLClassA.getStrAttField(), entityA.getStringAttribute(), true));
     }
 
     @Test
@@ -129,7 +127,7 @@ public class EntityDeconstructorTest {
         assertNotNull(res);
         assertEquals(entity.getUri(), res.getSubject().getIdentifier());
         assertEquals(2, res.getAssertions().size());
-        assertTrue(res.getAssertions().contains(Assertion.createClassAssertion(false)));
+        assertTrue(containsInstanceClassAssertion(res, OWLClassA.getClassIri()));
         final List<Value<?>> v = res.getAssertionValues(Assertion.createDataPropertyAssertion(
                 strAttAIdentifier, false));
         assertEquals(1, v.size());
@@ -199,17 +197,17 @@ public class EntityDeconstructorTest {
         assertEquals(entityD.getUri(), res.getSubject().getIdentifier());
         // Class assertion and the object property assertion
         assertEquals(2, res.getAssertions().size());
-        for (Assertion a : res.getAssertions()) {
-            final List<Value<?>> vals = res.getAssertionValues(a);
-            if (a.getType() == AssertionType.CLASS) {
-                assertEquals(1, vals.size());
-                assertEquals(URI.create(OWLClassD.getClassIri()), vals.get(0).getValue());
-            } else {
-                assertTrue(AssertionType.OBJECT_PROPERTY == a.getType());
-                assertEquals(1, vals.size());
-                assertEquals(NamedResource.create(entityA.getUri()), vals.get(0).getValue());
-            }
-        }
+        assertTrue(containsInstanceClassAssertion(res, OWLClassD.getClassIri()));
+        assertTrue(
+                containsOPAssertion(res, OWLClassD.getOwlClassAField(), NamedResource.create(entityA.getUri()), true));
+    }
+
+    private boolean containsOPAssertion(AxiomValueDescriptor descriptor, Field attributeField, Object value,
+                                        boolean checkSingle) {
+        final URI propertyUri = URI.create(attributeField.getAnnotation(OWLObjectProperty.class).iri());
+        final Assertion assertion = Assertion
+                .createObjectPropertyAssertion(propertyUri, attributeField.getAnnotation(Inferred.class) != null);
+        return containsAssertionValue(descriptor, assertion, value, checkSingle);
     }
 
     @Test
@@ -332,12 +330,7 @@ public class EntityDeconstructorTest {
                 OWLClassA.getStrAttField(), mocks.forOwlClassA().entityType(), aDescriptor);
         final AxiomValueDescriptor res = getAxiomValueDescriptor(builder);
         assertEquals(1, res.getAssertions().size());
-        assertTrue(res.getAssertions().contains(
-                Assertion.createDataPropertyAssertion(strAttAIdentifier,
-                        mocks.forOwlClassA().stringAttribute().isInferred())));
-        final List<Value<?>> val = res.getAssertionValues(res.getAssertions().iterator().next());
-        assertEquals(1, val.size());
-        assertEquals(entityA.getStringAttribute(), val.get(0).getValue());
+        assertTrue(containsDPAssertion(res, OWLClassA.getStrAttField(), entityA.getStringAttribute(), true));
     }
 
     @Test
@@ -365,14 +358,11 @@ public class EntityDeconstructorTest {
                 OWLClassD.getOwlClassAField(), mocks.forOwlClassD().entityType(), dDescriptor);
         final AxiomValueDescriptor res = getAxiomValueDescriptor(builder);
         assertEquals(1, res.getAssertions().size());
-        assertTrue(res.getAssertions().contains(
-                Assertion.createObjectPropertyAssertion(owlClassAAttIdentifier,
-                        mocks.forOwlClassD().owlClassAAtt().isInferred())));
-        final Assertion ass = res.getAssertions().iterator().next();
-        final List<Value<?>> val = res.getAssertionValues(ass);
-        assertEquals(1, val.size());
+        final Assertion ass = Assertion.createObjectPropertyAssertion(owlClassAAttIdentifier,
+                mocks.forOwlClassD().owlClassAAtt().isInferred());
         assertEquals(CONTEXT, res.getAssertionContext(ass));
-        assertEquals(NamedResource.create(entityA.getUri()), val.get(0).getValue());
+        assertTrue(
+                containsOPAssertion(res, OWLClassD.getOwlClassAField(), NamedResource.create(entityA.getUri()), true));
     }
 
     @Test
@@ -383,32 +373,77 @@ public class EntityDeconstructorTest {
                         .mapEntityToAxioms(URI.create(entityM.getKey()), entityM, mocks.forOwlClassM().entityType(),
                                 desc);
         final AxiomValueDescriptor res = getAxiomValueDescriptor(builder);
-        assertTrue(containsInstanceAssertion(res));
-        assertTrue(containsDPAssertion(res, OWLClassM.getBooleanAttributeField(), entityM.getBooleanAttribute()));
-        assertTrue(containsDPAssertion(res, OWLClassM.getIntAttributeField(), entityM.getIntAttribute()));
-        assertTrue(containsDPAssertion(res, OWLClassM.getDoubleAttributeField(), entityM.getDoubleAttribute()));
-        assertTrue(containsDPAssertion(res, OWLClassM.getLongAttributeField(), entityM.getLongAttribute()));
-        assertTrue(containsDPAssertion(res, OWLClassM.getDateAttributeField(), entityM.getDateAttribute()));
+        assertTrue(containsInstanceClassAssertion(res, OWLClassM.getClassIri()));
+        assertTrue(containsDPAssertion(res, OWLClassM.getBooleanAttributeField(), entityM.getBooleanAttribute(), true));
+        assertTrue(containsDPAssertion(res, OWLClassM.getIntAttributeField(), entityM.getIntAttribute(), true));
+        assertTrue(containsDPAssertion(res, OWLClassM.getDoubleAttributeField(), entityM.getDoubleAttribute(), true));
+        assertTrue(containsDPAssertion(res, OWLClassM.getLongAttributeField(), entityM.getLongAttribute(), true));
+        assertTrue(containsDPAssertion(res, OWLClassM.getDateAttributeField(), entityM.getDateAttribute(), true));
     }
 
-    private boolean containsInstanceAssertion(AxiomValueDescriptor descriptor) throws Exception {
+    private boolean containsInstanceClassAssertion(AxiomValueDescriptor descriptor, String classIri) throws Exception {
         final List<Value<?>> values = descriptor.getAssertionValues(Assertion.createClassAssertion(false));
         assertEquals(1, values.size());
-        return values.get(0).getValue().toString().equals(OWLClassM.getClassIri());
+        return values.get(0).getValue().toString().equals(classIri);
     }
 
-    private boolean containsDPAssertion(AxiomValueDescriptor descriptor, Field attributeField, Object value) {
-        OWLDataProperty annotation = attributeField.getAnnotation(OWLDataProperty.class);
+    private boolean containsDPAssertion(AxiomValueDescriptor descriptor, Field attributeField, Object value,
+                                        boolean checkSingle) {
+        final OWLDataProperty annotation = attributeField.getAnnotation(OWLDataProperty.class);
         final URI propertyUri = URI.create(annotation.iri());
         final Assertion assertion = Assertion.createDataPropertyAssertion(propertyUri, attributeField.getAnnotation(
                 Inferred.class) != null);
+        return containsAssertionValue(descriptor, assertion, value, checkSingle);
+    }
+
+    private boolean containsAssertionValue(AxiomValueDescriptor descriptor, Assertion assertion, Object value,
+                                           boolean checkSingle) {
         final List<Value<?>> values = descriptor.getAssertionValues(assertion);
+        assertFalse(values.isEmpty());
+        if (checkSingle) {
+            assertEquals(1, values.size());
+        }
         for (Value<?> val : values) {
             if (val.getValue().equals(value)) {
                 return true;
             }
         }
         return false;
+    }
+
+    @Test
+    public void mapEntityToAxiomsIncludesAttributesInheritedFromMappedSuperclass() throws Exception {
+        final Descriptor desc = new EntityDescriptor();
+        final OWLClassQ q = initQ();
+
+        final AxiomValueGatherer builder = entityBreaker
+                .mapEntityToAxioms(q.getUri(), q, mocks.forOwlClassQ().entityType(), desc);
+        final AxiomValueDescriptor valueDescriptor = getAxiomValueDescriptor(builder);
+        assertTrue(containsInstanceClassAssertion(valueDescriptor, OWLClassQ.getClassIri()));
+        assertTrue(containsDPAssertion(valueDescriptor, OWLClassQ.getStringAttributeField(), q.getStringAttribute(),
+                true));
+        assertTrue(containsDPAssertion(valueDescriptor, OWLClassQ.getParentStringField(), q.getParentString(), true));
+        assertTrue(containsAPAssertion(valueDescriptor, OWLClassQ.getLabelField(), q.getLabel(), true));
+        assertTrue(containsOPAssertion(valueDescriptor, OWLClassQ.getOwlClassAField(),
+                NamedResource.create(entityA.getUri()), true));
+    }
+
+    private OWLClassQ initQ() {
+        final OWLClassQ q = new OWLClassQ();
+        q.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/test#entityQ"));
+        q.setStringAttribute("stringAttribute");
+        q.setParentString("parentStringAttribute");
+        q.setLabel("label");
+        q.setOwlClassA(entityA);
+        return q;
+    }
+
+    private boolean containsAPAssertion(AxiomValueDescriptor descriptor, Field attributeField, Object value,
+                                        boolean checkSingle) {
+        final URI propertyUri = URI.create(attributeField.getAnnotation(OWLAnnotationProperty.class).iri());
+        final Assertion assertion = Assertion
+                .createAnnotationPropertyAssertion(propertyUri, attributeField.getAnnotation(Inferred.class) != null);
+        return containsAssertionValue(descriptor, assertion, value, checkSingle);
     }
 
     private static AxiomValueDescriptor getAxiomValueDescriptor(AxiomValueGatherer builder)

@@ -4,6 +4,9 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassQ")
 public class OWLClassQ extends QMappedSuperclass {
@@ -41,5 +44,10 @@ public class OWLClassQ extends QMappedSuperclass {
 
     public static Field getOwlClassAField() throws Exception {
         return QMappedSuperclass.class.getDeclaredField("owlClassA");
+    }
+
+    public static Set<Field> getPersistentFields() throws Exception {
+        return new HashSet<>(
+                Arrays.asList(getStringAttributeField(), getParentStringField(), getLabelField(), getOwlClassAField()));
     }
 }

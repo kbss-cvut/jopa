@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.environment.utils;
 
@@ -42,7 +40,7 @@ public class MetamodelFactory {
      */
     public static void initOWLClassAMocks(EntityType<OWLClassA> etMock, Attribute strAttMock,
                                           TypesSpecification typesMock, Identifier idMock) throws NoSuchFieldException,
-                                                                                                  SecurityException {
+            SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
         when(etMock.getAttribute(OWLClassA.getStrAttField().getName())).thenReturn(strAttMock);
@@ -77,8 +75,8 @@ public class MetamodelFactory {
      */
     public static void initOWLClassBMocks(EntityType<OWLClassB> etMock, Attribute strAttMock,
                                           PropertiesSpecification propsMock, Identifier idMock) throws
-                                                                                                NoSuchFieldException,
-                                                                                                SecurityException {
+            NoSuchFieldException,
+            SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassB.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
         when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
@@ -572,7 +570,7 @@ public class MetamodelFactory {
                                          PropertiesSpecification props,
                                          SingularAttribute uriAtt, PluralAttribute urlsAtt,
                                          ListAttribute simpleListAtt, ListAttribute refListAtt, Identifier idP) throws
-                                                                                                                Exception {
+            Exception {
         when(et.getIdentifier()).thenReturn(idP);
         when(idP.getJavaField()).thenReturn(OWLClassP.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassP.getClassIri()));
@@ -658,6 +656,7 @@ public class MetamodelFactory {
                                          SingularAttribute qLabelAtt,
                                          SingularAttribute qOwlClassAAtt, Identifier idQ) throws Exception {
         when(et.getIdentifier()).thenReturn(idQ);
+        when(et.getJavaType()).thenReturn(OWLClassQ.class);
         when(idQ.getJavaField()).thenReturn(OWLClassQ.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassQ.getClassIri()));
         when(et.getFieldSpecifications())
@@ -699,7 +698,7 @@ public class MetamodelFactory {
         when(qLabelAtt.getJavaType()).thenReturn(OWLClassQ.getLabelField().getType());
         when(qLabelAtt.getName()).thenReturn(OWLClassQ.getLabelField().getName());
         when(et.getAttribute(OWLClassQ.getLabelField().getName())).thenReturn(qLabelAtt);
-        when(qLabelAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(qLabelAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.ANNOTATION);
         when(qLabelAtt.isCollection()).thenReturn(false);
         when(qLabelAtt.getBindableJavaType()).thenReturn(String.class);
         when(qLabelAtt.getIRI()).thenReturn(

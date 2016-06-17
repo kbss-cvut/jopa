@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -31,8 +29,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
     final EntityMappingHelper mapper;
     CascadeResolver cascadeResolver;
 
-    FieldStrategy(EntityType<X> et, T att, Descriptor attributeDescriptor,
-                  EntityMappingHelper mapper) {
+    FieldStrategy(EntityType<X> et, T att, Descriptor attributeDescriptor, EntityMappingHelper mapper) {
         this.et = et;
         this.attribute = att;
         this.attributeDescriptor = attributeDescriptor;
@@ -43,11 +40,9 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             EntityType<X> et, FieldSpecification<? super X, ?> att,
             Descriptor fieldDescriptor, EntityMappingHelper mapper) {
         if (att instanceof TypesSpecification) {
-            return new TypesFieldStrategy<>(et,
-                    (TypesSpecification<? super X, ?>) att, fieldDescriptor, mapper);
+            return new TypesFieldStrategy<>(et, (TypesSpecification<? super X, ?>) att, fieldDescriptor, mapper);
         } else if (att instanceof PropertiesSpecification) {
-            return new PropertiesFieldStrategy<>(et,
-                    (PropertiesSpecification<? super X, ?, ?, ?>) att, fieldDescriptor,
+            return new PropertiesFieldStrategy<>(et, (PropertiesSpecification<? super X, ?, ?, ?>) att, fieldDescriptor,
                     mapper);
         }
         final Attribute<? super X, ?> attribute = (Attribute<? super X, ?>) att;
@@ -57,8 +52,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
                 case DATA:
                     throw new NotYetImplementedException();
                 case OBJECT:
-                    return createPluralObjectPropertyStrategy(et,
-                            (PluralAttribute<? super X, ?, ?>) attribute,
+                    return createPluralObjectPropertyStrategy(et, (PluralAttribute<? super X, ?, ?>) attribute,
                             fieldDescriptor, mapper);
                 default:
                     break;
@@ -84,16 +78,13 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
             Descriptor descriptor, EntityMappingHelper mapper) {
         switch (attribute.getCollectionType()) {
             case LIST:
-                return createOwlListPropertyStrategy(et, (ListAttribute<? super Y, ?>) attribute, descriptor,
-                        mapper);
+                return createOwlListPropertyStrategy(et, (ListAttribute<? super Y, ?>) attribute, descriptor, mapper);
             case COLLECTION:
             case SET:
-                return new SimpleSetPropertyStrategy<>(et, attribute, descriptor,
-                        mapper);
+                return new SimpleSetPropertyStrategy<>(et, attribute, descriptor, mapper);
             default:
                 throw new NotYetImplementedException(
-                        "Unsupported plural attribute collection type "
-                                + attribute.getCollectionType());
+                        "Unsupported plural attribute collection type " + attribute.getCollectionType());
         }
     }
 

@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.oom;
 
@@ -21,6 +19,7 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
@@ -443,7 +442,7 @@ public class EntityConstructorTest {
 
     private Collection<Axiom<?>> createAxiomsForValues(Boolean b, Integer i, Long lng, Double d, Date date,
                                                        OWLClassM.Severity severity) throws
-                                                                                    Exception {
+            Exception {
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         if (b != null) {
             final String boolAttIri = OWLClassM.getBooleanAttributeField().getAnnotation(OWLDataProperty.class).iri();
@@ -578,5 +577,31 @@ public class EntityConstructorTest {
         assertEquals(PK, res.getUri());
         assertNotNull(res.getStringAttribute());
         assertNull(res.getTypes());
+    }
+
+    @Test
+    public void reconstructsInstanceWithMappedSuperclass() throws Exception {
+        final Set<Axiom<?>> axioms = new HashSet<>();
+        axioms.add(getClassAssertionAxiomForType(OWLClassQ.getClassIri()));
+        axioms.add(getStringAttAssertionAxiom(OWLClassQ.getStringAttributeField()));
+        axioms.add(getStringAttAssertionAxiom(OWLClassQ.getParentStringField()));
+        final URI labelUri = URI.create(OWLClassQ.getLabelField().getAnnotation(OWLAnnotationProperty.class).iri());
+        axioms.add(new AxiomImpl<>(PK_RESOURCE, Assertion.createAnnotationPropertyAssertion(labelUri, false),
+                new Value<>(STRING_ATT)));
+        final URI owlClassAUri = URI.create(OWLClassQ.getOwlClassAField().getAnnotation(OWLObjectProperty.class).iri());
+        axioms.add(new AxiomImpl<>(PK_RESOURCE, Assertion.createObjectPropertyAssertion(owlClassAUri, false),
+                new Value<>(NamedResource.create(PK_TWO))));
+        final OWLClassA a = new OWLClassA();
+        a.setUri(PK_TWO);
+        when(mapperMock.getEntityFromCacheOrOntology(eq(OWLClassA.class), eq(PK_TWO), any(Descriptor.class)))
+                .thenReturn(a);
+
+        final OWLClassQ res = constructor.reconstructEntity(PK, mocks.forOwlClassQ().entityType(), descriptor, axioms);
+        assertNotNull(res);
+        assertEquals(PK, res.getUri());
+        assertEquals(STRING_ATT, res.getStringAttribute());
+        assertEquals(STRING_ATT, res.getParentString());
+        assertEquals(STRING_ATT, res.getLabel());
+        assertSame(a, res.getOwlClassA());
     }
 }
