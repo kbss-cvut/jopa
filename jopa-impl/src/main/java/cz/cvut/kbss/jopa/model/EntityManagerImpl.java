@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -78,6 +78,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         ensureOpen();
         Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
         Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        checkClassIsValidEntity(entity.getClass());
 
         switch (getState(entity, descriptor)) {
             case NOT_MANAGED:
@@ -127,6 +128,10 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         }
     }
 
+    private void checkClassIsValidEntity(Class<?> cls) {
+        getMetamodel().entity(cls);
+    }
+
     @Override
     public <T> T merge(final T entity) {
         final Descriptor d = new EntityDescriptor();
@@ -137,6 +142,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     public <T> T merge(final T entity, final Descriptor descriptor) {
         Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
         Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        checkClassIsValidEntity(entity.getClass());
 
         return mergeInternal(entity, descriptor);
     }
@@ -209,6 +215,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public void remove(Object object) {
         ensureOpen();
+        Objects.requireNonNull(object);
+        checkClassIsValidEntity(object.getClass());
 
         switch (getState(object)) {
             case MANAGED_NEW:
@@ -224,8 +232,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
                 }.start(this, object, CascadeType.REMOVE);
                 break;
             case NOT_MANAGED:
-                throw new IllegalArgumentException("Entity " + object
-                        + " is not managed and cannot be removed.");
+                throw new IllegalArgumentException("Entity " + object + " is not managed and cannot be removed.");
         }
     }
 
@@ -242,6 +249,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
         ensureOpen();
+        checkClassIsValidEntity(cls);
         LOG.trace("Finding instance of {} with identifier {} in context ", cls, primaryKey, descriptor);
         final URI uri = (primaryKey instanceof URI) ? (URI) primaryKey : URI.create(primaryKey.toString());
 
@@ -263,6 +271,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     public void refresh(Object entity) {
         ensureOpen();
         Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+        checkClassIsValidEntity(entity.getClass());
 
         this.getCurrentPersistenceContext().revertObject(entity);
         new SimpleOneLevelCascadeExplorer() {
@@ -301,6 +310,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public boolean contains(Object entity) {
         ensureOpen();
+        Objects.requireNonNull(entity);
+        checkClassIsValidEntity(entity.getClass());
         return getCurrentPersistenceContext().contains(entity);
     }
 

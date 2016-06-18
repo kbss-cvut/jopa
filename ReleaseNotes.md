@@ -2,6 +2,7 @@
 
 ## 0.8.0 - June 17, 2016
 - Added support for Mapped superclass (`@MappedSuperclass` annotation)
+- Do not allow non-entities in `EntityManager` operations (e.g. `persist`, `find`) - conforms to JPA
 
 ## 0.7.12 - June 8, 2016
 - Fixed issue with updating value in context,
