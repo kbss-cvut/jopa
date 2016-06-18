@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -23,7 +23,9 @@ import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -40,6 +42,9 @@ public class MetamodelImplTest {
 
     private static final Map<String, String> PROPERTIES = Collections
             .singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa");
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private EntityLoader entityLoaderMock;
@@ -381,14 +386,6 @@ public class MetamodelImplTest {
     }
 
     @Test
-    public void processesClassWhenItIsMissingInTypeMap() throws Exception {
-        when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.emptySet());
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
-        final EntityType<OWLClassA> et = metamodel.entity(OWLClassA.class);
-        assertNotNull(et);
-    }
-
-    @Test
     public void buildsSingleEntityWithSingularDataPropertyWithNonEmptyField() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassN.class));
         final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
@@ -568,5 +565,15 @@ public class MetamodelImplTest {
 
         @Types
         private Set<URI> types;
+    }
+
+    @Test
+    public void entityThrowsIllegalArgumentForNonEntityClass() throws Exception {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(
+                "Class " + ClassWithUriTypes.class.getName() + " is not a known entity in this persistence unit.");
+
+        final Metamodel m = new MetamodelImpl(conf, entityLoaderMock);
+        m.entity(ClassWithUriTypes.class);
     }
 }

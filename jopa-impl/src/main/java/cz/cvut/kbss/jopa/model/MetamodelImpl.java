@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -102,9 +102,17 @@ public class MetamodelImpl implements Metamodel {
     @Override
     public <X> EntityType<X> entity(Class<X> cls) {
         if (!typeMap.containsKey(cls)) {
+            throw new IllegalArgumentException(
+                    "Class " + cls.getName() + " is not a known entity in this persistence unit.");
+        }
+        return (EntityType<X>) typeMap.get(cls);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <X> EntityType<X> getEntityClass(Class<X> cls) {
+        if (!typeMap.containsKey(cls)) {
             processOWLClass(cls, new EntityFieldSeeker());
         }
-
         return (EntityType<X>) typeMap.get(cls);
     }
 
