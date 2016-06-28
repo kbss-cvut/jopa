@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
@@ -36,15 +34,14 @@ class OwlapiDriver implements Closeable, ConnectionListener {
                     OwlapiConfigParam.IRI_MAPPING_DELIMITER, OwlapiConfigParam.MAPPING_FILE_LOCATION,
                     OwlapiConfigParam.WRITE_ON_COMMIT);
 
-    private final OntologyStorageProperties storageProperties;
-    private final Configuration configuration = new Configuration();
+    private final Configuration configuration;
     private boolean open = true;
 
     private ConnectorFactory connectorFactory;
     private final Set<OwlapiConnection> openConnections = new HashSet<>();
 
     OwlapiDriver(OntologyStorageProperties storageProperties, Map<String, String> properties) {
-        this.storageProperties = storageProperties;
+        this.configuration = new Configuration(storageProperties);
         configuration.addConfiguration(properties, CONFIGS);
         this.connectorFactory = ConnectorFactory.createFactory();
     }
@@ -77,7 +74,7 @@ class OwlapiDriver implements Closeable, ConnectionListener {
 
     Connection acquireConnection() throws OntoDriverException {
         assert open;
-        final OwlapiAdapter adapter = new OwlapiAdapter(connectorFactory.getConnector(storageProperties, configuration), configuration);
+        final OwlapiAdapter adapter = new OwlapiAdapter(connectorFactory.getConnector(configuration), configuration);
         final OwlapiConnection c = new OwlapiConnection(adapter);
         c.setTypes(new OwlapiTypes(adapter, c::ensureOpen, c::commitIfAuto));
         c.setProperties(new OwlapiProperties(adapter, c::ensureOpen, c::commitIfAuto));

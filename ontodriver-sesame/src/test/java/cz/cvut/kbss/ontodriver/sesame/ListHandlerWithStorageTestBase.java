@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -32,24 +30,25 @@ import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
 
-public abstract class ListHandlerWithStorageTestBase {
+abstract class ListHandlerWithStorageTestBase {
 
-    protected static NamedResource OWNER = NamedResource
+    static NamedResource OWNER = NamedResource
             .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#EntityC");
 
-    protected static final String LIST_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasListProperty";
-    protected static final String NEXT_NODE_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasNext";
+    static final String LIST_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasListProperty";
+    static final String NEXT_NODE_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasNext";
 
-    protected static OntologyStorageProperties storageProperties;
-    static final Configuration configuration = new Configuration();
+    static Configuration configuration;
 
     protected Connector connector;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        storageProperties = OntologyStorageProperties.physicalUri(URI.create("SesameListTest"))
-                                                     .driver(SesameDataSource.class.getCanonicalName())
-                                                     .build();
+        OntologyStorageProperties storageProperties = OntologyStorageProperties
+                .physicalUri(URI.create("SesameListTest"))
+                .driver(SesameDataSource.class.getCanonicalName())
+                .build();
+        configuration = new Configuration(storageProperties);
 
         configuration.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
         configuration.setProperty(SesameConfigParam.USE_INFERENCE, Boolean.FALSE.toString());
@@ -66,8 +65,8 @@ public abstract class ListHandlerWithStorageTestBase {
         openField.set(ConnectorFactory.getInstance(), true);
     }
 
-    protected void verifyListContent(Collection<Axiom<NamedResource>> expected,
-                                     Collection<Axiom<NamedResource>> actual) throws Exception {
+    void verifyListContent(Collection<Axiom<NamedResource>> expected, Collection<Axiom<NamedResource>> actual)
+            throws Exception {
         assertEquals(expected.size(), actual.size());
         // This is more explicit on failure than just containsAll
         final Iterator<Axiom<NamedResource>> itExp = expected.iterator();

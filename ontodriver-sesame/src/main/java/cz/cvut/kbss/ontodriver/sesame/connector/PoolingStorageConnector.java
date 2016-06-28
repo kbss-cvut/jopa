@@ -38,7 +38,7 @@ class PoolingStorageConnector extends AbstractConnector {
     private final Connector centralConnector;
     private LocalModel localModel;
 
-    public PoolingStorageConnector(Connector centralConnector) {
+    PoolingStorageConnector(Connector centralConnector) {
         this.centralConnector = centralConnector;
         this.open = true;
     }

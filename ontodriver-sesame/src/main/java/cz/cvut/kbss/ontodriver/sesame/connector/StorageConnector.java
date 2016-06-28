@@ -1,20 +1,17 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
@@ -57,24 +54,22 @@ class StorageConnector extends AbstractConnector {
 
     private static final Logger LOG = LoggerFactory.getLogger(StorageConnector.class);
 
-    private final OntologyStorageProperties storageProperties;
+    private final Configuration configuration;
 
     private Repository repository;
     private RepositoryManager manager;
     private RepositoryConnection connection;
 
-    StorageConnector(OntologyStorageProperties storageProperties, Configuration configuration)
-            throws SesameDriverException {
-        assert storageProperties != null;
+    StorageConnector(Configuration configuration) throws SesameDriverException {
         assert configuration != null;
 
-        this.storageProperties = storageProperties;
-        initialize(configuration);
+        this.configuration = configuration;
+        initialize();
         this.open = true;
     }
 
-    private void initialize(Configuration configuration) throws SesameDriverException {
-        final URI serverUri = storageProperties.getPhysicalURI();
+    private void initialize() throws SesameDriverException {
+        final URI serverUri = configuration.getStorageProperties().getPhysicalURI();
         LOG.debug("Initializing connector to repository at {}", serverUri);
         try {
             final boolean isRemote = isRemoteRepository(serverUri);
@@ -99,7 +94,7 @@ class StorageConnector extends AbstractConnector {
     }
 
     private Repository createLocalRepository(Configuration configuration) {
-        final URI localUri = storageProperties.getPhysicalURI();
+        final URI localUri = configuration.getStorageProperties().getPhysicalURI();
         if (!isFileUri(localUri) && configuration.is(SesameConfigParam.USE_VOLATILE_STORAGE)) {
             return createInMemoryRepository(configuration);
         } else {
@@ -162,7 +157,7 @@ class StorageConnector extends AbstractConnector {
         if (!open) {
             return;
         }
-        LOG.debug("Closing connector to repository {}.", storageProperties.getPhysicalURI());
+        LOG.debug("Closing connector to repository {}.", configuration.getStorageProperties().getPhysicalURI());
         try {
             repository.shutDown();
             if (manager != null) {
@@ -204,6 +199,10 @@ class StorageConnector extends AbstractConnector {
     }
 
     private RepositoryConnection acquireConnection() throws SesameDriverException {
+        // Workaround for local native storage being reset when multiple drivers access it
+        if (!repository.isInitialized()) {
+            initialize();
+        }
         try {
             return repository.getConnection();
         } catch (RepositoryException e) {
@@ -338,6 +337,7 @@ class StorageConnector extends AbstractConnector {
     public Collection<Statement> findStatements(Resource subject, org.openrdf.model.URI property,
                                                 Value value, boolean includeInferred, org.openrdf.model.URI... contexts)
             throws SesameDriverException {
+        // TODO Why are we using an extra connection for findStatements and querying? We should be using the transactional one
         RepositoryConnection connection = null;
         try {
             connection = acquireConnection();

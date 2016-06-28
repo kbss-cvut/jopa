@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
@@ -52,7 +50,7 @@ public class BasicStorageConnectorTest {
     @Test
     public void loadsExistingOntology() throws Exception {
         final URI physicalUri = initOntology();
-        this.connector = new BasicStorageConnector(initStorageProperties(physicalUri, null), new Configuration());
+        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
         assertNotNull(connector);
         assertTrue(connector.isOpen());
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
@@ -75,7 +73,7 @@ public class BasicStorageConnectorTest {
     public void throwsExceptionWhenLoadedOntologyHasDifferentIri() throws Exception {
         final URI physicalUri = initOntology();
         final URI logicalUri = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/different");
-        this.connector = new BasicStorageConnector(initStorageProperties(physicalUri, logicalUri), new Configuration());
+        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, logicalUri)));
     }
 
     @Test
@@ -84,7 +82,7 @@ public class BasicStorageConnectorTest {
                 "java.io.tmpdir") + File.separator + "connectortest" + System.currentTimeMillis() + ".owl");
         assertFalse(f.exists());
         final URI physicalUri = f.toURI();
-        this.connector = new BasicStorageConnector(initStorageProperties(physicalUri, null), new Configuration());
+        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
         assertNotNull(connector);
         assertTrue(f.exists());
         f.deleteOnExit();
@@ -93,7 +91,7 @@ public class BasicStorageConnectorTest {
     @Test
     public void getSnapshotReturnsDistinctSnapshots() throws Exception {
         final URI physicalUri = initOntology();
-        this.connector = new BasicStorageConnector(initStorageProperties(physicalUri, null), new Configuration());
+        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
         final OntologySnapshot snapshotOne = connector.getOntologySnapshot();
         final OntologySnapshot snapshotTwo = connector.getOntologySnapshot();
 
@@ -103,7 +101,7 @@ public class BasicStorageConnectorTest {
     @Test(expected = IllegalStateException.class)
     public void throwsExceptionWhenTryingToGetSnapshotOfClosedConnector() throws Exception {
         final URI physicalUri = initOntology();
-        this.connector = new BasicStorageConnector(initStorageProperties(physicalUri, null), new Configuration());
+        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
         connector.close();
         assertFalse(connector.isOpen());
         connector.getOntologySnapshot();
@@ -112,7 +110,7 @@ public class BasicStorageConnectorTest {
     @Test(expected = IllegalStateException.class)
     public void throwsExceptionWhenApplyChangesCalledOnClose() throws Exception {
         final URI physicalUri = initOntology();
-        this.connector = new BasicStorageConnector(initStorageProperties(physicalUri, null), new Configuration());
+        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
         connector.close();
         assertFalse(connector.isOpen());
         connector.applyChanges(Collections.emptyList());
@@ -121,7 +119,7 @@ public class BasicStorageConnectorTest {
     @Test
     public void applyChangesModifiesTheCentralOntology() throws Exception {
         final URI physicalUri = initOntology();
-        this.connector = new BasicStorageConnector(initStorageProperties(physicalUri, null), new Configuration());
+        this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
         final OWLClass cls = addClassToOntology(snapshot);
         final OntologySnapshot result = connector.getOntologySnapshot();
@@ -142,11 +140,11 @@ public class BasicStorageConnectorTest {
     public void successfullySavesOntologyOnClose() throws Exception {
         final URI physicalUri = initOntology();
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
-        this.connector = new BasicStorageConnector(storageProperties, new Configuration());
+        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
         final OWLClass cls = addClassToOntology(connector.getOntologySnapshot());
         connector.close();
 
-        this.connector = new BasicStorageConnector(storageProperties, new Configuration());
+        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
         final OntologySnapshot res = connector.getOntologySnapshot();
         assertTrue(res.getOntology().containsClassInSignature(cls.getIRI()));
     }

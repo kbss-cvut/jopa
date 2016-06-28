@@ -1,18 +1,18 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.config;
+
+import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,6 +25,12 @@ import java.util.Objects;
 public final class Configuration {
 
     private final Map<ConfigurationParameter, String> configuration = new HashMap<>();
+    private final OntologyStorageProperties storageProperties;
+
+    public Configuration(OntologyStorageProperties storageProperties) {
+        Objects.requireNonNull(storageProperties);
+        this.storageProperties = storageProperties;
+    }
 
     /**
      * Loads configuration of parameters specified by {@code parameters} from the provided properties map.
@@ -101,6 +107,10 @@ public final class Configuration {
         return configuration.containsKey(property);
     }
 
+    public OntologyStorageProperties getStorageProperties() {
+        return storageProperties;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -108,12 +118,14 @@ public final class Configuration {
 
         Configuration that = (Configuration) o;
 
-        return configuration.equals(that.configuration);
+        return configuration.equals(that.configuration) && storageProperties.equals(that.storageProperties);
 
     }
 
     @Override
     public int hashCode() {
-        return configuration.hashCode();
+        int result = configuration.hashCode();
+        result = 31 * result + storageProperties.hashCode();
+        return result;
     }
 }

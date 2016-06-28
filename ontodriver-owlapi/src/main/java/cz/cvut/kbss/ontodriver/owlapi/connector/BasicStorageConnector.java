@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.owlapi.connector;
 
@@ -59,9 +57,8 @@ public class BasicStorageConnector extends AbstractConnector {
     private OWLReasoner reasoner;
     private OWLReasonerFactory reasonerFactory;
 
-    public BasicStorageConnector(OntologyStorageProperties storageProperties, Configuration configuration)
-            throws OwlapiDriverException {
-        super(storageProperties, configuration);
+    public BasicStorageConnector(Configuration configuration) throws OwlapiDriverException {
+        super(configuration);
     }
 
     @Override
@@ -69,6 +66,7 @@ public class BasicStorageConnector extends AbstractConnector {
         if (isOpen()) {
             return;
         }
+        final OntologyStorageProperties storageProperties = configuration.getStorageProperties();
         LOG.debug("Loading ontology {} from {}.", storageProperties.getOntologyURI(),
                 storageProperties.getPhysicalURI());
         this.ontologyManager = OWLManager.createOWLOntologyManager();
@@ -102,12 +100,14 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     private void tryCreatingOntology() throws OwlapiDriverException {
-        LOG.trace("Creating new ontology in {}.", storageProperties.getPhysicalURI());
+        LOG.trace("Creating new ontology in {}.", configuration.getStorageProperties().getPhysicalURI());
         try {
-            this.ontology = ontologyManager.createOntology(IRI.create(storageProperties.getOntologyURI()));
-            ontology.saveOntology(IRI.create(storageProperties.getPhysicalURI()));
+            this.ontology = ontologyManager
+                    .createOntology(IRI.create(configuration.getStorageProperties().getOntologyURI()));
+            ontology.saveOntology(IRI.create(configuration.getStorageProperties().getPhysicalURI()));
         } catch (OWLOntologyCreationException | OWLOntologyStorageException e) {
-            throw new OwlapiDriverException("Unable to create ontology in " + storageProperties.getPhysicalURI(), e);
+            throw new OwlapiDriverException(
+                    "Unable to create ontology in " + configuration.getStorageProperties().getPhysicalURI(), e);
         }
     }
 
@@ -216,10 +216,10 @@ public class BasicStorageConnector extends AbstractConnector {
 
     private void writeToFile() throws OntologyStorageException {
         try {
-            ontologyManager.saveOntology(ontology, IRI.create(storageProperties.getPhysicalURI()));
+            ontologyManager.saveOntology(ontology, IRI.create(configuration.getStorageProperties().getPhysicalURI()));
         } catch (OWLOntologyStorageException e) {
             throw new OntologyStorageException(
-                    "Error when saving ontology to " + storageProperties.getPhysicalURI(), e);
+                    "Error when saving ontology to " + configuration.getStorageProperties().getPhysicalURI(), e);
         }
     }
 }
