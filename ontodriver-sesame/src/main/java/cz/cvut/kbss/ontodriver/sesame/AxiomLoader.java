@@ -51,8 +51,7 @@ class AxiomLoader {
         return transformStatementsToAxioms(statements);
     }
 
-    private Collection<Statement> findStatements(AxiomDescriptor descriptor)
-            throws SesameDriverException {
+    private Collection<Statement> findStatements(AxiomDescriptor descriptor) throws SesameDriverException {
         final Collection<Statement> result = new HashSet<>();
         final Resource subject = SesameUtils.toSesameUri(descriptor.getSubject().getIdentifier(),
                 valueFactory);

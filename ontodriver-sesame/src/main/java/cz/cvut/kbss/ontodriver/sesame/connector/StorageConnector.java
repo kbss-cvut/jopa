@@ -23,7 +23,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.query.*;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -187,32 +187,28 @@ class StorageConnector extends AbstractConnector {
 
     @Override
     public TupleQueryResult executeSelectQuery(String query) throws SesameDriverException {
-        RepositoryConnection connection;
-        try {
-            connection = acquireConnection();
-            final TupleQuery tq = connection.prepareTupleQuery(QueryLanguage.SPARQL, query);
-            return new QueryResult(tq.evaluate(), connection);
-        } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
-            throw new SesameDriverException(e);
-        }
+        RepositoryConnection connection = acquireConnection();
+        return new ConnectionStatementExecutor(connection).executeSelectQuery(query);
         // The connection is released by the result set once it is closed
     }
 
-    private RepositoryConnection acquireConnection() throws SesameDriverException {
+    RepositoryConnection acquireConnection() throws SesameDriverException {
         // Workaround for local native storage being reset when multiple drivers access it
         if (!repository.isInitialized()) {
             initialize();
         }
         try {
+            LOG.trace("Acquiring repository connection.");
             return repository.getConnection();
         } catch (RepositoryException e) {
             throw new SesameDriverException(e);
         }
     }
 
-    private void releaseConnection(RepositoryConnection connection) throws SesameDriverException {
+    void releaseConnection(RepositoryConnection connection) throws SesameDriverException {
         try {
             if (connection != null) {
+                LOG.trace("Releasing repository connection.");
                 connection.close();
             }
         } catch (RepositoryException e) {
@@ -225,9 +221,7 @@ class StorageConnector extends AbstractConnector {
         RepositoryConnection connection = null;
         try {
             connection = acquireConnection();
-            return connection.prepareBooleanQuery(QueryLanguage.SPARQL, query).evaluate();
-        } catch (MalformedQueryException | QueryEvaluationException | RepositoryException e) {
-            throw new SesameDriverException(e);
+            return new ConnectionStatementExecutor(connection).executeBooleanQuery(query);
         } finally {
             releaseConnection(connection);
         }
@@ -238,10 +232,7 @@ class StorageConnector extends AbstractConnector {
         RepositoryConnection connection = null;
         try {
             connection = acquireConnection();
-            final Update u = connection.prepareUpdate(QueryLanguage.SPARQL, query);
-            u.execute();
-        } catch (MalformedQueryException | UpdateExecutionException | RepositoryException e) {
-            throw new SesameDriverException(e);
+            new ConnectionStatementExecutor(connection).executeUpdate(query);
         } finally {
             releaseConnection(connection);
         }
@@ -337,12 +328,11 @@ class StorageConnector extends AbstractConnector {
     public Collection<Statement> findStatements(Resource subject, org.openrdf.model.URI property,
                                                 Value value, boolean includeInferred, org.openrdf.model.URI... contexts)
             throws SesameDriverException {
-        // TODO Why are we using an extra connection for findStatements and querying? We should be using the transactional one
         RepositoryConnection connection = null;
         try {
             connection = acquireConnection();
-            final RepositoryResult<Statement> m = connection.getStatements(subject, property, null,
-                    includeInferred, contexts);
+            final RepositoryResult<Statement> m = connection
+                    .getStatements(subject, property, null, includeInferred, contexts);
             return Iterations.asList(m);
         } catch (RepositoryException e) {
             throw new SesameDriverException(e);

@@ -21,11 +21,11 @@ import cz.cvut.kbss.ontodriver.Statement;
 import java.util.NoSuchElementException;
 import java.util.Observer;
 
-public abstract class AbstractResultSet implements ResultSet {
+abstract class AbstractResultSet implements ResultSet {
 
     private final Statement statement;
 
-    int index;
+    private int index;
     private boolean open;
 
     AbstractResultSet(Statement statement) {
@@ -59,7 +59,7 @@ public abstract class AbstractResultSet implements ResultSet {
         return index == 0;
     }
 
-    protected void ensureOpen() {
+    void ensureOpen() {
         if (!open) {
             throw new IllegalStateException("The result set is closed!");
         }

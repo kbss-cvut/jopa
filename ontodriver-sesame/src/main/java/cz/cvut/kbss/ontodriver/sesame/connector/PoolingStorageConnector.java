@@ -1,33 +1,29 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
+
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import info.aduna.iteration.Iterations;
+import org.openrdf.model.*;
+import org.openrdf.query.TupleQueryResult;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.query.TupleQueryResult;
-
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
 class PoolingStorageConnector extends AbstractConnector {
 
@@ -35,16 +31,21 @@ class PoolingStorageConnector extends AbstractConnector {
     private static Lock READ = LOCK.readLock();
     private static Lock WRITE = LOCK.writeLock();
 
-    private final Connector centralConnector;
+    private final StorageConnector centralConnector;
+
+    private RepositoryConnection connection;
     private LocalModel localModel;
 
-    PoolingStorageConnector(Connector centralConnector) {
+    PoolingStorageConnector(StorageConnector centralConnector) {
         this.centralConnector = centralConnector;
         this.open = true;
     }
 
     @Override
     public TupleQueryResult executeSelectQuery(String query) throws SesameDriverException {
+        if (transaction.isActive()) {
+            return new ConnectionStatementExecutor(wrapConnection()).executeSelectQuery(query);
+        }
         READ.lock();
         try {
             return centralConnector.executeSelectQuery(query);
@@ -53,8 +54,15 @@ class PoolingStorageConnector extends AbstractConnector {
         }
     }
 
+    private RepositoryConnection wrapConnection() {
+        return new TransactionalRepositoryConnection(connection);
+    }
+
     @Override
     public boolean executeBooleanQuery(String query) throws SesameDriverException {
+        if (transaction.isActive()) {
+            return new ConnectionStatementExecutor(wrapConnection()).executeBooleanQuery(query);
+        }
         READ.lock();
         try {
             return centralConnector.executeBooleanQuery(query);
@@ -94,6 +102,7 @@ class PoolingStorageConnector extends AbstractConnector {
     public void begin() throws SesameDriverException {
         super.begin();
         this.localModel = new LocalModel();
+        this.connection = centralConnector.acquireConnection();
     }
 
     @Override
@@ -113,15 +122,26 @@ class PoolingStorageConnector extends AbstractConnector {
             throw e;
         } finally {
             WRITE.unlock();
+            centralConnector.releaseConnection(connection);
             this.localModel = null;
         }
     }
 
     @Override
-    public void rollback() {
+    public void rollback() throws SesameDriverException {
         transaction.rollback();
         this.localModel = null;
+        centralConnector.releaseConnection(connection);
         transaction.afterRollback();
+    }
+
+    @Override
+    public void close() throws OntoDriverException {
+        if (open && transaction.isActive()) {
+            this.localModel = null;
+            centralConnector.releaseConnection(connection);
+        }
+        super.close();
     }
 
     @Override
@@ -142,17 +162,14 @@ class PoolingStorageConnector extends AbstractConnector {
     public Collection<Statement> findStatements(Resource subject, URI property, Value value,
                                                 boolean includeInferred, URI... contexts) throws SesameDriverException {
         verifyTransactionActive();
-        READ.lock();
         try {
-            final Collection<Statement> statements = centralConnector.findStatements(subject,
-                    property, value, includeInferred, contexts);
+            final Collection<Statement> statements = Iterations
+                    .asList(connection.getStatements(subject, property, value, includeInferred, contexts));
             localModel.enhanceStatements(statements, subject, property, value, contexts);
             return statements;
-        } catch (SesameDriverException e) {
-            centralConnector.rollback();
-            throw e;
-        } finally {
-            READ.unlock();
+        } catch (RepositoryException e) {
+            rollback();
+            throw new SesameDriverException(e);
         }
     }
 

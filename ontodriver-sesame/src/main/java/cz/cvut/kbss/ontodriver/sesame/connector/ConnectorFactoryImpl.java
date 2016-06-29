@@ -12,16 +12,15 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
-public final class ConnectorFactoryImpl implements ConnectorFactory {
+final class ConnectorFactoryImpl implements ConnectorFactory {
 
     private boolean open;
 
-    private volatile Connector centralConnector;
+    private volatile StorageConnector centralConnector;
 
     ConnectorFactoryImpl() {
         this.open = true;

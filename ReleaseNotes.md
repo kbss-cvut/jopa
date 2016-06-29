@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.8.1 - June 29, 2016
+- More efficient handling of repository connections in the Sesame driver
+
 ## 0.8.0 - June 17, 2016
 - Added support for Mapped superclass (`@MappedSuperclass` annotation)
 
