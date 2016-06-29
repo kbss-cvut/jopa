@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,9 +22,11 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.net.URL;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 /**
@@ -216,22 +218,31 @@ public class MetamodelMocks {
     }
 
     public void setMocks(Metamodel metamodel) {
-        when(metamodel.entity(OWLClassA.class)).thenReturn(etA);
-        when(metamodel.entity(OWLClassB.class)).thenReturn(etB);
-        when(metamodel.entity(OWLClassC.class)).thenReturn(etC);
-        when(metamodel.entity(OWLClassD.class)).thenReturn(etD);
-        when(metamodel.entity(OWLClassE.class)).thenReturn(etE);
-        when(metamodel.entity(OWLClassF.class)).thenReturn(etF);
-        when(metamodel.entity(OWLClassG.class)).thenReturn(etG);
-        when(metamodel.entity(OWLClassH.class)).thenReturn(etH);
-        when(metamodel.entity(OWLClassJ.class)).thenReturn(etJ);
-        when(metamodel.entity(OWLClassK.class)).thenReturn(etK);
-        when(metamodel.entity(OWLClassL.class)).thenReturn(etL);
-        when(metamodel.entity(OWLClassM.class)).thenReturn(etM);
-        when(metamodel.entity(OWLClassN.class)).thenReturn(etN);
-        when(metamodel.entity(OWLClassO.class)).thenReturn(etO);
-        when(metamodel.entity(OWLClassP.class)).thenReturn(etP);
-        when(metamodel.entity(OWLClassQ.class)).thenReturn(etQ);
+        final Map<Class<?>, EntityType<?>> etMap = new HashMap<>();
+        etMap.put(OWLClassA.class, etA);
+        etMap.put(OWLClassB.class, etB);
+        etMap.put(OWLClassC.class, etC);
+        etMap.put(OWLClassD.class, etD);
+        etMap.put(OWLClassE.class, etE);
+        etMap.put(OWLClassF.class, etF);
+        etMap.put(OWLClassG.class, etG);
+        etMap.put(OWLClassH.class, etH);
+        etMap.put(OWLClassJ.class, etJ);
+        etMap.put(OWLClassK.class, etK);
+        etMap.put(OWLClassL.class, etL);
+        etMap.put(OWLClassM.class, etM);
+        etMap.put(OWLClassN.class, etN);
+        etMap.put(OWLClassO.class, etO);
+        etMap.put(OWLClassP.class, etP);
+        etMap.put(OWLClassQ.class, etQ);
+        when(metamodel.entity(any())).thenAnswer(invocation -> {
+            final Class<?> cls = (Class<?>) invocation.getArguments()[0];
+            if (etMap.containsKey(cls)) {
+                return etMap.get(cls);
+            }
+            throw new IllegalArgumentException(
+                    "Class " + cls.getName() + " is not a known entity in this persistence unit.");
+        });
     }
 
     public OWLClassAMetamodel forOwlClassA() {

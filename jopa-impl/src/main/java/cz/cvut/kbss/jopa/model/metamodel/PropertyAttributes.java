@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -29,8 +29,8 @@ abstract class PropertyAttributes {
     IRI iri = null;
     CascadeType[] cascadeTypes = new CascadeType[]{};
     FetchType fetchType = FetchType.EAGER;
-    boolean nonEmpty = false;
-    ParticipationConstraint[] participationConstraints = new ParticipationConstraint[]{};
+    private boolean nonEmpty = false;
+    private ParticipationConstraint[] participationConstraints = new ParticipationConstraint[]{};
 
     PropertyAttributes(FieldMappingValidator validator) {
         this.validator = validator;
@@ -72,10 +72,10 @@ abstract class PropertyAttributes {
         resolveParticipationConstraints(field);
     }
 
-    void resolveParticipationConstraints(Field field) {
+    private void resolveParticipationConstraints(Field field) {
         ParticipationConstraints cons = field.getAnnotation(ParticipationConstraints.class);
         if (cons != null) {
-            if (cons.value() != null && cons.value().length > 0) {
+            if (cons.value().length > 0) {
                 this.participationConstraints = cons.value();
             } else {
                 this.nonEmpty = cons.nonEmpty();

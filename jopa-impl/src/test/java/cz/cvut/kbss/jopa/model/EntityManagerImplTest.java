@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,13 +19,18 @@ import cz.cvut.kbss.jopa.environment.OWLClassC;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
+import cz.cvut.kbss.jopa.model.annotations.Id;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -40,10 +45,10 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * @author kidney
- */
 public class EntityManagerImplTest {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private EntityManagerFactoryImpl emfMock;
@@ -126,5 +131,68 @@ public class EntityManagerImplTest {
     @Test
     public void unwrapReturnsItselfWhenClassMatches() throws Exception {
         assertSame(em, em.unwrap(EntityManagerImpl.class));
+    }
+
+    @Test
+    public void containsThrowsIllegalArgumentForNonEntity() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(
+                "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.");
+        final UnknownEntity obj = new UnknownEntity();
+        em.contains(obj);
+    }
+
+    @Test
+    public void findThrowsIllegalArgumentForNonEntity() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(
+                "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.");
+        em.find(UnknownEntity.class, "primaryKey", new EntityDescriptor());
+    }
+
+    @Test
+    public void persistThrowsIllegalArgumentForNonEntity() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(
+                "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.");
+        em.persist(new UnknownEntity(), new EntityDescriptor());
+    }
+
+    @Test
+    public void mergeThrowsIllegalArgumentForNonEntity() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(
+                "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.");
+        em.merge(new UnknownEntity(), new EntityDescriptor());
+    }
+
+    @Test
+    public void removeThrowsIllegalArgumentForNonEntity() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(
+                "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.");
+        em.remove(new UnknownEntity());
+    }
+
+    @Test
+    public void refreshThrowsIllegalArgumentForNonEntity() {
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(
+                "Class " + UnknownEntity.class.getName() + " is not a known entity in this persistence unit.");
+        em.refresh(new UnknownEntity());
+    }
+
+    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#UnknownEntity")
+    private static class UnknownEntity {
+        @Id
+        private URI id;
+
+        public URI getId() {
+            return id;
+        }
+
+        public void setId(URI id) {
+            this.id = id;
+        }
     }
 }
