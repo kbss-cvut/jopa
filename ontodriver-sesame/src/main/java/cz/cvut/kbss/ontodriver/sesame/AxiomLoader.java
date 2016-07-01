@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
@@ -38,6 +36,9 @@ class AxiomLoader {
     private final ValueFactory valueFactory;
 
     private Map<URI, Assertion> propertyToAssertion;
+    private Map<URI, Assertion> explicitAssertions;
+    private Map<URI, Assertion> inferredAssertions;
+
     private Assertion unspecifiedProperty;
 
     AxiomLoader(Connector connector, ValueFactory valueFactory) {
@@ -53,22 +54,24 @@ class AxiomLoader {
 
     private Collection<Statement> findStatements(AxiomDescriptor descriptor) throws SesameDriverException {
         final Collection<Statement> result = new HashSet<>();
-        final Resource subject = SesameUtils.toSesameUri(descriptor.getSubject().getIdentifier(),
-                valueFactory);
-        for (Assertion assertion : descriptor.getAssertions()) {
-            final URI context = SesameUtils.toSesameUri(descriptor.getAssertionContext(assertion), valueFactory);
-            final URI property = getPropertyUri(assertion);
+        final Resource subject = SesameUtils.toSesameUri(descriptor.getSubject().getIdentifier(), valueFactory);
+        processAssertions(descriptor);
+        result.addAll(new ExplicitStatementLoader(descriptor, connector, subject).loadStatements(explicitAssertions));
+        return result;
+    }
 
-            if (property != null && !shouldLoad(assertion, descriptor)) {
-                continue;
-            }
-            if (context != null) {
-                result.addAll(connector.findStatements(subject, property, null, assertion.isInferred(), context));
+    private void processAssertions(AxiomDescriptor descriptor) {
+        this.explicitAssertions = new HashMap<>(descriptor.getAssertions().size());
+        this.inferredAssertions = new HashMap<>(descriptor.getAssertions().size());
+        for (Assertion a : descriptor.getAssertions()) {
+            final URI property = SesameUtils.toSesameUri(a.getIdentifier(), valueFactory);
+            propertyToAssertion.put(property, a);
+            if (a.isInferred()) {
+                inferredAssertions.put(property, a);
             } else {
-                result.addAll(connector.findStatements(subject, property, null, assertion.isInferred()));
+                explicitAssertions.put(property, a);
             }
         }
-        return result;
     }
 
     private boolean shouldLoad(Assertion assertion, AxiomDescriptor descriptor) {
@@ -113,7 +116,7 @@ class AxiomLoader {
         }
         final NamedResource subject = knownSubjects.get(stmt.getSubject());
         Assertion assertion = resolveAssertion(stmt.getPredicate());
-        if (SesameUtils.isBlankNode(stmt.getObject())) {
+        if (SesameUtils.isBlankNode(stmt.getObject()) || assertion == null) {
             return null;
         }
         Value<?> val = createValue(assertion.getType(), stmt.getObject());
@@ -125,17 +128,10 @@ class AxiomLoader {
 
     private Assertion resolveAssertion(URI predicate) {
         Assertion assertion = propertyToAssertion.get(predicate);
-        if (assertion == null) {
-            if (unspecifiedProperty == null) {
-                return null;
-            } else {
-                assertion = unspecifiedProperty;
-            }
-        }
         // If the property was unspecified, create assertion based on the actual property URI
-        if (assertion.getType() == AssertionType.PROPERTY) {
-            assertion = Assertion.createPropertyAssertion(
-                    SesameUtils.toJavaUri(predicate), assertion.isInferred());
+        if (assertion == null || assertion.getType() == AssertionType.PROPERTY) {
+            assertion = Assertion.createPropertyAssertion(SesameUtils.toJavaUri(predicate), false);
+            // TODO
         }
         return assertion;
     }

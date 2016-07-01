@@ -12,19 +12,12 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
-import cz.cvut.kbss.ontodriver.config.ConfigParam;
-import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
+import cz.cvut.kbss.ontodriver.sesame.environment.TestRepositoryProvider;
 import org.junit.After;
-import org.junit.BeforeClass;
 
-import java.lang.reflect.Field;
-import java.net.URI;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -38,31 +31,14 @@ abstract class ListHandlerWithStorageTestBase {
     static final String LIST_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasListProperty";
     static final String NEXT_NODE_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasNext";
 
-    static Configuration configuration;
+    TestRepositoryProvider repositoryProvider = new TestRepositoryProvider();
 
     protected Connector connector;
-
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        OntologyStorageProperties storageProperties = OntologyStorageProperties
-                .physicalUri(URI.create("SesameListTest"))
-                .driver(SesameDataSource.class.getCanonicalName())
-                .build();
-        configuration = new Configuration(storageProperties);
-
-        configuration.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        configuration.setProperty(SesameConfigParam.USE_INFERENCE, Boolean.FALSE.toString());
-        configuration.setProperty(ConfigParam.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
-        configuration.setProperty(ConfigParam.ONTOLOGY_LANGUAGE, "en");
-    }
 
     @After
     public void tearDown() throws Exception {
         connector.close();
-        ConnectorFactory.getInstance().close();
-        final Field openField = ConnectorFactory.getInstance().getClass().getDeclaredField("open");
-        openField.setAccessible(true);
-        openField.set(ConnectorFactory.getInstance(), true);
+        repositoryProvider.close();
     }
 
     void verifyListContent(Collection<Axiom<NamedResource>> expected, Collection<Axiom<NamedResource>> actual)

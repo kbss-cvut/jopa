@@ -14,9 +14,7 @@ package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
-import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.URI;
@@ -31,14 +29,9 @@ public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTest
 
     private SimpleListHandler handler;
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        ListHandlerWithStorageTestBase.setUpBeforeClass();
-    }
-
     @Before
     public void setUp() throws Exception {
-        connector = ConnectorFactory.getInstance().createStorageConnector(configuration);
+        connector = repositoryProvider.createConnector();
         this.handler = new SimpleListHandler(connector, connector.getValueFactory());
         connector.begin();
     }

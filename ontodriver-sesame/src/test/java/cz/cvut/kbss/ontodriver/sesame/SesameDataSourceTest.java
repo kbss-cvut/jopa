@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import java.lang.reflect.Field;
 
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import cz.cvut.kbss.ontodriver.sesame.environment.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

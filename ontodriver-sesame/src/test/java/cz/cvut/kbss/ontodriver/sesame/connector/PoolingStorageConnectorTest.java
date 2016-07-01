@@ -12,7 +12,7 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import cz.cvut.kbss.ontodriver.sesame.TestUtils;
+import cz.cvut.kbss.ontodriver.sesame.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.sesame.Transaction;
 import cz.cvut.kbss.ontodriver.sesame.TransactionState;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
