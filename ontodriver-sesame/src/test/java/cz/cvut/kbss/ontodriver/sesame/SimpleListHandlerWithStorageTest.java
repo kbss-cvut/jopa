@@ -31,7 +31,7 @@ public class SimpleListHandlerWithStorageTest extends ListHandlerWithStorageTest
 
     @Before
     public void setUp() throws Exception {
-        connector = repositoryProvider.createConnector();
+        connector = repositoryProvider.createConnector(false);
         this.handler = new SimpleListHandler(connector, connector.getValueFactory());
         connector.begin();
     }

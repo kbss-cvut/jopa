@@ -33,7 +33,7 @@ public class ReferencedListHandlerWithStorageTest extends ListHandlerWithStorage
 
     @Before
     public void setUp() throws Exception {
-        connector = repositoryProvider.createConnector();
+        connector = repositoryProvider.createConnector(false);
         this.handler = new ReferencedListHandler(connector, connector.getValueFactory());
         connector.begin();
     }

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -47,7 +48,7 @@ class ReferencedListIterator extends AbstractSesameIterator {
 		super(listDescriptor, connector, vf);
 		this.listDescriptor = listDescriptor;
 		this.hasContentProperty = SesameUtils.toSesameUri(listDescriptor.getNodeContent()
-				.getIdentifier(), vf);
+																		.getIdentifier(), vf);
 		this.currentProperty = hasListProperty;
 		init();
 	}

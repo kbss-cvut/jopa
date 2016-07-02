@@ -20,6 +20,7 @@ import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +33,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.memory.MemoryStore;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -116,9 +118,9 @@ public class SesamePropertiesTest {
         final Collection<Statement> stmts = new HashSet<>();
         for (Assertion a : properties.keySet()) {
             final URI property = vf.createURI(a.getIdentifier().toString());
-            for (Value<?> v : properties.get(a)) {
-                stmts.add(vf.createStatement(subject, property, SesameUtils.createDataPropertyLiteral(v.getValue(), LANG, vf)));
-            }
+            stmts.addAll(properties.get(a).stream().map(v -> vf
+                    .createStatement(subject, property, SesameUtils.createDataPropertyLiteral(v.getValue(), LANG, vf)))
+                                   .collect(Collectors.toList()));
         }
         return stmts;
     }

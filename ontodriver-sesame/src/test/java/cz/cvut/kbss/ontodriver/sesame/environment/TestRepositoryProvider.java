@@ -16,7 +16,7 @@ public class TestRepositoryProvider {
 
     private final ConnectorFactory factory = ConnectorFactory.getInstance();
 
-    public Connector createConnector() throws SesameDriverException {
+    public Connector createConnector(boolean useInference) throws SesameDriverException {
         OntologyStorageProperties storageProperties = OntologyStorageProperties
                 .physicalUri(URI.create("TestStore"))
                 .driver(SesameDataSource.class.getCanonicalName())
@@ -24,7 +24,7 @@ public class TestRepositoryProvider {
         final Configuration configuration = new Configuration(storageProperties);
 
         configuration.setProperty(SesameConfigParam.USE_VOLATILE_STORAGE, Boolean.TRUE.toString());
-        configuration.setProperty(SesameConfigParam.USE_INFERENCE, Boolean.FALSE.toString());
+        configuration.setProperty(SesameConfigParam.USE_INFERENCE, Boolean.toString(useInference));
         configuration.setProperty(ConfigParam.USE_TRANSACTIONAL_ONTOLOGY, Boolean.TRUE.toString());
         configuration.setProperty(ConfigParam.ONTOLOGY_LANGUAGE, "en");
         return factory.createStorageConnector(configuration);

@@ -23,14 +23,15 @@ public class AxiomLoaderTest {
     private TestRepositoryProvider repositoryProvider = new TestRepositoryProvider();
 
     private Generator.GeneratedData generatedData;
-    private Connector connector;
     private ValueFactory vf;
+
+    private Connector connector;
 
     private AxiomLoader axiomLoader;
 
     @Before
     public void setUp() throws Exception {
-        this.connector = repositoryProvider.createConnector();
+        this.connector = repositoryProvider.createConnector(false);
         final Repository repository = connector.unwrap(Repository.class);
         this.axiomLoader = new AxiomLoader(connector, repository.getValueFactory());
         this.generatedData = Generator.initTestData(repository);

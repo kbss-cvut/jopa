@@ -12,23 +12,21 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import java.util.*;
-
-import org.openrdf.model.Literal;
+import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import cz.cvut.kbss.ontodriver.sesame.util.AxiomBuilder;
+import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
-import cz.cvut.kbss.ontodriver.model.Assertion;
-import cz.cvut.kbss.ontodriver.model.Assertion.AssertionType;
-import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.AxiomImpl;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
-import cz.cvut.kbss.ontodriver.model.Value;
+import java.util.*;
+import java.util.stream.Collectors;
 
 class AxiomLoader {
 
@@ -39,8 +37,6 @@ class AxiomLoader {
     private Map<URI, Assertion> explicitAssertions;
     private Map<URI, Assertion> inferredAssertions;
 
-    private Assertion unspecifiedProperty;
-
     AxiomLoader(Connector connector, ValueFactory valueFactory) {
         this.connector = connector;
         this.valueFactory = valueFactory;
@@ -48,137 +44,63 @@ class AxiomLoader {
     }
 
     Collection<Axiom<?>> loadAxioms(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
-        Collection<Statement> statements = findStatements(axiomDescriptor);
-        return transformStatementsToAxioms(statements);
+        return findStatements(axiomDescriptor);
     }
 
-    private Collection<Statement> findStatements(AxiomDescriptor descriptor) throws SesameDriverException {
-        final Collection<Statement> result = new HashSet<>();
+    private Collection<Axiom<?>> findStatements(AxiomDescriptor descriptor) throws SesameDriverException {
+        final Collection<Axiom<?>> result = new HashSet<>();
         final Resource subject = SesameUtils.toSesameUri(descriptor.getSubject().getIdentifier(), valueFactory);
-        processAssertions(descriptor);
-        result.addAll(new ExplicitStatementLoader(descriptor, connector, subject).loadStatements(explicitAssertions));
+        final Assertion unspecified = processAssertions(descriptor);
+        final AxiomBuilder axiomBuilder = new AxiomBuilder(descriptor.getSubject(), propertyToAssertion, unspecified);
+        final StatementLoader statementLoader = new StatementLoader(descriptor, connector, subject, axiomBuilder);
+        if (unspecified == null || !unspecified.isInferred()) {
+            statementLoader.setIncludeInferred(false);
+            result.addAll(statementLoader.loadAxioms(explicitAssertions));
+        }
+        statementLoader.setIncludeInferred(true);
+        result.addAll(statementLoader.loadAxioms(inferredAssertions));
         return result;
     }
 
-    private void processAssertions(AxiomDescriptor descriptor) {
+    /**
+     * Processes assertions in the specified descriptor.
+     * <p>
+     * Splits them into explicit and inferred and returns unspecified property, if it is present in the descriptor.
+     *
+     * @param descriptor The descriptor to process
+     * @return Unspecified property, if it is present
+     */
+    private Assertion processAssertions(AxiomDescriptor descriptor) {
         this.explicitAssertions = new HashMap<>(descriptor.getAssertions().size());
         this.inferredAssertions = new HashMap<>(descriptor.getAssertions().size());
+        Assertion unspecified = null;
         for (Assertion a : descriptor.getAssertions()) {
             final URI property = SesameUtils.toSesameUri(a.getIdentifier(), valueFactory);
             propertyToAssertion.put(property, a);
+            if (a.equals(Assertion.createUnspecifiedPropertyAssertion(a.isInferred()))) {
+                unspecified = a;
+            }
             if (a.isInferred()) {
                 inferredAssertions.put(property, a);
             } else {
                 explicitAssertions.put(property, a);
             }
         }
-    }
-
-    private boolean shouldLoad(Assertion assertion, AxiomDescriptor descriptor) {
-        return unspecifiedProperty == null || assertion.getType() == AssertionType.CLASS
-                || !sameContext(unspecifiedProperty, assertion, descriptor)
-                || (!unspecifiedProperty.isInferred() && assertion.isInferred());
-    }
-
-    private boolean sameContext(Assertion assertionOne, Assertion assertionTwo, AxiomDescriptor descriptor) {
-        final java.net.URI cOne = descriptor.getAssertionContext(assertionOne);
-        final java.net.URI cTwo = descriptor.getAssertionContext(assertionTwo);
-        return cOne == cTwo || (cOne != null && cOne.equals(cTwo));
-    }
-
-    private URI getPropertyUri(Assertion assertion) {
-        if (assertion.equals(Assertion.createUnspecifiedPropertyAssertion(assertion.isInferred()))) {
-            this.unspecifiedProperty = assertion;
-            return null;
-        }
-        final URI property = SesameUtils.toSesameUri(assertion.getIdentifier(), valueFactory);
-        propertyToAssertion.put(property, assertion);
-        return property;
-    }
-
-    private List<Axiom<?>> transformStatementsToAxioms(Collection<Statement> statements) {
-        final List<Axiom<?>> axioms = new ArrayList<>(statements.size());
-        final Map<Resource, NamedResource> subjects = new HashMap<>();
-        for (Statement stmt : statements) {
-            final Axiom<?> axiom = createAxiom(stmt, subjects);
-            if (axiom == null) {
-                continue;
-            }
-            axioms.add(axiom);
-        }
-        return axioms;
-    }
-
-    private Axiom<?> createAxiom(Statement stmt, Map<Resource, NamedResource> knownSubjects) {
-        if (!knownSubjects.containsKey(stmt.getSubject())) {
-            knownSubjects.put(stmt.getSubject(),
-                    NamedResource.create(SesameUtils.toJavaUri(stmt.getSubject())));
-        }
-        final NamedResource subject = knownSubjects.get(stmt.getSubject());
-        Assertion assertion = resolveAssertion(stmt.getPredicate());
-        if (SesameUtils.isBlankNode(stmt.getObject()) || assertion == null) {
-            return null;
-        }
-        Value<?> val = createValue(assertion.getType(), stmt.getObject());
-        if (val == null) {
-            return null;
-        }
-        return new AxiomImpl<>(subject, assertion, val);
-    }
-
-    private Assertion resolveAssertion(URI predicate) {
-        Assertion assertion = propertyToAssertion.get(predicate);
-        // If the property was unspecified, create assertion based on the actual property URI
-        if (assertion == null || assertion.getType() == AssertionType.PROPERTY) {
-            assertion = Assertion.createPropertyAssertion(SesameUtils.toJavaUri(predicate), false);
-            // TODO
-        }
-        return assertion;
-    }
-
-    private Value<?> createValue(AssertionType assertionType, org.openrdf.model.Value value) {
-        switch (assertionType) {
-            case DATA_PROPERTY:
-                if (!(value instanceof Literal)) {
-                    return null;
-                }
-                return new Value<>(SesameUtils.getDataPropertyValue((Literal) value));
-            case CLASS:
-                if (!(value instanceof Resource)) {
-                    return null;
-                }
-                return new Value<>(SesameUtils.toJavaUri((Resource) value));
-            case OBJECT_PROPERTY:
-                if (!(value instanceof Resource)) {
-                    return null;
-                }
-                return new Value<>(NamedResource.create(value.stringValue()));
-            case ANNOTATION_PROPERTY:   // Intentional fall-through
-            case PROPERTY:
-                return resolveValue(value);
-        }
-        return null;
-    }
-
-    private Value<?> resolveValue(org.openrdf.model.Value object) {
-        if (object instanceof Literal) {
-            return new Value<>(SesameUtils.getDataPropertyValue((Literal) object));
-        } else {
-            return new Value<>(SesameUtils.toJavaUri((Resource) object));
-        }
+        return unspecified;
     }
 
     public Collection<Axiom<?>> loadAxioms(NamedResource individual, boolean includeInferred, java.net.URI context)
             throws SesameDriverException {
         final URI sesameContext = SesameUtils.toSesameUri(context, valueFactory);
         final URI subject = SesameUtils.toSesameUri(individual.getIdentifier(), valueFactory);
-        this.unspecifiedProperty = Assertion.createUnspecifiedPropertyAssertion(includeInferred);
+        final AxiomBuilder axiomBuilder = new AxiomBuilder(individual, Collections.emptyMap(),
+                Assertion.createUnspecifiedPropertyAssertion(includeInferred));
         final Collection<Statement> statements;
         if (sesameContext != null) {
             statements = connector.findStatements(subject, null, null, includeInferred, sesameContext);
         } else {
             statements = connector.findStatements(subject, null, null, includeInferred);
         }
-        return transformStatementsToAxioms(statements);
+        return statements.stream().map(axiomBuilder::statementToAxiom).collect(Collectors.toSet());
     }
 }

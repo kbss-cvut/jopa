@@ -17,6 +17,7 @@ package cz.cvut.kbss.ontodriver.sesame;
 import java.util.Collection;
 import java.util.HashSet;
 
+import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;

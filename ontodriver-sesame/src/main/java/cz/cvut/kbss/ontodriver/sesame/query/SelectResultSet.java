@@ -16,7 +16,7 @@ package cz.cvut.kbss.ontodriver.sesame.query;
 
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.sesame.SesameUtils;
+import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
