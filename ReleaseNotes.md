@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.8.2 - July 4, 2016
+- Major improvement of instance loading in the Sesame driver
+- Fixed bug in `CollectionChangeDetector`, which caused identical collection to behave as different (issue with element ordering)
+
 ## 0.8.1 - June 29, 2016
 - More efficient handling of repository connections in the Sesame driver
 
