@@ -67,6 +67,8 @@ JOPA currently does not support two important features - inheritance and referen
 
 Inheritance is currently in planning and development of its support should start soon.
 
+**Update**: Mapped superclass support has been added in version 0.8.0.
+
 As for referential integrity, this for example means that removing an instance that is referenced by another instance should
 not be possible. Such feature is vital for object-oriented application, but not compatible with the open-world nature of ontologies.
 Design possibilities and their implications are currently being studied.
@@ -77,18 +79,21 @@ Other missing/planned stuff can be found in `TODO.txt`.
 
 The whole framework consists of several modules:
 
-* JOPA API - definition of the JOPA API, similar to JPA
-* OntoDriver API - API of the storage access layer
-* JOPA Implementation - persistence provider implementation
-* OntoDriver Sesame - OntoDriver implementation for Sesame-accessed storages
-* OntoDriver OWLAPI - OntoDriver implementation for OWLAPI-accessed files
-* OWL2Java - generates JOPA entities based on integrity constraints in input ontology (see Example01)
+* _JOPA API_ - definition of the JOPA API, similar to JPA
+* _OntoDriver API_ - API of the storage access layer
+* _JOPA Implementation_ - persistence provider implementation
+* _OntoDriver Sesame_ - OntoDriver implementation for Sesame-accessed storages
+* _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files
+* _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see Example01)
 
 Other modules represent integration tests and various utilities. Jena OntoDriver is planned as future work.
   
 ## Usage
 
 JOPA examples can be found in a separate repository at [https://github.com/kbss-cvut/jopa-examples](https://github.com/kbss-cvut/jopa-examples).
+
+A more mature project using JOPA as its persistence provider can be found at [https://github.com/kbss-cvut/reporting-tool](https://github.com/kbss-cvut/reporting-tool).
+It is a safety occurrence reporting tool developed for the aviation industry. A live demo of it is running at [https://www.inbas.cz/reporting-tool-public](https://www.inbas.cz/reporting-tool-public).
 
 Note that JOPA requires Java 8.
 

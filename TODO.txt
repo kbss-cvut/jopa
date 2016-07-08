@@ -1,5 +1,6 @@
+- Create some sort of specification doc, which would explain JOPA behaviour
+    - Perhaps use the github wiki? Or something on KBSS Liferay?
 - Consider using FieldSpecification instead of attribute name in ChangeRecord
-    - e.g. when a entity class was not found by EntityLoader, trying to persist it should result in exception, not in adding it to metamodel
 - When persisting a collection of instances without generated ids, how to handle references between them?
     - It can happen that JOPA will try to insert a referenced individual which has not yet set id, which
         results in assigning it a generated URI. E.g. foreach(inst -> {inst.generateUri(); em.persist(inst); })
@@ -20,7 +21,6 @@
 - Add support for namespace definition - on class and package level
 - Add support for Lobs and Blobs
 - Modify OntoDriver API to support Fetch joins
-- Do some research on how to implement class hierarchies in JOPA
 - Define schema for persistence.xml for JOPA
 - Research whether we could replace aspectj with cglib-generated proxies
 - IC - SHACL
