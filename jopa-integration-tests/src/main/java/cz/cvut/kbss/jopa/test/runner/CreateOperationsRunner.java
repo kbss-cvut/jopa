@@ -1,24 +1,24 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
+import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -265,8 +265,8 @@ public abstract class CreateOperationsRunner extends BaseRunner {
     }
 
     @Test(expected = OWLEntityExistsException.class)
-    public void persistingTwoInstancesOfDifferentClassesWithSameUriIsIllegal() {
-        this.em = getEntityManager("PersistURITwiceInDifferentClasses", false);
+    public void persistTwoInstancesOfDifferentClassesWithSameUriIntoTheSamePersistenceContextIsIllegal() {
+        this.em = getEntityManager("PersistURITwiceInDifferentClassesSamePC", false);
         final URI pk = URI.create("http://krizik.felk.cvut.cz/jopa/onto/sameEntity");
         final OWLClassA a = new OWLClassA();
         a.setUri(pk);
@@ -276,6 +276,29 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.persist(a);
         em.persist(b);
         em.getTransaction().commit();
+    }
+
+    @Ignore
+    @Test
+    public void persistTwoInstancesWithTheSameUriIntoDifferentPersistenceContextsIsLegal() {
+        this.em = getEntityManager("PersistURITwiceInDifferentClassesDifferentPCs", false);
+        final URI uri = URI.create("http://krizik.felk.cvut.cz/jopa/onto/sameEntity");
+        entityA.setUri(uri);
+        entityB.setUri(uri);
+        em.getTransaction().begin();
+        em.persist(entityA);
+        em.getTransaction().commit();
+        final EntityManager emTwo = em.getEntityManagerFactory().createEntityManager();
+        try {
+            emTwo.getTransaction().begin();
+            emTwo.persist(entityB);
+            emTwo.getTransaction().commit();
+
+            assertNotNull(emTwo.find(OWLClassA.class, entityA.getUri()));
+            assertNotNull(em.find(OWLClassB.class, entityB.getUri()));
+        } finally {
+            emTwo.close();
+        }
     }
 
     @Test

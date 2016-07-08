@@ -20,7 +20,6 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,10 +29,8 @@ import org.mockito.MockitoAnnotations;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.memory.MemoryStore;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -44,6 +41,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyVararg;
 import static org.mockito.Mockito.*;
 
 public class SesameAdapterTest {
@@ -52,8 +50,7 @@ public class SesameAdapterTest {
     private static final NamedResource SUBJECT = NamedResource
             .create("http://krizik.felk.cvut.cz/ontologies/jopa/entityX");
 
-    private static ValueFactory vf;
-    private static Repository repo;
+    private static ValueFactory vf = new ValueFactoryImpl();
     private static org.openrdf.model.URI subjectUri;
 
     @Mock
@@ -63,10 +60,6 @@ public class SesameAdapterTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        final MemoryStore mStore = new MemoryStore();
-        repo = new SailRepository(mStore);
-        repo.initialize();
-        vf = repo.getValueFactory();
         subjectUri = vf.createURI(SUBJECT.getIdentifier().toString());
     }
 
@@ -80,11 +73,6 @@ public class SesameAdapterTest {
         configuration.setProperty(ConfigParam.ONTOLOGY_LANGUAGE, LANGUAGE);
         this.adapter = new SesameAdapter(connectorMock, configuration);
 
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        repo.shutDown();
     }
 
     @Test
@@ -604,8 +592,7 @@ public class SesameAdapterTest {
         final URI clsUri = URI.create("http://someClass.cz#class");
         when(
                 connectorMock.findStatements(any(Resource.class), eq(RDF.TYPE),
-                        eq(vf.createURI(clsUri.toString())), eq(true))).thenReturn(
-                Collections.<Statement>emptyList());
+                        eq(vf.createURI(clsUri.toString())), eq(true))).thenReturn(Collections.emptyList());
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
@@ -618,8 +605,7 @@ public class SesameAdapterTest {
         final URI clsUri = URI.create("http://someClass.cz/class");
         when(
                 connectorMock.findStatements(any(Resource.class), eq(RDF.TYPE),
-                        eq(vf.createURI(clsUri.toString())), eq(true))).thenReturn(
-                Collections.<Statement>emptyList());
+                        eq(vf.createURI(clsUri.toString())), eq(true))).thenReturn(Collections.emptyList());
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
@@ -633,8 +619,7 @@ public class SesameAdapterTest {
         final URI clsUri = URI.create("http://someClass.cz/class/");
         when(
                 connectorMock.findStatements(any(Resource.class), eq(RDF.TYPE),
-                        eq(vf.createURI(clsUri.toString())), eq(true))).thenReturn(
-                Collections.<Statement>emptyList());
+                        eq(vf.createURI(clsUri.toString())), eq(true))).thenReturn(Collections.emptyList());
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
@@ -645,10 +630,10 @@ public class SesameAdapterTest {
     @Test(expected = IdentifierGenerationException.class)
     public void testGenerateIdentifierNeverUnique() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz#class");
-        final Collection<Statement> stmts = Collections.singletonList(mock(Statement.class));
+        final Collection<Statement> statements = Collections.singletonList(mock(Statement.class));
         when(
                 connectorMock.findStatements(any(Resource.class), eq(RDF.TYPE),
-                        eq(vf.createURI(clsUri.toString())), eq(true))).thenReturn(stmts);
+                        eq(vf.createURI(clsUri.toString())), eq(true))).thenReturn(statements);
         final URI res = adapter.generateIdentifier(clsUri);
         assert res == null;
     }
