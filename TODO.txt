@@ -4,8 +4,6 @@
 - When persisting a collection of instances without generated ids, how to handle references between them?
     - It can happen that JOPA will try to insert a referenced individual which has not yet set id, which
         results in assigning it a generated URI. E.g. foreach(inst -> {inst.generateUri(); em.persist(inst); })
-- MappingFileParser should be able to handle file references when called from a different hierarchy
-    - e. g. when the examples project is built from parent, the OWL2Java transform fails because it does not find the target OWL file
 - Add support for EntityManager.getReference
 - Add support for named native queries
 - Support for data property collections?
