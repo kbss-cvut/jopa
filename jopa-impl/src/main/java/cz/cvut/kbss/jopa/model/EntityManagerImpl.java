@@ -1,20 +1,17 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
  * <p>
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  * <p>
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.exceptions.TransactionRequiredException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
@@ -51,8 +48,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     private ServerSession serverSession;
     private final Configuration configuration;
 
-    public EntityManagerImpl(EntityManagerFactoryImpl emf, Configuration configuration,
-                             ServerSession serverSession) {
+    public EntityManagerImpl(EntityManagerFactoryImpl emf, Configuration configuration, ServerSession serverSession) {
         this.emf = emf;
         this.serverSession = serverSession;
         this.configuration = configuration;
@@ -113,17 +109,16 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
                                 getTransaction().setRollbackOnly();
                             }
                             throw new OWLPersistenceException(
-                                    "A problem occured when persisting attribute " + at.getName()
+                                    "A problem occurred when persisting attribute " + at.getName()
                                             + " of with value " + o + " of object " + entity, e);
                         }
                     }
                 }.start(this, entity, CascadeType.PERSIST);
                 break;
-            case MANAGED_NEW:
-                throw new OWLEntityExistsException("Entity " + entity
-                        + " is already managed in this persistence context.");
             case REMOVED:
                 getCurrentPersistenceContext().revertObject(entity);
+                break;
+            default:
                 break;
         }
     }

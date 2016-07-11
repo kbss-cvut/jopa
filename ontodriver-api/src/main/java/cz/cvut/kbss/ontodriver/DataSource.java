@@ -36,7 +36,7 @@ public interface DataSource extends Closeable {
      * @return A {@code Connection} to the data source
      * @throws OntoDriverException If an ontology access error occurs
      */
-    public Connection getConnection() throws OntoDriverException;
+    Connection getConnection() throws OntoDriverException;
 
     /**
      * Sets storage properties for this data source.
@@ -46,7 +46,7 @@ public interface DataSource extends Closeable {
      * @param storageProperties The properties to use
      * @throws OntoDriverException If an ontology access error occurs
      */
-    public void setStorageProperties(OntologyStorageProperties storageProperties) throws OntoDriverException;
+    void setStorageProperties(OntologyStorageProperties storageProperties) throws OntoDriverException;
 
     /**
      * Sets additional configuration properties on the data source.
@@ -54,5 +54,5 @@ public interface DataSource extends Closeable {
      * @param properties Map of properties
      * @throws OntoDriverException If an ontology access error occurs
      */
-    public void setProperties(Map<String, String> properties) throws OntoDriverException;
+    void setProperties(Map<String, String> properties) throws OntoDriverException;
 }

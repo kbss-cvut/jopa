@@ -39,11 +39,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     private final Map<Object, Object> cloneMapping;
     private final Map<Object, Object> cloneToOriginals;
-    private final Map<Object, Object> keysToClones;
+    private final Map<Object, Object> keysToClones = new HashMap<>();
     private Map<Object, Object> deletedObjects;
     private Map<Object, Object> newObjectsCloneToOriginal;
     private Map<Object, Object> newObjectsOriginalToClone;
-    private Map<Object, Object> newObjectsKeyToClone;
+    private final Map<Object, Object> newObjectsKeyToClone = new HashMap<>();
     private RepositoryMap repoMap;
 
     private boolean hasChanges;
@@ -76,7 +76,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.parent = Objects.requireNonNull(parent, ErrorUtils.constructNPXMessage("parent"));
         this.cloneMapping = createMap();
         this.cloneToOriginals = createMap();
-        this.keysToClones = new HashMap<>();
         this.repoMap = new RepositoryMap();
         repoMap.initDescriptors();
         this.cloneBuilder = new CloneBuilderImpl(this);
@@ -120,7 +119,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         assert primaryKey != null;
         assert descriptor != null;
         // First try to find the object among new uncommitted objects
-        Object result = getNewObjectsKeyToClone().get(primaryKey);
+        Object result = newObjectsKeyToClone.get(primaryKey);
         if (result != null && (isInRepository(descriptor, result))) {
             // The result can be returned, since it is already registered in
             // this UOW
@@ -128,8 +127,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
         // Object is already managed
         result = keysToClones.get(primaryKey);
-        if (result != null && isInRepository(descriptor, result) && !getDeletedObjects().containsKey(result)) {
-            return cls.cast(result);
+        if (result != null) {
+            if (!cls.isAssignableFrom(result.getClass())) {
+                throw individualAlreadyManaged(primaryKey);
+            }
+            if (isInRepository(descriptor, result) && !getDeletedObjects().containsKey(result)) {
+                return cls.cast(result);
+            }
         }
         // Search the cache
         result = getObjectFromCache(cls, primaryKey, descriptor.getContext());
@@ -144,6 +148,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         Object clone = registerExistingObject(result, descriptor);
         checkForCollections(clone);
         return cls.cast(clone);
+    }
+
+    private OWLEntityExistsException individualAlreadyManaged(Object identifier) {
+        return new OWLEntityExistsException(
+                "An entity with URI " + identifier + " is already present in the current persistence context.");
     }
 
     /**
@@ -202,7 +211,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.deletedObjects = null;
         this.newObjectsCloneToOriginal = null;
         this.newObjectsOriginalToClone = null;
-        this.newObjectsKeyToClone = null;
+        this.newObjectsKeyToClone.clear();
         this.hasChanges = false;
         this.hasDeleted = false;
         this.hasNew = false;
@@ -250,7 +259,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         cloneMapping.keySet().forEach(this::removeIndirectCollections);
         getNewObjectsCloneToOriginal().clear();
         getNewObjectsOriginalToClone().clear();
-        getNewObjectsKeyToClone().clear();
+        newObjectsKeyToClone.clear();
         getDeletedObjects().clear();
         cloneToOriginals.clear();
         cloneMapping.clear();
@@ -451,15 +460,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return newObjectsOriginalToClone;
     }
 
-    public Map<Object, Object> getNewObjectsKeyToClone() {
-        if (newObjectsKeyToClone == null) {
-            // Cannot use identity map, since it compares the key references
-            // which may not be the same
-            this.newObjectsKeyToClone = new HashMap<>();
-        }
-        return newObjectsKeyToClone;
-    }
-
     @Override
     public CacheManager getLiveObjectCache() {
         return parent.getLiveObjectCache();
@@ -496,17 +496,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
 
         return (cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity));
-    }
-
-    private boolean doesEntityExist(Object entity, Object primaryKey, Descriptor descriptor) {
-        assert entity != null;
-        assert descriptor != null;
-        if (cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity)
-                && isInRepository(descriptor, entity)) {
-            return true;
-        }
-        return primaryKey != null
-                && cacheManager.contains(entity.getClass(), primaryKey, descriptor.getContext());
     }
 
     /**
@@ -564,13 +553,22 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
         Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-        final Object pk = getIdentifier(entity);
-        if (!storage.contains(pk, entity.getClass(), descriptor)) {
+        final Object id = getIdentifier(entity);
+        if (!storage.contains(id, entity.getClass(), descriptor)) {
             registerNewObject(entity, descriptor);
             return entity;
         } else {
+            if (isIndividualManaged(id, entity) && !isSameType(id, entity)) {
+                throw individualAlreadyManaged(id);
+            }
             return mergeDetachedInternal(entity, descriptor);
         }
+    }
+
+    private boolean isSameType(Object id, Object entity) {
+        final Class<?> mergedType = entity.getClass();
+        final Object managed = keysToClones.containsKey(id) ? keysToClones.get(id) : newObjectsKeyToClone.get(id);
+        return managed != null && managed.getClass().isAssignableFrom(mergedType);
     }
 
     private <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
@@ -622,9 +620,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         parent.deregisterEntityFromPersistenceContext(entity, uow);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public Object registerExistingObject(Object entity, Descriptor descriptor) {
         if (entity == null) {
             return null;
@@ -663,7 +659,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         Objects.requireNonNull(object, ErrorUtils.constructNPXMessage("object"));
 
         if (!isObjectManaged(object) && !getDeletedObjects().containsKey(object)) {
-            throw new IllegalArgumentException("The specified enity " + object
+            throw new IllegalArgumentException("The specified entity " + object
                     + " is not managed by this persistence context.");
         }
         final Descriptor descriptor = getDescriptor(object);
@@ -708,9 +704,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             final EntityType<?> eType = getMetamodel().entity(entity.getClass());
             EntityPropertiesUtils.verifyIdentifierIsGenerated(entity, eType);
         }
-        if (doesEntityExist(entity, id, descriptor) && !entity.getClass().isEnum()) {
-            throw new OWLEntityExistsException(
-                    "An entity with URI " + id + " is already persisted in repository " + descriptor);
+        if (isIndividualManaged(id, entity) && !entity.getClass().isEnum()) {
+            throw individualAlreadyManaged(id);
         }
         storage.persist(id, entity, descriptor);
         if (id == null) {
@@ -723,9 +718,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         getNewObjectsCloneToOriginal().put(entity, null);
         registerEntityWithPersistenceContext(entity, this);
         registerEntityWithOntologyContext(descriptor, entity);
-        getNewObjectsKeyToClone().put(id, entity);
+        newObjectsKeyToClone.put(id, entity);
         checkForCollections(entity);
         this.hasNew = true;
+    }
+
+    private boolean isIndividualManaged(Object identifier, Object entity) {
+        return keysToClones.containsKey(identifier) ||
+                newObjectsKeyToClone.containsKey(identifier) && !cloneMapping.containsKey(entity);
     }
 
     /**
@@ -749,7 +749,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
         if (hasNew() && getNewObjectsCloneToOriginal().containsKey(entity)) {
             unregisterObject(entity);
-            getNewObjectsKeyToClone().remove(primaryKey);
+            newObjectsKeyToClone.remove(primaryKey);
         } else {
             getDeletedObjects().put(entity, entity);
             this.hasDeleted = true;

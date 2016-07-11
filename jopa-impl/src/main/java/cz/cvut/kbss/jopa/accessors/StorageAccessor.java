@@ -15,10 +15,11 @@
 package cz.cvut.kbss.jopa.accessors;
 
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
+import cz.cvut.kbss.jopa.utils.Wrapper;
 import cz.cvut.kbss.ontodriver.Closeable;
 import cz.cvut.kbss.ontodriver.Connection;
 
-public interface StorageAccessor extends Closeable {
+public interface StorageAccessor extends Closeable, Wrapper {
 
     /**
      * Acquires a connection to the underlying ontology driver. </p>

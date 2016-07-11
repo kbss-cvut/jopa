@@ -1,16 +1,14 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details. You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details. You should have received a copy of the GNU General Public License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions;
 
@@ -22,14 +20,12 @@ import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
+import cz.cvut.kbss.jopa.utils.Wrapper;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 
 import java.net.URI;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,7 +35,7 @@ import java.util.stream.Collectors;
  *
  * @author kidney
  */
-public class ServerSession extends AbstractSession {
+public class ServerSession extends AbstractSession implements Wrapper {
 
     private final Metamodel metamodel;
     private final Set<Class<?>> managedClasses;
@@ -51,7 +47,7 @@ public class ServerSession extends AbstractSession {
     private Map<Object, UnitOfWorkImpl> activePersistenceContexts;
     private Map<UnitOfWork, Set<Object>> uowsToEntities;
 
-    protected ServerSession() {
+    ServerSession() {
         this.metamodel = null;
         this.managedClasses = null;
     }
@@ -223,5 +219,14 @@ public class ServerSession extends AbstractSession {
             }
         }
         uowsToEntities.remove(uow);
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> cls) {
+        Objects.requireNonNull(cls);
+        if (cls.isAssignableFrom(getClass())) {
+            return cls.cast(this);
+        }
+        return storageAccessor.unwrap(cls);
     }
 }

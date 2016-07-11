@@ -105,12 +105,6 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertEquals(resG.getOwlClassH().getOwlClassA(), resA2);
     }
 
-    @Test(expected = OWLEntityExistsException.class)
-    public void persistingInstanceMultipleTimesIsNotAllowed() {
-        this.em = getEntityManager("PersistTwice", false);
-        persist(entityB, entityB);
-    }
-
     @Test(expected = RollbackException.class)
     public void persistingOnlyOnePartOfRelationWithoutCascadeThrowsRollbackException() {
         this.em = getEntityManager("PersistWithoutCascade", false);
