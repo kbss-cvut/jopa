@@ -18,10 +18,8 @@ import cz.cvut.kbss.ontodriver.config.ConfigParam;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
-import cz.cvut.kbss.ontodriver.exception.OWLIndividualExistsException;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
@@ -188,20 +186,7 @@ class SesameAdapter implements Closeable, Wrapper {
 
     void persist(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {
         startTransactionIfNotActive();
-        if (individualExists(axiomDescriptor.getSubject(), axiomDescriptor.getSubjectContext())) {
-            throw new SesameDriverException(new OWLIndividualExistsException("An individual with identifier "
-                    + axiomDescriptor.getSubject() + " already exists in context "
-                    + axiomDescriptor.getSubjectContext()));
-        }
         new AxiomSaver(connector, valueFactory, language).persistAxioms(axiomDescriptor);
-    }
-
-    private boolean individualExists(NamedResource subject, URI subjectContext)
-            throws SesameDriverException {
-        final org.openrdf.model.URI sesameSubject = SesameUtils.toSesameUri(
-                subject.getIdentifier(), valueFactory);
-        return !findStatements(sesameSubject, RDF.TYPE,
-                null, true, SesameUtils.toSesameUri(subjectContext, valueFactory)).isEmpty();
     }
 
     void update(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {

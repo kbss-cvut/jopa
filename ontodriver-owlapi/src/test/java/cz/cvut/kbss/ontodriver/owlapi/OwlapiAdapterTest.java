@@ -16,7 +16,6 @@ import com.google.common.base.Optional;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
-import cz.cvut.kbss.ontodriver.exception.OWLIndividualExistsException;
 import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
@@ -34,15 +33,18 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+// TODO Try to rewrite this to a real ontology
 public class OwlapiAdapterTest {
 
     private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#EntityA");
+    private static final NamedResource INDIVIDUAL = NamedResource.create(PK);
 
     @Mock
     private Connector connectorMock;
@@ -256,16 +258,25 @@ public class OwlapiAdapterTest {
     }
 
 
-    @Test(expected = OWLIndividualExistsException.class)
-    public void persistDuplicateIndividualThrowsException() throws Exception {
-        final AxiomValueDescriptor descriptorOne = new AxiomValueDescriptor(NamedResource.create(PK));
-        descriptorOne.addAssertionValue(Assertion.createClassAssertion(false), new Value<>(URI.create("http://typeA")));
-        when(ontologyMock.containsIndividualInSignature(IRI.create(PK))).thenReturn(true);
-        final OWLNamedIndividual ind = factory.getOWLNamedIndividual(IRI.create(PK));
-        when(ontologyMock.getClassAssertionAxioms(ind))
-                .thenReturn(Collections.singleton(factory.getOWLClassAssertionAxiom(
-                        factory.getOWLClass(IRI.create("http://typeA")), ind)));
+    @Test
+    public void persistIndividualInMultipleClassesIsLegal() throws Exception {
+        final AxiomValueDescriptor descriptorOne = new AxiomValueDescriptor(INDIVIDUAL);
+        final String typeA = "http://krizik.felk.cvut.cz/typeA";
+        descriptorOne.addAssertionValue(Assertion.createClassAssertion(false), new Value<>(URI.create(typeA)));
+        final String propA = "http://krizik.felk.cvut.cz/propertyA";
+        descriptorOne
+                .addAssertionValue(Assertion.createDataPropertyAssertion(URI.create(propA), false), new Value<>(false));
         adapter.persist(descriptorOne);
+        adapter.commit();
+        final AxiomValueDescriptor descriptorTwo = new AxiomValueDescriptor(INDIVIDUAL);
+        final String typeB = "http://krizik.felk.cvut.cz/typeB";
+        descriptorTwo.addAssertionValue(Assertion.createClassAssertion(false), new Value<>(URI.create(typeB)));
+        final String propB = "http://krizik.felk.cvut.cz/propertyB";
+        descriptorTwo.addAssertionValue(Assertion.createDataPropertyAssertion(URI.create(propB), false),
+                new Value<>(new Date()));
+        adapter.persist(descriptorTwo);
+
+        // TODO Verify that axioms were added
     }
 
     @Test

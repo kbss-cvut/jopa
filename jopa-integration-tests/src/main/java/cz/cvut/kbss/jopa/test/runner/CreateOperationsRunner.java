@@ -18,7 +18,6 @@ import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -278,9 +277,8 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
     }
 
-    @Ignore
     @Test
-    public void persistTwoInstancesWithTheSameUriIntoDifferentPersistenceContextsIsLegal() {
+    public void persistTwoInstancesOfDifferentClassesWithSameUriIntoDifferentPersistenceContextsIsLegal() {
         this.em = getEntityManager("PersistURITwiceInDifferentClassesDifferentPCs", false);
         final URI uri = URI.create("http://krizik.felk.cvut.cz/jopa/onto/sameEntity");
         entityA.setUri(uri);

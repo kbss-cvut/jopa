@@ -64,7 +64,6 @@ public class SesameAdapterWithStoreTest {
         factory.close();
     }
 
-    @Ignore
     @Test
     public void persistIndividualInTwoClassesInIndependentTransactionsIsPossible() throws Exception {
         final AxiomValueDescriptor dOne = new AxiomValueDescriptor(SUBJECT);
