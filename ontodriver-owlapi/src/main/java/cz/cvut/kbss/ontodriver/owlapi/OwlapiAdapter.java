@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,9 +17,7 @@ package cz.cvut.kbss.ontodriver.owlapi;
 import cz.cvut.kbss.ontodriver.config.ConfigParam;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.*;
-import cz.cvut.kbss.ontodriver.exception.OWLIndividualExistsException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.list.ListHandler;
@@ -29,7 +27,6 @@ import cz.cvut.kbss.ontodriver.owlapi.query.StatementExecutorFactory;
 import cz.cvut.kbss.ontodriver.owlapi.util.IdentifierGenerator;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
-import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -176,23 +173,7 @@ public class OwlapiAdapter {
 
     void persist(AxiomValueDescriptor descriptor) {
         startTransactionIfNotActive();
-        if (instanceExists(descriptor.getSubject())) {
-            throw new OWLIndividualExistsException(
-                    "Individual " + descriptor.getSubject() + " already exists in the ontology.");
-        }
         new AxiomSaver(this, ontologySnapshot).persist(descriptor);
-    }
-
-    /**
-     * An individual has to have explicit type(s) to exist in this sense.
-     */
-    private boolean instanceExists(NamedResource subject) {
-        final IRI iri = IRI.create(subject.getIdentifier());
-        if (!ontology().containsIndividualInSignature(iri)) {
-            return false;
-        }
-        final OWLNamedIndividual ind = dataFactory().getOWLNamedIndividual(iri);
-        return (!EntitySearcher.getTypes(ind, ontology()).isEmpty());
     }
 
     URI generateIdentifier(URI classUri) {

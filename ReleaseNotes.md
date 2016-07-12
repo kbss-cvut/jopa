@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.8.3 - July 12, 2016
+- Consistent handling of instances with the same identifier (i.e. the same individual). Only single instance with a given
+identifier is allowed in one persistence context. But, persisting the same individual as instance of different classes in
+different persistence contexts is possible.
+
 ## 0.8.2 - July 4, 2016
 - Major improvement of instance loading in the Sesame driver
 - Fixed bug in `CollectionChangeDetector`, which caused identical collection to behave as different (issue with element ordering)

@@ -13,12 +13,15 @@
 package cz.cvut.kbss.ontodriver.owlapi;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Multimap;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
+import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -26,21 +29,20 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
-import uk.ac.manchester.cs.owl.owlapi.OWLDataFactoryImpl;
+import org.semanticweb.owlapi.search.EntitySearcher;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-// TODO Try to rewrite this to a real ontology
 public class OwlapiAdapterTest {
 
     private static final URI PK = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#EntityA");
@@ -48,10 +50,11 @@ public class OwlapiAdapterTest {
 
     @Mock
     private Connector connectorMock;
-    @Mock
-    private OntologySnapshot snapshotMock;
-    @Mock
-    private OWLOntology ontologyMock;
+
+    private OntologySnapshot ontologySnapshot;
+
+    private OWLOntology ontology;
+
     @Mock
     private OWLReasoner reasonerMock;
 
@@ -62,11 +65,11 @@ public class OwlapiAdapterTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(connectorMock.getOntologySnapshot()).thenReturn(snapshotMock);
-        when(snapshotMock.getOntology()).thenReturn(ontologyMock);
-        this.factory = new OWLDataFactoryImpl();
-        when(snapshotMock.getDataFactory()).thenReturn(factory);
-        when(snapshotMock.getReasoner()).thenReturn(reasonerMock);
+        final OntologySnapshot snapshot = TestUtils.initRealOntology(reasonerMock);
+        this.ontology = spy(snapshot.getOntology());
+        this.factory = snapshot.getDataFactory();
+        this.ontologySnapshot = new OntologySnapshot(ontology, snapshot.getOntologyManager(), factory, reasonerMock);
+        when(connectorMock.getOntologySnapshot()).thenReturn(ontologySnapshot);
 
         this.adapter = spy(new OwlapiAdapter(connectorMock, new Configuration(
                 OntologyStorageProperties.driver(OwlapiDataSource.class.getName()).physicalUri("testFile").build())));
@@ -97,27 +100,20 @@ public class OwlapiAdapterTest {
 
     @Test
     public void testIsConsistentWithCorrectContext() throws Exception {
-        final IRI iri = setupOntologyIri();
-        final OWLReasoner reasonerMock = mock(OWLReasoner.class);
-        when(snapshotMock.getReasoner()).thenReturn(reasonerMock);
+        final URI uri = getOntologyUri();
         when(reasonerMock.isConsistent()).thenReturn(Boolean.TRUE);
 
-        assertTrue(adapter.isConsistent(iri.toURI()));
+        assertTrue(adapter.isConsistent(uri));
         verify(reasonerMock).isConsistent();
     }
 
-    private IRI setupOntologyIri() {
-        final IRI iri = IRI.create("http://krizik.felk.cvut.cz/ontologies/jopa");
-        final OWLOntologyID id = new OWLOntologyID(Optional.fromNullable(iri), Optional.absent());
-        when(ontologyMock.getOntologyID()).thenReturn(id);
-        return iri;
+    private URI getOntologyUri() {
+        final Optional<IRI> iri = ontology.getOntologyID().getOntologyIRI();
+        return iri.get().toURI();
     }
 
     @Test
     public void isConsistentIgnoresContextInfo() throws Exception {
-        setupOntologyIri();
-        final OWLReasoner reasonerMock = mock(OWLReasoner.class);
-        when(snapshotMock.getReasoner()).thenReturn(reasonerMock);
         when(reasonerMock.isConsistent()).thenReturn(Boolean.TRUE);
         final URI ctx = URI.create("http://krizik.felk.cvut.cz/differentContext");
         assertTrue(adapter.isConsistent(ctx));
@@ -126,18 +122,17 @@ public class OwlapiAdapterTest {
 
     @Test
     public void testGetContexts() throws Exception {
-        final IRI iri = setupOntologyIri();
+        final URI uri = getOntologyUri();
 
         final List<URI> res = adapter.getContexts();
         assertEquals(1, res.size());
-        assertEquals(iri.toURI(), res.get(0));
+        assertEquals(uri, res.get(0));
     }
 
     @Test
     public void testContainsUnknownContext() throws Exception {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.CLASS, false);
         final URI context = URI.create("http://krizik.felk.cvut.cz/jopa/different");
-        setupOntologyIri();
         boolean res = adapter.containsAxiom(axiom, context);
         assertFalse(res);
     }
@@ -172,15 +167,49 @@ public class OwlapiAdapterTest {
         return new AxiomImpl<>(individual, assertion, value);
     }
 
+    private void addAxiomToOntology(Axiom<?> ax) {
+        final OWLNamedIndividual individual =
+                factory.getOWLNamedIndividual(IRI.create(ax.getSubject().getIdentifier()));
+        OWLAxiom owlAxiom;
+        switch (ax.getAssertion().getType()) {
+            case CLASS:
+                final OWLClass cls = factory.getOWLClass(IRI.create(ax.getValue().stringValue()));
+                owlAxiom = factory.getOWLClassAssertionAxiom(cls, individual);
+                break;
+            case OBJECT_PROPERTY:
+                final OWLNamedIndividual target =
+                        factory.getOWLNamedIndividual(IRI.create(ax.getValue().stringValue()));
+                final OWLObjectProperty op =
+                        factory.getOWLObjectProperty(IRI.create(ax.getAssertion().getIdentifier()));
+                owlAxiom = factory.getOWLObjectPropertyAssertionAxiom(op, individual, target);
+                break;
+            case DATA_PROPERTY:
+                final OWLDataProperty dp = factory.getOWLDataProperty(IRI.create(ax.getAssertion().getIdentifier()));
+                final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(ax.getValue().getValue(), factory, "en");
+                owlAxiom = factory.getOWLDataPropertyAssertionAxiom(dp, individual, value);
+                break;
+            case ANNOTATION_PROPERTY:
+                final OWLAnnotationProperty ap =
+                        factory.getOWLAnnotationProperty(IRI.create(ax.getAssertion().getIdentifier()));
+                final OWLAnnotationValue val =
+                        OwlapiUtils.createOWLLiteralFromValue(ax.getValue().getValue(), factory, "en");
+                owlAxiom = factory.getOWLAnnotationAssertionAxiom(ap, individual.getIRI(), val);
+                break;
+            default:
+                throw new IllegalArgumentException(ax.getAssertion().toString());
+        }
+        ontologySnapshot.getOntologyManager().addAxiom(ontology, owlAxiom);
+    }
+
     @Test
     public void testContainsClassAssertionAxiomNoContext() throws Exception {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.CLASS, false);
-        when(ontologyMock.containsAxiom(any())).thenReturn(Boolean.TRUE);
+        addAxiomToOntology(axiom);
         boolean res = adapter.containsAxiom(axiom, null);
 
         assertTrue(res);
         final ArgumentCaptor<OWLAxiom> captor = ArgumentCaptor.forClass(OWLAxiom.class);
-        verify(ontologyMock).containsAxiom(captor.capture());
+        verify(ontology).containsAxiom(captor.capture());
         final OWLAxiom ax = captor.getValue();
         assertTrue(ax.isOfType(AxiomType.CLASS_ASSERTION));
         final Set<OWLClass> types = ax.getClassesInSignature();
@@ -192,12 +221,9 @@ public class OwlapiAdapterTest {
     @Test
     public void testContainsObjectPropertyAssertionInferred() throws Exception {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.OBJECT_PROPERTY, true);
-        final IRI ctx = setupOntologyIri();
-        when(ontologyMock.containsAxiom(any())).thenReturn(Boolean.FALSE);
-        final OWLReasoner reasonerMock = mock(OWLReasoner.class);
-        when(snapshotMock.getReasoner()).thenReturn(reasonerMock);
+        final URI ctx = getOntologyUri();
         when(reasonerMock.isEntailed(any(OWLAxiom.class))).thenReturn(Boolean.TRUE);
-        boolean res = adapter.containsAxiom(axiom, ctx.toURI());
+        boolean res = adapter.containsAxiom(axiom, ctx);
 
         assertTrue(res);
         final ArgumentCaptor<OWLAxiom> captor = ArgumentCaptor.forClass(OWLAxiom.class);
@@ -216,12 +242,12 @@ public class OwlapiAdapterTest {
     @Test
     public void testContainsDataProperty() throws Exception {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.DATA_PROPERTY, false);
-        when(ontologyMock.containsAxiom(any())).thenReturn(Boolean.TRUE);
+        addAxiomToOntology(axiom);
         boolean res = adapter.containsAxiom(axiom, null);
 
         assertTrue(res);
         final ArgumentCaptor<OWLAxiom> captor = ArgumentCaptor.forClass(OWLAxiom.class);
-        verify(ontologyMock).containsAxiom(captor.capture());
+        verify(ontology).containsAxiom(captor.capture());
         final OWLAxiom ax = captor.getValue();
         assertTrue(ax.isOfType(AxiomType.DATA_PROPERTY_ASSERTION));
         final Set<OWLDataProperty> dataProperties = ax.getDataPropertiesInSignature();
@@ -237,9 +263,6 @@ public class OwlapiAdapterTest {
     @Test
     public void testContainsAnnotationPropertyInferred() throws Exception {
         final Axiom<?> axiom = initAxiomForContains(Assertion.AssertionType.ANNOTATION_PROPERTY, true);
-        setupOntologyIri();
-        final OWLReasoner reasonerMock = mock(OWLReasoner.class);
-        when(snapshotMock.getReasoner()).thenReturn(reasonerMock);
         when(reasonerMock.isEntailed(any(OWLAxiom.class))).thenReturn(Boolean.TRUE);
         boolean res = adapter.containsAxiom(axiom, null);
 
@@ -257,7 +280,6 @@ public class OwlapiAdapterTest {
                 assertionAxiom.getAnnotation().getValue().asLiteral().get().getLiteral());
     }
 
-
     @Test
     public void persistIndividualInMultipleClassesIsLegal() throws Exception {
         final AxiomValueDescriptor descriptorOne = new AxiomValueDescriptor(INDIVIDUAL);
@@ -272,11 +294,21 @@ public class OwlapiAdapterTest {
         final String typeB = "http://krizik.felk.cvut.cz/typeB";
         descriptorTwo.addAssertionValue(Assertion.createClassAssertion(false), new Value<>(URI.create(typeB)));
         final String propB = "http://krizik.felk.cvut.cz/propertyB";
+        final double bValue = 3.1419;
         descriptorTwo.addAssertionValue(Assertion.createDataPropertyAssertion(URI.create(propB), false),
-                new Value<>(new Date()));
+                new Value<>(bValue));
         adapter.persist(descriptorTwo);
 
-        // TODO Verify that axioms were added
+        final OWLNamedIndividual individual = factory.getOWLNamedIndividual(IRI.create(INDIVIDUAL.getIdentifier()));
+        final Collection<OWLClassExpression> classes = EntitySearcher.getTypes(individual, ontology);
+        assertTrue(classes.contains(factory.getOWLClass(IRI.create(typeA))));
+        assertTrue(classes.contains(factory.getOWLClass(IRI.create(typeB))));
+        final Multimap<OWLDataPropertyExpression, OWLLiteral> properties =
+                EntitySearcher.getDataPropertyValues(individual, ontology);
+        assertTrue(
+                properties.containsEntry(factory.getOWLDataProperty(IRI.create(propA)), factory.getOWLLiteral(false)));
+        assertTrue(
+                properties.containsEntry(factory.getOWLDataProperty(IRI.create(propB)), factory.getOWLLiteral(bValue)));
     }
 
     @Test
