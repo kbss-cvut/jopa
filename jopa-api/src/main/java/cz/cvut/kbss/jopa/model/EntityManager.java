@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -273,21 +273,28 @@ public interface EntityManager {
     @NonJPA
     public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass);
 
-    //
-    // /**
-    // * Create an instance of Query for executing a named query (in the Java
-    // * Persistence query language or in native SQL).
-    // *
-    // * @param name
-    // * the name of a query defined in metadata
-    // * @return the new query instance
-    // * @throws IllegalArgumentException
-    // * if a query has not been defined with the given name
-    // */
-    // public Query createNamedQuery(String name);
-    //
-    // TODO JPA 2.0 TypedQuery<T> createNamedQuery(String query, Class<T>
-    // resultClass)
+
+    /**
+     * Create an instance of Query for executing a named query (in native SPARQL).
+     *
+     * @param name the name of a query defined in metadata
+     * @return the new query instance
+     * @throws IllegalArgumentException if a query has not been defined with the given name
+     */
+    Query createNamedQuery(String name);
+
+    /**
+     * Create an instance of TypedQuery for executing a SPARQL named query.
+     * <p>
+     * The select list of the query must contain only a single item, which must be assignable to the type specified by the resultClass argument.
+     *
+     * @param name       the name of a query defined in metadata
+     * @param resultClass the type of the query result
+     * @return the new query instance
+     * @throws IllegalArgumentException if a query has not been defined with the given name or if the query string is
+     *                                  found to be invalid or if the query result is found to not be assignable to the specified type
+     */
+    <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass);
 
     /**
      * Create an instance of Query for executing a native SPARQL-DL query in SPARQL syntax.

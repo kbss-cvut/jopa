@@ -354,13 +354,23 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     }
 
     @Override
-    public Query createNativeQuery(String sqlString) {
-        return getCurrentPersistenceContext().createNativeQuery(sqlString);
+    public Query createNativeQuery(String sparql) {
+        return getCurrentPersistenceContext().createNativeQuery(sparql);
     }
 
     @Override
-    public <T> TypedQuery<T> createNativeQuery(String sqlString, Class<T> resultClass) {
-        return getCurrentPersistenceContext().createNativeQuery(sqlString, resultClass);
+    public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass) {
+        return getCurrentPersistenceContext().createNativeQuery(sparql, resultClass);
+    }
+
+    @Override
+    public Query createNamedQuery(String name) {
+        return getCurrentPersistenceContext().createNamedQuery(name);
+    }
+
+    @Override
+    public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
+        return getCurrentPersistenceContext().createNamedQuery(name, resultClass);
     }
 
     @Override

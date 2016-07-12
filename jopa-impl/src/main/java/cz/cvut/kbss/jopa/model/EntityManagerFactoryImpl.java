@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.sessions.Cache;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -65,20 +66,14 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
     @Override
     public void close() {
-        if (!open) {
-            return;
-        }
+        verifyOpen();
         synchronized (this) {
             if (!open) {
                 return;
             }
             open = false;
 
-            for (final EntityManager m : em) {
-                if (m.isOpen()) {
-                    m.close();
-                }
-            }
+            em.stream().filter(EntityManager::isOpen).forEach(EntityManager::close);
             em.clear();
             if (serverSession != null) {
                 serverSession.close();
@@ -89,14 +84,12 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
     @Override
     public EntityManager createEntityManager() {
-        return this.createEntityManager(Collections.<String, String>emptyMap());
+        return this.createEntityManager(Collections.emptyMap());
     }
 
     @Override
     public EntityManager createEntityManager(Map<String, String> map) {
-        if (!open) {
-            throw new IllegalStateException("The OWLEntityManager has been closed.");
-        }
+        verifyOpen();
 
         final Map<String, String> newMap = new HashMap<>(map);
 
@@ -108,6 +101,12 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
         em.add(c);
         return c;
+    }
+
+    private void verifyOpen() {
+        if (!open) {
+            throw new IllegalStateException("The entity manager factory is closed.");
+        }
     }
 
     /**
@@ -136,21 +135,26 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
     @Override
     public Map<String, String> getProperties() {
+        verifyOpen();
         return configuration.getProperties();
-    }
-
-    public Set<AbstractEntityManager> getEntityManagers() {
-        return Collections.unmodifiableSet(em);
     }
 
     @Override
     public Metamodel getMetamodel() {
+        verifyOpen();
         return metamodel;
     }
 
     @Override
     public PersistenceUnitUtil getPersistenceUnitUtil() {
+        verifyOpen();
         return this;
+    }
+
+    @Override
+    public void addNamedQuery(String name, Query query) {
+        verifyOpen();
+        // TODO
     }
 
     @Override
@@ -180,9 +184,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
 
     @Override
     public Cache getCache() {
-        if (!isOpen()) {
-            throw new IllegalStateException("The entity manager factory is closed.");
-        }
+        verifyOpen();
         initServerSession();
         return serverSession.getLiveObjectCache();
     }

@@ -930,6 +930,16 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return queryFactory.createQuery(query, resultClass);
     }
 
+    @Override
+    public Query createNamedQuery(String name) {
+        return queryFactory.createNamedQuery(name);
+    }
+
+    @Override
+    public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
+        return queryFactory.createNamedQuery(name, resultClass);
+    }
+
     /**
      * Check if the specified entity contains a collection. If so, replace it with its indirect representation so that
      * changes in that collection can be tracked.

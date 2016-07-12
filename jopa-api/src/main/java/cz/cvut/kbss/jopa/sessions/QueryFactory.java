@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -57,4 +57,24 @@ public interface QueryFactory {
      * @throws NullPointerException If {@code sparql} or {@code resultClass} is {@code null}
      */
     <T> TypedQuery<T> createQuery(String query, Class<T> resultClass);
+
+    /**
+     * Creates a query object representing a native SPARQL query.
+     *
+     * @param name The name of the query defined in metadata
+     * @return Query object
+     * @throws IllegalArgumentException If a query has not been defined with the given name
+     */
+    Query createNamedQuery(String name);
+
+    /**
+     * Creates a typed query object representing a native SPARQL query.
+     *
+     * @param name        The name of the query defined in metadata
+     * @param resultClass Type of the results param URI of the ontology context against which the query will be
+     *                    evaluated
+     * @return Query object
+     * @throws IllegalArgumentException If a query has not been defined with the given name
+     */
+    <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass);
 }

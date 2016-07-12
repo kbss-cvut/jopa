@@ -77,4 +77,14 @@ public class SparqlQueryFactory implements QueryFactory {
         // We do not support any more abstract syntax, yet
         return createNativeQuery(query, resultClass);
     }
+
+    @Override
+    public Query createNamedQuery(String name) {
+        return null;
+    }
+
+    @Override
+    public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
+        return null;
+    }
 }
