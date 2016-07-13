@@ -16,7 +16,6 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.BasicTypeImpl;
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
@@ -30,8 +29,8 @@ class ObjectPropertyAttributes extends PropertyAttributes {
     }
 
     @Override
-    void resolve(Field field, MetamodelImpl metamodel, Class<?> fieldValueCls) {
-        super.resolve(field, metamodel, fieldValueCls);
+    void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
+        super.resolve(field, metamodelBuilder, fieldValueCls);
         final OWLObjectProperty oop = field.getAnnotation(OWLObjectProperty.class);
         assert oop != null;
 
@@ -41,7 +40,7 @@ class ObjectPropertyAttributes extends PropertyAttributes {
         if (validator.isValidIdentifierType(fieldValueCls)) {
             initPlainIdentifierAttribute(fieldValueCls);
         } else {
-            this.type = metamodel.getEntityClass(fieldValueCls);
+            this.type = metamodelBuilder.getEntityClass(fieldValueCls);
             this.cascadeTypes = oop.cascade();
             this.fetchType = oop.fetch();
         }

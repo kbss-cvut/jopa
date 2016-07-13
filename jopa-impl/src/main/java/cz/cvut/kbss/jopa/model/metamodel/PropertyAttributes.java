@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
@@ -68,7 +67,7 @@ abstract class PropertyAttributes {
         return participationConstraints;
     }
 
-    void resolve(Field field, MetamodelImpl metamodel, Class<?> fieldValueCls) {
+    void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
         resolveParticipationConstraints(field);
     }
 
@@ -107,7 +106,7 @@ abstract class PropertyAttributes {
         }
 
         @Override
-        void resolve(Field field, MetamodelImpl metamodel, Class<?> fieldValueCls) {
+        void resolve(Field field, MetamodelBuilder metamodelBuilder, Class<?> fieldValueCls) {
             // do nothing
         }
     }

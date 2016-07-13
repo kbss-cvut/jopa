@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class EntityFieldMetamodelProcessor<X> {
+class EntityFieldMetamodelProcessor<X> {
 
     private static final Logger LOG = LoggerFactory.getLogger(EntityFieldMetamodelProcessor.class);
 
@@ -38,15 +38,15 @@ public class EntityFieldMetamodelProcessor<X> {
 
     private final Class<X> cls;
     private final EntityTypeImpl<X> et;
-    private final MetamodelImpl metamodel;
+    private final MetamodelBuilder metamodelBuilder;
 
-    public EntityFieldMetamodelProcessor(Class<X> cls, EntityTypeImpl<X> et, MetamodelImpl metamodel) {
+    EntityFieldMetamodelProcessor(Class<X> cls, EntityTypeImpl<X> et, MetamodelBuilder metamodelBuilder) {
         this.cls = cls;
         this.et = et;
-        this.metamodel = metamodel;
+        this.metamodelBuilder = metamodelBuilder;
     }
 
-    public void processField(Field field) {
+    void processField(Field field) {
         LOG.trace("processing field: {}", field);
         if (EntityPropertiesUtils.isFieldTransient(field)) {
             // Do not log static fields
@@ -74,7 +74,7 @@ public class EntityFieldMetamodelProcessor<X> {
         }
 
         final PropertyAttributes propertyAtt = PropertyAttributes.create(field, mappingValidator);
-        propertyAtt.resolve(field, metamodel, fieldValueCls);
+        propertyAtt.resolve(field, metamodelBuilder, fieldValueCls);
 
         if (propertyAtt.isKnownOwlProperty()) {
             createAttribute(field, inference, propertyAtt);
@@ -115,7 +115,7 @@ public class EntityFieldMetamodelProcessor<X> {
 
         final InferenceInfo inference = new InferenceInfo(inferred);
         if (inference.inferred) {
-            metamodel.addInferredClass(cls);
+            metamodelBuilder.addInferredClass(cls);
         }
         return inference;
     }

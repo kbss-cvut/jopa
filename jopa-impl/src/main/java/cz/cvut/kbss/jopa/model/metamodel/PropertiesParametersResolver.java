@@ -21,7 +21,7 @@ class PropertiesParametersResolver {
     private final java.lang.reflect.Type keyType;
     private final java.lang.reflect.Type valueType;
 
-    public PropertiesParametersResolver(Field propertiesField) {
+    PropertiesParametersResolver(Field propertiesField) {
         final ParameterizedType typeSpec = (ParameterizedType) propertiesField.getGenericType();
         assert typeSpec.getActualTypeArguments().length == 2;
         this.keyType = typeSpec.getActualTypeArguments()[0];

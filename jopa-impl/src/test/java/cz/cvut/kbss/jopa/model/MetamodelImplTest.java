@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Before;
 import org.junit.Rule;
@@ -575,5 +576,28 @@ public class MetamodelImplTest {
 
         final Metamodel m = new MetamodelImpl(conf, entityLoaderMock);
         m.entity(ClassWithUriTypes.class);
+    }
+
+    @Test
+    public void buildsEntityWithNamedQueries() throws Exception {
+        when(entityLoaderMock.discoverEntityClasses(conf))
+                .thenReturn(Collections.singleton(ClassWithNamedQueries.class));
+        final MetamodelImpl metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final NamedQueryManager queryManager = metamodel.getNamedQueryManager();
+        assertNotNull(queryManager.getQuery("selectAll"));
+        assertNotNull(queryManager.getQuery("askQuery"));
+    }
+
+    @NamedNativeQueries({
+            @NamedNativeQuery(name = "selectAll", query = "SELECT ?x ?y ?z WHERE { ?x ?y ?z . }"),
+            @NamedNativeQuery(name = "askQuery", query = "ASK WHERE { ?x a ?type . }")
+    })
+    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithNamedQueries")
+    private static class ClassWithNamedQueries {
+        @Id
+        private URI id;
+
+        @Types
+        private Set<String> types;
     }
 }

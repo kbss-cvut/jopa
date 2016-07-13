@@ -14,10 +14,10 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.slf4j.Logger;
@@ -33,15 +33,14 @@ public class MetamodelImpl implements Metamodel {
 
     private static final String ASPECTJ_CLASS = "org.aspectj.weaver.loadtime.Agent";
 
-    private final Map<Class<?>, EntityType<?>> typeMap = new HashMap<>();
+    private Map<Class<?>, EntityType<?>> typeMap;
+    private Set<Class<?>> inferredClasses;
 
-    private final Set<Class<?>> inferredClasses = new HashSet<>();
+    private NamedQueryManager namedQueryManager;
 
     private final Configuration configuration;
 
     private Set<URI> moduleExtractionSignature;
-
-    private final Set<Class<?>> entities = new HashSet<>();
 
     public MetamodelImpl(Configuration configuration, EntityLoader entityLoader) {
         this.configuration = Objects.requireNonNull(configuration);
@@ -53,11 +52,14 @@ public class MetamodelImpl implements Metamodel {
         LOG.debug("Building metamodel...");
         checkForWeaver();
 
-        loadEntities(entityLoader);
+        final Set<Class<?>> discoveredEntities = entityLoader.discoverEntityClasses(configuration);
 
-        final EntityFieldSeeker fieldSeeker = new EntityFieldSeeker();
+        final MetamodelBuilder metamodelBuilder = new MetamodelBuilder();
+        metamodelBuilder.buildMetamodel(discoveredEntities);
 
-        entities.forEach(c -> processOWLClass(c, fieldSeeker));
+        this.typeMap = metamodelBuilder.getTypeMap();
+        this.inferredClasses = metamodelBuilder.getInferredClasses();
+        this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
     }
 
     /**
@@ -72,46 +74,12 @@ public class MetamodelImpl implements Metamodel {
         }
     }
 
-    private void loadEntities(EntityLoader entityLoader) {
-        Set<Class<?>> discoveredEntities = entityLoader.discoverEntityClasses(configuration);
-        entities.addAll(discoveredEntities);
-    }
-
-    private <X> void processOWLClass(final Class<X> cls, EntityFieldSeeker fieldSeeker) {
-        if (typeMap.containsKey(cls)) {
-            return;
-        }
-
-        LOG.debug("Processing OWL class: {}", cls);
-
-        final EntityClassProcessor classProcessor = new EntityClassProcessor();
-
-        final EntityTypeImpl<X> et = classProcessor.processEntityType(cls);
-
-        typeMap.put(cls, et);
-        final EntityFieldMetamodelProcessor<X> fieldProcessor = new EntityFieldMetamodelProcessor<>(cls, et, this);
-
-        fieldSeeker.discoverFields(cls).forEach(fieldProcessor::processField);
-
-        if (et.getIdentifier() == null) {
-            throw new MetamodelInitializationException("Missing identifier field in entity class " + cls);
-        }
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public <X> EntityType<X> entity(Class<X> cls) {
         if (!typeMap.containsKey(cls)) {
             throw new IllegalArgumentException(
                     "Class " + cls.getName() + " is not a known entity in this persistence unit.");
-        }
-        return (EntityType<X>) typeMap.get(cls);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <X> EntityType<X> getEntityClass(Class<X> cls) {
-        if (!typeMap.containsKey(cls)) {
-            processOWLClass(cls, new EntityFieldSeeker());
         }
         return (EntityType<X>) typeMap.get(cls);
     }
@@ -146,8 +114,8 @@ public class MetamodelImpl implements Metamodel {
         return Collections.unmodifiableSet(inferredClasses);
     }
 
-    public void addInferredClass(Class<?> cls) {
-        inferredClasses.add(cls);
+    public NamedQueryManager getNamedQueryManager() {
+        return namedQueryManager;
     }
 
     @Override

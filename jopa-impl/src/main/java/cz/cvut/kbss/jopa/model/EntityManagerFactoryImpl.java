@@ -43,8 +43,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     private volatile MetamodelImpl metamodel;
 
     public EntityManagerFactoryImpl(final Map<String, String> properties) {
-        this.em = Collections
-                .newSetFromMap(new ConcurrentHashMap<>());
+        this.em = Collections.newSetFromMap(new ConcurrentHashMap<>());
         this.configuration = new Configuration(properties != null ? properties : Collections.emptyMap());
         this.storageProperties = initStorageProperties();
         initMetamodel();
@@ -154,7 +153,7 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     @Override
     public void addNamedQuery(String name, Query query) {
         verifyOpen();
-        // TODO
+        throw new NotYetImplementedException();
     }
 
     @Override
