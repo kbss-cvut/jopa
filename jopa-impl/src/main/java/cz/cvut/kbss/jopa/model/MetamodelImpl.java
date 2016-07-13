@@ -50,7 +50,7 @@ public class MetamodelImpl implements Metamodel {
     }
 
     private void build(EntityLoader entityLoader) {
-        LOG.debug("Building metamodel ... ");
+        LOG.debug("Building metamodel...");
         checkForWeaver();
 
         loadEntities(entityLoader);
@@ -82,7 +82,7 @@ public class MetamodelImpl implements Metamodel {
             return;
         }
 
-        LOG.debug("processing OWL class: {}", cls);
+        LOG.debug("Processing OWL class: {}", cls);
 
         final EntityClassProcessor classProcessor = new EntityClassProcessor();
 
