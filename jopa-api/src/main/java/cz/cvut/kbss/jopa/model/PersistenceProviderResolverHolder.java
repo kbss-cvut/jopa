@@ -25,7 +25,7 @@ public class PersistenceProviderResolverHolder {
         throw new AssertionError();
     }
 
-    public synchronized static PersistenceProviderResolver getPersistenceProviderResolver() {
+    public static synchronized PersistenceProviderResolver getPersistenceProviderResolver() {
         if (instance == null) {
             instance = new PersistenceProviderResolver() {
 
@@ -47,7 +47,7 @@ public class PersistenceProviderResolverHolder {
         return instance;
     }
 
-    public synchronized static void setPersistenceProviderResolver(
+    public static synchronized void setPersistenceProviderResolver(
             final PersistenceProviderResolver ppr) {
         instance = ppr;
     }

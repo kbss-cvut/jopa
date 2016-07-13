@@ -16,10 +16,6 @@ package cz.cvut.kbss.jopa.model;
 
 public final class JOPAPersistenceProperties extends PersistenceProperties {
 
-    private JOPAPersistenceProperties() {
-        throw new AssertionError();
-    }
-
     /**
      * Logical URI of the underlying ontology.
      */
@@ -89,4 +85,8 @@ public final class JOPAPersistenceProperties extends PersistenceProperties {
      * Disable integrity constraints validation on entity/field load.
      */
     public static final String DISABLE_IC_VALIDATION_ON_LOAD = "cz.cvut.jopa.ic.validation.disableOnLoad";
+
+    private JOPAPersistenceProperties() {
+        throw new AssertionError();
+    }
 }
