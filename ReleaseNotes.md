@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.8.4 - July 13, 2016
+- Added support for named native queries. Declaration is similar to JPA, just use `@NamedNativeQuery` or `@NamedNativeQueries`
+on an entity or its mapped superclass and the query will be available in the persistence unit.
+
 ## 0.8.3 - July 12, 2016
 - Consistent handling of instances with the same identifier (i.e. the same individual). Only single instance with a given
 identifier is allowed in one persistence context. But, persisting the same individual as instance of different classes in
