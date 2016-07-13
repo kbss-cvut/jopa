@@ -17,6 +17,11 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 import java.net.URI;
 import java.util.Set;
 
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "OWLClassA.findAll", query = "SELECT ?x WHERE {?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }"),
+        @NamedNativeQuery(name = "OWLClassA.findByString", query = "SELECT ?x WHERE { ?x <" +
+                Vocabulary.pAStringAttribute + "> ?str . }")
+})
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
 public class OWLClassA {
 
@@ -37,8 +42,7 @@ public class OWLClassA {
     }
 
     /**
-     * @param uri
-     *            the uri to set
+     * @param uri the uri to set
      */
     public void setUri(URI uri) {
         this.uri = uri;

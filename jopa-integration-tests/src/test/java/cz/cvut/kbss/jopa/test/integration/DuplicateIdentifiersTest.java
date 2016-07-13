@@ -1,8 +1,6 @@
 package cz.cvut.kbss.jopa.test.integration;
 
-import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
-import cz.cvut.kbss.jopa.model.*;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.OWLClassB;
 import cz.cvut.kbss.jopa.test.Vocabulary;
@@ -13,7 +11,6 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.*;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,21 +21,16 @@ import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-public class DuplicateIdentifiersTest {
+public class DuplicateIdentifiersTest extends IntegrationTestBase {
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
-
-    private EntityManagerFactory emf;
-    private EntityManager em;
 
     @Mock
     private Connection connectionMock;
@@ -48,14 +40,8 @@ public class DuplicateIdentifiersTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.test");
-        properties.put(JOPAPersistenceProperties.DATA_SOURCE_CLASS, TestDataSource.class.getCanonicalName());
-        properties.put(JOPAPersistenceProperties.JPA_PERSISTENCE_PROVIDER, JOPAPersistenceProvider.class.getName());
-        properties.put(JOPAPersistenceProperties.ONTOLOGY_PHYSICAL_URI_KEY, "TestOntology");
-        this.emf = Persistence.createEntityManagerFactory("testPU", properties);
-        this.em = emf.createEntityManager();
-        final TestDataSource testDs = ((EntityManagerFactoryImpl) emf).getServerSession().unwrap(TestDataSource.class);
+        super.setUp();
+        final TestDataSource testDs = getDataSource();
         testDs.setConnection(connectionMock);
 
         initInstances();
@@ -64,12 +50,6 @@ public class DuplicateIdentifiersTest {
     private void initInstances() {
         this.entityA = new OWLClassA(Generators.generateUri());
         entityA.setStringAttribute("aStringAttribute");
-    }
-
-    @After
-    public void tearDown() {
-        em.close();
-        emf.close();
     }
 
     @Test

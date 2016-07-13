@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
@@ -161,10 +162,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      */
     private void calculateChanges() {
         final UnitOfWorkChangeSet changeSet = getUowChangeSet();
-        if (hasNew()) {
+        if (hasNew) {
             calculateNewObjects(changeSet);
         }
-        if (hasDeleted()) {
+        if (hasDeleted) {
             calculateDeletedObjects(changeSet);
         }
     }
@@ -245,7 +246,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     /**
      * Commit this Unit of Work.
      */
-    protected void commitUnitOfWork() {
+    private void commitUnitOfWork() {
         commitToOntology();
         mergeChangesIntoParent();
         postCommit();
@@ -281,7 +282,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     /**
      * If there are any changes, commit them to the ontology.
      */
-    protected void commitToOntology() {
+    private void commitToOntology() {
         boolean hasChanges = this.hasNew || this.hasChanges || this.hasDeleted;
         if (hasChanges) {
             calculateChanges();
@@ -423,37 +424,29 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return null;
     }
 
-    public boolean hasDeleted() {
-        return hasDeleted;
-    }
-
     public boolean hasChanges() {
         return hasChanges || hasDeleted || hasNew;
     }
 
-    public boolean hasNew() {
-        return hasNew;
-    }
-
-    public void setHasChanges() {
+    void setHasChanges() {
         this.hasChanges = true;
     }
 
-    public Map<Object, Object> getDeletedObjects() {
+    Map<Object, Object> getDeletedObjects() {
         if (deletedObjects == null) {
             this.deletedObjects = createMap();
         }
         return deletedObjects;
     }
 
-    public Map<Object, Object> getNewObjectsCloneToOriginal() {
+    Map<Object, Object> getNewObjectsCloneToOriginal() {
         if (newObjectsCloneToOriginal == null) {
             this.newObjectsCloneToOriginal = createMap();
         }
         return newObjectsCloneToOriginal;
     }
 
-    public Map<Object, Object> getNewObjectsOriginalToClone() {
+    Map<Object, Object> getNewObjectsOriginalToClone() {
         if (newObjectsOriginalToClone == null) {
             this.newObjectsOriginalToClone = createMap();
         }
@@ -621,6 +614,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     @Override
+    public NamedQueryManager getNamedQueryManager() {
+        return parent.getNamedQueryManager();
+    }
+
+    @Override
     public Object registerExistingObject(Object entity, Descriptor descriptor) {
         if (entity == null) {
             return null;
@@ -747,7 +745,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         final Object primaryKey = getIdentifier(entity);
         final Descriptor descriptor = getDescriptor(entity);
 
-        if (hasNew() && getNewObjectsCloneToOriginal().containsKey(entity)) {
+        if (hasNew && getNewObjectsCloneToOriginal().containsKey(entity)) {
             unregisterObject(entity);
             newObjectsKeyToClone.remove(primaryKey);
         } else {
@@ -771,7 +769,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         cloneToOriginals.remove(object);
 
         getDeletedObjects().remove(object);
-        if (hasNew()) {
+        if (hasNew) {
             Object newOriginal = getNewObjectsCloneToOriginal().remove(object);
             if (newOriginal != null) {
                 getNewObjectsOriginalToClone().remove(newOriginal);

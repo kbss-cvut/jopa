@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -221,5 +221,14 @@ public abstract class QueryRunner extends BaseQueryRunner {
                 assertNull(rowArr[1]);
             }
         }
+    }
+
+    @Test
+    public void testCreateNamedNativeQueryWithParameterSetting() throws Exception {
+        final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
+        final List res = getEntityManager().createNamedQuery("OWLClassA.findByString")
+                                           .setParameter("str", a.getStringAttribute(), "en").getResultList();
+        assertFalse(res.isEmpty());
+        assertTrue(res.contains(a.getUri()));
     }
 }

@@ -15,9 +15,11 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.accessors.DefaultStorageAccessor;
 import cz.cvut.kbss.jopa.accessors.StorageAccessor;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.metamodel.Type;
+import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Wrapper;
@@ -29,15 +31,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * The ServerSession is the primary interface for accessing the ontology. </p>
+ * The ServerSession is the primary interface for accessing the ontology.
  * <p>
  * It manages an accessor object, which performs the queries.
- *
- * @author kidney
  */
 public class ServerSession extends AbstractSession implements Wrapper {
 
-    private final Metamodel metamodel;
+    private final MetamodelImpl metamodel;
     private final Set<Class<?>> managedClasses;
 
     private CacheManager liveObjectCache;
@@ -52,8 +52,8 @@ public class ServerSession extends AbstractSession implements Wrapper {
         this.managedClasses = null;
     }
 
-    public ServerSession(OntologyStorageProperties storageProperties,
-                         Map<String, String> properties, Metamodel metamodel) {
+    public ServerSession(OntologyStorageProperties storageProperties, Map<String, String> properties,
+                         MetamodelImpl metamodel) {
         this.metamodel = metamodel;
         this.managedClasses = processTypes(metamodel.getEntities());
         initialize(storageProperties, properties, metamodel);
@@ -170,8 +170,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
      * @param entity The entity to register
      * @param uow    Persistence context of the specified entity
      */
-    protected synchronized void registerEntityWithPersistenceContext(Object entity,
-                                                                     UnitOfWorkImpl uow) {
+    protected synchronized void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
         assert entity != null;
         assert uow != null;
 
@@ -190,6 +189,11 @@ public class ServerSession extends AbstractSession implements Wrapper {
         if (uowsToEntities.containsKey(uow)) {
             uowsToEntities.get(uow).remove(entity);
         }
+    }
+
+    @Override
+    public NamedQueryManager getNamedQueryManager() {
+        return metamodel.getNamedQueryManager();
     }
 
     /**
