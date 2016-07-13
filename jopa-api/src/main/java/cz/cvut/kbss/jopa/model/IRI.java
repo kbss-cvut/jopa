@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,44 +19,44 @@ import java.util.Objects;
 
 public class IRI implements AnnotationValue {
 
-	final String value;
+    private final String value;
 
-	public static IRI create(final String s) {
-		return new IRI(s);
-	}
+    IRI(String iri) {
+        this.value = Objects.requireNonNull(iri);
+    }
 
-	IRI(String iri) {
-		this.value = Objects.requireNonNull(iri);
-	}
+    public URI toURI() {
+        return URI.create(value);
+    }
 
-	public URI toURI() {
-		return URI.create(value);
-	}
+    @Override
+    public String toString() {
+        return value;
+    }
 
-	@Override
-	public String toString() {
-		return value;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + value.hashCode();
+        return result;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + value.hashCode();
-		return result;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        IRI other = (IRI) obj;
+        if (!value.equals(other.value))
+            return false;
+        return true;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		IRI other = (IRI) obj;
-		if (!value.equals(other.value))
-			return false;
-		return true;
-	}
+    public static IRI create(final String s) {
+        return new IRI(s);
+    }
 }

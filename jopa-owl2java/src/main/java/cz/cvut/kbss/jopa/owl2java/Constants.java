@@ -16,10 +16,6 @@ package cz.cvut.kbss.jopa.owl2java;
 
 public class Constants {
 
-    private Constants() {
-        throw new AssertionError();
-    }
-
     /**
      * Name of the class containing generated vocabulary.
      */
@@ -38,5 +34,10 @@ public class Constants {
     /**
      * Tool version.
      */
-    public static final String VERSION = "0.8.2";
+    public static final String VERSION = "$VERSION$";
+
+
+    private Constants() {
+        throw new AssertionError();
+    }
 }

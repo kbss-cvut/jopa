@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -23,7 +23,11 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
-public interface TypedQuery<ResultElement> extends Query {
+/**
+ * Interface used to control the execution of typed queries.
+ * @param <X> Query result type
+ */
+public interface TypedQuery<X> extends Query {
     /**
      * Execute a SELECT query and return the query results as a typed List.
      *
@@ -34,7 +38,7 @@ public interface TypedQuery<ResultElement> extends Query {
      *                                      transaction is rolled back
      */
     @Override
-    List<ResultElement> getResultList();
+    List<X> getResultList();
 
     /**
      * Execute a SELECT query that returns a single result.
@@ -44,7 +48,7 @@ public interface TypedQuery<ResultElement> extends Query {
      * @throws NoUniqueResultException There are more than one results
      */
     @Override
-    ResultElement getSingleResult();
+    X getSingleResult();
 
     /**
      * Adds URI of context against which this query will be executed. </p>
@@ -55,7 +59,7 @@ public interface TypedQuery<ResultElement> extends Query {
      * @return This instance
      */
     @Override
-    TypedQuery<ResultElement> addContext(URI context);
+    TypedQuery<X> addContext(URI context);
 
     /**
      * Adds URIs of contexts against which this query will be executed. </p>
@@ -66,7 +70,7 @@ public interface TypedQuery<ResultElement> extends Query {
      * @return This instance
      */
     @Override
-    TypedQuery<ResultElement> addContexts(Collection<URI> contexts);
+    TypedQuery<X> addContexts(Collection<URI> contexts);
 
     /**
      * Clears the previously set contexts.
@@ -76,7 +80,7 @@ public interface TypedQuery<ResultElement> extends Query {
      * @see #addContexts(Collection)
      */
     @Override
-    TypedQuery<ResultElement> clearContexts();
+    TypedQuery<X> clearContexts();
 
     /**
      * Set the maximum number of results to retrieve.
@@ -86,7 +90,7 @@ public interface TypedQuery<ResultElement> extends Query {
      * @throws IllegalArgumentException if the argument is negative
      */
     @Override
-    TypedQuery<ResultElement> setMaxResults(int maxResult);
+    TypedQuery<X> setMaxResults(int maxResult);
 
     /**
      * Binds an argument value to a positional parameter.
@@ -98,7 +102,7 @@ public interface TypedQuery<ResultElement> extends Query {
      *                                  argument is of incorrect type
      */
     @Override
-    TypedQuery<ResultElement> setParameter(int position, Object value);
+    TypedQuery<X> setParameter(int position, Object value);
 
     /**
      * Binds a String argument value to a positional parameter.
@@ -111,7 +115,7 @@ public interface TypedQuery<ResultElement> extends Query {
      *                                  argument is of incorrect type
      */
     @Override
-    TypedQuery<ResultElement> setParameter(int position, String value, String language);
+    TypedQuery<X> setParameter(int position, String value, String language);
 
     /**
      * Binds an argument value to a named parameter.
@@ -123,7 +127,7 @@ public interface TypedQuery<ResultElement> extends Query {
      *                                  argument is of incorrect type
      */
     @Override
-    TypedQuery<ResultElement> setParameter(String name, Object value);
+    TypedQuery<X> setParameter(String name, Object value);
 
     /**
      * Binds a String argument value to a named parameter.
@@ -136,7 +140,7 @@ public interface TypedQuery<ResultElement> extends Query {
      *                                  argument is of incorrect type
      */
     @Override
-    TypedQuery<ResultElement> setParameter(String name, String value, String language);
+    TypedQuery<X> setParameter(String name, String value, String language);
 
     /**
      * Binds the value of a Parameter object.
@@ -147,7 +151,7 @@ public interface TypedQuery<ResultElement> extends Query {
      * @throws IllegalArgumentException If the parameter does not correspond to a parameter of the query
      */
     @Override
-    <T> TypedQuery<ResultElement> setParameter(Parameter<T> parameter, T value);
+    <T> TypedQuery<X> setParameter(Parameter<T> parameter, T value);
 
     /**
      * Binds the value of a String Parameter.
@@ -159,5 +163,5 @@ public interface TypedQuery<ResultElement> extends Query {
      * @throws IllegalArgumentException If the parameter does not correspond to a parameter of the query
      */
     @Override
-    TypedQuery<ResultElement> setParameter(Parameter<String> parameter, String value, String language);
+    TypedQuery<X> setParameter(Parameter<String> parameter, String value, String language);
 }

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -118,7 +118,7 @@ public class QueryImpl implements Query {
         return getParameterValue(param);
     }
 
-    private IllegalStateException unboundParam(Object param) {
+    private static IllegalStateException unboundParam(Object param) {
         return new IllegalStateException("Parameter " + param + " is not bound.");
     }
 
@@ -219,7 +219,7 @@ public class QueryImpl implements Query {
         }
     }
 
-    private Object[] extractResultRow(ResultSet rs, int columnCount) throws OntoDriverException {
+    private static Object[] extractResultRow(ResultSet rs, int columnCount) throws OntoDriverException {
         final Object[] row = new Object[columnCount];
         for (int i = 0; i < columnCount; i++) {
             final Object ob = rs.getObject(i);

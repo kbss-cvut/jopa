@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,28 +15,21 @@
 package cz.cvut.kbss.jopa.exceptions;
 
 /**
- * This exception is thrown when an exception occurs while accessing OntoDriver
- * from JOPA.
- * 
- * @author ledvima1
- * 
+ * This exception is thrown when an exception occurs while accessing the OntoDriver.
  */
 public class StorageAccessException extends RuntimeException {
 
-	private static final long serialVersionUID = 4661531292404254252L;
+    private static final long serialVersionUID = 4661531292404254252L;
 
-	public StorageAccessException() {
-	}
+    public StorageAccessException(String message) {
+        super(message);
+    }
 
-	public StorageAccessException(String message) {
-		super(message);
-	}
+    public StorageAccessException(Throwable cause) {
+        super(cause);
+    }
 
-	public StorageAccessException(Throwable cause) {
-		super(cause);
-	}
-
-	public StorageAccessException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public StorageAccessException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

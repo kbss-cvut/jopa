@@ -25,12 +25,12 @@ import cz.cvut.kbss.jopa.model.annotations.RangeOf;
 public class AnnotationBuilder implements IntegrityConstraintVisitor {
 
 	private JAnnotationUse a;
+
+	private Annotation annotation = null;
 	
 	AnnotationBuilder(final JAnnotationUse a) {
 		this.a = a;
 	}
-	
-	private Annotation annotation = null;
 	
 	public Annotation getAnnotation() {
 		return annotation;

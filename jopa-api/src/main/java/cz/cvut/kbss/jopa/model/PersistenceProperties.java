@@ -14,10 +14,10 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-public interface PersistenceProperties {
+public class PersistenceProperties {
 
     /**
      * Persistence provider class.
      */
-    String JPA_PERSISTENCE_PROVIDER = "javax.persistence.provider";
+    public static final String JPA_PERSISTENCE_PROVIDER = "javax.persistence.provider";
 }

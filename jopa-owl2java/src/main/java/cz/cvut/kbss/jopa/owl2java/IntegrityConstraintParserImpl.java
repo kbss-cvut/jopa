@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -126,8 +126,8 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
     // private Map<OWLObjectProperty, DataRangeConstraint> drConstraints = new
     // HashMap<OWLObjectProperty, DataRangeConstraint>();
 
-    private Map<OWLClass, Map<OWLObjectProperty, Set<IntegrityConstraint>>> opConstraints = new HashMap<OWLClass, Map<OWLObjectProperty, Set<IntegrityConstraint>>>();
-    private Map<OWLClass, Map<OWLDataProperty, Set<IntegrityConstraint>>> dpConstraints = new HashMap<OWLClass, Map<OWLDataProperty, Set<IntegrityConstraint>>>();
+    private Map<OWLClass, Map<OWLObjectProperty, Set<IntegrityConstraint>>> opConstraints = new HashMap<>();
+    private Map<OWLClass, Map<OWLDataProperty, Set<IntegrityConstraint>>> dpConstraints = new HashMap<>();
 
     // private Map<OWLClass, Map<OWLDataProperty, Set<IntegrityConstraint>>>
     // dpConstraints = new HashMap<OWLClass, Map<OWLDataProperty,
@@ -138,8 +138,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 
     private ContextDefinition ctx;
 
-    public IntegrityConstraintParserImpl(final OWLDataFactory f,
-                                         final ContextDefinition ctx) {
+    public IntegrityConstraintParserImpl(final OWLDataFactory f, final ContextDefinition ctx) {
         this.ctx = ctx;
         this.f = f;
     }
@@ -150,11 +149,11 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         }
     }
 
-    private void notSupported(String message, final OWLObject o) {
+    private static void notSupported(String message, final OWLObject o) {
         LOG.info(message + " : " + o);
     }
 
-    private void notSupported(final OWLObject o) {
+    private static void notSupported(final OWLObject o) {
         notSupported("Ignoring Unsupported Axiom", o);
     }
 
@@ -422,7 +421,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         return r.asOWLDatatype();
     }
 
-    private OWLClass ensureClass(final OWLClassExpression r) throws UnsupportedICException {
+    private static OWLClass ensureClass(final OWLClassExpression r) {
         if (!r.isAnonymous()) {
             return r.asOWLClass();
         }
@@ -437,7 +436,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
     // }
     // }
 
-    private OWLDataProperty ensureDataProperty(final OWLDataPropertyExpression e) throws UnsupportedICException {
+    private static OWLDataProperty ensureDataProperty(final OWLDataPropertyExpression e) {
         if (e.isAnonymous()) {
             throw new UnsupportedICException(
                     "Data property expressions not supported: " + e);
@@ -446,7 +445,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         return e.asOWLDataProperty();
     }
 
-    private OWLObjectProperty ensureObjectProperty(
+    private static OWLObjectProperty ensureObjectProperty(
             final OWLObjectPropertyExpression e) throws UnsupportedICException {
         if (e.isAnonymous()) {
             throw new UnsupportedICException(
@@ -456,8 +455,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         return e.asOWLObjectProperty();
     }
 
-    private void processParticipationConstraint(final OWLClass subjClass,
-                                                final OWLClassExpression superClass) throws UnsupportedICException {
+    private void processParticipationConstraint(final OWLClass subjClass, final OWLClassExpression superClass) {
         Map<OWLObjectProperty, Set<IntegrityConstraint>> setOP2 = opConstraints
                 .get(subjClass);
         if (setOP2 == null) {
@@ -844,7 +842,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
                     OWLDatatype dt2 = opc.getObject();
                     if (dt1.equals(dt2)
                             || dt2.equals(OWLManager.getOWLDataFactory()
-                            .getTopDatatype())) {
+                                                    .getTopDatatype())) {
                         if (opc.getMax() == 1) {
                             return Card.ONE;
                         }
@@ -909,11 +907,17 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 
                 final OWLDataFactory f = merged.getOWLOntologyManager().getOWLDataFactory();
 
-                if (filler.getSuperClasses(merged).contains(f.getOWLClass(org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.c_List)))) {
-                    object = new ClassObjectPropertyComputer(filler, f.getOWLObjectProperty(org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.p_element)), merged).getObject();
+                if (filler.getSuperClasses(merged).contains(
+                        f.getOWLClass(org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.c_List)))) {
+                    object = new ClassObjectPropertyComputer(filler, f.getOWLObjectProperty(
+                            org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.p_element)), merged)
+                            .getObject();
                     card = Card.LIST;
-                } else if (filler.getSuperClasses(merged).contains(f.getOWLClass(org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.c_OWLSimpleList)))) {
-                    object = new ClassObjectPropertyComputer(filler, f.getOWLObjectProperty(org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.p_hasNext)), merged).getObject();
+                } else if (filler.getSuperClasses(merged).contains(
+                        f.getOWLClass(org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.c_OWLSimpleList)))) {
+                    object = new ClassObjectPropertyComputer(filler, f.getOWLObjectProperty(
+                            org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.p_hasNext)), merged)
+                            .getObject();
                     card = Card.SIMPLELIST; // TODO referenced
                 } else {
                     card = Card.MULTIPLE;
@@ -921,7 +925,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
                         OWLClass dt2 = opc.getObject();
                         if (filler.equals(dt2)
                                 || dt2.equals(OWLManager.getOWLDataFactory()
-                                .getOWLThing())) {
+                                                        .getOWLThing())) {
                             if (opc.getMax() == 1) {
                                 card = Card.ONE;
                                 break;

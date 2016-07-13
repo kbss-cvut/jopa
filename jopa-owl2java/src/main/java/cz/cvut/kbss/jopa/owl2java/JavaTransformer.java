@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -38,9 +38,61 @@ import static cz.cvut.kbss.jopa.owl2java.Constants.*;
 public class JavaTransformer {
 
     private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
-    private JDefinedClass voc;
 
+    private static final String[] KEYWORDS = {"abstract",
+            "assert",
+            "boolean",
+            "break",
+            "byte",
+            "case",
+            "catch",
+            "char",
+            "class",
+            "const",
+            "continue",
+            "default",
+            "do",
+            "double",
+            "else",
+            "enum",
+            "extends",
+            "final",
+            "finally",
+            "float",
+            "for",
+            "goto",
+            "if",
+            "implements",
+            "import",
+            "instanceof",
+            "int",
+            "interface",
+            "long",
+            "native",
+            "new",
+            "package",
+            "private",
+            "protected",
+            "public",
+            "return",
+            "short",
+            "static",
+            "strictfp",
+            "super",
+            "switch",
+            "synchronized",
+            "this",
+            "throw",
+            "throws",
+            "transient",
+            "try",
+            "void",
+            "volatile",
+            "while"};
+
+    private JDefinedClass voc;
     private Map<OWLEntity, JFieldRef> entities = new HashMap<>();
+
     private Map<OWLClass, JDefinedClass> classes = new HashMap<>();
 
     private JFieldVar addField(final String name, final JDefinedClass cls,
@@ -81,9 +133,10 @@ public class JavaTransformer {
     /**
      * Generates only vocabulary of the loaded ontology.
      *
-     * @param context    Integrity constraints context, if null is supplied, the whole ontology is interpreted as integrity constraints.
+     * @param context    Integrity constraints context, if null is supplied, the whole ontology is interpreted as
+     *                   integrity constraints.
      * @param targetDir  Directory into which the vocabulary file will be generated
-     * @param pkg  Package
+     * @param pkg        Package
      * @param withOWLAPI Whether OWLAPI-based IRIs of the generated vocabulary items should be created as well
      */
     public void generateVocabulary(final OWLOntology ontology, ContextDefinition context, String pkg, String targetDir,
@@ -294,65 +347,14 @@ public class JavaTransformer {
         }
     }
 
+
     private static String validJavaID(final String s) {
         String res = s.trim().replace("-", "_").replace("'", "_quote_").replace(".", "_dot_").replace(',', '_');
-        if (Arrays.binarySearch(keywords, res) >= 0) {
+        if (Arrays.binarySearch(KEYWORDS, res) >= 0) {
             res = "_" + res;
         }
         return res;
     }
-
-
-    private static final String[] keywords = {"abstract",
-            "assert",
-            "boolean",
-            "break",
-            "byte",
-            "case",
-            "catch",
-            "char",
-            "class",
-            "const",
-            "continue",
-            "default",
-            "do",
-            "double",
-            "else",
-            "enum",
-            "extends",
-            "final",
-            "finally",
-            "float",
-            "for",
-            "goto",
-            "if",
-            "implements",
-            "import",
-            "instanceof",
-            "int",
-            "interface",
-            "long",
-            "native",
-            "new",
-            "package",
-            "private",
-            "protected",
-            "public",
-            "return",
-            "short",
-            "static",
-            "strictfp",
-            "super",
-            "switch",
-            "synchronized",
-            "this",
-            "throw",
-            "throws",
-            "transient",
-            "try",
-            "void",
-            "volatile",
-            "while"};
 
     private String javaClassId(OWLOntology ontology, OWLClass owlClass, ContextDefinition ctx) {
         final Set<OWLAnnotation> annotations = owlClass.getAnnotations(ontology);
@@ -422,6 +424,7 @@ public class JavaTransformer {
             // }
 
         } catch (JClassAlreadyExistsException e) {
+            LOG.trace("Class already exists. Using the existing version. {}", e.getMessage());
             cls = cm._getClass(name);
         }
         classes.put(clazz, cls);

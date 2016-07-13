@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -56,7 +56,7 @@ class EntityConstructor {
         return instance;
     }
 
-    private boolean axiomsContainEntityClassAssertion(Collection<Axiom<?>> axioms, EntityType<?> et) {
+    private static boolean axiomsContainEntityClassAssertion(Collection<Axiom<?>> axioms, EntityType<?> et) {
         for (Axiom<?> ax : axioms) {
             if (MappingUtils.isEntityClassAssertion(ax, et)) {
                 return true;
@@ -101,7 +101,7 @@ class EntityConstructor {
         }
     }
 
-    private <T> Map<URI, FieldSpecification<? super T, ?>> indexEntityAttributes(EntityType<T> et) {
+    private static <T> Map<URI, FieldSpecification<? super T, ?>> indexEntityAttributes(EntityType<T> et) {
         final Map<URI, FieldSpecification<? super T, ?>> atts = new HashMap<>(et.getAttributes()
                                                                                 .size());
         for (Attribute<? super T, ?> at : et.getAttributes()) {
@@ -156,7 +156,7 @@ class EntityConstructor {
     }
 
     <T> void setFieldValue(T entity, Field field, Collection<Axiom<?>> axioms, EntityType<T> et,
-                           Descriptor entityDescriptor) throws IllegalArgumentException, IllegalAccessException {
+                           Descriptor entityDescriptor) throws IllegalAccessException {
         final FieldSpecification<? super T, ?> fieldSpec = MappingUtils.getFieldSpecification(field, et);
         final FieldStrategy<? extends FieldSpecification<? super T, ?>, T> fs = FieldStrategy
                 .createFieldStrategy(et, fieldSpec,
