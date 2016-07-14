@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -358,6 +358,16 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
             }
         }
         em.getTransaction().commit();
+        final Iterator<URI> it = toUpdate.getProperties().keySet().iterator();
+        while (it.hasNext()) {
+            final URI property = it.next();
+            if (toUpdate.getProperties().get(property).isEmpty()) {
+                it.remove();
+            }
+        }
+        if (toUpdate.getProperties().isEmpty()) {
+            toUpdate.setProperties(null);
+        }
 
         final OWLClassP res = em.find(OWLClassP.class, entityP.getUri());
         assertEquals(toUpdate.getProperties(), res.getProperties());

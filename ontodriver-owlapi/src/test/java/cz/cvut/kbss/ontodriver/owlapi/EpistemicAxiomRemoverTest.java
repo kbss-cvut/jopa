@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -60,10 +60,11 @@ public class EpistemicAxiomRemoverTest {
         MockitoAnnotations.initMocks(this);
         when(adapterMock.getLanguage()).thenReturn("en");
         final OntologySnapshot snapshot = TestUtils.initRealOntology(null);
-        this.ontology = snapshot.getOntology();
-        this.manager = snapshot.getOntologyManager();
+        this.ontology = spy(snapshot.getOntology());
+        this.manager = spy(snapshot.getOntologyManager());
         this.dataFactory = snapshot.getDataFactory();
-        this.axiomRemover = new EpistemicAxiomRemover(adapterMock, snapshot);
+        final OntologySnapshot snapshotToUse = new OntologySnapshot(ontology, manager, dataFactory, null);
+        this.axiomRemover = new EpistemicAxiomRemover(adapterMock, snapshotToUse);
         this.individual = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
     }
 
@@ -335,13 +336,15 @@ public class EpistemicAxiomRemoverTest {
         return map;
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void removeAxiomsWithUnknownPropertyThrowsIllegalArgumentException() throws Exception {
+    @Test
+    public void removeAxiomsWithUnknownPropertyDoesNothing() throws Exception {
         final Map<Assertion, Set<Value<?>>> toRemove = new HashMap<>();
         final Assertion unknownProperty = Assertion
                 .createPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/jopa#unknownProperty"), false);
         toRemove.put(unknownProperty, Collections.singleton(new Value<>("StringValue")));
 
         axiomRemover.removeAxioms(SUBJECT, toRemove);
+        verify(manager, never()).applyChange(any(OWLOntologyChange.class));
+        verify(manager).applyChanges(Collections.emptyList());
     }
 }

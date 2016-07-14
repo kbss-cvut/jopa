@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -88,9 +88,9 @@ class EpistemicAxiomRemover {
     }
 
     private Collection<? extends OWLOntologyChange> removeDataPropertyAssertions(OWLNamedIndividual individual,
-                                                                                 Assertion assertion,
+                                                                                 IRI propertyId,
                                                                                  Set<Value<?>> values) {
-        final OWLDataProperty dataProperty = dataFactory.getOWLDataProperty(IRI.create(assertion.getIdentifier()));
+        final OWLDataProperty dataProperty = dataFactory.getOWLDataProperty(propertyId);
         return values.stream().map(value -> {
             final OWLLiteral literal = OwlapiUtils
                     .createOWLLiteralFromValue(value.getValue(), dataFactory, owlapiAdapter.getLanguage());
@@ -110,9 +110,9 @@ class EpistemicAxiomRemover {
     }
 
     private Collection<? extends OWLOntologyChange> removeObjectPropertyAssertions(OWLNamedIndividual individual,
-                                                                                   Assertion assertion,
+                                                                                   IRI assertionId,
                                                                                    Set<Value<?>> values) {
-        final OWLObjectProperty objProperty = dataFactory.getOWLObjectProperty(IRI.create(assertion.getIdentifier()));
+        final OWLObjectProperty objProperty = dataFactory.getOWLObjectProperty(assertionId);
         return values.stream().map(value -> {
             final OWLIndividual object = OwlapiUtils
                     .getIndividual(NamedResource.create(value.stringValue()), dataFactory);
@@ -132,10 +132,9 @@ class EpistemicAxiomRemover {
     }
 
     private Collection<? extends OWLOntologyChange> removeAnnotationAssertions(OWLNamedIndividual individual,
-                                                                               Assertion assertion,
+                                                                               IRI assertionId,
                                                                                Set<Value<?>> values) {
-        final OWLAnnotationProperty annProperty = dataFactory
-                .getOWLAnnotationProperty(IRI.create(assertion.getIdentifier()));
+        final OWLAnnotationProperty annProperty = dataFactory.getOWLAnnotationProperty(assertionId);
         return values.stream().map(value -> {
             OWLAnnotationValue av = null;
             try {
@@ -155,16 +154,19 @@ class EpistemicAxiomRemover {
         for (Map.Entry<Assertion, Set<Value<?>>> e : toRemove.entrySet()) {
             final IRI assertionIri = IRI.create(e.getKey().getIdentifier());
             if (ontology.containsDataPropertyInSignature(assertionIri)) {
-                changes.addAll(removeDataPropertyAssertions(individual, e.getKey(), e.getValue()));
+                changes.addAll(removeDataPropertyAssertions(individual, assertionIri, e.getValue()));
             } else if (ontology.containsObjectPropertyInSignature(assertionIri)) {
-                changes.addAll(removeObjectPropertyAssertions(individual, e.getKey(), e.getValue()));
+                changes.addAll(removeObjectPropertyAssertions(individual, assertionIri, e.getValue()));
             } else if (ontology.containsAnnotationPropertyInSignature(assertionIri)) {
-                changes.addAll(removeAnnotationAssertions(individual, e.getKey(), e.getValue()));
+                changes.addAll(removeAnnotationAssertions(individual, assertionIri, e.getValue()));
             } else if (e.getKey().isClassAssertion()) {
                 changes.addAll(removeClassAssertionAxioms(individual, e.getValue()));
-            } else {
-                throw new IllegalArgumentException("Unknown assertion " + e.getKey());
             }
+            // It can happen that the assertionIri is no longer in the ontology, because of the way properties changes
+            // are processed in JOPA - they are compared to the original object, so if multiple property values are removed
+            // in a transaction, they are effectively removed multiple times. Therefore, it can happen that another
+            // property no longer exists in the ontology, because it was removed in the previous modifications during the same
+            // transaction
         }
         owlapiAdapter.addTransactionalChanges(snapshot.applyChanges(changes));
     }
