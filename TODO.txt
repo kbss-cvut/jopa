@@ -1,3 +1,5 @@
+- Add support for IC validation disabling on entity load
+    - Some sort of loading modes should be added (similar to Lock modes in JPA)
 - Create some sort of specification doc, which would explain JOPA behaviour
     - Perhaps use the github wiki? Or something on KBSS Liferay?
 - Consider using FieldSpecification instead of attribute name in ChangeRecord
