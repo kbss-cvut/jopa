@@ -12,9 +12,9 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.model;
+package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.model.metamodel.SetAttribute;
+import cz.cvut.kbss.jopa.model.IRI;
 
 import java.util.Set;
 

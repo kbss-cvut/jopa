@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,8 +15,10 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.OWLClassQ;
+import cz.cvut.kbss.jopa.environment.QMappedSuperclass;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.IdentifiableType;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,5 +73,15 @@ public class MetamodelImplInheritanceTest {
             assertNotNull(et.getFieldSpecification(f.getName()));
             assertEquals(f, et.getFieldSpecification(f.getName()).getJavaField());
         }
+    }
+
+    @Test
+    public void entityWithMappedSuperclassSetsEntityTypeSupertype() throws Exception {
+        when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassQ.class));
+        final MetamodelImpl metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final EntityType<OWLClassQ> et = metamodel.entity(OWLClassQ.class);
+
+        final IdentifiableType<? super OWLClassQ> supertype = et.getSupertype();
+        assertEquals(QMappedSuperclass.class, supertype.getJavaType());
     }
 }

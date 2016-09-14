@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
-import cz.cvut.kbss.jopa.model.EntityTypeImpl;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -12,15 +12,13 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.model;
+package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
-import cz.cvut.kbss.jopa.model.metamodel.ListAttribute;
-import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
-import cz.cvut.kbss.jopa.model.metamodel.Type;
 
 import java.lang.reflect.Field;
 import java.util.List;

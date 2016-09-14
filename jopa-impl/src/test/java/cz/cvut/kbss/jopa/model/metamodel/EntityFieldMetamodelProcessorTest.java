@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
-import cz.cvut.kbss.jopa.model.EntityTypeImpl;
 import org.junit.Test;
 import org.mockito.Mock;
 

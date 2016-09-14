@@ -14,8 +14,6 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import java.util.Set;
-
 import cz.cvut.kbss.jopa.UnusedJPA;
 
 /**
@@ -27,35 +25,6 @@ import cz.cvut.kbss.jopa.UnusedJPA;
  */
 @UnusedJPA
 public interface IdentifiableType<X> extends ManagedType<X> {
-	/**
-	 * Return the attribute that corresponds to the id attribute of the entity
-	 * or mapped superclass.
-	 * 
-	 * @param type
-	 *            the type of the represented id attribute
-	 * @return id attribute
-	 * @throws IllegalArgumentException
-	 *             if id attribute of the given type is not present in the
-	 *             identifiable type or if the identifiable type has an id class
-	 */
-	// @Deprecated
-	// @UnusedJPA
-	// <Y> SingularAttribute<? super X, Y> getId(Class<Y> type);
-
-	/**
-	 * Return the attribute that corresponds to the id attribute declared by the
-	 * entity or mapped superclass.
-	 * 
-	 * @param type
-	 *            the type of the represented declared id attribute
-	 * @return declared id attribute
-	 * @throws IllegalArgumentException
-	 *             if id attribute of the given type is not declared in the
-	 *             identifiable type or if the identifiable type has an id class
-	 */
-	// @Deprecated
-	// @UnusedJPA
-	// <Y> SingularAttribute<X, Y> getDeclaredId(Class<Y> type);
 
 	/**
 	 * Return the attribute that corresponds to the version attribute of the
@@ -112,28 +81,4 @@ public interface IdentifiableType<X> extends ManagedType<X> {
 	 *         type has a version attribute
 	 */
 	boolean hasVersionAttribute();
-
-	/**
-	 * 
-	 Return the attributes corresponding to the id class of the
-	 * 
-	 * identifiable type.
-	 * 
-	 * @return id attributes
-	 * 
-	 @throws IllegalArgumentException
-	 *             if the identifiable type
-	 * 
-	 *             does not have an id class
-	 */
-	Set<SingularAttribute<? super X, ?>> getIdClassAttributes();
-
-	/**
-	 * Return the type that represents the type of the id.
-	 * 
-	 * @return type of id
-	 */
-	// @Deprecated
-	// @UnusedJPA
-	// Type<?> getIdType();
 }

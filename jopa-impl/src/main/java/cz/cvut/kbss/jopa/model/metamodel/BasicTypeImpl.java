@@ -12,9 +12,7 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.model;
-
-import cz.cvut.kbss.jopa.model.metamodel.BasicType;
+package cz.cvut.kbss.jopa.model.metamodel;
 
 public class BasicTypeImpl<X> implements BasicType<X> {
 
