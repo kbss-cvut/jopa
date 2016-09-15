@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class MetamodelBuilder {
@@ -27,7 +28,7 @@ public class MetamodelBuilder {
 
     private final NamedNativeQueryProcessor queryProcessor;
 
-    private final Map<Class<?>, EntityType<?>> typeMap = new HashMap<>();
+    private final Map<Class<?>, ManagedType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
     private final NamedQueryManager namedQueryManager = new NamedQueryManager();
 
@@ -52,21 +53,50 @@ public class MetamodelBuilder {
 
         LOG.debug("Processing OWL class: {}", cls);
 
-        final EntityTypeImpl<X> et = EntityClassProcessor.processEntityType(cls);
+        final EntityTypeImpl<X> et = ManagedClassProcessor.processEntityType(cls);
 
-        typeMap.put(cls, et);
-        final EntityFieldMetamodelProcessor<X> fieldProcessor = new EntityFieldMetamodelProcessor<>(cls, et, this);
-
-        EntityClassProcessor.getEntityFields(cls).forEach(fieldProcessor::processField);
-
-        if (et.getIdentifier() == null) {
-            throw new MetamodelInitializationException("Missing identifier field in entity class " + cls);
-        }
-        queryProcessor.processClass(cls);
+        processManagedType(et);
     }
 
-    public Map<Class<?>, EntityType<?>> getTypeMap() {
+    private <X> void processManagedType(AbstractIdentifiableType<X> type) {
+        final Class<X> cls = type.getJavaType();
+        typeMap.put(cls, type);
+        final ClassFieldMetamodelProcessor<X> fieldProcessor = new ClassFieldMetamodelProcessor<>(cls, type, this);
+
+        for (Field f : cls.getDeclaredFields()) {
+            fieldProcessor.processField(f);
+        }
+
+        if (type.getPersistenceType() == Type.PersistenceType.ENTITY) {
+            try {
+                type.getIdentifier();
+            } catch (IllegalArgumentException e) {
+                throw new MetamodelInitializationException("Missing identifier field in entity class " + cls);
+            }
+        }
+
+        queryProcessor.processClass(cls);
+
+        processSupertypes(cls);
+    }
+
+    private <X> void processSupertypes(Class<X> cls) {
+        final Class<? super X> managedSupertype = ManagedClassProcessor.getManagedSupertype(cls);
+        if (managedSupertype != null) {
+            final AbstractIdentifiableType<? super X> type = ManagedClassProcessor.processManagedType(managedSupertype);
+            processManagedType(type);
+        }
+    }
+
+    public Map<Class<?>, ManagedType<?>> getTypeMap() {
         return Collections.unmodifiableMap(typeMap);
+    }
+
+    public Map<Class<?>, EntityType<?>> getEntities() {
+        final Map<Class<?>, EntityType<?>> map = new HashMap<>();
+        typeMap.entrySet().stream().filter(e -> e.getValue().getPersistenceType() == Type.PersistenceType.ENTITY)
+               .forEach(e -> map.put(e.getKey(), (EntityType<?>) e.getValue()));
+        return map;
     }
 
     public Set<Class<?>> getInferredClasses() {
@@ -82,10 +112,10 @@ public class MetamodelBuilder {
     }
 
     @SuppressWarnings("unchecked")
-    <X> EntityType<X> getEntityClass(Class<X> cls) {
+    <X> ManagedType<X> getEntityClass(Class<X> cls) {
         if (!typeMap.containsKey(cls)) {
             processOWLClass(cls);
         }
-        return (EntityType<X>) typeMap.get(cls);
+        return (ManagedType<X>) typeMap.get(cls);
     }
 }

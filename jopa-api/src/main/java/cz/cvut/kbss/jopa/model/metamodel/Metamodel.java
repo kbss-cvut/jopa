@@ -36,20 +36,6 @@ public interface Metamodel {
 	<X> EntityType<X> entity(Class<X> cls);
 
 	/**
-	 * Return the metamodel managed type representing the entity, mapped
-	 * superclass, or embeddable class.
-	 * 
-	 * @param cls
-	 *            the type of the represented managed class
-	 * @return the metamodel managed type
-	 * @throws IllegalArgumentException
-	 *             if not a managed class
-	 */
-	@UnusedJPA
-	@Deprecated
-	<X> ManagedType<X> managedType(Class<X> cls);
-
-	/**
 	 * Return the metamodel embeddable type representing the embeddable class.
 	 * 
 	 * @param cls

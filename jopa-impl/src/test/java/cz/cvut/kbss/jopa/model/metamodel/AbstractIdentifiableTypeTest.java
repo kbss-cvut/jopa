@@ -320,4 +320,13 @@ public class AbstractIdentifiableTypeTest {
         thrown.expectMessage("Field " + attName + " is not present in type " + et.toString());
         et.getFieldSpecification(attName);
     }
+
+    @Test
+    public void getIdentifierReturnsIdentifierFromSuperclass() {
+        final Identifier id = mock(Identifier.class);
+        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        when(supertype.getIdentifier()).thenReturn(id);
+        et.setSupertype(supertype);
+        assertEquals(id, et.getIdentifier());
+    }
 }

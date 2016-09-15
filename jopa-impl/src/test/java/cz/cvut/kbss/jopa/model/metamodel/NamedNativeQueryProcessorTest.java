@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
 import cz.cvut.kbss.jopa.model.annotations.NamedNativeQueries;
 import cz.cvut.kbss.jopa.model.annotations.NamedNativeQuery;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
@@ -99,24 +98,5 @@ public class NamedNativeQueryProcessorTest {
     @NamedNativeQuery(name = "QueryCombination." + ASK_NAME, query = ASK_QUERY)
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#QueryCombination")
     private static class QueryCombination {
-    }
-
-    @Test
-    public void processClassDiscoversQueriesDeclaredInMappedSuperclass() {
-        processor.processClass(WithMappedSuperclass.class);
-        final String select = queryManager.getQuery(Superclass.class.getSimpleName() + "." + SELECT_NAME);
-        assertEquals(SELECT_QUERY, select);
-        final String ask = queryManager.getQuery(WithMappedSuperclass.class.getSimpleName() + "." + ASK_NAME);
-        assertEquals(ASK_QUERY, ask);
-    }
-
-    @MappedSuperclass
-    @NamedNativeQuery(name = "Superclass." + SELECT_NAME, query = SELECT_QUERY)
-    private static abstract class Superclass {
-    }
-
-    @NamedNativeQuery(name = "WithMappedSuperclass." + ASK_NAME, query = ASK_QUERY)
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#WithMappedSuperclass")
-    private static class WithMappedSuperclass extends Superclass {
     }
 }

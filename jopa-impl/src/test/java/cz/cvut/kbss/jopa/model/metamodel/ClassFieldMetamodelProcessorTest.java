@@ -20,7 +20,7 @@ import org.mockito.Mock;
 
 import java.lang.reflect.Field;
 
-public class EntityFieldMetamodelProcessorTest {
+public class ClassFieldMetamodelProcessorTest {
 
     @Mock
     private EntityTypeImpl<InvalidClass> etMock;
@@ -29,7 +29,7 @@ public class EntityFieldMetamodelProcessorTest {
 
     @Test(expected = MetamodelInitializationException.class)
     public void processingNonTransientFieldWithoutPropertyInfoThrowsException() throws Exception {
-        final EntityFieldMetamodelProcessor<InvalidClass> processor = new EntityFieldMetamodelProcessor<>(
+        final ClassFieldMetamodelProcessor<InvalidClass> processor = new ClassFieldMetamodelProcessor<>(
                 InvalidClass.class, etMock, metamodelBuilder);
         final Field field = InvalidClass.class.getDeclaredField("invalidAttribute");
         processor.processField(field);

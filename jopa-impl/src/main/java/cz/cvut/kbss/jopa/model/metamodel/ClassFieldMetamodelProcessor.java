@@ -30,17 +30,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class EntityFieldMetamodelProcessor<X> {
+class ClassFieldMetamodelProcessor<X> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EntityFieldMetamodelProcessor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClassFieldMetamodelProcessor.class);
 
     private final FieldMappingValidator mappingValidator = new FieldMappingValidator();
 
     private final Class<X> cls;
-    private final EntityTypeImpl<X> et;
+    private final AbstractIdentifiableType<X> et;
     private final MetamodelBuilder metamodelBuilder;
 
-    EntityFieldMetamodelProcessor(Class<X> cls, EntityTypeImpl<X> et, MetamodelBuilder metamodelBuilder) {
+    ClassFieldMetamodelProcessor(Class<X> cls, AbstractIdentifiableType<X> et, MetamodelBuilder metamodelBuilder) {
         this.cls = cls;
         this.et = et;
         this.metamodelBuilder = metamodelBuilder;

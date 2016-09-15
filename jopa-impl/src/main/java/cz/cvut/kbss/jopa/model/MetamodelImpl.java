@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -33,7 +33,8 @@ public class MetamodelImpl implements Metamodel {
 
     private static final String ASPECTJ_CLASS = "org.aspectj.weaver.loadtime.Agent";
 
-    private Map<Class<?>, EntityType<?>> typeMap;
+    private Map<Class<?>, ManagedType<?>> typeMap;
+    private Map<Class<?>, EntityType<?>> entities;
     private Set<Class<?>> inferredClasses;
 
     private NamedQueryManager namedQueryManager;
@@ -58,6 +59,7 @@ public class MetamodelImpl implements Metamodel {
         metamodelBuilder.buildMetamodel(discoveredEntities);
 
         this.typeMap = metamodelBuilder.getTypeMap();
+        this.entities = metamodelBuilder.getEntities();
         this.inferredClasses = metamodelBuilder.getInferredClasses();
         this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
     }
@@ -77,7 +79,7 @@ public class MetamodelImpl implements Metamodel {
     @SuppressWarnings("unchecked")
     @Override
     public <X> EntityType<X> entity(Class<X> cls) {
-        if (!typeMap.containsKey(cls)) {
+        if (!entities.containsKey(cls)) {
             throw new IllegalArgumentException(
                     "Class " + cls.getName() + " is not a known entity in this persistence unit.");
         }
@@ -96,17 +98,12 @@ public class MetamodelImpl implements Metamodel {
 
     @Override
     public Set<EntityType<?>> getEntities() {
-        return new HashSet<>(typeMap.values());
+        return new HashSet<>(entities.values());
     }
 
     @Override
     public Set<ManagedType<?>> getManagedTypes() {
         return new HashSet<>(typeMap.values());
-    }
-
-    @Override
-    public <X> ManagedType<X> managedType(Class<X> cls) {
-        return entity(cls);
     }
 
     @Override

@@ -346,7 +346,14 @@ abstract class AbstractIdentifiableType<X> implements IdentifiableType<X> {
 
     @Override
     public Identifier getIdentifier() {
-        return identifier;
+        if (identifier != null) {
+            return identifier;
+        }
+        if (supertype != null) {
+            return supertype.getIdentifier();
+        }
+        // This shouldn't happen, because every entity has to contain an identifier, otherwise metamodel building fails
+        throw new IllegalArgumentException("Identifier attribute is not present in type " + this);
     }
 
     @Override
