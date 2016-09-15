@@ -7,9 +7,15 @@ abstract class AbstractIdentifiableType<X> implements IdentifiableType<X> {
 
     private final Class<X> javaType;
 
+    private Identifier identifier;
+
     private AbstractIdentifiableType<? super X> supertype;
 
-    final Map<String, Attribute<X, ?>> declaredAttributes = new HashMap<>();
+    private TypesSpecification<X, ?> directTypes;
+
+    private PropertiesSpecification<X, ?, ?, ?> properties;
+
+    private final Map<String, Attribute<X, ?>> declaredAttributes = new HashMap<>();
 
     AbstractIdentifiableType(Class<X> javaType) {
         this.javaType = javaType;
@@ -21,6 +27,18 @@ abstract class AbstractIdentifiableType<X> implements IdentifiableType<X> {
 
     void setSupertype(AbstractIdentifiableType<? super X> supertype) {
         this.supertype = supertype;
+    }
+
+    void addDirectTypes(TypesSpecification<X, ?> a) {
+        this.directTypes = a;
+    }
+
+    void addOtherProperties(PropertiesSpecification<X, ?, ?, ?> a) {
+        this.properties = a;
+    }
+
+    public void setIdentifier(final Identifier identifier) {
+        this.identifier = identifier;
     }
 
     @Override
@@ -278,6 +296,57 @@ abstract class AbstractIdentifiableType<X> implements IdentifiableType<X> {
     @Override
     public SingularAttribute<X, ?> getDeclaredSingularAttribute(String name) {
         return getDeclaredSingularAttribute(name, Object.class);
+    }
+
+    @Override
+    public TypesSpecification<? super X, ?> getTypes() {
+        if (directTypes != null) {
+            return directTypes;
+        }
+        return supertype != null ? supertype.getTypes() : null;
+    }
+
+    @Override
+    public PropertiesSpecification<? super X, ?, ?, ?> getProperties() {
+        if (properties != null) {
+            return properties;
+        }
+        return supertype != null ? supertype.getProperties() : null;
+    }
+
+    @Override
+    public Set<FieldSpecification<? super X, ?>> getFieldSpecifications() {
+        final Set<FieldSpecification<? super X, ?>> specs = new HashSet<>(getAttributes());
+        final TypesSpecification<? super X, ?> types = getTypes();
+        if (types != null) {
+            specs.add(types);
+        }
+        final PropertiesSpecification<? super X, ?, ?, ?> props = getProperties();
+        if (props != null) {
+            specs.add(props);
+        }
+        return specs;
+    }
+
+    @Override
+    public FieldSpecification<? super X, ?> getFieldSpecification(String fieldName) {
+        if (declaredAttributes.containsKey(fieldName)) {
+            return declaredAttributes.get(fieldName);
+        }
+        if (directTypes != null && directTypes.getName().equals(fieldName)) {
+            return directTypes;
+        } else if (properties != null && properties.getName().equals(fieldName)) {
+            return properties;
+        }
+        if (supertype != null) {
+            return supertype.getFieldSpecification(fieldName);
+        }
+        throw new IllegalArgumentException("Field " + fieldName + " is not present in type " + this);
+    }
+
+    @Override
+    public Identifier getIdentifier() {
+        return identifier;
     }
 
     @Override

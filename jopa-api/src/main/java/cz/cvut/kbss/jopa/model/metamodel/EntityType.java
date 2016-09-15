@@ -17,14 +17,13 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.NonJPA;
 import cz.cvut.kbss.jopa.model.IRI;
 
-import java.util.Set;
-
 /**
  * Instances of the type EntityType represent entity types.
  *
  * @param <X> The represented entity type.
  */
 public interface EntityType<X> extends Bindable<X>, IdentifiableType<X> {
+
     /**
      * Return the entity name.
      *
@@ -39,37 +38,4 @@ public interface EntityType<X> extends Bindable<X>, IdentifiableType<X> {
      */
     @NonJPA
     IRI getIRI();
-
-    @NonJPA
-    Identifier getIdentifier();
-
-    @NonJPA
-    TypesSpecification<? super X, ?> getTypes();
-
-    @NonJPA
-    PropertiesSpecification<? super X, ?, ?, ?> getProperties();
-
-    /**
-     * Gets specification of a field with the specified name.
-     * <p>
-     * In contrast to {@link #getAttribute(String)}, calling this method can also return field specification for a types
-     * or properties field.
-     *
-     * @param fieldName Name of the field
-     * @return Field specification
-     * @throws IllegalArgumentException If attribute of the given name is not present in the managed type
-     */
-    @NonJPA
-    FieldSpecification<? super X, ?> getFieldSpecification(String fieldName);
-
-    /**
-     * Gets all field specifications of this entity type.
-     * <p>
-     * In contrast to {@link #getAttributes()}, this method returns also specifications of types and properties (if
-     * present).
-     *
-     * @return Field specifications
-     */
-    @NonJPA
-    Set<FieldSpecification<? super X, ?>> getFieldSpecifications();
 }

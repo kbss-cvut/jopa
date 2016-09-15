@@ -242,4 +242,82 @@ public class AbstractIdentifiableTypeTest {
                         et.toString());
         et.getDeclaredSingularAttribute(attName, OWLClassB.class);
     }
+
+    @Test
+    public void getFieldSpecificationsReturnsAllAttributesAndTypesAndProperties() {
+        final SingularAttribute supertypeAtt = mock(SingularAttribute.class);
+        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        et.setSupertype(supertype);
+        when(supertype.getAttributes()).thenReturn(Collections.singleton(supertypeAtt));
+        final ListAttribute listAtt = mock(ListAttribute.class);
+        et.addDeclaredAttribute("list", listAtt);
+        final TypesSpecification types = mock(TypesSpecification.class);
+        et.addDirectTypes(types);
+        final PropertiesSpecification properties = mock(PropertiesSpecification.class);
+        et.addOtherProperties(properties);
+
+        final Set<FieldSpecification<? super OWLClassA, ?>> result = et.getFieldSpecifications();
+        assertTrue(result.contains(supertypeAtt));
+        assertTrue(result.contains(listAtt));
+        assertTrue(result.contains(types));
+        assertTrue(result.contains(properties));
+    }
+
+    @Test
+    public void getTypesReturnsTypesAlsoFromSuperType() {
+        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        et.setSupertype(supertype);
+        final TypesSpecification types = mock(TypesSpecification.class);
+        when(supertype.getTypes()).thenReturn(types);
+        final TypesSpecification result = et.getTypes();
+        assertEquals(types, result);
+    }
+
+    @Test
+    public void getPropertiesReturnsPropertiesAlsoFromSuperType() {
+        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        et.setSupertype(supertype);
+        final PropertiesSpecification properties = mock(PropertiesSpecification.class);
+        when(supertype.getProperties()).thenReturn(properties);
+        final PropertiesSpecification result = et.getProperties();
+        assertEquals(properties, result);
+    }
+
+    @Test
+    public void getFieldSpecificationGetsFieldSpecification() {
+        final SingularAttribute supertypeAtt = mock(SingularAttribute.class);
+        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        et.setSupertype(supertype);
+        final String attName = "test";
+        when(supertype.getFieldSpecification(attName)).thenReturn(supertypeAtt);
+        final FieldSpecification<? super OWLClassA, ?> result = et.getFieldSpecification(attName);
+        assertEquals(supertypeAtt, result);
+    }
+
+    @Test
+    public void getFieldSpecificationGetsTypes() {
+        final TypesSpecification types = mock(TypesSpecification.class);
+        final String attName = "types";
+        when(types.getName()).thenReturn(attName);
+        et.addDirectTypes(types);
+        final FieldSpecification<? super OWLClassA, ?> result = et.getFieldSpecification(attName);
+        assertEquals(types, result);
+    }
+
+    @Test
+    public void getFieldSpecificationGetsDeclaredAttribute() {
+        final SetAttribute att = mock(SetAttribute.class);
+        final String attName = "test";
+        et.addDeclaredAttribute(attName, att);
+        final FieldSpecification<? super OWLClassA, ?> result = et.getFieldSpecification(attName);
+        assertEquals(att, result);
+    }
+
+    @Test
+    public void getFieldSpecificationThrowsIllegalArgumentWhenFieldIsNotFound() {
+        final String attName = "unknownAttribute";
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Field " + attName + " is not present in type " + et.toString());
+        et.getFieldSpecification(attName);
+    }
 }
