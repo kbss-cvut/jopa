@@ -15,8 +15,11 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.OWLClassQ;
+import cz.cvut.kbss.jopa.environment.OWLClassR;
+import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.QMappedSuperclass;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.IdentifiableType;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -26,10 +29,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -52,17 +52,20 @@ public class MetamodelImplInheritanceTest {
 
     @Test
     public void buildsEntityTypeForClassWithMappedSuperclass() throws Exception {
-        when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassQ.class));
-        final MetamodelImpl metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
         final EntityType<OWLClassQ> et = metamodel.entity(OWLClassQ.class);
         assertNotNull(et);
         assertEquals(OWLClassQ.getClassIri(), et.getIRI().toString());
     }
 
+    private MetamodelImpl metamodelFor(Class<?>... classes) {
+        when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(new HashSet<>(Arrays.asList(classes)));
+        return new MetamodelImpl(conf, entityLoaderMock);
+    }
+
     @Test
     public void entityWithMappedSuperclassIsBuiltWithAllRelevantFields() throws Exception {
-        when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassQ.class));
-        final MetamodelImpl metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
         final EntityType<OWLClassQ> et = metamodel.entity(OWLClassQ.class);
 
         assertNotNull(et.getIdentifier());
@@ -77,11 +80,36 @@ public class MetamodelImplInheritanceTest {
 
     @Test
     public void entityWithMappedSuperclassSetsEntityTypeSupertype() throws Exception {
-        when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassQ.class));
-        final MetamodelImpl metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final MetamodelImpl metamodel = metamodelFor(OWLClassQ.class);
         final EntityType<OWLClassQ> et = metamodel.entity(OWLClassQ.class);
 
         final IdentifiableType<? super OWLClassQ> supertype = et.getSupertype();
         assertEquals(QMappedSuperclass.class, supertype.getJavaType());
+    }
+
+    @Test
+    public void entityWithAbstractEntityParentSetsEntityTypeSupertype() throws Exception {
+        final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
+
+        final EntityType<OWLClassR> etR = metamodel.entity(OWLClassR.class);
+        assertNotNull(etR);
+        final EntityType<OWLClassS> etS = metamodel.entity(OWLClassS.class);
+        assertNotNull(etS);
+        assertEquals(etS, etR.getSupertype());
+    }
+
+    @Test
+    public void entityWithEntitySuperclassIsBuiltWithAllRelevantAttributes() throws Exception {
+        final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
+        final List<Field> fields = Arrays
+                .asList(OWLClassS.getNameField(), OWLClassR.getOwlClassAField(), OWLClassR.getStringAttField());
+        final EntityType<OWLClassR> et = metamodel.entity(OWLClassR.class);
+        for (Field f : fields) {
+            final Attribute<? super OWLClassR, ?> att = et.getAttribute(f.getName());
+            assertNotNull(att);
+            assertEquals(f, att.getJavaField());
+        }
+        assertNotNull(et.getIdentifier());
+        assertEquals(OWLClassS.getUriField(), et.getIdentifier().getJavaField());
     }
 }

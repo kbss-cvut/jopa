@@ -614,4 +614,16 @@ public class MetamodelImplTest {
         assertTrue(types.contains(OWLClassQ.class));
         assertTrue(types.contains(QMappedSuperclass.class));
     }
+
+    @Test
+    public void getEntitiesReturnsOnlyEntityTypes() {
+        when(entityLoaderMock.discoverEntityClasses(conf))
+                .thenReturn(new HashSet<>(Arrays.asList(OWLClassQ.class, OWLClassA.class)));
+        final MetamodelImpl metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Set<EntityType<?>> entities = metamodel.getEntities();
+        assertEquals(2, entities.size());
+        final Set<Class<?>> types = entities.stream().map(Type::getJavaType).collect(Collectors.toSet());
+        assertTrue(types.contains(OWLClassQ.class));
+        assertTrue(types.contains(OWLClassA.class));
+    }
 }
