@@ -19,7 +19,7 @@ import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
 import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiOntoDriverProperties;
-import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
+import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import cz.cvut.kbss.ontodriver.owlapi.exception.MappingFileParserException;
 import org.junit.Test;
 
@@ -169,7 +169,7 @@ public class MappingFileParserTest {
 
     private List<URI> generateUris() {
         final List<URI> lst = new ArrayList<>();
-        final int cnt = TestUtils.randomInt(10);
+        final int cnt = Generator.randomInt(10);
         for (int i = 0; i < cnt; i++) {
             lst.add(URI.create("http://krizik.felk.cvut.cz/ontologies/test-" + i));
         }

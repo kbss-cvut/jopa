@@ -11,12 +11,12 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.8.4</version>
+        <version>0.8.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <properties>
-        <net.sourceforge.owlapi.version>4.1.0</net.sourceforge.owlapi.version>
+        <net.sourceforge.owlapi.version>4.2.4</net.sourceforge.owlapi.version>
         <cz.cvut.kbss.owl2query.version>0.4.0</cz.cvut.kbss.owl2query.version>
     </properties>
 

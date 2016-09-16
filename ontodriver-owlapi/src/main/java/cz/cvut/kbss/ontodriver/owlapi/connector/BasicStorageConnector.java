@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -59,6 +59,8 @@ public class BasicStorageConnector extends AbstractConnector {
     private OWLReasoner reasoner;
     private OWLReasonerFactory reasonerFactory;
 
+    private OWLOntologyIRIMapper iriMapper;
+
     public BasicStorageConnector(Configuration configuration) throws OwlapiDriverException {
         super(configuration);
     }
@@ -71,8 +73,9 @@ public class BasicStorageConnector extends AbstractConnector {
         final OntologyStorageProperties storageProperties = configuration.getStorageProperties();
         LOG.debug("Loading ontology {} from {}.", storageProperties.getOntologyURI(),
                 storageProperties.getPhysicalURI());
+        resolveIriMapper();
         this.ontologyManager = OWLManager.createOWLOntologyManager();
-        setIriMapper();
+        setIriMapper(ontologyManager);
         try {
             this.ontology = ontologyManager.loadOntologyFromOntologyDocument(
                     IRI.create(storageProperties.getPhysicalURI()));
@@ -95,9 +98,15 @@ public class BasicStorageConnector extends AbstractConnector {
         this.reasoner = getReasoner(ontology);
     }
 
-    private void setIriMapper() {
+    private void resolveIriMapper() {
         if (configuration.isSet(OwlapiConfigParam.MAPPING_FILE_LOCATION)) {
-            ontologyManager.getIRIMappers().add(new DefaultOntologyIriMapper(new MappingFileParser(configuration)));
+            this.iriMapper = new DefaultOntologyIriMapper(new MappingFileParser(configuration));
+        }
+    }
+
+    private void setIriMapper(OWLOntologyManager manager) {
+        if (iriMapper != null) {
+            manager.getIRIMappers().add(new DefaultOntologyIriMapper(new MappingFileParser(configuration)));
         }
     }
 
@@ -138,6 +147,7 @@ public class BasicStorageConnector extends AbstractConnector {
         READ.lock();
         try {
             final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
+            setIriMapper(m);
             final OWLOntology snapshot = m.copyOntology(ontology, OntologyCopy.DEEP);
             return new OntologySnapshot(snapshot, m, m.getOWLDataFactory(), getReasoner(snapshot));
         } catch (OWLOntologyCreationException e) {
