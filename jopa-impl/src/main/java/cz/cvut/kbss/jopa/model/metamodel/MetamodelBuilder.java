@@ -43,7 +43,7 @@ public class MetamodelBuilder {
      */
     public void buildMetamodel(Set<Class<?>> entities) {
         // AJC won't compile a method reference here
-        entities.forEach(cls -> processOWLClass(cls));
+        entities.forEach(this::processOWLClass);
     }
 
     private <X> void processOWLClass(final Class<X> cls) {

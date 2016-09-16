@@ -35,6 +35,7 @@
         <org.slf4j.version>1.7.18</org.slf4j.version>
         <junit.version>4.12</junit.version>
         <org.mockito.version>1.10.19</org.mockito.version>
+        <org.aspectj.version>1.8.9</org.aspectj.version>
     </properties>
 
     <dependencies>

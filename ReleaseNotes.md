@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.8.5 - September 16, 2016
+- Refactored metamodel as a preparation for inheritance implementation. Use AspectJ 1.8.9.
+
 ## 0.8.4 - July 13, 2016
 - Added support for named native queries. Declaration is similar to JPA, just use `@NamedNativeQuery` or `@NamedNativeQueries`
 on an entity or its mapped superclass and the query will be available in the persistence unit.

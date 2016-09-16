@@ -15,7 +15,6 @@
     <description>Integration tests of JOPA and its OntoDriver implementations</description>
 
     <properties>
-        <org.aspectj.version>1.8.5</org.aspectj.version>
         <pellet.version>2.3.0</pellet.version>
         <ch.qos.logback.version>1.1.6</ch.qos.logback.version>
     </properties>
