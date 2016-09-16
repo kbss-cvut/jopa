@@ -67,6 +67,11 @@ public class MetamodelBuilder {
             fieldProcessor.processField(f);
         }
 
+        final AbstractIdentifiableType<? super X> supertype = processSupertypes(cls);
+        if (supertype != null) {
+            type.setSupertype(supertype);
+        }
+
         if (type.getPersistenceType() == Type.PersistenceType.ENTITY) {
             try {
                 type.getIdentifier();
@@ -76,16 +81,16 @@ public class MetamodelBuilder {
         }
 
         queryProcessor.processClass(cls);
-
-        processSupertypes(cls);
     }
 
-    private <X> void processSupertypes(Class<X> cls) {
+    private <X> AbstractIdentifiableType<? super X> processSupertypes(Class<X> cls) {
         final Class<? super X> managedSupertype = ManagedClassProcessor.getManagedSupertype(cls);
         if (managedSupertype != null) {
             final AbstractIdentifiableType<? super X> type = ManagedClassProcessor.processManagedType(managedSupertype);
             processManagedType(type);
+            return type;
         }
+        return null;
     }
 
     public Map<Class<?>, ManagedType<?>> getTypeMap() {
