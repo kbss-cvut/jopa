@@ -25,13 +25,13 @@ import cz.cvut.kbss.ontodriver.owlapi.util.MappingFileParser;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAxiomChange;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
-import org.semanticweb.owlapi.model.parameters.OntologyCopy;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -142,14 +142,21 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     @Override
+    public URI getOntologyUri() {
+        assert ontology.getOntologyID().getOntologyIRI().isPresent();
+
+        return ontology.getOntologyID().getOntologyIRI().get().toURI();
+    }
+
+    @Override
     public OntologySnapshot getOntologySnapshot() {
         ensureOpen();
         READ.lock();
         try {
-            final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
-            setIriMapper(m);
-            final OWLOntology snapshot = m.copyOntology(ontology, OntologyCopy.DEEP);
-            return new OntologySnapshot(snapshot, m, m.getOWLDataFactory(), getReasoner(snapshot));
+            final OWLOntology snapshot = ontologyManager.createOntology();
+            ontologyManager.addAxioms(snapshot, ontology.getAxioms());
+            return new OntologySnapshot(snapshot, ontologyManager, ontologyManager.getOWLDataFactory(),
+                    getReasoner(snapshot));
         } catch (OWLOntologyCreationException e) {
             throw new OntologySnapshotException("Unable to create ontology snapshot.", e);
         } finally {
@@ -210,6 +217,13 @@ public class BasicStorageConnector extends AbstractConnector {
         } finally {
             WRITE.unlock();
         }
+    }
+
+    @Override
+    public void closeSnapshot(OntologySnapshot snapshot) {
+        ensureOpen();
+        assert snapshot != null;
+        ontologyManager.removeOntology(snapshot.getOntology());
     }
 
     @Override

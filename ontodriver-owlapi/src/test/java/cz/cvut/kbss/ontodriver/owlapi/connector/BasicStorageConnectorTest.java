@@ -17,7 +17,7 @@ package cz.cvut.kbss.ontodriver.owlapi.connector;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.owlapi.OwlapiDataSource;
-import cz.cvut.kbss.ontodriver.owlapi.config.OwlapiConfigParam;
+import cz.cvut.kbss.ontodriver.owlapi.environment.Generator;
 import cz.cvut.kbss.ontodriver.owlapi.exception.InvalidOntologyIriException;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAddAxiom;
 import org.junit.After;
@@ -29,6 +29,7 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.Collections;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -52,29 +53,29 @@ public class BasicStorageConnectorTest {
 
     @Test
     public void loadsExistingOntology() throws Exception {
-        final URI physicalUri = initOntology();
+        final URI physicalUri = initOntology(Collections.emptySet());
         this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
         assertNotNull(connector);
         assertTrue(connector.isOpen());
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
         assertNotNull(snapshot.getOntology());
-        assertEquals(IRI.create(ONTOLOGY_URI), snapshot.getOntology().getOntologyID().getOntologyIRI().get());
         assertNotNull(snapshot.getOntologyManager());
         assertNotNull(snapshot.getDataFactory());
     }
 
-    private URI initOntology() throws Exception {
+    private URI initOntology(Set<OWLAxiom> axioms) throws Exception {
         final File targetFile = Files.createTempFile("connectortest", ".owl").toFile();
         targetFile.deleteOnExit();
         final OWLOntologyManager om = OWLManager.createOWLOntologyManager();
         final OWLOntology o = om.createOntology(IRI.create(ONTOLOGY_URI));
+        om.addAxioms(o, axioms);
         om.saveOntology(o, IRI.create(targetFile));
         return targetFile.toURI();
     }
 
     @Test(expected = InvalidOntologyIriException.class)
     public void throwsExceptionWhenLoadedOntologyHasDifferentIri() throws Exception {
-        final URI physicalUri = initOntology();
+        final URI physicalUri = initOntology(Collections.emptySet());
         final URI logicalUri = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/different");
         this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, logicalUri)));
     }
@@ -93,7 +94,7 @@ public class BasicStorageConnectorTest {
 
     @Test
     public void getSnapshotReturnsDistinctSnapshots() throws Exception {
-        final URI physicalUri = initOntology();
+        final URI physicalUri = initOntology(Collections.emptySet());
         this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
         final OntologySnapshot snapshotOne = connector.getOntologySnapshot();
         final OntologySnapshot snapshotTwo = connector.getOntologySnapshot();
@@ -103,7 +104,7 @@ public class BasicStorageConnectorTest {
 
     @Test(expected = IllegalStateException.class)
     public void throwsExceptionWhenTryingToGetSnapshotOfClosedConnector() throws Exception {
-        final URI physicalUri = initOntology();
+        final URI physicalUri = initOntology(Collections.emptySet());
         this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
         connector.close();
         assertFalse(connector.isOpen());
@@ -112,7 +113,7 @@ public class BasicStorageConnectorTest {
 
     @Test(expected = IllegalStateException.class)
     public void throwsExceptionWhenApplyChangesCalledOnClose() throws Exception {
-        final URI physicalUri = initOntology();
+        final URI physicalUri = initOntology(Collections.emptySet());
         this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
         connector.close();
         assertFalse(connector.isOpen());
@@ -121,7 +122,7 @@ public class BasicStorageConnectorTest {
 
     @Test
     public void applyChangesModifiesTheCentralOntology() throws Exception {
-        final URI physicalUri = initOntology();
+        final URI physicalUri = initOntology(Collections.emptySet());
         this.connector = new BasicStorageConnector(new Configuration(initStorageProperties(physicalUri, null)));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
         final OWLClass cls = addClassToOntology(snapshot);
@@ -141,7 +142,7 @@ public class BasicStorageConnectorTest {
 
     @Test
     public void successfullySavesOntologyOnClose() throws Exception {
-        final URI physicalUri = initOntology();
+        final URI physicalUri = initOntology(Collections.emptySet());
         final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
         this.connector = new BasicStorageConnector(new Configuration(storageProperties));
         final OWLClass cls = addClassToOntology(connector.getOntologySnapshot());
@@ -153,20 +154,35 @@ public class BasicStorageConnectorTest {
     }
 
     @Test
-    public void getSnapshotSetsIRIMapperOnSnapshotOntologyManager() throws Exception {
-        final URI physicalUri = initOntology();
-        final File mappingFile = Files.createTempFile("mapping", "txt").toFile();
-        mappingFile.deleteOnExit();
-        // File path without the file:
-        Files.write(mappingFile.toPath(),
-                (ONTOLOGY_URI.toString() + " > " + physicalUri.getSchemeSpecificPart()).getBytes());
-        final Configuration config = new Configuration(initStorageProperties(physicalUri, ONTOLOGY_URI));
-        config.setProperty(OwlapiConfigParam.MAPPING_FILE_LOCATION, mappingFile.getAbsolutePath());
-        this.connector = new BasicStorageConnector(config);
+    public void getSnapshotCreatesNewAnonymousTransactionalOntology() throws Exception {
+        final URI physicalUri = initOntology(Collections.emptySet());
+        final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
+        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
         final OntologySnapshot snapshot = connector.getOntologySnapshot();
-        final OWLOntologyManager om = snapshot.getOntologyManager();
-        assertFalse(om.getIRIMappers().isEmpty());
-        final OWLOntologyIRIMapper mapper = om.getIRIMappers().iterator().next();
-        assertEquals(physicalUri, mapper.getDocumentIRI(IRI.create(ONTOLOGY_URI)).toURI());
+        assertTrue(snapshot.getOntology().getOntologyID().isAnonymous());
+    }
+
+    @Test
+    public void getSnapshotCopiesAxiomsIntoTheTransactionOntology() throws Exception {
+        final Set<OWLAxiom> axioms = Generator.generateAxioms();
+        final URI physicalUri = initOntology(axioms);
+        final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
+        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
+        final OntologySnapshot snapshot = connector.getOntologySnapshot();
+        final Set<OWLAxiom> transactionalAxioms = snapshot.getOntology().getAxioms();
+        assertTrue(transactionalAxioms.containsAll(axioms));
+    }
+
+    @Test
+    public void closeSnapshotRemovesTransactionalOntologyFromManager() throws Exception {
+        final URI physicalUri = initOntology(Collections.emptySet());
+        final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
+        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
+        final OntologySnapshot snapshot = connector.getOntologySnapshot();
+        final OWLOntology transactionalOntology = snapshot.getOntology();
+        final OWLOntologyManager manager = snapshot.getOntologyManager(); // We know this is the root manager
+        assertTrue(manager.contains(transactionalOntology));
+        connector.closeSnapshot(snapshot);
+        assertFalse(manager.contains(transactionalOntology));
     }
 }

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -72,6 +72,8 @@ public class OwlapiAdapterTest {
         this.factory = snapshot.getDataFactory();
         this.ontologySnapshot = new OntologySnapshot(ontology, snapshot.getOntologyManager(), factory, reasonerMock);
         when(connectorMock.getOntologySnapshot()).thenReturn(ontologySnapshot);
+        when(connectorMock.getOntologyUri())
+                .thenReturn(snapshot.getOntology().getOntologyID().getOntologyIRI().get().toURI());
 
         this.adapter = spy(new OwlapiAdapter(connectorMock, new Configuration(
                 OntologyStorageProperties.driver(OwlapiDataSource.class.getName()).physicalUri("testFile").build())));
@@ -321,5 +323,21 @@ public class OwlapiAdapterTest {
         startTransaction();
         verify(connectorMock).getOntologySnapshot();
         assertNotNull(executorFactoryField.get(adapter));
+    }
+
+    @Test
+    public void transactionCommitClosesTransactionalSnapshot() throws Exception {
+        startTransaction();
+        adapter.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
+        adapter.commit();
+        verify(connectorMock).closeSnapshot(ontologySnapshot);
+    }
+
+    @Test
+    public void transactionRollbackClosesTransactionalSnapshot() throws Exception {
+        startTransaction();
+        adapter.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
+        adapter.rollback();
+        verify(connectorMock).closeSnapshot(ontologySnapshot);
     }
 }

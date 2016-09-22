@@ -18,6 +18,7 @@
     <properties>
         <net.sourceforge.owlapi.version>4.2.4</net.sourceforge.owlapi.version>
         <cz.cvut.kbss.owl2query.version>0.4.0</cz.cvut.kbss.owl2query.version>
+        <ch.qos.logback.version>1.1.6</ch.qos.logback.version>
     </properties>
 
     <repositories>
@@ -79,6 +80,13 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${ch.qos.logback.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
