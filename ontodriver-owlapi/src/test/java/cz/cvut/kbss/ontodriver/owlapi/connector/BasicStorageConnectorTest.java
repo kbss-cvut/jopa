@@ -37,7 +37,10 @@ public class BasicStorageConnectorTest {
 
     private static final URI ONTOLOGY_URI = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/connector");
 
-    private AbstractConnector connector;
+    private BasicStorageConnector connector;
+
+    private OWLOntologyManager manager;
+    private OWLOntology ontology;
 
     @After
     public void tearDown() throws Exception {
@@ -70,6 +73,8 @@ public class BasicStorageConnectorTest {
         final OWLOntology o = om.createOntology(IRI.create(ONTOLOGY_URI));
         om.addAxioms(o, axioms);
         om.saveOntology(o, IRI.create(targetFile));
+        this.manager = om;
+        this.ontology = o;
         return targetFile.toURI();
     }
 
@@ -184,5 +189,22 @@ public class BasicStorageConnectorTest {
         assertTrue(manager.contains(transactionalOntology));
         connector.closeSnapshot(snapshot);
         assertFalse(manager.contains(transactionalOntology));
+    }
+
+    @Test
+    public void getSnapshotResolvesImportsOfTheTransactionalSnapshot() throws Exception {
+        final URI physicalUri = initOntology(Collections.emptySet());
+        final String importedOnto = "http://onto.fel.cvut.cz/ontologies/ufo";
+        final OWLImportsDeclaration importDecl = manager.getOWLDataFactory()
+                                                        .getOWLImportsDeclaration(IRI.create(importedOnto));
+        manager.applyChange(new AddImport(ontology, importDecl));
+        manager.saveOntology(ontology, IRI.create(physicalUri));
+        final OntologyStorageProperties storageProperties = initStorageProperties(physicalUri, null);
+        this.connector = new BasicStorageConnector(new Configuration(storageProperties));
+        final OntologySnapshot snapshot = connector.getOntologySnapshot();
+        final Set<OWLOntology> imports = snapshot.getOntology().getImports();
+        assertEquals(1, imports.size());
+        final OWLOntology imported = imports.iterator().next();
+        assertEquals(IRI.create(importedOnto), imported.getOntologyID().getOntologyIRI().get());
     }
 }

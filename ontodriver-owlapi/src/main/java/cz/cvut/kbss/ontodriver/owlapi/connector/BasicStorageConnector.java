@@ -37,6 +37,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Default file-based storage connector.
@@ -154,7 +155,7 @@ public class BasicStorageConnector extends AbstractConnector {
         READ.lock();
         try {
             final OWLOntology snapshot = ontologyManager.createOntology();
-            ontologyManager.addAxioms(snapshot, ontology.getAxioms());
+            cloneOntologyContent(snapshot);
             return new OntologySnapshot(snapshot, ontologyManager, ontologyManager.getOWLDataFactory(),
                     getReasoner(snapshot));
         } catch (OWLOntologyCreationException e) {
@@ -162,6 +163,14 @@ public class BasicStorageConnector extends AbstractConnector {
         } finally {
             READ.unlock();
         }
+    }
+
+    private void cloneOntologyContent(OWLOntology target) {
+        ontologyManager.addAxioms(target, ontology.getAxioms());
+        ontologyManager
+                .applyChanges(
+                        ontology.getImportsDeclarations().stream().map(i -> new AddImport(target, i)).collect(
+                                Collectors.toList()));
     }
 
     private OntologySnapshot getLiveOntology() {

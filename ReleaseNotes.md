@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.8.5 - September 26, 2016
+- Upgraded to OWL API 4.2.4 - it fixes issues with missing import statements after ontology copy,
+- Changed the way transactional snapshot are created in the OWL API driver.
+
 ## 0.8.4 - July 13, 2016
 - Added support for named native queries. Declaration is similar to JPA, just use `@NamedNativeQuery` or `@NamedNativeQueries`
 on an entity or its mapped superclass and the query will be available in the persistence unit.
