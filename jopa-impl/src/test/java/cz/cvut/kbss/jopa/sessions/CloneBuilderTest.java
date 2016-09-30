@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -428,6 +428,23 @@ public class CloneBuilderTest {
             assertEquals(c.getReferencedList().get(i).getUri(), entityC.getReferencedList().get(i)
                                                                        .getUri());
         }
+    }
+
+    @Test
+    public void mergeChangesHandlesSingletonCollection() throws Exception {
+        entityC.setReferencedList(Collections.singletonList(entityA));
+        final OWLClassC c = (OWLClassC) builder.buildClone(entityC, defaultDescriptor);
+        final OWLClassA newA = new OWLClassA();
+        c.setReferencedList(Collections.singletonList(newA));
+        final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c,
+                defaultDescriptor);
+        chSet.addChangeRecord(new ChangeRecordImpl(OWLClassC.getRefListField().getName(), c
+                .getReferencedList()));
+
+        builder.mergeChanges(entityC, chSet);
+        assertNotNull(entityC.getReferencedList());
+        assertEquals(1, entityC.getReferencedList().size());
+        assertEquals(newA, entityC.getReferencedList().get(0));
     }
 
     @Test
