@@ -91,7 +91,7 @@ public aspect BeanListenerAspect {
 
             field.setAccessible(true);
 
-            LOG.trace("*** Fetching {} of {}: {}", field.getName(), object.getClass(), object.hashCode());
+            LOG.trace("*** Fetching {} of {}: {}", field.getName(), object.getClass(), System.identityHashCode(object));
 
             JOPAPersistenceProvider.loadReference(object, field);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
