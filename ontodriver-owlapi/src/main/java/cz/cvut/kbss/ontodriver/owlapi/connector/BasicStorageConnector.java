@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -25,18 +25,19 @@ import cz.cvut.kbss.ontodriver.owlapi.util.MappingFileParser;
 import cz.cvut.kbss.ontodriver.owlapi.util.MutableAxiomChange;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
-import org.semanticweb.owlapi.model.parameters.OntologyCopy;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Default file-based storage connector.
@@ -59,6 +60,8 @@ public class BasicStorageConnector extends AbstractConnector {
     private OWLReasoner reasoner;
     private OWLReasonerFactory reasonerFactory;
 
+    private OWLOntologyIRIMapper iriMapper;
+
     public BasicStorageConnector(Configuration configuration) throws OwlapiDriverException {
         super(configuration);
     }
@@ -71,8 +74,9 @@ public class BasicStorageConnector extends AbstractConnector {
         final OntologyStorageProperties storageProperties = configuration.getStorageProperties();
         LOG.debug("Loading ontology {} from {}.", storageProperties.getOntologyURI(),
                 storageProperties.getPhysicalURI());
+        resolveIriMapper();
         this.ontologyManager = OWLManager.createOWLOntologyManager();
-        setIriMapper();
+        setIriMapper(ontologyManager);
         try {
             this.ontology = ontologyManager.loadOntologyFromOntologyDocument(
                     IRI.create(storageProperties.getPhysicalURI()));
@@ -95,9 +99,15 @@ public class BasicStorageConnector extends AbstractConnector {
         this.reasoner = getReasoner(ontology);
     }
 
-    private void setIriMapper() {
+    private void resolveIriMapper() {
         if (configuration.isSet(OwlapiConfigParam.MAPPING_FILE_LOCATION)) {
-            ontologyManager.getIRIMappers().add(new DefaultOntologyIriMapper(new MappingFileParser(configuration)));
+            this.iriMapper = new DefaultOntologyIriMapper(new MappingFileParser(configuration));
+        }
+    }
+
+    private void setIriMapper(OWLOntologyManager manager) {
+        if (iriMapper != null) {
+            manager.getIRIMappers().add(new DefaultOntologyIriMapper(new MappingFileParser(configuration)));
         }
     }
 
@@ -133,18 +143,34 @@ public class BasicStorageConnector extends AbstractConnector {
     }
 
     @Override
+    public URI getOntologyUri() {
+        assert ontology.getOntologyID().getOntologyIRI().isPresent();
+
+        return ontology.getOntologyID().getOntologyIRI().get().toURI();
+    }
+
+    @Override
     public OntologySnapshot getOntologySnapshot() {
         ensureOpen();
         READ.lock();
         try {
-            final OWLOntologyManager m = OWLManager.createOWLOntologyManager();
-            final OWLOntology snapshot = m.copyOntology(ontology, OntologyCopy.DEEP);
-            return new OntologySnapshot(snapshot, m, m.getOWLDataFactory(), getReasoner(snapshot));
+            final OWLOntology snapshot = ontologyManager.createOntology();
+            cloneOntologyContent(snapshot);
+            return new OntologySnapshot(snapshot, ontologyManager, ontologyManager.getOWLDataFactory(),
+                    getReasoner(snapshot));
         } catch (OWLOntologyCreationException e) {
             throw new OntologySnapshotException("Unable to create ontology snapshot.", e);
         } finally {
             READ.unlock();
         }
+    }
+
+    private void cloneOntologyContent(OWLOntology target) {
+        ontologyManager.addAxioms(target, ontology.getAxioms());
+        ontologyManager
+                .applyChanges(
+                        ontology.getImportsDeclarations().stream().map(i -> new AddImport(target, i)).collect(
+                                Collectors.toList()));
     }
 
     private OntologySnapshot getLiveOntology() {
@@ -200,6 +226,13 @@ public class BasicStorageConnector extends AbstractConnector {
         } finally {
             WRITE.unlock();
         }
+    }
+
+    @Override
+    public void closeSnapshot(OntologySnapshot snapshot) {
+        ensureOpen();
+        assert snapshot != null;
+        ontologyManager.removeOntology(snapshot.getOntology());
     }
 
     @Override

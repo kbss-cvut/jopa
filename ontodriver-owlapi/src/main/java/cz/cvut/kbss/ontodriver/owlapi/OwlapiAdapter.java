@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -25,7 +25,10 @@ import cz.cvut.kbss.ontodriver.owlapi.query.OwlapiPreparedStatement;
 import cz.cvut.kbss.ontodriver.owlapi.query.OwlapiStatement;
 import cz.cvut.kbss.ontodriver.owlapi.query.StatementExecutorFactory;
 import cz.cvut.kbss.ontodriver.owlapi.util.IdentifierGenerator;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import java.net.URI;
@@ -79,6 +82,7 @@ public class OwlapiAdapter {
     }
 
     private void transactionCleanup() {
+        connector.closeSnapshot(ontologySnapshot);
         this.ontologySnapshot = null;
         this.transactionState = TransactionState.INITIAL;
     }
@@ -111,16 +115,9 @@ public class OwlapiAdapter {
         return ontologySnapshot.getDataFactory();
     }
 
-    private IRI getOntologyIri() {
-        assert ontologySnapshot != null;
-        assert ontology().getOntologyID().getOntologyIRI().isPresent();
-
-        return ontology().getOntologyID().getOntologyIRI().get();
-    }
-
     List<URI> getContexts() {
         startTransactionIfNotActive();
-        return Collections.singletonList(getOntologyIri().toURI());
+        return Collections.singletonList(connector.getOntologyUri());
     }
 
     boolean containsAxiom(Axiom<?> axiom, URI context) {

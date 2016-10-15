@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -32,8 +32,6 @@ import java.util.*;
  * Special class for cloning collections. Introduced because some Java collection have no no-argument constructor and
  * thus they must be cloned specially. NOTE: This class may be removed in case a better cloning mechanisms (namely
  * database mappings and copy policies) is introduced.
- *
- * @author kidney
  */
 class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 
@@ -201,19 +199,16 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         assert (originalValue == null || originalValue instanceof Collection);
         assert cloneValue instanceof Collection;
 
-        Collection<Object> orig = (Collection<Object>) originalValue;
         Collection<Object> clone = (Collection<Object>) cloneValue;
         if (clone instanceof IndirectCollection) {
             clone = ((IndirectCollection<Collection<Object>>) clone).getReferencedCollection();
         }
-        if (originalValue == null) {
-            orig = (Collection<Object>) createNewInstance(clone.getClass(), clone.size());
-            if (orig == null) {
-                orig = createDefaultCollection(clone.getClass());
-            }
-            EntityPropertiesUtils.setFieldValue(field, target, orig);
+        Collection<Object> orig = (Collection<Object>) createNewInstance(clone.getClass(), clone.size());
+        if (orig == null) {
+            orig = createDefaultCollection(clone.getClass());
         }
-        orig.clear();
+        EntityPropertiesUtils.setFieldValue(field, target, orig);
+
         if (clone.isEmpty()) {
             return;
         }

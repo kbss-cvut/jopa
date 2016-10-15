@@ -1,6 +1,11 @@
 # JOPA - Release Notes
 
-## 0.8.5 - September 16, 2016
+## 0.8.6 - September 30, 2016
+- Fixed issue with merging changes into collections which do not support the  `clear` operation (e.g. singleton collections).
+
+## 0.8.5 - September 26, 2016
+- Upgraded to OWL API 4.2.4 - it fixes issues with missing import statements after ontology copy,
+- Changed the way transactional snapshot are created in the OWL API driver.
 - Refactored metamodel as a preparation for inheritance implementation. Use AspectJ 1.8.9.
 
 ## 0.8.4 - July 13, 2016
