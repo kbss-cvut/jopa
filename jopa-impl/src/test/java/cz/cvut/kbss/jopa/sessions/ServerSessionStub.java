@@ -49,4 +49,9 @@ public class ServerSessionStub extends ServerSession {
     public boolean isTypeManaged(Class<?> cls) {
         return TestEnvironmentUtils.getManagedTypes().contains(cls);
     }
+
+    @Override
+    public synchronized UnitOfWorkImpl getPersistenceContext(Object entity) {
+        return null;
+    }
 }

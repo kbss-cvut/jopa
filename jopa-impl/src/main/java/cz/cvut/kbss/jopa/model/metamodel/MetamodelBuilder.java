@@ -42,7 +42,6 @@ public class MetamodelBuilder {
      * @param entities Entities declared for the persistence unit
      */
     public void buildMetamodel(Set<Class<?>> entities) {
-        // AJC won't compile a method reference here
         entities.forEach(this::processOWLClass);
     }
 

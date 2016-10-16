@@ -16,10 +16,18 @@ package cz.cvut.kbss.jopa.test;
 
 public class Vocabulary {
 
-    public static final String cOwlClassB = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB";
+    public static final String CLASS_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
+    public static final String ATTRIBUTE_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
 
-    public static final String pAStringAttribute = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute";
-    public static final String pBStringAttribute = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute";
+    public static final String cOwlClassB = CLASS_IRI_BASE + "OWLClassB";
+    public static final String cOWLClassS = CLASS_IRI_BASE + "OWLClassS";
+    public static final String cOWLClassT = CLASS_IRI_BASE + "OWLClassT";
+
+    public static final String pAStringAttribute = ATTRIBUTE_IRI_BASE + "A-stringAttribute";
+    public static final String pBStringAttribute = ATTRIBUTE_IRI_BASE + "B-stringAttribute";
+
+    public static final String tIntegerAttribute = ATTRIBUTE_IRI_BASE + "T-integerAttribute";
+    public static final String hasOwlClassA = ATTRIBUTE_IRI_BASE + "hasOwlClassA";
 
     private Vocabulary() {
         throw new AssertionError();

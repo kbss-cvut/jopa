@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -195,6 +195,20 @@ public class MetamodelMocks {
     @Mock
     private SingularAttribute<OWLClassQ, OWLClassA> qOwlClassAAtt;
 
+    @Mock
+    private EntityType<OWLClassR> etR;
+    @Mock
+    private SingularAttribute<OWLClassR, String> rStringAtt;
+    @Mock
+    private SingularAttribute<OWLClassR, OWLClassA> rOwlClassAAtt;
+
+    @Mock
+    private EntityType<OWLClassS> etS;
+    @Mock
+    private Identifier idS;
+    @Mock
+    private SingularAttribute<OWLClassS, String> sNameAtt;
+
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
         MetamodelFactory.initOWLClassAMocks(etA, aStringAtt, aTypes, idA);
@@ -215,6 +229,8 @@ public class MetamodelMocks {
         MetamodelFactory
                 .initOWLClassPMock(etP, pTypes, pProperties, pUriAtt, pUrlsAtt, pSimpleList, pReferencedList, idP);
         MetamodelFactory.initOwlClassQMock(etQ, qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
+        MetamodelFactory.initOwlClassSMock(etS, sNameAtt, idS);
+        MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -235,6 +251,8 @@ public class MetamodelMocks {
         etMap.put(OWLClassO.class, etO);
         etMap.put(OWLClassP.class, etP);
         etMap.put(OWLClassQ.class, etQ);
+        etMap.put(OWLClassR.class, etR);
+        etMap.put(OWLClassS.class, etS);
         when(metamodel.entity(any())).thenAnswer(invocation -> {
             final Class<?> cls = (Class<?>) invocation.getArguments()[0];
             if (etMap.containsKey(cls)) {
@@ -615,6 +633,35 @@ public class MetamodelMocks {
 
         public SingularAttribute<OWLClassQ, OWLClassA> qOwlClassAAtt() {
             return MetamodelMocks.this.qOwlClassAAtt;
+        }
+    }
+
+    public class OWLClassRMetamodel {
+        public EntityType<OWLClassR> entityType() {
+            return MetamodelMocks.this.etR;
+        }
+
+        public SingularAttribute<OWLClassR, String> rStringAtt() {
+            return MetamodelMocks.this.rStringAtt;
+        }
+
+        public SingularAttribute<OWLClassR, OWLClassA> rOwlClassAAtt() {
+            return MetamodelMocks.this.rOwlClassAAtt;
+        }
+    }
+
+    public class OWLClassSMetamodel {
+
+        public EntityType<OWLClassS> entityType() {
+            return MetamodelMocks.this.etS;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idS;
+        }
+
+        public SingularAttribute<OWLClassS, String> rNameAtt() {
+            return MetamodelMocks.this.sNameAtt;
         }
     }
 }

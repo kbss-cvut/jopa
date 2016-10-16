@@ -479,25 +479,4 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertEquals(entityP.getTypes().size(), result.getTypes().size());
         assertTrue(entityP.getTypes().containsAll(result.getTypes()));
     }
-
-    @Test
-    public void testPersistEntityWithMappedSuperclass() {
-        this.em = getEntityManager("PersistEntityWithMappedSuperclass", false);
-        em.getTransaction().begin();
-        em.persist(entityA);
-        em.persist(entityQ);
-        em.getTransaction().commit();
-        em.clear();
-
-        assertNotNull(entityQ.getUri());
-        final OWLClassQ result = em.find(OWLClassQ.class, entityQ.getUri());
-        assertNotNull(result);
-        assertEquals(entityQ.getStringAttribute(), result.getStringAttribute());
-        assertEquals(entityQ.getParentString(), result.getParentString());
-        assertEquals(entityQ.getLabel(), result.getLabel());
-        assertNotNull(result.getOwlClassA());
-        assertEquals(entityQ.getOwlClassA().getUri(), result.getOwlClassA().getUri());
-        assertEquals(entityA.getStringAttribute(), result.getOwlClassA().getStringAttribute());
-        assertEquals(entityA.getTypes(), result.getOwlClassA().getTypes());
-    }
 }
