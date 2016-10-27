@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -21,7 +21,9 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProvider;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.SesameDataPersist;
 import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
+import cz.cvut.kbss.jopa.test.environment.Triple;
 import cz.cvut.kbss.jopa.test.runner.PersistenceUnitTestRunner;
 import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import cz.cvut.kbss.ontodriver.sesame.SesameDataSource;
@@ -39,11 +41,13 @@ public class SesamePersistenceUnitTest extends PersistenceUnitTestRunner {
 
     private static final Logger LOG = LoggerFactory.getLogger(SesamePersistenceUnitTest.class);
 
-    private SesamePersistenceFactory persistenceFactory;
+    private final SesamePersistenceFactory persistenceFactory;
+    private final SesameDataPersist dataPersist;
 
     public SesamePersistenceUnitTest() {
         super(LOG);
         this.persistenceFactory = new SesamePersistenceFactory();
+        this.dataPersist = new SesameDataPersist();
     }
 
     @Override
@@ -55,6 +59,11 @@ public class SesamePersistenceUnitTest extends PersistenceUnitTestRunner {
     protected EntityManager getEntityManager(String repositoryName, boolean cacheEnabled,
                                              Map<String, String> properties) {
         return persistenceFactory.getEntityManager(repositoryName, cacheEnabled, properties);
+    }
+
+    @Override
+    protected void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
+        dataPersist.persistTestData(data, em);
     }
 
     @Test

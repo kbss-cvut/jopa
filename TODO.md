@@ -6,6 +6,9 @@
     - [x] Mapped superclass
     - [ ] Single inheritance
     - [ ] Multiple inheritance
+- [ ] Publish in Maven central    
+- [ ] Deploy stable build to maven
+- [ ] Publish build javadocs on kbss
 - [ ] Add support for IC validation disabling on entity load
     - Some sort of loading modes should be added (similar to Lock modes in JPA)
 - [ ] JOPA Specification doc, which would explain behaviour and principles

@@ -29,6 +29,9 @@ public class Vocabulary {
     public static final String tIntegerAttribute = ATTRIBUTE_IRI_BASE + "T-integerAttribute";
     public static final String hasOwlClassA = ATTRIBUTE_IRI_BASE + "hasOwlClassA";
 
+    public static final String qParentStringAttribute = ATTRIBUTE_IRI_BASE + "QParent-stringAttribute";
+    public static final String qStringAttribute = ATTRIBUTE_IRI_BASE + "Q-stringAttribute";
+
     private Vocabulary() {
         throw new AssertionError();
     }
