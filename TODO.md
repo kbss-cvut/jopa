@@ -46,7 +46,7 @@
 Single inheritance:
 - [x] Metamodel structure
 - [x] Metamodel building
-- [ ] Instance loading
+- [x] Instance loading
 - [x] Instance persist
 - [ ] Instance update
 - [ ] Instance remove

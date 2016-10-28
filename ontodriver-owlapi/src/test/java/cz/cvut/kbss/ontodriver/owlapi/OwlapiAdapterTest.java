@@ -16,6 +16,7 @@ package cz.cvut.kbss.ontodriver.owlapi;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Multimap;
+import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.config.Configuration;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
@@ -23,6 +24,7 @@ import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
 import cz.cvut.kbss.ontodriver.owlapi.environment.TestUtils;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -339,5 +341,20 @@ public class OwlapiAdapterTest {
         adapter.addTransactionalChanges(Collections.singletonList(mock(OWLOntologyChange.class)));
         adapter.rollback();
         verify(connectorMock).closeSnapshot(ontologySnapshot);
+    }
+
+    @Test
+    public void unwrapReturnsTheAdapterWhenClassMatches() throws Exception {
+        assertSame(adapter, adapter.unwrap(OwlapiAdapter.class));
+    }
+
+    @Test
+    public void unwrapReturnsOntologySnapshotWhenOwlOntologyClassIsPassedIn() throws Exception {
+        assertSame(ontology, adapter.unwrap(OWLOntology.class));
+    }
+
+    @Test(expected = OwlapiDriverException.class)
+    public void throwsDriverExceptionWhenUnsupportedClassIsPassedToUnwrap() throws Exception {
+        adapter.unwrap(Connection.class);
     }
 }

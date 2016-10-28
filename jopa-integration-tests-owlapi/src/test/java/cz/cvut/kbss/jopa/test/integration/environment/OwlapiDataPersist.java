@@ -18,7 +18,10 @@ public class OwlapiDataPersist {
         for (Triple t : data) {
             final OWLNamedIndividual ind = df.getOWLNamedIndividual(IRI.create(t.getSubject()));
             final AddAxiom axiom;
-            if (t.getValue() instanceof URI) {
+            if (t.getProperty().toString().equals(CommonVocabulary.RDF_TYPE)) {
+                final OWLClass cls = df.getOWLClass(IRI.create(t.getValue().toString()));
+                axiom = new AddAxiom(ontology, df.getOWLClassAssertionAxiom(cls, ind));
+            } else if (t.getValue() instanceof URI) {
                 final OWLObjectProperty op = df.getOWLObjectProperty(IRI.create(t.getProperty()));
                 final OWLNamedIndividual obj = df.getOWLNamedIndividual(IRI.create((URI) t.getValue()));
                 axiom = new AddAxiom(ontology, df.getOWLObjectPropertyAssertionAxiom(op, ind, obj));

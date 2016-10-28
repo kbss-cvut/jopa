@@ -20,6 +20,7 @@ import cz.cvut.kbss.ontodriver.descriptor.*;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.owlapi.connector.Connector;
 import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.exception.OwlapiDriverException;
 import cz.cvut.kbss.ontodriver.owlapi.list.ListHandler;
 import cz.cvut.kbss.ontodriver.owlapi.query.OwlapiPreparedStatement;
 import cz.cvut.kbss.ontodriver.owlapi.query.OwlapiStatement;
@@ -225,5 +226,15 @@ public class OwlapiAdapter {
     public OwlapiPreparedStatement prepareStatement(String statement, OwlapiConnection connection) {
         startTransactionIfNotActive();
         return new OwlapiPreparedStatement(statementExecutorFactory, connection, statement);
+    }
+
+    public <T> T unwrap(Class<T> cls) throws OwlapiDriverException {
+        startTransactionIfNotActive();
+        if (cls.isAssignableFrom(this.getClass())) {
+            return cls.cast(this);
+        } else if (cls.isAssignableFrom(OWLOntology.class)) {
+            return cls.cast(ontologySnapshot.getOntology());
+        }
+        throw new OwlapiDriverException("Unsupported type " + cls);
     }
 }

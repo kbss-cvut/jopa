@@ -19,9 +19,11 @@ public class Vocabulary {
     public static final String CLASS_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
     public static final String ATTRIBUTE_IRI_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
 
+    public static final String cOwlClassA = CLASS_IRI_BASE + "OWLClassA";
     public static final String cOwlClassB = CLASS_IRI_BASE + "OWLClassB";
     public static final String cOWLClassS = CLASS_IRI_BASE + "OWLClassS";
     public static final String cOWLClassT = CLASS_IRI_BASE + "OWLClassT";
+    public static final String cOWLClassQ = CLASS_IRI_BASE + "OWLClassQ";
 
     public static final String pAStringAttribute = ATTRIBUTE_IRI_BASE + "A-stringAttribute";
     public static final String pBStringAttribute = ATTRIBUTE_IRI_BASE + "B-stringAttribute";

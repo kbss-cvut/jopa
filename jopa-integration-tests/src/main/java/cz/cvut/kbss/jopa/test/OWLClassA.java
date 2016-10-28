@@ -24,7 +24,7 @@ import java.util.Set;
         @NamedNativeQuery(name = "OWLClassA.findByString", query = "SELECT ?x WHERE { ?x <" +
                 Vocabulary.pAStringAttribute + "> ?str . }")
 })
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
+@OWLClass(iri = Vocabulary.cOwlClassA)
 public class OWLClassA {
 
     @Types(fetchType = FetchType.EAGER)
