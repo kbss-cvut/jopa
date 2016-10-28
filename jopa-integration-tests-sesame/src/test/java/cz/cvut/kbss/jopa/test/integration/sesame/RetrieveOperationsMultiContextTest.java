@@ -12,13 +12,13 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.test.integration.owlapi;
+package cz.cvut.kbss.jopa.test.integration.sesame;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.test.environment.SesameDataPersist;
+import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
-import cz.cvut.kbss.jopa.test.integration.environment.OwlapiDataPersist;
-import cz.cvut.kbss.jopa.test.integration.environment.OwlapiPersistenceFactory;
-import cz.cvut.kbss.jopa.test.runner.UpdateOperationsRunner;
+import cz.cvut.kbss.jopa.test.runner.RetrieveOperationsMultiContextRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,17 +26,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public class OwlapiUpdateOperationsTest extends UpdateOperationsRunner {
+public class RetrieveOperationsMultiContextTest extends RetrieveOperationsMultiContextRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OwlapiUpdateOperationsTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RetrieveOperationsMultiContextTest.class);
 
-    private final OwlapiPersistenceFactory persistenceFactory;
-    private final OwlapiDataPersist dataPersist;
+    private final SesamePersistenceFactory persistenceFactory;
+    private final SesameDataPersist dataPersist;
 
-    public OwlapiUpdateOperationsTest() {
+    public RetrieveOperationsMultiContextTest() {
         super(LOG);
-        this.persistenceFactory = new OwlapiPersistenceFactory();
-        this.dataPersist = new OwlapiDataPersist();
+        this.persistenceFactory = new SesamePersistenceFactory();
+        this.dataPersist = new SesameDataPersist();
     }
 
     @Override

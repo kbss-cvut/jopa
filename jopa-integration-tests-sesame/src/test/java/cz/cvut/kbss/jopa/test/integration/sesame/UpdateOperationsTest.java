@@ -12,13 +12,13 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.test.integration;
+package cz.cvut.kbss.jopa.test.integration.sesame;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.environment.SesameDataPersist;
 import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
-import cz.cvut.kbss.jopa.test.runner.UpdateOperationsMultiContextRunner;
+import cz.cvut.kbss.jopa.test.runner.UpdateOperationsRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,14 +26,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public class SesameUpdateOperationsMultiContextTest extends UpdateOperationsMultiContextRunner {
+public class UpdateOperationsTest extends UpdateOperationsRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SesameUpdateOperationsMultiContextTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UpdateOperationsTest.class);
 
     private final SesamePersistenceFactory persistenceFactory;
     private final SesameDataPersist dataPersist;
 
-    public SesameUpdateOperationsMultiContextTest() {
+    public UpdateOperationsTest() {
         super(LOG);
         this.persistenceFactory = new SesamePersistenceFactory();
         this.dataPersist = new SesameDataPersist();

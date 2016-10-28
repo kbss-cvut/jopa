@@ -12,13 +12,13 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.test.integration;
+package cz.cvut.kbss.jopa.test.integration.sesame;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.environment.SesameDataPersist;
 import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
-import cz.cvut.kbss.jopa.test.runner.DeleteOperationsRunner;
+import cz.cvut.kbss.jopa.test.runner.DeleteOperationsMultiContextRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,14 +26,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public class SesameDeleteOperationsTest extends DeleteOperationsRunner {
+public class DeleteOperationsMultiContextTest extends DeleteOperationsMultiContextRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SesameDeleteOperationsTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DeleteOperationsMultiContextTest.class);
 
     private final SesamePersistenceFactory persistenceFactory;
     private final SesameDataPersist dataPersist;
 
-    public SesameDeleteOperationsTest() {
+    public DeleteOperationsMultiContextTest() {
         super(LOG);
         this.persistenceFactory = new SesamePersistenceFactory();
         this.dataPersist = new SesameDataPersist();

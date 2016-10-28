@@ -1,4 +1,4 @@
-package cz.cvut.kbss.jopa.test.integration.environment;
+package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
 import cz.cvut.kbss.jopa.model.EntityManager;

@@ -12,12 +12,13 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.test.query.owlapi;
+package cz.cvut.kbss.jopa.test.query.sesame;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.test.integration.environment.OwlapiPersistenceFactory;
+import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
-import cz.cvut.kbss.jopa.test.query.runner.TypedQueryRunner;
+import cz.cvut.kbss.jopa.test.query.runner.QueryRunner;
+import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
@@ -25,25 +26,21 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 
-public class OwlapiTypedQueryTest extends TypedQueryRunner {
+public class QueryTest extends QueryRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OwlapiTypedQueryTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(QueryTest.class);
 
     private static EntityManager em;
 
-    public OwlapiTypedQueryTest() {
+    public QueryTest() {
         super(LOG);
-    }
-
-    @Override
-    protected EntityManager getEntityManager() {
-        return em;
     }
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        final OwlapiPersistenceFactory persistenceFactory = new OwlapiPersistenceFactory();
-        em = persistenceFactory.getEntityManager("SPARQLTypedQueryTests", false, Collections.emptyMap());
+        final SesamePersistenceFactory persistenceFactory = new SesamePersistenceFactory();
+        em = persistenceFactory.getEntityManager("SPARQLQueryTests", false,
+                Collections.singletonMap(SesameOntoDriverProperties.SESAME_USE_INFERENCE, "true"));
         QueryTestEnvironment.generateTestData(em);
         em.clear();
         em.getEntityManagerFactory().getCache().evictAll();
@@ -53,5 +50,10 @@ public class OwlapiTypedQueryTest extends TypedQueryRunner {
     public static void tearDownAfterClass() throws Exception {
         em.close();
         em.getEntityManagerFactory().close();
+    }
+
+    @Override
+    protected EntityManager getEntityManager() {
+        return em;
     }
 }

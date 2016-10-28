@@ -15,7 +15,7 @@
 package cz.cvut.kbss.jopa.test.query.owlapi;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.test.integration.environment.OwlapiPersistenceFactory;
+import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import cz.cvut.kbss.jopa.test.query.runner.QueryRunner;
 import org.junit.AfterClass;
@@ -26,13 +26,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 
-public class OwlapiQueryTest extends QueryRunner {
+public class QueryTest extends QueryRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OwlapiQueryTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(QueryTest.class);
 
     private static EntityManager em;
 
-    public OwlapiQueryTest() {
+    public QueryTest() {
         super(LOG);
     }
 

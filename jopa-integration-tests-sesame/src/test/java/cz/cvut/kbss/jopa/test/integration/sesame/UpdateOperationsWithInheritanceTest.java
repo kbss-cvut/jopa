@@ -1,10 +1,10 @@
-package cz.cvut.kbss.jopa.test.integration;
+package cz.cvut.kbss.jopa.test.integration.sesame;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.environment.SesameDataPersist;
 import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
 import cz.cvut.kbss.jopa.test.environment.Triple;
-import cz.cvut.kbss.jopa.test.runner.CreateOperationsWithInheritanceRunner;
+import cz.cvut.kbss.jopa.test.runner.UpdateOperationsWithInheritanceRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,14 +12,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public class SesameCreateOperationsWithInheritanceTest extends CreateOperationsWithInheritanceRunner {
+public class UpdateOperationsWithInheritanceTest extends UpdateOperationsWithInheritanceRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SesameCreateOperationsWithInheritanceTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UpdateOperationsWithInheritanceTest.class);
 
     private final SesamePersistenceFactory persistenceFactory;
     private final SesameDataPersist dataPersist;
 
-    public SesameCreateOperationsWithInheritanceTest() {
+    public UpdateOperationsWithInheritanceTest() {
         super(LOG);
         this.persistenceFactory = new SesamePersistenceFactory();
         this.dataPersist = new SesameDataPersist();

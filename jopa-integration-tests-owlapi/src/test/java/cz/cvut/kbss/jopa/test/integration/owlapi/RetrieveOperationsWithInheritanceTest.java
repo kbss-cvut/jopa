@@ -2,8 +2,8 @@ package cz.cvut.kbss.jopa.test.integration.owlapi;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.environment.Triple;
-import cz.cvut.kbss.jopa.test.integration.environment.OwlapiDataPersist;
-import cz.cvut.kbss.jopa.test.integration.environment.OwlapiPersistenceFactory;
+import cz.cvut.kbss.jopa.test.environment.OwlapiDataPersist;
+import cz.cvut.kbss.jopa.test.environment.OwlapiPersistenceFactory;
 import cz.cvut.kbss.jopa.test.runner.RetrieveOperationsWithInheritanceRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,14 +12,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public class OwlapiRetrieveOperationsWithInheritanceTest extends RetrieveOperationsWithInheritanceRunner {
+public class RetrieveOperationsWithInheritanceTest extends RetrieveOperationsWithInheritanceRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OwlapiRetrieveOperationsWithInheritanceTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RetrieveOperationsWithInheritanceTest.class);
 
     private final OwlapiPersistenceFactory persistenceFactory;
     private final OwlapiDataPersist dataPersist;
 
-    public OwlapiRetrieveOperationsWithInheritanceTest() {
+    public RetrieveOperationsWithInheritanceTest() {
         super(LOG);
         this.persistenceFactory = new OwlapiPersistenceFactory();
         this.dataPersist = new OwlapiDataPersist();

@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.Assert.assertFalse;
+
 public abstract class BaseRunner {
 
     protected static final URI CONTEXT_ONE = URI.create("http://krizik.felk.cvut.cz/jopa/contexts#One");
@@ -143,6 +145,19 @@ public abstract class BaseRunner {
             em.persist(ent);
         }
         em.getTransaction().commit();
+    }
+
+    /**
+     * Verifies that no statements with the specified individual as subject exist in the ontology any more.
+     *
+     * @param identifier Individual identifier
+     */
+    protected void verifyIndividualWasRemoved(URI identifier) {
+        // TODO There is a bug in OWL2Query - the query returns true, because it finds the top object and data property assertion for an individual
+        // which doesn't exist anymore (but is a part of the query)
+        final boolean remains = em.createNativeQuery("ASK WHERE { ?instance ?y ?z . }", Boolean.class)
+                                  .setParameter("instance", identifier).getSingleResult();
+        assertFalse(remains);
     }
 
     protected abstract EntityManager getEntityManager(String repositoryName, boolean cacheEnabled);

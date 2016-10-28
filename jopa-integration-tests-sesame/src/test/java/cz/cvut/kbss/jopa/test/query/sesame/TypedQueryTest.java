@@ -12,11 +12,12 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.test.query;
+package cz.cvut.kbss.jopa.test.query.sesame;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.environment.SesamePersistenceFactory;
-import cz.cvut.kbss.jopa.test.query.runner.QueryRunner;
+import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
+import cz.cvut.kbss.jopa.test.query.runner.TypedQueryRunner;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -25,20 +26,20 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 
-public class SesameQueryTest extends QueryRunner {
+public class TypedQueryTest extends TypedQueryRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SesameQueryTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TypedQueryTest.class);
 
     private static EntityManager em;
 
-    public SesameQueryTest() {
+    public TypedQueryTest() {
         super(LOG);
     }
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         final SesamePersistenceFactory persistenceFactory = new SesamePersistenceFactory();
-        em = persistenceFactory.getEntityManager("SPARQLQueryTests", false,
+        em = persistenceFactory.getEntityManager("SPARQLTypedQueryTests", false,
                 Collections.singletonMap(SesameOntoDriverProperties.SESAME_USE_INFERENCE, "true"));
         QueryTestEnvironment.generateTestData(em);
         em.clear();

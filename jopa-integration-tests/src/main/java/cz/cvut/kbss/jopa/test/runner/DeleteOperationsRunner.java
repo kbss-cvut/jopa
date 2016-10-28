@@ -49,6 +49,7 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
 
         assertNull(em.find(OWLClassA.class, entityA.getUri()));
+        verifyIndividualWasRemoved(entityA.getUri());
     }
 
     // TODO First we need to resolve referential integrity
@@ -99,6 +100,9 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         assertNull(em.find(OWLClassG.class, entityG.getUri()));
         assertNull(em.find(OWLClassH.class, entityH.getUri()));
         assertNull(em.find(OWLClassA.class, entityA.getUri()));
+        verifyIndividualWasRemoved(entityG.getUri());
+        verifyIndividualWasRemoved(entityH.getUri());
+        verifyIndividualWasRemoved(entityA.getUri());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -453,29 +457,6 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
 
         final OWLClassP result = em.find(OWLClassP.class, entityP.getUri());
         assertNull(result.getTypes());
-    }
-
-    @Ignore
-    @Test
-    public void testRemoveEntityWithMappedSuperclass() {
-        this.em = getEntityManager("RemoveEntityWithMappedSuperclass", false);
-        persist(entityQ, entityA);
-
-        em.getTransaction().begin();
-        final OWLClassQ toRemove = em.find(OWLClassQ.class, entityQ.getUri());
-        assertNotNull(toRemove);
-        em.remove(toRemove);
-        em.getTransaction().commit();
-
-        assertNull(em.find(OWLClassQ.class, entityQ.getUri()));
-        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
-//        final List res = em.createNativeQuery("SELECT * WHERE { ?instance ?y ?z . }").setParameter("instance",
-//                                   entityQ.getUri()).getResultList();
-        // TODO There may be a bug in OWL2Query - the query above returns top object and data property assertion for an individual
-        // which doesn't exist anymore (but is a part of the query)
-        final boolean remains = em.createNativeQuery("ASK WHERE { ?instance ?y ?z . }", Boolean.class)
-                                  .setParameter("instance", entityQ.getUri()).getSingleResult();
-        assertFalse(remains);
     }
 
     @Test

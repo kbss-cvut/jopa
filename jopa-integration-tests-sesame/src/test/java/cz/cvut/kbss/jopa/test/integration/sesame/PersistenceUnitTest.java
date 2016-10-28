@@ -12,7 +12,7 @@
  * details. You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cvut.kbss.jopa.test.integration;
+package cz.cvut.kbss.jopa.test.integration.sesame;
 
 import cz.cvut.kbss.jopa.Persistence;
 import cz.cvut.kbss.jopa.model.EntityManager;
@@ -37,14 +37,14 @@ import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
 
-public class SesamePersistenceUnitTest extends PersistenceUnitTestRunner {
+public class PersistenceUnitTest extends PersistenceUnitTestRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SesamePersistenceUnitTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PersistenceUnitTest.class);
 
     private final SesamePersistenceFactory persistenceFactory;
     private final SesameDataPersist dataPersist;
 
-    public SesamePersistenceUnitTest() {
+    public PersistenceUnitTest() {
         super(LOG);
         this.persistenceFactory = new SesamePersistenceFactory();
         this.dataPersist = new SesameDataPersist();
