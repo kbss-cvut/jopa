@@ -48,6 +48,19 @@ public class QueryImpl implements Query {
     }
 
     @Override
+    public void executeUpdate() {
+        final Statement stmt = connection.createStatement();
+        setTargetOntology(stmt);
+        URI[] uris = new URI[contexts.size()];
+        uris = contexts.toArray(uris);
+        try {
+            stmt.executeUpdate(query.assembleQuery(), uris);
+        } catch (OntoDriverException e) {
+            throw queryEvaluationException(e);
+        }
+    }
+
+    @Override
     public List getResultList() {
         try {
             if (maxResults == 0) {

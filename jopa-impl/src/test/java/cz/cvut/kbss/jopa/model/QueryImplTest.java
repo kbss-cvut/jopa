@@ -112,4 +112,14 @@ public class QueryImplTest extends QueryTestBase {
             assertEquals(res, o);
         }
     }
+
+    @Test
+    public void executeUpdateRunsUpdateOnConnection() throws Exception {
+        final String update = "INSERT { ?inst ?property ?newValue . } " +
+                "DELETE { ?inst ?property ?origValue . } WHERE {" +
+                "?inst ?property ?origValue . }";
+        final Query q = queryFactory.createNativeQuery(update);
+        q.executeUpdate();
+        verify(statementMock).executeUpdate(update);
+    }
 }
