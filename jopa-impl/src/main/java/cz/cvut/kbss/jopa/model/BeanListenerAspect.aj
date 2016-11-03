@@ -91,8 +91,7 @@ public aspect BeanListenerAspect {
 
             field.setAccessible(true);
 
-            // Can't use toString or regular hashCode, because it could lead to an infinite loop
-            LOG.trace("*** Fetching {} of {}, {}", field.getName(), object.getClass(), System.identityHashCode(object));
+            LOG.trace("*** Fetching {} of {}: {}", field.getName(), object.getClass(), System.identityHashCode(object));
 
             JOPAPersistenceProvider.loadReference(object, field);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -25,6 +25,18 @@ import java.util.List;
 import java.util.Set;
 
 public interface Query {
+
+    /**
+     * Execute an update or delete statement.
+     *
+     * @throws IllegalStateException        if called for a SELECT statement or for a criteria query
+     * @throws TransactionRequiredException if there is no transaction or the persistence context has not been joined to
+     *                                      the transaction
+     * @throws OWLPersistenceException      if the query execution exceeds the query timeout value set and the
+     *                                      transaction is rolled back
+     */
+    void executeUpdate();
+
     /**
      * Execute a SELECT query and return the query results as an untyped List.
      *

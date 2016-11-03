@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -52,8 +52,6 @@ public interface Statement extends AutoCloseable {
 
     /**
      * Execute the specified SPARQL update query. </p>
-     * <p>
-     * The return value is optional and implementations may choose to return 0 by default.
      *
      * @param sparql   The statement to execute
      * @param contexts Specifies contexts against which to run the query. Since this parameter is optional, it is

@@ -85,9 +85,9 @@ public class ServerSession extends AbstractSession implements Wrapper {
                             Map<String, String> properties, Metamodel metamodel) {
         assert properties != null;
         assert metamodel != null;
-        this.runningTransactions = new WeakHashMap<>();
-        this.activePersistenceContexts = new WeakHashMap<>();
-        this.uowsToEntities = new WeakHashMap<>();
+        this.runningTransactions = new HashMap<>();
+        this.activePersistenceContexts = new IdentityHashMap<>();
+        this.uowsToEntities = new HashMap<>();
         this.liveObjectCache = CacheFactory.createCache(properties);
         liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
         this.storageAccessor = new DefaultStorageAccessor(storageProperties, properties);

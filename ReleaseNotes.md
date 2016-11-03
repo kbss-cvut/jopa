@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.8.7 - November 3, 2016
+- Added support for `Query.executeUpdate`, which executes SPARQL Update statements on the repository. (_This feature is not supported by OWL2Query, so it only applies to Sesame-backed applications._)
+
 ## 0.8.6 - September 30, 2016
 - Fixed issue with merging changes into collections which do not support the  `clear` operation (e.g. singleton collections).
 
