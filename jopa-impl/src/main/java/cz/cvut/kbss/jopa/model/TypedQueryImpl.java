@@ -63,6 +63,19 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
     }
 
     @Override
+    public void executeUpdate() {
+        final Statement stmt = connection.createStatement();
+        URI[] uris = new URI[contexts.size()];
+        uris = contexts.toArray(uris);
+        setTargetOntology(stmt);
+        try {
+            stmt.executeUpdate(query.assembleQuery(), uris);
+        } catch (OntoDriverException e) {
+            throw queryEvaluationException(e);
+        }
+    }
+
+    @Override
     public List<X> getResultList() {
         if (maxResults == 0) {
             return Collections.emptyList();
@@ -198,11 +211,7 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
     private List<X> getResultListImpl(int maxResults) throws OntoDriverException {
         assert maxResults > 0;
         final Statement stmt = connection.createStatement();
-        if (useBackupOntology) {
-            stmt.useOntology(Statement.StatementOntology.CENTRAL);
-        } else {
-            stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
-        }
+        setTargetOntology(stmt);
         URI[] arr = new URI[contexts.size()];
         arr = contexts.toArray(arr);
         try (ResultSet rs = stmt.executeQuery(query.assembleQuery(), arr)) {
@@ -221,6 +230,14 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
                 cnt++;
             }
             return res;
+        }
+    }
+
+    private void setTargetOntology(Statement stmt) {
+        if (useBackupOntology) {
+            stmt.useOntology(Statement.StatementOntology.CENTRAL);
+        } else {
+            stmt.useOntology(Statement.StatementOntology.TRANSACTIONAL);
         }
     }
 

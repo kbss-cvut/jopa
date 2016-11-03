@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -185,5 +185,15 @@ public class TypedQueryImplTest extends QueryTestBase {
     private void initAskQueryData(boolean result) throws Exception {
         when(resultSetMock.hasNext()).thenReturn(true, false);
         when(resultSetMock.getObject(0, Boolean.class)).thenReturn(result);
+    }
+
+    @Test
+    public void executeUpdateRunsUpdateOnConnection() throws Exception {
+        final String update = "INSERT { ?inst ?property ?newValue . } " +
+                "DELETE { ?inst ?property ?origValue . } WHERE {" +
+                "?inst ?property ?origValue . }";
+        final TypedQuery<Void> q = queryFactory.createNativeQuery(update, Void.class);
+        q.executeUpdate();
+        verify(statementMock).executeUpdate(update);
     }
 }
