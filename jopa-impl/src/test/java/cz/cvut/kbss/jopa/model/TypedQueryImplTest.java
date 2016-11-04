@@ -17,9 +17,12 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -195,5 +198,14 @@ public class TypedQueryImplTest extends QueryTestBase {
         final TypedQuery<Void> q = queryFactory.createNativeQuery(update, Void.class);
         q.executeUpdate();
         verify(statementMock).executeUpdate(update);
+    }
+
+    @Test
+    public void executeUpdateThrowsPersistenceExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
+        thrown.expect(OWLPersistenceException.class);
+        thrown.expectMessage("Exception caught when evaluating query " + UPDATE_QUERY);
+        doThrow(new OntoDriverException()).when(statementMock).executeUpdate(UPDATE_QUERY);
+        final Query q = queryFactory.createNativeQuery(UPDATE_QUERY, Void.class);
+        q.executeUpdate();
     }
 }

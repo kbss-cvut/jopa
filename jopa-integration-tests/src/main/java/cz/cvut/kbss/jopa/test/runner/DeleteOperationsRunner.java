@@ -482,4 +482,20 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         assertNull(em.find(OWLClassH.class, entityH.getUri()));
         assertNull(em.find(OWLClassA.class, entityA.getUri()));
     }
+
+    @Test
+    public void removeEntityTwiceInOneTransactionRemovesIt() {
+        this.em = getEntityManager("RemoveDetachedEntityWithCascadedReferenceUsingMergeAndRemove", true);
+        persist(entityA);
+
+        em.getTransaction().begin();
+        final OWLClassA toRemove = em.merge(entityA);
+        em.remove(toRemove);
+        assertFalse(em.contains(toRemove));
+        em.remove(toRemove);
+        assertFalse(em.contains(toRemove));
+        em.getTransaction().commit();
+
+        assertNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
 }

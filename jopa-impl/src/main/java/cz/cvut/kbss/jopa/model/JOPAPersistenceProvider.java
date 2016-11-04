@@ -40,18 +40,22 @@ public class JOPAPersistenceProvider implements PersistenceProvider, ProviderUti
         return emf;
     }
 
+    @Override
     public ProviderUtil getProviderUtil() {
         return this;
     }
 
+    @Override
     public LoadState isLoaded(Object entity) {
         return LoadState.UNKNOWN;
     }
 
+    @Override
     public LoadState isLoadedWithReference(Object entity, String attributeName) {
         return LoadState.UNKNOWN;
     }
 
+    @Override
     public LoadState isLoadedWithoutReference(Object entity, String attributeName) {
         return LoadState.UNKNOWN;
     }

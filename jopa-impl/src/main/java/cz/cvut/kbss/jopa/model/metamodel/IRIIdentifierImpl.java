@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,27 +18,27 @@ import java.lang.reflect.Field;
 
 public class IRIIdentifierImpl implements IRIIdentifier {
 
-	private final Field javaField;
-	
-	private final boolean generated;
+    private final Field javaField;
 
-	public IRIIdentifierImpl(final Field javaField, final boolean generated) {
-		this.javaField = javaField;
-		this.generated = generated;
-	}
+    private final boolean generated;
 
-	@Override
-	public Field getJavaField() {
-		return javaField;
-	}
+    public IRIIdentifierImpl(final Field javaField, final boolean generated) {
+        this.javaField = javaField;
+        this.generated = generated;
+    }
 
-	@Override
-	public void accept(IdentifierVisitor i) {
-		i.visit(this);
-	}
+    @Override
+    public Field getJavaField() {
+        return javaField;
+    }
 
-	@Override
-	public boolean isGenerated() {
-		return generated;
-	}
+    @Override
+    public void accept(IdentifierVisitor i) {
+        i.visit(this);
+    }
+
+    @Override
+    public boolean isGenerated() {
+        return generated;
+    }
 }
