@@ -3,6 +3,9 @@ package cz.cvut.kbss.jopa.test;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
+import cz.cvut.kbss.jopa.model.annotations.Types;
+
+import java.util.Set;
 
 @OWLClass(iri = Vocabulary.cOWLClassT)
 public class OWLClassT extends OWLClassS {
@@ -28,4 +31,5 @@ public class OWLClassT extends OWLClassS {
     public void setOwlClassA(OWLClassA owlClassA) {
         this.owlClassA = owlClassA;
     }
+
 }

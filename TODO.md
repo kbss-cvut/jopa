@@ -7,8 +7,8 @@
     - [ ] Single inheritance
     - [ ] Multiple inheritance
 - [ ] Publish in Maven central    
-- [ ] Deploy stable build to maven
-- [ ] Publish build javadocs on kbss
+- [ ] Deploy stable builds to Maven
+- [ ] Publish javadocs on kbss
 - [ ] Add support for IC validation disabling on entity load
     - Some sort of loading modes should be added (similar to Lock modes in JPA)
 - [ ] JOPA Specification doc, which would explain behaviour and principles
@@ -51,4 +51,7 @@ Single inheritance:
 - [x] Instance update
 - [x] Instance remove
 - [ ] Polymorphic instance loading (including queries)
+    - [x] Entity type for concrete supertype + supertype class assertion present
+    - [ ] Entity type for concrete supertype + supertype class assertion NOT present
+    - [ ] Entity type for abstract supertype
 - [ ] Polymorphic attributes
