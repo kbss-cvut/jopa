@@ -42,9 +42,9 @@ public interface EntityManager {
      * @throws NullPointerException         If {@code entity} is {@code null}
      * @throws TransactionRequiredException if invoked on a container-managed entity manager of type
      *                                      PersistenceContextType.TRANSACTION and there is no transaction.
-     * @see {@link #persist(Object, cz.cvut.kbss.jopa.model.descriptors.Descriptor)}
+     * @see #persist(Object, cz.cvut.kbss.jopa.model.descriptors.Descriptor)
      */
-    public void persist(final Object entity);
+    void persist(final Object entity);
 
     /**
      * Make an instance managed and persistent. </p>
@@ -62,7 +62,7 @@ public interface EntityManager {
      * @throws TransactionRequiredException if invoked on a container-managed entity manager of type
      *                                      PersistenceContextType.TRANSACTION and there is no transaction.
      */
-    public void persist(final Object entity, final Descriptor descriptor);
+    void persist(final Object entity, final Descriptor descriptor);
 
     /**
      * Merge the state of the given entity into the current persistence context. </p>
@@ -75,7 +75,7 @@ public interface EntityManager {
      * @throws TransactionRequiredException if invoked on a container-managed entity manager of type
      *                                      PersistenceContextType.TRANSACTION and there is no transaction.
      */
-    public <T> T merge(final T entity);
+    <T> T merge(final T entity);
 
     /**
      * Merge the state of the given entity into the current persistence context and into the repository specified by
@@ -88,7 +88,7 @@ public interface EntityManager {
      * @throws TransactionRequiredException if invoked on a container-managed entity manager of type
      *                                      PersistenceContextType.TRANSACTION and there is no transaction.
      */
-    public <T> T merge(final T entity, Descriptor descriptor);
+    <T> T merge(final T entity, Descriptor descriptor);
 
     /**
      * Remove the entity instance.
@@ -98,7 +98,7 @@ public interface EntityManager {
      * @throws TransactionRequiredException if invoked on a container-managed entity manager of type
      *                                      PersistenceContextType.TRANSACTION and there is no transaction.
      */
-    public void remove(final Object entity);
+    void remove(final Object entity);
 
     /**
      * Find by primary key. </p> <p> Search for an entity of the specified class and primary key. If the entity instance
@@ -111,7 +111,7 @@ public interface EntityManager {
      *                                  not a valid type for that entity’s primary key
      * @throws NullPointerException     If {@code entityClass}, {@code primaryKey} is {@code null}
      */
-    public <T> T find(final Class<T> entityClass, final Object primaryKey);
+    <T> T find(final Class<T> entityClass, final Object primaryKey);
 
     /**
      * Find by primary key. </p> <p> Search for an entity of the specified class and primary key. If the entity instance
@@ -129,7 +129,7 @@ public interface EntityManager {
      *                                  null}
      * @see #getContexts()
      */
-    public <T> T find(final Class<T> entityClass, final Object primaryKey,
+    <T> T find(final Class<T> entityClass, final Object primaryKey,
                       final Descriptor descriptor);
 
     // TODO JPA 2.0 find with properties
@@ -167,7 +167,7 @@ public interface EntityManager {
      * @throws TransactionRequiredException if there is no transaction
      * @throws OWLPersistenceException      if the flush fails
      */
-    public void flush();
+    void flush();
 
     // /**
     // * Set the flush mode that applies to all objects contained in the
@@ -204,7 +204,7 @@ public interface EntityManager {
      * @throws TransactionRequiredException if invoked on a container-managed entity manager of type
      *                                      PersistenceContextType.TRANSACTION and there is no transaction.
      */
-    public void refresh(final Object entity);
+    void refresh(final Object entity);
 
     // TODO JPA 2.0 refresh with lock mode
     // TODO JPA 2.0 refresh with properties
@@ -214,7 +214,7 @@ public interface EntityManager {
      * Clear the persistence context, causing all managed entities to become detached. Changes made to entities that
      * have not been flushed to the database will not be persisted.
      */
-    public void clear();
+    void clear();
 
     /**
      * Remove the given entity from the persistence context, causing a managed entity to become detached. Unflushed
@@ -224,7 +224,7 @@ public interface EntityManager {
      * @param entity The instance to detach
      * @throws IllegalArgumentException if the instance is not an entity
      */
-    public void detach(Object entity);
+    void detach(Object entity);
 
     /**
      * Check if the instance belongs to the current persistence context.
@@ -233,7 +233,7 @@ public interface EntityManager {
      * @return True if the instance is managed, false otherwise
      * @throws IllegalArgumentException if not an entity
      */
-    public boolean contains(Object entity);
+    boolean contains(Object entity);
 
     /**
      * Checks consistency of the specified context. </p>
@@ -259,7 +259,7 @@ public interface EntityManager {
      * @throws IllegalArgumentException if query string is not valid
      */
     @NonJPA
-    public Query createQuery(String qlString);
+    Query createQuery(String qlString);
 
     // TODO JPA 2.0 TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery)
 
@@ -271,7 +271,7 @@ public interface EntityManager {
      * @return the new query instance
      */
     @NonJPA
-    public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass);
+    <T> TypedQuery<T> createQuery(String query, Class<T> resultClass);
 
 
     /**
@@ -351,7 +351,7 @@ public interface EntityManager {
      * Return the underlying provider object for the EntityManager, if available. The result of this method is
      * implementation specific.
      */
-    public Object getDelegate();
+    Object getDelegate();
 
     /**
      * Close an application-managed EntityManager. After the close method has been invoked, all methods on the
@@ -361,14 +361,14 @@ public interface EntityManager {
      *
      * @throws IllegalStateException if the EntityManager is container-managed.
      */
-    public void close();
+    void close();
 
     /**
      * Determine whether the EntityManager is open.
      *
      * @return true until the EntityManager has been closed.
      */
-    public boolean isOpen();
+    boolean isOpen();
 
     /**
      * Return the resource-level transaction object. The EntityTransaction instance may be used serially to begin and
@@ -377,12 +377,12 @@ public interface EntityManager {
      * @return EntityTransaction instance
      * @throws IllegalStateException if invoked on a JTA EntityManager.
      */
-    public EntityTransaction getTransaction();
+    EntityTransaction getTransaction();
 
     /**
      * @since JPA 2.0
      */
-    public EntityManagerFactory getEntityManagerFactory();
+    EntityManagerFactory getEntityManagerFactory();
 
 //	/**
 //	 * Returns a label for the given IRI. The label is returned with the
@@ -401,10 +401,10 @@ public interface EntityManager {
      * @return List of repository context URIs
      */
     @NonJPA
-    public List<URI> getContexts();
+    List<URI> getContexts();
 
     // TODO JPA 2.0 public CriteriaBuilder getCriteriaBuilder();
-    public Metamodel getMetamodel();
+    Metamodel getMetamodel();
 
     /**
      * Sets the transactional ontology as the one which will be used when processing SPARQL queries. </p> <p> This
@@ -417,7 +417,7 @@ public interface EntityManager {
      * @see #setUseBackupOntologyForQueryProcessing()
      */
     @NonJPA
-    public void setUseTransactionalOntologyForQueryProcessing();
+    void setUseTransactionalOntologyForQueryProcessing();
 
     /**
      * Returns true if the transactional ontology should be used for SPARQL query processing.
@@ -426,7 +426,7 @@ public interface EntityManager {
      * @see #setUseTransactionalOntologyForQueryProcessing()
      */
     @NonJPA
-    public boolean useTransactionalOntologyForQueryProcessing();
+    boolean useTransactionalOntologyForQueryProcessing();
 
     /**
      * Sets the backup ontology as the one which will be used for processing of SPARQL queries. </p>
@@ -438,7 +438,7 @@ public interface EntityManager {
      * @see #setUseTransactionalOntologyForQueryProcessing()
      */
     @NonJPA
-    public void setUseBackupOntologyForQueryProcessing();
+    void setUseBackupOntologyForQueryProcessing();
 
     /**
      * Returns true if the backup (central) ontology should be used for SPARQL query processing. </p>
@@ -447,5 +447,5 @@ public interface EntityManager {
      * @see #setUseBackupOntologyForQueryProcessing()
      */
     @NonJPA
-    public boolean useBackupOntologyForQueryProcessing();
+    boolean useBackupOntologyForQueryProcessing();
 }

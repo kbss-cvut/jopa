@@ -734,15 +734,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @param entity Managed entity to delete
      */
     public void removeObject(Object entity) {
-        if (entity == null) {
-            return;
-        }
+        assert entity != null;
         if (!isObjectManaged(entity)) {
             throw new IllegalArgumentException(
                     "Cannot remove entity which is not managed in the current persistence context.");
-        }
-        if (getDeletedObjects().containsKey(entity)) {
-            return;
         }
         final Object primaryKey = getIdentifier(entity);
         final Descriptor descriptor = getDescriptor(entity);
@@ -754,7 +749,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             getDeletedObjects().put(entity, entity);
             this.hasDeleted = true;
         }
-//		unregisterEntityFromOntologyContext(entity);
         storage.remove(primaryKey, entity.getClass(), descriptor);
     }
 

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,7 +15,9 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Query;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.Test;
 
 import java.util.List;
@@ -28,6 +30,8 @@ import static org.mockito.Mockito.*;
 
 public class QueryImplTest extends QueryTestBase {
 
+    private static final String SELECT_QUERY = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
+
     @Override
     Query createQuery(String query, Class<?> resultType) {
         return queryFactory.createNativeQuery(query);
@@ -35,8 +39,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void getSingleResultReturnsUniqueResult() throws Exception {
-        final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query q = queryFactory.createNativeQuery(query);
+        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
         when(resultSetMock.getObject(anyInt())).thenReturn("str");
@@ -49,8 +52,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test(expected = NoUniqueResultException.class)
     public void getSingleResultWithMultipleResultsThrowsNoUniqueResultException() throws Exception {
-        final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query q = queryFactory.createNativeQuery(query);
+        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(false);
         when(resultSetMock.getObject(anyInt())).thenReturn("str");
@@ -59,8 +61,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void setMaxResultsConstrainsNumberOfReturnedResults() throws Exception {
-        final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query q = queryFactory.createNativeQuery(query);
+        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         // Three results
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(false);
@@ -72,8 +73,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void setMaxResultsToZeroReturnsImmediatelyEmptyResult() throws Exception {
-        final String query = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
-        final Query q = queryFactory.createNativeQuery(query);
+        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
         q.setMaxResults(0);
         final List result = q.getResultList();
         assertNotNull(result);
@@ -83,8 +83,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void queryResultRowIsArrayOfObjectsWhenMultipleColumnsExist() throws Exception {
-        final String query = "SELECT ?x ?y WHERE { ?x ?y ?z . }";
-        final Query q = queryFactory.createNativeQuery(query);
+        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(2);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
         final String res = "str";
@@ -101,8 +100,7 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void queryResultRowObjectWhenSingleColumnExists() throws Exception {
-        final String query = "SELECT ?x WHERE { ?x ?y ?z . }";
-        final Query q = queryFactory.createNativeQuery(query);
+        final Query q = queryFactory.createNativeQuery(SELECT_QUERY);
         when(resultSetMock.getColumnCount()).thenReturn(1);
         when(resultSetMock.hasNext()).thenReturn(true).thenReturn(false);
         final String res = "str";
@@ -115,11 +113,17 @@ public class QueryImplTest extends QueryTestBase {
 
     @Test
     public void executeUpdateRunsUpdateOnConnection() throws Exception {
-        final String update = "INSERT { ?inst ?property ?newValue . } " +
-                "DELETE { ?inst ?property ?origValue . } WHERE {" +
-                "?inst ?property ?origValue . }";
-        final Query q = queryFactory.createNativeQuery(update);
+        final Query q = queryFactory.createNativeQuery(UPDATE_QUERY);
         q.executeUpdate();
-        verify(statementMock).executeUpdate(update);
+        verify(statementMock).executeUpdate(UPDATE_QUERY);
+    }
+
+    @Test
+    public void executeUpdateThrowsPersistenceExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
+        thrown.expect(OWLPersistenceException.class);
+        thrown.expectMessage("Exception caught when evaluating query " + UPDATE_QUERY);
+        doThrow(new OntoDriverException()).when(statementMock).executeUpdate(UPDATE_QUERY);
+        final Query q = queryFactory.createNativeQuery(UPDATE_QUERY);
+        q.executeUpdate();
     }
 }

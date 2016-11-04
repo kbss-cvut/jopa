@@ -228,7 +228,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
                     }
                 }.start(this, object, CascadeType.REMOVE);
                 break;
-            case NOT_MANAGED:
+            default:
                 throw new IllegalArgumentException("Entity " + object + " is not managed and cannot be removed.");
         }
     }
