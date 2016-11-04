@@ -9,6 +9,7 @@
 - [ ] Publish in Maven central    
 - [ ] Deploy stable builds to Maven
 - [ ] Publish javadocs on kbss
+- [ ] Benchmark comparison with Empire and AliBaba
 - [ ] Add support for IC validation disabling on entity load
     - Some sort of loading modes should be added (similar to Lock modes in JPA)
 - [ ] JOPA Specification doc, which would explain behaviour and principles
