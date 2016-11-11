@@ -738,10 +738,9 @@ public class MetamodelFactory {
         when(et.getJavaType()).thenReturn(OWLClassS.class);
         when(idS.getJavaField()).thenReturn(OWLClassS.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassS.getClassIri()));
-        when(et.getFieldSpecifications())
-                .thenReturn(Collections.singleton(sNameAtt));
-        when(et.getAttributes())
-                .thenReturn(Collections.singleton(sNameAtt));
+        when(et.getFieldSpecifications()).thenReturn(Collections.singleton(sNameAtt));
+        when(et.getAttributes()).thenReturn(Collections.singleton(sNameAtt));
+        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
 
         when(sNameAtt.getJavaField()).thenReturn(OWLClassS.getNameField());
         when(sNameAtt.getJavaType()).thenReturn(OWLClassS.getNameField().getType());
@@ -764,6 +763,7 @@ public class MetamodelFactory {
         when(et.getJavaType()).thenReturn(OWLClassR.class);
         when(et.getIRI()).thenReturn(IRI.create(OWLClassR.getClassIri()));
         final Set attributes = new HashSet<>(parentEt.getAttributes());
+        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
         attributes.add(rStringAtt);
         attributes.add(owlClassAAtt);
         when(et.getFieldSpecifications()).thenReturn(attributes);
