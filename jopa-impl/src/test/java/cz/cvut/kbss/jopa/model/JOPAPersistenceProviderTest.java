@@ -4,7 +4,6 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -35,7 +34,7 @@ public class JOPAPersistenceProviderTest {
     private UnitOfWorkImpl uow;
 
     @Mock
-    private Metamodel metamodelMock;
+    private MetamodelImpl metamodelMock;
 
     @Before
     public void setUp() throws Exception {

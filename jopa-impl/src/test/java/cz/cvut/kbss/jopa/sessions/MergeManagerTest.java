@@ -16,11 +16,11 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Identifier;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.change.UnitOfWorkChangeSetImpl;
@@ -48,10 +48,10 @@ public class MergeManagerTest {
     private UnitOfWorkImpl uow;
 
     @Mock
-    private Metamodel metamodel;
+    private MetamodelImpl metamodel;
 
     @Mock
-    private EntityType<OWLClassB> et;
+    private EntityTypeImpl<OWLClassB> et;
 
     @Mock
     private Identifier identifier;

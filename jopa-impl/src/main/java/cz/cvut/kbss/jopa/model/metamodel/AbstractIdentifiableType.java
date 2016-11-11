@@ -3,13 +3,15 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import java.util.*;
 import java.util.stream.Collectors;
 
-abstract class AbstractIdentifiableType<X> implements IdentifiableType<X> {
+public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X> {
 
     private final Class<X> javaType;
 
     private Identifier identifier;
 
     private AbstractIdentifiableType<? super X> supertype;
+
+    private final Set<AbstractIdentifiableType<? extends X>> subtypes = new HashSet<>(2);
 
     private TypesSpecification<X, ?> directTypes;
 
@@ -26,7 +28,13 @@ abstract class AbstractIdentifiableType<X> implements IdentifiableType<X> {
     }
 
     void setSupertype(AbstractIdentifiableType<? super X> supertype) {
+        assert supertype != null;
         this.supertype = supertype;
+        supertype.addSubtype(this);
+    }
+
+    private void addSubtype(AbstractIdentifiableType<? extends X> subtype) {
+        subtypes.add(subtype);
     }
 
     void addDirectTypes(TypesSpecification<X, ?> a) {
@@ -55,6 +63,14 @@ abstract class AbstractIdentifiableType<X> implements IdentifiableType<X> {
     @Override
     public IdentifiableType<? super X> getSupertype() {
         return supertype;
+    }
+
+    public boolean hasSubtypes() {
+        return !subtypes.isEmpty();
+    }
+
+    public Set<AbstractIdentifiableType<? extends X>> getSubtypes() {
+        return Collections.unmodifiableSet(subtypes);
     }
 
     @Override

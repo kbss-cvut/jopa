@@ -15,7 +15,9 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
+import cz.cvut.kbss.jopa.model.annotations.Inheritance;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
+import cz.cvut.kbss.jopa.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,6 +79,7 @@ public class MetamodelBuilder {
             } catch (IllegalArgumentException e) {
                 throw new MetamodelInitializationException("Missing identifier field in entity class " + cls);
             }
+            resolveInheritanceType((EntityTypeImpl<X>) type);
         }
 
         queryProcessor.processClass(cls);
@@ -90,6 +93,21 @@ public class MetamodelBuilder {
             return type;
         }
         return null;
+    }
+
+    private <X> void resolveInheritanceType(EntityTypeImpl<X> et) {
+        final Class<X> cls = et.getJavaType();
+        final Inheritance inheritance = cls.getDeclaredAnnotation(Inheritance.class);
+        if (inheritance != null) {
+            if (et.getSupertype() != null &&
+                    et.getSupertype().getPersistenceType() != Type.PersistenceType.MAPPED_SUPERCLASS) {
+                throw new MetamodelInitializationException("Class " + cls +
+                        " cannot declare inheritance strategy, because it already inherits it from its supertype.");
+            }
+            et.setInheritanceType(inheritance.strategy());
+        } else {
+            et.setInheritanceType(Constants.DEFAULT_INHERITANCE_TYPE);
+        }
     }
 
     public Map<Class<?>, ManagedType<?>> getTypeMap() {

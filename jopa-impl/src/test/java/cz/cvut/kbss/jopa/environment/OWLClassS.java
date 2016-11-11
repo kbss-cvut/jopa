@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.net.URI;
 
+@Inheritance(strategy = InheritanceType.TWO_STEP)
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassS")
 public abstract class OWLClassS implements Serializable {
 

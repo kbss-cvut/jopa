@@ -43,13 +43,22 @@ public class MetamodelImpl implements Metamodel {
 
     private Set<URI> moduleExtractionSignature;
 
-    public MetamodelImpl(Configuration configuration, EntityLoader entityLoader) {
-        this.configuration = Objects.requireNonNull(configuration);
-        Objects.requireNonNull(entityLoader);
-        build(entityLoader);
+    protected MetamodelImpl() {
+        // Protected constructor for easier mocking
+        this.configuration = null;
     }
 
-    private void build(EntityLoader entityLoader) {
+    public MetamodelImpl(Configuration configuration) {
+        this.configuration = Objects.requireNonNull(configuration);
+    }
+
+    /**
+     * Builds the metamodel for entities discovered by the specified entity loader.
+     *
+     * @param entityLoader Loader of entity classes
+     */
+    public void build(EntityLoader entityLoader) {
+        Objects.requireNonNull(entityLoader);
         LOG.debug("Building metamodel...");
         checkForWeaver();
 
@@ -78,12 +87,12 @@ public class MetamodelImpl implements Metamodel {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <X> EntityType<X> entity(Class<X> cls) {
+    public <X> EntityTypeImpl<X> entity(Class<X> cls) {
         if (!entities.containsKey(cls)) {
             throw new IllegalArgumentException(
                     "Class " + cls.getName() + " is not a known entity in this persistence unit.");
         }
-        return (EntityType<X>) typeMap.get(cls);
+        return (EntityTypeImpl<X>) typeMap.get(cls);
     }
 
     @Override

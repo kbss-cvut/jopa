@@ -15,12 +15,15 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 
 public class EntityTypeImpl<X> extends AbstractIdentifiableType<X> implements EntityType<X> {
 
     private final String name;
 
     private final IRI iri;
+
+    private InheritanceType inheritanceType;
 
     public EntityTypeImpl(String name, Class<X> javaType, final IRI iri) {
         super(javaType);
@@ -51,6 +54,31 @@ public class EntityTypeImpl<X> extends AbstractIdentifiableType<X> implements En
     @Override
     public IRI getIRI() {
         return iri;
+    }
+
+    @Override
+    void setSupertype(AbstractIdentifiableType<? super X> supertype) {
+        super.setSupertype(supertype);
+        if (supertype.getPersistenceType() == PersistenceType.ENTITY) {
+            this.inheritanceType = ((EntityTypeImpl) supertype).inheritanceType;
+        }
+    }
+
+    /**
+     * Gets inheritance type of this entity type.
+     * <p>
+     * If the entity type is a root if an inheritance hierarchy, the type can be defined using the {@link
+     * cz.cvut.kbss.jopa.model.annotations.Inheritance} annotation. If the entity is deeper in inheritance hierarchy, it
+     * is inherited from the supertype. Otherwise, it defaults to {@link cz.cvut.kbss.jopa.utils.Constants#DEFAULT_INHERITANCE_TYPE}.
+     *
+     * @return Inheritance strategy for this entity type
+     */
+    public InheritanceType getInheritanceType() {
+        return inheritanceType;
+    }
+
+    public void setInheritanceType(InheritanceType inheritanceType) {
+        this.inheritanceType = inheritanceType;
     }
 
     @Override

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Assertion.AssertionType;
@@ -95,7 +96,8 @@ public class EntityDeconstructorTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         this.mocks = new MetamodelMocks();
-        when(oomMock.getEntityType(OWLClassA.class)).thenReturn(mocks.forOwlClassA().entityType());
+        when(oomMock.getEntityType(OWLClassA.class))
+                .thenReturn(mocks.forOwlClassA().entityType());
         entityA.setTypes(null);
         entityA.setStringAttribute("someStringAttribute");
         entityB.setProperties(null);
@@ -312,7 +314,8 @@ public class EntityDeconstructorTest {
     public void testMapEntityWithObjectPropertyWithGeneratedIdentifier() throws Exception {
         final URI eUri = URI.create("http://eUri");
         when(oomMock.generateIdentifier(mocks.forOwlClassE().entityType())).thenReturn(eUri);
-        when(oomMock.getEntityType(OWLClassE.class)).thenReturn(mocks.forOwlClassE().entityType());
+        when(oomMock.getEntityType(OWLClassE.class))
+                .thenReturn((EntityTypeImpl<OWLClassE>) mocks.forOwlClassE().entityType());
         final Descriptor eDescriptor = new EntityDescriptor(CONTEXT);
         final Descriptor kDescriptor = new EntityDescriptor();
         kDescriptor.addAttributeDescriptor(OWLClassK.getOwlClassEField(), eDescriptor);

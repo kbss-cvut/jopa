@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 
 public class ServerSessionStub extends ServerSession {
@@ -30,7 +31,7 @@ public class ServerSessionStub extends ServerSession {
     }
 
     @Override
-    public Metamodel getMetamodel() {
+    public MetamodelImpl getMetamodel() {
         // Just exporting API as public so that we can stub it with Mockito
         return null;
     }

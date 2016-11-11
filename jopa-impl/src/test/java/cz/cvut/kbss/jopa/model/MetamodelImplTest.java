@@ -61,7 +61,7 @@ public class MetamodelImplTest {
     @Test
     public void buildsSingleEntityWithSingularDataProperty() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassE.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassE> et = metamodel.entity(OWLClassE.class);
         assertNotNull(et);
@@ -74,6 +74,12 @@ public class MetamodelImplTest {
                 expectedField,
                 FetchType.EAGER, false, expectedField.getAnnotation(OWLDataProperty.class).iri(),
                 expectedField.getType(), new CascadeType[]{});
+    }
+
+    private MetamodelImpl getMetamodel() {
+        final MetamodelImpl metamodel = new MetamodelImpl(conf);
+        metamodel.build(entityLoaderMock);
+        return metamodel;
     }
 
     private void checkSingularAttribute(FieldSpecification<?, ?> attribute, EntityType<?> declaringType, String name,
@@ -113,7 +119,7 @@ public class MetamodelImplTest {
     public void buildsSingleEntityWithSingularObjectProperty() throws Exception {
 
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassD.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassD> et = metamodel.entity(OWLClassD.class);
         assertFalse(et.getIdentifier().isGenerated());
@@ -129,7 +135,7 @@ public class MetamodelImplTest {
     @Test
     public void buildsCorrectIdentifierFromUriField() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassE.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassE> et = metamodel.entity(OWLClassE.class);
         final Identifier id = et.getIdentifier();
@@ -140,7 +146,7 @@ public class MetamodelImplTest {
     @Test
     public void buildsSingleEntityWithMultipleSingularDataProperties() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassM.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassM> et = metamodel.entity(OWLClassM.class);
         assertNotNull(et);
@@ -179,7 +185,7 @@ public class MetamodelImplTest {
     @Test
     public void buildsSingleEntityWithSetBasedObjectProperty() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassJ.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassJ> et = metamodel.entity(OWLClassJ.class);
         assertNotNull(et);
@@ -208,7 +214,7 @@ public class MetamodelImplTest {
     @Test
     public void buildsSingleEntityWithListsSimpleList() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassC.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassC> et = metamodel.entity(OWLClassC.class);
         assertNotNull(et);
@@ -242,7 +248,7 @@ public class MetamodelImplTest {
     @Test
     public void buildsSingleEntityWithListsReferencedList() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassC.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassC> et = metamodel.entity(OWLClassC.class);
         assertNotNull(et);
@@ -261,7 +267,7 @@ public class MetamodelImplTest {
     @Test
     public void buildsSingleEntityWithTypesField() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassA.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassA> et = metamodel.entity(OWLClassA.class);
         assertNotNull(et);
@@ -274,7 +280,7 @@ public class MetamodelImplTest {
     @Test
     public void buildsSingleEntityWithPropertiesField() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassB.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassB> et = metamodel.entity(OWLClassB.class);
         assertNotNull(et);
@@ -287,7 +293,7 @@ public class MetamodelImplTest {
     @Test
     public void buildsSingleEntityWithParticipationConstraints() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassL.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassL> et = metamodel.entity(OWLClassL.class);
         assertNotNull(et);
@@ -307,7 +313,7 @@ public class MetamodelImplTest {
     @Test
     public void buildsSingleEntityWithAnnotationPropertyAndInferredPropertiesField() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassN.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassN> et = metamodel.entity(OWLClassN.class);
         assertNotNull(et);
@@ -328,14 +334,14 @@ public class MetamodelImplTest {
     @Test(expected = MetamodelInitializationException.class)
     public void throwsExceptionWhenTryingToBuildClassWithoutOWLClassAnnotation() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(String.class));
-        new MetamodelImpl(conf, entityLoaderMock);
+        getMetamodel();
     }
 
     @Test(expected = MetamodelInitializationException.class)
     public void throwsExceptionWhenTypesFieldIsNotASet() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithInvalidTypes.class));
-        new MetamodelImpl(conf, entityLoaderMock);
+        getMetamodel();
     }
 
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithInvalidTypes")
@@ -350,7 +356,7 @@ public class MetamodelImplTest {
     public void throwsExceptionWhenPropertiesIsNotAMap() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithInvalidProperties.class));
-        new MetamodelImpl(conf, entityLoaderMock);
+        getMetamodel();
     }
 
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithInvalidProperties")
@@ -365,7 +371,7 @@ public class MetamodelImplTest {
     public void throwExceptionWhenForClassWithInvalidIdentifier() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithInvalidIdentifier.class));
-        new MetamodelImpl(conf, entityLoaderMock);
+        getMetamodel();
     }
 
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithInvalidIdentifier")
@@ -378,7 +384,7 @@ public class MetamodelImplTest {
     public void throwsExceptionForClassWithoutIdentifier() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithoutIdentifier.class));
-        new MetamodelImpl(conf, entityLoaderMock);
+        getMetamodel();
     }
 
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithoutIdentifier")
@@ -390,7 +396,7 @@ public class MetamodelImplTest {
     @Test
     public void buildsSingleEntityWithSingularDataPropertyWithNonEmptyField() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassN.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassN> et = metamodel.entity(OWLClassN.class);
         final Field strAttField = OWLClassN.getStringAttributeField();
@@ -402,7 +408,7 @@ public class MetamodelImplTest {
     @Test
     public void skipsStaticFieldsWhenProcessingClass() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassO.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassO> et = metamodel.entity(OWLClassO.class);
         assertEquals(1, et.getDeclaredAttributes().size());
@@ -421,7 +427,7 @@ public class MetamodelImplTest {
     @Test
     public void skipsFieldsAnnotatedWithTransientWhenProcessingClass() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassO.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassO> et = metamodel.entity(OWLClassO.class);
         assertEquals(1, et.getDeclaredAttributes().size());
@@ -435,7 +441,7 @@ public class MetamodelImplTest {
     @Test
     public void skipsTransientFieldsWhenProcessingClass() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassO.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassO> et = metamodel.entity(OWLClassO.class);
         assertEquals(1, et.getDeclaredAttributes().size());
@@ -449,7 +455,7 @@ public class MetamodelImplTest {
     @Test
     public void skipsFinalFieldsWhenProcessingClass() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(OWLClassO.class));
-        final Metamodel metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel metamodel = getMetamodel();
 
         final EntityType<OWLClassO> et = metamodel.entity(OWLClassO.class);
         assertEquals(1, et.getDeclaredAttributes().size());
@@ -465,7 +471,7 @@ public class MetamodelImplTest {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithoutNoArgConstructor.class));
 
-        new MetamodelImpl(conf, entityLoaderMock);
+        getMetamodel();
     }
 
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithoutNoArgConstructor")
@@ -484,7 +490,7 @@ public class MetamodelImplTest {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithArrayAttribute.class));
 
-        new MetamodelImpl(conf, entityLoaderMock);
+        getMetamodel();
     }
 
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithArrayAttribute")
@@ -502,7 +508,7 @@ public class MetamodelImplTest {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithOPUri.class));
 
-        final Metamodel m = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel m = getMetamodel();
         final EntityType<ClassWithOPUri> et = m.entity(ClassWithOPUri.class);
         assertNotNull(et);
         final Attribute<? super ClassWithOPUri, ?> att = et.getAttribute("op");
@@ -527,7 +533,7 @@ public class MetamodelImplTest {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithPluralOPUrls.class));
 
-        final Metamodel m = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel m = getMetamodel();
         final EntityType<ClassWithPluralOPUrls> et = m.entity(ClassWithPluralOPUrls.class);
         assertNotNull(et);
         final Attribute<? super ClassWithPluralOPUrls, ?> att = et.getAttribute("op");
@@ -554,7 +560,7 @@ public class MetamodelImplTest {
     public void buildsEntityWithUriTypesField() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf)).thenReturn(Collections.singleton(ClassWithUriTypes.class));
 
-        final Metamodel m = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel m = getMetamodel();
         final EntityType<ClassWithUriTypes> et = m.entity(ClassWithUriTypes.class);
         assertNotNull(et);
         assertEquals(URI.class, et.getTypes().getJavaType());
@@ -575,7 +581,7 @@ public class MetamodelImplTest {
         thrown.expectMessage(
                 "Class " + ClassWithUriTypes.class.getName() + " is not a known entity in this persistence unit.");
 
-        final Metamodel m = new MetamodelImpl(conf, entityLoaderMock);
+        final Metamodel m = getMetamodel();
         m.entity(ClassWithUriTypes.class);
     }
 
@@ -583,7 +589,7 @@ public class MetamodelImplTest {
     public void buildsEntityWithNamedQueries() throws Exception {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(Collections.singleton(ClassWithNamedQueries.class));
-        final MetamodelImpl metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final MetamodelImpl metamodel = getMetamodel();
         final NamedQueryManager queryManager = metamodel.getNamedQueryManager();
         assertNotNull(queryManager.getQuery("selectAll"));
         assertNotNull(queryManager.getQuery("askQuery"));
@@ -606,7 +612,7 @@ public class MetamodelImplTest {
     public void getManagedTypesReturnsEntitiesAndMappedSuperclasses() {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(new HashSet<>(Arrays.asList(OWLClassQ.class, OWLClassA.class)));
-        final MetamodelImpl metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final MetamodelImpl metamodel = getMetamodel();
         final Set<ManagedType<?>> managedTypes = metamodel.getManagedTypes();
         assertEquals(3, metamodel.getManagedTypes().size());
         final Set<Class<?>> types = managedTypes.stream().map(Type::getJavaType).collect(Collectors.toSet());
@@ -619,7 +625,7 @@ public class MetamodelImplTest {
     public void getEntitiesReturnsOnlyEntityTypes() {
         when(entityLoaderMock.discoverEntityClasses(conf))
                 .thenReturn(new HashSet<>(Arrays.asList(OWLClassQ.class, OWLClassA.class)));
-        final MetamodelImpl metamodel = new MetamodelImpl(conf, entityLoaderMock);
+        final MetamodelImpl metamodel = getMetamodel();
         final Set<EntityType<?>> entities = metamodel.getEntities();
         assertEquals(2, entities.size());
         final Set<Class<?>> types = entities.stream().map(Type::getJavaType).collect(Collectors.toSet());

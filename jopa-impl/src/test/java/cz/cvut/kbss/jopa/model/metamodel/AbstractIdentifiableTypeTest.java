@@ -46,7 +46,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getAttributesReturnsDeclaredAttributesPlusInheritedAttributes() {
-        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         et.getAttributes();
         verify(supertype).getAttributes();
@@ -63,11 +63,11 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getAttributeReturnsInheritedAttribute() {
-        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         final String attName = "test";
         final Attribute att = mock(Attribute.class);
-        when(supertype.getAttribute(attName)).thenReturn(att);
+        doReturn(att).when(supertype).getAttribute(attName);
         assertEquals(att, et.getAttribute(attName));
         verify(supertype).getAttribute(attName);
     }
@@ -120,7 +120,7 @@ public class AbstractIdentifiableTypeTest {
         when(att.isCollection()).thenReturn(true);
         final ListAttribute listAtt = mock(ListAttribute.class);
         when(listAtt.isCollection()).thenReturn(true);
-        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         et.addDeclaredAttribute("test", listAtt);
         when(supertype.getPluralAttributes()).thenReturn(Collections.singleton(att));
@@ -135,7 +135,7 @@ public class AbstractIdentifiableTypeTest {
         when(attOne.isCollection()).thenReturn(false);
         final SingularAttribute attTwo = mock(SingularAttribute.class);
         when(attTwo.isCollection()).thenReturn(false);
-        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         et.addDeclaredAttribute("test", attTwo);
         when(supertype.getSingularAttributes()).thenReturn(Collections.singleton(attOne));
@@ -246,7 +246,7 @@ public class AbstractIdentifiableTypeTest {
     @Test
     public void getFieldSpecificationsReturnsAllAttributesAndTypesAndProperties() {
         final SingularAttribute supertypeAtt = mock(SingularAttribute.class);
-        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         when(supertype.getAttributes()).thenReturn(Collections.singleton(supertypeAtt));
         final ListAttribute listAtt = mock(ListAttribute.class);
@@ -265,7 +265,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getTypesReturnsTypesAlsoFromSuperType() {
-        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         final TypesSpecification types = mock(TypesSpecification.class);
         when(supertype.getTypes()).thenReturn(types);
@@ -275,7 +275,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getPropertiesReturnsPropertiesAlsoFromSuperType() {
-        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         final PropertiesSpecification properties = mock(PropertiesSpecification.class);
         when(supertype.getProperties()).thenReturn(properties);
@@ -286,10 +286,10 @@ public class AbstractIdentifiableTypeTest {
     @Test
     public void getFieldSpecificationGetsFieldSpecification() {
         final SingularAttribute supertypeAtt = mock(SingularAttribute.class);
-        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
+        final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
         et.setSupertype(supertype);
         final String attName = "test";
-        when(supertype.getFieldSpecification(attName)).thenReturn(supertypeAtt);
+        doReturn(supertypeAtt).when(supertype).getFieldSpecification(attName);
         final FieldSpecification<? super OWLClassA, ?> result = et.getFieldSpecification(attName);
         assertEquals(supertypeAtt, result);
     }
@@ -324,8 +324,8 @@ public class AbstractIdentifiableTypeTest {
     @Test
     public void getIdentifierReturnsIdentifierFromSuperclass() {
         final Identifier id = mock(Identifier.class);
-        final AbstractIdentifiableType<? super OWLClassA> supertype = mock(AbstractIdentifiableType.class);
-        when(supertype.getIdentifier()).thenReturn(id);
+        final AbstractIdentifiableType<? super OWLClassA> supertype = spy(new MappedSuperclassTypeImpl<>(Object.class));
+        doReturn(id).when(supertype).getIdentifier();
         et.setSupertype(supertype);
         assertEquals(id, et.getIdentifier());
     }

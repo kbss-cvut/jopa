@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,10 +15,11 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
+import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
@@ -48,13 +49,16 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     private final UnitOfWorkImpl uow;
     private final Connection storageConnection;
-    private final Metamodel metamodel;
+    private final MetamodelImpl metamodel;
 
     private final AxiomDescriptorFactory descriptorFactory;
     private final EntityConstructor entityBuilder;
     private final EntityDeconstructor entityBreaker;
     private final InstanceRegistry instanceRegistry;
     private final PendingChangeRegistry pendingPersists;
+
+    private final EntityInstanceLoader defaultInstanceLoader;
+    private final EntityInstanceLoader twoStepInstanceLoader;
 
     public ObjectOntologyMapperImpl(UnitOfWorkImpl uow, Connection connection) {
         this.uow = Objects.requireNonNull(uow);
@@ -65,6 +69,11 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         this.pendingPersists = new PendingChangeRegistry();
         this.entityBuilder = new EntityConstructor(this);
         this.entityBreaker = new EntityDeconstructor(this);
+
+        this.defaultInstanceLoader = new DefaultInstanceLoader(storageConnection, metamodel, descriptorFactory,
+                entityBuilder);
+        this.twoStepInstanceLoader = new TwoStepInstanceLoader(storageConnection, metamodel, descriptorFactory,
+                entityBuilder);
     }
 
     @Override
@@ -93,25 +102,15 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     }
 
     private <T> T loadEntityInternal(LoadingParameters<T> loadingParameters) {
-        final EntityType<T> et = getEntityType(loadingParameters.getEntityType());
-        final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
-        try {
-            final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
-            if (axioms.isEmpty()) {
-                return null;
-            }
-            return entityBuilder
-                    .reconstructEntity(loadingParameters.getIdentifier(), et, loadingParameters.getDescriptor(),
-                            axioms);
-        } catch (OntoDriverException e) {
-            throw new StorageAccessException(e);
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new EntityReconstructionException(e);
+        final EntityTypeImpl<T> et = getEntityType(loadingParameters.getEntityType());
+        if (et.hasSubtypes()) {
+            return twoStepInstanceLoader.loadEntity(loadingParameters);
         }
+        return defaultInstanceLoader.loadEntity(loadingParameters);
     }
 
     @Override
-    public <T> EntityType<T> getEntityType(Class<T> cls) {
+    public <T> EntityTypeImpl<T> getEntityType(Class<T> cls) {
         return metamodel.entity(cls);
     }
 

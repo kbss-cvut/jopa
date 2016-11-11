@@ -14,14 +14,15 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.*;
 
 public class EntityTypeImplTest {
 
@@ -63,5 +64,27 @@ public class EntityTypeImplTest {
         et.addDirectTypes(typesSpec);
 
         assertEquals(typesSpec, et.getFieldSpecification(typesSpec.getName()));
+    }
+
+    @Test
+    public void setSupertypeSetsInheritanceStrategyFromTheSupertypeWhenItIsEntity() throws Exception {
+        final EntityTypeImpl<OWLClassR> rEntityType = new EntityTypeImpl<>(OWLClassR.class.getName(),
+                OWLClassR.class, IRI.create(OWLClassR.getClassIri()));
+        final EntityTypeImpl<OWLClassS> sEntityType = spy(new EntityTypeImpl<>(OWLClassS.class.getName(),
+                OWLClassS.class, IRI.create(OWLClassS.getClassIri())));
+        sEntityType.setInheritanceType(InheritanceType.TRY_FIRST);
+        rEntityType.setSupertype(sEntityType);
+
+        assertEquals(InheritanceType.TRY_FIRST, rEntityType.getInheritanceType());
+    }
+
+    @Test
+    public void setSupertypeSkipsInheritanceStrategyWhenSupertypeIsNotEntity() throws Exception {
+        final EntityTypeImpl<OWLClassQ> qEntityType = new EntityTypeImpl<>(OWLClassQ.class.getName(), OWLClassQ.class,
+                IRI.create(OWLClassQ.getClassIri()));
+        final MappedSuperclassTypeImpl<QMappedSuperclass> superclassType = new MappedSuperclassTypeImpl<>(
+                QMappedSuperclass.class);
+        qEntityType.setSupertype(superclassType);
+        assertNull(qEntityType.getInheritanceType());
     }
 }

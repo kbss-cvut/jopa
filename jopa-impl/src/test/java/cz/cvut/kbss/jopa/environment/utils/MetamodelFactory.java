@@ -42,7 +42,7 @@ public class MetamodelFactory {
      */
     public static void initOWLClassAMocks(EntityType<OWLClassA> etMock, Attribute strAttMock,
                                           TypesSpecification typesMock, Identifier idMock) throws NoSuchFieldException,
-                                                                                                  SecurityException {
+            SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassA.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassA.getClassIri()));
         when(etMock.getAttribute(OWLClassA.getStrAttField().getName())).thenReturn(strAttMock);
@@ -77,8 +77,8 @@ public class MetamodelFactory {
      */
     public static void initOWLClassBMocks(EntityType<OWLClassB> etMock, Attribute strAttMock,
                                           PropertiesSpecification propsMock, Identifier idMock) throws
-                                                                                                NoSuchFieldException,
-                                                                                                SecurityException {
+            NoSuchFieldException,
+            SecurityException {
         when(etMock.getJavaType()).thenReturn(OWLClassB.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassB.getClassIri()));
         when(etMock.getAttribute(OWLClassB.getStrAttField().getName())).thenReturn(strAttMock);
@@ -580,7 +580,7 @@ public class MetamodelFactory {
                                          PropertiesSpecification props,
                                          SingularAttribute uriAtt, PluralAttribute urlsAtt,
                                          ListAttribute simpleListAtt, ListAttribute refListAtt, Identifier idP) throws
-                                                                                                                Exception {
+            Exception {
         when(et.getIdentifier()).thenReturn(idP);
         when(idP.getJavaField()).thenReturn(OWLClassP.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassP.getClassIri()));
@@ -733,7 +733,7 @@ public class MetamodelFactory {
     }
 
     public static void initOwlClassSMock(EntityType<OWLClassS> et, SingularAttribute sNameAtt, Identifier idS) throws
-                                                                                                               Exception {
+            Exception {
         when(et.getIdentifier()).thenReturn(idS);
         when(et.getJavaType()).thenReturn(OWLClassS.class);
         when(idS.getJavaField()).thenReturn(OWLClassS.getUriField());
@@ -757,8 +757,8 @@ public class MetamodelFactory {
         when(et.getFieldSpecification(sNameAtt.getName())).thenReturn(sNameAtt);
     }
 
-    static void initOwlClassRMock(EntityType<OWLClassR> et, SingularAttribute rStringAtt,
-                                  SingularAttribute owlClassAAtt, EntityType<OWLClassS> parentEt) throws Exception {
+    static void initOwlClassRMock(EntityTypeImpl<OWLClassR> et, SingularAttribute rStringAtt,
+                                  SingularAttribute owlClassAAtt, EntityTypeImpl<OWLClassS> parentEt) throws Exception {
         final Identifier id = parentEt.getIdentifier();
         when(et.getIdentifier()).thenReturn(id);
         when(et.getJavaType()).thenReturn(OWLClassR.class);
@@ -769,6 +769,8 @@ public class MetamodelFactory {
         when(et.getFieldSpecifications()).thenReturn(attributes);
         when(et.getAttributes()).thenReturn(attributes);
         when(et.getSupertype()).thenReturn((EntityType) parentEt);
+        when(parentEt.getSubtypes()).thenReturn(Collections.singleton(et));
+        when(parentEt.hasSubtypes()).thenReturn(true);
 
         when(rStringAtt.getJavaField()).thenReturn(OWLClassR.getStringAttField());
         when(rStringAtt.getJavaType()).thenReturn(OWLClassR.getStringAttField().getType());

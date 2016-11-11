@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -25,7 +25,6 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSetImpl;
@@ -38,7 +37,7 @@ import java.util.Collections;
 
 public class IntegrityConstraintsValidatorTest {
 
-    private Metamodel metamodel;
+    private MetamodelImpl metamodel;
 
     private IntegrityConstraintsValidator validator = IntegrityConstraintsValidator.getValidator();
 
@@ -46,7 +45,8 @@ public class IntegrityConstraintsValidatorTest {
     public void setUp() throws Exception {
         final Configuration config = new Configuration(
                 Collections.singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment"));
-        this.metamodel = new MetamodelImpl(config, new EntityLoader());
+        this.metamodel = new MetamodelImpl(config);
+        metamodel.build(new EntityLoader());
     }
 
     @Test
