@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -206,15 +206,19 @@ class SesameAdapter implements Closeable, Wrapper {
         return connector;
     }
 
-    ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler() {
+    ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler() throws SesameDriverException {
+        startTransactionIfNotActive();
         return ListHandler.createForSimpleList(connector, valueFactory);
     }
 
-    ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler() {
+    ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler() throws
+                                                                                                    SesameDriverException {
+        startTransactionIfNotActive();
         return ListHandler.createForReferencedList(connector, valueFactory);
     }
 
-    TypesHandler getTypesHandler() {
+    TypesHandler getTypesHandler() throws SesameDriverException {
+        startTransactionIfNotActive();
         return new TypesHandler(connector, valueFactory);
     }
 

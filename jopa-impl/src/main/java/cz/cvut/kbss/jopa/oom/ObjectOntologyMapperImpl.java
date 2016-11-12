@@ -120,7 +120,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         assert field != null;
         assert descriptor != null;
 
-        LOG.trace("Lazily loading value of field {} of entity ", field, entity);
+        LOG.trace("Lazily loading value of field {} of entity {}.", field, entity);
 
         final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI primaryKey = EntityPropertiesUtils.getPrimaryKey(entity, et);

@@ -1,0 +1,88 @@
+package cz.cvut.kbss.jopa.oom.metamodel;
+
+import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.Type;
+import cz.cvut.kbss.jopa.oom.exceptions.AmbiguousEntityTypeException;
+import cz.cvut.kbss.ontodriver.model.Axiom;
+import cz.cvut.kbss.ontodriver.model.NamedResource;
+
+import java.net.URI;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public class PolymorphicEntityTypeResolver<T> {
+
+    private final NamedResource individual;
+    private final Set<URI> types;
+    private final EntityTypeImpl<T> root;
+
+    private final Set<EntityType<? extends T>> matches = new HashSet<>(2);
+
+    public PolymorphicEntityTypeResolver(NamedResource individual, EntityTypeImpl<T> root,
+                                         Collection<Axiom<URI>> typeAxioms) {
+        this.individual = individual;
+        this.types = typeAxioms.stream().map(a -> a.getValue().getValue()).collect(Collectors.toSet());
+        this.root = root;
+    }
+
+    /**
+     * Returns entity type suitable for instance loading. This entity type is
+     * <pre>
+     * <ul>
+     *     <li>either the specified {@code root} in case the type axioms contain type corresponding to the root entity
+     * type,</li>
+     *     <li>or the most specific non-abstract entity type from the hierarchy of the specified root entity type
+     * present in the specified type axioms.</li>
+     * </ul>
+     * </pre>
+     *
+     * @return The specified root entity type or the most specific non-abstract unique entity type
+     * @throws AmbiguousEntityTypeException When multiple entity types match the specified types
+     */
+    public EntityType<? extends T> determineActualEntityType() {
+        if (types.contains(root.getIRI().toURI())) {
+            return root;
+        }
+        resolveMatchingEntityTypes();
+        if (matches.size() > 1) {
+            throw new AmbiguousEntityTypeException(
+                    "Unable to determine unique entity type for loading individual " + individual +
+                            ". Matching types are " + matches + '.');
+        }
+        return !matches.isEmpty() ? matches.iterator().next() : null;
+    }
+
+    /**
+     * The algorithm uses DFS with remembering the path taken. If a matching entity type is found, but there already exists
+     * a more general one (an ancestor of the ET), then the ancestor is removed from the matches, because it is superseded by the
+     * more specific entity type just found.
+     */
+    private void resolveMatchingEntityTypes() {
+        findMatchingEntityType(root, new HashSet<>());
+    }
+
+    private void findMatchingEntityType(AbstractIdentifiableType<? extends T> parent,
+                                        Set<EntityType<? extends T>> ancestors) {
+        for (AbstractIdentifiableType<? extends T> subtype : parent.getSubtypes()) {
+            final Set<EntityType<? extends T>> updatedAncestors = new HashSet<>(ancestors);
+            if (subtype.getPersistenceType() == Type.PersistenceType.ENTITY) {
+                final EntityTypeImpl<? extends T> et = (EntityTypeImpl<? extends T>) subtype;
+                final URI etUri = et.getIRI().toURI();
+                if (types.contains(etUri)) {
+                    addMatchingType(et, ancestors);
+                }
+                updatedAncestors.add(et);
+            }
+            findMatchingEntityType(subtype, updatedAncestors);
+        }
+    }
+
+    private void addMatchingType(EntityType<? extends T> et, Set<EntityType<? extends T>> ancestors) {
+        matches.add(et);
+        ancestors.forEach(matches::remove);
+    }
+}

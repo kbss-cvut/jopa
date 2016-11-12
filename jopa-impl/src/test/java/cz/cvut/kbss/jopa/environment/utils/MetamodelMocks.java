@@ -315,6 +315,10 @@ public class MetamodelMocks {
         return new OWLClassQMetamodel();
     }
 
+    public OWLClassRMetamodel forOwlClassR() {
+        return new OWLClassRMetamodel();
+    }
+
     public class OWLClassAMetamodel {
         public EntityTypeImpl<OWLClassA> entityType() {
             return MetamodelMocks.this.etA;

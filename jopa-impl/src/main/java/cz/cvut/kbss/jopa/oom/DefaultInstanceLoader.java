@@ -25,19 +25,6 @@ class DefaultInstanceLoader extends EntityInstanceLoader {
     @Override
     <T> T loadEntity(LoadingParameters<T> loadingParameters) {
         final EntityType<T> et = metamodel.entity(loadingParameters.getEntityType());
-        final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
-        try {
-            final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
-            if (axioms.isEmpty()) {
-                return null;
-            }
-            return entityBuilder
-                    .reconstructEntity(loadingParameters.getIdentifier(), et, loadingParameters.getDescriptor(),
-                            axioms);
-        } catch (OntoDriverException e) {
-            throw new StorageAccessException(e);
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new EntityReconstructionException(e);
-        }
+        return loadInstance(loadingParameters, et);
     }
 }
