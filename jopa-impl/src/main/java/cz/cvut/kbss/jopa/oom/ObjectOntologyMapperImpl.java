@@ -71,6 +71,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     public <T> boolean containsEntity(Class<T> cls, URI primaryKey, Descriptor descriptor) {
         assert cls != null;
         assert primaryKey != null;
+        assert descriptor != null;
 
         final EntityType<T> et = getEntityType(cls);
         final NamedResource classUri = NamedResource.create(et.getIRI().toURI());

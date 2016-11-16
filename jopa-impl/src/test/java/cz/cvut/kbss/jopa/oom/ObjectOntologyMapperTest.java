@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -28,13 +28,17 @@ import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.Connection;
+import cz.cvut.kbss.ontodriver.Lists;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
+import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.model.Axiom;
-import cz.cvut.kbss.ontodriver.model.NamedResource;
+import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -56,6 +60,9 @@ public class ObjectOntologyMapperTest {
     private static Descriptor aDescriptor;
     private static Set<String> aTypes;
     private static AxiomDescriptor axiomDescriptor;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Mock
     private UnitOfWorkImpl uowMock;
@@ -125,7 +132,8 @@ public class ObjectOntologyMapperTest {
         final Collection<Axiom<?>> entityAAxioms = getAxiomsForEntityA();
         when(connectionMock.find(axiomDescriptor)).thenReturn(entityAAxioms);
         when(
-                entityConstructorMock.reconstructEntity(ENTITY_PK, etAMock, aDescriptor, entityAAxioms)).thenReturn(entityA);
+                entityConstructorMock.reconstructEntity(ENTITY_PK, etAMock, aDescriptor, entityAAxioms))
+                .thenReturn(entityA);
         final OWLClassA res = mapper.loadEntity(loadingParameters);
 
         assertNotNull(res);
@@ -186,7 +194,7 @@ public class ObjectOntologyMapperTest {
         final Field typesField = OWLClassA.getTypesField();
         typesField.setAccessible(true);
         assertNull(typesField.get(entityA));
-        when(connectionMock.find(axiomDescriptor)).thenReturn(Collections.<Axiom<?>>emptyList());
+        when(connectionMock.find(axiomDescriptor)).thenReturn(Collections.emptyList());
         mapper.loadFieldValue(entityA, typesField, aDescriptor);
         assertNull(typesField.get(entityA));
         verify(entityConstructorMock, never()).setFieldValue(any(), eq(typesField),
@@ -289,8 +297,7 @@ public class ObjectOntologyMapperTest {
     @Test(expected = UnpersistedChangeException.class)
     public void checksForUnpersistedChangesThrowsExceptionWhenThereAre() throws Exception {
         mapper.registerPendingPersist(ENTITY_PK, entityA, null);
-        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(
-                Collections.<Axiom<?>>emptyList());
+        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(Collections.emptyList());
         mapper.checkForUnpersistedChanges();
     }
 
@@ -329,5 +336,47 @@ public class ObjectOntologyMapperTest {
         verify(descriptorFactoryMock).createForEntityLoading(captor.capture(), eq(etAMock));
         final LoadingParameters p = captor.getValue();
         assertTrue(p.isForceLoad());
+    }
+
+    @Test
+    public void containsEntityThrowsStorageAccessExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
+        final String message = "OntoDriver exception was thrown";
+        when(connectionMock.contains(any(Axiom.class), eq(null))).thenThrow(new OntoDriverException(message));
+        thrown.expect(StorageAccessException.class);
+        thrown.expectMessage(message);
+
+        mapper.containsEntity(OWLClassA.class, ENTITY_PK, aDescriptor);
+        verify(connectionMock).contains(
+                new AxiomImpl<>(NamedResource.create(ENTITY_PK), Assertion.createClassAssertion(false),
+                        new Value<>(NamedResource.create(OWLClassA.getClassIri()))), null);
+    }
+
+    @Test
+    public void loadSimpleListThrowsStorageAccessExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
+        final String message = "OntoDriver exception was thrown";
+        thrown.expect(StorageAccessException.class);
+        thrown.expectMessage(message);
+        final Lists listsMock = mock(Lists.class);
+        when(listsMock.loadSimpleList(any(SimpleListDescriptor.class))).thenThrow(new OntoDriverException(message));
+        when(connectionMock.lists()).thenReturn(listsMock);
+
+        final SimpleListDescriptor listDescriptorMock = mock(SimpleListDescriptor.class);
+        mapper.loadSimpleList(listDescriptorMock);
+        verify(listsMock).loadSimpleList(listDescriptorMock);
+    }
+
+    @Test
+    public void loadReferencedListThrowsStorageAccessExceptionWhenOntoDriverExceptionIsThrown() throws Exception {
+        final String message = "OntoDriver exception was thrown";
+        thrown.expect(StorageAccessException.class);
+        thrown.expectMessage(message);
+        final Lists listsMock = mock(Lists.class);
+        when(listsMock.loadReferencedList(any(ReferencedListDescriptor.class)))
+                .thenThrow(new OntoDriverException(message));
+        when(connectionMock.lists()).thenReturn(listsMock);
+
+        final ReferencedListDescriptor listDescriptorMock = mock(ReferencedListDescriptor.class);
+        mapper.loadReferencedList(listDescriptorMock);
+        verify(listsMock).loadReferencedList(listDescriptorMock);
     }
 }
