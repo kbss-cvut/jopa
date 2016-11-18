@@ -24,6 +24,7 @@ public class Vocabulary {
     public static final String cOWLClassS = CLASS_IRI_BASE + "OWLClassS";
     public static final String cOWLClassT = CLASS_IRI_BASE + "OWLClassT";
     public static final String cOWLClassQ = CLASS_IRI_BASE + "OWLClassQ";
+    public static final String cOWLClassSParent = CLASS_IRI_BASE + "OWLClassSParent";
 
     public static final String pAStringAttribute = ATTRIBUTE_IRI_BASE + "A-stringAttribute";
     public static final String pBStringAttribute = ATTRIBUTE_IRI_BASE + "B-stringAttribute";

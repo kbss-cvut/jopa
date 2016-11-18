@@ -1,15 +1,13 @@
 package cz.cvut.kbss.jopa.oom.metamodel;
 
+import cz.cvut.kbss.jopa.environment.OWLClassQ;
 import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
-import cz.cvut.kbss.jopa.model.metamodel.AbstractIdentifiableType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
-import cz.cvut.kbss.jopa.model.metamodel.Type;
+import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.oom.exceptions.AmbiguousEntityTypeException;
 import cz.cvut.kbss.ontodriver.model.*;
 import org.junit.Before;
@@ -87,7 +85,8 @@ public class PolymorphicEntityTypeResolverTest {
         final EntityTypeImpl extraEt = generateEntityType(extraEtIri);
         final EntityTypeImpl<OWLClassR> etR = metamodelMock.entity(OWLClassR.class);
         final EntityTypeImpl<OWLClassS> etS = metamodelMock.entity(OWLClassS.class);
-        final Set subtypes = new HashSet<>(Arrays.asList(etR, extraEt));
+        final Set<AbstractIdentifiableType<? extends OWLClassS>> subtypes = new HashSet<>(
+                Arrays.<AbstractIdentifiableType<? extends OWLClassS>>asList(etR, extraEt));
         when(etS.getSubtypes()).thenReturn(subtypes);
         final Collection<Axiom<URI>> types = getTypeAxioms(etR.getIRI().toString(), extraEtIri.toString());
         thrown.expect(AmbiguousEntityTypeException.class);
@@ -164,6 +163,18 @@ public class PolymorphicEntityTypeResolverTest {
         execute(etS, types);
     }
 
+    @Test
+    public void determineActualEntityTypeTraversesOverMappedSuperclassInEntityHierarchy() {
+        final EntityTypeImpl rootEt = generateEntityType(
+                IRI.create(Generators.createIndividualIdentifier().toString()));
+        final EntityTypeImpl<OWLClassQ> etQ = metamodelMock.entity(OWLClassQ.class);
+        final MappedSuperclassType mappedSuperclassType = (MappedSuperclassType) etQ.getSupertype();
+        when(mappedSuperclassType.getSupertype()).thenReturn(rootEt);
+        when(rootEt.getSubtypes()).thenReturn(Collections.singleton(mappedSuperclassType));
+        final Collection<Axiom<URI>> types = getTypeAxioms(etQ.getIRI().toString());
+
+        assertEquals(etQ, execute(rootEt, types));
+    }
+
     // TODO Check for entity type being abstract - what should actually happen if the class is abstract?
-    // TODO Add also some tests for mapped superclasses - they should be skipped in the traversal
 }

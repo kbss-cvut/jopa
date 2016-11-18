@@ -53,8 +53,6 @@ public interface Metamodel {
 	 * 
 	 * @return the metamodel managed types
 	 */
-	@UnusedJPA
-	@Deprecated
 	Set<ManagedType<?>> getManagedTypes();
 
 	/**

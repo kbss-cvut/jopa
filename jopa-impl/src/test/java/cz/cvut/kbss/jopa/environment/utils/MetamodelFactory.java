@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import org.mockito.stubbing.OngoingStubbing;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -661,14 +662,18 @@ public class MetamodelFactory {
                 .thenReturn(IRI.create(refListField.getAnnotation(Sequence.class).ObjectPropertyHasContentsIRI()));
     }
 
-    public static void initOwlClassQMock(EntityType<OWLClassQ> et, SingularAttribute qStringAtt,
-                                         SingularAttribute qParentStringAtt,
-                                         SingularAttribute qLabelAtt,
-                                         SingularAttribute qOwlClassAAtt, Identifier idQ) throws Exception {
+    public static void initOwlClassQMock(EntityTypeImpl<OWLClassQ> et,
+                                         MappedSuperclassTypeImpl<QMappedSuperclass> superclassType,
+                                         SingularAttribute qStringAtt, SingularAttribute qParentStringAtt,
+                                         SingularAttribute qLabelAtt, SingularAttribute qOwlClassAAtt, Identifier idQ)
+            throws Exception {
         when(et.getIdentifier()).thenReturn(idQ);
         when(et.getJavaType()).thenReturn(OWLClassQ.class);
         when(idQ.getJavaField()).thenReturn(OWLClassQ.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassQ.getClassIri()));
+        when(et.getSupertype()).thenReturn((IdentifiableType) superclassType);
+        when(superclassType.getSubtypes()).thenReturn(Collections.singleton(et));
+        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
         when(et.getFieldSpecifications())
                 .thenReturn(
                         new HashSet<>(

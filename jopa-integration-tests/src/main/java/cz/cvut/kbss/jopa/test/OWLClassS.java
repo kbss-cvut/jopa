@@ -1,16 +1,15 @@
 package cz.cvut.kbss.jopa.test;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
-import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.model.annotations.Types;
 
-import java.net.URI;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.cOWLClassS)
-public class OWLClassS {
-
-    @Id(generated = true)
-    private URI uri;
+public class OWLClassS extends OWLClassSParent {
 
     @OWLAnnotationProperty(iri = CommonVocabulary.RDFS_LABEL)
     private String name;
@@ -20,14 +19,6 @@ public class OWLClassS {
 
     @Types
     private Set<String> types;
-
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
 
     public String getName() {
         return name;

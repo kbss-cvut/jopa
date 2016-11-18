@@ -183,6 +183,8 @@ public class MetamodelMocks {
     private PropertiesSpecification<OWLClassP, Map, URI, Object> pProperties;
 
     @Mock
+    private MappedSuperclassTypeImpl<QMappedSuperclass> qMappedSuperclass;
+    @Mock
     private EntityTypeImpl<OWLClassQ> etQ;
     @Mock
     private Identifier idQ;
@@ -228,7 +230,7 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
         MetamodelFactory
                 .initOWLClassPMock(etP, pTypes, pProperties, pUriAtt, pUrlsAtt, pSimpleList, pReferencedList, idP);
-        MetamodelFactory.initOwlClassQMock(etQ, qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
+        MetamodelFactory.initOwlClassQMock(etQ, qMappedSuperclass, qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
         MetamodelFactory.initOwlClassSMock(etS, sNameAtt, idS);
         MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
     }

@@ -53,6 +53,7 @@ Single inheritance:
 - [x] Instance remove
 - [ ] Polymorphic instance loading (including queries)
     - [x] Entity type for concrete supertype + supertype class assertion present
-    - [ ] Entity type for concrete supertype + supertype class assertion NOT present
+    - [x] Entity type for concrete supertype + supertype class assertion NOT present
     - [ ] Entity type for abstract supertype
+    - [ ] Polymorphic loading from cache
 - [ ] Polymorphic attributes

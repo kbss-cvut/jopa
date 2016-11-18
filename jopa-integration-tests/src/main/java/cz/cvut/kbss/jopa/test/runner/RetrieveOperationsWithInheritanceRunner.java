@@ -1,10 +1,7 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.test.OWLClassQ;
-import cz.cvut.kbss.jopa.test.OWLClassS;
-import cz.cvut.kbss.jopa.test.OWLClassT;
-import cz.cvut.kbss.jopa.test.Vocabulary;
+import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import org.junit.Test;
@@ -74,8 +71,7 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
     private Collection<Triple> triplesForEntityT() {
         final Collection<Triple> data = new ArrayList<>();
         entityT.setUri(Generators.generateUri());
-        data.add(
-                new Triple(entityT.getUri(), URI.create(RDF_TYPE), URI.create(Vocabulary.cOWLClassT)));
+        data.add(new Triple(entityT.getUri(), URI.create(RDF_TYPE), URI.create(Vocabulary.cOWLClassT)));
         data.add(new Triple(entityT.getUri(), URI.create(RDFS_LABEL), entityT.getName()));
         data.add(new Triple(entityT.getUri(), URI.create(DC_DESCRIPTION), entityT.getDescription()));
         data.add(new Triple(entityT.getUri(), URI.create(Vocabulary.tIntegerAttribute), entityT.getIntAttribute()));
@@ -98,5 +94,60 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         assertEquals(entityT.getName(), result.getName());
         assertEquals(entityT.getDescription(), result.getDescription());
         assertTrue(result.getTypes().contains(Vocabulary.cOWLClassT));
+    }
+
+    @Test
+    public void findLoadsSubclassWhenSuperclassIsPassedInAndTypeCorrespondsToSubclass() throws Exception {
+        final Collection<Triple> data = triplesForEntityT();
+
+        final EntityManager em = getEntityManager(
+                "findLoadsSubclassWhenSuperclassIsPassedInAndTypeCorrespondsToSubclass",
+                false);
+        persistTestData(data, em);
+
+        final OWLClassS result = em.find(OWLClassS.class, entityT.getUri());
+        assertNotNull(result);
+        assertTrue(result instanceof OWLClassT);
+        verifyEntityTAttributes((OWLClassT) result);
+    }
+
+    private void verifyEntityTAttributes(OWLClassT result) {
+        assertEquals(entityT.getName(), result.getName());
+        assertEquals(entityT.getDescription(), result.getDescription());
+        assertEquals(entityT.getIntAttribute(), result.getIntAttribute());
+        assertEquals(entityT.getOwlClassA().getUri(), result.getOwlClassA().getUri());
+    }
+
+    @Test
+    public void findLoadsSubclassOfAbstractParent() throws Exception {
+        final Collection<Triple> data = new ArrayList<>();
+        entityT.setUri(Generators.generateUri());
+        data.add(new Triple(entityT.getUri(), URI.create(RDF_TYPE), URI.create(Vocabulary.cOWLClassS)));
+        data.add(new Triple(entityT.getUri(), URI.create(RDFS_LABEL), entityT.getName()));
+        data.add(new Triple(entityT.getUri(), URI.create(DC_DESCRIPTION), entityT.getDescription()));
+
+        final EntityManager em = getEntityManager("findLoadsSubclassOfAbstractParent", false);
+        persistTestData(data, em);
+
+        final OWLClassSParent result = em.find(OWLClassSParent.class, entityT.getUri());
+        assertNotNull(result);
+        assertTrue(result instanceof OWLClassS);
+        final OWLClassS sResult = (OWLClassS) result;
+        assertEquals(entityT.getName(), sResult.getName());
+        assertEquals(entityT.getDescription(), sResult.getDescription());
+    }
+
+    @Test
+    public void findLoadsMostConcreteSubclassOfAbstractAncestor() throws Exception {
+        final Collection<Triple> data = triplesForEntityT();
+        data.add(new Triple(entityT.getUri(), URI.create(RDF_TYPE), URI.create(Vocabulary.cOWLClassS)));
+
+        final EntityManager em = getEntityManager("findLoadsMostConcreteSubclassOfAbstractAncestor", false);
+        persistTestData(data, em);
+
+        final OWLClassSParent result = em.find(OWLClassSParent.class, entityT.getUri());
+        assertNotNull(result);
+        assertTrue(result instanceof OWLClassT);
+        verifyEntityTAttributes((OWLClassT) result);
     }
 }
