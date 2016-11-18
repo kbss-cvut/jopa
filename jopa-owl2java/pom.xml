@@ -16,16 +16,9 @@
 
     <repositories>
         <repository>
-            <releases>
-            </releases>
             <id>kbss</id>
             <name>KBSS Maven 2 Repository</name>
             <url>http://kbss.felk.cvut.cz/m2repo</url>
-        </repository>
-
-        <repository>
-            <id>jena</id>
-            <url>http://repo1.maven.org/maven2</url>
         </repository>
     </repositories>
 
