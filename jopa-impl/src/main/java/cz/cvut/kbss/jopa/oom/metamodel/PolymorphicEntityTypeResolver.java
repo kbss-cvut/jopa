@@ -44,7 +44,7 @@ public class PolymorphicEntityTypeResolver<T> {
      * @throws AmbiguousEntityTypeException When multiple entity types match the specified types
      */
     public EntityType<? extends T> determineActualEntityType() {
-        if (types.contains(root.getIRI().toURI())) {
+        if (types.contains(root.getIRI().toURI()) && !root.isAbstract()) {
             return root;
         }
         resolveMatchingEntityTypes();
@@ -57,9 +57,9 @@ public class PolymorphicEntityTypeResolver<T> {
     }
 
     /**
-     * The algorithm uses DFS with remembering the path taken. If a matching entity type is found, but there already exists
-     * a more general one (an ancestor of the ET), then the ancestor is removed from the matches, because it is superseded by the
-     * more specific entity type just found.
+     * The algorithm uses DFS with remembering the path taken. If a matching entity type is found, but there already
+     * exists a more general one (an ancestor of the ET), then the ancestor is removed from the matches, because it is
+     * superseded by the more specific entity type just found.
      */
     private void resolveMatchingEntityTypes() {
         findMatchingEntityType(root, new HashSet<>());
@@ -69,7 +69,7 @@ public class PolymorphicEntityTypeResolver<T> {
                                         Set<EntityType<? extends T>> ancestors) {
         for (AbstractIdentifiableType<? extends T> subtype : parent.getSubtypes()) {
             final Set<EntityType<? extends T>> updatedAncestors = new HashSet<>(ancestors);
-            if (subtype.getPersistenceType() == Type.PersistenceType.ENTITY) {
+            if (subtype.getPersistenceType() == Type.PersistenceType.ENTITY && !subtype.isAbstract()) {
                 final EntityTypeImpl<? extends T> et = (EntityTypeImpl<? extends T>) subtype;
                 final URI etUri = et.getIRI().toURI();
                 if (types.contains(etUri)) {

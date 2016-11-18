@@ -77,7 +77,7 @@ public class EntityTypeImpl<X> extends AbstractIdentifiableType<X> implements En
         return inheritanceType;
     }
 
-    public void setInheritanceType(InheritanceType inheritanceType) {
+    void setInheritanceType(InheritanceType inheritanceType) {
         this.inheritanceType = inheritanceType;
     }
 

@@ -150,4 +150,32 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         assertTrue(result instanceof OWLClassT);
         verifyEntityTAttributes((OWLClassT) result);
     }
+
+    @Test
+    public void findReturnsNullWhenMatchingClassIsAbstract() throws Exception {
+        final Collection<Triple> data = triplesForEntityT();
+        data.remove(new Triple(entityT.getUri(), URI.create(RDF_TYPE), URI.create(Vocabulary.cOWLClassT)));
+        data.add(new Triple(entityT.getUri(), URI.create(RDF_TYPE), URI.create(Vocabulary.cOWLClassSParent)));
+
+        final EntityManager em = getEntityManager("findReturnsNullWhenMatchingClassIsAbstract", false);
+        persistTestData(data, em);
+
+        assertNull(em.find(OWLClassSParent.class, entityT.getUri()));
+    }
+
+    @Test
+    public void findReturnsMostSpecificSubtypeWhenReturnTypeIsAbstractAncestor() throws Exception {
+        final Collection<Triple> data = triplesForEntityT();
+        data.add(new Triple(entityT.getUri(), URI.create(RDF_TYPE), URI.create(Vocabulary.cOWLClassS)));
+        data.add(new Triple(entityT.getUri(), URI.create(RDF_TYPE), URI.create(Vocabulary.cOWLClassSParent)));
+
+        final EntityManager em = getEntityManager("findReturnsMostSpecificSubtypeWhenReturnTypeIsAbstractAncestor",
+                false);
+        persistTestData(data, em);
+
+        final OWLClassSParent result = em.find(OWLClassSParent.class, entityT.getUri());
+        assertNotNull(result);
+        assertTrue(result instanceof OWLClassT);
+        verifyEntityTAttributes((OWLClassT) result);
+    }
 }

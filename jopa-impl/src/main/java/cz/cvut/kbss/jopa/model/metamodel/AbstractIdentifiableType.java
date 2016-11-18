@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,8 +66,22 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         return supertype;
     }
 
+    /**
+     * Whether this managed type has any managed subtypes (entities or mapped superclasses).
+     *
+     * @return {@code true} when managed subtypes exist, {@code false} otherwise
+     */
     public boolean hasSubtypes() {
         return !subtypes.isEmpty();
+    }
+
+    /**
+     * Whether the Java type represented by this type is an abstract class.
+     *
+     * @return {@code true} if the represented Java type is abstract, {@code false} otherwise
+     */
+    public boolean isAbstract() {
+        return Modifier.isAbstract(javaType.getModifiers());
     }
 
     public Set<AbstractIdentifiableType<? extends X>> getSubtypes() {

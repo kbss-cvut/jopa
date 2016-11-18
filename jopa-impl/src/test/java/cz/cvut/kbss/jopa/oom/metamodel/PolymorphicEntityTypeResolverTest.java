@@ -23,8 +23,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class PolymorphicEntityTypeResolverTest {
 
@@ -36,16 +35,20 @@ public class PolymorphicEntityTypeResolverTest {
     @Mock
     private MetamodelImpl metamodelMock;
 
+    private EntityTypeImpl<OWLClassS> etS;
+    private EntityTypeImpl<OWLClassR> etR;
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
+        this.etS = metamodelMock.entity(OWLClassS.class);
+        this.etR = metamodelMock.entity(OWLClassR.class);
     }
 
     @Test
     public void determineActualEntityTypeReturnsRootTypeWhenTypeAxiomsContainItsClass() {
-        final EntityTypeImpl<OWLClassS> etS = metamodelMock.entity(OWLClassS.class);
         final Collection<Axiom<URI>> types = getTypeAxioms(etS.getIRI().toString());
 
         assertEquals(etS, execute(etS, types));
@@ -64,8 +67,6 @@ public class PolymorphicEntityTypeResolverTest {
 
     @Test
     public void determineActualEntityTypeReturnsSubtypeWhoseIriIsPresentIntTypeAxioms() {
-        final EntityTypeImpl<OWLClassS> etS = metamodelMock.entity(OWLClassS.class);
-        final EntityTypeImpl<OWLClassR> etR = metamodelMock.entity(OWLClassR.class);
         final Collection<Axiom<URI>> types = getTypeAxioms(etR.getIRI().toString());
 
         assertEquals(etR, execute(etS, types));
@@ -73,7 +74,6 @@ public class PolymorphicEntityTypeResolverTest {
 
     @Test
     public void determineActualEntityTypeReturnsNullForNoMatchingEntityType() {
-        final EntityTypeImpl<OWLClassS> etS = metamodelMock.entity(OWLClassS.class);
         final Collection<Axiom<URI>> types = getTypeAxioms();
 
         assertNull(execute(etS, types));
@@ -83,8 +83,6 @@ public class PolymorphicEntityTypeResolverTest {
     public void determineActualEntityTypeThrowsAmbiguousEtExceptionWhenMultipleEntityTypesAreFound() {
         final IRI extraEtIri = IRI.create(Generators.createIndividualIdentifier().toString());
         final EntityTypeImpl extraEt = generateEntityType(extraEtIri);
-        final EntityTypeImpl<OWLClassR> etR = metamodelMock.entity(OWLClassR.class);
-        final EntityTypeImpl<OWLClassS> etS = metamodelMock.entity(OWLClassS.class);
         final Set<AbstractIdentifiableType<? extends OWLClassS>> subtypes = new HashSet<>(
                 Arrays.<AbstractIdentifiableType<? extends OWLClassS>>asList(etR, extraEt));
         when(etS.getSubtypes()).thenReturn(subtypes);
@@ -108,8 +106,6 @@ public class PolymorphicEntityTypeResolverTest {
 
     @Test
     public void determineActualEntityTypeReturnsMostConcreteEtWhenParentEtIsAlsoInTypes() {
-        final EntityTypeImpl<OWLClassR> etR = metamodelMock.entity(OWLClassR.class);
-        final EntityTypeImpl<OWLClassS> etS = metamodelMock.entity(OWLClassS.class);
         final EntityTypeImpl extraEt = generateEntityTypeSubtree(1, etR);
         final Collection<Axiom<URI>> types = getTypeAxioms(etR.getIRI().toString(), extraEt.getIRI().toString());
 
@@ -137,8 +133,6 @@ public class PolymorphicEntityTypeResolverTest {
 
     @Test
     public void determineActualEntityTypeReturnsMostConcreteEtWhenAncestorIsAlsoInTypes() {
-        final EntityTypeImpl<OWLClassR> etR = metamodelMock.entity(OWLClassR.class);
-        final EntityTypeImpl<OWLClassS> etS = metamodelMock.entity(OWLClassS.class);
         final EntityTypeImpl mostSpecificEt = generateEntityTypeSubtree(Generators.randomPositiveInt(5), etR);
         final Collection<Axiom<URI>> types = getTypeAxioms(etR.getIRI().toString(), mostSpecificEt.getIRI().toString());
 
@@ -147,8 +141,6 @@ public class PolymorphicEntityTypeResolverTest {
 
     @Test
     public void determineActualEntityTypeThrowsAmbiguousEtExceptionWhenMultipleEtsInDifferentSubtreesAreFound() {
-        final EntityTypeImpl<OWLClassR> etR = metamodelMock.entity(OWLClassR.class);
-        final EntityTypeImpl<OWLClassS> etS = metamodelMock.entity(OWLClassS.class);
         final EntityTypeImpl mostSpecificEtOne = generateEntityTypeSubtree(Generators.randomPositiveInt(5), etR);
         final EntityTypeImpl mostSpecificEtTwo = generateEntityTypeSubtree(Generators.randomPositiveInt(5), etR);
         final Collection<Axiom<URI>> types =
@@ -176,5 +168,47 @@ public class PolymorphicEntityTypeResolverTest {
         assertEquals(etQ, execute(rootEt, types));
     }
 
-    // TODO Check for entity type being abstract - what should actually happen if the class is abstract?
+    @Test
+    public void determineActualEntityTypeReturnsNullWhenMostSpecificTypeIsAbstract() {
+        final String abstractTypeIri = Generators.createIndividualIdentifier().toString();
+        final EntityTypeImpl<AbstractSubtype> etAbstract = spy(
+                new EntityTypeImpl<>(AbstractSubtype.class.getSimpleName(),
+                        AbstractSubtype.class, IRI.create(abstractTypeIri)));
+        doReturn(etR).when(etAbstract).getSupertype();
+        doReturn(Collections.singleton(etAbstract)).when(etR).getSubtypes();
+
+        final Collection<Axiom<URI>> types = getTypeAxioms(abstractTypeIri);
+        assertNull(execute(etS, types));
+    }
+
+    private static abstract class AbstractSubtype extends OWLClassR {
+    }
+
+    @Test
+    public void determineActualEntityTypeIsNotAmbiguousWhenOneOfTheTypesIsAbstract() {
+        final String abstractTypeIri = Generators.createIndividualIdentifier().toString();
+        final EntityTypeImpl<AbstractSubtype> etAbstract = spy(
+                new EntityTypeImpl<>(AbstractSubtype.class.getSimpleName(),
+                        AbstractSubtype.class, IRI.create(abstractTypeIri)));
+        doReturn(etR).when(etAbstract).getSupertype();
+        doReturn(Collections.singleton(etAbstract)).when(etR).getSubtypes();
+        final EntityTypeImpl mostSpecificEtOne = generateEntityTypeSubtree(Generators.randomPositiveInt(5), etR);
+
+        final Collection<Axiom<URI>> types = getTypeAxioms(mostSpecificEtOne.getIRI().toString(), abstractTypeIri);
+        assertEquals(mostSpecificEtOne, execute(etS, types));
+    }
+
+    @Test
+    public void determineActualEntityTypeSearchesForMoreSpecificTypeWhenRootTypeIsAbstract() {
+        final String abstractTypeIri = Generators.createIndividualIdentifier().toString();
+        final EntityTypeImpl<AbstractSubtype> etAbstract = spy(
+                new EntityTypeImpl<>(AbstractSubtype.class.getSimpleName(),
+                        AbstractSubtype.class, IRI.create(abstractTypeIri)));
+        doReturn(Collections.singleton(etS)).when(etAbstract).getSubtypes();
+        // We are abusing the type erasure here a little
+        when(etS.getSupertype()).thenReturn((IdentifiableType) etAbstract);
+
+        final Collection<Axiom<URI>> types = getTypeAxioms(OWLClassS.getClassIri(), abstractTypeIri);
+        assertEquals(etS, execute(etAbstract, types));
+    }
 }
