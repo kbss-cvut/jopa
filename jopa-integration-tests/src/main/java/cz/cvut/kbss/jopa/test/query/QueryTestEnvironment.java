@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,14 +15,9 @@
 package cz.cvut.kbss.jopa.test.query;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
-import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +32,6 @@ public final class QueryTestEnvironment {
     private static final String BASE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityA_";
     private static final String TYPE_A = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#TypeA";
     private static final String BASE_B = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityB_";
-    //	private static final String BASE_C = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityC_";
     private static final String BASE_D = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD_";
 
     /**
@@ -204,9 +198,17 @@ public final class QueryTestEnvironment {
         LOG.debug("Generating test data...");
         final Map<Class<?>, List<?>> m = new HashMap<>();
         final int count = 10;
-        final OWLClass ann = OWLClassA.class.getAnnotation(OWLClass.class);
-        final List<OWLClassA> aa = new ArrayList<>(count);
+        final List<OWLClassA> aa = generateOwlClassAInstances(count);
         m.put(OWLClassA.class, aa);
+        m.put(OWLClassB.class, generateOwlClassBInstances(count));
+        m.put(OWLClassD.class, generateOwlClassDInstances(count, aa));
+        m.put(OWLClassE.class, generateOwlClassEInstances(count));
+        m.put(OWLClassT.class, generateOwlClassTInstances(count, aa));
+        return m;
+    }
+
+    private static List<OWLClassA> generateOwlClassAInstances(int count) {
+        final List<OWLClassA> lst = new ArrayList<>();
         int randomNum = Generators.randomInt(1000);
         for (int i = 0; i < count; i++) {
             final OWLClassA a = new OWLClassA();
@@ -214,51 +216,60 @@ public final class QueryTestEnvironment {
             a.setStringAttribute("stringAttribute" + randomNum);
             final Set<String> s = new HashSet<>();
             s.add(TYPE_A);
-            s.add(ann.iri());
             a.setTypes(s);
-            aa.add(a);
+            lst.add(a);
             randomNum++;
         }
-        final List<OWLClassB> bb = new ArrayList<>(count);
-        m.put(OWLClassB.class, bb);
-        randomNum = Generators.randomInt(1000);
+        return lst;
+    }
+
+    private static List<OWLClassB> generateOwlClassBInstances(int count) {
+        final List<OWLClassB> lst = new ArrayList<>();
+        int randomNum = Generators.randomInt(1000);
         for (int i = 0; i < count; i++) {
             final OWLClassB b = new OWLClassB();
             b.setUri(URI.create(BASE_B + randomNum));
             b.setStringAttribute("strAtt" + randomNum);
-            bb.add(b);
+            lst.add(b);
             randomNum++;
         }
-        // final List<OWLClassC> cc = new ArrayList<>(count);
-        // m.put(OWLClassC.class, cc);
-        // randomNum = TestEnvironmentUtils.randomInt(1000);
-        // for (int i = 0; i < count; i++) {
-        // final OWLClassC c = new OWLClassC();
-        // c.setUri(URI.create(BASE_C + randomNum));
-        // if (i % 2 != 0) {
-        // c.setReferencedList(new ArrayList<>(aa));
-        // }
-        // randomNum++;
-        // cc.add(c);
-        // }
-        final List<OWLClassD> dd = new ArrayList<>();
-        m.put(OWLClassD.class, dd);
-        randomNum = Generators.randomInt(1000);
+        return lst;
+    }
+
+    private static List<OWLClassD> generateOwlClassDInstances(int count, List<OWLClassA> aList) {
+        final List<OWLClassD> lst = new ArrayList<>();
+        int randomNum = Generators.randomInt(1000);
         for (int i = 0; i < count; i++) {
             final OWLClassD d = new OWLClassD();
             d.setUri(URI.create(BASE_D + randomNum));
-            d.setOwlClassA(aa.get(i));
-            dd.add(d);
+            d.setOwlClassA(aList.get(i));
+            lst.add(d);
             randomNum++;
         }
-        final List<OWLClassE> ee = new ArrayList<>();
-        m.put(OWLClassE.class, ee);
+        return lst;
+    }
+
+    private static List<OWLClassE> generateOwlClassEInstances(int count) {
+        final List<OWLClassE> lst = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             final OWLClassE e = new OWLClassE();
             // Auto-generated id
-            e.setStringAttribute("eStr");
-            ee.add(e);
+            e.setStringAttribute("eStr" + i);
+            lst.add(e);
         }
-        return m;
+        return lst;
+    }
+
+    private static List<OWLClassT> generateOwlClassTInstances(int count, List<OWLClassA> aList) {
+        final List<OWLClassT> lst = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            final OWLClassT t = new OWLClassT();
+            t.setIntAttribute(i);
+            t.setName("tInstance " + i);
+            t.setDescription("Description of tInstance" + i);
+            t.setOwlClassA(aList.get(Generators.randomInt(aList.size())));
+            lst.add(t);
+        }
+        return lst;
     }
 }

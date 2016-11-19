@@ -55,6 +55,6 @@ Single inheritance:
     - [x] Entity type for concrete supertype + supertype class assertion present
     - [x] Entity type for concrete supertype + supertype class assertion NOT present
     - [x] Entity type for abstract supertype
-    - [ ] Polymorphic loading in tests
+    - [x] Polymorphic loading in queries
     - [ ] Polymorphic loading from cache
 - [ ] Polymorphic attributes
