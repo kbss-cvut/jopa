@@ -82,11 +82,10 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
     @Test
     public void findLoadsSuperclassInstanceWhenRequestedAndClassAssertionIsPresent() throws Exception {
-        final Collection<Triple> data = triplesForEntityT();
-        data.add(new Triple(entityT.getUri(), URI.create(RDF_TYPE), URI.create(Vocabulary.cOWLClassS)));
-
         final EntityManager em = getEntityManager("findLoadsSuperclassInstanceWhenRequestedAndClassAssertionIsPresent",
                 false);
+        final Collection<Triple> data = triplesForEntityT();
+        data.add(new Triple(entityT.getUri(), URI.create(RDF_TYPE), URI.create(Vocabulary.cOWLClassS)));
         persistTestData(data, em);
 
         final OWLClassS result = em.find(OWLClassS.class, entityT.getUri());
@@ -177,5 +176,27 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         assertNotNull(result);
         assertTrue(result instanceof OWLClassT);
         verifyEntityTAttributes((OWLClassT) result);
+    }
+
+    @Test
+    public void findLoadsMostSpecificSubclassFromCache() {
+        this.em = getEntityManager("findLoadsMostSpecificSubclassFromCache", true);
+        persist(entityT, entityA);
+
+        final OWLClassSParent result = em.find(OWLClassSParent.class, entityT.getUri());
+        assertNotNull(result);
+        assertTrue(result instanceof OWLClassT);
+        verifyEntityTAttributes((OWLClassT) result);
+    }
+
+    @Test
+    public void findLoadsInstanceOfSuperclassFromCacheWhenTypeMatchesAndIsSpecifiedAsReturnType() {
+        this.em = getEntityManager("findLoadsInstanceOfSuperclassWhenTypeMatchesAndIsSpecifiedAsReturnType", true);
+        persist(entityT, entityA);
+
+        final OWLClassS result = em.find(OWLClassS.class, entityT.getUri());
+        assertNotNull(result);
+        assertEquals(entityT.getName(), result.getName());
+        assertEquals(entityT.getDescription(), result.getDescription());
     }
 }
