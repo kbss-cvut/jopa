@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.IntStream;
 
 import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.*;
@@ -942,5 +943,42 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.getTransaction().begin();
         em.merge(entityQ);
         em.getTransaction().commit();
+    }
+
+    @Test
+    public void addingValuesToDatatypePropertyCollectionAddsThemIntoRepository() {
+        this.em = getEntityManager("addingValuesToDatatypePropertyCollectionAddsThemIntoRepository", false);
+        persist(entityM);
+
+        IntStream.generate(Generators::randomInt).limit(7).forEach(entityM.getIntegerSet()::add);
+        em.getTransaction().begin();
+        em.merge(entityM);
+        em.getTransaction().commit();
+
+        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
+        assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
+    }
+
+    @Test
+    public void removingValuesFromDatatypePropertyCollectionRemovesThemFromRepository() {
+        this.em = getEntityManager("removingValuesFromDatatypePropertyCollectionRemovesThemFromRepository", false);
+        persist(entityM);
+
+        final Iterator<Integer> it = entityM.getIntegerSet().iterator();
+        while (it.hasNext()) {
+            it.next();
+            if (Generators.randomBoolean()) {
+                it.remove();
+            }
+        }
+        // Make sure there is at least one element
+        entityM.getIntegerSet().add(Generators.randomInt());
+
+        em.getTransaction().begin();
+        em.merge(entityM);
+        em.getTransaction().commit();
+
+        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
+        assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
     }
 }

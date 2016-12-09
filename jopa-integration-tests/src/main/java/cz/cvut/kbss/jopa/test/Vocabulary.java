@@ -16,10 +16,22 @@ package cz.cvut.kbss.jopa.test;
 
 public class Vocabulary {
 
-    public static final String cOwlClassB = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB";
+    private static final String ATTRIBUTE_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
+    private static final String CLASS_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
 
-    public static final String pAStringAttribute = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute";
-    public static final String pBStringAttribute = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute";
+    public static final String c_OwlClassB = CLASS_BASE + "OWLClassB";
+    public static final String c_OwlClassM = CLASS_BASE + "OWLClassM";
+
+    public static final String p_m_booleanAttribute = ATTRIBUTE_BASE + "m-booleanAttribute";
+    public static final String p_m_intAttribute = ATTRIBUTE_BASE + "m-intAttribute";
+    public static final String p_m_longAttribute = ATTRIBUTE_BASE + "m-longAttribute";
+    public static final String p_m_doubleAttribute = ATTRIBUTE_BASE + "m-doubleAttribute";
+    public static final String p_m_dateAttribute = ATTRIBUTE_BASE + "m-dateAttribute";
+    public static final String p_m_enumAttribute = ATTRIBUTE_BASE + "m-enumAttribute";
+    public static final String p_m_IntegerSet = ATTRIBUTE_BASE + "m-pluralIntAttribute";
+
+    public static final String pAStringAttribute = ATTRIBUTE_BASE + "A-stringAttribute";
+    public static final String pBStringAttribute = ATTRIBUTE_BASE + "B-stringAttribute";
 
     private Vocabulary() {
         throw new AssertionError();

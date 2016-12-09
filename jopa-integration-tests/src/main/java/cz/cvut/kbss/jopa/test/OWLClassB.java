@@ -20,7 +20,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 
-@OWLClass(iri = Vocabulary.cOwlClassB)
+@OWLClass(iri = Vocabulary.c_OwlClassB)
 public class OWLClassB {
 
     @Id

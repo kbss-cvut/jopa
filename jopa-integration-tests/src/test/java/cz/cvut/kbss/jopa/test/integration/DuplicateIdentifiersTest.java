@@ -206,7 +206,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
             throws OntoDriverException {
         final List<Axiom<?>> axioms = new ArrayList<>();
         final Axiom<?> classAssertion = new AxiomImpl<>(subject, Assertion.createClassAssertion(false),
-                new Value<>(NamedResource.create(Vocabulary.cOwlClassB)));
+                new Value<>(NamedResource.create(Vocabulary.c_OwlClassB)));
         axioms.add(classAssertion);
         axioms.add(new AxiomImpl<>(subject, stringAss, new Value<>(entityB.getStringAttribute())));
         final AxiomDescriptor desc = new AxiomDescriptor(subject);

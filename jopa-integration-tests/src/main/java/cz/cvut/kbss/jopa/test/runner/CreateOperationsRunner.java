@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -499,5 +499,19 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertEquals(entityQ.getOwlClassA().getUri(), result.getOwlClassA().getUri());
         assertEquals(entityA.getStringAttribute(), result.getOwlClassA().getStringAttribute());
         assertEquals(entityA.getTypes(), result.getOwlClassA().getTypes());
+    }
+
+    @Test
+    public void persistEntityWithDatatypePropertyCollectionPersistsAllValues() {
+        assertFalse(entityM.getIntegerSet().isEmpty());
+        this.em = getEntityManager("PersistEntityWithDatatypePropertyCollection", false);
+        em.getTransaction().begin();
+        em.persist(entityM);
+        em.getTransaction().commit();
+
+        assertNotNull(entityM.getKey());
+        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
+        assertNotNull(result);
+        assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
     }
 }
