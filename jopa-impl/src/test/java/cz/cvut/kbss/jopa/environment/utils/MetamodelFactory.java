@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -433,22 +434,22 @@ public class MetamodelFactory {
     public static void initOWLClassMMock(EntityType<OWLClassM> etMock, SingularAttribute booleanAtt,
                                          SingularAttribute intAtt, SingularAttribute longAtt,
                                          SingularAttribute doubleAtt, SingularAttribute dateAtt,
-                                         SingularAttribute enumAtt, Identifier idMock) throws Exception {
+                                         SingularAttribute enumAtt, PluralAttribute intSetAtt, Identifier idMock)
+            throws Exception {
         when(etMock.getJavaType()).thenReturn(OWLClassM.class);
         when(etMock.getIRI()).thenReturn(IRI.create(OWLClassM.getClassIri()));
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassM.getUriField());
         when(etMock.getAttributes()).thenReturn(
                 new HashSet<>(Arrays.<Attribute<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt,
-                        dateAtt, enumAtt)));
+                        dateAtt, enumAtt, intSetAtt)));
         when(etMock.getFieldSpecifications()).thenReturn(new HashSet<>(
                 Arrays.<FieldSpecification<? super OWLClassM, ?>>asList(booleanAtt, intAtt, longAtt, doubleAtt, dateAtt,
-                        enumAtt)));
+                        enumAtt, intSetAtt)));
 
         when(booleanAtt.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
         when(booleanAtt.getJavaType()).thenReturn(OWLClassM.getBooleanAttributeField().getType());
-        when(booleanAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassM.getBooleanAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(booleanAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_booleanAttribute));
         when(booleanAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(booleanAtt.isCollection()).thenReturn(false);
         when(booleanAtt.getDeclaringType()).thenReturn(etMock);
@@ -456,8 +457,7 @@ public class MetamodelFactory {
 
         when(intAtt.getJavaField()).thenReturn(OWLClassM.getIntAttributeField());
         when(intAtt.getJavaType()).thenReturn(OWLClassM.getIntAttributeField().getType());
-        when(intAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassM.getIntAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(intAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_intAttribute));
         when(intAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(intAtt.isCollection()).thenReturn(false);
         when(intAtt.getDeclaringType()).thenReturn(etMock);
@@ -465,8 +465,7 @@ public class MetamodelFactory {
 
         when(longAtt.getJavaField()).thenReturn(OWLClassM.getLongAttributeField());
         when(longAtt.getJavaType()).thenReturn(OWLClassM.getLongAttributeField().getType());
-        when(longAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassM.getLongAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(longAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_longAttribute));
         when(longAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(longAtt.isCollection()).thenReturn(false);
         when(longAtt.getBindableJavaType()).thenReturn(Long.class);
@@ -475,8 +474,7 @@ public class MetamodelFactory {
 
         when(doubleAtt.getJavaField()).thenReturn(OWLClassM.getDoubleAttributeField());
         when(doubleAtt.getJavaType()).thenReturn(OWLClassM.getDoubleAttributeField().getType());
-        when(doubleAtt.getIRI()).thenReturn(
-                IRI.create(OWLClassM.getDoubleAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(doubleAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_doubleAttribute));
         when(doubleAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(doubleAtt.isCollection()).thenReturn(false);
         when(doubleAtt.getDeclaringType()).thenReturn(etMock);
@@ -484,8 +482,7 @@ public class MetamodelFactory {
 
         when(dateAtt.getJavaField()).thenReturn(OWLClassM.getDateAttributeField());
         when(dateAtt.getJavaType()).thenReturn(OWLClassM.getDateAttributeField().getType());
-        when(dateAtt.getIRI())
-                .thenReturn(IRI.create(OWLClassM.getDateAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(dateAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_dateAttribute));
         when(dateAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(dateAtt.isCollection()).thenReturn(false);
         when(dateAtt.getDeclaringType()).thenReturn(etMock);
@@ -493,12 +490,23 @@ public class MetamodelFactory {
 
         when(enumAtt.getJavaField()).thenReturn(OWLClassM.getEnumAttributeField());
         when(enumAtt.getJavaType()).thenReturn(OWLClassM.getEnumAttributeField().getType());
-        when(enumAtt.getIRI()).thenReturn(IRI.create(
-                OWLClassM.getEnumAttributeField().getAnnotation(OWLDataProperty.class).iri()));
+        when(enumAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_enumAttribute));
         when(enumAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(enumAtt.isCollection()).thenReturn(false);
         when(enumAtt.getDeclaringType()).thenReturn(etMock);
         when(etMock.getFieldSpecification(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
+
+        when(intSetAtt.getJavaField()).thenReturn(OWLClassM.getIntegerSetField());
+        when(intSetAtt.getJavaType()).thenReturn(OWLClassM.getIntegerSetField().getType());
+        when(intSetAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_IntegerSet));
+        when(intSetAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(intSetAtt.isCollection()).thenReturn(true);
+        when(intSetAtt.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
+        when(intSetAtt.getDeclaringType()).thenReturn(etMock);
+        final Type typeMock = mock(Type.class);
+        when(intSetAtt.getElementType()).thenReturn(typeMock);
+        when(typeMock.getJavaType()).thenReturn(Integer.class);
+        when(etMock.getFieldSpecification(OWLClassM.getIntegerSetField().getName())).thenReturn(intSetAtt);
     }
 
     public static void initOWLClassNMock(EntityType<OWLClassN> et, SingularAttribute annotationAtt,

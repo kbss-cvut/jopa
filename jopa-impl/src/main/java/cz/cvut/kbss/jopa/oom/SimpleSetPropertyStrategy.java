@@ -24,6 +24,7 @@ import cz.cvut.kbss.ontodriver.model.Value;
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
@@ -48,7 +49,7 @@ class SimpleSetPropertyStrategy<X> extends PluralObjectPropertyStrategy<X> {
         }
         final Set<Value<?>> assertionValues = new HashSet<>(valueCollection.size());
         if (IdentifierTransformer.isValidIdentifierType(pluralAtt.getBindableJavaType())) {
-            valueCollection.stream().filter(item -> item != null).forEach(item -> assertionValues
+            valueCollection.stream().filter(Objects::nonNull).forEach(item -> assertionValues
                     .add(new Value<>(NamedResource.create(IdentifierTransformer.valueAsUri(item)))));
         } else {
             final EntityType<T> et = (EntityType<T>) mapper.getEntityType(pluralAtt.getBindableJavaType());

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.adapters.IndirectList;
 import cz.cvut.kbss.jopa.adapters.IndirectMap;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 
 import java.lang.reflect.Field;
@@ -71,5 +72,23 @@ public final class CollectionFactory {
             return new HashSet<>(collection.size());
         }
         throw new IllegalArgumentException("Unsupported collection type: " + collection);
+    }
+
+    /**
+     * Creates default collection for the specified collection type.
+     *
+     * @param collectionType Type of the collection to create
+     * @return Collection implementation instance
+     */
+    public static Collection<Object> createDefaultCollection(PluralAttribute.CollectionType collectionType) {
+        switch (collectionType) {
+            case LIST:
+                return new ArrayList<>();
+            case SET:
+            case COLLECTION:    // Intentional fall-through
+                return new HashSet<>();
+            default:
+                throw new IllegalArgumentException("Collection type " + collectionType + " is not supported.");
+        }
     }
 }

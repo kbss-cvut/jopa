@@ -18,6 +18,8 @@ import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Constructor;
@@ -222,13 +224,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     }
 
     private Collection<Object> createDefaultCollection(Class<?> cls) {
-        if (Set.class.isAssignableFrom(cls)) {
-            return new HashSet<>();
-        } else if (List.class.isAssignableFrom(cls)) {
-            return new ArrayList<>();
-        } else {
-            throw new IllegalArgumentException("Unsupported type of collection: " + cls);
-        }
+        return CollectionFactory.createDefaultCollection(PluralAttribute.CollectionType.fromClass(cls));
     }
 
     /**

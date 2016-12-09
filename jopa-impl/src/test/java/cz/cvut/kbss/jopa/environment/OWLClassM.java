@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,42 +14,48 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 
+import java.lang.invoke.VolatileCallSite;
 import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Contains a generated string URI and data property attributes of primitive wrapper types
- * - boolean, int, long, double.
- *
- * @author ledvima1
+ * - boolean, int, long, double. Plus an enum attribute and a plural datatype property attribute.
  */
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassM")
+@OWLClass(iri = Vocabulary.c_OwlClassM)
 public class OWLClassM {
 
     @Id(generated = true)
     private String key;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-booleanAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_m_booleanAttribute)
     private Boolean booleanAttribute;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-intAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_m_intAttribute)
     private Integer intAttribute;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-longAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_m_longAttribute)
     private Long longAttribute;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-doubleAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_m_doubleAttribute)
     private Double doubleAttribute;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-dateAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_m_dateAttribute)
     private Date dateAttribute;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-enumAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_m_enumAttribute)
     private Severity enumAttribute;
+
+    @OWLDataProperty(iri = Vocabulary.p_m_IntegerSet)
+    private Set<Integer> integerSet;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -111,6 +117,14 @@ public class OWLClassM {
         this.enumAttribute = enumAttribute;
     }
 
+    public Set<Integer> getIntegerSet() {
+        return integerSet;
+    }
+
+    public void setIntegerSet(Set<Integer> integerSet) {
+        this.integerSet = integerSet;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -120,6 +134,7 @@ public class OWLClassM {
                 ", longAttribute=" + longAttribute +
                 ", doubleAttribute=" + doubleAttribute +
                 ", enumAttribute=" + enumAttribute +
+                ", integerSet=" + integerSet +
                 '}';
     }
 
@@ -133,6 +148,7 @@ public class OWLClassM {
         this.doubleAttribute = 3.14D;
         this.dateAttribute = new Date();
         this.enumAttribute = Severity.MEDIUM;
+        this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());
     }
 
     public static String getClassIri() throws Exception {
@@ -165,5 +181,9 @@ public class OWLClassM {
 
     public static Field getEnumAttributeField() throws Exception {
         return OWLClassM.class.getDeclaredField("enumAttribute");
+    }
+
+    public static Field getIntegerSetField() throws Exception {
+        return OWLClassM.class.getDeclaredField("integerSet");
     }
 }

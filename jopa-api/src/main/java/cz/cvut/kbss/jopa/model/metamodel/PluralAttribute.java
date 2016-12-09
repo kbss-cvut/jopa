@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,10 +14,15 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Instances of the type PluralAttribute represent persistent collection-valued
  * attributes.
- * 
+ *
  * @param <X>
  *            The type the represented collection belongs to
  * @param <C>
@@ -27,21 +32,36 @@ package cz.cvut.kbss.jopa.model.metamodel;
  */
 public interface PluralAttribute<X, C, E> extends Attribute<X, C>, Bindable<E> {
 
-	enum CollectionType {
-		COLLECTION, SET, LIST, MAP
-	}
+    enum CollectionType {
+        SET(Set.class), LIST(List.class), COLLECTION(Collection.class), MAP(Map.class);
 
-	/**
-	 * Return the collection type.
-	 * 
-	 * @return collection type
-	 */
-	CollectionType getCollectionType();
+        CollectionType(Class<?> cls) {
+            this.collectionClass = cls;
+        }
 
-	/**
-	 * Return the type representing the element type of the collection.
-	 * 
-	 * @return element type
-	 */
-	Type<E> getElementType();
+        private final Class<?> collectionClass;
+
+        public static CollectionType fromClass(Class<?> cls) {
+            for (CollectionType type : values()) {
+                if (type.collectionClass.isAssignableFrom(cls)) {
+                    return type;
+                }
+            }
+            throw new IllegalArgumentException("Unsupported collection class " + cls);
+        }
+    }
+
+    /**
+     * Return the collection type.
+     *
+     * @return collection type
+     */
+    CollectionType getCollectionType();
+
+    /**
+     * Return the type representing the element type of the collection.
+     *
+     * @return element type
+     */
+    Type<E> getElementType();
 }
