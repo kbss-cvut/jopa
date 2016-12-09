@@ -7,7 +7,6 @@
     - It can happen that JOPA will try to insert a referenced individual which has not yet set id, which
         results in assigning it a generated URI. E.g. foreach(inst -> {inst.generateUri(); em.persist(inst); })
 - Add support for EntityManager.getReference
-- Support for data property collections?
 - Add a @Context annotation, which would specify that a field/entity should always be loaded from the specified context.
     This could be overwritten with a descriptor passed to EM
 - How to enhance query results with transactional changes? Sesame
