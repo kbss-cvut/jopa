@@ -223,7 +223,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         }
     }
 
-    private Collection<Object> createDefaultCollection(Class<?> cls) {
+    private static Collection<Object> createDefaultCollection(Class<?> cls) {
         return CollectionFactory.createDefaultCollection(PluralAttribute.CollectionType.fromClass(cls));
     }
 

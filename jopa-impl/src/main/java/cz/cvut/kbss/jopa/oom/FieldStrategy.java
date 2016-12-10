@@ -53,7 +53,7 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
                 case ANNOTATION:
                     throw new NotYetImplementedException();
                 case DATA:
-                    return new PluralDataPropertyStrategy<X>(et, (PluralAttribute<? super X, ?, ?>) attribute,
+                    return new PluralDataPropertyStrategy<>(et, (PluralAttribute<? super X, ?, ?>) attribute,
                             fieldDescriptor, mapper);
                 case OBJECT:
                     return createPluralObjectPropertyStrategy(et, (PluralAttribute<? super X, ?, ?>) attribute,
