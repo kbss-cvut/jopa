@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.9.0 - December 13, 2016
+- Support for single inheritance.
+
 ## 0.8.8 - December 9, 2016
 - Added support for datatype property collections in entities.
 
