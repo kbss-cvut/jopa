@@ -48,8 +48,9 @@ public class DefaultInstanceLoaderTest extends InstanceLoaderTestBase {
                 descriptorFactoryMock.createForFieldLoading(ENTITY_PK, OWLClassA.getTypesField(),
                         descriptor, mocks.forOwlClassA().entityType())).thenReturn(axiomDescriptor);
         entityA.setTypes(null);
-        this.instanceLoader = new DefaultInstanceLoader(connectionMock, metamodelMock, descriptorFactoryMock,
-                entityConstructorMock);
+        this.instanceLoader = DefaultInstanceLoader.builder().connection(connectionMock).metamodel(metamodelMock)
+                                                   .descriptorFactory(descriptorFactoryMock).cache(cacheMock)
+                                                   .entityBuilder(entityConstructorMock).build();
     }
 
     @Test

@@ -49,8 +49,9 @@ public class TwoStepInstanceLoaderTest extends InstanceLoaderTestBase {
         when(connectionMock.types()).thenReturn(typesMock);
         when(descriptorFactoryMock.createForEntityLoading(loadingParameters, mocks.forOwlClassR().entityType()))
                 .thenReturn(axiomDescriptor);
-        this.instanceLoader = new TwoStepInstanceLoader(connectionMock, metamodelMock, descriptorFactoryMock,
-                entityConstructorMock);
+        this.instanceLoader = TwoStepInstanceLoader.builder().connection(connectionMock).metamodel(metamodelMock)
+                                                   .cache(cacheMock).descriptorFactory(descriptorFactoryMock)
+                                                   .entityBuilder(entityConstructorMock).build();
     }
 
     @Test

@@ -1,9 +1,11 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
+import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
@@ -11,6 +13,7 @@ import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Root of the entity loading strategies.
@@ -18,17 +21,24 @@ import java.util.Collection;
 abstract class EntityInstanceLoader {
 
     final Connection storageConnection;
-    final Metamodel metamodel;
+    final MetamodelImpl metamodel;
 
+    private final CacheManager cache;
     private final AxiomDescriptorFactory descriptorFactory;
     private final EntityConstructor entityBuilder;
 
-    EntityInstanceLoader(Connection storageConnection, Metamodel metamodel, AxiomDescriptorFactory descriptorFactory,
-                         EntityConstructor entityBuilder) {
-        this.storageConnection = storageConnection;
-        this.metamodel = metamodel;
-        this.descriptorFactory = descriptorFactory;
-        this.entityBuilder = entityBuilder;
+    EntityInstanceLoader(EntityInstanceLoaderBuilder builder) {
+        assert builder.storageConnection != null;
+        assert builder.metamodel != null;
+        assert builder.cache != null;
+        assert builder.descriptorFactory != null;
+        assert builder.entityBuilder != null;
+
+        this.storageConnection = builder.storageConnection;
+        this.metamodel = builder.metamodel;
+        this.cache = builder.cache;
+        this.descriptorFactory = builder.descriptorFactory;
+        this.entityBuilder = builder.entityBuilder;
     }
 
     /**
@@ -40,6 +50,11 @@ abstract class EntityInstanceLoader {
     abstract <T> T loadEntity(LoadingParameters<T> loadingParameters);
 
     <T> T loadInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
+        if (cache.contains(et.getJavaType(), loadingParameters.getIdentifier(),
+                loadingParameters.getDescriptor().getContext())) {
+            return cache.get(et.getJavaType(), loadingParameters.getIdentifier(),
+                    loadingParameters.getDescriptor().getContext());
+        }
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
         try {
             final Collection<Axiom<?>> axioms = storageConnection.find(axiomDescriptor);
@@ -54,5 +69,41 @@ abstract class EntityInstanceLoader {
         } catch (InstantiationException | IllegalAccessException e) {
             throw new EntityReconstructionException(e);
         }
+    }
+
+    static abstract class EntityInstanceLoaderBuilder {
+        private Connection storageConnection;
+        private MetamodelImpl metamodel;
+        private CacheManager cache;
+
+        private AxiomDescriptorFactory descriptorFactory;
+        private EntityConstructor entityBuilder;
+
+        EntityInstanceLoaderBuilder connection(Connection connection) {
+            this.storageConnection = Objects.requireNonNull(connection);
+            return this;
+        }
+
+        EntityInstanceLoaderBuilder metamodel(MetamodelImpl metamodel) {
+            this.metamodel = metamodel;
+            return this;
+        }
+
+        EntityInstanceLoaderBuilder descriptorFactory(AxiomDescriptorFactory factory) {
+            this.descriptorFactory = factory;
+            return this;
+        }
+
+        EntityInstanceLoaderBuilder entityBuilder(EntityConstructor builder) {
+            this.entityBuilder = builder;
+            return this;
+        }
+
+        EntityInstanceLoaderBuilder cache(CacheManager cache) {
+            this.cache = cache;
+            return this;
+        }
+
+        abstract EntityInstanceLoader build();
     }
 }

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -23,7 +23,6 @@ import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
@@ -138,13 +137,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                 return cls.cast(result);
             }
         }
-        // Search the cache
-        result = getObjectFromCache(cls, identifier, descriptor.getContext());
-        if (result == null) {
-            // The object is not in the session cache, so search the ontology
-            final URI idUri = EntityPropertiesUtils.getValueAsURI(identifier);
-            result = storage.find(new LoadingParameters<>(cls, idUri, descriptor));
-        }
+        final URI idUri = EntityPropertiesUtils.getValueAsURI(identifier);
+        result = storage.find(new LoadingParameters<>(cls, idUri, descriptor));
+
         if (result == null) {
             return null;
         }
@@ -570,13 +565,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         assert entity != null;
         final Object iri = getIdentifier(entity);
         final Class<T> entityCls = (Class<T>) entity.getClass();
-        // Search the cache
-        T original = getObjectFromCache(entityCls, iri, descriptor.getContext());
-        if (original == null) {
-            // The object is not in the session cache, so search the ontology
-            final URI idUri = EntityPropertiesUtils.getValueAsURI(iri);
-            original = storage.find(new LoadingParameters<>(entityCls, idUri, descriptor, true));
-        }
+        final URI idUri = EntityPropertiesUtils.getValueAsURI(iri);
+        T original = storage.find(new LoadingParameters<>(entityCls, idUri, descriptor, true));
+
         assert original != null;
         registerClone(entity, original, descriptor);
         try {
@@ -1002,21 +993,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
     }
 
-    /**
-     * Get entity with the specified primary key from the cache. </p>
-     * <p>
-     * If the cache does not contain any object with the specified primary key and class, null is returned. This method
-     * is just a delegate for the cache methods.
-     *
-     * @return Cached object or null
-     */
-    private <T> T getObjectFromCache(Class<T> cls, Object primaryKey, URI context) {
-        assert cls != null;
-        assert primaryKey != null;
-        return cacheManager.get(cls, primaryKey, context);
-    }
-
-    public void putObjectIntoCache(Object primaryKey, Object entity, URI context) {
+    void putObjectIntoCache(Object primaryKey, Object entity, URI context) {
         cacheManager.add(primaryKey, entity, context);
     }
 

@@ -17,6 +17,7 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
+import cz.cvut.kbss.jopa.environment.Vocabulary;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
@@ -31,6 +32,7 @@ import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Lists;
+import cz.cvut.kbss.ontodriver.Types;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
@@ -365,5 +367,37 @@ public class ObjectOntologyMapperTest {
         final OWLClassS result = mapper.loadEntity(loadingParameters);
         assertSame(entity, result);
         verify(twoStepLoader).loadEntity(loadingParameters);
+    }
+
+    @Test
+    public void loadEntityLoadsInstanceFromCacheWhenItIsPresentThere() throws Exception {
+        when(cacheMock.contains(OWLClassA.class, ENTITY_PK, null)).thenReturn(true);
+        when(cacheMock.get(OWLClassA.class, ENTITY_PK, null)).thenReturn(entityA);
+
+        final OWLClassA result = mapper.loadEntity(loadingParameters);
+        assertSame(entityA, result);
+        verify(cacheMock).get(OWLClassA.class, ENTITY_PK, null);
+        verify(connectionMock, never()).find(any(AxiomDescriptor.class));
+    }
+
+    @Test
+    public void loadEntityDeterminesConcreteEntityTypeAndLoadsItFromCacheWhenItIsPresentThere() throws Exception {
+        final OWLClassR entity = new OWLClassR();
+        entity.setUri(ENTITY_PK);
+        when(cacheMock.contains(OWLClassR.class, ENTITY_PK, null)).thenReturn(true);
+        when(cacheMock.get(OWLClassR.class, ENTITY_PK, null)).thenReturn(entity);
+        final Types typesMock = mock(Types.class);
+        final NamedResource individual = NamedResource.create(ENTITY_PK);
+        final URI typeUri = URI.create(Vocabulary.C_OWLClassR);
+        when(typesMock.getTypes(NamedResource.create(ENTITY_PK), null, false)).thenReturn(Collections.singleton(
+                new AxiomImpl<>(individual, Assertion.createClassAssertion(false), new Value<>(typeUri))));
+        when(connectionMock.types()).thenReturn(typesMock);
+
+        final LoadingParameters<OWLClassS> loadingParameters = new LoadingParameters<>(OWLClassS.class, ENTITY_PK,
+                aDescriptor);
+        final OWLClassS result = mapper.loadEntity(loadingParameters);
+        assertSame(entity, result);
+        verify(cacheMock).get(OWLClassR.class, ENTITY_PK, null);
+        verify(connectionMock, never()).find(any(AxiomDescriptor.class));
     }
 }

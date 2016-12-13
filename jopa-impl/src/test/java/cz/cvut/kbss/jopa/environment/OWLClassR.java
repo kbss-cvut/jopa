@@ -4,13 +4,13 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassR")
+@OWLClass(iri = Vocabulary.C_OWLClassR)
 public class OWLClassR extends OWLClassS {
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#R-stringAttribute")
+    @OWLDataProperty(iri = Vocabulary.P_R_STRING_ATTRIBUTE)
     private String stringAtt;
 
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA", cascade = {CascadeType.PERSIST})
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_A, cascade = {CascadeType.PERSIST})
     private OWLClassA owlClassA;
 
     public String getStringAtt() {

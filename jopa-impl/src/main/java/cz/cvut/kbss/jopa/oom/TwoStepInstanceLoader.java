@@ -1,12 +1,10 @@
 package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
-import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.oom.metamodel.PolymorphicEntityTypeResolver;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
-import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -16,13 +14,8 @@ import java.util.Set;
 
 class TwoStepInstanceLoader extends EntityInstanceLoader {
 
-    private final MetamodelImpl metamodel;
-
-    TwoStepInstanceLoader(Connection storageConnection, MetamodelImpl metamodel,
-                          AxiomDescriptorFactory descriptorFactory,
-                          EntityConstructor entityBuilder) {
-        super(storageConnection, metamodel, descriptorFactory, entityBuilder);
-        this.metamodel = metamodel;
+    TwoStepInstanceLoader(TwoStepInstanceLoaderBuilder builder) {
+        super(builder);
     }
 
     @Override
@@ -40,6 +33,18 @@ class TwoStepInstanceLoader extends EntityInstanceLoader {
             return loadInstance(loadingParameters, et);
         } catch (OntoDriverException e) {
             throw new StorageAccessException(e);
+        }
+    }
+
+    static TwoStepInstanceLoaderBuilder builder() {
+        return new TwoStepInstanceLoaderBuilder();
+    }
+
+    static class TwoStepInstanceLoaderBuilder extends EntityInstanceLoaderBuilder {
+
+        @Override
+        EntityInstanceLoader build() {
+            return new TwoStepInstanceLoader(this);
         }
     }
 }

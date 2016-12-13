@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityDeconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
+import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -48,6 +49,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
     private static final Logger LOG = LoggerFactory.getLogger(ObjectOntologyMapperImpl.class);
 
     private final UnitOfWorkImpl uow;
+    private final CacheManager cache;
     private final Connection storageConnection;
     private final MetamodelImpl metamodel;
 
@@ -62,6 +64,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     public ObjectOntologyMapperImpl(UnitOfWorkImpl uow, Connection connection) {
         this.uow = Objects.requireNonNull(uow);
+        this.cache = uow.getLiveObjectCache();
         this.storageConnection = Objects.requireNonNull(connection);
         this.metamodel = uow.getMetamodel();
         this.descriptorFactory = new AxiomDescriptorFactory();
@@ -70,10 +73,12 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         this.entityBuilder = new EntityConstructor(this);
         this.entityBreaker = new EntityDeconstructor(this);
 
-        this.defaultInstanceLoader = new DefaultInstanceLoader(storageConnection, metamodel, descriptorFactory,
-                entityBuilder);
-        this.twoStepInstanceLoader = new TwoStepInstanceLoader(storageConnection, metamodel, descriptorFactory,
-                entityBuilder);
+        this.defaultInstanceLoader = DefaultInstanceLoader.builder().connection(storageConnection).metamodel(metamodel)
+                                                          .descriptorFactory(descriptorFactory)
+                                                          .entityBuilder(entityBuilder).cache(cache).build();
+        this.twoStepInstanceLoader = TwoStepInstanceLoader.builder().connection(storageConnection).metamodel(metamodel)
+                                                          .descriptorFactory(descriptorFactory)
+                                                          .entityBuilder(entityBuilder).cache(cache).build();
     }
 
     @Override
@@ -178,8 +183,8 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         if (orig != null) {
             return orig;
         }
-        if (uow.getLiveObjectCache().contains(cls, primaryKey, descriptor.getContext())) {
-            return uow.getLiveObjectCache().get(cls, primaryKey, descriptor.getContext());
+        if (cache.contains(cls, primaryKey, descriptor.getContext())) {
+            return cache.get(cls, primaryKey, descriptor.getContext());
         } else if (instanceRegistry.containsInstance(primaryKey, descriptor.getContext())) {
             // This prevents endless cycles in bidirectional relationships
             return cls.cast(instanceRegistry.getInstance(primaryKey, descriptor.getContext()));

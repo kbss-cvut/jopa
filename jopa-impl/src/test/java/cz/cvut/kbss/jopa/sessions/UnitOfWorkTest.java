@@ -55,15 +55,19 @@ public class UnitOfWorkTest {
     private OWLClassL entityL;
 
     @Mock
-    MetamodelImpl metamodelMock;
+    private MetamodelImpl metamodelMock;
+
     @Mock
-    CacheManager cacheManagerMock;
+    private CacheManager cacheManagerMock;
+
     @Mock
-    ConnectionWrapper storageMock;
+    private ConnectionWrapper storageMock;
+
     @Mock
-    EntityManagerImpl emMock;
+    private EntityManagerImpl emMock;
+
     @Mock
-    EntityTransaction transactionMock;
+    private EntityTransaction transactionMock;
 
     private UnitOfWorkImpl uow;
 
@@ -106,15 +110,6 @@ public class UnitOfWorkTest {
         connectionField.set(uow, storageMock);
     }
 
-    @Test
-    public void testReadObjectFromCache() {
-        when(cacheManagerMock.get(OWLClassA.class, entityA.getUri(), CONTEXT_URI)).thenReturn(
-                entityA);
-        OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
-        assertNotNull(res);
-        assertEquals(res.getStringAttribute(), entityA.getStringAttribute());
-    }
-
     @SuppressWarnings("unchecked")
     @Test(expected = NullPointerException.class)
     public void testReadObjectNullPrimaryKey() {
@@ -149,13 +144,12 @@ public class UnitOfWorkTest {
     }
 
     @Test
-    public void testReadObjectFromOntology() throws Exception {
+    public void testReadObjectFromOntology() {
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor)))
                 .thenReturn(entityA);
         OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         assertNotNull(res);
         assertEquals(entityA.getUri(), res.getUri());
-        verify(cacheManagerMock).get(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
     }
 
     @Test
@@ -832,7 +826,8 @@ public class UnitOfWorkTest {
         clone.setStringAttribute("changedStringAttribute");
         clone.setTypes(Collections.emptySet());
         when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
-        when(cacheManagerMock.get(OWLClassA.class, entityA.getUri(), CONTEXT_URI)).thenReturn(entityA);
+        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, true)))
+                .thenReturn(entityA);
         uow.mergeDetached(clone, descriptor);
 
         assertTrue(uow.hasChanges());
