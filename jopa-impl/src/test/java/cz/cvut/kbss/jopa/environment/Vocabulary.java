@@ -19,7 +19,7 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 public class Vocabulary {
 
     private static final String ATTRIBUTE_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
-    private static final String CLASS_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
+    public static final String CLASS_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
 
     public static final String c_OwlClassM = CLASS_BASE + "OWLClassM";
     public static final String C_OWLClassR = CLASS_BASE + "OWLClassR";

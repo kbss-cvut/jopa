@@ -514,6 +514,7 @@ public class MetamodelFactory {
         when(intSetAtt.getDeclaringType()).thenReturn(etMock);
         final Type typeMock = mock(Type.class);
         when(intSetAtt.getElementType()).thenReturn(typeMock);
+        when(intSetAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(typeMock.getJavaType()).thenReturn(Integer.class);
         when(etMock.getFieldSpecification(OWLClassM.getIntegerSetField().getName())).thenReturn(intSetAtt);
     }

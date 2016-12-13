@@ -21,6 +21,7 @@ public class Vocabulary {
 
     public static final String C_OWL_CLASS_A = CLASS_IRI_BASE + "OWLClassA";
     public static final String C_OWL_CLASS_B = CLASS_IRI_BASE + "OWLClassB";
+    public static final String C_OWL_CLASS_M = CLASS_IRI_BASE + "OWLClassM";
     public static final String C_OWL_CLASS_S = CLASS_IRI_BASE + "OWLClassS";
     public static final String C_OWL_CLASS_T = CLASS_IRI_BASE + "OWLClassT";
     public static final String C_OWL_CLASS_U = CLASS_IRI_BASE + "OWLClassU";
