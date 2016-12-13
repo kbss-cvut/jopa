@@ -19,15 +19,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-/**
- * @author ledvima1
- */
 class LruCache extends LinkedHashMap<LruCache.CacheNode, Object> {
 
     private final int capacity;
     private final transient Consumer<CacheNode> removeCallback;
 
-    public LruCache(int initialCapacity, Consumer<CacheNode> removeCallback) {
+    LruCache(int initialCapacity, Consumer<CacheNode> removeCallback) {
         super(initialCapacity, 1.0f, true);
         this.capacity = initialCapacity;
         this.removeCallback = removeCallback;

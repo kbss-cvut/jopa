@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -34,8 +34,6 @@ import java.util.function.Consumer;
  * This is a fixed-size second level cache implementation with LRU eviction policy.
  * <p>
  * When the capacity is reached, the least recently used entry is removed from the cache.
- *
- * @author kidney
  */
 public class LruCacheManager implements CacheManager {
 
@@ -228,27 +226,27 @@ public class LruCacheManager implements CacheManager {
         }
 
         @Override
-        void put(Object primaryKey, Object entity, URI context) {
+        void put(Object identifier, Object entity, URI context) {
             final URI ctx = context != null ? context : defaultContext;
-            super.put(primaryKey, entity, ctx);
-            cache.put(new LruCache.CacheNode(ctx, entity.getClass(), primaryKey), NULL_VALUE);
+            super.put(identifier, entity, ctx);
+            cache.put(new LruCache.CacheNode(ctx, entity.getClass(), identifier), NULL_VALUE);
         }
 
         @Override
-        <T> T get(Class<T> cls, Object primaryKey, URI context) {
+        <T> T get(Class<T> cls, Object identifier, URI context) {
             final URI ctx = context != null ? context : defaultContext;
-            T result = super.get(cls, primaryKey, ctx);
+            T result = super.get(cls, identifier, ctx);
             if (result != null) {
-                cache.get(new LruCache.CacheNode(ctx, cls, primaryKey));
+                cache.get(new LruCache.CacheNode(ctx, cls, identifier));
             }
             return result;
         }
 
         @Override
-        void evict(Class<?> cls, Object primaryKey, URI context) {
+        void evict(Class<?> cls, Object identifier, URI context) {
             final URI ctx = context != null ? context : defaultContext;
-            super.evict(cls, primaryKey, ctx);
-            cache.remove(new LruCache.CacheNode(ctx, cls, primaryKey));
+            super.evict(cls, identifier, ctx);
+            cache.remove(new LruCache.CacheNode(ctx, cls, identifier));
         }
 
         @Override
@@ -259,24 +257,21 @@ public class LruCacheManager implements CacheManager {
             if (!repoCache.containsKey(context)) {
                 return;
             }
-            final Map<Class<?>, Map<Object, Object>> ctxContent = repoCache.get(context);
-            for (Map.Entry<Class<?>, Map<Object, Object>> e : ctxContent.entrySet()) {
-                for (Object id : e.getValue().keySet()) {
-                    cache.remove(new LruCache.CacheNode(context, e.getKey(), id));
-                }
+            final URI ctx = context;
+            final Map<Object, Map<Class<?>, Object>> ctxContent = repoCache.get(context);
+            for (Map.Entry<Object, Map<Class<?>, Object>> e : ctxContent.entrySet()) {
+                e.getValue().forEach((cls, instance) -> cache.remove(new LruCache.CacheNode(ctx, cls, e.getKey())));
             }
             ctxContent.clear();
         }
 
         @Override
         void evict(Class<?> cls) {
-            for (Map.Entry<URI, Map<Class<?>, Map<Object, Object>>> e : repoCache.entrySet()) {
-                final Map<Class<?>, Map<Object, Object>> m = e.getValue();
-                final Map<Object, Object> cached = m.remove(cls);
-                if (cached != null) {
-                    for (Object id : cached.keySet()) {
-                        cache.remove(new LruCache.CacheNode(e.getKey(), cls, id));
-                    }
+            for (Map.Entry<URI, Map<Object, Map<Class<?>, Object>>> e : repoCache.entrySet()) {
+                final URI ctx = e.getKey();
+                for (Map.Entry<Object, Map<Class<?>, Object>> indNode : e.getValue().entrySet()) {
+                    indNode.getValue().remove(cls);
+                    cache.remove(new LruCache.CacheNode(ctx, cls, indNode.getKey()));
                 }
             }
         }

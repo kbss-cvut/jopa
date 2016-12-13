@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -319,18 +319,18 @@ public class TtlCacheManager implements CacheManager {
 
         private final Map<URI, Long> ttls = new HashMap<>();
 
-        void put(Object primaryKey, Object entity, URI context) {
-            super.put(primaryKey, entity, context);
+        void put(Object identifier, Object entity, URI context) {
+            super.put(identifier, entity, context);
             final URI ctx = context != null ? context : defaultContext;
             updateTimeToLive(ctx);
         }
 
-        <T> T get(Class<T> cls, Object primaryKey, URI context) {
+        <T> T get(Class<T> cls, Object identifier, URI context) {
             assert cls != null;
-            assert primaryKey != null;
+            assert identifier != null;
 
             final URI ctx = context != null ? context : defaultContext;
-            T result = super.get(cls, primaryKey, ctx);
+            T result = super.get(cls, identifier, ctx);
             if (result != null) {
                 updateTimeToLive(ctx);
             }
@@ -350,9 +350,11 @@ public class TtlCacheManager implements CacheManager {
         }
 
         void evict(Class<?> cls) {
-            for (Entry<URI, Map<Class<?>, Map<Object, Object>>> e : repoCache.entrySet()) {
-                final Map<Class<?>, Map<Object, Object>> m = e.getValue();
-                m.remove(cls);
+            for (Entry<URI, Map<Object, Map<Class<?>, Object>>> e : repoCache.entrySet()) {
+                final Map<Object, Map<Class<?>, Object>> m = e.getValue();
+                for (Entry<Object, Map<Class<?>, Object>> indNode : m.entrySet()) {
+                    indNode.getValue().remove(cls);
+                }
                 if (m.isEmpty()) {
                     ttls.remove(e.getKey());
                 }
