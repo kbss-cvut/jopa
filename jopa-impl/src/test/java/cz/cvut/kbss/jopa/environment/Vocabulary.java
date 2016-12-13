@@ -19,9 +19,10 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 public class Vocabulary {
 
     private static final String ATTRIBUTE_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
-    private static final String CLASS_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
+    public static final String CLASS_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
 
     public static final String c_OwlClassM = CLASS_BASE + "OWLClassM";
+    public static final String C_OWLClassR = CLASS_BASE + "OWLClassR";
 
     public static final String p_m_booleanAttribute = ATTRIBUTE_BASE + "m-booleanAttribute";
     public static final String p_m_intAttribute = ATTRIBUTE_BASE + "m-intAttribute";
@@ -30,6 +31,9 @@ public class Vocabulary {
     public static final String p_m_dateAttribute = ATTRIBUTE_BASE + "m-dateAttribute";
     public static final String p_m_enumAttribute = ATTRIBUTE_BASE + "m-enumAttribute";
     public static final String p_m_IntegerSet = ATTRIBUTE_BASE + "m-pluralIntAttribute";
+
+    public static final String P_R_STRING_ATTRIBUTE = ATTRIBUTE_BASE + "R-stringAttribute";
+    public static final String P_HAS_A = ATTRIBUTE_BASE + "hasA";
 
     private Vocabulary() {
         throw new AssertionError();

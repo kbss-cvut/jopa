@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.metamodel.*;
+import org.mockito.stubbing.OngoingStubbing;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -96,12 +97,14 @@ public class MetamodelFactory {
         when(strAttMock.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(strAttMock.getName()).thenReturn(OWLClassB.getStrAttField().getName());
         when(strAttMock.getDeclaringType()).thenReturn(etMock);
+        when(strAttMock.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(propsMock.getJavaField()).thenReturn(OWLClassB.getPropertiesField());
         when(propsMock.getName()).thenReturn(OWLClassB.getPropertiesField().getName());
         when(propsMock.getDeclaringType()).thenReturn(etMock);
         when(propsMock.getPropertyIdentifierType()).thenReturn(String.class);
         when(propsMock.getPropertyValueType()).thenReturn(String.class);
+
         when(etMock.getFieldSpecification(propsMock.getName())).thenReturn(propsMock);
         when(etMock.getIdentifier()).thenReturn(idMock);
         when(idMock.getJavaField()).thenReturn(OWLClassB.class.getDeclaredField("uri"));
@@ -453,6 +456,7 @@ public class MetamodelFactory {
         when(booleanAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(booleanAtt.isCollection()).thenReturn(false);
         when(booleanAtt.getDeclaringType()).thenReturn(etMock);
+        when(booleanAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(etMock.getFieldSpecification(OWLClassM.getBooleanAttributeField().getName())).thenReturn(booleanAtt);
 
         when(intAtt.getJavaField()).thenReturn(OWLClassM.getIntAttributeField());
@@ -461,6 +465,7 @@ public class MetamodelFactory {
         when(intAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(intAtt.isCollection()).thenReturn(false);
         when(intAtt.getDeclaringType()).thenReturn(etMock);
+        when(intAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(etMock.getFieldSpecification(OWLClassM.getIntAttributeField().getName())).thenReturn(intAtt);
 
         when(longAtt.getJavaField()).thenReturn(OWLClassM.getLongAttributeField());
@@ -470,6 +475,7 @@ public class MetamodelFactory {
         when(longAtt.isCollection()).thenReturn(false);
         when(longAtt.getBindableJavaType()).thenReturn(Long.class);
         when(longAtt.getDeclaringType()).thenReturn(etMock);
+        when(longAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(etMock.getFieldSpecification(OWLClassM.getLongAttributeField().getName())).thenReturn(longAtt);
 
         when(doubleAtt.getJavaField()).thenReturn(OWLClassM.getDoubleAttributeField());
@@ -478,6 +484,7 @@ public class MetamodelFactory {
         when(doubleAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(doubleAtt.isCollection()).thenReturn(false);
         when(doubleAtt.getDeclaringType()).thenReturn(etMock);
+        when(doubleAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(etMock.getFieldSpecification(OWLClassM.getDoubleAttributeField().getName())).thenReturn(doubleAtt);
 
         when(dateAtt.getJavaField()).thenReturn(OWLClassM.getDateAttributeField());
@@ -486,6 +493,7 @@ public class MetamodelFactory {
         when(dateAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(dateAtt.isCollection()).thenReturn(false);
         when(dateAtt.getDeclaringType()).thenReturn(etMock);
+        when(dateAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(etMock.getFieldSpecification(OWLClassM.getDateAttributeField().getName())).thenReturn(dateAtt);
 
         when(enumAtt.getJavaField()).thenReturn(OWLClassM.getEnumAttributeField());
@@ -494,6 +502,7 @@ public class MetamodelFactory {
         when(enumAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
         when(enumAtt.isCollection()).thenReturn(false);
         when(enumAtt.getDeclaringType()).thenReturn(etMock);
+        when(enumAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(etMock.getFieldSpecification(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
 
         when(intSetAtt.getJavaField()).thenReturn(OWLClassM.getIntegerSetField());
@@ -505,6 +514,7 @@ public class MetamodelFactory {
         when(intSetAtt.getDeclaringType()).thenReturn(etMock);
         final Type typeMock = mock(Type.class);
         when(intSetAtt.getElementType()).thenReturn(typeMock);
+        when(intSetAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(typeMock.getJavaType()).thenReturn(Integer.class);
         when(etMock.getFieldSpecification(OWLClassM.getIntegerSetField().getName())).thenReturn(intSetAtt);
     }
@@ -661,14 +671,18 @@ public class MetamodelFactory {
                 .thenReturn(IRI.create(refListField.getAnnotation(Sequence.class).ObjectPropertyHasContentsIRI()));
     }
 
-    public static void initOwlClassQMock(EntityType<OWLClassQ> et, SingularAttribute qStringAtt,
-                                         SingularAttribute qParentStringAtt,
-                                         SingularAttribute qLabelAtt,
-                                         SingularAttribute qOwlClassAAtt, Identifier idQ) throws Exception {
+    public static void initOwlClassQMock(EntityTypeImpl<OWLClassQ> et,
+                                         MappedSuperclassTypeImpl<QMappedSuperclass> superclassType,
+                                         SingularAttribute qStringAtt, SingularAttribute qParentStringAtt,
+                                         SingularAttribute qLabelAtt, SingularAttribute qOwlClassAAtt, Identifier idQ)
+            throws Exception {
         when(et.getIdentifier()).thenReturn(idQ);
         when(et.getJavaType()).thenReturn(OWLClassQ.class);
         when(idQ.getJavaField()).thenReturn(OWLClassQ.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassQ.getClassIri()));
+        when(et.getSupertype()).thenReturn((IdentifiableType) superclassType);
+        when(superclassType.getSubtypes()).thenReturn(Collections.singleton(et));
+        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
         when(et.getFieldSpecifications())
                 .thenReturn(
                         new HashSet<>(
@@ -690,6 +704,7 @@ public class MetamodelFactory {
         when(qStringAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassQ.getStringAttributeField().getAnnotation(OWLDataProperty.class).iri()));
         when(qStringAtt.getDeclaringType()).thenReturn(et);
+        when(qStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(et.getFieldSpecification(qStringAtt.getName())).thenReturn(qStringAtt);
 
         when(qParentStringAtt.getJavaField()).thenReturn(OWLClassQ.getParentStringField());
@@ -702,6 +717,7 @@ public class MetamodelFactory {
         when(qParentStringAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassQ.getParentStringField().getAnnotation(OWLDataProperty.class).iri()));
         when(qParentStringAtt.getDeclaringType()).thenReturn(et);
+        when(qParentStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(et.getFieldSpecification(qParentStringAtt.getName())).thenReturn(qParentStringAtt);
 
         when(qLabelAtt.getJavaField()).thenReturn(OWLClassQ.getLabelField());
@@ -714,6 +730,7 @@ public class MetamodelFactory {
         when(qLabelAtt.getIRI()).thenReturn(
                 IRI.create(OWLClassQ.getLabelField().getAnnotation(OWLAnnotationProperty.class).iri()));
         when(qLabelAtt.getDeclaringType()).thenReturn(et);
+        when(qLabelAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(et.getFieldSpecification(qLabelAtt.getName())).thenReturn(qLabelAtt);
 
         when(qOwlClassAAtt.getIRI())
@@ -725,6 +742,77 @@ public class MetamodelFactory {
         when(qOwlClassAAtt.getFetchType()).thenReturn(FetchType.EAGER);
         when(qOwlClassAAtt.getDeclaringType()).thenReturn(et);
         when(qOwlClassAAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(qOwlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(et.getFieldSpecification(qOwlClassAAtt.getName())).thenReturn(qOwlClassAAtt);
+    }
+
+    public static void initOwlClassSMock(EntityType<OWLClassS> et, SingularAttribute sNameAtt, Identifier idS) throws
+            Exception {
+        when(et.getIdentifier()).thenReturn(idS);
+        when(et.getJavaType()).thenReturn(OWLClassS.class);
+        when(idS.getJavaField()).thenReturn(OWLClassS.getUriField());
+        when(et.getIRI()).thenReturn(IRI.create(OWLClassS.getClassIri()));
+        when(et.getFieldSpecifications()).thenReturn(Collections.singleton(sNameAtt));
+        when(et.getAttributes()).thenReturn(Collections.singleton(sNameAtt));
+        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
+
+        when(sNameAtt.getJavaField()).thenReturn(OWLClassS.getNameField());
+        when(sNameAtt.getJavaType()).thenReturn(OWLClassS.getNameField().getType());
+        when(sNameAtt.getName()).thenReturn(OWLClassS.getNameField().getName());
+        when(et.getAttribute(OWLClassS.getNameField().getName())).thenReturn(sNameAtt);
+        when(sNameAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(sNameAtt.isCollection()).thenReturn(false);
+        when(sNameAtt.getBindableJavaType()).thenReturn(String.class);
+        when(sNameAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassS.getNameField().getAnnotation(OWLAnnotationProperty.class).iri()));
+        when(sNameAtt.getDeclaringType()).thenReturn(et);
+        when(sNameAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(et.getFieldSpecification(sNameAtt.getName())).thenReturn(sNameAtt);
+    }
+
+    static void initOwlClassRMock(EntityTypeImpl<OWLClassR> et, SingularAttribute rStringAtt,
+                                  SingularAttribute owlClassAAtt, EntityTypeImpl<OWLClassS> parentEt) throws Exception {
+        final Identifier id = parentEt.getIdentifier();
+        when(et.getIdentifier()).thenReturn(id);
+        when(et.getJavaType()).thenReturn(OWLClassR.class);
+        when(et.getIRI()).thenReturn(IRI.create(OWLClassR.getClassIri()));
+        final Set attributes = new HashSet<>(parentEt.getAttributes());
+        when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
+        attributes.add(rStringAtt);
+        attributes.add(owlClassAAtt);
+        when(et.getFieldSpecifications()).thenReturn(attributes);
+        when(et.getAttributes()).thenReturn(attributes);
+        when(et.getSupertype()).thenReturn((EntityType) parentEt);
+        when(parentEt.getSubtypes()).thenReturn(Collections.singleton(et));
+        when(parentEt.hasSubtypes()).thenReturn(true);
+
+        when(rStringAtt.getJavaField()).thenReturn(OWLClassR.getStringAttField());
+        when(rStringAtt.getJavaType()).thenReturn(OWLClassR.getStringAttField().getType());
+        when(rStringAtt.getName()).thenReturn(OWLClassR.getStringAttField().getName());
+        when(et.getAttribute(OWLClassR.getStringAttField().getName())).thenReturn(rStringAtt);
+        when(rStringAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
+        when(rStringAtt.isCollection()).thenReturn(false);
+        when(rStringAtt.getBindableJavaType()).thenReturn(String.class);
+        when(rStringAtt.getIRI()).thenReturn(
+                IRI.create(OWLClassR.getStringAttField().getAnnotation(OWLDataProperty.class).iri()));
+        when(rStringAtt.getDeclaringType()).thenReturn(et);
+        when(rStringAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(et.getFieldSpecification(rStringAtt.getName())).thenReturn(rStringAtt);
+
+        when(owlClassAAtt.getIRI())
+                .thenReturn(IRI.create(OWLClassR.getOwlClassAField().getAnnotation(OWLObjectProperty.class).iri()));
+        when(owlClassAAtt.getJavaType()).thenReturn(OWLClassA.class);
+        when(owlClassAAtt.getJavaField()).thenReturn(OWLClassR.getOwlClassAField());
+        when(owlClassAAtt.getName()).thenReturn(OWLClassR.getOwlClassAField().getName());
+        when(owlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(owlClassAAtt.getFetchType()).thenReturn(FetchType.EAGER);
+        when(owlClassAAtt.getDeclaringType()).thenReturn(et);
+        when(owlClassAAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(owlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(et.getFieldSpecification(owlClassAAtt.getName())).thenReturn(owlClassAAtt);
+        for (Attribute att : parentEt.getAttributes()) {
+            when(et.getAttribute(att.getName())).thenReturn(att);
+            when(et.getFieldSpecification(att.getName())).thenReturn(att);
+        }
     }
 }

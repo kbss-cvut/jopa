@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import org.junit.Before;
@@ -31,9 +32,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static org.junit.Assert.*;
 
-/**
- * @author kidney
- */
 public class TtlCacheManagerTest {
 
     private static final URI CONTEXT_ONE = URI.create("http://jopa-unit-tests");
@@ -47,13 +45,9 @@ public class TtlCacheManagerTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        final URI pk = URI.create("http://testEntity");
-        testA = new OWLClassA();
-        testA.setUri(pk);
+        testA = new OWLClassA(Generators.createIndividualIdentifier());
         testA.setStringAttribute("testAttribute");
-        final URI pkB = URI.create("http://testB");
-        testB = new OWLClassB();
-        testB.setUri(pkB);
+        testB = new OWLClassB(Generators.createIndividualIdentifier());
         testB.setStringAttribute("stringAttribute");
     }
 

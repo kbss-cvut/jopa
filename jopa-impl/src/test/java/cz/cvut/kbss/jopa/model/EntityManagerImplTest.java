@@ -23,7 +23,6 @@ import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -59,7 +58,7 @@ public class EntityManagerImplTest {
     private UnitOfWorkImpl uow;
 
     @Mock
-    private Metamodel metamodelMock;
+    private MetamodelImpl metamodelMock;
 
     private MetamodelMocks mocks;
 

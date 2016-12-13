@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 public class MetamodelMocks {
 
     @Mock
-    private EntityType<OWLClassA> etA;
+    private EntityTypeImpl<OWLClassA> etA;
     @Mock
     private Identifier idA;
     @Mock
@@ -45,7 +45,7 @@ public class MetamodelMocks {
     private TypesSpecification<OWLClassA, ?> aTypes;
 
     @Mock
-    private EntityType<OWLClassB> etB;
+    private EntityTypeImpl<OWLClassB> etB;
     @Mock
     private Identifier idB;
     @Mock
@@ -54,7 +54,7 @@ public class MetamodelMocks {
     private PropertiesSpecification<OWLClassB, Map, String, String> bProperties;
 
     @Mock
-    private EntityType<OWLClassC> etC;
+    private EntityTypeImpl<OWLClassC> etC;
     @Mock
     private Identifier idC;
     @Mock
@@ -63,28 +63,28 @@ public class MetamodelMocks {
     private ListAttribute<OWLClassC, OWLClassA> cSimpleList;
 
     @Mock
-    private EntityType<OWLClassD> etD;
+    private EntityTypeImpl<OWLClassD> etD;
     @Mock
     private Identifier idD;
     @Mock
     private SingularAttribute<OWLClassD, OWLClassA> dOwlClassAAtt;
 
     @Mock
-    private EntityType<OWLClassE> etE;
+    private EntityTypeImpl<OWLClassE> etE;
     @Mock
     private Identifier idE;
     @Mock
     private SingularAttribute<OWLClassE, String> eStringAtt;
 
     @Mock
-    private EntityType<OWLClassG> etG;
+    private EntityTypeImpl<OWLClassG> etG;
     @Mock
     private Identifier idG;
     @Mock
     private SingularAttribute<OWLClassG, OWLClassH> gOwlClassHAtt;
 
     @Mock
-    private EntityType<OWLClassF> etF;
+    private EntityTypeImpl<OWLClassF> etF;
     @Mock
     private Identifier idF;
     @Mock
@@ -93,7 +93,7 @@ public class MetamodelMocks {
     private PluralAttribute<OWLClassF, Set, OWLClassA> fSetAtt;
 
     @Mock
-    private EntityType<OWLClassH> etH;
+    private EntityTypeImpl<OWLClassH> etH;
     @Mock
     private Identifier idH;
     @Mock
@@ -102,21 +102,21 @@ public class MetamodelMocks {
     private SingularAttribute<OWLClassH, OWLClassG> hOwlClassGAtt;
 
     @Mock
-    private EntityType<OWLClassJ> etJ;
+    private EntityTypeImpl<OWLClassJ> etJ;
     @Mock
     private Identifier idJ;
     @Mock
     private PluralAttribute<OWLClassJ, Set, OWLClassA> jSetAtt;
 
     @Mock
-    private EntityType<OWLClassK> etK;
+    private EntityTypeImpl<OWLClassK> etK;
     @Mock
     private Identifier idK;
     @Mock
     private SingularAttribute<OWLClassK, OWLClassE> kOwlClassEAtt;
 
     @Mock
-    private EntityType<OWLClassL> etL;
+    private EntityTypeImpl<OWLClassL> etL;
     @Mock
     private Identifier idL;
     @Mock
@@ -129,7 +129,7 @@ public class MetamodelMocks {
     private SingularAttribute<OWLClassL, OWLClassA> lOwlClassAAtt;
 
     @Mock
-    private EntityType<OWLClassM> etM;
+    private EntityTypeImpl<OWLClassM> etM;
     @Mock
     private Identifier idM;
     @Mock
@@ -148,7 +148,7 @@ public class MetamodelMocks {
     private PluralAttribute<OWLClassM, Set, Integer> mIntegerSetAtt;
 
     @Mock
-    private EntityType<OWLClassN> etN;
+    private EntityTypeImpl<OWLClassN> etN;
     @Mock
     private Identifier idN;
     @Mock
@@ -161,14 +161,14 @@ public class MetamodelMocks {
     private PropertiesSpecification<OWLClassN, Map, String, String> nProperties;
 
     @Mock
-    private EntityType<OWLClassO> etO;
+    private EntityTypeImpl<OWLClassO> etO;
     @Mock
     private Identifier idO;
     @Mock
     private SingularAttribute<OWLClassO, String> oStringAtt;
 
     @Mock
-    private EntityType<OWLClassP> etP;
+    private EntityTypeImpl<OWLClassP> etP;
     @Mock
     private Identifier idP;
     @Mock
@@ -185,7 +185,9 @@ public class MetamodelMocks {
     private PropertiesSpecification<OWLClassP, Map, URI, Object> pProperties;
 
     @Mock
-    private EntityType<OWLClassQ> etQ;
+    private MappedSuperclassTypeImpl<QMappedSuperclass> qMappedSuperclass;
+    @Mock
+    private EntityTypeImpl<OWLClassQ> etQ;
     @Mock
     private Identifier idQ;
     @Mock
@@ -196,6 +198,20 @@ public class MetamodelMocks {
     private SingularAttribute<OWLClassQ, String> qParentStringAtt;
     @Mock
     private SingularAttribute<OWLClassQ, OWLClassA> qOwlClassAAtt;
+
+    @Mock
+    private EntityTypeImpl<OWLClassR> etR;
+    @Mock
+    private SingularAttribute<OWLClassR, String> rStringAtt;
+    @Mock
+    private SingularAttribute<OWLClassR, OWLClassA> rOwlClassAAtt;
+
+    @Mock
+    private EntityTypeImpl<OWLClassS> etS;
+    @Mock
+    private Identifier idS;
+    @Mock
+    private SingularAttribute<OWLClassS, String> sNameAtt;
 
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -216,11 +232,13 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
         MetamodelFactory
                 .initOWLClassPMock(etP, pTypes, pProperties, pUriAtt, pUrlsAtt, pSimpleList, pReferencedList, idP);
-        MetamodelFactory.initOwlClassQMock(etQ, qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
+        MetamodelFactory.initOwlClassQMock(etQ, qMappedSuperclass, qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
+        MetamodelFactory.initOwlClassSMock(etS, sNameAtt, idS);
+        MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
     }
 
     public void setMocks(Metamodel metamodel) {
-        final Map<Class<?>, EntityType<?>> etMap = new HashMap<>();
+        final Map<Class<?>, EntityTypeImpl<?>> etMap = new HashMap<>();
         etMap.put(OWLClassA.class, etA);
         etMap.put(OWLClassB.class, etB);
         etMap.put(OWLClassC.class, etC);
@@ -237,6 +255,8 @@ public class MetamodelMocks {
         etMap.put(OWLClassO.class, etO);
         etMap.put(OWLClassP.class, etP);
         etMap.put(OWLClassQ.class, etQ);
+        etMap.put(OWLClassR.class, etR);
+        etMap.put(OWLClassS.class, etS);
         when(metamodel.entity(any())).thenAnswer(invocation -> {
             final Class<?> cls = (Class<?>) invocation.getArguments()[0];
             if (etMap.containsKey(cls)) {
@@ -299,8 +319,12 @@ public class MetamodelMocks {
         return new OWLClassQMetamodel();
     }
 
+    public OWLClassRMetamodel forOwlClassR() {
+        return new OWLClassRMetamodel();
+    }
+
     public class OWLClassAMetamodel {
-        public EntityType<OWLClassA> entityType() {
+        public EntityTypeImpl<OWLClassA> entityType() {
             return MetamodelMocks.this.etA;
         }
 
@@ -318,7 +342,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassBMetamodel {
-        public EntityType<OWLClassB> entityType() {
+        public EntityTypeImpl<OWLClassB> entityType() {
             return MetamodelMocks.this.etB;
         }
 
@@ -336,7 +360,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassCMetamodel {
-        public EntityType<OWLClassC> entityType() {
+        public EntityTypeImpl<OWLClassC> entityType() {
             return MetamodelMocks.this.etC;
         }
 
@@ -354,7 +378,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassDMetamodel {
-        public EntityType<OWLClassD> entityType() {
+        public EntityTypeImpl<OWLClassD> entityType() {
             return MetamodelMocks.this.etD;
         }
 
@@ -368,7 +392,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassEMetamodel {
-        public EntityType<OWLClassE> entityType() {
+        public EntityTypeImpl<OWLClassE> entityType() {
             return MetamodelMocks.this.etE;
         }
 
@@ -382,7 +406,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassFMetamodel {
-        public EntityType<OWLClassF> entityType() {
+        public EntityTypeImpl<OWLClassF> entityType() {
             return MetamodelMocks.this.etF;
         }
 
@@ -400,7 +424,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassGMetamodel {
-        public EntityType<OWLClassG> entityType() {
+        public EntityTypeImpl<OWLClassG> entityType() {
             return MetamodelMocks.this.etG;
         }
 
@@ -414,7 +438,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassHMetamodel {
-        public EntityType<OWLClassH> entityType() {
+        public EntityTypeImpl<OWLClassH> entityType() {
             return MetamodelMocks.this.etH;
         }
 
@@ -433,7 +457,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassJMetamodel {
-        public EntityType<OWLClassJ> entityType() {
+        public EntityTypeImpl<OWLClassJ> entityType() {
             return MetamodelMocks.this.etJ;
         }
 
@@ -447,7 +471,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassKMetamodel {
-        public EntityType<OWLClassK> entityType() {
+        public EntityTypeImpl<OWLClassK> entityType() {
             return MetamodelMocks.this.etK;
         }
 
@@ -461,7 +485,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassLMetamodel {
-        public EntityType<OWLClassL> entityType() {
+        public EntityTypeImpl<OWLClassL> entityType() {
             return MetamodelMocks.this.etL;
         }
 
@@ -487,7 +511,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassMMetamodel {
-        public EntityType<OWLClassM> entityType() {
+        public EntityTypeImpl<OWLClassM> entityType() {
             return MetamodelMocks.this.etM;
         }
 
@@ -525,7 +549,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassNMetamodel {
-        public EntityType<OWLClassN> entityType() {
+        public EntityTypeImpl<OWLClassN> entityType() {
             return MetamodelMocks.this.etN;
         }
 
@@ -551,7 +575,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassOMetamodel {
-        public EntityType<OWLClassO> entityType() {
+        public EntityTypeImpl<OWLClassO> entityType() {
             return MetamodelMocks.this.etO;
         }
 
@@ -565,7 +589,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassPMetamodel {
-        public EntityType<OWLClassP> entityType() {
+        public EntityTypeImpl<OWLClassP> entityType() {
             return MetamodelMocks.this.etP;
         }
 
@@ -599,7 +623,7 @@ public class MetamodelMocks {
     }
 
     public class OWLClassQMetamodel {
-        public EntityType<OWLClassQ> entityType() {
+        public EntityTypeImpl<OWLClassQ> entityType() {
             return MetamodelMocks.this.etQ;
         }
 
@@ -621,6 +645,35 @@ public class MetamodelMocks {
 
         public SingularAttribute<OWLClassQ, OWLClassA> qOwlClassAAtt() {
             return MetamodelMocks.this.qOwlClassAAtt;
+        }
+    }
+
+    public class OWLClassRMetamodel {
+        public EntityTypeImpl<OWLClassR> entityType() {
+            return MetamodelMocks.this.etR;
+        }
+
+        public SingularAttribute<OWLClassR, String> rStringAtt() {
+            return MetamodelMocks.this.rStringAtt;
+        }
+
+        public SingularAttribute<OWLClassR, OWLClassA> rOwlClassAAtt() {
+            return MetamodelMocks.this.rOwlClassAAtt;
+        }
+    }
+
+    public class OWLClassSMetamodel {
+
+        public EntityTypeImpl<OWLClassS> entityType() {
+            return MetamodelMocks.this.etS;
+        }
+
+        public Identifier identifier() {
+            return MetamodelMocks.this.idS;
+        }
+
+        public SingularAttribute<OWLClassS, String> rNameAtt() {
+            return MetamodelMocks.this.sNameAtt;
         }
     }
 }

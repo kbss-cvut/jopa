@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,9 @@ public abstract class AbstractSession implements Session, MetamodelProvider {
         LOG.trace("UnitOfWork acquired.");
         return uow;
     }
+
+    @Override
+    public abstract MetamodelImpl getMetamodel();
 
     /**
      * This method just releases the live object cache. Subclasses are free to

@@ -22,6 +22,7 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.IdentifierGenerationException;
 import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -210,17 +211,17 @@ public class SesameAdapterTest {
         final AxiomValueDescriptor ad = new AxiomValueDescriptor(SUBJECT);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
-                new Value<URI>(URI
+                new Value<>(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         final Assertion objectAssertion = Assertion.createObjectPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-owlclassY"),
                 false);
         ad.addAssertionValue(objectAssertion,
-                new Value<URI>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityY")));
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityY")));
         ad.addAssertionValue(objectAssertion,
-                new Value<URI>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityYY")));
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityYY")));
         ad.addAssertionValue(objectAssertion,
-                new Value<URI>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityYYY")));
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityYYY")));
         ad.setSubjectContext(URI.create("http://krizik.felk.cvut.cz/ontologies/contextOne"));
         adapter.persist(ad);
         final ArgumentCaptor<Collection> captor = ArgumentCaptor.forClass(Collection.class);
@@ -263,7 +264,7 @@ public class SesameAdapterTest {
         ad.setSubjectContext(subjectCtx);
         ad.addAssertionValue(
                 Assertion.createClassAssertion(false),
-                new Value<URI>(URI
+                new Value<>(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
         final Assertion dataAssertion = Assertion.createAnnotationPropertyAssertion(
                 URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-annotation"),
@@ -848,5 +849,23 @@ public class SesameAdapterTest {
         adapter.contains(new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(URI.create(cls))), null);
         verify(connectorMock).findStatements(vf.createURI(SUBJECT.toString()), RDF.TYPE, vf.createURI(cls), false);
+    }
+
+    @Test
+    public void getTypesHandlerStartsTransaction() throws SesameDriverException {
+        adapter.getTypesHandler();
+        verify(connectorMock).begin();
+    }
+
+    @Test
+    public void getSimpleListHandlerStartsTransaction() throws SesameDriverException {
+        adapter.getSimpleListHandler();
+        verify(connectorMock).begin();
+    }
+
+    @Test
+    public void getReferencedListHandlerStartsTransaction() throws Exception {
+        adapter.getReferencedListHandler();
+        verify(connectorMock).begin();
     }
 }

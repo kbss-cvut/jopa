@@ -22,9 +22,9 @@ import java.util.Set;
 @NamedNativeQueries({
         @NamedNativeQuery(name = "OWLClassA.findAll", query = "SELECT ?x WHERE {?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }"),
         @NamedNativeQuery(name = "OWLClassA.findByString", query = "SELECT ?x WHERE { ?x <" +
-                Vocabulary.pAStringAttribute + "> ?str . }")
+                Vocabulary.P_A_STRING_ATTRIBUTE + "> ?str . }")
 })
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_A)
 public class OWLClassA {
 
     @Types(fetchType = FetchType.EAGER)
@@ -33,7 +33,7 @@ public class OWLClassA {
     @Id
     private URI uri;
 
-    @OWLDataProperty(iri = Vocabulary.pAStringAttribute)
+    @OWLDataProperty(iri = Vocabulary.P_A_STRING_ATTRIBUTE)
     private String stringAttribute;
 
     public OWLClassA() {

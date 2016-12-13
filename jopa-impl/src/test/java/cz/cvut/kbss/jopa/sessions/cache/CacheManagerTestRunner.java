@@ -29,7 +29,7 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class CacheManagerTestRunner {
+class CacheManagerTestRunner {
 
     private final URI CONTEXT_ONE = URI.create("http://jopa-unit-tests");
     private final URI CONTEXT_TWO = URI.create("http://jopa-unit-testsTwo");
@@ -38,7 +38,7 @@ public class CacheManagerTestRunner {
     private OWLClassM testM;
     private Map<URI, OWLClassB> listOfBs;
 
-    public CacheManagerTestRunner() {
+    CacheManagerTestRunner() {
         final URI pk = URI.create("http://testEntity");
         testA = new OWLClassA();
         testA.setUri(pk);
@@ -60,7 +60,7 @@ public class CacheManagerTestRunner {
     }
 
 
-    public void testAdd(CacheManager manager) {
+    void testAdd(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_TWO);
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
@@ -69,7 +69,7 @@ public class CacheManagerTestRunner {
         assertSame(testA, res);
     }
 
-    public void testAddToDefault(CacheManager manager) {
+    void testAddToDefault(CacheManager manager) {
         manager.add(testA.getUri(), testA, null);
         assertTrue(manager.contains(testA.getClass(), testA.getUri()));
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
@@ -79,11 +79,11 @@ public class CacheManagerTestRunner {
         assertSame(testA, res);
     }
 
-    public void testAddNull(CacheManager manager) {
+    void testAddNull(CacheManager manager) {
         manager.add(URI.create("http://blahblahblah"), null, CONTEXT_TWO);
     }
 
-    public void testAddWithDuplicateIRI(CacheManager manager) {
+    void testAddWithDuplicateIRI(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         final OWLClassA duplicate = new OWLClassA();
         final String newStr = testA.getStringAttribute() + "duplicated";
@@ -96,7 +96,7 @@ public class CacheManagerTestRunner {
         assertEquals(newStr, res.getStringAttribute());
     }
 
-    public void testAddWithDuplicateIRIToDifferentContexts(CacheManager manager) {
+    void testAddWithDuplicateIRIToDifferentContexts(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_TWO);
         final OWLClassA duplicate = new OWLClassA();
         duplicate.setUri(testA.getUri());
@@ -109,19 +109,19 @@ public class CacheManagerTestRunner {
         assertSame(duplicate, manager.get(testA.getClass(), duplicate.getUri(), CONTEXT_ONE));
     }
 
-    public void testContainsDefault(CacheManager manager) {
+    void testContainsDefault(CacheManager manager) {
         manager.add(testA.getUri(), testA, null);
         assertTrue(manager.contains(testA.getClass(), testA.getUri()));
         assertFalse(manager.contains(testB.getClass(), testA.getUri(), CONTEXT_ONE));
     }
 
-    public void testContainsWithContext(CacheManager manager) {
+    void testContainsWithContext(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_TWO);
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
     }
 
-    public void testContainsNull(CacheManager manager) {
+    void testContainsNull(CacheManager manager) {
         assertFalse(manager.contains(null, testA.getUri()));
         assertFalse(manager.contains(testA.getClass(), null));
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), null));
@@ -129,33 +129,33 @@ public class CacheManagerTestRunner {
         assertFalse(manager.contains(testA.getClass(), null, CONTEXT_TWO));
     }
 
-    public void testGetObject(CacheManager manager) {
+    void testGetObject(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_TWO);
         final Object res = manager.get(testA.getClass(), testA.getUri(), CONTEXT_TWO);
         assertEquals(testA, res);
     }
 
-    public void testGetObjectWithWrongContext(CacheManager manager) {
+    void testGetObjectWithWrongContext(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_TWO);
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
         final OWLClassA res = manager.get(testA.getClass(), testA.getUri(), CONTEXT_ONE);
         assertNull(res);
     }
 
-    public void testGetObjectNull(CacheManager manager) {
+    void testGetObjectNull(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_TWO);
         final Object o = manager.get(OWLClassA.class, null, CONTEXT_TWO);
         assertNull(o);
     }
 
-    public void testGetObjectUnknownClass(CacheManager manager) {
+    void testGetObjectUnknownClass(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_TWO);
         manager.add(testB.getUri(), testB, CONTEXT_TWO);
         final Object o = manager.get(OWLClassD.class, testA.getUri(), CONTEXT_TWO);
         assertNull(o);
     }
 
-    public void testGetObjectUnknownPrimaryKey(CacheManager manager) {
+    void testGetObjectUnknownPrimaryKey(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         manager.add(testB.getUri(), testB, CONTEXT_ONE);
         final URI unknownId = URI.create("http://unknownId");
@@ -163,7 +163,7 @@ public class CacheManagerTestRunner {
         assertNull(o);
     }
 
-    public void testEvictAll(CacheManager manager) {
+    void testEvictAll(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         addAllToCache(listOfBs, manager);
         manager.evictAll();
@@ -173,7 +173,7 @@ public class CacheManagerTestRunner {
         }
     }
 
-    public Class<?> testEvictByClass(CacheManager manager) {
+    Class<?> testEvictByClass(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         manager.add(testB.getUri(), testB, CONTEXT_TWO);
         addAllToCache(listOfBs, manager);
@@ -186,14 +186,14 @@ public class CacheManagerTestRunner {
         return OWLClassB.class;
     }
 
-    public void testEvictByClassNull(CacheManager manager) {
+    void testEvictByClassNull(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         manager.add(testB.getUri(), testB, CONTEXT_TWO);
         addAllToCache(listOfBs, manager);
         manager.evict((Class<?>) null);
     }
 
-    public URI testEvictByContext(CacheManager manager) {
+    URI testEvictByContext(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         manager.add(testB.getUri(), testB, CONTEXT_TWO);
         manager.evict(CONTEXT_ONE);
@@ -202,13 +202,13 @@ public class CacheManagerTestRunner {
         return CONTEXT_ONE;
     }
 
-    public void testEvictByContextNull(CacheManager manager) {
+    void testEvictByContextNull(CacheManager manager) {
         manager.add(testA.getUri(), testA, null);
         manager.evict((URI) null);
         assertNull(manager.get(testA.getClass(), testA.getUri(), null));
     }
 
-    public void testEvictByContextUnknownContext(CacheManager manager) {
+    void testEvictByContextUnknownContext(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         manager.add(testB.getUri(), testB, CONTEXT_TWO);
         manager.evict(URI.create("http://someUnknownContextUri"));
@@ -216,17 +216,17 @@ public class CacheManagerTestRunner {
         assertTrue(manager.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
     }
 
-    public void testEvictInferredClass(CacheManager manager) {
+    void testEvictInferredClass(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         manager.add(testB.getUri(), testB, CONTEXT_TWO);
-        final Set<Class<?>> inferred = Collections.<Class<?>>singleton(testA.getClass());
+        final Set<Class<?>> inferred = Collections.singleton(testA.getClass());
         manager.setInferredClasses(inferred);
         manager.clearInferredObjects();
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
         assertTrue(manager.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
     }
 
-    public void testEvictByContextAndPrimaryKey(CacheManager manager) {
+    void testEvictByContextAndPrimaryKey(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_TWO);
         final OWLClassA duplicate = new OWLClassA();
         duplicate.setUri(testA.getUri());
@@ -240,7 +240,7 @@ public class CacheManagerTestRunner {
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
     }
 
-    public void testEvictByContextAndPrimaryKeyNull(CacheManager manager) {
+    void testEvictByContextAndPrimaryKeyNull(CacheManager manager) {
         manager.add(testA.getUri(), testA, CONTEXT_ONE);
         manager.evict(null, null, CONTEXT_ONE);
     }
@@ -252,12 +252,12 @@ public class CacheManagerTestRunner {
     }
 
 
-    public void cacheAddWithStringIdentifier(CacheManager manager) throws Exception {
+    void cacheAddWithStringIdentifier(CacheManager manager) throws Exception {
         manager.add(testM.getKey(), testM, CONTEXT_ONE);
         assertTrue(manager.contains(OWLClassM.class, testM.getKey(), CONTEXT_ONE));
     }
 
-    public void cacheEvictWithStringIdentifier(CacheManager manager) throws Exception {
+    void cacheEvictWithStringIdentifier(CacheManager manager) throws Exception {
         manager.add(testM.getKey(), testM, null);
         assertTrue(manager.contains(OWLClassM.class, testM.getKey()));
         manager.evict(OWLClassM.class, testM.getKey(), null);

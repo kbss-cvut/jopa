@@ -42,7 +42,7 @@ public interface EntityManager {
      * @throws NullPointerException         If {@code entity} is {@code null}
      * @throws TransactionRequiredException if invoked on a container-managed entity manager of type
      *                                      PersistenceContextType.TRANSACTION and there is no transaction.
-     * @see #persist(Object, cz.cvut.kbss.jopa.model.descriptors.Descriptor)
+     * @see #persist(Object, Descriptor)
      */
     void persist(final Object entity);
 

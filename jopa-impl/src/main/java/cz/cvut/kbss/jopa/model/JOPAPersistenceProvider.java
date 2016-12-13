@@ -15,6 +15,8 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.CloneBuilderImpl;
 import cz.cvut.kbss.jopa.sessions.ServerSession;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -108,8 +110,27 @@ public class JOPAPersistenceProvider implements PersistenceProvider, ProviderUti
             return;
         }
         if (CloneBuilderImpl.isFieldInferred(field)) {
-            throw new OWLInferredAttributeModifiedException(
-                    "Modifying inferred attributes is forbidden.");
+            throw new OWLInferredAttributeModifiedException("Modifying inferred attributes is forbidden.");
         }
+    }
+
+    /**
+     * Gets field matching the specified name, declared in the specified managed entity or any of its managed supertypes.
+     * <p>
+     * The entity has to be managed in one of the currently open persistence contexts.
+     *
+     * @param entity    Entity instance
+     * @param fieldName Name of the field to get
+     * @return Matching field or {@code null}, if the entity is not managed or if no field with the specified name exists in the entity
+     */
+    static Field getEntityField(Object entity, String fieldName) {
+        final UnitOfWorkImpl uow = getPersistenceContext(entity);
+        if (uow == null) {
+            return null;
+        }
+        final EntityType<?> et = uow.getMetamodel().entity(entity.getClass());
+        assert et != null;  // If the instance is managed, it has to be an existing entity type
+        final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(fieldName);
+        return fieldSpec != null ? fieldSpec.getJavaField() : null;
     }
 }

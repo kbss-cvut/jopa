@@ -216,7 +216,7 @@ public class OwlapiConnection implements Connection {
         if (!open) {
             return;
         }
-        listeners.stream().forEach(listener -> listener.connectionClosed(this));
+        listeners.forEach(listener -> listener.connectionClosed(this));
         this.open = false;
     }
 
@@ -228,7 +228,9 @@ public class OwlapiConnection implements Connection {
 
     @Override
     public <T> T unwrap(Class<T> cls) throws OntoDriverException {
-        // TODO Add support for unwrap here
-        throw new OwlapiDriverException("Not supported, yet.");
+        if (cls.isAssignableFrom(this.getClass())) {
+            return cls.cast(this);
+        }
+        return adapter.unwrap(cls);
     }
 }

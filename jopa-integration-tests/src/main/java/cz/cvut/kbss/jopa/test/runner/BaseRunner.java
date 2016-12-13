@@ -16,15 +16,19 @@ package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.Triple;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static org.junit.Assert.assertFalse;
 
 public abstract class BaseRunner {
 
@@ -143,8 +147,23 @@ public abstract class BaseRunner {
         em.getTransaction().commit();
     }
 
+    /**
+     * Verifies that no statements with the specified individual as subject exist in the ontology any more.
+     *
+     * @param identifier Individual identifier
+     */
+    protected void verifyIndividualWasRemoved(URI identifier) {
+        // TODO There is a bug in OWL2Query - the query returns true, because it finds the top object and data property assertion for an individual
+        // which doesn't exist anymore (but is a part of the query)
+        final boolean remains = em.createNativeQuery("ASK WHERE { ?instance ?y ?z . }", Boolean.class)
+                                  .setParameter("instance", identifier).getSingleResult();
+        assertFalse(remains);
+    }
+
     protected abstract EntityManager getEntityManager(String repositoryName, boolean cacheEnabled);
 
     protected abstract EntityManager getEntityManager(String repositoryName, boolean cacheEnabled,
                                                       Map<String, String> properties);
+
+    protected abstract void persistTestData(Collection<Triple> data, EntityManager em) throws Exception;
 }

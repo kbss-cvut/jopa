@@ -6,17 +6,13 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.8.8</version>
+        <version>0.9.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <name>JOPA - implementation</name>
     <artifactId>jopa-impl</artifactId>
     <packaging>jar</packaging>
-
-    <properties>
-        <aspectj.version>1.8.5</aspectj.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -32,12 +28,12 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>${aspectj.version}</version>
+            <version>${org.aspectj.version}</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
-            <version>${aspectj.version}</version>
+            <version>${org.aspectj.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -82,7 +78,7 @@
                     <dependency>
                         <groupId>org.aspectj</groupId>
                         <artifactId>aspectjtools</artifactId>
-                        <version>${aspectj.version}</version>
+                        <version>${org.aspectj.version}</version>
                     </dependency>
                 </dependencies>
                 <executions>
