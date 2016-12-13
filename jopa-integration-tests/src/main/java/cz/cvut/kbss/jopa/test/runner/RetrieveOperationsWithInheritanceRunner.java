@@ -231,4 +231,35 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
 
         em.find(OWLClassS.class, entityT.getUri());
     }
+
+    @Test
+    public void loadingEntityLoadsExactMatchOfPolymorphicAttribute() {
+        this.em = getEntityManager("loadingEntityLoadsExactMatchOfPolymorphicAttribute", false);
+        final OWLClassS s = new OWLClassS();
+        s.setName("s");
+        s.setDescription("S - description");
+        entityU.setOwlClassS(s);
+        persist(entityU, s);
+
+        final OWLClassU result = em.find(OWLClassU.class, entityU.getUri());
+        assertNotNull(result);
+        assertNotNull(result.getOwlClassS());
+        assertEquals(s.getUri(), result.getOwlClassS().getUri());
+        assertEquals(s.getName(), result.getOwlClassS().getName());
+        assertEquals(s.getDescription(), result.getOwlClassS().getDescription());
+    }
+
+    @Test
+    public void loadingEntityLoadsCorrectSubtypeInPolymorphicAttribute() {
+        this.em = getEntityManager("loadingEntityLoadsCorrectSubtypeInPolymorphicAttribute", false);
+        persist(entityU, entityT, entityA);
+
+        final OWLClassU result = em.find(OWLClassU.class, entityU.getUri());
+        assertNotNull(result.getOwlClassS());
+        assertTrue(result.getOwlClassS() instanceof OWLClassT);
+        final OWLClassT tResult = (OWLClassT) result.getOwlClassS();
+        verifyEntityTAttributes(tResult);
+        assertNotNull(tResult.getOwlClassA());
+        assertEquals(entityA.getUri(), tResult.getOwlClassA().getUri());
+    }
 }

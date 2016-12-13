@@ -2,9 +2,7 @@ package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassQ;
-import cz.cvut.kbss.jopa.test.OWLClassT;
+import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -12,6 +10,7 @@ import org.slf4j.Logger;
 import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public abstract class UpdateOperationsWithInheritanceRunner extends BaseInheritanceRunner {
 
@@ -90,5 +89,27 @@ public abstract class UpdateOperationsWithInheritanceRunner extends BaseInherita
         assertEquals(newName, result.getName());
         assertEquals(newDescription, result.getDescription());
         assertEquals(newInt, result.getIntAttribute().intValue());
+    }
+
+    @Test
+    public void updateAllowsSettingValueOfPolymorphicAttributeToInstanceOfDifferentSubtype() {
+        this.em = getEntityManager("updateAllowsSettingValueOfPolymorphicAttributeToInstanceOfDifferentSubtype", true);
+        persist(entityU, entityT, entityA);
+
+        final OWLClassU newReference = new OWLClassU();
+        newReference.setName("UpdatedU");
+        newReference.setDescription("Description");
+
+        em.getTransaction().begin();
+        em.persist(newReference);
+        final OWLClassU toUpdate = em.find(OWLClassU.class, entityU.getUri());
+        toUpdate.setOwlClassS(newReference);
+        em.getTransaction().commit();
+
+        final OWLClassU result = em.find(OWLClassU.class, entityU.getUri());
+        assertNotNull(result);
+        assertTrue(result.getOwlClassS() instanceof OWLClassU);
+        assertEquals(newReference.getUri(), result.getOwlClassS().getUri());
+        assertNotNull(em.find(OWLClassS.class, entityT.getUri()));
     }
 }

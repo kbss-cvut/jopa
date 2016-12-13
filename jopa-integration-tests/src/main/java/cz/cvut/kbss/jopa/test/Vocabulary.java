@@ -45,6 +45,8 @@ public class Vocabulary {
     public static final String P_Q_PARENT_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "QParent-stringAttribute";
     public static final String P_Q_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "Q-stringAttribute";
 
+    public static final String P_HAS_OWL_CLASS_S = ATTRIBUTE_IRI_BASE + "hasOwlClassS";
+
     private Vocabulary() {
         throw new AssertionError();
     }
