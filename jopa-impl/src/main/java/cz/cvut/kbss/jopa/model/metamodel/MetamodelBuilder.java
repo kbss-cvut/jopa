@@ -30,7 +30,7 @@ public class MetamodelBuilder {
 
     private final NamedNativeQueryProcessor queryProcessor;
 
-    private final Map<Class<?>, ManagedType<?>> typeMap = new HashMap<>();
+    private final Map<Class<?>, AbstractIdentifiableType<?>> typeMap = new HashMap<>();
     private final Set<Class<?>> inferredClasses = new HashSet<>();
     private final NamedQueryManager namedQueryManager = new NamedQueryManager();
 
@@ -88,6 +88,9 @@ public class MetamodelBuilder {
     private <X> AbstractIdentifiableType<? super X> processSupertypes(Class<X> cls) {
         final Class<? super X> managedSupertype = ManagedClassProcessor.getManagedSupertype(cls);
         if (managedSupertype != null) {
+            if (typeMap.containsKey(managedSupertype)) {
+                return (AbstractIdentifiableType<? super X>) typeMap.get(managedSupertype);
+            }
             final AbstractIdentifiableType<? super X> type = ManagedClassProcessor.processManagedType(managedSupertype);
             processManagedType(type);
             return type;

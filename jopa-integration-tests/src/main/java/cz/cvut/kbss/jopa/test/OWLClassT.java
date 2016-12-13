@@ -3,17 +3,14 @@ package cz.cvut.kbss.jopa.test;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
-import cz.cvut.kbss.jopa.model.annotations.Types;
 
-import java.util.Set;
-
-@OWLClass(iri = Vocabulary.cOWLClassT)
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_T)
 public class OWLClassT extends OWLClassS {
 
-    @OWLDataProperty(iri = Vocabulary.tIntegerAttribute)
+    @OWLDataProperty(iri = Vocabulary.P_T_INTEGER_ATTRIBUTE)
     private Integer intAttribute;
 
-    @OWLObjectProperty(iri = Vocabulary.hasOwlClassA)
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_OWL_CLASS_A)
     private OWLClassA owlClassA;
 
     public Integer getIntAttribute() {

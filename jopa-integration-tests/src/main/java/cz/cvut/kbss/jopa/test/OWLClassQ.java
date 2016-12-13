@@ -22,7 +22,7 @@ import java.lang.reflect.Field;
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassQ")
 public class OWLClassQ extends QMappedSuperclass {
 
-    @OWLDataProperty(iri = Vocabulary.qStringAttribute)
+    @OWLDataProperty(iri = Vocabulary.P_Q_STRING_ATTRIBUTE)
     private String stringAttribute;
 
     public String getStringAttribute() {

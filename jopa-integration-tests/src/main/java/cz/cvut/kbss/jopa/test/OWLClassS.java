@@ -8,7 +8,7 @@ import cz.cvut.kbss.jopa.model.annotations.Types;
 
 import java.util.Set;
 
-@OWLClass(iri = Vocabulary.cOWLClassS)
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_S)
 public class OWLClassS extends OWLClassSParent {
 
     @OWLAnnotationProperty(iri = CommonVocabulary.RDFS_LABEL)

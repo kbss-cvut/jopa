@@ -20,13 +20,13 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 
-@OWLClass(iri = Vocabulary.cOwlClassB)
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_B)
 public class OWLClassB {
 
     @Id
     private URI uri;
 
-    @OWLDataProperty(iri = Vocabulary.pBStringAttribute)
+    @OWLDataProperty(iri = Vocabulary.P_B_STRING_ATTRIBUTE)
     private String stringAttribute;
 
     @Properties(fetchType = FetchType.LAZY)

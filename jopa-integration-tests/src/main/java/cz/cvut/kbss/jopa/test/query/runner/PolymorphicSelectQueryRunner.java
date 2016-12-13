@@ -66,14 +66,14 @@ public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
         // This will cause the type resolver to have to do some work
         em.getTransaction().begin();
         data.forEach(t -> {
-            t.setTypes(new HashSet<>(Arrays.asList(Vocabulary.cOWLClassSParent, Vocabulary.cOWLClassS)));
+            t.setTypes(new HashSet<>(Arrays.asList(Vocabulary.C_OWL_CLASS_S_PARENT, Vocabulary.C_OWL_CLASS_S)));
             em.merge(t);
         });
         em.getTransaction().commit();
         final List<OWLClassSParent> result =
                 em.createNativeQuery("SELECT ?x WHERE { ?x a ?type . }", OWLClassSParent.class)
                   .setParameter("type", URI.create(
-                          Vocabulary.cOWLClassSParent)).getResultList();
+                          Vocabulary.C_OWL_CLASS_S_PARENT)).getResultList();
         assertEquals(data.size(), result.size());
 
         boolean found;
@@ -96,17 +96,17 @@ public abstract class PolymorphicSelectQueryRunner extends BaseQueryRunner {
         final OWLClassT t = Generators.getRandomItem(QueryTestEnvironment.getData(OWLClassT.class));
         final EntityManager em = getEntityManager();
         em.getTransaction().begin();
-        t.setTypes(Collections.singleton(Vocabulary.cOWLClassS));
+        t.setTypes(Collections.singleton(Vocabulary.C_OWL_CLASS_S));
         em.merge(t);
         em.getTransaction().commit();
 
         final OWLClassS result = em.createNativeQuery("SELECT ?x WHERE { ?x ?hasInt ?int. }", OWLClassS.class)
-                                   .setParameter("hasInt", URI.create(Vocabulary.tIntegerAttribute))
+                                   .setParameter("hasInt", URI.create(Vocabulary.P_T_INTEGER_ATTRIBUTE))
                                    .setParameter("int", t.getIntAttribute()).getSingleResult();
         assertNotNull(result);
         assertFalse(result instanceof OWLClassT);
         assertEquals(t.getName(), result.getName());
         assertEquals(t.getDescription(), result.getDescription());
-        assertTrue(result.getTypes().contains(Vocabulary.cOWLClassT));
+        assertTrue(result.getTypes().contains(Vocabulary.C_OWL_CLASS_T));
     }
 }

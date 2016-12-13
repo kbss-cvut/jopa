@@ -72,7 +72,7 @@ public class QueryTest extends QueryRunner {
                 "INSERT { ?inst ?property ?newValue . } WHERE {" +
                 "?inst ?property ?origValue . }";
         em.createNativeQuery(update).setParameter("inst", instance.getUri()).setParameter("property", URI.create(
-                Vocabulary.pAStringAttribute)).setParameter("newValue", newValue, "en").executeUpdate();
+                Vocabulary.P_A_STRING_ATTRIBUTE)).setParameter("newValue", newValue, "en").executeUpdate();
 
         final OWLClassA result = em.find(OWLClassA.class, instance.getUri());
         assertEquals(newValue, result.getStringAttribute());
@@ -85,7 +85,7 @@ public class QueryTest extends QueryRunner {
         final String update = "DELETE { ?inst ?property ?origValue . } WHERE {" +
                 "?inst ?property ?origValue . }";
         em.createNativeQuery(update).setParameter("inst", instance.getUri())
-          .setParameter("property", URI.create(Vocabulary.pAStringAttribute)).executeUpdate();
+          .setParameter("property", URI.create(Vocabulary.P_A_STRING_ATTRIBUTE)).executeUpdate();
 
         final OWLClassA result = em.find(OWLClassA.class, instance.getUri());
         assertNull(result.getStringAttribute());

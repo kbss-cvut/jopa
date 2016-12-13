@@ -5,7 +5,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 
 import java.net.URI;
 
-@OWLClass(iri = Vocabulary.cOWLClassSParent)
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_S_PARENT)
 public abstract class OWLClassSParent {
 
     @Id(generated = true)

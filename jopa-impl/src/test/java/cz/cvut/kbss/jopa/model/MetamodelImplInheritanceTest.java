@@ -134,7 +134,7 @@ public class MetamodelImplInheritanceTest {
         final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
         final EntityTypeImpl<OWLClassS> supertype = metamodel.entity(OWLClassS.class);
         assertTrue(supertype.hasSubtypes());
-        assertTrue(supertype.getSubtypes().contains((EntityTypeImpl) metamodel.entity(OWLClassR.class)));
+        assertTrue(supertype.getSubtypes().contains(metamodel.entity(OWLClassR.class)));
     }
 
     @Test
@@ -174,5 +174,18 @@ public class MetamodelImplInheritanceTest {
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#SubclassWithInheritanceType")
     private static final class SubclassWithInheritanceType extends OWLClassS {
 
+    }
+
+    @Test
+    public void buildingMetamodelSetsMultipleSubtypesOnSuperType() throws Exception {
+        final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, AnotherSubclass.class, OWLClassS.class);
+        final EntityTypeImpl<OWLClassS> supertype = metamodel.entity(OWLClassS.class);
+        assertEquals(2, supertype.getSubtypes().size());
+        assertTrue(supertype.getSubtypes().contains(metamodel.entity(OWLClassR.class)));
+        assertTrue(supertype.getSubtypes().contains(metamodel.entity(AnotherSubclass.class)));
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "AnotherSubtype")
+    private static class AnotherSubclass extends OWLClassS {
     }
 }

@@ -70,7 +70,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
         final AxiomValueDescriptor descriptor = captor.getValue();
         assertEquals(1, descriptor.getAssertions().size());
         final List<Value<?>> values = descriptor.getAssertionValues(Assertion.createDataPropertyAssertion(URI.create(
-                Vocabulary.pAStringAttribute), false));
+                Vocabulary.P_A_STRING_ATTRIBUTE), false));
         assertEquals(1, values.size());
         assertEquals(entityA.getStringAttribute(), values.get(0).getValue());
     }
@@ -114,7 +114,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     public void mergeInstanceTwiceInTwoPersistenceContextsIsLegal() throws Exception {
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAss = Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.pAStringAttribute), false);
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
 
         em.getTransaction().begin();
         em.persist(entityA);
@@ -163,9 +163,9 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     public void mergeTwoInstancesWithTheSameIdentifierInTwoPersistenceContextsIsLegal() throws Exception {
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.pAStringAttribute), false);
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
         final Assertion stringAssB = Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.pBStringAttribute), false);
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_B_STRING_ATTRIBUTE), false);
 
         em.getTransaction().begin();
         em.persist(entityA);
@@ -206,7 +206,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
             throws OntoDriverException {
         final List<Axiom<?>> axioms = new ArrayList<>();
         final Axiom<?> classAssertion = new AxiomImpl<>(subject, Assertion.createClassAssertion(false),
-                new Value<>(NamedResource.create(Vocabulary.cOwlClassB)));
+                new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_B)));
         axioms.add(classAssertion);
         axioms.add(new AxiomImpl<>(subject, stringAss, new Value<>(entityB.getStringAttribute())));
         final AxiomDescriptor desc = new AxiomDescriptor(subject);
@@ -220,7 +220,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     public void mergeSameInstanceMultipleTimesInOnePersistenceContextIsLegal() throws Exception {
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.pAStringAttribute), false);
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
         initAxiomsForOWLClassA(subject, stringAssA);
 
         final String updateOne = "updatedString";
@@ -251,9 +251,9 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
                 "An entity with URI " + entityA.getUri() + " is already present in the current persistence context.");
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.pAStringAttribute), false);
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
         final Assertion stringAssB = Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.pBStringAttribute), false);
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_B_STRING_ATTRIBUTE), false);
         initAxiomsForOWLClassA(subject, stringAssA);
         final OWLClassB entityB = new OWLClassB();
         entityB.setUri(entityA.getUri());
@@ -273,7 +273,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
             throws Exception {
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.pAStringAttribute), false);
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
         initAxiomsForOWLClassA(subject, stringAssA);
 
         final String updateOne = "update";
@@ -301,7 +301,7 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
     public void findTwiceInOnePersistenceContextWithTheSameIdentifierAndTypeReturnsTheSameInstance() throws Exception {
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.pAStringAttribute), false);
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
         initAxiomsForOWLClassA(subject, stringAssA);
 
         final OWLClassA aOne = em.find(OWLClassA.class, entityA.getUri());
@@ -318,9 +318,9 @@ public class DuplicateIdentifiersTest extends IntegrationTestBase {
                 "An entity with URI " + entityA.getUri() + " is already present in the current persistence context.");
         final NamedResource subject = NamedResource.create(entityA.getUri());
         final Assertion stringAssA = Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.pAStringAttribute), false);
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false);
         final Assertion stringAssB = Assertion
-                .createDataPropertyAssertion(URI.create(Vocabulary.pBStringAttribute), false);
+                .createDataPropertyAssertion(URI.create(Vocabulary.P_B_STRING_ATTRIBUTE), false);
         initAxiomsForOWLClassA(subject, stringAssA);
         final OWLClassB entityB = new OWLClassB();
         entityB.setUri(entityA.getUri());
