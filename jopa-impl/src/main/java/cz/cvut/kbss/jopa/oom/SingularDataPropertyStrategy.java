@@ -18,12 +18,11 @@ import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 
-class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
+class SingularDataPropertyStrategy<X> extends DataPropertyFieldStrategy<X> {
 
     Object value;
 
@@ -50,24 +49,10 @@ class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X,
         }
     }
 
-    boolean isValidRange(Object value) {
-        return attribute.getJavaType().isAssignableFrom(value.getClass()) || isFieldEnum();
-    }
-
-    private boolean isFieldEnum() {
-        final Class<?> cls = attribute.getJavaField().getType();
-        return cls.isEnum();
-    }
-
     @Override
     void buildInstanceFieldValue(Object entity) throws IllegalAccessException {
-        final Object toAssign = isFieldEnum() ? resolveEnumValue() : value;
+        final Object toAssign = isFieldEnum() ? resolveEnumValue(value) : value;
         setValueOnInstance(entity, toAssign);
-    }
-
-    private Object resolveEnumValue() {
-        final Class cls = attribute.getJavaField().getType();
-        return Enum.valueOf(cls, value.toString());
     }
 
     @Override
@@ -76,11 +61,5 @@ class SingularDataPropertyStrategy<X> extends FieldStrategy<Attribute<? super X,
 
         final Value<?> val = extractedValue != null ? new Value<>(extractedValue) : Value.nullValue();
         valueBuilder.addValue(createAssertion(), val, getAttributeContext());
-    }
-
-    @Override
-    Assertion createAssertion() {
-        return Assertion.createDataPropertyAssertion(attribute.getIRI().toURI(),
-                attribute.isInferred());
     }
 }

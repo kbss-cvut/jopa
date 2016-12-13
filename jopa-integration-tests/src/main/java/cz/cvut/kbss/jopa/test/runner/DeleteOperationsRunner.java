@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -497,5 +497,45 @@ public abstract class DeleteOperationsRunner extends BaseRunner {
         em.getTransaction().commit();
 
         assertNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
+
+    @Test
+    public void settingDatatypeCollectionToNullRemovesAllValues() {
+        this.em = getEntityManager("settingDatatypeCollectionToNullRemovesAllValues", true);
+        persist(entityM);
+
+        em.getTransaction().begin();
+        final OWLClassM toClear = em.find(OWLClassM.class, entityM.getKey());
+        toClear.setIntegerSet(null);
+        em.getTransaction().commit();
+
+        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
+        assertNull(result.getIntegerSet());
+        verifyDatatypePropertiesRemoved();
+    }
+
+    private void verifyDatatypePropertiesRemoved() {
+        for (Integer value : entityM.getIntegerSet()) {
+            assertFalse(em.createNativeQuery("ASK { ?x ?p ?v . }", Boolean.class)
+                          .setParameter("x", URI.create(entityM.getKey()))
+                          .setParameter("p", URI.create(Vocabulary.p_m_IntegerSet)).setParameter("v", value)
+                          .getSingleResult());
+        }
+    }
+
+    @Test
+    public void clearingDatatypeCollectionRemovesAllValues() {
+        this.em = getEntityManager("clearingDatatypeCollectionRemovesAllValues", true);
+        persist(entityM);
+
+        em.getTransaction().begin();
+        final OWLClassM toClear = em.find(OWLClassM.class, entityM.getKey());
+        toClear.getIntegerSet().clear();
+        em.getTransaction().commit();
+
+        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
+        // Could be the cached variant, which contains empty collection, or loaded from ontology, which contains null
+        assertTrue(result.getIntegerSet() == null || result.getIntegerSet().isEmpty());
+        verifyDatatypePropertiesRemoved();
     }
 }

@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.IntStream;
 
 import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.*;
@@ -892,5 +893,42 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         em.getTransaction().begin();
         em.merge(entityN);
         em.getTransaction().commit();
+    }
+
+    @Test
+    public void addingValuesToDatatypePropertyCollectionAddsThemIntoRepository() {
+        this.em = getEntityManager("addingValuesToDatatypePropertyCollectionAddsThemIntoRepository", false);
+        persist(entityM);
+
+        IntStream.generate(Generators::randomInt).limit(7).forEach(entityM.getIntegerSet()::add);
+        em.getTransaction().begin();
+        em.merge(entityM);
+        em.getTransaction().commit();
+
+        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
+        assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
+    }
+
+    @Test
+    public void removingValuesFromDatatypePropertyCollectionRemovesThemFromRepository() {
+        this.em = getEntityManager("removingValuesFromDatatypePropertyCollectionRemovesThemFromRepository", false);
+        persist(entityM);
+
+        final Iterator<Integer> it = entityM.getIntegerSet().iterator();
+        while (it.hasNext()) {
+            it.next();
+            if (Generators.randomBoolean()) {
+                it.remove();
+            }
+        }
+        // Make sure there is at least one element
+        entityM.getIntegerSet().add(Generators.randomInt());
+
+        em.getTransaction().begin();
+        em.merge(entityM);
+        em.getTransaction().commit();
+
+        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
+        assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
     }
 }

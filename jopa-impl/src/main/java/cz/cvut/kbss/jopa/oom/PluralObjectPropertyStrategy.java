@@ -18,40 +18,24 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.IdentifierTransformer;
-import cz.cvut.kbss.ontodriver.exception.NotYetImplementedException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 
 abstract class PluralObjectPropertyStrategy<X> extends FieldStrategy<Attribute<? super X, ?>, X> {
 
     final PluralAttribute<? super X, ?, ?> pluralAtt;
     private Collection<Object> values;
 
-    public PluralObjectPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att,
-                                        Descriptor descriptor, EntityMappingHelper mapper) {
+    PluralObjectPropertyStrategy(EntityType<X> et, Attribute<? super X, ?> att, Descriptor descriptor,
+                                 EntityMappingHelper mapper) {
         super(et, att, descriptor, mapper);
         this.pluralAtt = (PluralAttribute<? super X, ?, ?>) attribute;
-        initCollection();
-    }
-
-    private void initCollection() {
-        switch (pluralAtt.getCollectionType()) {
-            case LIST:
-                this.values = new ArrayList<>();
-                break;
-            case COLLECTION:
-            case SET:
-                this.values = new HashSet<>();
-                break;
-            default:
-                throw new NotYetImplementedException("This type of collection is not supported yet.");
-        }
+        this.values = CollectionFactory.createDefaultCollection(pluralAtt.getCollectionType());
     }
 
     @Override
@@ -70,7 +54,9 @@ abstract class PluralObjectPropertyStrategy<X> extends FieldStrategy<Attribute<?
 
     @Override
     void buildInstanceFieldValue(Object instance) throws IllegalAccessException {
-        setValueOnInstance(instance, values.isEmpty() ? null : values);
+        if (!values.isEmpty()) {
+            setValueOnInstance(instance, values);
+        }
     }
 
     @Override

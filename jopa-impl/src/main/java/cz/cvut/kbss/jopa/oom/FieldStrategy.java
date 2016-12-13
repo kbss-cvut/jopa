@@ -51,8 +51,10 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
         if (attribute.isCollection()) {
             switch (attribute.getPersistentAttributeType()) {
                 case ANNOTATION:
-                case DATA:
                     throw new NotYetImplementedException();
+                case DATA:
+                    return new PluralDataPropertyStrategy<>(et, (PluralAttribute<? super X, ?, ?>) attribute,
+                            fieldDescriptor, mapper);
                 case OBJECT:
                     return createPluralObjectPropertyStrategy(et, (PluralAttribute<? super X, ?, ?>) attribute,
                             fieldDescriptor, mapper);

@@ -17,38 +17,43 @@ package cz.cvut.kbss.jopa.test;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
+import cz.cvut.kbss.jopa.test.environment.Generators;
 
 import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Contains a generated string URI and data property attributes of primitive wrapper types
  * - boolean, int, long, double and date.
- *
- * @author ledvima1
  */
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassM")
+@OWLClass(iri = Vocabulary.c_OwlClassM)
 public class OWLClassM {
 
     @Id(generated = true)
     private String key;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-booleanAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_m_booleanAttribute)
     private Boolean booleanAttribute;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-intAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_m_intAttribute)
     private Integer intAttribute;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-longAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_m_longAttribute)
     private Long longAttribute;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-doubleAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_m_doubleAttribute)
     private Double doubleAttribute;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-dateAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_m_dateAttribute)
     private Date dateAttribute;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#m-enumAttribute")
+    @OWLDataProperty(iri = Vocabulary.p_m_enumAttribute)
     private Severity enumAttribute;
+
+    @OWLDataProperty(iri = Vocabulary.p_m_IntegerSet)
+    private Set<Integer> integerSet;
 
     public enum Severity {
         LOW, MEDIUM, HIGH
@@ -110,6 +115,14 @@ public class OWLClassM {
         this.enumAttribute = enumAttribute;
     }
 
+    public Set<Integer> getIntegerSet() {
+        return integerSet;
+    }
+
+    public void setIntegerSet(Set<Integer> integerSet) {
+        this.integerSet = integerSet;
+    }
+
     @Override
     public String toString() {
         return "OWLCLassM{" +
@@ -119,6 +132,7 @@ public class OWLClassM {
                 ", longAttribute=" + longAttribute +
                 ", doubleAttribute=" + doubleAttribute +
                 ", enumAttribute=" + enumAttribute +
+                ", integerSet=" + integerSet +
                 '}';
     }
 
@@ -132,5 +146,6 @@ public class OWLClassM {
         this.doubleAttribute = 3.14D;
         this.dateAttribute = new Date();
         this.enumAttribute = Severity.MEDIUM;
+        this.integerSet = IntStream.generate(Generators::randomInt).limit(10).boxed().collect(Collectors.toSet());
     }
 }

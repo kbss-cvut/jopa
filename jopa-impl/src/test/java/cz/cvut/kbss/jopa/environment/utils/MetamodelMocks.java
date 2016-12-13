@@ -144,6 +144,8 @@ public class MetamodelMocks {
     private SingularAttribute<OWLClassM, Date> mDateAtt;
     @Mock
     private SingularAttribute<OWLClassM, OWLClassM.Severity> mEnumAtt;
+    @Mock
+    private PluralAttribute<OWLClassM, Set, Integer> mIntegerSetAtt;
 
     @Mock
     private EntityTypeImpl<OWLClassN> etN;
@@ -224,8 +226,8 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassJMocks(etJ, jSetAtt, idJ);
         MetamodelFactory.initOWLClassKMocks(etK, kOwlClassEAtt, idK);
         MetamodelFactory.initOWLClassLMocks(etL, lReferencedList, lSimpleList, lSetAtt, lOwlClassAAtt, idL);
-        MetamodelFactory
-                .initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt, idM);
+        MetamodelFactory.initOWLClassMMock(etM, mBooleanAtt, mIntegerAtt, mLongAtt, mDoubleAtt, mDateAtt, mEnumAtt,
+                mIntegerSetAtt, idM);
         MetamodelFactory.initOWLClassNMock(etN, nAnnotationAtt, nAnnotationUriAtt, nStringAtt, nProperties, idN);
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
         MetamodelFactory
@@ -539,6 +541,10 @@ public class MetamodelMocks {
 
         public SingularAttribute<OWLClassM, OWLClassM.Severity> enumAttribute() {
             return MetamodelMocks.this.mEnumAtt;
+        }
+
+        public PluralAttribute<OWLClassM, Set, Integer> integerSetAttribute() {
+            return MetamodelMocks.this.mIntegerSetAtt;
         }
     }
 

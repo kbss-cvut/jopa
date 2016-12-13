@@ -177,6 +177,10 @@ public abstract class Generators {
         }).collect(Collectors.toSet());
     }
 
+    public static int randomInt() {
+        return RANDOM.nextInt();
+    }
+
     public static int randomInt(int max) {
         return RANDOM.nextInt(max);
     }

@@ -479,4 +479,18 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertEquals(entityP.getTypes().size(), result.getTypes().size());
         assertTrue(entityP.getTypes().containsAll(result.getTypes()));
     }
+
+    @Test
+    public void persistEntityWithDatatypePropertyCollectionPersistsAllValues() {
+        assertFalse(entityM.getIntegerSet().isEmpty());
+        this.em = getEntityManager("PersistEntityWithDatatypePropertyCollection", false);
+        em.getTransaction().begin();
+        em.persist(entityM);
+        em.getTransaction().commit();
+
+        assertNotNull(entityM.getKey());
+        final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
+        assertNotNull(result);
+        assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
+    }
 }

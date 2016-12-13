@@ -22,8 +22,6 @@ import java.util.stream.Collectors;
 
 /**
  * Generators of test data.
- *
- * @author ledvima1
  */
 public abstract class Generators {
 
@@ -34,6 +32,10 @@ public abstract class Generators {
 
     private Generators() {
         // Private constructor
+    }
+
+    public static int randomInt() {
+        return RAND.nextInt();
     }
 
     public static int randomInt(int max) {

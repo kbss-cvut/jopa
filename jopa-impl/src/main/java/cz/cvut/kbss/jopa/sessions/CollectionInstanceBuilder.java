@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- * <p>
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- * <p>
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,6 +18,8 @@ import cz.cvut.kbss.jopa.adapters.IndirectCollection;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Types;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.lang.reflect.Constructor;
@@ -221,14 +223,8 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         }
     }
 
-    private Collection<Object> createDefaultCollection(Class<?> cls) {
-        if (Set.class.isAssignableFrom(cls)) {
-            return new HashSet<>();
-        } else if (List.class.isAssignableFrom(cls)) {
-            return new ArrayList<>();
-        } else {
-            throw new IllegalArgumentException("Unsupported type of collection: " + cls);
-        }
+    private static Collection<Object> createDefaultCollection(Class<?> cls) {
+        return CollectionFactory.createDefaultCollection(PluralAttribute.CollectionType.fromClass(cls));
     }
 
     /**

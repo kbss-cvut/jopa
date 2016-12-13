@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cvut.kbss.jopa</groupId>
-    <version>0.8.7</version>
+    <version>0.8.8</version>
     <artifactId>jopa-all</artifactId>
     <packaging>pom</packaging>
     <name>JOPA</name>
@@ -117,6 +117,7 @@
                         <exclude>license</exclude>
                         <exclude>readme</exclude>
                         <exclude>**/*.txt</exclude>
+                        <exclude>**/*.md</exclude>
                         <exclude>**/pom.xml</exclude>
                     </excludes>
                 </configuration>
@@ -227,7 +228,6 @@
             <name>JOPA</name>
             <url>https://github.com/kbss-cvut/jopa</url>
         </site>
-        <!-- TODO Does github have a download URL? -->
-        <downloadUrl>http://sourceforge.net/projects/jopa/files/</downloadUrl>
+        <downloadUrl>https://github.com/kbss-cvut/jopa/releases</downloadUrl>
     </distributionManagement>
 </project>

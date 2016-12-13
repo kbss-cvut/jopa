@@ -27,6 +27,14 @@ public class Vocabulary {
     public static final String C_OWL_CLASS_Q = CLASS_IRI_BASE + "OWLClassQ";
     public static final String C_OWL_CLASS_S_PARENT = CLASS_IRI_BASE + "OWLClassSParent";
 
+    public static final String p_m_booleanAttribute = ATTRIBUTE_IRI_BASE + "m-booleanAttribute";
+    public static final String p_m_intAttribute = ATTRIBUTE_IRI_BASE + "m-intAttribute";
+    public static final String p_m_longAttribute = ATTRIBUTE_IRI_BASE + "m-longAttribute";
+    public static final String p_m_doubleAttribute = ATTRIBUTE_IRI_BASE + "m-doubleAttribute";
+    public static final String p_m_dateAttribute = ATTRIBUTE_IRI_BASE + "m-dateAttribute";
+    public static final String p_m_enumAttribute = ATTRIBUTE_IRI_BASE + "m-enumAttribute";
+    public static final String p_m_IntegerSet = ATTRIBUTE_IRI_BASE + "m-pluralIntAttribute";
+
     public static final String P_A_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "A-stringAttribute";
     public static final String P_B_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "B-stringAttribute";
 
