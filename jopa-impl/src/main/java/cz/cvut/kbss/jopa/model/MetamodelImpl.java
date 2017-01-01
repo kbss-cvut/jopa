@@ -33,7 +33,8 @@ public class MetamodelImpl implements Metamodel {
 
     private static final String ASPECTJ_CLASS = "org.aspectj.weaver.loadtime.Agent";
 
-    private Map<Class<?>, EntityType<?>> typeMap;
+    private Map<Class<?>, ManagedType<?>> typeMap;
+    private Map<Class<?>, EntityType<?>> entities;
     private Set<Class<?>> inferredClasses;
 
     private NamedQueryManager namedQueryManager;
@@ -42,13 +43,22 @@ public class MetamodelImpl implements Metamodel {
 
     private Set<URI> moduleExtractionSignature;
 
-    public MetamodelImpl(Configuration configuration, EntityLoader entityLoader) {
-        this.configuration = Objects.requireNonNull(configuration);
-        Objects.requireNonNull(entityLoader);
-        build(entityLoader);
+    protected MetamodelImpl() {
+        // Protected constructor for easier mocking
+        this.configuration = null;
     }
 
-    private void build(EntityLoader entityLoader) {
+    public MetamodelImpl(Configuration configuration) {
+        this.configuration = Objects.requireNonNull(configuration);
+    }
+
+    /**
+     * Builds the metamodel for entities discovered by the specified entity loader.
+     *
+     * @param entityLoader Loader of entity classes
+     */
+    public void build(EntityLoader entityLoader) {
+        Objects.requireNonNull(entityLoader);
         LOG.debug("Building metamodel...");
         checkForWeaver();
 
@@ -58,6 +68,7 @@ public class MetamodelImpl implements Metamodel {
         metamodelBuilder.buildMetamodel(discoveredEntities);
 
         this.typeMap = metamodelBuilder.getTypeMap();
+        this.entities = metamodelBuilder.getEntities();
         this.inferredClasses = metamodelBuilder.getInferredClasses();
         this.namedQueryManager = metamodelBuilder.getNamedQueryManager();
     }
@@ -76,12 +87,12 @@ public class MetamodelImpl implements Metamodel {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <X> EntityType<X> entity(Class<X> cls) {
-        if (!typeMap.containsKey(cls)) {
+    public <X> EntityTypeImpl<X> entity(Class<X> cls) {
+        if (!entities.containsKey(cls)) {
             throw new IllegalArgumentException(
                     "Class " + cls.getName() + " is not a known entity in this persistence unit.");
         }
-        return (EntityType<X>) typeMap.get(cls);
+        return (EntityTypeImpl<X>) typeMap.get(cls);
     }
 
     @Override
@@ -96,17 +107,12 @@ public class MetamodelImpl implements Metamodel {
 
     @Override
     public Set<EntityType<?>> getEntities() {
-        return new HashSet<>(typeMap.values());
+        return new HashSet<>(entities.values());
     }
 
     @Override
     public Set<ManagedType<?>> getManagedTypes() {
         return new HashSet<>(typeMap.values());
-    }
-
-    @Override
-    public <X> ManagedType<X> managedType(Class<X> cls) {
-        return entity(cls);
     }
 
     @Override

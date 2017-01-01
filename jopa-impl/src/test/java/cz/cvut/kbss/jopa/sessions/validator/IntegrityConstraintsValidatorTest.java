@@ -25,7 +25,6 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraints;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ObjectChangeSetImpl;
@@ -38,7 +37,7 @@ import java.util.Collections;
 
 public class IntegrityConstraintsValidatorTest {
 
-    private Metamodel metamodel;
+    private MetamodelImpl metamodel;
 
     private IntegrityConstraintsValidator validator = IntegrityConstraintsValidator.getValidator();
 
@@ -46,7 +45,8 @@ public class IntegrityConstraintsValidatorTest {
     public void setUp() throws Exception {
         final Configuration config = new Configuration(
                 Collections.singletonMap(JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.environment"));
-        this.metamodel = new MetamodelImpl(config, new EntityLoader());
+        this.metamodel = new MetamodelImpl(config);
+        metamodel.build(new EntityLoader());
     }
 
     @Test

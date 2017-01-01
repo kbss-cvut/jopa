@@ -23,6 +23,7 @@ import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Assertion.AssertionType;
@@ -95,7 +96,8 @@ public class EntityDeconstructorTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         this.mocks = new MetamodelMocks();
-        when(oomMock.getEntityType(OWLClassA.class)).thenReturn(mocks.forOwlClassA().entityType());
+        when(oomMock.getEntityType(OWLClassA.class))
+                .thenReturn(mocks.forOwlClassA().entityType());
         entityA.setTypes(null);
         entityA.setStringAttribute("someStringAttribute");
         entityB.setProperties(null);
@@ -312,7 +314,8 @@ public class EntityDeconstructorTest {
     public void testMapEntityWithObjectPropertyWithGeneratedIdentifier() throws Exception {
         final URI eUri = URI.create("http://eUri");
         when(oomMock.generateIdentifier(mocks.forOwlClassE().entityType())).thenReturn(eUri);
-        when(oomMock.getEntityType(OWLClassE.class)).thenReturn(mocks.forOwlClassE().entityType());
+        when(oomMock.getEntityType(OWLClassE.class))
+                .thenReturn((EntityTypeImpl<OWLClassE>) mocks.forOwlClassE().entityType());
         final Descriptor eDescriptor = new EntityDescriptor(CONTEXT);
         final Descriptor kDescriptor = new EntityDescriptor();
         kDescriptor.addAttributeDescriptor(OWLClassK.getOwlClassEField(), eDescriptor);

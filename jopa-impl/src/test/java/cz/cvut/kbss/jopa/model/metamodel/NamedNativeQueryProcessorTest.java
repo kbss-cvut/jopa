@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
 import cz.cvut.kbss.jopa.model.annotations.NamedNativeQueries;
 import cz.cvut.kbss.jopa.model.annotations.NamedNativeQuery;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
@@ -99,24 +98,5 @@ public class NamedNativeQueryProcessorTest {
     @NamedNativeQuery(name = "QueryCombination." + ASK_NAME, query = ASK_QUERY)
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#QueryCombination")
     private static class QueryCombination {
-    }
-
-    @Test
-    public void processClassDiscoversQueriesDeclaredInMappedSuperclass() {
-        processor.processClass(WithMappedSuperclass.class);
-        final String select = queryManager.getQuery(Superclass.class.getSimpleName() + "." + SELECT_NAME);
-        assertEquals(SELECT_QUERY, select);
-        final String ask = queryManager.getQuery(WithMappedSuperclass.class.getSimpleName() + "." + ASK_NAME);
-        assertEquals(ASK_QUERY, ask);
-    }
-
-    @MappedSuperclass
-    @NamedNativeQuery(name = "Superclass." + SELECT_NAME, query = SELECT_QUERY)
-    private static abstract class Superclass {
-    }
-
-    @NamedNativeQuery(name = "WithMappedSuperclass." + ASK_NAME, query = ASK_QUERY)
-    @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#WithMappedSuperclass")
-    private static class WithMappedSuperclass extends Superclass {
     }
 }

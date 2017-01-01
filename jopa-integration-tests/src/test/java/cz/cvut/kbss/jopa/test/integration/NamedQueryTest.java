@@ -64,7 +64,7 @@ public class NamedQueryTest extends IntegrationTestBase {
         assertNotNull(query);
         query.setParameter("str", "Test", "en").getResultList();
         verify(statementMock)
-                .executeQuery("SELECT ?x WHERE { ?x <" + Vocabulary.pAStringAttribute + "> \"Test\"@en . }");
+                .executeQuery("SELECT ?x WHERE { ?x <" + Vocabulary.P_A_STRING_ATTRIBUTE + "> \"Test\"@en . }");
     }
 
     @Test(expected = IllegalArgumentException.class)

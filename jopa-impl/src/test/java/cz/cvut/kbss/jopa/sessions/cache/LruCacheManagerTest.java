@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -28,9 +29,6 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-/**
- * @author kidney
- */
 public class LruCacheManagerTest {
 
     private static final URI CONTEXT_ONE = URI.create("http://jopa-unit-tests");
@@ -44,13 +42,9 @@ public class LruCacheManagerTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        final URI pk = URI.create("http://testEntity");
-        testA = new OWLClassA();
-        testA.setUri(pk);
+        testA = new OWLClassA(Generators.createIndividualIdentifier());
         testA.setStringAttribute("testAttribute");
-        final URI pkB = URI.create("http://testB");
-        testB = new OWLClassB();
-        testB.setUri(pkB);
+        testB = new OWLClassB(Generators.createIndividualIdentifier());
         testB.setStringAttribute("stringAttribute");
     }
 
@@ -80,11 +74,6 @@ public class LruCacheManagerTest {
                 .singletonMap(JOPAPersistenceProperties.LRU_CACHE_CAPACITY, "-111");
         this.manager = new LruCacheManager(props);
         assertEquals(LruCacheManager.DEFAULT_CAPACITY, manager.getCapacity());
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void npxForNullConstructorArgument() {
-        this.manager = new LruCacheManager(null);
     }
 
     @Test

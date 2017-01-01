@@ -224,4 +224,13 @@ public abstract class Generators {
         return URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/individuals#instance" +
                 randomInt(Integer.MAX_VALUE));
     }
+
+    /**
+     * Gets random item from the specified list.
+     * @param items List of items
+     * @return Random item from the list
+     */
+    public static <T> T getRandomItem(List<T> items) {
+        return items.get(randomInt(items.size()));
+    }
 }

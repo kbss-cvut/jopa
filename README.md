@@ -28,6 +28,11 @@ More specifically, OOM in JOPA maps (we are using JLS terminology):
 
 All this means that individuals belonging to an OWL class can be retrieved as instances of a (Java) class.
 
+#### Inheritance
+
+* Support for mapped superclasses was added in version __0.8.0__.
+* Support for single inheritance was added in version __0.9.0__.
+
 #### Explicit access to inferred knowledge
 
 A member annotated with the `@Inferred` annotation represents a field whose values are retrieved using a reasoner. As such,
@@ -63,11 +68,9 @@ needs to be modified.
 
 ### Not Supported, yet
 
-JOPA currently does not support two important features - inheritance and referential integrity.
+JOPA currently does not support two important features - multiple inheritance and referential integrity.
 
-Inheritance is currently in planning and development of its support should start soon.
-
-**Update**: Mapped superclass support has been added in version 0.8.0.
+Single inheritance (and mapped superclasses) have been supported since version 0.9.0 (0.8.0 resp.), multiple inheritance is currently in planning.
 
 As for referential integrity, this for example means that removing an instance that is referenced by another instance should
 not be possible. Such feature is vital for object-oriented application, but not compatible with the open-world nature of ontologies.

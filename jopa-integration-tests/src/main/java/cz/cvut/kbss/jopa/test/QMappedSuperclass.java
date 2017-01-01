@@ -28,11 +28,11 @@ class QMappedSuperclass {
     @OWLAnnotationProperty(iri = CommonVocabulary.RDFS_LABEL)
     private String label;
 
-    @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#QParent-stringAttribute")
+    @OWLDataProperty(iri = Vocabulary.P_Q_PARENT_STRING_ATTRIBUTE)
     private String parentString;
 
     @ParticipationConstraints(nonEmpty = true)
-    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA", fetch = FetchType.EAGER)
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_OWL_CLASS_A, fetch = FetchType.EAGER)
     private OWLClassA owlClassA;
 
     public URI getUri() {

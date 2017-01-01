@@ -19,9 +19,9 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
@@ -55,8 +55,9 @@ public class CloneBuilderTest {
 
     @Mock
     private UnitOfWorkImpl uow;
+
     @Mock
-    private Metamodel metamodel;
+    private MetamodelImpl metamodel;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {

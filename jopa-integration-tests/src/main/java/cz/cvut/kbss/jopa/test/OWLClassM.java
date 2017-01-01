@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
  * Contains a generated string URI and data property attributes of primitive wrapper types
  * - boolean, int, long, double and date.
  */
-@OWLClass(iri = Vocabulary.c_OwlClassM)
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_M)
 public class OWLClassM {
 
     @Id(generated = true)

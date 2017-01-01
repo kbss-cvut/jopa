@@ -50,6 +50,8 @@ public class EntityLoaderTest {
         set.add(OWLClassO.class);
         set.add(OWLClassP.class);
         set.add(OWLClassQ.class);
+        set.add(OWLClassR.class);
+        set.add(OWLClassS.class);
         return set;
     }
 

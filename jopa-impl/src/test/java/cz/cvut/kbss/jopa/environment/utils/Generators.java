@@ -73,7 +73,7 @@ public abstract class Generators {
 
     public static List<OWLClassA> createReferencedList(int size) {
         assert size > 0;
-        return generateInstances("http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityAReferenced", size);
+        return generateInstances(size);
     }
 
     public static Map<String, Set<String>> generateStringProperties() {
@@ -138,21 +138,19 @@ public abstract class Generators {
         }
     }
 
-    public static List<OWLClassA> generateInstances(int size) {
-        return generateInstances("http://krizik.felk.cvut.cz/ontologies/jopa/tests/instance_", size);
+    public static OWLClassA generateOwlClassAInstance() {
+        final OWLClassA a = new OWLClassA();
+        a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/instance_" + RAND.nextInt()));
+        a.setStringAttribute("stringAttribute" + RAND.nextInt());
+        a.setTypes(TYPES);
+        return a;
     }
 
-    public static List<OWLClassA> generateInstances(String uriBase, int size) {
+    public static List<OWLClassA> generateInstances(int size) {
         assert size > 0;
-        int counter = randomInt(1000);
         final List<OWLClassA> lst = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
-            final OWLClassA a = new OWLClassA();
-            a.setUri(URI.create(uriBase + counter));
-            a.setStringAttribute("stringAttributeeee" + counter);
-            counter++;
-            a.setTypes(TYPES);
-            lst.add(a);
+            lst.add(generateOwlClassAInstance());
         }
         return lst;
     }

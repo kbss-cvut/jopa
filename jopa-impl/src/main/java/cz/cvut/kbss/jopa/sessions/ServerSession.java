@@ -154,7 +154,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
     }
 
     @Override
-    public Metamodel getMetamodel() {
+    public MetamodelImpl getMetamodel() {
         return metamodel;
     }
 

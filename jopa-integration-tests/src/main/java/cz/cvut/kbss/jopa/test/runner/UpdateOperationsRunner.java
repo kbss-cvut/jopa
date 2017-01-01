@@ -896,56 +896,6 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testUpdateFieldsOfEntityWithMappedSuperclass() {
-        this.em = getEntityManager("UpdateEntityWithMappedSuperclass", true);
-        persist(entityQ, entityA);
-
-        entityQ.setStringAttribute("newStringAttribute");
-        entityQ.setParentString("newParentStringAttribute");
-        entityQ.setLabel("newLabel");
-        em.getTransaction().begin();
-        em.merge(entityQ);
-        em.getTransaction().commit();
-
-        final OWLClassQ res = em.find(OWLClassQ.class, entityQ.getUri());
-        assertEquals(entityQ.getStringAttribute(), res.getStringAttribute());
-        assertEquals(entityQ.getParentString(), res.getParentString());
-        assertEquals(entityQ.getLabel(), res.getLabel());
-    }
-
-    @Test
-    public void testUpdateObjectPropertyInMappedSuperclass() {
-        this.em = getEntityManager("UpdateObjectPropertyInMappedSuperclass", true);
-        persist(entityQ, entityA);
-
-        entityQ.setOwlClassA(entityA2);
-        em.getTransaction().begin();
-        em.merge(entityQ);
-        em.persist(entityA2);
-        em.getTransaction().commit();
-
-        final OWLClassQ res = em.find(OWLClassQ.class, entityQ.getUri());
-        assertNotNull(res.getOwlClassA());
-        assertEquals(entityA2.getUri(), res.getOwlClassA().getUri());
-        assertEquals(entityA2.getStringAttribute(), res.getOwlClassA().getStringAttribute());
-        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
-    }
-
-    @Test
-    public void settingNonEmptyFieldInMappedSuperclassThrowsICViolationOnMerge() {
-        this.em = getEntityManager("SettingNonEmptyFieldInMappedSuperclassThrowsICViolation", true);
-        persist(entityQ, entityA);
-
-        thrown.expect(RollbackException.class);
-        thrown.expectCause(isA(IntegrityConstraintViolatedException.class));
-
-        entityQ.setOwlClassA(null);
-        em.getTransaction().begin();
-        em.merge(entityQ);
-        em.getTransaction().commit();
-    }
-
-    @Test
     public void addingValuesToDatatypePropertyCollectionAddsThemIntoRepository() {
         this.em = getEntityManager("addingValuesToDatatypePropertyCollectionAddsThemIntoRepository", false);
         persist(entityM);

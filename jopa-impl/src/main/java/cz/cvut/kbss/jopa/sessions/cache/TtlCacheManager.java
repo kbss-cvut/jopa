@@ -319,18 +319,18 @@ public class TtlCacheManager implements CacheManager {
 
         private final Map<URI, Long> ttls = new HashMap<>();
 
-        void put(Object primaryKey, Object entity, URI context) {
-            super.put(primaryKey, entity, context);
+        void put(Object identifier, Object entity, URI context) {
+            super.put(identifier, entity, context);
             final URI ctx = context != null ? context : defaultContext;
             updateTimeToLive(ctx);
         }
 
-        <T> T get(Class<T> cls, Object primaryKey, URI context) {
+        <T> T get(Class<T> cls, Object identifier, URI context) {
             assert cls != null;
-            assert primaryKey != null;
+            assert identifier != null;
 
             final URI ctx = context != null ? context : defaultContext;
-            T result = super.get(cls, primaryKey, ctx);
+            T result = super.get(cls, identifier, ctx);
             if (result != null) {
                 updateTimeToLive(ctx);
             }
@@ -350,9 +350,11 @@ public class TtlCacheManager implements CacheManager {
         }
 
         void evict(Class<?> cls) {
-            for (Entry<URI, Map<Class<?>, Map<Object, Object>>> e : repoCache.entrySet()) {
-                final Map<Class<?>, Map<Object, Object>> m = e.getValue();
-                m.remove(cls);
+            for (Entry<URI, Map<Object, Map<Class<?>, Object>>> e : repoCache.entrySet()) {
+                final Map<Object, Map<Class<?>, Object>> m = e.getValue();
+                for (Entry<Object, Map<Class<?>, Object>> indNode : m.entrySet()) {
+                    indNode.getValue().remove(cls);
+                }
                 if (m.isEmpty()) {
                     ttls.remove(e.getKey());
                 }

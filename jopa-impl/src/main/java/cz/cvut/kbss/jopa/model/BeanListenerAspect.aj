@@ -14,18 +14,18 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import java.lang.reflect.Field;
-
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.Types;
-import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Field;
 
 public aspect BeanListenerAspect {
 
@@ -38,23 +38,12 @@ public aspect BeanListenerAspect {
     before(): setter() {
         // Check for inferred field modification
         final Object object = thisJoinPoint.getTarget();
-        Class<?> cls = object.getClass();
-        Field field = null;
         final String fieldName = thisJoinPoint.getSignature().getName();
+        final Field field;
         try {
-            field = cls.getDeclaredField(fieldName);
-        } catch (NoSuchFieldException e) {
-            Class<?> superCls = cls;
-            while ((superCls = superCls.getSuperclass()) != null) {
-                try {
-                    field = superCls.getDeclaredField(fieldName);
-                    break;
-                } catch (NoSuchFieldException ex) {
-                    // Do nothing, keep trying
-                }
-            }
+            field = JOPAPersistenceProvider.getEntityField(object, fieldName);
             if (field == null) {
-                throw new OWLPersistenceException(e.getMessage());
+                return;
             }
         } catch (SecurityException e) {
             LOG.error(e.getMessage(), e);
@@ -66,14 +55,15 @@ public aspect BeanListenerAspect {
     after() returning : setter() {
         // Persist changes done during transaction
         final Object entity = thisJoinPoint.getTarget();
-        Field f;
+
+        final Field f;
         try {
-            f = entity.getClass().getDeclaredField(thisJoinPoint.getSignature().getName());
-            if (EntityPropertiesUtils.isFieldTransient(f)) {
+            f = JOPAPersistenceProvider.getEntityField(entity, thisJoinPoint.getSignature().getName());
+            if (f == null || EntityPropertiesUtils.isFieldTransient(f)) {
                 return;
             }
             JOPAPersistenceProvider.persistEntityChanges(entity, f);
-        } catch (NoSuchFieldException | SecurityException e) {
+        } catch (SecurityException e) {
             LOG.error(e.getMessage(), e);
             throw new OWLPersistenceException(e.getMessage());
         }
@@ -83,18 +73,17 @@ public aspect BeanListenerAspect {
         // Load lazy loaded entity field
         try {
             final Object object = thisJoinPoint.getTarget();
-            final Field field = object.getClass().getDeclaredField(
-                    thisJoinPoint.getSignature().getName());
-            if (EntityPropertiesUtils.isFieldTransient(field)) {
+            final Field field = JOPAPersistenceProvider.getEntityField(object, thisJoinPoint.getSignature().getName());
+            if (field == null || EntityPropertiesUtils.isFieldTransient(field)) {
                 return;
             }
 
             field.setAccessible(true);
 
-            LOG.trace("*** Fetching {} of {}: {}", field.getName(), object.getClass(), System.identityHashCode(object));
+//            LOG.trace("*** Fetching {} of {}: {}", field.getName(), object.getClass(), System.identityHashCode(object));
 
             JOPAPersistenceProvider.loadReference(object, field);
-        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+        } catch (IllegalArgumentException | IllegalAccessException e) {
             LOG.error(e.getMessage(), e);
             throw new OWLPersistenceException();
         }

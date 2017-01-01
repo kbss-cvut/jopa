@@ -19,10 +19,10 @@ import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
+import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
@@ -117,38 +117,33 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return readObjectInternal(cls, primaryKey, descriptor);
     }
 
-    private <T> T readObjectInternal(Class<T> cls, Object primaryKey, Descriptor descriptor) {
+    private <T> T readObjectInternal(Class<T> cls, Object identifier, Descriptor descriptor) {
         assert cls != null;
-        assert primaryKey != null;
+        assert identifier != null;
         assert descriptor != null;
         // First try to find the object among new uncommitted objects
-        Object result = newObjectsKeyToClone.get(primaryKey);
+        Object result = newObjectsKeyToClone.get(identifier);
         if (result != null && (isInRepository(descriptor, result))) {
-            // The result can be returned, since it is already registered in
-            // this UOW
+            // The result can be returned, since it is already registered in this UOW
             return cls.cast(result);
         }
         // Object is already managed
-        result = keysToClones.get(primaryKey);
+        result = keysToClones.get(identifier);
         if (result != null) {
             if (!cls.isAssignableFrom(result.getClass())) {
-                throw individualAlreadyManaged(primaryKey);
+                throw individualAlreadyManaged(identifier);
             }
             if (isInRepository(descriptor, result) && !getDeletedObjects().containsKey(result)) {
                 return cls.cast(result);
             }
         }
-        // Search the cache
-        result = getObjectFromCache(cls, primaryKey, descriptor.getContext());
-        if (result == null) {
-            // The object is not in the session cache, so search the ontology
-            final URI pkUri = EntityPropertiesUtils.getValueAsURI(primaryKey);
-            result = storage.find(new LoadingParameters<>(cls, pkUri, descriptor));
-        }
+        final URI idUri = EntityPropertiesUtils.getValueAsURI(identifier);
+        result = storage.find(new LoadingParameters<>(cls, idUri, descriptor));
+
         if (result == null) {
             return null;
         }
-        Object clone = registerExistingObject(result, descriptor);
+        final Object clone = registerExistingObject(result, descriptor);
         checkForCollections(clone);
         return cls.cast(clone);
     }
@@ -570,13 +565,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         assert entity != null;
         final Object iri = getIdentifier(entity);
         final Class<T> entityCls = (Class<T>) entity.getClass();
-        // Search the cache
-        T original = getObjectFromCache(entityCls, iri, descriptor.getContext());
-        if (original == null) {
-            // The object is not in the session cache, so search the ontology
-            final URI idUri = EntityPropertiesUtils.getValueAsURI(iri);
-            original = storage.find(new LoadingParameters<>(entityCls, idUri, descriptor, true));
-        }
+        final URI idUri = EntityPropertiesUtils.getValueAsURI(iri);
+        T original = storage.find(new LoadingParameters<>(entityCls, idUri, descriptor, true));
+
         assert original != null;
         registerClone(entity, original, descriptor);
         try {
@@ -796,7 +787,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     @Override
-    public Metamodel getMetamodel() {
+    public MetamodelImpl getMetamodel() {
         return parent.getMetamodel();
     }
 
@@ -1002,21 +993,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
     }
 
-    /**
-     * Get entity with the specified primary key from the cache. </p>
-     * <p>
-     * If the cache does not contain any object with the specified primary key and class, null is returned. This method
-     * is just a delegate for the cache methods, it handles locks.
-     *
-     * @return Cached object or null
-     */
-    private <T> T getObjectFromCache(Class<T> cls, Object primaryKey, URI context) {
-        assert cls != null;
-        assert primaryKey != null;
-        return cacheManager.get(cls, primaryKey, context);
-    }
-
-    public void putObjectIntoCache(Object primaryKey, Object entity, URI context) {
+    void putObjectIntoCache(Object primaryKey, Object entity, URI context) {
         cacheManager.add(primaryKey, entity, context);
     }
 

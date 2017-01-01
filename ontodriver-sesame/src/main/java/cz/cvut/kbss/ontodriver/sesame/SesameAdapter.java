@@ -206,15 +206,19 @@ class SesameAdapter implements Closeable, Wrapper {
         return connector;
     }
 
-    ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler() {
+    ListHandler<SimpleListDescriptor, SimpleListValueDescriptor> getSimpleListHandler() throws SesameDriverException {
+        startTransactionIfNotActive();
         return ListHandler.createForSimpleList(connector, valueFactory);
     }
 
-    ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler() {
+    ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler() throws
+                                                                                                    SesameDriverException {
+        startTransactionIfNotActive();
         return ListHandler.createForReferencedList(connector, valueFactory);
     }
 
-    TypesHandler getTypesHandler() {
+    TypesHandler getTypesHandler() throws SesameDriverException {
+        startTransactionIfNotActive();
         return new TypesHandler(connector, valueFactory);
     }
 

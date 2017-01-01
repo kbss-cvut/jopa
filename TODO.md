@@ -4,7 +4,7 @@
 
 - [ ] Inheritance support
     - [x] Mapped superclass
-    - [x] Single inheritance
+    - [ ] Single inheritance
     - [ ] Multiple inheritance
 - [ ] Publish in Maven central    
 - [ ] Deploy stable builds to Maven

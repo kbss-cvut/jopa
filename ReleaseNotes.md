@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.9.0 - December 13, 2016
+- Support for single inheritance.
+
 ## 0.8.8 - December 9, 2016
 - Added support for datatype property collections in entities.
 
@@ -12,6 +15,7 @@
 ## 0.8.5 - September 26, 2016
 - Upgraded to OWL API 4.2.4 - it fixes issues with missing import statements after ontology copy,
 - Changed the way transactional snapshot are created in the OWL API driver.
+- Refactored metamodel as a preparation for inheritance implementation. Use AspectJ 1.8.9.
 
 ## 0.8.4 - July 13, 2016
 - Added support for named native queries. Declaration is similar to JPA, just use `@NamedNativeQuery` or `@NamedNativeQueries`

@@ -19,15 +19,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * TODO Think about locking on context level, so that the whole cache doesn't have to be locked when being accessed
- * @author ledvima1
- */
 class EntityCache {
+
+    // TODO Think about locking on context level, so that the whole cache doesn't have to be locked when being accessed
 
     private static final String DEFAULT_CONTEXT_BASE = "http://defaultContext";
 
-    final Map<URI, Map<Class<?>, Map<Object, Object>>> repoCache;
+    final Map<URI, Map<Object, Map<Class<?>, Object>>> repoCache;
     final URI defaultContext;
 
     EntityCache() {
@@ -35,69 +33,64 @@ class EntityCache {
         this.defaultContext = URI.create(DEFAULT_CONTEXT_BASE + System.currentTimeMillis());
     }
 
-    void put(Object primaryKey, Object entity, URI context) {
-        assert primaryKey != null;
+    void put(Object identifier, Object entity, URI context) {
+        assert identifier != null;
         assert entity != null;
 
         final Class<?> cls = entity.getClass();
         final URI ctx = context != null ? context : defaultContext;
 
-        Map<Class<?>, Map<Object, Object>> ctxMap;
+        Map<Object, Map<Class<?>, Object>> ctxMap;
         if (!repoCache.containsKey(ctx)) {
             ctxMap = new HashMap<>();
             repoCache.put(ctx, ctxMap);
         } else {
             ctxMap = repoCache.get(ctx);
         }
-        Map<Object, Object> clsMap;
-        if (!ctxMap.containsKey(cls)) {
-            clsMap = new HashMap<>();
-            ctxMap.put(cls, clsMap);
+        Map<Class<?>, Object> individualMap;
+        if (!ctxMap.containsKey(identifier)) {
+            individualMap = new HashMap<>();
+            ctxMap.put(identifier, individualMap);
         } else {
-            clsMap = ctxMap.get(cls);
+            individualMap = ctxMap.get(identifier);
         }
-        clsMap.put(primaryKey, entity);
+        individualMap.put(cls, entity);
     }
 
-    <T> T get(Class<T> cls, Object primaryKey, URI context) {
+    <T> T get(Class<T> cls, Object identifier, URI context) {
         assert cls != null;
-        assert primaryKey != null;
+        assert identifier != null;
 
         final URI ctx = context != null ? context : defaultContext;
-        final Map<Object, Object> m = getMapForClass(ctx, cls);
-        if (m.containsKey(primaryKey)) {
-            return cls.cast(m.get(primaryKey));
-        }
-        return null;
+        final Map<Class<?>, Object> m = getMapForId(ctx, identifier);
+        return cls.cast(m.getOrDefault(cls, null));
     }
 
-    boolean contains(Class<?> cls, Object primaryKey) {
+    boolean contains(Class<?> cls, Object identifier) {
         assert cls != null;
-        assert primaryKey != null;
-        final Map<Object, Object> m = getMapForClass(defaultContext, cls);
-        return m.containsKey(primaryKey);
+        assert identifier != null;
+        final Map<Class<?>, Object> m = getMapForId(defaultContext, identifier);
+        return m.containsKey(cls);
     }
 
-    boolean contains(Class<?> cls, Object primaryKey, URI context) {
+    boolean contains(Class<?> cls, Object identifier, URI context) {
         assert cls != null;
-        assert primaryKey != null;
+        assert identifier != null;
         if (context == null) {
-            return contains(cls, primaryKey);
+            return contains(cls, identifier);
         }
 
-        final Map<Object, Object> m = getMapForClass(context, cls);
-        return m.containsKey(primaryKey);
+        final Map<Class<?>, Object> m = getMapForId(context, identifier);
+        return m.containsKey(cls);
     }
 
-    void evict(Class<?> cls, Object primaryKey, URI context) {
+    void evict(Class<?> cls, Object identifier, URI context) {
         assert cls != null;
-        assert primaryKey != null;
+        assert identifier != null;
 
         final URI ctx = context != null ? context : defaultContext;
-        final Map<Object, Object> m = getMapForClass(ctx, cls);
-        if (m.containsKey(primaryKey)) {
-            m.remove(primaryKey);
-        }
+        final Map<Class<?>, Object> m = getMapForId(ctx, identifier);
+        m.remove(cls);
     }
 
     void evict(URI context) {
@@ -111,20 +104,20 @@ class EntityCache {
     }
 
     void evict(Class<?> cls) {
-        for (Map.Entry<URI, Map<Class<?>, Map<Object, Object>>> e : repoCache.entrySet()) {
-            final Map<Class<?>, Map<Object, Object>> m = e.getValue();
-            m.remove(cls);
+        for (Map.Entry<URI, Map<Object, Map<Class<?>, Object>>> e : repoCache.entrySet()) {
+            final Map<Object, Map<Class<?>, Object>> m = e.getValue();
+            m.forEach((key, value) -> value.remove(cls));
         }
     }
 
-    private Map<Object, Object> getMapForClass(URI context, Class<?> cls) {
+    private Map<Class<?>, Object> getMapForId(URI context, Object identifier) {
         assert context != null;
-        assert cls != null;
+        assert identifier != null;
 
         if (!repoCache.containsKey(context)) {
             return Collections.emptyMap();
         }
-        final Map<Class<?>, Map<Object, Object>> ctxMap = repoCache.get(context);
-        return (ctxMap.containsKey(cls) ? ctxMap.get(cls) : Collections.emptyMap());
+        final Map<Object, Map<Class<?>, Object>> ctxMap = repoCache.get(context);
+        return ctxMap.getOrDefault(identifier, Collections.emptyMap());
     }
 }

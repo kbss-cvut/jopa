@@ -14,7 +14,6 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.model.BasicTypeImpl;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.FetchType;

@@ -60,7 +60,8 @@ public class EntityManagerFactoryImpl implements EntityManagerFactory, Persisten
     }
 
     private void initMetamodel() {
-        this.metamodel = new MetamodelImpl(configuration, new EntityLoader());
+        this.metamodel = new MetamodelImpl(configuration);
+        metamodel.build(new EntityLoader());
     }
 
     @Override

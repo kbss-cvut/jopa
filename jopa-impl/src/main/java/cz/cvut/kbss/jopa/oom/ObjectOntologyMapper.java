@@ -33,7 +33,7 @@ public interface ObjectOntologyMapper {
      * @return {@code true} if the ontology contains such individual,
      * {@code false} otherwise
      */
-    public <T> boolean containsEntity(Class<T> cls, URI primaryKey, Descriptor descriptor);
+    <T> boolean containsEntity(Class<T> cls, URI primaryKey, Descriptor descriptor);
 
     /**
      * Loads and reconstructs the entity from the ontology. </p>
@@ -41,7 +41,7 @@ public interface ObjectOntologyMapper {
      * @param loadingParameters Entity loading parameters
      * @return Reconstructed entity or {@code null} if there is none such
      */
-    public <T> T loadEntity(LoadingParameters<T> loadingParameters);
+    <T> T loadEntity(LoadingParameters<T> loadingParameters);
 
     /**
      * Loads entity field value and sets it on the specified entity. </p>
@@ -50,7 +50,7 @@ public interface ObjectOntologyMapper {
      * @param field      The field to load
      * @param descriptor Descriptor possibly specifying the field context
      */
-    public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor);
+    <T> void loadFieldValue(T entity, Field field, Descriptor descriptor);
 
     /**
      * Persists the specified entity into the underlying ontology. </p>
@@ -59,7 +59,7 @@ public interface ObjectOntologyMapper {
      * @param entity     The entity to persist
      * @param descriptor Descriptor possibly specifying entity and attribute contexts
      */
-    public <T> void persistEntity(URI primaryKey, T entity, Descriptor descriptor);
+    <T> void persistEntity(URI primaryKey, T entity, Descriptor descriptor);
 
     /**
      * Removes entity with specified identifier from the ontology.
@@ -68,14 +68,14 @@ public interface ObjectOntologyMapper {
      * @param cls        Entity class
      * @param descriptor Descriptor specifying entity attribute contexts
      */
-    public <T> void removeEntity(URI primaryKey, Class<T> cls, Descriptor descriptor);
+    <T> void removeEntity(URI primaryKey, Class<T> cls, Descriptor descriptor);
 
     /**
      * Checks that there are no pending changes in the mapper. </p>
      *
-     * @throws UnpersistedChangeException
+     * @throws UnpersistedChangeException Thrown when there are unpersisted changes
      */
-    public void checkForUnpersistedChanges();
+    void checkForUnpersistedChanges();
 
     /**
      * Sets value of property represented by the specified field to the field's
@@ -85,5 +85,5 @@ public interface ObjectOntologyMapper {
      * @param field      The field to update
      * @param descriptor Optionally specifies context
      */
-    public <T> void updateFieldValue(T entity, Field field, Descriptor descriptor);
+    <T> void updateFieldValue(T entity, Field field, Descriptor descriptor);
 }
