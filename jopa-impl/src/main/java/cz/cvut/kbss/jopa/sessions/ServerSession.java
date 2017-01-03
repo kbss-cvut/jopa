@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -126,7 +126,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
         if (uow != null && uow.hasChanges()) {
             getLiveObjectCache().clearInferredObjects();
         }
-        removePersistenceContext(uow);
+        releasePersistenceContext(uow);
     }
 
     /**
@@ -212,13 +212,14 @@ public class ServerSession extends AbstractSession implements Wrapper {
     }
 
     /**
-     * Remove the specified {@code UnitOfWork} from the list of currently active persistence contexts. </p>
+     * Remove the specified {@code UnitOfWork} from the list of currently active persistence contexts.
      * <p>
      * Also remove all the objects associated with this persistence context.
      *
      * @param uow The persistence context to remove
      */
-    private void removePersistenceContext(UnitOfWorkImpl uow) {
+    @Override
+    synchronized void releasePersistenceContext(UnitOfWork uow) {
         if (uowsToEntities.containsKey(uow)) {
             for (Object entity : uowsToEntities.get(uow)) {
                 activePersistenceContexts.remove(entity);

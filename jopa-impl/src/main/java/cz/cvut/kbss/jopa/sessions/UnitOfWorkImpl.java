@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -203,6 +203,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     public void clear() {
+        detachAllManagedInstances();
         cloneMapping.clear();
         cloneToOriginals.clear();
         keysToClones.clear();
@@ -213,6 +214,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.hasChanges = false;
         this.hasDeleted = false;
         this.hasNew = false;
+    }
+
+    private void detachAllManagedInstances() {
+        cloneMapping.keySet().forEach(this::unregisterObjectFromPersistenceContext);
     }
 
     public boolean contains(Object entity) {
@@ -443,7 +448,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return newObjectsCloneToOriginal;
     }
 
-    Map<Object, Object> getNewObjectsOriginalToClone() {
+    private Map<Object, Object> getNewObjectsOriginalToClone() {
         if (newObjectsOriginalToClone == null) {
             this.newObjectsOriginalToClone = createMap();
         }
@@ -607,6 +612,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     @Override
+    void releasePersistenceContext(UnitOfWork uow) {
+        parent.releasePersistenceContext(uow);
+    }
+
+    @Override
     public NamedQueryManager getNamedQueryManager() {
         return parent.getNamedQueryManager();
     }
@@ -641,6 +651,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     public void release() {
         clear();
         storage.close();
+        releasePersistenceContext(this);
         this.isActive = false;
         LOG.debug("UnitOfWork released.");
     }
@@ -650,13 +661,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         Objects.requireNonNull(object, ErrorUtils.constructNPXMessage("object"));
 
         if (!isObjectManaged(object) && !getDeletedObjects().containsKey(object)) {
-            throw new IllegalArgumentException("The specified entity " + object
-                    + " is not managed by this persistence context.");
+            throw new IllegalArgumentException(
+                    "The specified entity " + object + " is not managed by this persistence context.");
         }
         final Descriptor descriptor = getDescriptor(object);
         if (descriptor == null) {
-            throw new IllegalArgumentException("Unable to find entity " + object
-                    + " in this persistence context.");
+            throw new IllegalArgumentException("Unable to find entity " + object + " in this persistence context.");
         }
         // To revert the object's state, just swap original and clone for change
         // calculation and merging so that the state of the original is merged
@@ -762,6 +772,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                 getNewObjectsOriginalToClone().remove(newOriginal);
             }
         }
+        unregisterObjectFromPersistenceContext(object);
+    }
+
+    private void unregisterObjectFromPersistenceContext(Object object) {
         removeIndirectCollections(object);
         deregisterEntityFromPersistenceContext(object, this);
         unregisterEntityFromOntologyContext(object);
@@ -932,6 +946,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @param entity The entity to check
      */
     private void checkForCollections(Object entity) {
+        // TODO This should iterate over all mapped fields, not just the declared ones
         Field[] fields = entity.getClass().getDeclaredFields();
         for (Field f : fields) {
             setIndirectCollectionIfPresent(entity, f);
