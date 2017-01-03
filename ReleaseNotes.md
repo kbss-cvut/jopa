@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.9.1 - January 3, 2017
+- Fixed major memory leak in persistence context management.
+
 ## 0.9.0 - December 13, 2016
 - Support for single inheritance.
 

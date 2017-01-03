@@ -10,6 +10,7 @@
 - [ ] Deploy stable builds to Maven
 - [ ] Publish javadocs on kbss
 - [ ] Benchmark comparison with Empire and AliBaba
+- [ ] Add support for entity lifecycle hooks (postLoad, prePersist etc.)
 - [ ] Add support for IC validation disabling on entity load
     - Some sort of loading modes should be added (similar to Lock modes in JPA)
 - [ ] JOPA Specification doc, which would explain behaviour and principles
@@ -43,17 +44,3 @@
 
 ### Currently in Progress
 
-Single inheritance:
-- [x] Metamodel structure
-- [x] Metamodel building
-- [x] Instance loading
-- [x] Instance persist
-- [x] Instance update
-- [x] Instance remove
-- [ ] Polymorphic instance loading (including queries)
-    - [x] Entity type for concrete supertype + supertype class assertion present
-    - [x] Entity type for concrete supertype + supertype class assertion NOT present
-    - [x] Entity type for abstract supertype
-    - [x] Polymorphic loading in queries
-    - [x] Polymorphic loading from cache
-- [x] Polymorphic attributes

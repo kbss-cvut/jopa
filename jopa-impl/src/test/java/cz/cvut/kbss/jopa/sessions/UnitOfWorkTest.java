@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,6 +14,8 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.adapters.IndirectMap;
+import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassB;
 import cz.cvut.kbss.jopa.environment.OWLClassD;
@@ -69,6 +71,8 @@ public class UnitOfWorkTest {
     @Mock
     private EntityTransaction transactionMock;
 
+    private ServerSessionStub serverSessionStub;
+
     private UnitOfWorkImpl uow;
 
     @BeforeClass
@@ -96,14 +100,13 @@ public class UnitOfWorkTest {
         this.entityL = new OWLClassL();
         this.descriptor = new EntityDescriptor(CONTEXT_URI);
         entityL.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityL"));
-        final ServerSessionStub ssStub = new ServerSessionStub(mock(ConnectionWrapper.class));
-        ServerSessionStub serverSessionMock = spy(ssStub);
-        when(serverSessionMock.getMetamodel()).thenReturn(metamodelMock);
-        when(serverSessionMock.getLiveObjectCache()).thenReturn(cacheManagerMock);
+        this.serverSessionStub = spy(new ServerSessionStub(mock(ConnectionWrapper.class)));
+        when(serverSessionStub.getMetamodel()).thenReturn(metamodelMock);
+        when(serverSessionStub.getLiveObjectCache()).thenReturn(cacheManagerMock);
         when(emMock.getTransaction()).thenReturn(transactionMock);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
-        uow = new UnitOfWorkImpl(serverSessionMock);
+        uow = new UnitOfWorkImpl(serverSessionStub);
         uow.setEntityManager(emMock);
         final Field connectionField = UnitOfWorkImpl.class.getDeclaredField("storage");
         connectionField.setAccessible(true);
@@ -168,7 +171,7 @@ public class UnitOfWorkTest {
         final OWLClassA res = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
         assertSame(clone, res);
         // Had to cast, otherwise ajc refused to compile this
-        verify(storageMock, never()).find((LoadingParameters<OWLClassA>) any(LoadingParameters.class));
+        verify(storageMock, never()).find(any(LoadingParameters.class));
     }
 
     @Test
@@ -841,5 +844,43 @@ public class UnitOfWorkTest {
         final ChangeRecord rTwo = objectChanges.getChanges().get(OWLClassA.getTypesField().getName());
         assertNotNull(rTwo);
         assertEquals(clone.getTypes(), rTwo.getNewValue());
+    }
+
+    @Test
+    public void releaseRemovesUoWFromServerSessionsActivePersistenceContexts() {
+        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false)))
+                .thenReturn(entityA);
+        final OWLClassA result = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+        assertNotNull(result);
+        verify(serverSessionStub).registerEntityWithPersistenceContext(any(OWLClassA.class), eq(uow));
+        uow.release();
+        verify(serverSessionStub).releasePersistenceContext(uow);
+    }
+
+    @Test
+    public void releaseRemovesIndirectCollectionsFromManagedEntities() {
+        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false)))
+                .thenReturn(entityA);
+        final OWLClassA result = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+        assertNotNull(result);
+        assertTrue(result.getTypes() instanceof IndirectSet);
+        uow.release();
+        assertFalse(result.getTypes() instanceof IndirectSet);
+    }
+
+    @Test
+    public void rollbackDetachesAllManagedEntities() {
+        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, false)))
+                .thenReturn(entityA);
+        final OWLClassA result = uow.readObject(OWLClassA.class, entityA.getUri(), descriptor);
+        entityB.setProperties(new HashMap<>());
+        uow.registerNewObject(entityB, descriptor);
+        assertTrue(result.getTypes() instanceof IndirectSet);
+        assertTrue(entityB.getProperties() instanceof IndirectMap);
+        uow.rollback();
+        assertFalse(result.getTypes() instanceof IndirectSet);
+        assertFalse(entityB.getProperties() instanceof IndirectMap);
+        verify(serverSessionStub).deregisterEntityFromPersistenceContext(result, uow);
+        verify(serverSessionStub).deregisterEntityFromPersistenceContext(entityB, uow);
     }
 }
