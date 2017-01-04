@@ -46,14 +46,12 @@ public class EntityPropertiesUtils {
      * @throws NullPointerException    If {@code entity} or {@code metamodel} is null
      * @throws OWLPersistenceException If {@code entity} is not an entity or if the identifier is of an unknown type
      */
-    public static Object getPrimaryKey(Object entity, Metamodel metamodel) {
+    public static URI getPrimaryKey(Object entity, Metamodel metamodel) {
         Objects.requireNonNull(entity);
         Objects.requireNonNull(metamodel);
 
-        Object fieldValue;
         final EntityType<?> type = metamodel.entity(entity.getClass());
-        fieldValue = getFieldValue(type.getIdentifier().getJavaField(), entity);
-        return fieldValue;
+        return getPrimaryKey(entity, type);
     }
 
     /**
@@ -172,13 +170,7 @@ public class EntityPropertiesUtils {
             fields.addAll(Arrays.asList(tmp.getDeclaredFields()));
             tmp = tmp.getSuperclass();
         }
-        Iterator<Field> it = fields.iterator();
-        while (it.hasNext()) {
-            Field f = it.next();
-            if (Modifier.isStatic(f.getModifiers())) {
-                it.remove();
-            }
-        }
+        fields.removeIf(f -> Modifier.isStatic(f.getModifiers()));
         return fields;
     }
 

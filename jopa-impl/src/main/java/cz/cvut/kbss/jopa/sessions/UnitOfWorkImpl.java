@@ -42,11 +42,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     private final Map<Object, Object> cloneMapping;
     private final Map<Object, Object> cloneToOriginals;
-    private final Map<Object, Object> keysToClones = new HashMap<>();
+    private final Map<URI, Object> keysToClones = new HashMap<>();
     private Map<Object, Object> deletedObjects;
     private Map<Object, Object> newObjectsCloneToOriginal;
     private Map<Object, Object> newObjectsOriginalToClone;
-    private final Map<Object, Object> newObjectsKeyToClone = new HashMap<>();
+    private final Map<URI, Object> newObjectsKeyToClone = new HashMap<>();
     private RepositoryMap repoMap;
 
     private boolean hasChanges;
@@ -121,14 +121,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         assert cls != null;
         assert identifier != null;
         assert descriptor != null;
+        final URI idUri = EntityPropertiesUtils.getValueAsURI(identifier);
         // First try to find the object among new uncommitted objects
-        Object result = newObjectsKeyToClone.get(identifier);
+        Object result = newObjectsKeyToClone.get(idUri);
         if (result != null && (isInRepository(descriptor, result))) {
             // The result can be returned, since it is already registered in this UOW
             return cls.cast(result);
         }
         // Object is already managed
-        result = keysToClones.get(identifier);
+        result = keysToClones.get(idUri);
         if (result != null) {
             if (!cls.isAssignableFrom(result.getClass())) {
                 throw individualAlreadyManaged(identifier);
@@ -137,7 +138,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                 return cls.cast(result);
             }
         }
-        final URI idUri = EntityPropertiesUtils.getValueAsURI(identifier);
         result = storage.find(new LoadingParameters<>(cls, idUri, descriptor));
 
         if (result == null) {
@@ -383,7 +383,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @param descriptor Repository descriptor
      * @return Original object managed by this UoW or {@code null} if this UoW doesn't contain a matching instance
      */
-    public <T> T getManagedOriginal(Class<T> cls, Object identifier, Descriptor descriptor) {
+    public <T> T getManagedOriginal(Class<T> cls, URI identifier, Descriptor descriptor) {
         if (!keysToClones.containsKey(identifier)) {
             return null;
         }
@@ -460,7 +460,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return parent.getLiveObjectCache();
     }
 
-    public UnitOfWorkChangeSet getUowChangeSet() {
+    UnitOfWorkChangeSet getUowChangeSet() {
         if (uowChangeSet == null) {
             this.uowChangeSet = ChangeSetFactory.createUoWChangeSet();
         }
@@ -477,7 +477,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @param clone Object
      * @return boolean
      */
-    public boolean isObjectNew(Object clone) {
+    boolean isObjectNew(Object clone) {
         return clone != null && getNewObjectsCloneToOriginal().containsKey(clone);
     }
 
@@ -537,7 +537,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     /**
      * Merge the changes from this Unit of Work's change set into the server session.
      */
-    public void mergeChangesIntoParent() {
+    private void mergeChangesIntoParent() {
         if (hasChanges()) {
             mergeManager.mergeChangesFromChangeSet(getUowChangeSet());
         }
@@ -548,7 +548,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
         Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-        final Object id = getIdentifier(entity);
+        final URI id = getIdentifier(entity);
         if (!storage.contains(id, entity.getClass(), descriptor)) {
             registerNewObject(entity, descriptor);
             return entity;
@@ -560,7 +560,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
     }
 
-    private boolean isSameType(Object id, Object entity) {
+    private boolean isSameType(URI id, Object entity) {
         final Class<?> mergedType = entity.getClass();
         final Object managed = keysToClones.containsKey(id) ? keysToClones.get(id) : newObjectsKeyToClone.get(id);
         return managed != null && managed.getClass().isAssignableFrom(mergedType);
@@ -638,7 +638,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private void registerClone(Object clone, Object original, Descriptor descriptor) {
         cloneMapping.put(clone, clone);
         cloneToOriginals.put(clone, original);
-        final Object identifier = EntityPropertiesUtils.getPrimaryKey(clone, getMetamodel());
+        final URI identifier = EntityPropertiesUtils.getPrimaryKey(clone, getMetamodel());
         keysToClones.put(identifier, clone);
         registerEntityWithPersistenceContext(clone, this);
         registerEntityWithOntologyContext(descriptor, clone);
@@ -700,7 +700,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      */
     private void registerNewObjectInternal(Object entity, Descriptor descriptor) {
         assert entity != null;
-        Object id = getIdentifier(entity);
+        URI id = getIdentifier(entity);
         if (id == null) {
             final EntityType<?> eType = getMetamodel().entity(entity.getClass());
             EntityPropertiesUtils.verifyIdentifierIsGenerated(entity, eType);
@@ -724,7 +724,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.hasNew = true;
     }
 
-    private boolean isIndividualManaged(Object identifier, Object entity) {
+    private boolean isIndividualManaged(URI identifier, Object entity) {
         return keysToClones.containsKey(identifier) ||
                 newObjectsKeyToClone.containsKey(identifier) && !cloneMapping.containsKey(entity);
     }
@@ -740,17 +740,17 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             throw new IllegalArgumentException(
                     "Cannot remove entity which is not managed in the current persistence context.");
         }
-        final Object primaryKey = getIdentifier(entity);
+        final URI identifier = getIdentifier(entity);
         final Descriptor descriptor = getDescriptor(entity);
 
         if (hasNew && getNewObjectsCloneToOriginal().containsKey(entity)) {
             unregisterObject(entity);
-            newObjectsKeyToClone.remove(primaryKey);
+            newObjectsKeyToClone.remove(identifier);
         } else {
             getDeletedObjects().put(entity, entity);
             this.hasDeleted = true;
         }
-        storage.remove(primaryKey, entity.getClass(), descriptor);
+        storage.remove(identifier, entity.getClass(), descriptor);
     }
 
     /**
@@ -963,7 +963,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @param field  The field to set
      * @throws IllegalArgumentException Reflection
      */
-    public void setIndirectCollectionIfPresent(Object entity, Field field) {
+    private void setIndirectCollectionIfPresent(Object entity, Field field) {
         Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
         Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
 
@@ -1012,7 +1012,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         cacheManager.add(primaryKey, entity, context);
     }
 
-    private Object getIdentifier(Object entity) {
+    private URI getIdentifier(Object entity) {
         assert entity != null;
         return EntityPropertiesUtils.getPrimaryKey(entity, getMetamodel());
     }
