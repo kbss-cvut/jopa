@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -223,7 +223,7 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
             while (rs.hasNext() && cnt < maxResults) {
                 rs.next();
                 if (isTypeManaged) {
-                    res.add(loadEntityInstance(rs, ctx));
+                    loadEntityInstance(rs, ctx).ifPresent(res::add);
                 } else {
                     res.add(loadResultValue(rs));
                 }
@@ -241,7 +241,7 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
         }
     }
 
-    private X loadEntityInstance(ResultSet resultSet, URI context) throws OntoDriverException {
+    private Optional<X> loadEntityInstance(ResultSet resultSet, URI context) throws OntoDriverException {
         if (uow == null) {
             throw new IllegalStateException("Cannot load entity instance without Unit of Work.");
         }
@@ -249,13 +249,7 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
         // TODO Setting the context like this won't work for queries over multiple contexts
         final EntityDescriptor descriptor = new EntityDescriptor(context);
 
-        final X entity = uow.readObject(resultType, uri, descriptor);
-        if (entity == null) {
-            throw new OWLPersistenceException(
-                    "Fatal error, unable to load entity for primary key already found by query "
-                            + query);
-        }
-        return entity;
+        return Optional.ofNullable(uow.readObject(resultType, uri, descriptor));
     }
 
     private X loadResultValue(ResultSet resultSet) throws OntoDriverException {

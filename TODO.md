@@ -4,10 +4,9 @@
 
 - [ ] Inheritance support
     - [x] Mapped superclass
-    - [ ] Single inheritance
+    - [x] Single inheritance
     - [ ] Multiple inheritance
-- [ ] Publish in Maven central    
-- [ ] Deploy stable builds to Maven
+- [ ] Publish stable builds in Maven central
 - [ ] Publish javadocs on kbss
 - [ ] Benchmark comparison with Empire and AliBaba
 - [ ] Add support for entity lifecycle hooks (postLoad, prePersist etc.)

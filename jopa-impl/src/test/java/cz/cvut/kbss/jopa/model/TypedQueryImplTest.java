@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -29,6 +30,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -40,8 +42,10 @@ import static org.mockito.Mockito.*;
 
 public class TypedQueryImplTest extends QueryTestBase {
 
-    private static final String SELECT_ENTITY_QUERY = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
-    private static final String ASK_BOOLEAN_QUERY = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
+    private static final String SELECT_ENTITY_QUERY =
+            "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
+    private static final String ASK_BOOLEAN_QUERY =
+            "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
 
     @Override
     TypedQuery<?> createQuery(String query, Class<?> resultType) {
@@ -207,5 +211,19 @@ public class TypedQueryImplTest extends QueryTestBase {
         doThrow(new OntoDriverException()).when(statementMock).executeUpdate(UPDATE_QUERY);
         final Query q = queryFactory.createNativeQuery(UPDATE_QUERY, Void.class);
         q.executeUpdate();
+    }
+
+    @Test
+    public void getResultListSkipsValuesWhichCannotBeLoadedAsEntities() throws Exception {
+        when(resultSetMock.hasNext()).thenReturn(true, true, false);
+        final List<String> uris = Arrays.asList(Generators.createIndividualIdentifier().toString(),
+                Generators.createIndividualIdentifier().toString());
+        when(resultSetMock.getString(0)).thenReturn(uris.get(0), uris.get(1));
+        when(uowMock.readObject(eq(OWLClassA.class), eq(URI.create(uris.get(0))), any(Descriptor.class)))
+                .thenReturn(new OWLClassA(URI.create(uris.get(0))));
+
+        final TypedQuery<OWLClassA> q = queryFactory.createNativeQuery(SELECT_ENTITY_QUERY, OWLClassA.class);
+        final List<OWLClassA> result = q.getResultList();
+        assertEquals(1, result.size());
     }
 }
