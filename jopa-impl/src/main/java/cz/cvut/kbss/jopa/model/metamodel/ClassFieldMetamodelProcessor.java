@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -163,7 +163,8 @@ class ClassFieldMetamodelProcessor<X> {
                                  .hasNextProperty(IRI.create(os.ObjectPropertyHasNextIRI()))
                                  .hasContentsProperty(IRI.create(os.ObjectPropertyHasContentsIRI()))
                                  .sequenceType(os.type())
-                                 .participationConstraints(propertyAttributes.getParticipationConstraints()).build();
+                                 .participationConstraints(propertyAttributes.getParticipationConstraints())
+                                 .nonEmpty(propertyAttributes.isNonEmpty()).build();
         } else if (field.getType().isAssignableFrom(Set.class)) {
             a = SetAttributeImpl.iri(propertyAttributes.getIri()).declaringType(et).field(field)
                                 .elementType(propertyAttributes.getType())
@@ -171,7 +172,8 @@ class ClassFieldMetamodelProcessor<X> {
                                 .fetchType(propertyAttributes.getFetchType())
                                 .cascadeTypes(propertyAttributes.getCascadeTypes()).inferred(inference.inferred)
                                 .includeExplicit(inference.includeExplicit)
-                                .participationConstraints(propertyAttributes.getParticipationConstraints()).build();
+                                .participationConstraints(propertyAttributes.getParticipationConstraints())
+                                .nonEmpty(propertyAttributes.isNonEmpty()).build();
         } else if (field.getType().isAssignableFrom(Map.class)) {
             throw new IllegalArgumentException("NOT YET SUPPORTED");
         } else {
