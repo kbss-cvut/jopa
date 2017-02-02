@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -269,11 +269,7 @@ public class JavaTransformer {
 
                     JAnnotationUse u = use.annotate(
                             ParticipationConstraint.class).param(
-                            // "owlClassIRI",
-                            // ic.getSubject().getIRI().toString()).param(
-                            // "owlPropertyIRI",
-                            // ic.getPredicate().getIRI().toString()).param(
-                            "owlObjectIRI", obj);
+                            "owlObjectIRI", comp.getFiller().getIRI().toString());
 
                     if (ic.getMin() != 0) {
                         u = u.param("min", ic.getMin());
