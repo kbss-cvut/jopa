@@ -16,10 +16,7 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectMap;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassB;
-import cz.cvut.kbss.jopa.environment.OWLClassD;
-import cz.cvut.kbss.jopa.environment.OWLClassL;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -34,6 +31,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -882,5 +880,14 @@ public class UnitOfWorkTest {
         assertFalse(entityB.getProperties() instanceof IndirectMap);
         verify(serverSessionStub).deregisterEntityFromPersistenceContext(result, uow);
         verify(serverSessionStub).deregisterEntityFromPersistenceContext(entityB, uow);
+    }
+
+    @Test
+    public void prePersistLifecycleListenerIsCalledBeforeInstanceIsInsertedIntoPersistenceContext() {
+        final OWLClassR rInstance = spy(new OWLClassR());
+        uow.registerNewObject(rInstance, descriptor);
+        final InOrder inOrder = inOrder(rInstance, storageMock);
+        inOrder.verify(rInstance).prePersist();
+        inOrder.verify(storageMock).persist(any(Object.class), eq(rInstance), eq(descriptor));
     }
 }

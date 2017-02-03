@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -232,7 +232,8 @@ public class MetamodelMocks {
         MetamodelFactory.initOWLClassOMock(etO, oStringAtt, idO);
         MetamodelFactory
                 .initOWLClassPMock(etP, pTypes, pProperties, pUriAtt, pUrlsAtt, pSimpleList, pReferencedList, idP);
-        MetamodelFactory.initOwlClassQMock(etQ, qMappedSuperclass, qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
+        MetamodelFactory
+                .initOwlClassQMock(etQ, qMappedSuperclass, qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
         MetamodelFactory.initOwlClassSMock(etS, sNameAtt, idS);
         MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
     }
@@ -261,6 +262,11 @@ public class MetamodelMocks {
             final Class<?> cls = (Class<?>) invocation.getArguments()[0];
             if (etMap.containsKey(cls)) {
                 return etMap.get(cls);
+            }
+            for (Class<?> type : etMap.keySet()) {
+                if (type.isAssignableFrom(cls)) {
+                    return etMap.get(type);
+                }
             }
             throw new IllegalArgumentException(
                     "Class " + cls.getName() + " is not a known entity in this persistence unit.");

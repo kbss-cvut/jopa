@@ -93,14 +93,14 @@ class ManagedClassProcessor {
                 if (m.getDeclaredAnnotation(hookType.getAnnotation()) != null) {
                     verifyCallbackNotAlreadyDefined(type, hookType);
                     verifyListenerSignature(type, m);
-                    type.addLifecycleHook(hookType, m);
+                    type.addLifecycleListener(hookType, m);
                 }
             }
         }
     }
 
     private static <T> void verifyCallbackNotAlreadyDefined(AbstractIdentifiableType<T> type, LifecycleEvent hookType) {
-        if (type.hasDeclaredLifecycleHook(hookType)) {
+        if (type.hasDeclaredLifecycleListener(hookType)) {
             throw MetamodelInitializationException.multipleListenersForSameLifecycleEvent(type.getJavaType(), hookType);
         }
     }

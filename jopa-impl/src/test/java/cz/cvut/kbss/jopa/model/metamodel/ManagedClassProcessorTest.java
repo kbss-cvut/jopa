@@ -71,10 +71,10 @@ public class ManagedClassProcessorTest {
     @Test
     public void processManagedTypeDiscoversEntityLifecycleListeners() throws Exception {
         final AbstractIdentifiableType<OWLClassR> type = ManagedClassProcessor.processManagedType(OWLClassR.class);
-        assertTrue(type.hasLifecycleHooks(LifecycleEvent.POST_LOAD));
-        assertEquals(1, type.getLifecycleHooks(LifecycleEvent.POST_LOAD).size());
-        assertEquals(OWLClassR.class.getDeclaredMethod("postLoadHook"),
-                type.getLifecycleHooks(LifecycleEvent.POST_LOAD).get(0));
+        assertTrue(type.hasLifecycleListeners(LifecycleEvent.POST_LOAD));
+        assertEquals(1, type.getLifecycleListeners(LifecycleEvent.POST_LOAD).size());
+        assertEquals(OWLClassR.class.getDeclaredMethod("postLoad"),
+                type.getLifecycleListeners(LifecycleEvent.POST_LOAD).get(0));
     }
 
     @Test

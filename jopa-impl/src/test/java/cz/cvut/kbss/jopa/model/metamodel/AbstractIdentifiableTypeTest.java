@@ -347,7 +347,7 @@ public class AbstractIdentifiableTypeTest {
 
     @Test
     public void getLifecycleHooksReturnsEmptyListForEntityWithoutSuperclassAndWithoutMatchingHook() {
-        final List<Method> hooks = et.getLifecycleHooks(LifecycleEvent.PRE_PERSIST);
+        final List<Method> hooks = et.getLifecycleListeners(LifecycleEvent.PRE_PERSIST);
         assertNotNull(hooks);
         assertTrue(hooks.isEmpty());
     }
@@ -357,17 +357,17 @@ public class AbstractIdentifiableTypeTest {
         final AbstractIdentifiableType<OWLClassR> etR = new EntityTypeImpl<>(OWLClassR.class.getSimpleName(),
                 OWLClassR.class, IRI.create(Vocabulary.C_OWLClassR));
         final Method rMethod = OWLClassR.class.getDeclaredMethod("getStringAtt");
-        etR.addLifecycleHook(LifecycleEvent.PRE_PERSIST, rMethod);
+        etR.addLifecycleListener(LifecycleEvent.PRE_PERSIST, rMethod);
         final AbstractIdentifiableType<OWLClassS> etS = new EntityTypeImpl<>(OWLClassS.class.getSimpleName(),
                 OWLClassS.class, IRI.create(Vocabulary.c_OwlClassS));
         final Method sMethod = OWLClassS.class.getDeclaredMethod("getUri");
-        etS.addLifecycleHook(LifecycleEvent.PRE_PERSIST, sMethod);
+        etS.addLifecycleListener(LifecycleEvent.PRE_PERSIST, sMethod);
         etR.setSupertype(etS);
         final AbstractIdentifiableType<Object> root = new MappedSuperclassTypeImpl<>(Object.class);
         final Method rootMethod = Object.class.getDeclaredMethod("toString");
-        root.addLifecycleHook(LifecycleEvent.PRE_PERSIST, rootMethod);
+        root.addLifecycleListener(LifecycleEvent.PRE_PERSIST, rootMethod);
         etS.setSupertype(root);
-        final List<Method> hooks = etR.getLifecycleHooks(LifecycleEvent.PRE_PERSIST);
+        final List<Method> hooks = etR.getLifecycleListeners(LifecycleEvent.PRE_PERSIST);
         assertEquals(3, hooks.size());
         assertEquals(rootMethod, hooks.get(0));
         assertEquals(sMethod, hooks.get(1));
@@ -381,10 +381,10 @@ public class AbstractIdentifiableTypeTest {
         final AbstractIdentifiableType<OWLClassS> etS = new EntityTypeImpl<>(OWLClassS.class.getSimpleName(),
                 OWLClassS.class, IRI.create(Vocabulary.c_OwlClassS));
         final Method sMethod = OWLClassS.class.getDeclaredMethod("getUri");
-        etS.addLifecycleHook(LifecycleEvent.PRE_PERSIST, sMethod);
+        etS.addLifecycleListener(LifecycleEvent.PRE_PERSIST, sMethod);
         etR.setSupertype(etS);
 
-        final List<Method> hooks = etR.getLifecycleHooks(LifecycleEvent.PRE_PERSIST);
+        final List<Method> hooks = etR.getLifecycleListeners(LifecycleEvent.PRE_PERSIST);
         assertEquals(1, hooks.size());
         assertEquals(sMethod, hooks.get(0));
     }
@@ -392,8 +392,8 @@ public class AbstractIdentifiableTypeTest {
     @Test
     public void hasLifecycleHooksReturnsTrueIfHooksIsDeclaredInEntity() throws Exception {
         final Method hook = OWLClassA.class.getDeclaredMethod("getTypes");
-        et.addLifecycleHook(LifecycleEvent.PRE_PERSIST, hook);
-        assertTrue(et.hasLifecycleHooks(LifecycleEvent.PRE_PERSIST));
+        et.addLifecycleListener(LifecycleEvent.PRE_PERSIST, hook);
+        assertTrue(et.hasLifecycleListeners(LifecycleEvent.PRE_PERSIST));
     }
 
     @Test
@@ -403,9 +403,9 @@ public class AbstractIdentifiableTypeTest {
         final AbstractIdentifiableType<OWLClassS> etS = new EntityTypeImpl<>(OWLClassS.class.getSimpleName(),
                 OWLClassS.class, IRI.create(Vocabulary.c_OwlClassS));
         final Method sMethod = OWLClassS.class.getDeclaredMethod("getUri");
-        etS.addLifecycleHook(LifecycleEvent.PRE_PERSIST, sMethod);
+        etS.addLifecycleListener(LifecycleEvent.PRE_PERSIST, sMethod);
         etR.setSupertype(etS);
 
-        assertTrue(etR.hasLifecycleHooks(LifecycleEvent.PRE_PERSIST));
+        assertTrue(etR.hasLifecycleListeners(LifecycleEvent.PRE_PERSIST));
     }
 }

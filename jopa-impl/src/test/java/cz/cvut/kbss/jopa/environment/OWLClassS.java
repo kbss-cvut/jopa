@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URI;
 
 @Inheritance(strategy = InheritanceType.TWO_STEP)
@@ -49,9 +50,10 @@ public abstract class OWLClassS implements Serializable {
     }
 
     @PrePersist
-    private void prePersistPrivate() {
-        System.out.println("Private prePersist hook called.");
+    private void prePersist() {
+        System.out.println("PrePersist called.");
     }
+
 
     public static String getClassIri() {
         return OWLClassS.class.getDeclaredAnnotation(OWLClass.class).iri();
@@ -63,5 +65,9 @@ public abstract class OWLClassS implements Serializable {
 
     public static Field getNameField() throws NoSuchFieldException {
         return OWLClassS.class.getDeclaredField("name");
+    }
+
+    public static Method getPrePersistHook() throws Exception {
+        return OWLClassS.class.getDeclaredMethod("prePersist");
     }
 }

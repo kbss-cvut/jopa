@@ -195,13 +195,13 @@ public class MetamodelImplInheritanceTest {
     public void buildingMetamodelDiscoversEntityLifecycleListenersInHierarchy() {
         final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
         final EntityTypeImpl<OWLClassS> supertype = metamodel.entity(OWLClassS.class);
-        final List<Method> supertypeHooks = supertype.getLifecycleHooks(LifecycleEvent.PRE_PERSIST);
+        final List<Method> supertypeHooks = supertype.getLifecycleListeners(LifecycleEvent.PRE_PERSIST);
         assertFalse(supertypeHooks.isEmpty());
-        assertFalse(supertype.hasLifecycleHooks(LifecycleEvent.POST_LOAD));
+        assertFalse(supertype.hasLifecycleListeners(LifecycleEvent.POST_LOAD));
         final EntityTypeImpl<OWLClassR> subtype = metamodel.entity(OWLClassR.class);
-        final List<Method> subtypeHooks = subtype.getLifecycleHooks(LifecycleEvent.PRE_PERSIST);
+        final List<Method> subtypeHooks = subtype.getLifecycleListeners(LifecycleEvent.PRE_PERSIST);
         assertTrue(subtypeHooks.containsAll(supertypeHooks));
-        assertTrue(subtype.hasLifecycleHooks(LifecycleEvent.POST_LOAD));
-        assertFalse(subtype.getLifecycleHooks(LifecycleEvent.POST_LOAD).isEmpty());
+        assertTrue(subtype.hasLifecycleListeners(LifecycleEvent.POST_LOAD));
+        assertFalse(subtype.getLifecycleListeners(LifecycleEvent.POST_LOAD).isEmpty());
     }
 }

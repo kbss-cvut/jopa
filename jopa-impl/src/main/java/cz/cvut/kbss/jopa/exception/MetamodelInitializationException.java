@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.exception;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.annotations.PostLoad;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 
 import java.lang.reflect.Method;

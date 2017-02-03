@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
@@ -70,6 +71,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private final ChangeManager changeManager;
     private final QueryFactory queryFactory;
     private final CollectionFactory collectionFactory;
+
+    private final EntityLifecycleListenerCaller lifecycleListenerCaller = new EntityLifecycleListenerCaller();
     /**
      * This is a shortcut for the second level cache.
      */
@@ -700,9 +703,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      */
     private void registerNewObjectInternal(Object entity, Descriptor descriptor) {
         assert entity != null;
+        final EntityTypeImpl<?> eType = getMetamodel().entity(entity.getClass());
+        lifecycleListenerCaller.callPrePersistListeners(eType, entity);
         Object id = getIdentifier(entity);
         if (id == null) {
-            final EntityType<?> eType = getMetamodel().entity(entity.getClass());
             EntityPropertiesUtils.verifyIdentifierIsGenerated(entity, eType);
         }
         if (isIndividualManaged(id, entity) && !entity.getClass().isEnum()) {

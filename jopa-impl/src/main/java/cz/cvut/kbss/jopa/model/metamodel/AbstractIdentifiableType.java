@@ -66,8 +66,8 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         this.properties = a;
     }
 
-    void addLifecycleHook(LifecycleEvent hookType, Method hook) {
-        lifecycleHooks.put(hookType, hook);
+    void addLifecycleListener(LifecycleEvent event, Method listener) {
+        lifecycleHooks.put(event, listener);
     }
 
     public void setIdentifier(final Identifier identifier) {
@@ -416,19 +416,19 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         return javaType;
     }
 
-    public List<Method> getLifecycleHooks(LifecycleEvent hookType) {
-        final List<Method> hooks = supertype != null ? supertype.getLifecycleHooks(hookType) : new ArrayList<>();
-        if (lifecycleHooks.containsKey(hookType)) {
-            hooks.add(lifecycleHooks.get(hookType));
+    public List<Method> getLifecycleListeners(LifecycleEvent event) {
+        final List<Method> hooks = supertype != null ? supertype.getLifecycleListeners(event) : new ArrayList<>();
+        if (lifecycleHooks.containsKey(event)) {
+            hooks.add(lifecycleHooks.get(event));
         }
         return hooks;
     }
 
-    public boolean hasLifecycleHooks(LifecycleEvent hookType) {
-        return hasDeclaredLifecycleHook(hookType) || (supertype != null && supertype.hasLifecycleHooks(hookType));
+    public boolean hasLifecycleListeners(LifecycleEvent event) {
+        return hasDeclaredLifecycleListener(event) || (supertype != null && supertype.hasLifecycleListeners(event));
     }
 
-    public boolean hasDeclaredLifecycleHook(LifecycleEvent hookType) {
-        return lifecycleHooks.containsKey(hookType);
+    public boolean hasDeclaredLifecycleListener(LifecycleEvent event) {
+        return lifecycleHooks.containsKey(event);
     }
 }
