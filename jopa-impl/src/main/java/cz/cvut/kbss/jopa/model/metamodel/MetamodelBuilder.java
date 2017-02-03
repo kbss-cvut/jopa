@@ -54,7 +54,7 @@ public class MetamodelBuilder {
 
         LOG.debug("Processing OWL class: {}", cls);
 
-        final EntityTypeImpl<X> et = ManagedClassProcessor.processEntityType(cls);
+        final AbstractIdentifiableType<X> et = ManagedClassProcessor.processManagedType(cls);
 
         processManagedType(et);
     }

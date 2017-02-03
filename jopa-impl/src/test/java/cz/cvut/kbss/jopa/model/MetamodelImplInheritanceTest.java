@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.annotations.Inheritance;
 import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.Constants;
@@ -31,6 +32,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -126,7 +128,7 @@ public class MetamodelImplInheritanceTest {
         assertTrue(supertype instanceof AbstractIdentifiableType);
         final AbstractIdentifiableType<? super OWLClassQ> mappedSupertype = (AbstractIdentifiableType<? super OWLClassQ>) supertype;
         assertTrue(mappedSupertype.hasSubtypes());
-        assertTrue(mappedSupertype.getSubtypes().contains((EntityTypeImpl) metamodel.entity(OWLClassQ.class)));
+        assertTrue(mappedSupertype.getSubtypes().contains(metamodel.entity(OWLClassQ.class)));
     }
 
     @Test
@@ -187,5 +189,19 @@ public class MetamodelImplInheritanceTest {
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "AnotherSubtype")
     private static class AnotherSubclass extends OWLClassS {
+    }
+
+    @Test
+    public void buildingMetamodelDiscoversEntityLifecycleListenersInHierarchy() {
+        final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
+        final EntityTypeImpl<OWLClassS> supertype = metamodel.entity(OWLClassS.class);
+        final List<Method> supertypeHooks = supertype.getLifecycleHooks(LifecycleEvent.PRE_PERSIST);
+        assertFalse(supertypeHooks.isEmpty());
+        assertFalse(supertype.hasLifecycleHooks(LifecycleEvent.POST_LOAD));
+        final EntityTypeImpl<OWLClassR> subtype = metamodel.entity(OWLClassR.class);
+        final List<Method> subtypeHooks = subtype.getLifecycleHooks(LifecycleEvent.PRE_PERSIST);
+        assertTrue(subtypeHooks.containsAll(supertypeHooks));
+        assertTrue(subtype.hasLifecycleHooks(LifecycleEvent.POST_LOAD));
+        assertFalse(subtype.getLifecycleHooks(LifecycleEvent.POST_LOAD).isEmpty());
     }
 }

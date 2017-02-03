@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,7 +22,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 
 @Inheritance(strategy = InheritanceType.TWO_STEP)
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassS")
+@OWLClass(iri = Vocabulary.c_OwlClassS)
 public abstract class OWLClassS implements Serializable {
 
     @Id(generated = true)
@@ -46,6 +46,11 @@ public abstract class OWLClassS implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @PrePersist
+    private void prePersistPrivate() {
+        System.out.println("Private prePersist hook called.");
     }
 
     public static String getClassIri() {

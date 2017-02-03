@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,6 +18,10 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
  * Utility methods for processing managed types for metamodel construction.
@@ -28,21 +32,21 @@ class ManagedClassProcessor {
     }
 
     static <T> AbstractIdentifiableType<T> processManagedType(Class<T> cls) {
-        assert isManagedType(cls);
+        final AbstractIdentifiableType<T> type;
         if (isEntityType(cls)) {
-            return processEntityType(cls);
+            type = processEntityType(cls);
         } else if (isMappedSuperclassType(cls)) {
-            return processMappedSuperclassType(cls);
+            type = processMappedSuperclassType(cls);
+        } else {
+            throw new MetamodelInitializationException("Type " + cls + " is not a managed type.");
         }
-        throw new IllegalArgumentException("Type " + cls + " is not a managed type.");
+        resolveLifecycleHooks(type);
+        return type;
     }
 
-    static <T> EntityTypeImpl<T> processEntityType(Class<T> cls) {
+    private static <T> EntityTypeImpl<T> processEntityType(Class<T> cls) {
         final OWLClass c = cls.getDeclaredAnnotation(OWLClass.class);
-
-        if (c == null) {
-            throw new MetamodelInitializationException("The class " + cls + " is not an OWLPersistence entity!");
-        }
+        assert c != null;
 
         checkForNoArgConstructor(cls);
 
@@ -80,5 +84,36 @@ class ManagedClassProcessor {
 
     private static boolean isMappedSuperclassType(Class<?> cls) {
         return cls.getDeclaredAnnotation(MappedSuperclass.class) != null;
+    }
+
+    private static <T> void resolveLifecycleHooks(AbstractIdentifiableType<T> type) {
+        final Class<T> cls = type.getJavaType();
+        for (Method m : cls.getDeclaredMethods()) {
+            for (LifecycleEvent hookType : LifecycleEvent.values()) {
+                if (m.getDeclaredAnnotation(hookType.getAnnotation()) != null) {
+                    verifyCallbackNotAlreadyDefined(type, hookType);
+                    verifyListenerSignature(type, m);
+                    type.addLifecycleHook(hookType, m);
+                }
+            }
+        }
+    }
+
+    private static <T> void verifyCallbackNotAlreadyDefined(AbstractIdentifiableType<T> type, LifecycleEvent hookType) {
+        if (type.hasDeclaredLifecycleHook(hookType)) {
+            throw MetamodelInitializationException.multipleListenersForSameLifecycleEvent(type.getJavaType(), hookType);
+        }
+    }
+
+    private static <T> void verifyListenerSignature(AbstractIdentifiableType<T> type, Method listener) {
+        if (listener.getParameterCount() > 0) {
+            throw MetamodelInitializationException.invalidArgumentsForLifecycleListener(type.getJavaType(), listener);
+        }
+        if (!listener.getReturnType().equals(Void.TYPE)) {
+            throw MetamodelInitializationException.invalidReturnTypeForLifecycleListener(type.getJavaType(), listener);
+        }
+        if (Modifier.isFinal(listener.getModifiers()) || Modifier.isStatic(listener.getModifiers())) {
+            throw MetamodelInitializationException.invalidLifecycleListenerModifier(type.getJavaType(), listener);
+        }
     }
 }
