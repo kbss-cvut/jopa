@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URI;
 
 @OWLClass(iri = Vocabulary.C_OWLClassR)
 public class OWLClassR extends OWLClassS {
@@ -27,6 +28,13 @@ public class OWLClassR extends OWLClassS {
 
     @OWLObjectProperty(iri = Vocabulary.P_HAS_A, cascade = {CascadeType.PERSIST})
     private OWLClassA owlClassA;
+
+    public OWLClassR() {
+    }
+
+    public OWLClassR(URI uri) {
+        super(uri);
+    }
 
     public String getStringAtt() {
         return stringAtt;

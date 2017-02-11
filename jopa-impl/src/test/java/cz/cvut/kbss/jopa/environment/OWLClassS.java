@@ -33,6 +33,13 @@ public abstract class OWLClassS implements Serializable {
     @OWLAnnotationProperty(iri = CommonVocabulary.RDFS_LABEL)
     private String name;
 
+    public OWLClassS() {
+    }
+
+    public OWLClassS(URI uri) {
+        this.uri = uri;
+    }
+
     public URI getUri() {
         return uri;
     }
@@ -51,7 +58,7 @@ public abstract class OWLClassS implements Serializable {
 
     @PrePersist
     private void prePersist() {
-        System.out.println("PrePersist called.");
+        System.out.println("PrePersist called in OWLClassS.");
     }
 
 

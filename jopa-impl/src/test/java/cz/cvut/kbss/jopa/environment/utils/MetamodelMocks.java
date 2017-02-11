@@ -21,10 +21,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -239,7 +236,8 @@ public class MetamodelMocks {
     }
 
     public void setMocks(Metamodel metamodel) {
-        final Map<Class<?>, EntityTypeImpl<?>> etMap = new HashMap<>();
+        // Order does matter for the entity() method implementation below
+        final Map<Class<?>, EntityTypeImpl<?>> etMap = new LinkedHashMap<>();
         etMap.put(OWLClassA.class, etA);
         etMap.put(OWLClassB.class, etB);
         etMap.put(OWLClassC.class, etC);
