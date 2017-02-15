@@ -514,10 +514,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             throw new OWLPersistenceException("Unable to find repository for entity " + entity
                     + ". Is it registered in this UoW?");
         }
+        final EntityTypeImpl<?> et = entityType(entity.getClass());
+        lifecycleListenerCaller.invokePreUpdateListeners(et, entity);
         storage.merge(entity, f, descriptor);
         createChangeRecord(entity, f, descriptor);
         setHasChanges();
         setIndirectCollectionIfPresent(entity, f);
+        lifecycleListenerCaller.invokePostUpdateListeners(et, entity);
     }
 
     private void createChangeRecord(Object clone, Field field, Descriptor descriptor) {
@@ -574,9 +577,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private <T> T mergeDetachedInternal(T entity, Descriptor descriptor) {
         assert entity != null;
         final Object iri = getIdentifier(entity);
-        final Class<T> entityCls = (Class<T>) entity.getClass();
+        final EntityTypeImpl<T> et = (EntityTypeImpl<T>) entityType(entity.getClass());
         final URI idUri = EntityPropertiesUtils.getValueAsURI(iri);
-        T original = storage.find(new LoadingParameters<>(entityCls, idUri, descriptor, true));
+        T original = storage.find(new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true));
 
         assert original != null;
         registerClone(entity, original, descriptor);
@@ -584,10 +587,15 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             // Merge only the changed attributes
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(original, entity, descriptor);
             changeManager.calculateChanges(chSet);
-            final EntityType<?> et = entityType(entityCls);
+            if (chSet.hasChanges()) {
+                lifecycleListenerCaller.invokePreUpdateListeners(et, entity);
+            }
             for (ChangeRecord record : chSet.getChanges().values()) {
                 final Field field = et.getFieldSpecification(record.getAttributeName()).getJavaField();
                 storage.merge(entity, field, descriptor);
+            }
+            if (chSet.hasChanges()) {
+                lifecycleListenerCaller.invokePostUpdateListeners(et, entity);
             }
             getUowChangeSet().addObjectChangeSet(chSet);
         } catch (OWLEntityExistsException e) {
@@ -596,8 +604,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         } catch (IllegalAccessException e) {
             throw new OWLPersistenceException(e);
         }
-        if (cacheManager.contains(entityCls, iri, descriptor.getContext())) {
-            cacheManager.evict(entityCls, iri, descriptor.getContext());
+        if (cacheManager.contains(et.getJavaType(), iri, descriptor.getContext())) {
+            cacheManager.evict(et.getJavaType(), iri, descriptor.getContext());
         }
         setHasChanges();
         return entity;

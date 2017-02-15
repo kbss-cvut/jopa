@@ -75,4 +75,24 @@ class EntityLifecycleListenerCaller {
     void invokePostLoadListeners(EntityTypeImpl<?> et, Object instance) {
         invokeListeners(instance, et.getLifecycleListeners(LifecycleEvent.POST_LOAD));
     }
+
+    /**
+     * Calls pre-update listeners for the specified instance.
+     *
+     * @param et       Entity type of the instance
+     * @param instance The updated instance
+     */
+    void invokePreUpdateListeners(EntityTypeImpl<?> et, Object instance) {
+        invokeListeners(instance, et.getLifecycleListeners(LifecycleEvent.PRE_UPDATE));
+    }
+
+    /**
+     * Calls post-update listeners for the specified instance.
+     *
+     * @param et       Entity type of the instance
+     * @param instance The updated instance
+     */
+    void invokePostUpdateListeners(EntityTypeImpl<?> et, Object instance) {
+        invokeListeners(instance, et.getLifecycleListeners(LifecycleEvent.POST_UPDATE));
+    }
 }
