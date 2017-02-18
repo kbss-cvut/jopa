@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,16 +17,14 @@ package cz.cvut.kbss.jopa.environment.utils;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.*;
+import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.model.metamodel.*;
-import org.mockito.stubbing.OngoingStubbing;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -746,9 +744,11 @@ public class MetamodelFactory {
         when(et.getFieldSpecification(qOwlClassAAtt.getName())).thenReturn(qOwlClassAAtt);
     }
 
-    public static void initOwlClassSMock(EntityType<OWLClassS> et, SingularAttribute sNameAtt, Identifier idS) throws
+    public static void initOwlClassSMock(EntityTypeImpl<OWLClassS> et, SingularAttribute sNameAtt, Identifier idS)
+            throws
             Exception {
         when(et.getIdentifier()).thenReturn(idS);
+        when(idS.isGenerated()).thenReturn(true);
         when(et.getJavaType()).thenReturn(OWLClassS.class);
         when(idS.getJavaField()).thenReturn(OWLClassS.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassS.getClassIri()));
@@ -767,7 +767,10 @@ public class MetamodelFactory {
                 IRI.create(OWLClassS.getNameField().getAnnotation(OWLAnnotationProperty.class).iri()));
         when(sNameAtt.getDeclaringType()).thenReturn(et);
         when(sNameAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(sNameAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
         when(et.getFieldSpecification(sNameAtt.getName())).thenReturn(sNameAtt);
+        when(et.getLifecycleListeners(LifecycleEvent.PRE_PERSIST))
+                .thenReturn(Collections.singletonList(OWLClassS.getPrePersistHook()));
     }
 
     static void initOwlClassRMock(EntityTypeImpl<OWLClassR> et, SingularAttribute rStringAtt,
@@ -804,15 +807,32 @@ public class MetamodelFactory {
         when(owlClassAAtt.getJavaType()).thenReturn(OWLClassA.class);
         when(owlClassAAtt.getJavaField()).thenReturn(OWLClassR.getOwlClassAField());
         when(owlClassAAtt.getName()).thenReturn(OWLClassR.getOwlClassAField().getName());
-        when(owlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[]{});
+        when(owlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(owlClassAAtt.getFetchType()).thenReturn(FetchType.EAGER);
         when(owlClassAAtt.getDeclaringType()).thenReturn(et);
         when(owlClassAAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
         when(owlClassAAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
+        when(owlClassAAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
         when(et.getFieldSpecification(owlClassAAtt.getName())).thenReturn(owlClassAAtt);
         for (Attribute att : parentEt.getAttributes()) {
             when(et.getAttribute(att.getName())).thenReturn(att);
             when(et.getFieldSpecification(att.getName())).thenReturn(att);
         }
+        final List<Method> prePersist = new ArrayList<>(parentEt.getLifecycleListeners(LifecycleEvent.PRE_PERSIST));
+        prePersist.add(OWLClassR.getPrePersistHook());
+        when(et.getLifecycleListeners(LifecycleEvent.PRE_PERSIST))
+                .thenReturn(prePersist);
+        when(et.getLifecycleListeners(LifecycleEvent.POST_PERSIST))
+                .thenReturn(Collections.singletonList(OWLClassR.getPostPersistHook()));
+        when(et.getLifecycleListeners(LifecycleEvent.PRE_UPDATE))
+                .thenReturn(Collections.singletonList(OWLClassR.getPreUpdateHook()));
+        when(et.getLifecycleListeners(LifecycleEvent.POST_UPDATE))
+                .thenReturn(Collections.singletonList(OWLClassR.getPostUpdateHook()));
+        when(et.getLifecycleListeners(LifecycleEvent.PRE_REMOVE))
+                .thenReturn(Collections.singletonList(OWLClassR.getPreRemoveHook()));
+        when(et.getLifecycleListeners(LifecycleEvent.POST_REMOVE))
+                .thenReturn(Collections.singletonList(OWLClassR.getPostRemoveHook()));
+        when(et.getLifecycleListeners(LifecycleEvent.POST_LOAD))
+                .thenReturn(Collections.singletonList(OWLClassR.getPostLoadHook()));
     }
 }

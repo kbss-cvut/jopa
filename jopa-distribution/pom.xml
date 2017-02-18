@@ -6,7 +6,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.9.1</version>
+        <version>0.9.2</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -38,6 +38,14 @@
                             jopa-sesame-bin.xml
                         </descriptor>
                     </descriptors>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- explicitly define maven-deploy-plugin after other to force exec order -->
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven.deploy.plugin.version}</version>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>

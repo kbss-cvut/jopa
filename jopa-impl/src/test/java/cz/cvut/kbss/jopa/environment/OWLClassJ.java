@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -23,17 +23,14 @@ import java.util.Set;
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassJ")
 public class OWLClassJ {
 
-	private static final String CLS_A_FIELD = "owlClassA";
+    private static final String CLS_A_FIELD = "owlClassA";
 
-	@Id
-	private URI uri;
+    @Id
+    private URI uri;
 
-	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	// @ParticipationConstraints({
-	// @ParticipationConstraint(owlObjectIRI="http://new.owl#OWLClassA", min=1,
-	// max=1)
-	// })
-	private Set<OWLClassA> owlClassA;
+    @ParticipationConstraints(nonEmpty = true)
+    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<OWLClassA> owlClassA;
 
     public OWLClassJ() {
     }
@@ -43,33 +40,33 @@ public class OWLClassJ {
     }
 
     /**
-	 * @param uri
-	 *            the uri to set
-	 */
-	public void setUri(URI uri) {
-		this.uri = uri;
-	}
+     * @param uri
+     *            the uri to set
+     */
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
 
-	/**
-	 * @return the uri
-	 */
-	public URI getUri() {
-		return uri;
-	}
+    /**
+     * @return the uri
+     */
+    public URI getUri() {
+        return uri;
+    }
 
-	public void setOwlClassA(Set<OWLClassA> owlClassA) {
-		this.owlClassA = owlClassA;
-	}
+    public void setOwlClassA(Set<OWLClassA> owlClassA) {
+        this.owlClassA = owlClassA;
+    }
 
-	public Set<OWLClassA> getOwlClassA() {
-		return owlClassA;
-	}
+    public Set<OWLClassA> getOwlClassA() {
+        return owlClassA;
+    }
 
-	public static String getClassIri() {
-		return OWLClassJ.class.getAnnotation(OWLClass.class).iri();
-	}
-	
-	public static Field getOwlClassAField() throws NoSuchFieldException, SecurityException {
-		return OWLClassJ.class.getDeclaredField(CLS_A_FIELD);
-	}
+    public static String getClassIri() {
+        return OWLClassJ.class.getAnnotation(OWLClass.class).iri();
+    }
+
+    public static Field getOwlClassAField() throws NoSuchFieldException, SecurityException {
+        return OWLClassJ.class.getDeclaredField(CLS_A_FIELD);
+    }
 }

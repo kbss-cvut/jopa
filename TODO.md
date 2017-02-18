@@ -4,13 +4,11 @@
 
 - [ ] Inheritance support
     - [x] Mapped superclass
-    - [ ] Single inheritance
+    - [x] Single inheritance
     - [ ] Multiple inheritance
-- [ ] Publish in Maven central    
-- [ ] Deploy stable builds to Maven
+- [ ] Publish stable builds in Maven central
 - [ ] Publish javadocs on kbss
 - [ ] Benchmark comparison with Empire and AliBaba
-- [ ] Add support for entity lifecycle hooks (postLoad, prePersist etc.)
 - [ ] Add support for IC validation disabling on entity load
     - Some sort of loading modes should be added (similar to Lock modes in JPA)
 - [ ] JOPA Specification doc, which would explain behaviour and principles
@@ -44,3 +42,6 @@
 
 ### Currently in Progress
 
+- [ ] Add support for entity lifecycle hooks (postLoad, prePersist etc.)
+    - [x] Internal
+    - [ ] External

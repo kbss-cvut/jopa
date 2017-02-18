@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,20 +14,21 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassB;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.model.IRI;
+import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class AbstractIdentifiableTypeTest {
@@ -342,5 +343,69 @@ public class AbstractIdentifiableTypeTest {
         doReturn(id).when(supertype).getIdentifier();
         et.setSupertype(supertype);
         assertEquals(id, et.getIdentifier());
+    }
+
+    @Test
+    public void getLifecycleHooksReturnsEmptyListForEntityWithoutSuperclassAndWithoutMatchingHook() {
+        final List<Method> hooks = et.getLifecycleListeners(LifecycleEvent.PRE_PERSIST);
+        assertNotNull(hooks);
+        assertTrue(hooks.isEmpty());
+    }
+
+    @Test
+    public void getLifecycleHooksReturnsHooksFromWholeHierarchyOrderFromTopToBottom() throws Exception {
+        final AbstractIdentifiableType<OWLClassR> etR = new EntityTypeImpl<>(OWLClassR.class.getSimpleName(),
+                OWLClassR.class, IRI.create(Vocabulary.C_OWLClassR));
+        final Method rMethod = OWLClassR.class.getDeclaredMethod("getStringAtt");
+        etR.addLifecycleListener(LifecycleEvent.PRE_PERSIST, rMethod);
+        final AbstractIdentifiableType<OWLClassS> etS = new EntityTypeImpl<>(OWLClassS.class.getSimpleName(),
+                OWLClassS.class, IRI.create(Vocabulary.c_OwlClassS));
+        final Method sMethod = OWLClassS.class.getDeclaredMethod("getUri");
+        etS.addLifecycleListener(LifecycleEvent.PRE_PERSIST, sMethod);
+        etR.setSupertype(etS);
+        final AbstractIdentifiableType<Object> root = new MappedSuperclassTypeImpl<>(Object.class);
+        final Method rootMethod = Object.class.getDeclaredMethod("toString");
+        root.addLifecycleListener(LifecycleEvent.PRE_PERSIST, rootMethod);
+        etS.setSupertype(root);
+        final List<Method> hooks = etR.getLifecycleListeners(LifecycleEvent.PRE_PERSIST);
+        assertEquals(3, hooks.size());
+        assertEquals(rootMethod, hooks.get(0));
+        assertEquals(sMethod, hooks.get(1));
+        assertEquals(rMethod, hooks.get(2));
+    }
+
+    @Test
+    public void getLifecycleHooksReturnsSupertypeHooksWhenNoneAreDeclaredOnEntity() throws Exception {
+        final AbstractIdentifiableType<OWLClassR> etR = new EntityTypeImpl<>(OWLClassR.class.getSimpleName(),
+                OWLClassR.class, IRI.create(Vocabulary.C_OWLClassR));
+        final AbstractIdentifiableType<OWLClassS> etS = new EntityTypeImpl<>(OWLClassS.class.getSimpleName(),
+                OWLClassS.class, IRI.create(Vocabulary.c_OwlClassS));
+        final Method sMethod = OWLClassS.class.getDeclaredMethod("getUri");
+        etS.addLifecycleListener(LifecycleEvent.PRE_PERSIST, sMethod);
+        etR.setSupertype(etS);
+
+        final List<Method> hooks = etR.getLifecycleListeners(LifecycleEvent.PRE_PERSIST);
+        assertEquals(1, hooks.size());
+        assertEquals(sMethod, hooks.get(0));
+    }
+
+    @Test
+    public void hasLifecycleHooksReturnsTrueIfHooksIsDeclaredInEntity() throws Exception {
+        final Method hook = OWLClassA.class.getDeclaredMethod("getTypes");
+        et.addLifecycleListener(LifecycleEvent.PRE_PERSIST, hook);
+        assertTrue(et.hasLifecycleListeners(LifecycleEvent.PRE_PERSIST));
+    }
+
+    @Test
+    public void hasLifecycleHooksChecksHookPresenceInSupertypeWhenItIsNotDeclaredOnEntityItself() throws Exception {
+        final AbstractIdentifiableType<OWLClassR> etR = new EntityTypeImpl<>(OWLClassR.class.getSimpleName(),
+                OWLClassR.class, IRI.create(Vocabulary.C_OWLClassR));
+        final AbstractIdentifiableType<OWLClassS> etS = new EntityTypeImpl<>(OWLClassS.class.getSimpleName(),
+                OWLClassS.class, IRI.create(Vocabulary.c_OwlClassS));
+        final Method sMethod = OWLClassS.class.getDeclaredMethod("getUri");
+        etS.addLifecycleListener(LifecycleEvent.PRE_PERSIST, sMethod);
+        etR.setSupertype(etS);
+
+        assertTrue(etR.hasLifecycleListeners(LifecycleEvent.PRE_PERSIST));
     }
 }
