@@ -41,34 +41,34 @@ public class ConnectionWrapper implements Wrapper {
         this.mapper = new ObjectOntologyMapperImpl(uow, connection);
     }
 
-    <T> boolean contains(Object primaryKey, Class<T> cls, Descriptor descriptor) {
+    public <T> boolean contains(Object primaryKey, Class<T> cls, Descriptor descriptor) {
         final URI pkUri = getPrimaryKeyAsUri(primaryKey);
         return pkUri != null && mapper.containsEntity(cls, pkUri, descriptor);
     }
 
-    <T> T find(LoadingParameters<T> loadingParameters) {
+    public <T> T find(LoadingParameters<T> loadingParameters) {
         return mapper.loadEntity(loadingParameters);
     }
 
-    <T> void merge(T entity, Field field, Descriptor descriptor) {
+    public <T> void merge(T entity, Field field, Descriptor descriptor) {
         mapper.updateFieldValue(entity, field, descriptor);
     }
 
-    <T> void persist(Object primaryKey, T entity, Descriptor descriptor) {
+    public <T> void persist(Object primaryKey, T entity, Descriptor descriptor) {
         final URI pkUri = getPrimaryKeyAsUri(primaryKey);
         mapper.persistEntity(pkUri, entity, descriptor);
     }
 
-    <T> void remove(Object primaryKey, Class<T> cls, Descriptor descriptor) {
+    public <T> void remove(Object primaryKey, Class<T> cls, Descriptor descriptor) {
         final URI pkUri = getPrimaryKeyAsUri(primaryKey);
         mapper.removeEntity(pkUri, cls, descriptor);
     }
 
-    <T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
+    public <T> void loadFieldValue(T entity, Field field, Descriptor descriptor) {
         mapper.loadFieldValue(entity, field, descriptor);
     }
 
-    void commit() {
+    public void commit() {
         try {
             mapper.checkForUnpersistedChanges();
             connection.commit();
@@ -77,7 +77,7 @@ public class ConnectionWrapper implements Wrapper {
         }
     }
 
-    void rollback() {
+    public void rollback() {
         try {
             connection.rollback();
         } catch (OntoDriverException e) {
@@ -85,7 +85,7 @@ public class ConnectionWrapper implements Wrapper {
         }
     }
 
-    void close() {
+    public void close() {
         try {
             connection.close();
         } catch (Exception e) {
@@ -93,7 +93,7 @@ public class ConnectionWrapper implements Wrapper {
         }
     }
 
-    boolean isConsistent(URI context) {
+    public boolean isConsistent(URI context) {
         try {
             return connection.isConsistent(context);
         } catch (OntoDriverException e) {
@@ -101,7 +101,7 @@ public class ConnectionWrapper implements Wrapper {
         }
     }
 
-    List<URI> getContexts() {
+    public List<URI> getContexts() {
         try {
             return connection.getContexts();
         } catch (OntoDriverException e) {

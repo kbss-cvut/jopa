@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,6 +14,9 @@
  */
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
+
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +36,9 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     private PropertiesSpecification<X, ?, ?, ?> properties;
 
     private final Map<String, Attribute<X, ?>> declaredAttributes = new HashMap<>();
+
+    // Lifecycle hooks declared on this type
+    private final Map<LifecycleEvent, Method> lifecycleHooks = new EnumMap<>(LifecycleEvent.class);
 
     AbstractIdentifiableType(Class<X> javaType) {
         this.javaType = javaType;
@@ -58,6 +64,10 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     void addOtherProperties(PropertiesSpecification<X, ?, ?, ?> a) {
         this.properties = a;
+    }
+
+    void addLifecycleListener(LifecycleEvent event, Method listener) {
+        lifecycleHooks.put(event, listener);
     }
 
     public void setIdentifier(final Identifier identifier) {
@@ -404,5 +414,21 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     @Override
     public Class<X> getJavaType() {
         return javaType;
+    }
+
+    public List<Method> getLifecycleListeners(LifecycleEvent event) {
+        final List<Method> hooks = supertype != null ? supertype.getLifecycleListeners(event) : new ArrayList<>();
+        if (lifecycleHooks.containsKey(event)) {
+            hooks.add(lifecycleHooks.get(event));
+        }
+        return hooks;
+    }
+
+    public boolean hasLifecycleListeners(LifecycleEvent event) {
+        return hasDeclaredLifecycleListener(event) || (supertype != null && supertype.hasLifecycleListeners(event));
+    }
+
+    public boolean hasDeclaredLifecycleListener(LifecycleEvent event) {
+        return lifecycleHooks.containsKey(event);
     }
 }

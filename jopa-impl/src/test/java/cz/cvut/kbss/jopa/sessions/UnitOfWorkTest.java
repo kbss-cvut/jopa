@@ -100,7 +100,7 @@ public class UnitOfWorkTest {
         this.entityL = new OWLClassL();
         this.descriptor = new EntityDescriptor(CONTEXT_URI);
         entityL.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityL"));
-        this.serverSessionStub = spy(new ServerSessionStub(mock(ConnectionWrapper.class)));
+        this.serverSessionStub = spy(new ServerSessionStub(storageMock));
         when(serverSessionStub.getMetamodel()).thenReturn(metamodelMock);
         when(serverSessionStub.getLiveObjectCache()).thenReturn(cacheManagerMock);
         when(emMock.getTransaction()).thenReturn(transactionMock);
