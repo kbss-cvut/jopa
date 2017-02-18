@@ -29,7 +29,6 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
