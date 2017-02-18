@@ -43,3 +43,5 @@
 ### Currently in Progress
 
 - [ ] Add support for entity lifecycle hooks (postLoad, prePersist etc.)
+    - [x] Internal
+    - [ ] External

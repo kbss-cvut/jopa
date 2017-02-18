@@ -1,5 +1,8 @@
 # JOPA - Release Notes
 
+## 0.9.2 - February 18, 2017
+- Internal entity lifecycle callbacks support (Lifecycle callback methods declared directly in entity classes).
+
 ## 0.9.1 - January 3, 2017
 - Fixed major memory leak in persistence context management.
 
