@@ -76,7 +76,7 @@ As for referential integrity, this for example means that removing an instance t
 not be possible. Such feature is vital for object-oriented application, but not compatible with the open-world nature of ontologies.
 Design possibilities and their implications are currently being studied.
 
-Other missing/planned stuff can be found in `TODO.txt`.
+Other missing/planned stuff can be found in the TODO file.
 
 ## Modules
 
@@ -95,6 +95,8 @@ Other modules represent integration tests and various utilities. Jena OntoDriver
 
 JOPA examples can be found in a separate repository at [https://github.com/kbss-cvut/jopa-examples](https://github.com/kbss-cvut/jopa-examples).
 
+A simplistic demo of JOPA ([https://github.com/kbss-cvut/jopa-examples/tree/master/eswc2016](https://github.com/kbss-cvut/jopa-examples/tree/master/eswc2016)) is running at [http://onto.fel.cvut.cz/eswc2016](http://onto.fel.cvut.cz/eswc2016).
+
 A more mature project using JOPA as its persistence provider can be found at [https://github.com/kbss-cvut/reporting-tool](https://github.com/kbss-cvut/reporting-tool).
 It is a safety occurrence reporting tool developed for the aviation industry. A live demo of it is running at [https://www.inbas.cz/reporting-tool-public](https://www.inbas.cz/reporting-tool-public).
 
@@ -104,8 +106,8 @@ Note that JOPA requires Java 8.
 
 There are two ways to get JOPA for your project:
 
-* Clone repository/download zip and build it with maven
-* Use a Maven dependency from our maven repo at [http://kbss.felk.cvut.cz/m2repo/](http://kbss.felk.cvut.cz/m2repo/)
+* Clone repository/download zip and build it with Maven,
+* Use a Maven dependency from the [Maven central repository](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22cz.cvut.kbss.jopa%22).
 
 ## More Info
 
