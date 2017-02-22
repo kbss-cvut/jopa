@@ -53,7 +53,7 @@ public abstract class AbstractSession implements Session, MetamodelProvider {
     }
 
     /**
-     * Get the current live object cache. </p>
+     * Get the current live object cache.
      * <p>
      * This manager represents the second level cache.
      *
@@ -62,15 +62,14 @@ public abstract class AbstractSession implements Session, MetamodelProvider {
     public abstract CacheManager getLiveObjectCache();
 
     /**
-     * Acquires connection to the underlying ontology storage. </p>
+     * Acquires connection to the underlying ontology storage.
      *
      * @return Connection
      */
     protected abstract ConnectionWrapper acquireConnection();
 
     /**
-     * Register the specified entity as managed in the specified
-     * {@code UnitOfWork}. </p>
+     * Register the specified entity as managed in the specified {@code UnitOfWork}.
      * <p>
      * Registering loaded entities with their owning {@code UnitOfWork} is
      * highly recommended, since it speeds up persistence context lookup when
@@ -91,6 +90,7 @@ public abstract class AbstractSession implements Session, MetamodelProvider {
 
     /**
      * Releases the specified persistence context, detaching any entities associated with it.
+     *
      * @param uow The persistence context to release
      */
     abstract void releasePersistenceContext(UnitOfWork uow);

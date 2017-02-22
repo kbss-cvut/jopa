@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -21,12 +21,10 @@ import java.net.URI;
 import java.util.*;
 
 /**
- * This descriptor specifies subject and properties of axioms to search for in the ontology. </p>
+ * This descriptor specifies subject and properties of axioms to search for in the ontology.
  * <p>
  * Additionally, it can specify context URIs for both the descriptor and individual properties so that the underlying
  * driver knows where to look for the corresponding axioms.
- *
- * @author ledvima1
  */
 public class AxiomDescriptor {
 
@@ -55,7 +53,7 @@ public class AxiomDescriptor {
      * Adds the specified assertion to this descriptor.
      *
      * @param assertion The assertion to add
-     * @throws NullPointerException
+     * @throws NullPointerException When {@code assertion} is {@code null}
      */
     public void addAssertion(Assertion assertion) {
         Objects.requireNonNull(assertion);
@@ -63,14 +61,14 @@ public class AxiomDescriptor {
     }
 
     /**
-     * Sets context for the specified assertion. </p>
+     * Sets context for the specified assertion.
      * <p>
      * Note that the assertion has to be already present in this descriptor.
      *
      * @param assertion The property to set context for
      * @param context   Context URI
      * @throws IllegalArgumentException If there is no such assertion in this descriptor
-     * @throws NullPointerException
+     * @throws NullPointerException     When {@code assertion} is {@code null}
      */
     public void setAssertionContext(Assertion assertion, URI context) {
         Objects.requireNonNull(assertion);
@@ -90,10 +88,11 @@ public class AxiomDescriptor {
     }
 
     /**
-     * Gets context of the specified assertion. </p>
+     * Gets context of the specified assertion.
      * <p>
      * If the context was not explicitly set, the same context as the subject's is returned.
      *
+     * @param assertion Assertion for which context should be resolved
      * @return Assertion context
      */
     public URI getAssertionContext(Assertion assertion) {
@@ -106,6 +105,8 @@ public class AxiomDescriptor {
 
     /**
      * Gets unmodifiable view of the properties in this descriptor.
+     *
+     * @return Set of assertions in this descriptor
      */
     public Set<Assertion> getAssertions() {
         return Collections.unmodifiableSet(assertions);
@@ -148,11 +149,7 @@ public class AxiomDescriptor {
                 return false;
         } else if (!subjectContext.equals(other.subjectContext))
             return false;
-        if (!assertions.equals(other.assertions))
-            return false;
-        if (!assertionContexts.equals(other.assertionContexts))
-            return false;
-        return true;
+        return assertions.equals(other.assertions) && assertionContexts.equals(other.assertionContexts);
     }
 
     @Override

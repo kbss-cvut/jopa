@@ -30,6 +30,8 @@ public @interface Types {
 	/**
 	 * Denotes a member that is inferred (true) using the OWL reasoner or just
 	 * asserted (false).
+	 *
+	 * @return Whether this property is read only
 	 */
 	boolean readOnly() default false;
 }

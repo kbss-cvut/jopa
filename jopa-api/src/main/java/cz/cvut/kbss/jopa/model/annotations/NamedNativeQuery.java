@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,19 +22,25 @@ import java.lang.annotation.Target;
 /**
  * Specifies a named native SPARQL query.
  * <p>
- * Query names are scoped to the persistence unit. The NamedNativeQuery annotation can be applied to an entity or mapped superclass.
+ * Query names are scoped to the persistence unit. The NamedNativeQuery annotation can be applied to an entity or mapped
+ * superclass.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NamedNativeQuery {
 
     /**
-     * The name used to refer to the query with the {@link cz.cvut.kbss.jopa.model.EntityManager} methods that create query objects.
+     * The name used to refer to the query with the {@link cz.cvut.kbss.jopa.model.EntityManager} methods that create
+     * query objects.
+     *
+     * @return Name of the query
      */
     String name();
 
     /**
      * The SPARQL query string.
+     *
+     * @return The query
      */
     String query();
 }

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -45,14 +45,12 @@ public class PolymorphicEntityTypeResolver<T> {
 
     /**
      * Returns entity type suitable for instance loading. This entity type is
-     * <pre>
      * <ul>
-     *     <li>either the specified {@code root} in case the type axioms contain type corresponding to the root entity
-     * type,</li>
-     *     <li>or the most specific non-abstract entity type from the hierarchy of the specified root entity type
-     * present in the specified type axioms.</li>
+     * <li>either the specified {@code root} in case the type axioms contain type corresponding to the root entity
+     * type,
+     * <li>or the most specific non-abstract entity type from the hierarchy of the specified root entity type
+     * present in the specified type axioms.
      * </ul>
-     * </pre>
      *
      * @return The specified root entity type or the most specific non-abstract unique entity type
      * @throws AmbiguousEntityTypeException When multiple entity types match the specified types

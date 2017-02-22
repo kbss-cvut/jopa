@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -35,6 +35,9 @@ public interface EntityManagerFactory {
      * Create a new EntityManager with the specified Map of properties. This
      * method returns a new EntityManager instance each time it is invoked. The
      * isOpen method will return true on the returned instance.
+     *
+     * @param map properties for entity manager
+     * @return entity manager instance
      */
     EntityManager createEntityManager(Map<String, String> map);
 
@@ -97,15 +100,14 @@ public interface EntityManagerFactory {
     PersistenceUnitUtil getPersistenceUnitUtil();
 
     /**
-     * Define the query or typed query as a named query such that future query objects can be
-     * created from it using the {@code createNamedQuery} method.
-     * Any configuration of the query object (except for actual parameter binding) in effect when the named query is
-     * added is retained as part of the named query definition. This includes configuration information such as max results
-     * and result set mapping information.
+     * Define the query or typed query as a named query such that future query objects can be created from it using the
+     * {@code createNamedQuery} method. Any configuration of the query object (except for actual parameter binding) in
+     * effect when the named query is added is retained as part of the named query definition. This includes
+     * configuration information such as max results and result set mapping information.
      * <p>
-     * When the query is executed, information that can be set by means of the query APIs can be overridden.
-     * Information that is overridden does not affect the named query as registered with the entity manager factory,
-     * and thus does not affect subsequent query objects created from it by means of the {@code createNamedQuery} method.
+     * When the query is executed, information that can be set by means of the query APIs can be overridden. Information
+     * that is overridden does not affect the named query as registered with the entity manager factory, and thus does
+     * not affect subsequent query objects created from it by means of the {@code createNamedQuery} method.
      * <p>
      * If a named query of the same name has been previously defined, either statically via metadata or via this method,
      * that query definition is replaced.

@@ -21,7 +21,7 @@ public interface ObjectChangeSet {
 
     /**
      * Adds a new change record to this change set.
-     * <p/>
+     * <p>
      * If there was a change for attribute represented by the new record, it will be overwritten.
      *
      * @param record The record to add
@@ -44,6 +44,7 @@ public interface ObjectChangeSet {
 
     /**
      * Whether this change set contains an changes.
+     *
      * @return {@code true} if there are any changes in this change set, {@code false} otherwise
      */
     boolean hasChanges();
@@ -56,7 +57,9 @@ public interface ObjectChangeSet {
     void setNew(boolean isNew);
 
     /**
-     * Whether this is a new object's change set
+     * Whether this is a new object's change set.
+     *
+     * @return Whether target object is new
      */
     boolean isNew();
 

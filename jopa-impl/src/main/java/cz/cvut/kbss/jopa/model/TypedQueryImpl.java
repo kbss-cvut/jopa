@@ -281,7 +281,7 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
     }
 
     /**
-     * Sets ontology used for processing of this query. </p>
+     * Sets ontology used for processing of this query.
      *
      * @param useBackupOntology If true, the backup (central) ontology is used, otherwise the transactional ontology is
      *                          used (default)

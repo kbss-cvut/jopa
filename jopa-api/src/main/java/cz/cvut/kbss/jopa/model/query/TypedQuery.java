@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -25,9 +25,11 @@ import java.util.List;
 
 /**
  * Interface used to control the execution of typed queries.
+ *
  * @param <X> Query result type
  */
 public interface TypedQuery<X> extends Query {
+
     /**
      * Execute a SELECT query and return the query results as a typed List.
      *
@@ -51,7 +53,7 @@ public interface TypedQuery<X> extends Query {
     X getSingleResult();
 
     /**
-     * Adds URI of context against which this query will be executed. </p>
+     * Adds URI of context against which this query will be executed.
      * <p>
      * If no context was specified, the query is run against the default repository context.
      *
@@ -62,7 +64,7 @@ public interface TypedQuery<X> extends Query {
     TypedQuery<X> addContext(URI context);
 
     /**
-     * Adds URIs of contexts against which this query will be executed. </p>
+     * Adds URIs of contexts against which this query will be executed.
      * <p>
      * If no context was specified, the query is run against the default repository context.
      *

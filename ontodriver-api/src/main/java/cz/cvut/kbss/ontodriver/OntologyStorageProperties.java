@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,15 +18,17 @@ import java.net.URI;
 import java.util.Objects;
 
 /**
- * Holds properties of an ontology storage. </p>
+ * Holds properties of an ontology storage.
  * <p>
  * These properties can be used to create a DataSource representing the storage.
  */
 public class OntologyStorageProperties {
 
     /**
-     * URI of the ontology. <p> Logical URI is not required, since for example for Sesame storages there is no logical
-     * URI, there is just the physical URI of the repository and multiple contexts in it. </p>
+     * URI of the ontology.
+     * <p>
+     * Logical URI is not required, since for example for Sesame storages there is no logical
+     * URI, there is just the physical URI of the repository and multiple contexts in it.
      * <p>
      * However, OWLAPI based storages require logical URI.
      */
@@ -116,8 +118,6 @@ public class OntologyStorageProperties {
 
     /**
      * Builder class for the {@code OntologyStorageProperties}.
-     *
-     * @author kidney
      */
     public static class OntologyStoragePropertiesBuilder {
 

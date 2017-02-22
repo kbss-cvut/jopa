@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -38,7 +38,7 @@ public class EntityPropertiesUtils {
     }
 
     /**
-     * Extracts primary key from the specified {@code entity} and returns it. </p>
+     * Extracts primary key from the specified {@code entity} and returns it.
      *
      * @param entity    The entity to extract primary key from
      * @param metamodel Metamodel
@@ -143,7 +143,7 @@ public class EntityPropertiesUtils {
     }
 
     /**
-     * Transforms the specified value to URI (if possible). </p>
+     * Transforms the specified value to URI (if possible).
      *
      * @param value The value to transform
      * @return {@code URI}
@@ -157,7 +157,7 @@ public class EntityPropertiesUtils {
     }
 
     /**
-     * Gets all instance fields of the specified class, including inherited ones. </p>
+     * Gets all instance fields of the specified class, including inherited ones.
      *
      * @param cls The class to search
      * @return List of declared fields
@@ -175,7 +175,7 @@ public class EntityPropertiesUtils {
     }
 
     /**
-     * Verifies, that the primary key (identifier) of the specified instance is generated. </p>
+     * Verifies, that the primary key (identifier) of the specified instance is generated.
      * <p>
      * If not, an exception is thrown.
      *
@@ -195,14 +195,12 @@ public class EntityPropertiesUtils {
      * sense.
      * <p>
      * A field is transient if it is:
-     * <pre>
      * <ul>
-     *     <li>static</li>
-     *     <li>or final</li>
-     *     <li>or transient</li>
-     *     <li>or annotated with the {@link Transient} annotation</li>
+     * <li>static
+     * <li>or final
+     * <li>or transient
+     * <li>or annotated with the {@link Transient} annotation
      * </ul>
-     * </pre>
      *
      * @param field The field to investigate
      * @return Whether the field is transient
@@ -219,6 +217,7 @@ public class EntityPropertiesUtils {
 
     /**
      * Returns true if the specified field is static.
+     *
      * @param field The field to check
      * @return True if field is static, false otherwise
      */

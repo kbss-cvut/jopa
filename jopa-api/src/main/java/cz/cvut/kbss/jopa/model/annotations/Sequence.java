@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,27 +27,35 @@ import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 @Target(ElementType.FIELD)
 public @interface Sequence {
 
-	/**
-	 * Defines the type of the sequence.
-	 */
-	SequenceType type() default SequenceType.referenced;
+    /**
+     * Defines the type of the sequence.
+     *
+     * @return Type of sequence
+     */
+    SequenceType type() default SequenceType.referenced;
 
-	/**
-	 * URI of the class that represents the 'OWLList' concept.
-	 * 
-	 * Relevant only for REFERENCED type.
-	 */
-	String ClassOWLListIRI() default SequencesVocabulary.s_c_OWLList;
-	
-	/**
-	 * URI of the object property that represents the 'hasContents' role.
-	 * 
-	 * Relevant only for REFERENCED type.
-	 */
-	String ObjectPropertyHasContentsIRI() default SequencesVocabulary.s_p_hasContents;
+    /**
+     * URI of the class that represents the 'OWLList' concept.
+     *
+     * Relevant only for REFERENCED type.
+     *
+     * @return OWLList class IRI
+     */
+    String ClassOWLListIRI() default SequencesVocabulary.s_c_OWLList;
 
-	/**
-	 * URI of the object property that represents the 'hasNext' role.
-	 */
-	String ObjectPropertyHasNextIRI() default SequencesVocabulary.s_p_hasNext;
+    /**
+     * URI of the object property that represents the 'hasContents' role.
+     *
+     * Relevant only for REFERENCED type.
+     *
+     * @return hasContents property IRI
+     */
+    String ObjectPropertyHasContentsIRI() default SequencesVocabulary.s_p_hasContents;
+
+    /**
+     * URI of the object property that represents the 'hasNext' role.
+     *
+     * @return hasNext property IRI
+     */
+    String ObjectPropertyHasNextIRI() default SequencesVocabulary.s_p_hasNext;
 }

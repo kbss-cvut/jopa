@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -36,12 +36,15 @@ public @interface OWLObjectProperty {
 
     /**
      * (Optional) Whether the association should be lazily loaded or must be eagerly fetched.
+     *
+     * @return Whether this property is read only
      */
     FetchType fetch() default FetchType.LAZY;
 
     /**
-     * Denotes a member that is inferred (true) using the OWL reasoner or just
-     * asserted (false).
+     * Denotes a member that is inferred (true) using the OWL reasoner or just asserted (false).
+     *
+     * @return Fetch type of this property
      */
     boolean readOnly() default false;
 }

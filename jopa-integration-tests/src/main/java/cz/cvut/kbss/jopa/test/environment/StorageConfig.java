@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,8 +18,6 @@ import java.util.Map;
 
 /**
  * Persistent storage configuration.
- *
- * @author ledvima1
  */
 public abstract class StorageConfig {
 
@@ -40,7 +38,7 @@ public abstract class StorageConfig {
     }
 
     /**
-     * Creates ontology storage properties for this storage configuration. </p>
+     * Creates ontology storage properties for this storage configuration.
      * <p>
      * This method performs any necessary tasks before creating the storage properties (typically deleting the old
      * data).

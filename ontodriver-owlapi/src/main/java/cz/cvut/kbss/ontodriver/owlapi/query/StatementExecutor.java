@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -26,7 +26,7 @@ public interface StatementExecutor {
      * @param query     The query to execute
      * @param statement Statement instance representing the query
      * @return Query result
-     * @throws OwlapiDriverException
+     * @throws OwlapiDriverException When storage access error occurs.
      */
     ResultSet executeQuery(String query, Statement statement) throws OwlapiDriverException;
 
@@ -36,7 +36,7 @@ public interface StatementExecutor {
      * This query may modify the state of the ontology.
      *
      * @param update The update query to execute
-     * @throws OwlapiDriverException
+     * @throws OwlapiDriverException When storage access error occurs
      */
     void executeUpdate(String update) throws OwlapiDriverException;
 }
