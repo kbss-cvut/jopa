@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -35,15 +35,17 @@ public final class QueryTestEnvironment {
     private static final String BASE_D = "http://krizik.felk.cvut.cz/ontologies/jopa/tests/entityD_";
 
     /**
-     * Default prefixes for SPARQL. </p>
-     *
+     * Default prefixes for SPARQL.
+     * <p>
      * Currently: owl, rdf, rdfs
      */
     public static final String OWL_PREFIX = "PREFIX owl: <http://www.w3.org/2002/07/owl#>";
     public static final String RDF_PREFIX = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>";
     public static final String RDFS_PREFIX = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>";
 
-    /** owl:Thing class */
+    /**
+     * owl:Thing class
+     */
     public static final String OWL_THING = "http://www.w3.org/2002/07/owl#Thing";
 
     private static final URI NULL_CONTEXT = URI.create("http://NullContext");
@@ -57,10 +59,9 @@ public final class QueryTestEnvironment {
 
     /**
      * Generates and persists test data into the default context of the
-     * specified entity manager. </p>
+     * specified entity manager.
      *
-     * @param em
-     *            EntityManager
+     * @param em EntityManager
      */
     public static void generateTestData(EntityManager em) {
         assert em != null;
@@ -71,15 +72,13 @@ public final class QueryTestEnvironment {
     }
 
     /**
-     * Generates and persists test data into the specified contexts. </p>
-     *
+     * Generates and persists test data into the specified contexts.
+     * <p>
      * This method distributes the data approximately uniformly into all the
      * specified contexts.
      *
-     * @param em
-     *            EntityManager
-     * @param contexts
-     *            A collection of target contexts
+     * @param em       EntityManager
+     * @param contexts A collection of target contexts
      */
     public static void generateTestData(EntityManager em, Collection<URI> contexts) {
         assert em != null;
@@ -133,7 +132,7 @@ public final class QueryTestEnvironment {
     /**
      * Get all current test data.
      *
-     * @return
+     * @return Map of test data
      */
     public static Map<Class<?>, List<?>> getData() {
         return data;
@@ -142,8 +141,7 @@ public final class QueryTestEnvironment {
     /**
      * Get a list of test instances of the specified class.
      *
-     * @param cls
-     *            The class
+     * @param cls The class
      * @return List of test data of the specified class
      */
     @SuppressWarnings("unchecked")
@@ -153,10 +151,9 @@ public final class QueryTestEnvironment {
     }
 
     /**
-     * Gets all data from the specified context. </p>
+     * Gets all data from the specified context.
      *
-     * @param context
-     *            Context URI, null is permitted
+     * @param context Context URI, null is permitted
      * @return Map of all data or an empty map
      */
     public static Map<Class<?>, List<?>> getDataByContext(URI context) {
@@ -172,10 +169,8 @@ public final class QueryTestEnvironment {
     /**
      * Gets data from the specified context and of the specified type
      *
-     * @param context
-     *            Context URI, null is permitted
-     * @param cls
-     *            Data type
+     * @param context Context URI, null is permitted
+     * @param cls     Data type
      * @return List of data or an empty list
      */
     @SuppressWarnings("unchecked")

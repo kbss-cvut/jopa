@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Defines base descriptor, which is used to specify context information for entities and their fields. </p>
+ * Defines base descriptor, which is used to specify context information for entities and their fields.
  * <p>
  * The descriptor hierarchy is a classical <b>Composite</b> pattern.
  *
@@ -43,7 +43,7 @@ public abstract class Descriptor {
     }
 
     /**
-     * Gets context for this descriptor. </p>
+     * Gets context for this descriptor.
      * <p>
      * Note that the context URI may be {@code null}, meaning that the default context is referenced
      *
@@ -54,14 +54,14 @@ public abstract class Descriptor {
     }
 
     /**
-     * Gets attribute descriptors specified in this descriptor. </p>
+     * Gets attribute descriptors specified in this descriptor.
      *
      * @return Unmodifiable view of attribute descriptors
      */
     public abstract Collection<Descriptor> getAttributeDescriptors();
 
     /**
-     * Gets descriptor for the specified attribute. </p>
+     * Gets descriptor for the specified attribute.
      *
      * @param attribute Entity attribute, as specified by the application metamodel
      * @return Descriptor
@@ -70,7 +70,7 @@ public abstract class Descriptor {
     public abstract Descriptor getAttributeDescriptor(FieldSpecification<?, ?> attribute);
 
     /**
-     * Adds descriptor for the specified attribute. </p>
+     * Adds descriptor for the specified attribute.
      *
      * @param attribute  The attribute to set descriptor for
      * @param descriptor The descriptor to use
@@ -78,7 +78,7 @@ public abstract class Descriptor {
     public abstract void addAttributeDescriptor(Field attribute, Descriptor descriptor);
 
     /**
-     * Adds repository context for the specified attribute. </p>
+     * Adds repository context for the specified attribute.
      * <p>
      * This in effect means creating a descriptor for the specified field with the specified context.
      *
@@ -89,8 +89,9 @@ public abstract class Descriptor {
     public abstract void addAttributeContext(Field attribute, URI context);
 
     /**
-     * Gets all contexts present in this descriptor. </p> <p/> If any of the descriptors specifies the default context,
-     * an empty set is returned. </p>
+     * Gets all contexts present in this descriptor.
+     * <p>
+     * If any of the descriptors specifies the default context, an empty set is returned.
      * <p>
      * In case of entity descriptor this means recursively asking all of its attributes for their context.
      *

@@ -58,8 +58,8 @@ public interface Query {
     Object getSingleResult();
 
     /**
-     * Adds URI of context against which this query will be executed. </p>
-     * <p>
+     * Adds URI of context against which this query will be executed.
+     *
      * If no context was specified, the query is run against the default repository context.
      *
      * @param context Context URI
@@ -68,8 +68,8 @@ public interface Query {
     Query addContext(URI context);
 
     /**
-     * Adds URIs of contexts against which this query will be executed. </p>
-     * <p>
+     * Adds URIs of contexts against which this query will be executed.
+     *
      * If no context was specified, the query is run against the default repository context.
      *
      * @param contexts Context URIs
@@ -96,8 +96,8 @@ public interface Query {
     Query setMaxResults(int maxResult);
 
     /**
-     * The maximum number of results the query object was set to retrieve. </p>
-     * <p>
+     * The maximum number of results the query object was set to retrieve.
+     *
      * Returns Integer.MAX_VALUE if {@link #setMaxResults(int)} was not applied to the query object.
      *
      * @return maximum number of results

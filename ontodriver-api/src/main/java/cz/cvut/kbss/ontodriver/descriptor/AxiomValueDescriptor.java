@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -31,7 +31,7 @@ public class AxiomValueDescriptor extends AxiomDescriptor {
     }
 
     /**
-     * Adds a new value for the specified assertion. </p>
+     * Adds a new value for the specified assertion.
      *
      * @param assertion The assertion
      * @param value     The value to add
@@ -48,7 +48,7 @@ public class AxiomValueDescriptor extends AxiomDescriptor {
     }
 
     /**
-     * Gets values of the specified assertion held by this descriptor. </p>
+     * Gets values of the specified assertion held by this descriptor.
      *
      * @param assertion The assertion
      * @return Unmodifiable list of values or an empty list, if there are none
@@ -88,9 +88,7 @@ public class AxiomValueDescriptor extends AxiomDescriptor {
         if (getClass() != obj.getClass())
             return false;
         AxiomValueDescriptor other = (AxiomValueDescriptor) obj;
-        if (!values.equals(other.values))
-            return false;
-        return true;
+        return values.equals(other.values);
     }
 
     @Override

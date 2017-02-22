@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -25,7 +25,7 @@ import java.util.Set;
 public interface CacheManager extends Cache {
 
     /**
-     * Adds the specified object into the shared session cache. </p>
+     * Adds the specified object into the shared session cache.
      * <p>
      * If the cache already contains object with the specified primary key (and it is in the same repository context),
      * it is replaced with the one passed as argument.
@@ -37,7 +37,7 @@ public interface CacheManager extends Cache {
     void add(Object primaryKey, Object entity, URI context);
 
     /**
-     * Gets entity with the specified primary key from the cache. </p>
+     * Gets entity with the specified primary key from the cache.
      * <p>
      * The entity is searched for in the context specified by {@code entityOrigin} . Thus all three conditions - class,
      * primary key and origin must match to return a result.
@@ -56,7 +56,7 @@ public interface CacheManager extends Cache {
     void clearInferredObjects();
 
     /**
-     * Set the inferred classes for this cache manager. </p>
+     * Set the inferred classes for this cache manager.
      * <p>
      * Entities from inferred classes are special in that when anything in the ontology changes, they have to be evicted
      * from the cache, since they are reasoned and their attributes may change.

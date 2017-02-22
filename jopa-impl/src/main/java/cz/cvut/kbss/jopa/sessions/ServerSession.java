@@ -164,7 +164,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
     }
 
     /**
-     * Register the specified entity as managed in the specified {@code UnitOfWork}. </p>
+     * Register the specified entity as managed in the specified {@code UnitOfWork}.
      * <p>
      * Registering loaded entities with their owning {@code UnitOfWork} is highly recommended, since it speeds up
      * persistence context lookup when entity attributes are modified.
@@ -199,7 +199,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
     }
 
     /**
-     * Get persistence context for the specified entity. </p>
+     * Get persistence context for the specified entity.
      *
      * @param entity The entity
      * @return Persistence context of the specified entity or null, if it cannot be found

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -32,36 +32,31 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
     /**
      * Explicitly starts a transaction.
      *
-     * @throws SesameDriverException
-     *             If unable to start transaction
+     * @throws SesameDriverException If unable to start transaction
      */
     void begin() throws SesameDriverException;
 
     /**
-     * Commits the changes made since transaction beginning. </p>
+     * Commits the changes made since transaction beginning.
      *
-     * @throws SesameDriverException
-     *             If an error occurs during commit
+     * @throws SesameDriverException If an error occurs during commit
      * @see #begin()
      */
     void commit() throws SesameDriverException;
 
     /**
-     * Rolls back changes made since transaction beginning. </p>
+     * Rolls back changes made since transaction beginning.
      *
-     * @throws SesameDriverException
-     *             If an error occurs when rolling back
+     * @throws SesameDriverException If an error occurs when rolling back
      * @see #begin()
      */
     void rollback() throws SesameDriverException;
 
     /**
-     * Gets resources representing currently existing contexts in the
-     * repository.
+     * Gets resources representing currently existing contexts in the repository.
      *
      * @return List of resources
-     * @throws SesameDriverException
-     *             If repository access error occurs
+     * @throws SesameDriverException If repository access error occurs
      */
     List<Resource> getContexts() throws SesameDriverException;
 
@@ -73,55 +68,43 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
     ValueFactory getValueFactory();
 
     /**
-     * Finds statements corresponding to the specified criteria. </p>
-     *
+     * Finds statements corresponding to the specified criteria.
+     * <p>
      * Note that some of the parameters are optional
      *
-     * @param subject
-     *            Statement subject, optional
-     * @param property
-     *            Statement property, optional
-     * @param value
-     *            Statement value, optional
-     * @param includeInferred
-     *            Whether to include inferred statements as well
-     * @param contexts
-     *            Optionally specify contexts in which the search should be
-     *            performed. If not specified or if the first context is {@code null}, the default one is used
+     * @param subject         Statement subject, optional
+     * @param property        Statement property, optional
+     * @param value           Statement value, optional
+     * @param includeInferred Whether to include inferred statements as well
+     * @param contexts        Optionally specify contexts in which the search should be performed. If not specified or
+     *                        if the first context is {@code null}, the default one is used
      * @return Collection of matching statements
-     * @throws SesameDriverException
-     *             If a repository access error occurs
+     * @throws SesameDriverException If a repository access error occurs
      */
     Collection<Statement> findStatements(Resource subject, URI property, Value value,
-                                                boolean includeInferred, URI... contexts) throws SesameDriverException;
+                                         boolean includeInferred, URI... contexts) throws SesameDriverException;
 
     /**
-     * Adds the specified statements to the underlying repository. </p>
-     *
+     * Adds the specified statements to the underlying repository.
+     * <p>
      * Note that this operation is transactional and the changes are required to
      * be persistent only after successful {@link #commit()}.
      *
-     * @param statements
-     *            The statements to add
-     * @throws IllegalStateException
-     *             If transaction is not active
-     * @throws SesameDriverException
-     *             If a repository access error occurs
+     * @param statements The statements to add
+     * @throws IllegalStateException If transaction is not active
+     * @throws SesameDriverException If a repository access error occurs
      */
     void addStatements(Collection<Statement> statements) throws SesameDriverException;
 
     /**
-     * Removes the specified statements from the underlying repository. </p>
-     *
+     * Removes the specified statements from the underlying repository.
+     * <p>
      * Note that this operation is transactional and the changes are required to
      * be persistent only after successful {@link #commit()}.
      *
-     * @param statements
-     *            The statements to remove
-     * @throws IllegalStateException
-     *             If transaction is not active
-     * @throws SesameDriverException
-     *             If a repository access error occurs
+     * @param statements The statements to remove
+     * @throws IllegalStateException If transaction is not active
+     * @throws SesameDriverException If a repository access error occurs
      */
     void removeStatements(Collection<Statement> statements) throws SesameDriverException;
 }

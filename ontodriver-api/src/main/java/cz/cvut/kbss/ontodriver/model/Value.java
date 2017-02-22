@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,11 +17,9 @@ package cz.cvut.kbss.ontodriver.model;
 import java.util.Objects;
 
 /**
- * Represents assertion value. </p>
+ * Represents assertion value.
  * <p>
  * This class is a base for both property and class assertion values.
- *
- * @author ledvima1
  */
 public class Value<T> {
 
@@ -42,7 +40,7 @@ public class Value<T> {
     }
 
     /**
-     * Gets this value. </p>
+     * Gets this value.
      *
      * @return Value of the appropriate type
      */
@@ -51,7 +49,7 @@ public class Value<T> {
     }
 
     /**
-     * Gets this value as string. </p>
+     * Gets this value as string.
      *
      * @return Value as string
      */
@@ -60,7 +58,7 @@ public class Value<T> {
     }
 
     /**
-     * Returns a Null object for Value. </p>
+     * Returns a Null object for Value.
      * <p>
      * Since Value requires a non-null value, this method returns a predefined object which represents a null (empty)
      * value.

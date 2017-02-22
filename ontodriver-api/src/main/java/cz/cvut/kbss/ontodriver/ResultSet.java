@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -20,11 +20,9 @@ import java.util.NoSuchElementException;
 import java.util.Observer;
 
 /**
- * Represents a set of results of a SPARQL query. </p>
+ * Represents a set of results of a SPARQL query.
  * <p>
  * This interface declares methods for getting values from a set of results of a SPARQL query issued to an ontology.
- *
- * @author kidney
  */
 public interface ResultSet extends AutoCloseable {
 
@@ -35,17 +33,17 @@ public interface ResultSet extends AutoCloseable {
      * @return index of the column or -1 if there is no such column
      * @throws IllegalStateException If called on a closed result set
      */
-    public int findColumn(String columnLabel);
+    int findColumn(String columnLabel);
 
     /**
-     * Gets the count of available columns. </p>
+     * Gets the count of available columns.
      * <p>
      * This number corresponds to the number of result variables bound in the query.
      *
      * @return Number of columns in the result set
      * @throws IllegalStateException If called on a closed result set
      */
-    public int getColumnCount();
+    int getColumnCount();
 
     /**
      * Move the cursor to the first row.
@@ -53,7 +51,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If some other error occurs
      */
-    public void first() throws OntoDriverException;
+    void first() throws OntoDriverException;
 
     /**
      * Retrieves value from column at the specified index and returns it as a {@code boolean}.
@@ -64,7 +62,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If the {@code columnIndex} is not a valid column index, the value cannot be cast to
      *                               {@code boolean} or there occurs some other error
      */
-    public boolean getBoolean(int columnIndex) throws OntoDriverException;
+    boolean getBoolean(int columnIndex) throws OntoDriverException;
 
     /**
      * Retrieves value from column with the specified label and returns it as a {@code boolean}.
@@ -75,7 +73,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
      *                               boolean} or there occurs some other error
      */
-    public boolean getBoolean(String columnLabel) throws OntoDriverException;
+    boolean getBoolean(String columnLabel) throws OntoDriverException;
 
     /**
      * Retrieves value from column at the specified index and returns it as {@code byte}.
@@ -86,7 +84,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If the {@code columnIndex} is not a valid column index, the value cannot be cast to
      *                               {@code byte} or there occurs some other error
      */
-    public byte getByte(int columnIndex) throws OntoDriverException;
+    byte getByte(int columnIndex) throws OntoDriverException;
 
     /**
      * Retrieves value from column with the specified label and returns it as {@code byte}.
@@ -97,7 +95,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
      *                               byte} or there occurs some other error
      */
-    public byte getByte(String columnLabel) throws OntoDriverException;
+    byte getByte(String columnLabel) throws OntoDriverException;
 
     /**
      * Retrieves value from column at the specified index and returns it as {@code double}.
@@ -108,7 +106,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If the {@code columnIndex} is not a valid column index, the value cannot be cast to
      *                               {@code double} or there occurs some other error
      */
-    public double getDouble(int columnIndex) throws OntoDriverException;
+    double getDouble(int columnIndex) throws OntoDriverException;
 
     /**
      * Retrieves value from column with the specified label and returns it as {@code double}.
@@ -119,7 +117,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
      *                               double} or there occurs some other error
      */
-    public double getDouble(String columnLabel) throws OntoDriverException;
+    double getDouble(String columnLabel) throws OntoDriverException;
 
     /**
      * Retrieves value from column at the specified index and returns it as {@code float}.
@@ -130,7 +128,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If the {@code columnIndex} is not a valid column index, the value cannot be cast to
      *                               {@code float} or there occurs some other error
      */
-    public float getFloat(int columnIndex) throws OntoDriverException;
+    float getFloat(int columnIndex) throws OntoDriverException;
 
     /**
      * Retrieves value from column with the specified label and returns it as {@code float}.
@@ -141,7 +139,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
      *                               float} or there occurs some other error
      */
-    public float getFloat(String columnLabel) throws OntoDriverException;
+    float getFloat(String columnLabel) throws OntoDriverException;
 
     /**
      * Retrieves value from column at the specified index and returns it as {@code int}.
@@ -152,7 +150,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If the {@code columnIndex} is not a valid column index, the value cannot be cast to
      *                               {@code int} or there occurs some other error
      */
-    public int getInt(int columnIndex) throws OntoDriverException;
+    int getInt(int columnIndex) throws OntoDriverException;
 
     /**
      * Retrieves value from column with the specified label and returns it as {@code int}.
@@ -163,7 +161,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
      *                               int} or there occurs some other error
      */
-    public int getInt(String columnLabel) throws OntoDriverException;
+    int getInt(String columnLabel) throws OntoDriverException;
 
     /**
      * Retrieves value from column at the specified index and returns it as {@code long}.
@@ -174,7 +172,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If the {@code columnIndex} is not a valid column index, the value cannot be cast to
      *                               {@code long} or there occurs some other error
      */
-    public long getLong(int columnIndex) throws OntoDriverException;
+    long getLong(int columnIndex) throws OntoDriverException;
 
     /**
      * Retrieves value from column with the specified label and returns it as {@code long}.
@@ -185,7 +183,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
      *                               long} or there occurs some other error
      */
-    public long getLong(String columnLabel) throws OntoDriverException;
+    long getLong(String columnLabel) throws OntoDriverException;
 
     /**
      * Retrieves value from column at the specified index and returns it as {@code Object}.
@@ -196,7 +194,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If the {@code columnIndex} is not a valid column index or there occurs some other
      *                               error
      */
-    public Object getObject(int columnIndex) throws OntoDriverException;
+    Object getObject(int columnIndex) throws OntoDriverException;
 
     /**
      * Retrieves value from column with the specified label and returns it as {@code Object}.
@@ -206,40 +204,42 @@ public interface ResultSet extends AutoCloseable {
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If there is no column with the specified label or there occurs some other error
      */
-    public Object getObject(String columnLabel) throws OntoDriverException;
+    Object getObject(String columnLabel) throws OntoDriverException;
 
     /**
-     * Retrieves value from column at the specified index and returns it as an instance of the specified class. </p>
+     * Retrieves value from column at the specified index and returns it as an instance of the specified class.
      * <p>
      * The mechanism of transforming the value to the specified class is not specified, it can be merely type casting or
      * calling a constructor of the specified type.
      *
      * @param columnIndex Column index, the first column has index 0
      * @param cls         Requested class type
+     * @param <T>         Return type
      * @return Value of the column
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If the {@code columnIndex} is not a valid column index, the value cannot be cast to
      *                               the specified type or there occurs some other error
      */
-    public <T> T getObject(int columnIndex, Class<T> cls) throws OntoDriverException;
+    <T> T getObject(int columnIndex, Class<T> cls) throws OntoDriverException;
 
     /**
-     * Retrieves value from column with the specified label and returns it as an instance of the specified class. </p>
+     * Retrieves value from column with the specified label and returns it as an instance of the specified class.
      * <p>
      * The mechanism of transforming the value to the specified class is not specified, it can be merely type casting or
      * calling a constructor of the specified type.
      *
      * @param columnLabel Label of the column
      * @param cls         Requested class type
+     * @param <T>         Return type
      * @return Value of the column.
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to the
      *                               specified type or there occurs some other error
      */
-    public <T> T getObject(String columnLabel, Class<T> cls) throws OntoDriverException;
+    <T> T getObject(String columnLabel, Class<T> cls) throws OntoDriverException;
 
     /**
-     * Retrieves index of the current row. </p>
+     * Retrieves index of the current row.
      * <p>
      * The first row has index 0.
      *
@@ -247,7 +247,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If some other error occurs
      */
-    public int getRowIndex() throws OntoDriverException;
+    int getRowIndex() throws OntoDriverException;
 
     /**
      * Retrieves value of column at the specified index and returns it as {@code short}.
@@ -258,7 +258,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If the {@code columnIndex} is not a valid column index, the value cannot be cast to
      *                               {@code short} or there occurs some other error
      */
-    public short getShort(int columnIndex) throws OntoDriverException;
+    short getShort(int columnIndex) throws OntoDriverException;
 
     /**
      * Retrieves value of column with the specified label and returns it as {@code short}.
@@ -269,7 +269,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
      *                               short} or there occurs some other error
      */
-    public short getShort(String columnLabel) throws OntoDriverException;
+    short getShort(String columnLabel) throws OntoDriverException;
 
     /**
      * Retrieves the {@code Statement} that produced this {@code ResultSet} object. If this result set was generated
@@ -279,7 +279,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If some other error occurs
      */
-    public Statement getStatement() throws OntoDriverException;
+    Statement getStatement() throws OntoDriverException;
 
     /**
      * Retrieves value of column at the specified index and returns it as {@code String}.
@@ -290,7 +290,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If the {@code columnIndex} is not a valid column index, the value cannot be cast to
      *                               {@code String} or there occurs some other error
      */
-    public String getString(int columnIndex) throws OntoDriverException;
+    String getString(int columnIndex) throws OntoDriverException;
 
     /**
      * Retrieves value of column with the specified label and returns it as {@code String}.
@@ -301,7 +301,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException   If there is no column with the specified label, the value cannot be cast to {@code
      *                               String} or there occurs some other error
      */
-    public String getString(String columnLabel) throws OntoDriverException;
+    String getString(String columnLabel) throws OntoDriverException;
 
     /**
      * Returns true if the cursor is at the first row of this result set.
@@ -310,7 +310,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If some other error occurs
      */
-    public boolean isFirst() throws OntoDriverException;
+    boolean isFirst() throws OntoDriverException;
 
     /**
      * Returns true if the cursor does not point at the last row in this result set.
@@ -319,17 +319,17 @@ public interface ResultSet extends AutoCloseable {
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If some other error occurs
      */
-    public boolean hasNext() throws OntoDriverException;
+    boolean hasNext() throws OntoDriverException;
 
     /**
-     * Move the cursor to the last row in this results set. </p>
+     * Move the cursor to the last row in this results set.
      * <p>
      * Note that since the result set may be asynchronously updated, the last row does not have to always be the same.
      *
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If some other error occurs
      */
-    public void last() throws OntoDriverException;
+    void last() throws OntoDriverException;
 
     /**
      * Move the cursor one row forward.
@@ -338,7 +338,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws IllegalStateException  If called on a closed result set
      * @throws OntoDriverException    If some other error occurs
      */
-    public void next() throws OntoDriverException;
+    void next() throws OntoDriverException;
 
     /**
      * Move the cursor one row backwards.
@@ -346,10 +346,10 @@ public interface ResultSet extends AutoCloseable {
      * @throws IllegalStateException If called on a closed result set or the cursor is at the first row
      * @throws OntoDriverException   If some other error occurs
      */
-    public void previous() throws OntoDriverException;
+    void previous() throws OntoDriverException;
 
     /**
-     * Registers the specified {@code Observer} at this result set. </p>
+     * Registers the specified {@code Observer} at this result set.
      * <p>
      * The observer is notified whenever new results of ontology reasoning are available.
      *
@@ -357,7 +357,7 @@ public interface ResultSet extends AutoCloseable {
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If or some other error occurs
      */
-    public void registerObserver(Observer observer) throws OntoDriverException;
+    void registerObserver(Observer observer) throws OntoDriverException;
 
     /**
      * Move the cursor a relative number of rows, either positive or negative.
@@ -366,10 +366,10 @@ public interface ResultSet extends AutoCloseable {
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If the {@code rows} number is not valid or some other error occurs
      */
-    public void relative(int rows) throws OntoDriverException;
+    void relative(int rows) throws OntoDriverException;
 
     /**
-     * Move the cursor to the specified row index. </p>
+     * Move the cursor to the specified row index.
      * <p>
      * The first row has index 0.
      *
@@ -377,15 +377,15 @@ public interface ResultSet extends AutoCloseable {
      * @throws IllegalStateException If called on a closed result set
      * @throws OntoDriverException   If the index is not valid row index or some other error occurs
      */
-    public void setRowIndex(int rowIndex) throws OntoDriverException;
+    void setRowIndex(int rowIndex) throws OntoDriverException;
 
     /**
-     * Closes this result set releasing any sub-resources it holds. </p>
+     * Closes this result set releasing any sub-resources it holds.
      * <p>
      * After closing the result set is not usable any more and calling methods on it (except {@code close} and {@code
-     * isOpen}) will result in {@code OntoDriverException}. </p>
+     * isOpen}) will result in {@code OntoDriverException}.
      * <p>
-     * Calling {@code close} on already closed resource does nothing. </p>
+     * Calling {@code close} on already closed resource does nothing.
      * <p>
      * Calling this method also results in immediate disconnection of all registered observers and cancellation of any
      * running reasoning associated with this result set.
@@ -393,12 +393,12 @@ public interface ResultSet extends AutoCloseable {
      * @throws OntoDriverException If an ontology access error occurs.
      */
     @Override
-    public void close() throws OntoDriverException;
+    void close() throws OntoDriverException;
 
     /**
-     * Retrieves status of this result set. </p>
+     * Retrieves status of this result set.
      *
      * @return {@code true} if the resource is open, {@code false} otherwise
      */
-    public boolean isOpen();
+    boolean isOpen();
 }

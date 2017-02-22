@@ -133,6 +133,7 @@ public class JavaTransformer {
     /**
      * Generates only vocabulary of the loaded ontology.
      *
+     * @param ontology   Ontology from which the vocabulary should be generated
      * @param context    Integrity constraints context, if null is supplied, the whole ontology is interpreted as
      *                   integrity constraints.
      * @param targetDir  Directory into which the vocabulary file will be generated

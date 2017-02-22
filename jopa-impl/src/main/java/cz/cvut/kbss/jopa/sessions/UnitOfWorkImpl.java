@@ -315,7 +315,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Gets current state of the specified entity. </p>
+     * Gets current state of the specified entity.
      * <p>
      * Note that since no repository is specified we can only determine if the entity is managed or removed. Therefore
      * if the case is different this method returns State#NOT_MANAGED.
@@ -839,6 +839,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     /**
      * Returns {@code true} if this UoW is currently committing changes.
+     *
+     * @return Whether this UoW is in the commit phase
      */
     public boolean isInCommit() {
         return inCommit;
@@ -976,7 +978,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Create and set indirect collection on the specified entity field.</p>
+     * Create and set indirect collection on the specified entity field.
      * <p>
      * If the specified field is of Collection type and it is not already an indirect collection, create new one and set
      * it as the value of the specified field on the specified entity.

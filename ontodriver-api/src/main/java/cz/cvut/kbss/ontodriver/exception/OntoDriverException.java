@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,29 +18,25 @@ import java.io.Serializable;
 
 /**
  * Describes a general purpose exception that can be thrown by the OntoDriver.
- * </p>
- * 
+ * <p>
  * This exception is likely to wrap another more specific exception (the cause).
- * 
- * @author kidney
- * 
  */
 public class OntoDriverException extends Exception implements Serializable {
 
-	private static final long serialVersionUID = 5057709405049286475L;
+    private static final long serialVersionUID = 5057709405049286475L;
 
-	public OntoDriverException() {
-	}
+    public OntoDriverException() {
+    }
 
-	public OntoDriverException(String message) {
-		super(message);
-	}
+    public OntoDriverException(String message) {
+        super(message);
+    }
 
-	public OntoDriverException(Throwable cause) {
-		super(cause);
-	}
+    public OntoDriverException(Throwable cause) {
+        super(cause);
+    }
 
-	public OntoDriverException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public OntoDriverException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

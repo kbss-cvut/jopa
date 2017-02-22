@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,7 +17,10 @@ package cz.cvut.kbss.jopa.model;
 import java.util.Map;
 
 /**
- * @see JPA 2.0
+ * Interface implemented by the persistence provider.
+ * <p>
+ * It is invoked by the container in Java EE environments and by the Persistence class in Java SE environments to create
+ * an EntityManagerFactory and/or to cause schema generation to occur.
  */
 public interface PersistenceProvider {
 

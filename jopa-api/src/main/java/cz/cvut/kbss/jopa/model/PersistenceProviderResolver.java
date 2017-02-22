@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,29 +19,27 @@ import java.util.List;
 /**
  * Determine the list of persistence providers available in the runtime
  * environment.
- * 
+ * <p>
  * Implementations must be thread-safe.
- * 
+ * <p>
  * Note that the getPersistenceProviders method can potentially be called many
  * times: it is recommended that the implementation of this method make use of
  * caching.
+ *
+ * @see PersistenceProvider
  */
 public interface PersistenceProviderResolver {
 
-	/**
-	 * Returns a list of the PersdistenceProvider implementations available in
-	 * the runtime environment.
-	 * 
-	 * @return list of the persistence providers available in the environment
-	 * 
-	 * @see JPA 2.0
-	 */
-	List<PersistenceProvider> getPersistenceProviders();
+    /**
+     * Returns a list of the PersistenceProvider implementations available in
+     * the runtime environment.
+     *
+     * @return list of the persistence providers available in the environment
+     */
+    List<PersistenceProvider> getPersistenceProviders();
 
-	/**
-	 * Clear cache of providers
-	 * 
-	 * @see JPA 2.0
-	 */
-	void clearCachedProviders();
+    /**
+     * Clear cache of providers
+     */
+    void clearCachedProviders();
 }

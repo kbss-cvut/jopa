@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,7 +30,7 @@ import java.util.List;
 public interface EntityManager {
 
     /**
-     * Make an instance managed and persistent. </p>
+     * Make an instance managed and persistent.
      * <p>
      * The entity is persisted into the default context.
      *
@@ -47,7 +47,7 @@ public interface EntityManager {
     void persist(final Object entity);
 
     /**
-     * Make an instance managed and persistent. </p>
+     * Make an instance managed and persistent.
      * <p>
      * The {@code descriptor} represents repository and context into which the entity and its fields should be
      * persisted.
@@ -65,7 +65,7 @@ public interface EntityManager {
     void persist(final Object entity, final Descriptor descriptor);
 
     /**
-     * Merge the state of the given entity into the current persistence context. </p>
+     * Merge the state of the given entity into the current persistence context.
      * <p>
      * The entity is merged into the default repository context.
      *
@@ -101,8 +101,10 @@ public interface EntityManager {
     void remove(final Object entity);
 
     /**
-     * Find by primary key. </p> <p> Search for an entity of the specified class and primary key. If the entity instance
-     * is contained in the persistence context, it is returned from there. </p>
+     * Find by primary key.
+     * <p>
+     * Search for an entity of the specified class and primary key. If the entity instance is contained in the
+     * persistence context, it is returned from there.
      *
      * @param entityClass Entity class
      * @param primaryKey  Primary key
@@ -114,8 +116,10 @@ public interface EntityManager {
     <T> T find(final Class<T> entityClass, final Object primaryKey);
 
     /**
-     * Find by primary key. </p> <p> Search for an entity of the specified class and primary key. If the entity instance
-     * is contained in the persistence context, it is returned from there. </p>
+     * Find by primary key.
+     * <p>
+     * Search for an entity of the specified class and primary key. If the entity instance is contained in the
+     * persistence context, it is returned from there.
      * <p>
      * The {@code repository} parameter represents repository and context in which the entity should be looked for.
      *
@@ -130,7 +134,7 @@ public interface EntityManager {
      * @see #getContexts()
      */
     <T> T find(final Class<T> entityClass, final Object primaryKey,
-                      final Descriptor descriptor);
+               final Descriptor descriptor);
 
     // TODO JPA 2.0 find with properties
 
@@ -197,7 +201,7 @@ public interface EntityManager {
     // TODO JPA 2.0 lock with lock mode and properties
 
     /**
-     * Refresh the state of the instance from the data source, overwriting changes made to the entity, if any. </p>
+     * Refresh the state of the instance from the data source, overwriting changes made to the entity, if any.
      *
      * @param entity The entity instance to refresh
      * @throws IllegalArgumentException     if not an entity or entity is not managed
@@ -236,7 +240,7 @@ public interface EntityManager {
     boolean contains(Object entity);
 
     /**
-     * Checks consistency of the specified context. </p>
+     * Checks consistency of the specified context.
      * <p>
      * The context URI can be {@code null}, which indicates that consistency of the whole repository should be
      * verified.
@@ -286,13 +290,15 @@ public interface EntityManager {
     /**
      * Create an instance of TypedQuery for executing a SPARQL named query.
      * <p>
-     * The select list of the query must contain only a single item, which must be assignable to the type specified by the resultClass argument.
+     * The select list of the query must contain only a single item, which must be assignable to the type specified by
+     * the resultClass argument.
      *
-     * @param name       the name of a query defined in metadata
+     * @param name        the name of a query defined in metadata
      * @param resultClass the type of the query result
      * @return the new query instance
      * @throws IllegalArgumentException if a query has not been defined with the given name or if the query string is
-     *                                  found to be invalid or if the query result is found to not be assignable to the specified type
+     *                                  found to be invalid or if the query result is found to not be assignable to the
+     *                                  specified type
      */
     <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass);
 
@@ -350,6 +356,8 @@ public interface EntityManager {
     /**
      * Return the underlying provider object for the EntityManager, if available. The result of this method is
      * implementation specific.
+     *
+     * @return underlying provider object for EntityManager
      */
     Object getDelegate();
 
@@ -380,6 +388,9 @@ public interface EntityManager {
     EntityTransaction getTransaction();
 
     /**
+     * Return the entity manager factory for the entity manager.
+     *
+     * @return EntityManagerFactory instance
      * @since JPA 2.0
      */
     EntityManagerFactory getEntityManagerFactory();
@@ -396,7 +407,7 @@ public interface EntityManager {
 //	public String getLabel(final String iri);
 
     /**
-     * Returns a list of repository contexts available to this entity manager. </p>
+     * Returns a list of repository contexts available to this entity manager.
      *
      * @return List of repository context URIs
      */
@@ -404,17 +415,24 @@ public interface EntityManager {
     List<URI> getContexts();
 
     // TODO JPA 2.0 public CriteriaBuilder getCriteriaBuilder();
+
+    /**
+     * Return an instance of Metamodel interface for access to the metamodel of the persistence unit.
+     *
+     * @return Metamodel instance
+     */
     Metamodel getMetamodel();
 
     /**
-     * Sets the transactional ontology as the one which will be used when processing SPARQL queries. </p> <p> This
-     * setting may have significant impact on query results, since changes made during transaction are propagated to the
-     * transactional ontology, which is private to this persistence context, before commit. The ontology can even be in
-     * an inconsistent state. </p>
+     * Sets the transactional ontology as the one which will be used when processing SPARQL queries.
+     * <p>
+     * This setting may have significant impact on query results, since changes made during transaction are propagated
+     * to the transactional ontology, which is private to this persistence context, before commit. The ontology can even
+     * be in an inconsistent state.
      * <p>
      * This is the default setting, unless changed by properties passed on persistence initialization.
      *
-     * @see #setUseBackupOntologyForQueryProcessing()
+     * @see #setUseBackupOntologyForQueryProcessing
      */
     @NonJPA
     void setUseTransactionalOntologyForQueryProcessing();
@@ -429,7 +447,7 @@ public interface EntityManager {
     boolean useTransactionalOntologyForQueryProcessing();
 
     /**
-     * Sets the backup ontology as the one which will be used for processing of SPARQL queries. </p>
+     * Sets the backup ontology as the one which will be used for processing of SPARQL queries.
      * <p>
      * The backup ontology represents the ontology after the last commit done by any transaction and therefore can
      * produce different results from those produced by the transactional ontology, which is private to this persistence
@@ -441,7 +459,7 @@ public interface EntityManager {
     void setUseBackupOntologyForQueryProcessing();
 
     /**
-     * Returns true if the backup (central) ontology should be used for SPARQL query processing. </p>
+     * Returns true if the backup (central) ontology should be used for SPARQL query processing.
      *
      * @return {@code true} if the central ontology will be used, {@code false} otherwise
      * @see #setUseBackupOntologyForQueryProcessing()

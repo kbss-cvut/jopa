@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,14 +17,13 @@ package cz.cvut.kbss.ontodriver.model;
 import java.net.URI;
 
 /**
- * Base assertion axiom class. </p> <p> Defines just whether the assertion uses inferred values and existing types of
- * assertions. </p>
+ * Base assertion axiom class.
+ * <p>
+ * Defines just whether the assertion uses inferred values and existing types of assertions.
  * <p>
  * The usage of types may seem as not being very object-oriented, but since the hierarchy is fixed (there aren't any
  * other kinds of assertions in ontologies) and since the subclasses essentially don't contain any behavior, we can use
  * this way.
- *
- * @author ledvima1
  */
 public abstract class Assertion extends NamedResource {
 
@@ -90,9 +89,7 @@ public abstract class Assertion extends NamedResource {
         if (getClass() != obj.getClass())
             return false;
         Assertion other = (Assertion) obj;
-        if (inferred != other.inferred)
-            return false;
-        return true;
+        return inferred == other.inferred;
     }
 
     @Override
@@ -101,7 +98,7 @@ public abstract class Assertion extends NamedResource {
     }
 
     /**
-     * Creates new class assertion. </p>
+     * Creates new class assertion.
      * <p>
      * Class assertions use the rdf:type identifier.
      *
@@ -113,7 +110,7 @@ public abstract class Assertion extends NamedResource {
     }
 
     /**
-     * Creates a property assertion without specifying the assertion identifier. </p>
+     * Creates a property assertion without specifying the assertion identifier.
      * <p>
      * Note that the returned instances are all equals as long as their inferred status is the same.
      *
@@ -125,7 +122,7 @@ public abstract class Assertion extends NamedResource {
     }
 
     /**
-     * Creates new property assertion without specifying what kind of property it is. </p>
+     * Creates new property assertion without specifying what kind of property it is.
      *
      * @param assertionIdentifier Assertion identifier
      * @param isInferred          Whether the assertion uses inferred values

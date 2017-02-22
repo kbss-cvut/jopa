@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -31,15 +31,13 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * Manages the second level cache shared by all persistence contexts. </p>
+ * Manages the second level cache shared by all persistence contexts.
  * <p>
  * This implementation of CacheManager uses cache-wide locking, i. e. the whole cache is locked when an entity is being
  * put in it, no matter that only one context is affected by the change.
  * <p>
- * This cache is sweeped regularly by a dedicated thread, which removes all entries whose time-to-live (TTL) has
+ * This cache is swept regularly by a dedicated thread, which removes all entries whose time-to-live (TTL) has
  * expired.
- *
- * @author kidney
  */
 public class TtlCacheManager implements CacheManager {
 
@@ -282,8 +280,6 @@ public class TtlCacheManager implements CacheManager {
 
     /**
      * Sweeps the second level cache and removes entities with no more time to live.
-     *
-     * @author kidney
      */
     private final class CacheSweeper implements Runnable {
 

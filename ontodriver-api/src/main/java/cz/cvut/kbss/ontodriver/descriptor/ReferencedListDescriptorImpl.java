@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -21,12 +21,10 @@ import java.net.URI;
 import java.util.Objects;
 
 /**
- * Represents singly-linked referenced list. </p>
+ * Represents singly-linked referenced list.
  * <p>
  * In referenced list each node has content linked to it by a separate property. In addition, each node points to its
  * successor in the sequence (with the exception of the last node, which has no successor).
- *
- * @author ledvima1
  */
 public class ReferencedListDescriptorImpl implements ReferencedListDescriptor {
 
@@ -87,11 +85,7 @@ public class ReferencedListDescriptorImpl implements ReferencedListDescriptor {
         if (getClass() != obj.getClass())
             return false;
         ReferencedListDescriptorImpl other = (ReferencedListDescriptorImpl) obj;
-        if (!descriptor.equals(other.descriptor))
-            return false;
-        if (!nodeContent.equals(other.nodeContent))
-            return false;
-        return true;
+        return descriptor.equals(other.descriptor) && nodeContent.equals(other.nodeContent);
     }
 
     @Override

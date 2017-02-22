@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -21,6 +21,12 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * Represents a persistence context.
+ * <p>
+ * All interactions with objects managed in a persistence context are tracked by its corresponding UoW and on commit,
+ * the UoW propagates them into the changes into the storage.
+ */
 public interface UnitOfWork extends Session {
 
     /**
@@ -75,34 +81,33 @@ public interface UnitOfWork extends Session {
     boolean isObjectManaged(Object entity);
 
     /**
-     * Checks whether context specified by {@code context} is consistent. </p>
+     * Checks whether context specified by {@code context} is consistent.
      * <p>
      * Can be {@code null}, indicating that consistency of the whole repository
      * should be checked.
      *
      * @param context Context URI
-     * @return {@code true} if the context is consistent, {@code false}
-     * otherwise
+     * @return {@code true} if the context is consistent, {@code false} otherwise
      * @throws OWLPersistenceException If an ontology access error occurs
      */
     boolean isConsistent(URI context);
 
     /**
-     * Loads value of the specified field for the specified entity. </p>
+     * Loads value of the specified field for the specified entity.
      * <p>
      * The value is set on the entity.
      *
      * @param entity The entity to load field for
      * @param field  The field to load
      * @throws NullPointerException    If {@code entity} or {@code field} is {@code null}
-     * @throws OWLPersistenceException If an error occurs, this may be e. g. that the field is not
-     *                                 present on the entity, an ontology access error occurred etc.
+     * @throws OWLPersistenceException If an error occurs, this may be e. g. that the field is not present on the
+     *                                 entity, an ontology access error occurred etc.
      */
     <T> void loadEntityField(T entity, Field field);
 
     /**
      * Merges the state of the given entity into the current persistence
-     * context. </p>
+     * context.
      * <p>
      * The {@code descriptor} argument specified the ontology contexts into
      * which the detached entity and its fields belong and should be merged.
@@ -115,7 +120,7 @@ public interface UnitOfWork extends Session {
     <T> T mergeDetached(T entity, Descriptor descriptor);
 
     /**
-     * Retrieves object with the specified primary key. </p>
+     * Retrieves object with the specified primary key.
      * <p>
      * The object as well as its fields are looked for in contexts specified by
      * the descriptor. The result is then cast to the specified type.
@@ -123,12 +128,10 @@ public interface UnitOfWork extends Session {
      * @param cls        The type of the returned object
      * @param primaryKey Primary key
      * @param descriptor Entity descriptor
-     * @return The retrieved object or {@code null} if there is no object with
-     * the specified primary key in the specified repository
-     * @throws NullPointerException    If {@code cls}, {@code primaryKey} or {@code repository} is
-     *                                 {@code null}
-     * @throws OWLPersistenceException If {@code repository} is not valid or if an error during
-     *                                 object loading occurs
+     * @return The retrieved object or {@code null} if there is no object with the specified primary key in the
+     * specified repository
+     * @throws NullPointerException    If {@code cls}, {@code primaryKey} or {@code repository} is {@code null}
+     * @throws OWLPersistenceException If {@code repository} is not valid or if an error during object loading occurs
      */
     <T> T readObject(Class<T> cls, Object primaryKey, Descriptor descriptor);
 
@@ -145,7 +148,7 @@ public interface UnitOfWork extends Session {
     Object registerExistingObject(Object object, Descriptor descriptor);
 
     /**
-     * Registers the specified new object in this Unit of Work. </p>
+     * Registers the specified new object in this Unit of Work.
      * <p>
      * The object will be persisted into the context specified by
      * {@code descriptor}.
@@ -153,8 +156,8 @@ public interface UnitOfWork extends Session {
      * @param object     The object to register
      * @param descriptor Entity descriptor
      * @throws NullPointerException    If {@code entity} or {@code context} is {@code null}
-     * @throws OWLPersistenceException If {@code context} is not a valid context URI or if an error
-     *                                 during registration occurs
+     * @throws OWLPersistenceException If {@code context} is not a valid context URI or if an error during registration
+     *                                 occurs
      */
     void registerNewObject(Object object, Descriptor descriptor);
 
@@ -174,7 +177,7 @@ public interface UnitOfWork extends Session {
     void release();
 
     /**
-     * Reverts any changes to the given object.</p>
+     * Reverts any changes to the given object.
      * <p>
      * This method modifies the specified object. The object has to be managed
      * by this persistence context.

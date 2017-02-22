@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,30 +27,34 @@ import java.util.List;
 public interface Connection extends AutoCloseable, Wrapper {
 
     /**
-     * Whether this connection is active. </p>
+     * Whether this connection is active.
+     *
+     * @return Active status of this connection
      */
-    public boolean isOpen();
+    boolean isOpen();
 
     /**
-     * Commits this connection. </p> <p/> This effectively makes persistent any changes made since the last
-     * commit/rollback or since this connection was opened. </p>
+     * Commits this connection.
+     * <p>
+     * This effectively makes persistent any changes made since the last commit/rollback or since this connection was
+     * opened.
      * <p>
      * If this connection is in auto-commit mode, calling this method has no effect.
      *
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    public void commit() throws OntoDriverException;
+    void commit() throws OntoDriverException;
 
     /**
-     * Rolls back any changes made in the current transaction. </p>
+     * Rolls back any changes made in the current transaction.
      * <p>
      * If this connection is in auto-commit mode, calling this method has no effect.
      *
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    public void rollback() throws OntoDriverException;
+    void rollback() throws OntoDriverException;
 
     /**
      * Sets this connection's auto-commit mode to the specified state.
@@ -58,7 +62,7 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @param autoCommit The new auto-commit state
      * @throws IllegalStateException If called on a closed connection
      */
-    public void setAutoCommit(boolean autoCommit);
+    void setAutoCommit(boolean autoCommit);
 
     /**
      * Returns this connection's auto-commit mode.
@@ -66,7 +70,7 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @return {@code true} if this connection is in auto-commit mode, {@code false} otherwise
      * @throws IllegalStateException If called on a closed connection
      */
-    public boolean isAutoCommit();
+    boolean isAutoCommit();
 
     /**
      * Creates a new SPARQL statement.
@@ -75,20 +79,20 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    public Statement createStatement() throws OntoDriverException;
+    Statement createStatement() throws OntoDriverException;
 
     /**
-     * Creates and returns a new prepared SPARQL statement. </p>
+     * Creates and returns a new prepared SPARQL statement.
      *
      * @param sparql The query to prepare
      * @return {@code PreparedStatement}
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    public PreparedStatement prepareStatement(String sparql) throws OntoDriverException;
+    PreparedStatement prepareStatement(String sparql) throws OntoDriverException;
 
     /**
-     * Verifies consistency of ontology context with the specified URI. </p>
+     * Verifies consistency of ontology context with the specified URI
      * <p>
      * Note that {@code null} argument means checking consistency of the whole repository.
      *
@@ -97,10 +101,10 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    public boolean isConsistent(URI context) throws OntoDriverException;
+    boolean isConsistent(URI context) throws OntoDriverException;
 
     /**
-     * Gets a set of currently available contexts in the underlying repository. </p>
+     * Gets a set of currently available contexts in the underlying repository.
      * <p>
      * Note that the default context is not included in the result.
      *
@@ -108,10 +112,10 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    public List<URI> getContexts() throws OntoDriverException;
+    List<URI> getContexts() throws OntoDriverException;
 
     /**
-     * Checks whether the storage contains the specified axiom. </p>
+     * Checks whether the storage contains the specified axiom.
      * <p>
      * The context optionally specifies context in which to look for the axiom.
      *
@@ -121,17 +125,17 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException;
+    boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException;
 
     /**
-     * Finds axioms with the corresponding subject and properties. </p>
+     * Finds axioms with the corresponding subject and properties.
      *
      * @param descriptor Loading descriptor specifies subject, properties to load and possible contexts to work with
      * @return Collection of axioms matching the specified criteria
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException;
+    Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException;
 
     /**
      * Persists new individual and its property values specified by the descriptor.
@@ -140,10 +144,10 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    public void persist(AxiomValueDescriptor descriptor) throws OntoDriverException;
+    void persist(AxiomValueDescriptor descriptor) throws OntoDriverException;
 
     /**
-     * Generates a new unique identifier based on the specified type. </p>
+     * Generates a new unique identifier based on the specified type.
      * <p>
      * The identifier is required to be unique in the whole repository.
      *
@@ -151,10 +155,10 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @return Unique identifier
      * @throws OntoDriverException If an ontology access error occurs
      */
-    public URI generateIdentifier(URI classUri) throws OntoDriverException;
+    URI generateIdentifier(URI classUri) throws OntoDriverException;
 
     /**
-     * Persists the values specified by this descriptor, removing existing property values from the ontology. </p>
+     * Persists the values specified by this descriptor, removing existing property values from the ontology.
      * <p>
      * This method removes original values of properties specified in the descriptor and persists new values specified
      * therein.
@@ -163,11 +167,12 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    public void update(AxiomValueDescriptor descriptor) throws OntoDriverException;
+    void update(AxiomValueDescriptor descriptor) throws OntoDriverException;
 
     /**
-     * Removes all axioms related to subject specified by the descriptor. </p> <p/> The descriptor may also specify
-     * contexts from which property assertion axioms should be removed. </p>
+     * Removes all axioms related to subject specified by the descriptor.
+     * <p>
+     * The descriptor may also specify contexts from which property assertion axioms should be removed.
      * <p>
      * Note that this method will cause also removal of axioms in which the {@link NamedResource} specified by the
      * argument stands as value.
@@ -176,26 +181,26 @@ public interface Connection extends AutoCloseable, Wrapper {
      * @throws OntoDriverException   If an ontology access error occurs
      * @throws IllegalStateException If called on a closed connection
      */
-    public void remove(AxiomDescriptor descriptor) throws OntoDriverException;
+    void remove(AxiomDescriptor descriptor) throws OntoDriverException;
 
     /**
      * Gets ontology lists handler.
      *
      * @return Lists handler
      */
-    public Lists lists();
+    Lists lists();
 
     /**
      * Gets types handler.
      *
      * @return Types handler
      */
-    public Types types();
+    Types types();
 
     /**
      * Gets handler for unmapped properties.
      *
      * @return Properties handler
      */
-    public Properties properties();
+    Properties properties();
 }

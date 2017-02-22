@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,19 +24,17 @@ import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 public interface ObjectOntologyMapper {
 
     /**
-     * Checks whether the storage contains individual with the specified
-     * identifier and of the specified type. </p>
+     * Checks whether the storage contains individual with the specified identifier and of the specified type.
      *
      * @param cls        Class representing the individual type
      * @param primaryKey Identifier
      * @param descriptor Descriptor, can specify context
-     * @return {@code true} if the ontology contains such individual,
-     * {@code false} otherwise
+     * @return {@code true} if the ontology contains such individual, {@code false} otherwise
      */
     <T> boolean containsEntity(Class<T> cls, URI primaryKey, Descriptor descriptor);
 
     /**
-     * Loads and reconstructs the entity from the ontology. </p>
+     * Loads and reconstructs the entity from the ontology.
      *
      * @param loadingParameters Entity loading parameters
      * @return Reconstructed entity or {@code null} if there is none such
@@ -44,7 +42,7 @@ public interface ObjectOntologyMapper {
     <T> T loadEntity(LoadingParameters<T> loadingParameters);
 
     /**
-     * Loads entity field value and sets it on the specified entity. </p>
+     * Loads entity field value and sets it on the specified entity.
      *
      * @param entity     The entity on which the field value will be set
      * @param field      The field to load
@@ -53,7 +51,7 @@ public interface ObjectOntologyMapper {
     <T> void loadFieldValue(T entity, Field field, Descriptor descriptor);
 
     /**
-     * Persists the specified entity into the underlying ontology. </p>
+     * Persists the specified entity into the underlying ontology.
      *
      * @param primaryKey Primary key of the persisted entity, possibly {@code null}
      * @param entity     The entity to persist
@@ -71,15 +69,14 @@ public interface ObjectOntologyMapper {
     <T> void removeEntity(URI primaryKey, Class<T> cls, Descriptor descriptor);
 
     /**
-     * Checks that there are no pending changes in the mapper. </p>
+     * Checks that there are no pending changes in the mapper.
      *
      * @throws UnpersistedChangeException Thrown when there are unpersisted changes
      */
     void checkForUnpersistedChanges();
 
     /**
-     * Sets value of property represented by the specified field to the field's
-     * value.
+     * Sets value of property represented by the specified field to the field's value.
      *
      * @param entity     Entity containing the field
      * @param field      The field to update
