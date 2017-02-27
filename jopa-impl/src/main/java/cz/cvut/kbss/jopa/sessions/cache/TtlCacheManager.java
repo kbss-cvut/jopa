@@ -223,7 +223,7 @@ public class TtlCacheManager implements CacheManager {
 
     @Override
     public void evict(Class<?> cls) {
-        Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
+        Objects.requireNonNull(cls);
 
         acquireWriteLock();
         try {

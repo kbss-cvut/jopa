@@ -99,7 +99,7 @@ JOPA examples can be found in a separate repository at [https://github.com/kbss-
 A simplistic demo of JOPA ([https://github.com/kbss-cvut/jopa-examples/tree/master/eswc2016](https://github.com/kbss-cvut/jopa-examples/tree/master/eswc2016)) is running at [http://onto.fel.cvut.cz/eswc2016](http://onto.fel.cvut.cz/eswc2016).
 
 A more mature project using JOPA as its persistence provider can be found at [https://github.com/kbss-cvut/reporting-tool](https://github.com/kbss-cvut/reporting-tool).
-It is a safety occurrence reporting tool developed for the aviation industry as part of the INBAS project ([https://www.inbas.cz/](https://www.inbas.cz/)).
+It is a safety occurrence reporting tool developed for the aviation industry as part of the INBAS project ([https://www.inbas.cz](https://www.inbas.cz)).
 A live demo of it is running at [https://www.inbas.cz/reporting-tool-public](https://www.inbas.cz/reporting-tool-public).
 
 Note that JOPA requires Java 8.

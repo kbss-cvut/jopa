@@ -46,14 +46,12 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
     private int maxResults;
 
     public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
-                          final ConnectionWrapper connection,
-                          MetamodelProvider metamodelProvider) {
+                          final ConnectionWrapper connection, MetamodelProvider metamodelProvider) {
         this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
         this.resultType = Objects.requireNonNull(resultType, ErrorUtils.constructNPXMessage("resultType"));
-        this.connection = Objects.requireNonNull(connection,
-                ErrorUtils.constructNPXMessage("connection"));
-        this.metamodelProvider = Objects.requireNonNull(metamodelProvider,
-                ErrorUtils.constructNPXMessage("metamodelProvider"));
+        this.connection = Objects.requireNonNull(connection, ErrorUtils.constructNPXMessage("connection"));
+        this.metamodelProvider = Objects
+                .requireNonNull(metamodelProvider, ErrorUtils.constructNPXMessage("metamodelProvider"));
         this.contexts = new HashSet<>();
         this.maxResults = Integer.MAX_VALUE;
     }
@@ -262,14 +260,14 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
 
     @Override
     public TypedQuery<X> addContext(URI context) {
-        Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
+        Objects.requireNonNull(context);
         contexts.add(context);
         return this;
     }
 
     @Override
     public TypedQuery<X> addContexts(Collection<URI> contexts) {
-        Objects.requireNonNull(contexts, ErrorUtils.constructNPXMessage("contexts"));
+        Objects.requireNonNull(contexts);
         this.contexts.addAll(contexts);
         return this;
     }
