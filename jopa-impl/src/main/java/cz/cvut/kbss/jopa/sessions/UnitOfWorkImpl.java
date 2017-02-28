@@ -79,7 +79,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private final CacheManager cacheManager;
 
     public UnitOfWorkImpl(AbstractSession parent) {
-        this.parent = Objects.requireNonNull(parent, ErrorUtils.constructNPXMessage("parent"));
+        this.parent = Objects.requireNonNull(parent);
         this.cloneMapping = createMap();
         this.cloneToOriginals = createMap();
         this.repoMap = new RepositoryMap();
