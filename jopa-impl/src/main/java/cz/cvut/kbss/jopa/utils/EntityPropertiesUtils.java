@@ -66,11 +66,11 @@ public class EntityPropertiesUtils {
      * Sets value of the specified field.
      *
      * @param field    Field to set value on
-     * @param instance Target instance (may be null for static fields)
-     * @param value    The value to set
+     * @param instance Target instance (may be {@code null} for static fields)
+     * @param value    The value to set (may be {@code null})
      */
     public static void setFieldValue(Field field, Object instance, Object value) {
-        Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
+        Objects.requireNonNull(field);
         if (!field.isAccessible()) {
             field.setAccessible(true);
         }

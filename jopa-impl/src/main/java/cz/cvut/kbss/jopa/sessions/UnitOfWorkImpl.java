@@ -987,11 +987,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @param field  The field to set
      * @throws IllegalArgumentException Reflection
      */
-    public void setIndirectCollectionIfPresent(Object entity, Field field) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-        Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
+    private void setIndirectCollectionIfPresent(Object entity, Field field) {
+        assert entity != null;
+        assert field != null;
 
-        Object value = EntityPropertiesUtils.getFieldValue(field, entity);
+        final Object value = EntityPropertiesUtils.getFieldValue(field, entity);
         if (value == null || value instanceof IndirectCollection) {
             return;
         }
