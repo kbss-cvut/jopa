@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,8 +24,6 @@ import org.openrdf.query.TupleQueryResult;
 
 import java.net.URI;
 import java.util.Objects;
-
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
 
 public class SesameStatement implements Statement {
 
@@ -83,7 +81,7 @@ public class SesameStatement implements Statement {
     }
 
     private void validateQueryParams(String sparql) {
-        Objects.requireNonNull(sparql, npxMessage("sparql"));
+        Objects.requireNonNull(sparql);
         if (sparql.isEmpty()) {
             throw new IllegalArgumentException("Query string cannot be empty.");
         }

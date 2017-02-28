@@ -6,8 +6,6 @@
     - [x] Mapped superclass
     - [x] Single inheritance
     - [ ] Multiple inheritance
-- [ ] Publish stable builds in Maven central
-- [ ] Publish javadocs on kbss
 - [ ] Benchmark comparison with Empire and AliBaba
 - [ ] Add support for IC validation disabling on entity load
     - Some sort of loading modes should be added (similar to Lock modes in JPA)

@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.9.3 - February 28,2017
+- Fixed issue in which second level cache was being bypassed by instances loaded from repository.
+- Create default collection instance (currently `ArrayList`, `HashSet`) when unable to clone the specified instance.
+- Minor performance improvements.
+
 ## 0.9.2 - February 18, 2017
 - Internal entity lifecycle callbacks support (Lifecycle callback methods declared directly in entity classes).
 

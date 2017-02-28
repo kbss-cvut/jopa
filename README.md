@@ -1,22 +1,22 @@
 # JOPA - Java OWL Persistence API
 
-JOPA is a Java OWL persistence API aimed at efficient programatic access to OWL2 ontologies in Java. The system is based
+JOPA is a Java OWL persistence framework aimed at efficient programmatic access to OWL2 ontologies in Java. The system is based
 on integrity constraints [1] in OWL that JOPA uses to establish the contract between a JOPA-enabled Java application and
-an OWL ontology. he system architecture is similar to JPA 2.1, see [2].
+an OWL ontology. The system architecture and API is similar to JPA 2.1, see [2].
 
 ### Main Features
 
-* Object-ontological mapping based on integrity constraints,
+* Object-ontological mapping (OOM) based on integrity constraints,
 * Explicit access to inferred knowledge,
-* Access to unmapped properties and individual's types
-* Transactions
-* Separate storage access layer
+* Access to unmapped properties and individual's types,
+* Transactions,
+* Separate storage access layer (currently Sesame and OWLAPI drivers available).
 
 #### Object-ontological mapping based on integrity constraints
 
 Similarly to ORM, OOM enables to map ontological constructs to constructs of an object-oriented programming language and vice versa.
 
-More specifically, OOM in JOPA maps (we are using JLS terminology):
+More specifically, OOM in JOPA maps (using the JLS [3] terminology):
 
 | Ontology   | OO Language    |
 | ---------- | -------------- |
@@ -24,7 +24,7 @@ More specifically, OOM in JOPA maps (we are using JLS terminology):
 | Object property | Reference type member |
 | Data property | Primitive type member (+ String, Date) |
 | Annotation property | Reference or primitive type member |
-| Class assertions | Reference type instance + @Types record |
+| Class assertions | Reference type instance or @Types record |
 
 All this means that individuals belonging to an OWL class can be retrieved as instances of a (Java) class.
 
@@ -44,11 +44,11 @@ cannot be directly modified/removed. Therefore, it would make no sense to remove
 
 #### Access to unmapped properties and individual's types
 
-OOM is not meant to completely capture the ontological model. It wouldn't even make much sense. One of the main features
+OOM is not meant to completely capture the ontological model. It would not even make much sense. One of the main features
 of JOPA is its ability to work with knowledge which is not part of the object model. This is done using members annotated
 with `@Types` and `@Properties`. `@Types` field contains all OWL classes whose instance the particular individual represented by
-an object is. `@Properties` contains values of properties not mapped by object model. This way, the application gets (although limited)
-access to for example newly added property values, without the need to adjust object model and recompile.
+an object is. `@Properties` field contains values of properties not mapped by object model. This way, the application gets (although limited)
+access to unmapped property values (e.g. values of newly added properties), without the need to adjust the object model and recompile.
 
 #### Transactions
 
@@ -62,8 +62,8 @@ Also, the current version of Sesame OntoDriver is not able to include pending ch
 #### Separate storage access layer
 
 Similarly to JPA and JDBC driver, JOPA sits on top of an OntoDriver instance, which provides access to the underlying storage.
-There are two main reasons for such split - firstly, it decouples storage-specific API usage from the more generic OOM core.
-Secondly, it enables the application to switch underlying storage with as little as 2-3 lines of configuration code. Nothing else
+There are two main reasons for such split - first, it decouples storage-specific API usage from the more generic OOM core.
+Second, it enables the application to switch the underlying storage with as little as 2-3 lines of configuration code. Nothing else
 needs to be modified.
 
 ### Not Supported, yet
@@ -76,18 +76,19 @@ As for referential integrity, this for example means that removing an instance t
 not be possible. Such feature is vital for object-oriented application, but not compatible with the open-world nature of ontologies.
 Design possibilities and their implications are currently being studied.
 
-Other missing/planned stuff can be found in the TODO file.
+Other missing/planned stuff can be found in `TODO.md`.
 
 ## Modules
 
 The whole framework consists of several modules:
 
-* _JOPA API_ - definition of the JOPA API, similar to JPA
-* _OntoDriver API_ - API of the storage access layer
-* _JOPA Implementation_ - persistence provider implementation
-* _OntoDriver Sesame_ - OntoDriver implementation for Sesame-accessed storages
-* _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files
-* _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see Example01)
+* _JOPA API_ - definition of the JOPA API, similar to JPA,
+* _OntoDriver API_ - API of the storage access layer,
+* _JOPA Implementation_ - persistence provider implementation,
+* _OntoDriver Sesame_ - OntoDriver implementation for Sesame-accessed storages,
+* _OntoDriver OWLAPI_ - OntoDriver implementation for OWLAPI-accessed files,
+* _OWL2Java_ - generates JOPA entities based on integrity constraints in input ontology (see Example01),
+* _JOPA Maven plugin_ - Maven plugin for object model generation (using OWL2Java).
 
 Other modules represent integration tests and various utilities. Jena OntoDriver is planned as future work.
   
@@ -98,29 +99,33 @@ JOPA examples can be found in a separate repository at [https://github.com/kbss-
 A simplistic demo of JOPA ([https://github.com/kbss-cvut/jopa-examples/tree/master/eswc2016](https://github.com/kbss-cvut/jopa-examples/tree/master/eswc2016)) is running at [http://onto.fel.cvut.cz/eswc2016](http://onto.fel.cvut.cz/eswc2016).
 
 A more mature project using JOPA as its persistence provider can be found at [https://github.com/kbss-cvut/reporting-tool](https://github.com/kbss-cvut/reporting-tool).
-It is a safety occurrence reporting tool developed for the aviation industry. A live demo of it is running at [https://www.inbas.cz/reporting-tool-public](https://www.inbas.cz/reporting-tool-public).
+It is a safety occurrence reporting tool developed for the aviation industry as part of the INBAS project ([https://www.inbas.cz](https://www.inbas.cz)).
+A live demo of it is running at [https://www.inbas.cz/reporting-tool-public](https://www.inbas.cz/reporting-tool-public).
 
 Note that JOPA requires Java 8.
 
 ## Getting JOPA
 
-There are two ways to get JOPA for your project:
+There are two ways of getting JOPA for your project:
 
 * Clone repository/download zip and build it with Maven,
 * Use a Maven dependency from the [Maven central repository](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22cz.cvut.kbss.jopa%22).
 
 ## More Info
 
-More information about JOPA can be found for example in articles [3], [4] and at [https://kbss.felk.cvut.cz/web/portal/jopa](https://kbss.felk.cvut.cz/web/portal/jopa).
+More information about JOPA can be found for example in articles [4], [5] and at [https://kbss.felk.cvut.cz/web/portal/jopa](https://kbss.felk.cvut.cz/web/portal/jopa).
 
 JOPA build status and code metrics can be found at:
 
-* KBSS Jenkins [https://kbss.felk.cvut.cz/jenkins](https://kbss.felk.cvut.cz/jenkins)
-* KBSS SonarQube [https://kbss.felk.cvut.cz/sonarqube](https://kbss.felk.cvut.cz/sonarqube)
+* KBSS Jenkins [https://kbss.felk.cvut.cz/jenkins](https://kbss.felk.cvut.cz/jenkins),
+* KBSS SonarQube [https://kbss.felk.cvut.cz/sonarqube](https://kbss.felk.cvut.cz/sonarqube).
+
+Javadoc of the latest stable version is available at [https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html](https://kbss.felk.cvut.cz/jenkins/job/jopa-stable/javadoc/index.html?overview-summary.html).
 
 ## References
   
 * [1] J. Tao and E. Sirin, J. Bao, D. L. McGuinness, Integrity Constraints in OWL, The Twenty-Fourth AAAI Conference on Artiﬁcial Intelligence, 2010, available online at [http://www.aaai.org/ocs/index.php/AAAI/AAAI10/paper/view/1931/2229](http://www.aaai.org/ocs/index.php/AAAI/AAAI10/paper/view/1931/2229)
 * [2] JSR 338 [http://jcp.org/en/jsr/detail?id=338](http://jcp.org/en/jsr/detail?id=338)
-* [3] P. Křemen and Z. Kouba: Ontology-Driven Information System Design. IEEE Transactions on Systems, Man, and Cybernetics: Part C, 42(3):334–344, May 2012 [http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6011704&tag=1](http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6011704&tag=1)
-* [4] M. Ledvinka and P. Křemen: JOPA: Accessing Ontologies in an Object-oriented Way. In Proceedings of the 17th International Conference on Enterprise Information Systems. Porto: SciTePress - Science and Technology Publications, 2015, p. 212-222. ISBN 978-989-758-096-0. [http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=p/CdcFwtlFM=&t=1](http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=p/CdcFwtlFM=&t=1)
+* [3] The Java Language Specification, Java SE 8 Edition [https://docs.oracle.com/javase/specs/jls/se8/html/index.html](https://docs.oracle.com/javase/specs/jls/se8/html/index.html)
+* [4] P. Křemen and Z. Kouba: Ontology-Driven Information System Design. IEEE Transactions on Systems, Man, and Cybernetics: Part C, 42(3):334–344, May 2012 [http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6011704&tag=1](http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6011704&tag=1)
+* [5] M. Ledvinka and P. Křemen: JOPA: Accessing Ontologies in an Object-oriented Way. In Proceedings of the 17th International Conference on Enterprise Information Systems. Porto: SciTePress - Science and Technology Publications, 2015, p. 212-222. ISBN 978-989-758-096-0. [http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=p/CdcFwtlFM=&t=1](http://www.scitepress.org/DigitalLibrary/PublicationsDetail.aspx?ID=p/CdcFwtlFM=&t=1)

@@ -79,7 +79,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private final CacheManager cacheManager;
 
     public UnitOfWorkImpl(AbstractSession parent) {
-        this.parent = Objects.requireNonNull(parent, ErrorUtils.constructNPXMessage("parent"));
+        this.parent = Objects.requireNonNull(parent);
         this.cloneMapping = createMap();
         this.cloneToOriginals = createMap();
         this.repoMap = new RepositoryMap();
@@ -226,7 +226,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     public boolean contains(Object entity) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+        Objects.requireNonNull(entity);
 
         return isObjectManaged(entity);
     }
@@ -324,7 +324,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @return State of the entity
      */
     public State getState(Object entity) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+        Objects.requireNonNull(entity);
 
         if (getDeletedObjects().containsKey(entity)) {
             return State.REMOVED;
@@ -493,7 +493,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @return boolean
      */
     public boolean isObjectManaged(Object entity) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+        Objects.requireNonNull(entity);
 
         return (cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity));
     }
@@ -671,7 +671,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public <T> void revertObject(T object) {
-        Objects.requireNonNull(object, ErrorUtils.constructNPXMessage("object"));
+        Objects.requireNonNull(object);
 
         if (!isObjectManaged(object) && !getDeletedObjects().containsKey(object)) {
             throw new IllegalArgumentException(
@@ -987,11 +987,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @param field  The field to set
      * @throws IllegalArgumentException Reflection
      */
-    public void setIndirectCollectionIfPresent(Object entity, Field field) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-        Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
+    private void setIndirectCollectionIfPresent(Object entity, Field field) {
+        assert entity != null;
+        assert field != null;
 
-        Object value = EntityPropertiesUtils.getFieldValue(field, entity);
+        final Object value = EntityPropertiesUtils.getFieldValue(field, entity);
         if (value == null || value instanceof IndirectCollection) {
             return;
         }

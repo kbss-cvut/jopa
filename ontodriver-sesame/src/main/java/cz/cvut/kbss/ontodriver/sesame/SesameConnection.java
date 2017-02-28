@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -131,7 +131,7 @@ class SesameConnection implements Connection {
     @Override
     public PreparedStatement prepareStatement(String sparql) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(sparql, npxMessage("sparql"));
+        Objects.requireNonNull(sparql);
         if (sparql.isEmpty()) {
             throw new IllegalArgumentException("The value for prepared statement cannot be empty.");
         }
@@ -153,7 +153,7 @@ class SesameConnection implements Connection {
     @Override
     public URI generateIdentifier(URI classUri) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(classUri, npxMessage("classUri"));
+        Objects.requireNonNull(classUri);
         try {
             return adapter.generateIdentifier(classUri);
         } catch (IdentifierGenerationException e) {
@@ -171,7 +171,7 @@ class SesameConnection implements Connection {
     @Override
     public Collection<Axiom<?>> find(AxiomDescriptor descriptor) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(descriptor, npxMessage("descriptor"));
+        Objects.requireNonNull(descriptor);
         try {
             return adapter.find(descriptor);
         } catch (RuntimeException e) {
@@ -182,7 +182,7 @@ class SesameConnection implements Connection {
     @Override
     public void persist(AxiomValueDescriptor descriptor) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(descriptor, npxMessage("descriptor"));
+        Objects.requireNonNull(descriptor);
         try {
             adapter.persist(descriptor);
             commitIfAuto();
@@ -194,7 +194,7 @@ class SesameConnection implements Connection {
     @Override
     public void update(AxiomValueDescriptor descriptor) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(descriptor, npxMessage("descriptor"));
+        Objects.requireNonNull(descriptor);
         try {
             adapter.update(descriptor);
             commitIfAuto();
@@ -206,7 +206,7 @@ class SesameConnection implements Connection {
     @Override
     public void remove(AxiomDescriptor descriptor) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(descriptor, npxMessage("descriptor"));
+        Objects.requireNonNull(descriptor);
         try {
             adapter.remove(descriptor);
             commitIfAuto();

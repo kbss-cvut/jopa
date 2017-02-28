@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -20,7 +20,6 @@ import cz.cvut.kbss.jopa.sessions.ChangeManager;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,11 +102,9 @@ public class ChangeManagerImpl implements ChangeManager {
     }
 
     public boolean calculateChanges(ObjectChangeSet changeSet) throws IllegalAccessException,
-                                                                      IllegalArgumentException,
-                                                                      OWLInferredAttributeModifiedException {
-        Objects.requireNonNull(changeSet, ErrorUtils.constructNPXMessage("changeSet"));
-
-        return calculateChangesInternal(changeSet);
+            IllegalArgumentException,
+            OWLInferredAttributeModifiedException {
+        return calculateChangesInternal(Objects.requireNonNull(changeSet));
     }
 
     /**
@@ -116,9 +113,6 @@ public class ChangeManagerImpl implements ChangeManager {
      *
      * @param changeSet The change set where change records will be put in. It also contains reference to the clone and
      *                  original object.
-     * @throws IllegalArgumentException
-     * @throws IllegalAccessException
-     * @throws OWLInferredAttributeModifiedException
      */
     private boolean calculateChangesInternal(ObjectChangeSet changeSet)
             throws IllegalArgumentException, IllegalAccessException {

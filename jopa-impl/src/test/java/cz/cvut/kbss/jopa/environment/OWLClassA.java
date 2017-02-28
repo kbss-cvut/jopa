@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,90 +14,86 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.model.annotations.*;
+
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.Set;
 
-import cz.cvut.kbss.jopa.model.annotations.FetchType;
-import cz.cvut.kbss.jopa.model.annotations.Id;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
-import cz.cvut.kbss.jopa.model.annotations.Types;
-
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")
+@OWLClass(iri = Vocabulary.c_OwlClassA)
 public class OWLClassA {
 
-	private static final String TYPES_FIELD = "types";
-	private static final String STR_ATT_FIELD = "stringAttribute";
+    private static final String TYPES_FIELD = "types";
+    private static final String STR_ATT_FIELD = "stringAttribute";
 
-	@Types(fetchType = FetchType.EAGER)
-	private Set<String> types;
+    @Types(fetchType = FetchType.EAGER)
+    private Set<String> types;
 
-	@Id
-	private URI uri;
+    @Id
+    private URI uri;
 
-	@OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute")
-	private String stringAttribute;
+    @OWLDataProperty(iri = Vocabulary.p_a_stringAttribute)
+    private String stringAttribute;
 
-	public OWLClassA() {
-	}
+    public OWLClassA() {
+    }
 
-	public OWLClassA(URI uri) {
-		this.uri = uri;
-	}
+    public OWLClassA(URI uri) {
+        this.uri = uri;
+    }
 
-	/**
-	 * @param uri
-	 *            the uri to set
-	 */
-	public void setUri(URI uri) {
-		this.uri = uri;
-	}
+    /**
+     * @param uri
+     *            the uri to set
+     */
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
 
-	/**
-	 * @return the uri
-	 */
-	public URI getUri() {
-		return uri;
-	}
+    /**
+     * @return the uri
+     */
+    public URI getUri() {
+        return uri;
+    }
 
-	public void setStringAttribute(String stringAttribute) {
-		this.stringAttribute = stringAttribute;
-	}
+    public void setStringAttribute(String stringAttribute) {
+        this.stringAttribute = stringAttribute;
+    }
 
-	public String getStringAttribute() {
-		return stringAttribute;
-	}
+    public String getStringAttribute() {
+        return stringAttribute;
+    }
 
-	public void setTypes(Set<String> types) {
-		this.types = types;
-	}
+    public void setTypes(Set<String> types) {
+        this.types = types;
+    }
 
-	public Set<String> getTypes() {
-		return types;
-	}
+    public Set<String> getTypes() {
+        return types;
+    }
 
-	public static String getClassIri() {
-		return OWLClassA.class.getAnnotation(OWLClass.class).iri();
-	}
+    public static String getClassIri() {
+        return OWLClassA.class.getAnnotation(OWLClass.class).iri();
+    }
 
-	public static Field getStrAttField() throws NoSuchFieldException,
-			SecurityException {
-		return OWLClassA.class.getDeclaredField(STR_ATT_FIELD);
-	}
+    public static Field getStrAttField() throws NoSuchFieldException,
+            SecurityException {
+        return OWLClassA.class.getDeclaredField(STR_ATT_FIELD);
+    }
 
-	public static Field getTypesField() throws NoSuchFieldException,
-			SecurityException {
-		return OWLClassA.class.getDeclaredField(TYPES_FIELD);
-	}
+    public static Field getTypesField() throws NoSuchFieldException,
+            SecurityException {
+        return OWLClassA.class.getDeclaredField(TYPES_FIELD);
+    }
 
-	@Override
-	public String toString() {
-		String out = "OWLClassA: uri = " + uri;
-		out += ", stringAttribute = " + stringAttribute;
-		if (types != null) {
-			out += ", types = {" + types.toString() + "}";
-		}
-		return out;
-	}
+    @Override
+    public String toString() {
+        String out = "OWLClassA: uri = " + uri;
+        out += ", stringAttribute = " + stringAttribute;
+        if (types != null) {
+            out += ", types = {" + types.toString() + "}";
+        }
+        return out;
+    }
 }

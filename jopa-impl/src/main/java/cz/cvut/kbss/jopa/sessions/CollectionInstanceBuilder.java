@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -41,6 +41,9 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     private static final Class<?> singletonSetClass = Collections.singleton(null).getClass();
     private static final Class<?> arrayAsListClass = Arrays.asList(new Object()).getClass();
 
+    private static final Class<? extends List> DEFAULT_LIST_CLASS = ArrayList.class;
+    private static final Class<? extends Set> DEFAULT_SET_CLASS = HashSet.class;
+
     CollectionInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
         super(builder, uow);
         this.populates = true;
@@ -61,56 +64,20 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         assert (collection instanceof Collection);
         Collection<?> container = (Collection<?>) collection;
         if (container instanceof IndirectCollection<?>) {
-            container = (Collection<?>) ((IndirectCollection<?>) container)
-                    .getReferencedCollection();
+            container = (Collection<?>) ((IndirectCollection<?>) container).getReferencedCollection();
+        }
+        if (Collections.EMPTY_LIST == container) {
+            return Collections.EMPTY_LIST;
+        }
+        if (Collections.EMPTY_SET == container) {
+            return Collections.EMPTY_SET;
         }
         Collection<?> clone = cloneUsingDefaultConstructor(cloneOwner, field, container, repository);
         if (clone == null) {
-            if (Collections.EMPTY_LIST == container) {
-                return Collections.EMPTY_LIST;
-            }
-            if (Collections.EMPTY_SET == container) {
-                return Collections.EMPTY_SET;
-            }
-            Constructor<?> c;
-            Object element = container.iterator().next();
-            Object[] params = new Object[1];
-            if (!CloneBuilderImpl.isImmutable(element.getClass())) {
-                element = builder.buildClone(element, repository);
-                if (element instanceof Collection || element instanceof Map) {
-                    element = builder.createIndirectCollection(element, cloneOwner, field);
-                }
-            }
-            params[0] = element;
-            if (singletonListClass.isInstance(container)) {
-                c = getFirstDeclaredConstructorFor(singletonListClass);
-            } else if (singletonSetClass.isInstance(container)) {
-                c = getFirstDeclaredConstructorFor(singletonSetClass);
-            } else if (arrayAsListClass.isInstance(container)) {
-                final List arrayList = new ArrayList<>(container.size());
-                cloneCollectionContent(cloneOwner, field, container, arrayList, repository);
-                c = getFirstDeclaredConstructorFor(ArrayList.class);
-                params[0] = arrayList;
-            } else {
-                throw new OWLPersistenceException("Encountered unsupported type of collection: "
-                        + container.getClass());
-            }
-            try {
-                if (!c.isAccessible()) {
-                    c.setAccessible(true);
-                }
-                clone = (Collection<?>) c.newInstance(params);
-            } catch (InstantiationException | IllegalArgumentException | InvocationTargetException e) {
-                throw new OWLPersistenceException(e);
-            } catch (IllegalAccessException e) {
-                logConstructorAccessException(c, e);
-                try {
-                    clone = (Collection<?>) AccessController
-                            .doPrivileged(new PrivilegedInstanceCreator(c));
-                } catch (PrivilegedActionException ex) {
-                    throw new OWLPersistenceException(ex);
-                }
-            }
+            clone = buildInstanceOfSpecialCollection(cloneOwner, field, repository, container);
+        }
+        if (clone == null) {
+            clone = buildDefaultCollectionInstance(cloneOwner, field, repository, container);
         }
         clone = (Collection<?>) builder.createIndirectCollection(clone, cloneOwner, field);
         return clone;
@@ -194,6 +161,71 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             }
             tg.add(clone);
         }
+    }
+
+    private Collection<?> buildInstanceOfSpecialCollection(Object cloneOwner, Field field, Descriptor repository,
+                                                           Collection<?> container) {
+        Collection<?> clone;
+        Constructor<?> c;
+        Object[] params = new Object[1];
+        if (arrayAsListClass.isInstance(container)) {
+            final List<?> arrayList = new ArrayList<>(container.size());
+            cloneCollectionContent(cloneOwner, field, container, arrayList, repository);
+            c = getFirstDeclaredConstructorFor(ArrayList.class);
+            params[0] = arrayList;
+        } else {
+            if (singletonListClass.isInstance(container)) {
+                c = getFirstDeclaredConstructorFor(singletonListClass);
+            } else if (singletonSetClass.isInstance(container)) {
+                c = getFirstDeclaredConstructorFor(singletonSetClass);
+            } else {
+                return null;
+            }
+            Object element = container.iterator().next();
+            if (!CloneBuilderImpl.isImmutable(element.getClass())) {
+                element = builder.buildClone(element, repository);
+                if (element instanceof Collection || element instanceof Map) {
+                    element = builder.createIndirectCollection(element, cloneOwner, field);
+                }
+            }
+            params[0] = element;
+        }
+        try {
+            if (!c.isAccessible()) {
+                c.setAccessible(true);
+            }
+            clone = (Collection<?>) c.newInstance(params);
+        } catch (InstantiationException | IllegalArgumentException | InvocationTargetException e) {
+            throw new OWLPersistenceException(e);
+        } catch (IllegalAccessException e) {
+            logConstructorAccessException(c, e);
+            try {
+                clone = (Collection<?>) AccessController.doPrivileged(new PrivilegedInstanceCreator(c));
+            } catch (PrivilegedActionException ex) {
+                throw new OWLPersistenceException(ex);
+            }
+        }
+        return clone;
+    }
+
+    private Collection<?> buildDefaultCollectionInstance(Object cloneOwner, Field field, Descriptor repository,
+                                                         Collection<?> container) {
+        LOG.trace("Unable to find matching collection constructor. Creating default collection.");
+        final Collection<?> clone;
+        try {
+            if (container instanceof List) {
+                clone = DEFAULT_LIST_CLASS.newInstance();
+            } else if (container instanceof Set) {
+                clone = DEFAULT_SET_CLASS.newInstance();
+            } else {
+                throw new OWLPersistenceException(
+                        "Cannot clone unsupported collection instance of type " + container.getClass() + ".");
+            }
+            cloneCollectionContent(cloneOwner, field, container, clone, repository);
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new OWLPersistenceException(e);
+        }
+        return clone;
     }
 
     @Override

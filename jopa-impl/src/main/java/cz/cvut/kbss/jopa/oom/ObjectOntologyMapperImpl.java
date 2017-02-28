@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -108,10 +108,16 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     private <T> T loadEntityInternal(LoadingParameters<T> loadingParameters) {
         final EntityTypeImpl<T> et = getEntityType(loadingParameters.getEntityType());
+        final T result;
         if (et.hasSubtypes()) {
-            return twoStepInstanceLoader.loadEntity(loadingParameters);
+            result = twoStepInstanceLoader.loadEntity(loadingParameters);
+        } else {
+            result = defaultInstanceLoader.loadEntity(loadingParameters);
         }
-        return defaultInstanceLoader.loadEntity(loadingParameters);
+        if (result != null) {
+            cache.add(loadingParameters.getIdentifier(), result, loadingParameters.getDescriptor().getContext());
+        }
+        return result;
     }
 
     @Override

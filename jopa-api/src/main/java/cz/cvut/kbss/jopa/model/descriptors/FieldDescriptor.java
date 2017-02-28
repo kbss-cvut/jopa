@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.model.descriptors;
 
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
-import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -26,23 +25,18 @@ import java.util.Set;
 
 /**
  * Describes a singular data property or a plural data, object or annotation property field.
- *
- * @author ledvima1
  */
 public class FieldDescriptor extends Descriptor {
 
     private final Field field;
 
     public FieldDescriptor(Field attribute) {
-        super();
-        Objects.requireNonNull(attribute, ErrorUtils.constructNPXMessage("attribute"));
-        this.field = attribute;
+        this.field = Objects.requireNonNull(attribute);
     }
 
     public FieldDescriptor(URI context, Field attribute) {
         super(context);
-        Objects.requireNonNull(attribute, ErrorUtils.constructNPXMessage("attribute"));
-        this.field = attribute;
+        this.field = Objects.requireNonNull(attribute);
     }
 
     @Override

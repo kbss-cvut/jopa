@@ -16,14 +16,20 @@ package cz.cvut.kbss.jopa.utils;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.Transient;
-import cz.cvut.kbss.jopa.model.metamodel.*;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
+import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import cz.cvut.kbss.ontodriver.exception.UnassignableIdentifierException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Utility class for entity properties.
@@ -58,8 +64,8 @@ public class EntityPropertiesUtils {
      * Sets value of the specified field.
      *
      * @param field    Field to set value on
-     * @param instance Target instance (may be null for static fields)
-     * @param value    The value to set
+     * @param instance Target instance (may be {@code null} for static fields)
+     * @param value    The value to set (may be {@code null})
      */
     public static void setFieldValue(Field field, Object instance, Object value) {
         Objects.requireNonNull(field);
@@ -151,9 +157,7 @@ public class EntityPropertiesUtils {
      * @throws IllegalArgumentException If {@code value} cannot be transformed to URI
      */
     public static URI getValueAsURI(Object value) {
-        Objects.requireNonNull(value, ErrorUtils.constructNPXMessage("value"));
-
-        return IdentifierTransformer.valueAsUri(value);
+        return IdentifierTransformer.valueAsUri(Objects.requireNonNull(value));
     }
 
     /**

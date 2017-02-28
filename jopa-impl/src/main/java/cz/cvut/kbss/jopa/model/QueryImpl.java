@@ -243,14 +243,14 @@ public class QueryImpl implements Query {
 
     @Override
     public Query addContext(URI context) {
-        Objects.requireNonNull(context, ErrorUtils.constructNPXMessage("context"));
+        Objects.requireNonNull(context);
         contexts.add(context);
         return this;
     }
 
     @Override
     public Query addContexts(Collection<URI> contexts) {
-        Objects.requireNonNull(contexts, ErrorUtils.constructNPXMessage("contexts"));
+        Objects.requireNonNull(contexts);
         this.contexts.addAll(contexts);
         return this;
     }

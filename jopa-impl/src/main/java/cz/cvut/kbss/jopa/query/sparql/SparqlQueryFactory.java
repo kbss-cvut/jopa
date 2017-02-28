@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -43,7 +43,7 @@ public class SparqlQueryFactory implements QueryFactory {
 
     @Override
     public Query createNativeQuery(String sparql) {
-        Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
+        Objects.requireNonNull(sparql);
 
         final QueryImpl q = new QueryImpl(queryParser.parseQuery(sparql), connection);
         q.setUseBackupOntology(uow.useBackupOntologyForQueryProcessing());
@@ -63,7 +63,7 @@ public class SparqlQueryFactory implements QueryFactory {
 
     @Override
     public Query createQuery(String query) {
-        Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
+        Objects.requireNonNull(query);
 
         // We do not support any more abstract syntax, yet
         return createNativeQuery(query);
