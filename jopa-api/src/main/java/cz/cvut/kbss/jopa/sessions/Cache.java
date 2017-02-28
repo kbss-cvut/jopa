@@ -22,8 +22,6 @@ import java.net.URI;
  * returns false.
  * <p>
  * Taken from JPA 2.
- *
- * @author kidney
  */
 public interface Cache {
 

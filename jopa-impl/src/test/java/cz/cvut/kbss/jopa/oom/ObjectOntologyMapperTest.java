@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,10 +14,7 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassR;
-import cz.cvut.kbss.jopa.environment.OWLClassS;
-import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
@@ -30,6 +27,7 @@ import cz.cvut.kbss.jopa.oom.exceptions.UnpersistedChangeException;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.Lists;
 import cz.cvut.kbss.ontodriver.Types;
@@ -109,12 +107,12 @@ public class ObjectOntologyMapperTest {
         MockitoAnnotations.initMocks(this);
         when(uowMock.getMetamodel()).thenReturn(metamodelMock);
         when(uowMock.getLiveObjectCache()).thenReturn(cacheMock);
+        when(uowMock.getConfiguration()).thenReturn(new Configuration(Collections.emptyMap()));
         this.loadingParameters = new LoadingParameters<>(OWLClassA.class, ENTITY_PK, aDescriptor);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
         this.etAMock = mocks.forOwlClassA().entityType();
-        when(descriptorFactoryMock.createForEntityLoading(loadingParameters, mocks.forOwlClassA().entityType()))
-                .thenReturn(axiomDescriptor);
+        when(descriptorFactoryMock.createForEntityLoading(loadingParameters, etAMock)).thenReturn(axiomDescriptor);
         when(
                 descriptorFactoryMock.createForFieldLoading(ENTITY_PK, OWLClassA.getTypesField(),
                         aDescriptor, mocks.forOwlClassA().entityType())).thenReturn(axiomDescriptor);
@@ -133,10 +131,12 @@ public class ObjectOntologyMapperTest {
 
     private Collection<Axiom<?>> getAxiomsForEntityA() {
         final List<Axiom<?>> res = new ArrayList<>();
-        final Axiom<?> clsAssertion = mock(Axiom.class);
-        res.add(clsAssertion);
-        final Axiom<?> strAttAssertion = mock(Axiom.class);
-        res.add(strAttAssertion);
+        final NamedResource identifier = NamedResource.create(ENTITY_PK);
+        res.add(new AxiomImpl<>(identifier, Assertion.createClassAssertion(false),
+                new Value<Object>(NamedResource.create(Vocabulary.c_OwlClassA))));
+        res.add(new AxiomImpl<>(identifier,
+                Assertion.createDataPropertyAssertion(URI.create(Vocabulary.p_a_stringAttribute), false),
+                new Value<>("stringAttribute")));
         return res;
     }
 
@@ -399,5 +399,51 @@ public class ObjectOntologyMapperTest {
         assertSame(entity, result);
         verify(cacheMock).get(OWLClassR.class, ENTITY_PK, null);
         verify(connectionMock, never()).find(any(AxiomDescriptor.class));
+    }
+
+    @Test
+    public void loadEntityPutsItIntoSecondLevelCache() throws Exception {
+        final Collection<Axiom<?>> axiomsForA = getAxiomsForEntityA();
+        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(axiomsForA);
+        final OWLClassA result = mapper.loadEntity(loadingParameters);
+        assertNotNull(result);
+        verify(cacheMock).add(ENTITY_PK, result, null);
+    }
+
+    @Test
+    public void loadEntityPutsIntoSecondLevelCacheThenEntityAndEntitiesItReferences() throws Exception {
+        final Collection<Axiom<?>> axiomsForA = getAxiomsForEntityA();
+        final URI identifier = Generators.createIndividualIdentifier();
+        final Collection<Axiom<?>> axiomsForD = axiomsForD(identifier);
+        when(connectionMock.find(any(AxiomDescriptor.class))).thenAnswer(invocationOnMock -> {
+            final AxiomDescriptor arg = (AxiomDescriptor) invocationOnMock.getArguments()[0];
+            if (arg.getSubject().equals(NamedResource.create(identifier))) {
+                return axiomsForD;
+            } else {
+                return axiomsForA;
+            }
+        });
+        final OWLClassD result = mapper.loadEntity(new LoadingParameters<>(OWLClassD.class, identifier, aDescriptor));
+        assertNotNull(result);
+        verify(cacheMock).add(identifier, result, null);
+        verify(cacheMock).add(ENTITY_PK, result.getOwlClassA(), null);
+    }
+
+    private Collection<Axiom<?>> axiomsForD(URI identifier) {
+        final NamedResource id = NamedResource.create(identifier);
+        final Collection<Axiom<?>> axioms = new ArrayList<>();
+        axioms.add(new AxiomImpl<>(id, Assertion.createClassAssertion(false),
+                new Value<>(NamedResource.create(Vocabulary.c_OwlClassD))));
+        axioms.add(new AxiomImpl<>(id, Assertion.createObjectPropertyAssertion(URI.create(Vocabulary.P_HAS_A), false),
+                new Value<Object>(NamedResource.create(ENTITY_PK))));
+        return axioms;
+    }
+
+    @Test
+    public void loadEntitySkipsCacheWhenNothingIsFound() throws Exception {
+        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(Collections.emptyList());
+        final OWLClassA result = mapper.loadEntity(loadingParameters);
+        assertNull(result);
+        verify(cacheMock, never()).add(any(), any(), any());
     }
 }
