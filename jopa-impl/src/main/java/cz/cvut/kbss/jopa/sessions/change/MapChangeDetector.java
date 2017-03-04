@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -20,44 +20,33 @@ import java.util.Map;
 class MapChangeDetector implements ChangeDetector {
 
     private final ChangeDetector changeDetector;
-    private final ChangeManagerImpl changeManager;
 
-    public MapChangeDetector(ChangeDetector changeDetector, ChangeManagerImpl changeManager) {
+    MapChangeDetector(ChangeDetector changeDetector) {
         this.changeDetector = changeDetector;
-        this.changeManager = changeManager;
     }
 
     @Override
-    public Changed hasChanges(Object clone, Object original) {
+    public boolean hasChanges(Object clone, Object original) {
         assert clone != null;
         assert original != null;
 
         final Map<?, ?> cl = (Map<?, ?>) clone;
         final Map<?, ?> orig = (Map<?, ?>) original;
         if (orig.size() != cl.size()) {
-            return Changed.TRUE;
+            return true;
         }
         boolean changes = false;
         final Iterator<?> it = orig.keySet().iterator();
         while (it.hasNext() && !changes) {
             final Object origKey = it.next();
             if (!cl.containsKey(origKey)) {
-                return Changed.TRUE;
+                return true;
             }
-            // TODO Maybe we should check also for key changes
             final Object origVal = orig.get(origKey);
             Object clVal = cl.get(origKey);
 
-            final Changed ch = changeDetector.hasChanges(origVal, clVal);
-            switch (ch) {
-                case TRUE:
-                    return ch;
-                case FALSE:
-                    break;
-                case UNDETERMINED:
-                    changes = changeManager.hasChangesInternal(origVal, clVal);
-            }
+            changes = changeDetector.hasChanges(origVal, clVal);
         }
-        return Changed.fromBoolean(changes);
+        return changes;
     }
 }

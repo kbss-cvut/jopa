@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,10 +18,8 @@ import cz.cvut.kbss.jopa.exceptions.NoResultException;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.*;
+import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -43,9 +41,11 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test
     public void testFindAll() {
         logger.debug("Test: select all entities of a certain type.");
-        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD> .}";
+        final String query = "SELECT ?x WHERE { ?x a ?type .}";
         final List<OWLClassD> ds = new ArrayList<>();
-        final TypedQuery<OWLClassD> q = getEntityManager().createNativeQuery(query, OWLClassD.class);
+        final TypedQuery<OWLClassD> q =
+                getEntityManager().createNativeQuery(query, OWLClassD.class).setParameter("type", URI.create(
+                        Vocabulary.C_OWL_CLASS_D));
         ds.addAll(QueryTestEnvironment.getDataByContext(null, OWLClassD.class));
         final List<OWLClassD> res = q.getResultList();
         assertNotNull(res);
@@ -72,10 +72,12 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         final OWLClassB b = QueryTestEnvironment.getData(OWLClassB.class).get(5);
         final String query =
                 "SELECT ?x WHERE { " +
-                        "?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassB> ; " +
-                        "<http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> ?bString . }";
+                        "?x a ?type ; " +
+                        "?stringAtt ?bString . }";
         final TypedQuery<OWLClassB> q = getEntityManager().createNativeQuery(query, OWLClassB.class);
-        q.setParameter("bString", b.getStringAttribute(), "en");
+        q.setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_B))
+         .setParameter("stringAtt", URI.create(Vocabulary.P_B_STRING_ATTRIBUTE))
+         .setParameter("bString", b.getStringAttribute(), "en");
         final OWLClassB res = q.getSingleResult();
         assertNotNull(res);
         assertEquals(b.getUri(), res.getUri());
@@ -84,22 +86,29 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
 
     @Test
     public void testSelectByObjectProperty() {
-        logger.debug("Test: select entity by object property value.");
-        final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> ?y . }";
-        final TypedQuery<OWLClassD> q = getEntityManager().createNativeQuery(query, OWLClassD.class);
+        final String query = "SELECT ?x WHERE { ?x a ?type ; ?hasA ?y . }";
         final List<OWLClassD> ds = new ArrayList<>();
-        ds.addAll(QueryTestEnvironment.getDataByContext(null, OWLClassD.class));
-        final int cnt = ds.size() / 2;
-        assertTrue(cnt > 1);
-        final List<OWLClassD> res = q.setMaxResults(cnt).getResultList();
-        assertEquals(cnt, res.size());
+        ds.addAll(QueryTestEnvironment.getData(OWLClassD.class));
+        final OWLClassA a = ds.get(Generators.randomPositiveInt(ds.size())).getOwlClassA();
+        final TypedQuery<OWLClassD> q = getEntityManager().createNativeQuery(query, OWLClassD.class)
+                                                          .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_D))
+                                                          .setParameter("hasA",
+                                                                  URI.create(Vocabulary.P_HAS_OWL_CLASS_A))
+                                                          .setParameter("y", a.getUri());
+
+        final List<OWLClassD> expected = ds.stream().filter(d -> d.getOwlClassA().getUri().equals(a.getUri())).collect(
+                Collectors.toList());
+        final List<OWLClassD> res = q.getResultList();
+        assertEquals(res.toString(), expected.size(), res.size());
     }
 
     @Test
     public void testSetMaxResults() {
         logger.debug("Test: set maximum number of results.");
-        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
-        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class);
+        final String query =
+                "SELECT ?x WHERE { ?x a ?type . }";
+        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class)
+                                                          .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_E));
         final int max = 5;
         assertTrue(max < QueryTestEnvironment.getData(OWLClassE.class).size());
         assertEquals(Integer.MAX_VALUE, q.getMaxResults());
@@ -114,16 +123,20 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test(expected = IllegalArgumentException.class)
     public void testSetMaxResultsNegative() {
         logger.debug("Test: set maximum number of results. Negative argument.");
-        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
-        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class);
+        final String query =
+                "SELECT ?x WHERE { ?x a ?type . }";
+        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class)
+                                                          .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_E));
         q.setMaxResults(-1);
     }
 
     @Test
     public void testSetMaxResultsZero() {
         logger.debug("Test: set maximum number of results. Zero argument.");
-        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
-        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class);
+        final String query =
+                "SELECT ?x WHERE { ?x a ?type. }";
+        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class)
+                                                          .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_E));
         q.setMaxResults(0);
         final List<OWLClassE> res = q.getResultList();
         assertNotNull(res);
@@ -135,9 +148,10 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         logger.debug("Test: get single result.");
         final OWLClassA a = QueryTestEnvironment.getData(OWLClassA.class).get(0);
         final String query =
-                "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#A-stringAttribute> ?aString .}";
+                "SELECT ?x WHERE { ?x ?stringAtt ?aString .}";
         final TypedQuery<OWLClassA> q = getEntityManager().createNativeQuery(query, OWLClassA.class);
-        q.setParameter("aString", a.getStringAttribute(), "en");
+        q.setParameter("stringAtt", URI.create(Vocabulary.P_A_STRING_ATTRIBUTE))
+         .setParameter("aString", a.getStringAttribute(), "en");
         final OWLClassA res = q.getSingleResult();
         assertNotNull(res);
         assertEquals(a.getUri(), res.getUri());
@@ -146,15 +160,18 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test(expected = NoUniqueResultException.class)
     public void testGetSingleResultMultiples() {
         logger.debug("Test: get single result. No unique result.");
-        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
-        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class);
+        final String query =
+                "SELECT ?x WHERE { ?x a ?type . }";
+        final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class)
+                                                          .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_E));
         q.getSingleResult();
     }
 
     @Test(expected = NoResultException.class)
     public void testGetSingleResultNoResult() {
         logger.debug("Test: get single result. No result.");
-        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX> . }";
+        final String query =
+                "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX> . }";
         final TypedQuery<OWLClassE> q = getEntityManager().createNativeQuery(query, OWLClassE.class);
         q.getSingleResult();
     }
@@ -175,8 +192,9 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
     @Test
     public void askQueryReturnsTrue() {
         logger.debug("Test: execute a ASK query which returns true.");
-        final String query = "ASK { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA> . }";
-        final TypedQuery<Boolean> q = getEntityManager().createNativeQuery(query, Boolean.class);
+        final String query = "ASK { ?x a ?type . }";
+        final TypedQuery<Boolean> q = getEntityManager().createNativeQuery(query, Boolean.class)
+                                                        .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_A));
         final Boolean res = q.getSingleResult();
         assertNotNull(res);
         assertTrue(res);
@@ -202,8 +220,9 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         try {
             getEntityManager().persist(e);
             final TypedQuery<Boolean> query = getEntityManager().createNativeQuery(
-                    "ASK { ?individual a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }",
-                    Boolean.class).setParameter("individual", e.getUri());
+                    "ASK { ?individual a ?type . }",
+                    Boolean.class).setParameter("individual", e.getUri()).setParameter("type",
+                    URI.create(Vocabulary.C_OWL_CLASS_E));
             final Boolean res = query.getSingleResult();
             assertTrue(res);
         } finally {

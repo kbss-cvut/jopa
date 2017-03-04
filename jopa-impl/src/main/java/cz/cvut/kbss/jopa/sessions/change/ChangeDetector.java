@@ -26,5 +26,5 @@ interface ChangeDetector {
      * @param original Original object
      * @return Change status
      */
-    Changed hasChanges(Object clone, Object original);
+    boolean hasChanges(Object clone, Object original);
 }

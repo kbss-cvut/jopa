@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,10 +19,7 @@ import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import cz.cvut.kbss.jopa.model.query.Query;
-import cz.cvut.kbss.jopa.test.OWLClassA;
-import cz.cvut.kbss.jopa.test.OWLClassB;
-import cz.cvut.kbss.jopa.test.OWLClassD;
-import cz.cvut.kbss.jopa.test.OWLClassE;
+import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.query.QueryTestEnvironment;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -69,8 +66,10 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     public void testSelectByDataProperty() {
         logger.debug("Test: select data property values.");
-        final String query = "SELECT ?y WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#B-stringAttribute> ?y . }";
-        final Query q = getEntityManager().createNativeQuery(query);
+        final String query =
+                "SELECT ?y WHERE { ?x ?stringAtt ?y . }";
+        final Query q = getEntityManager().createNativeQuery(query)
+                                          .setParameter("stringAtt", URI.create(Vocabulary.P_B_STRING_ATTRIBUTE));
         final Set<String> exp = QueryTestEnvironment.getDataByContext(null, OWLClassB.class).stream()
                                                     .map(OWLClassB::getStringAttribute).collect(Collectors.toSet());
 
@@ -90,9 +89,10 @@ public abstract class QueryRunner extends BaseQueryRunner {
     public void testSelectByObjectProperty() {
         logger.debug("Test: select object property values.");
         final OWLClassD d = QueryTestEnvironment.getData(OWLClassD.class).get(0);
-        final String query = "SELECT ?x WHERE { ?x <http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA> ?y . }";
+        final String query = "SELECT ?x WHERE { ?x a ?type ; ?hasA ?y . }";
         final Query q = getEntityManager().createNativeQuery(query);
-        q.setParameter("y", d.getOwlClassA().getUri());
+        q.setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_D))
+         .setParameter("hasA", URI.create(Vocabulary.P_HAS_OWL_CLASS_A)).setParameter("y", d.getOwlClassA().getUri());
 
         final List res = q.getResultList();
 
@@ -122,7 +122,8 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     public void testSetMaxResults() {
         logger.debug("Test: set maximum number of results.");
-        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
+        final String query =
+                "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         final int max = 5;
         assertTrue(max < QueryTestEnvironment.getData(OWLClassE.class).size());
@@ -139,7 +140,8 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test(expected = IllegalArgumentException.class)
     public void testSetMaxResultsNegative() {
         logger.debug("Test: set maximum number of results. Negative argument.");
-        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
+        final String query =
+                "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         q.setMaxResults(-1);
     }
@@ -147,7 +149,8 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test
     public void testSetMaxResultsZero() {
         logger.debug("Test: set maximum number of results. Zero argument.");
-        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
+        final String query =
+                "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         q.setMaxResults(0);
 
@@ -173,7 +176,8 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test(expected = NoUniqueResultException.class)
     public void testGetSingleResultMultiples() {
         logger.debug("Test: get single result. No unique result.");
-        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
+        final String query =
+                "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassE> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         q.getSingleResult();
     }
@@ -181,7 +185,8 @@ public abstract class QueryRunner extends BaseQueryRunner {
     @Test(expected = NoResultException.class)
     public void testGetSingleResultNoResult() {
         logger.debug("Test: get single result. No result.");
-        final String query = "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX> . }";
+        final String query =
+                "SELECT ?x WHERE { ?x a <http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassX> . }";
         final Query q = getEntityManager().createNativeQuery(query);
         q.getSingleResult();
     }

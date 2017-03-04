@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,7 +27,6 @@ import java.util.*;
  *         <li>Different order of elements in a collection with deterministic ordering semantics (List, Queue,
  * <b>NOT!</b> Set)</li>
  *         <li>Different elements in the collection</li>
- *         <li>Changed elements in the collection (their attributes)</li>
  *     </ul>
  * </pre>
  */
@@ -35,28 +34,25 @@ class CollectionChangeDetector implements ChangeDetector {
 
     private final ChangeDetector changeDetector;
 
-    private final ChangeManagerImpl changeManager;
     private final MetamodelProvider metamodelProvider;
 
-    CollectionChangeDetector(ChangeDetector changeDetector, ChangeManagerImpl changeManager,
-                             MetamodelProvider metamodelProvider) {
+    CollectionChangeDetector(ChangeDetector changeDetector, MetamodelProvider metamodelProvider) {
         this.changeDetector = changeDetector;
-        this.changeManager = changeManager;
         this.metamodelProvider = metamodelProvider;
     }
 
     @Override
-    public Changed hasChanges(Object clone, Object original) {
+    public boolean hasChanges(Object clone, Object original) {
         assert clone != null;
         assert original != null;
 
         Collection<?> origCol = (Collection<?>) original;
         Collection<?> cloneCol = (Collection<?>) clone;
         if (origCol.size() != cloneCol.size()) {
-            return Changed.TRUE;
+            return true;
         }
         if (origCol.isEmpty()) {
-            return Changed.FALSE;
+            return false;
         }
         if (origCol instanceof Set) {
             return setChanged(cloneCol, origCol);
@@ -65,27 +61,16 @@ class CollectionChangeDetector implements ChangeDetector {
         }
     }
 
-    private Changed orderedCollectionChanged(Collection<?> clone, Collection<?> original) {
+    private boolean orderedCollectionChanged(Collection<?> clone, Collection<?> original) {
         Iterator<?> itOrig = original.iterator();
         Iterator<?> itClone = clone.iterator();
         boolean changes = false;
         while (itOrig.hasNext() && !changes) {
-            Object cl = itClone.next();
-            Object orig = itOrig.next();
-            final Changed ch = changeDetector.hasChanges(orig, cl);
-            switch (ch) {
-                case TRUE:
-                    changes = true;
-                    break;
-                case FALSE:
-                    changes = false;
-                    break;
-                case UNDETERMINED:
-                    changes = changeManager.hasChangesInternal(orig, cl);
-                    break;
-            }
+            final Object cl = itClone.next();
+            final Object orig = itOrig.next();
+            changes = changeDetector.hasChanges(cl, orig);
         }
-        return Changed.fromBoolean(changes);
+        return changes;
     }
 
     /**
@@ -93,7 +78,7 @@ class CollectionChangeDetector implements ChangeDetector {
      * <p>
      * Therefore, we first order the elements in a predictable way and then compare the elements.
      */
-    private Changed setChanged(Collection<?> clone, Collection<?> original) {
+    private boolean setChanged(Collection<?> clone, Collection<?> original) {
         assert !clone.isEmpty();
         assert !original.isEmpty();
 
@@ -120,7 +105,7 @@ class CollectionChangeDetector implements ChangeDetector {
                 return Integer.compare(keyOne.hashCode(), keyTwo.hashCode());
             };
         } else {
-            return (o1, o2) -> Integer.compare(o1.hashCode(), o2.hashCode());
+            return Comparator.comparingInt(Object::hashCode);
         }
     }
 }

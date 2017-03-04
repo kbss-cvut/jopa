@@ -63,7 +63,9 @@ public class BugTest extends IntegrationTestBase {
                         new Value<>(name)));
     }
 
-    @Ignore
+    /**
+     * Bug #2.
+     */
     @Test
     public void mergeDoesNotOverwriteCacheWithNonMergeInstance() throws OntoDriverException {
         final OWLClassD d = new OWLClassD(Generators.generateUri());
