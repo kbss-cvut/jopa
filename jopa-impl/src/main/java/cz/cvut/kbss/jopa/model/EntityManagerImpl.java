@@ -154,7 +154,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     private <T> T mergeInternal(final T entity, final Descriptor descriptor) {
         assert entity != null;
         assert descriptor != null;
-        LOG.trace("Merging {}", entity);
+        LOG.trace("Merging {}.", entity);
         ensureOpen();
 
         switch (getState(entity, descriptor)) {

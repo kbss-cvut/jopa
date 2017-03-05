@@ -16,10 +16,8 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectMap;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassB;
-import cz.cvut.kbss.jopa.environment.OWLClassD;
-import cz.cvut.kbss.jopa.environment.OWLClassL;
+import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.CardinalityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
@@ -51,9 +49,9 @@ public class UnitOfWorkTest {
 
     private Descriptor descriptor;
 
-    private static OWLClassA entityA;
-    private static OWLClassB entityB;
-    private static OWLClassD entityD;
+    private OWLClassA entityA;
+    private OWLClassB entityB;
+    private OWLClassD entityD;
     private OWLClassL entityL;
 
     @Mock
@@ -77,29 +75,13 @@ public class UnitOfWorkTest {
 
     @BeforeClass
     public static void setUpBeforeClass() {
-        final URI pkOne = URI.create("http://testOne");
-        entityA = new OWLClassA();
-        entityA.setUri(pkOne);
-        entityA.setStringAttribute("attribute");
-        entityA.setTypes(new HashSet<>());
-        entityA.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa#entityQ");
-        entityA.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa#entityX");
-        entityA.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa#entityW");
-        final URI pkTwo = URI.create("http://testTwo");
-        entityB = new OWLClassB();
-        entityB.setUri(pkTwo);
-        final URI pkThree = URI.create("http://testThree");
-        entityD = new OWLClassD();
-        entityD.setUri(pkThree);
-        entityD.setOwlClassA(entityA);
+
     }
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        this.entityL = new OWLClassL();
         this.descriptor = new EntityDescriptor(CONTEXT_URI);
-        entityL.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityL"));
         this.serverSessionStub = spy(new ServerSessionStub(storageMock));
         when(serverSessionStub.getMetamodel()).thenReturn(metamodelMock);
         when(serverSessionStub.getLiveObjectCache()).thenReturn(cacheManagerMock);
@@ -111,6 +93,16 @@ public class UnitOfWorkTest {
         final Field connectionField = UnitOfWorkImpl.class.getDeclaredField("storage");
         connectionField.setAccessible(true);
         connectionField.set(uow, storageMock);
+        initEntities();
+    }
+
+    private void initEntities() {
+        this.entityA = Generators.generateOwlClassAInstance();
+        this.entityB = new OWLClassB(Generators.createIndividualIdentifier());
+        this.entityD = new OWLClassD(Generators.createIndividualIdentifier());
+        entityD.setOwlClassA(entityA);
+        this.entityL = new OWLClassL();
+        entityL.setUri(Generators.createIndividualIdentifier());
     }
 
     @SuppressWarnings("unchecked")
@@ -831,11 +823,11 @@ public class UnitOfWorkTest {
         when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, true)))
                 .thenReturn(entityA);
-        uow.mergeDetached(clone, descriptor);
+        OWLClassA result = uow.mergeDetached(clone, descriptor);
 
         assertTrue(uow.hasChanges());
         final UnitOfWorkChangeSet changeSet = uow.getUowChangeSet();
-        final ObjectChangeSet objectChanges = changeSet.getExistingObjectChanges(entityA);
+        final ObjectChangeSet objectChanges = changeSet.getExistingObjectChanges(result);
         assertNotNull(objectChanges);
         assertEquals(2, objectChanges.getChanges().size());
         final ChangeRecord rOne = objectChanges.getChanges().get(OWLClassA.getStrAttField().getName());
@@ -882,5 +874,38 @@ public class UnitOfWorkTest {
         assertFalse(entityB.getProperties() instanceof IndirectMap);
         verify(serverSessionStub).deregisterEntityFromPersistenceContext(result, uow);
         verify(serverSessionStub).deregisterEntityFromPersistenceContext(entityB, uow);
+    }
+
+    @Test
+    public void mergeReturnsInstanceWithReferencesWithOriginalValues() {
+        final OWLClassA aOriginal = new OWLClassA(entityA.getUri());
+        aOriginal.setStringAttribute(entityA.getStringAttribute());
+        aOriginal.setTypes(new HashSet<>(entityA.getTypes()));
+        final OWLClassD dOriginal = new OWLClassD(entityD.getUri());
+        dOriginal.setOwlClassA(aOriginal);
+        entityA.setStringAttribute("differentString");
+        entityA.getTypes().add(Vocabulary.CLASS_BASE + "addedType");
+        when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
+        when(storageMock.find(new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(), descriptor, true)))
+                .thenReturn(dOriginal);
+
+        final OWLClassD result = uow.mergeDetached(entityD, descriptor);
+        assertEquals(aOriginal.getStringAttribute(), result.getOwlClassA().getStringAttribute());
+        assertEquals(aOriginal.getTypes(), result.getOwlClassA().getTypes());
+    }
+
+    @Test
+    public void mergeReturnsInstanceWithUpdatedReferenceWhenItWasChangedInTheDetachedObject() {
+        final OWLClassA aOriginal = Generators.generateOwlClassAInstance();
+        final OWLClassD dOriginal = new OWLClassD(entityD.getUri());
+        dOriginal.setOwlClassA(aOriginal);
+        when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
+        when(storageMock.find(new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(), descriptor, true)))
+                .thenReturn(dOriginal);
+
+        final OWLClassD result = uow.mergeDetached(entityD, descriptor);
+        assertEquals(entityA.getUri(), result.getOwlClassA().getUri());
+        assertEquals(entityA.getStringAttribute(), result.getOwlClassA().getStringAttribute());
+        assertEquals(entityA.getTypes(), result.getOwlClassA().getTypes());
     }
 }

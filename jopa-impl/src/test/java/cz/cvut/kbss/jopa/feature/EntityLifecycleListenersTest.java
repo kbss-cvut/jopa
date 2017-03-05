@@ -149,6 +149,7 @@ public class EntityLifecycleListenersTest {
         when(storageMock.find(new LoadingParameters<>(OWLClassR.class, rInstance.getUri(), descriptor, true)))
                 .thenReturn(rOriginal);
         rInstance.setStringAtt("differentString");
+        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rOriginal);
         uow.mergeDetached(rInstance, descriptor);
         final InOrder inOrder = inOrder(rInstance, storageMock);
         inOrder.verify(rInstance).preUpdate();
@@ -162,6 +163,7 @@ public class EntityLifecycleListenersTest {
         when(storageMock.contains(rInstance.getUri(), rInstance.getClass(), descriptor)).thenReturn(true);
         when(storageMock.find(new LoadingParameters<>(OWLClassR.class, rInstance.getUri(), descriptor, true)))
                 .thenReturn(rOriginal);
+        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rOriginal);
         uow.mergeDetached(rInstance, descriptor);
         verify(rInstance, never()).preUpdate();
         verify(storageMock, never()).merge(eq(rInstance), any(Field.class), eq(descriptor));
@@ -190,6 +192,7 @@ public class EntityLifecycleListenersTest {
         when(storageMock.find(new LoadingParameters<>(OWLClassR.class, rInstance.getUri(), descriptor, true)))
                 .thenReturn(rOriginal);
         rInstance.setStringAtt("differentString");
+        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rOriginal);
         uow.mergeDetached(rInstance, descriptor);
         final InOrder inOrder = inOrder(rInstance, storageMock);
         inOrder.verify(storageMock, atLeastOnce()).merge(eq(rInstance), any(Field.class), eq(descriptor));
@@ -203,6 +206,7 @@ public class EntityLifecycleListenersTest {
         when(storageMock.contains(rInstance.getUri(), rInstance.getClass(), descriptor)).thenReturn(true);
         when(storageMock.find(new LoadingParameters<>(OWLClassR.class, rInstance.getUri(), descriptor, true)))
                 .thenReturn(rOriginal);
+        when(cloneBuilderMock.buildClone(rOriginal, descriptor)).thenReturn(rOriginal);
         uow.mergeDetached(rInstance, descriptor);
         verify(rInstance, never()).postUpdate();
         verify(storageMock, never()).merge(eq(rInstance), any(Field.class), eq(descriptor));

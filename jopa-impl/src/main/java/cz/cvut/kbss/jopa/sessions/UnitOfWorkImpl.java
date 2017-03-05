@@ -117,7 +117,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
         Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
 
-        return readObjectInternal(cls, primaryKey, descriptor);
+        final T result = readObjectInternal(cls, primaryKey, descriptor);
+        if (result != null) {
+            final EntityTypeImpl<?> et = entityType(cls);
+            lifecycleListenerCaller.invokePostLoadListeners(et, result);
+        }
+        return result;
     }
 
     private <T> T readObjectInternal(Class<T> cls, Object identifier, Descriptor descriptor) {
@@ -148,8 +153,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
         final Object clone = registerExistingObject(result, descriptor);
         checkForCollections(clone);
-        final EntityTypeImpl<?> et = entityType(cls);
-        lifecycleListenerCaller.invokePostLoadListeners(et, clone);
         return cls.cast(clone);
     }
 
@@ -580,12 +583,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         final EntityTypeImpl<T> et = (EntityTypeImpl<T>) entityType(entity.getClass());
         final URI idUri = EntityPropertiesUtils.getValueAsURI(iri);
         T original = storage.find(new LoadingParameters<>(et.getJavaType(), idUri, descriptor, true));
-
         assert original != null;
-        registerClone(entity, original, descriptor);
+
+        final Object clone = registerExistingObject(original, descriptor);
         try {
             // Merge only the changed attributes
-            final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(original, entity, descriptor);
+            final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
             changeManager.calculateChanges(chSet);
             if (chSet.hasChanges()) {
                 lifecycleListenerCaller.invokePreUpdateListeners(et, entity);
@@ -594,6 +597,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                 final Field field = et.getFieldSpecification(record.getAttributeName()).getJavaField();
                 storage.merge(entity, field, descriptor);
             }
+            mergeManager.mergeChangesOnObject(chSet);
             if (chSet.hasChanges()) {
                 lifecycleListenerCaller.invokePostUpdateListeners(et, entity);
             }
@@ -608,7 +612,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             cacheManager.evict(et.getJavaType(), iri, descriptor.getContext());
         }
         setHasChanges();
-        return entity;
+        checkForCollections(clone);
+        return et.getJavaType().cast(clone);
     }
 
     /**
@@ -690,7 +695,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         try {
             final boolean anyChanges = changeManager.calculateChanges(chSet);
             if (anyChanges) {
-                mergeManager.mergeChangesOnObject(original, chSet);
+                mergeManager.mergeChangesOnObject(chSet);
             }
         } catch (IllegalAccessException | IllegalArgumentException e) {
             throw new OWLPersistenceException(e);

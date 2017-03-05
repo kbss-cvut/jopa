@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -930,5 +930,21 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
         assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
+    }
+
+    @Test
+    public void mergeReplacesReferenceWithInstanceFromRepository() {
+        this.em = getEntityManager("mergeReplacesReferenceWithInstanceFromRepository", true);
+        persist(entityD, entityA);
+
+        final String originalString = entityA.getStringAttribute();
+        entityA.setStringAttribute("updatedStringAttribute");
+        em.getTransaction().begin();
+        final OWLClassD merged = em.merge(entityD);
+        assertEquals(originalString, merged.getOwlClassA().getStringAttribute());
+        em.getTransaction().commit();
+
+        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
+        assertEquals(originalString, result.getStringAttribute());
     }
 }
