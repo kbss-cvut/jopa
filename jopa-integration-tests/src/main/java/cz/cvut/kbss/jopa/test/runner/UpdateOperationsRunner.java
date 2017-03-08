@@ -143,8 +143,8 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
     }
 
     @Test
-    public void testMergeSet() throws Exception {
-        logger.debug("Test: merge set property.");
+    public void mergedInstanceWithChangesInCascadedPluralReferenceAttributeContainsUpdatedValues()
+            throws Exception {
         this.em = getEntityManager("MergeSet", false);
         persist(entityJ);
         em.clear();

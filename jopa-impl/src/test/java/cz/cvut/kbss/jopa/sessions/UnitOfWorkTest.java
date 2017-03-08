@@ -71,6 +71,8 @@ public class UnitOfWorkTest {
 
     private ServerSessionStub serverSessionStub;
 
+    private CloneBuilder cloneBuilder;
+
     private UnitOfWorkImpl uow;
 
     @BeforeClass
@@ -93,6 +95,10 @@ public class UnitOfWorkTest {
         final Field connectionField = UnitOfWorkImpl.class.getDeclaredField("storage");
         connectionField.setAccessible(true);
         connectionField.set(uow, storageMock);
+        final Field cbField = UnitOfWorkImpl.class.getDeclaredField("cloneBuilder");
+        cbField.setAccessible(true);
+        this.cloneBuilder = spy((CloneBuilder) cbField.get(uow));
+        cbField.set(uow, cloneBuilder);
         initEntities();
     }
 
@@ -443,8 +449,15 @@ public class UnitOfWorkTest {
     public void testUnregisterObject() {
         final OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertTrue(uow.contains(managed));
-        this.uow.unregisterObject(managed);
+        uow.unregisterObject(managed);
         assertFalse(uow.contains(managed));
+    }
+
+    @Test
+    public void unregisterObjectRemovesItFromCloneBuilderCache() {
+        final OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        uow.unregisterObject(managed);
+        verify(cloneBuilder).removeVisited(entityA, descriptor);
     }
 
     @Test

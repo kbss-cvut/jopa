@@ -53,11 +53,20 @@ public interface CloneBuilder {
                       Descriptor descriptor);
 
     /**
-     * Resets the clone builder. Especially resets the visited objects cache to
-     * make sure all the clones are built from scratch and are not affected by
-     * the previously built ones.
+     * Resets the clone builder.
+     * <p>
+     * Especially resets the visited objects cache to make sure all the clones are built from scratch and are not
+     * affected by the previously built ones.
      */
     void reset();
+
+    /**
+     * Removes the specified instance from the clone builder's visited entities cache.
+     *
+     * @param instance   The instance to remove (original object).
+     * @param descriptor Instance descriptor
+     */
+    void removeVisited(Object instance, Descriptor descriptor);
 
     /**
      * Merges the changes on clone into the original object.

@@ -597,11 +597,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             if (chSet.hasChanges()) {
                 lifecycleListenerCaller.invokePreUpdateListeners(et, entity);
             }
-//            for (ChangeRecord record : chSet.getChanges().values()) {
-//                final Field field = et.getFieldSpecification(record.getAttributeName()).getJavaField();
-//                storage.merge(entity, field, descriptor);
-//            }
-            // TODO Merge changes (it will also cause change propagation into the storage)
+            for (ChangeRecord record : chSet.getChanges().values()) {
+                final Field field = et.getFieldSpecification(record.getAttributeName()).getJavaField();
+                storage.merge(entity, field, descriptor);
+            }
+            final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
+            merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
             if (chSet.hasChanges()) {
                 lifecycleListenerCaller.invokePostUpdateListeners(et, entity);
             }
@@ -620,9 +621,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return et.getJavaType().cast(clone);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     void registerEntityWithPersistenceContext(Object entity, UnitOfWorkImpl uow) {
         parent.registerEntityWithPersistenceContext(entity, uow);
@@ -729,9 +727,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         if (id == null) {
             EntityPropertiesUtils.verifyIdentifierIsGenerated(entity, eType);
         }
-        if (isIndividualManaged(id, entity) && !entity.getClass().isEnum()) {
-            throw individualAlreadyManaged(id);
-        }
+        verifyCanPersist(id, entity, eType, descriptor);
         storage.persist(id, entity, descriptor);
         if (id == null) {
             // If the ID was null, extract it from the entity. It is present now
@@ -746,6 +742,16 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         checkForCollections(entity);
         this.hasNew = true;
         lifecycleListenerCaller.invokePostPersistListeners(eType, entity);
+    }
+
+    private void verifyCanPersist(Object id, Object instance, EntityType<?> et, Descriptor descriptor) {
+        if (isIndividualManaged(id, instance) && !instance.getClass().isEnum()) {
+            throw individualAlreadyManaged(id);
+        }
+        if (storage.contains(id, instance.getClass(), descriptor)) {
+            throw new OWLEntityExistsException(
+                    "Individual " + id + " of type " + et.getIRI() + " already exists in storage.");
+        }
     }
 
     private boolean isIndividualManaged(Object identifier, Object entity) {
@@ -790,7 +796,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             return;
         }
         cloneMapping.remove(object);
-        cloneToOriginals.remove(object);
+        final Object original = cloneToOriginals.remove(object);
+        keysToClones.remove(EntityPropertiesUtils.getPrimaryKey(object, getMetamodel()));
 
         getDeletedObjects().remove(object);
         if (hasNew) {
@@ -798,6 +805,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             if (newOriginal != null) {
                 getNewObjectsOriginalToClone().remove(newOriginal);
             }
+        }
+        if (original != null) {
+            cloneBuilder.removeVisited(original, repoMap.getEntityDescriptor(object));
         }
         unregisterObjectFromPersistenceContext(object);
     }

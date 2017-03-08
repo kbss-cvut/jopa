@@ -120,8 +120,10 @@ public abstract class CreateOperationsRunner extends BaseRunner {
 
         final OWLClassA det = em.find(OWLClassA.class, entityA.getUri());
         assertNotNull(det);
+        em.getTransaction().begin();
         em.detach(det);
         em.persist(det);
+        em.getTransaction().commit();
     }
 
     @Test

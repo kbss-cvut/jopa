@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
+import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.descriptors.ObjectPropertyCollectionDescriptor;
@@ -47,7 +48,6 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testPersistDataPropertyIntoContext() throws Exception {
-        logger.debug("Test: persist an entity into the default context and its data property into a different one.");
         this.em = getEntityManager("MultiPersistDataPropertyIntoContext", false);
         final Descriptor aDescriptor = new EntityDescriptor();
         aDescriptor.addAttributeContext(OWLClassA.class.getDeclaredField("stringAttribute"), CONTEXT_ONE);
@@ -65,8 +65,6 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testPersistObjectPropertyIntoContext() throws Exception {
-        logger.debug(
-                "Test: persist entity into one context and its object property into another, along with its own attributes.");
         this.em = getEntityManager("MultiPersistObjectPropertyIntoContext", false);
         final Descriptor dDescriptor = new EntityDescriptor();
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
@@ -88,7 +86,6 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testPersistWithGeneratedIntoContext() {
-        logger.debug("Test: persist entity with generated ID into a context.");
         this.em = getEntityManager("MultiPersistWithGeneratedIntoContext", false);
         final Descriptor eDescriptor = new EntityDescriptor(CONTEXT_ONE);
         em.getTransaction().begin();
@@ -120,10 +117,9 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         assertNotNull(res.getOwlClassA());
     }
 
-    @Test
-    public void persistTwiceIntoSameContextIsLegal() {
+    @Test(expected = OWLEntityExistsException.class)
+    public void persistTwiceIntoSameContextIsInvalid() {
         this.em = getEntityManager("MultiPersistTwiceIntoOneContext", false);
-        logger.debug("Test: persist an entity twice into the same context.");
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_ONE);
         em.getTransaction().begin();
         em.persist(entityA, aDescriptor);
@@ -132,13 +128,11 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
         em.getTransaction().begin();
         em.persist(entityA, aDescriptor);
         em.getTransaction().commit();
-        assertNotNull(em.find(OWLClassA.class, entityA.getUri(), aDescriptor));
     }
 
     @Test
     public void persistTwiceIntoDifferentContextsIsLegal() {
         this.em = getEntityManager("MultiPersistTwiceIntoDifferentContexts", false);
-        logger.debug("Test: persist an entity into two different contexts.");
         final Descriptor aDescriptorOne = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptorTwo = new EntityDescriptor(CONTEXT_TWO);
         em.getTransaction().begin();
@@ -158,7 +152,6 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     @Test
     public void testPersistPropertiesIntoDifferentContext() throws Exception {
         this.em = getEntityManager("MultiPersistPropertiesIntoDifferentContext", false);
-        logger.debug("Test: persist an entity and persist its properties into a different context.");
         final Descriptor bDescriptor = new EntityDescriptor();
         entityB.setProperties(Generators.createProperties(10));
         bDescriptor.addAttributeContext(OWLClassB.class.getDeclaredField("properties"), CONTEXT_ONE);
@@ -179,7 +172,6 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     @Test
     public void testPersistCascadeIntoThreeContexts() throws Exception {
         this.em = getEntityManager("MultiPersistCascadeIntoThreeContexts", false);
-        logger.debug("Test: persist three entities in cascaded relationship, each into a different context.");
         final Descriptor gDescriptor = new EntityDescriptor();
         final Descriptor hDescriptor = new EntityDescriptor(CONTEXT_ONE);
         final Descriptor aDescriptor = new EntityDescriptor(CONTEXT_TWO);
@@ -204,8 +196,6 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
 
     @Test
     public void testPersistSetWithAttributeContexts() throws Exception {
-        logger.debug(
-                "Test: persist entity with simple set, the set will be in a different context and attributes of its element in another.");
         this.em = getEntityManager("MultiPersistSetWithAttributeContexts", false);
         entityF.setSimpleSet(Generators.createSimpleSet(20));
         final Descriptor fDescriptor = new EntityDescriptor();
@@ -235,8 +225,8 @@ public abstract class CreateOperationsMultiContextRunner extends BaseRunner {
     @Test
     public void testPersistEntityWithObjectPropertyWithGeneratedIdentifierAndPutTheReferenceIntoContext()
             throws Exception {
-        logger.debug("Test: persist entity with reference to an entity with generated identifier. "
-                + "The identifier should be generated automatically before the referenced entity itself is persisted.");
+        // persist entity with reference to an entity with generated identifier.
+        // The identifier should be generated automatically before the referenced entity itself is persisted.
         this.em = getEntityManager("PersistEntityWithObjectPropertyWithGeneratedIdentifierContexts", true);
         entityK.setOwlClassE(entityE);
         assertNull(entityE.getUri());
