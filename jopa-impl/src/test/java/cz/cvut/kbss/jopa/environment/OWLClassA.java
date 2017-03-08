@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.HashSet;
 import java.util.Set;
 
 @OWLClass(iri = Vocabulary.c_OwlClassA)
@@ -43,8 +44,16 @@ public class OWLClassA {
     }
 
     /**
-     * @param uri
-     *            the uri to set
+     * Copy constructor
+     */
+    public OWLClassA(OWLClassA other) {
+        this.uri = other.uri;
+        this.stringAttribute = other.stringAttribute;
+        this.types = new HashSet<>(other.types);
+    }
+
+    /**
+     * @param uri the uri to set
      */
     public void setUri(URI uri) {
         this.uri = uri;

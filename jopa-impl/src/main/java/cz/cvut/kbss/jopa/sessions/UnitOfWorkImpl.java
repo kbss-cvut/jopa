@@ -96,6 +96,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.isActive = true;
     }
 
+    CloneBuilder getCloneBuilder() {
+        return cloneBuilder;
+    }
+
     /**
      * This method returns null, since we don't support nested Units of Work yet.
      */
@@ -593,11 +597,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             if (chSet.hasChanges()) {
                 lifecycleListenerCaller.invokePreUpdateListeners(et, entity);
             }
-            for (ChangeRecord record : chSet.getChanges().values()) {
-                final Field field = et.getFieldSpecification(record.getAttributeName()).getJavaField();
-                storage.merge(entity, field, descriptor);
-            }
-            mergeManager.mergeChangesOnObject(chSet);
+//            for (ChangeRecord record : chSet.getChanges().values()) {
+//                final Field field = et.getFieldSpecification(record.getAttributeName()).getJavaField();
+//                storage.merge(entity, field, descriptor);
+//            }
+            // TODO Merge changes (it will also cause change propagation into the storage)
             if (chSet.hasChanges()) {
                 lifecycleListenerCaller.invokePostUpdateListeners(et, entity);
             }

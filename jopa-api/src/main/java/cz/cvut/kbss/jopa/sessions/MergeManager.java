@@ -29,6 +29,16 @@ public interface MergeManager {
     Object mergeChangesOnObject(ObjectChangeSet changeSet);
 
     /**
+     * Merges changes specified by the {@link ObjectChangeSet} into the original object.
+     * <p>
+     * The clone in this case is a detached instance being merged into the persistence context.
+     *
+     * @param changeSet The change set to merge
+     * @return The instance into which changes were merged
+     */
+    Object mergeChangesFromDetached(ObjectChangeSet changeSet);
+
+    /**
      * Merge changes from the provided UnitOfWorkChangeSet into the target
      * session.
      *

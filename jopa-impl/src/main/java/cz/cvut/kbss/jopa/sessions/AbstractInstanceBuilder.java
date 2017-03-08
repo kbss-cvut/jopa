@@ -31,7 +31,6 @@ abstract class AbstractInstanceBuilder {
     protected final UnitOfWork uow;
 
     AbstractInstanceBuilder(CloneBuilderImpl builder, UnitOfWork uow) {
-        super();
         this.builder = builder;
         this.uow = uow;
         this.populates = false;
@@ -58,8 +57,7 @@ abstract class AbstractInstanceBuilder {
      * @param descriptor Entity origin
      * @return The clone
      */
-    abstract Object buildClone(Object cloneOwner, Field field, Object original,
-                               Descriptor descriptor);
+    abstract Object buildClone(Object cloneOwner, Field field, Object original, Descriptor descriptor);
 
     /**
      * Merges changes from clone to the original.

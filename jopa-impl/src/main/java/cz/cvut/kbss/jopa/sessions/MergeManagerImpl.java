@@ -15,6 +15,9 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.net.URI;
@@ -28,7 +31,7 @@ public class MergeManagerImpl implements MergeManager {
 
     MergeManagerImpl(UnitOfWorkImpl session) {
         this.uow = session;
-        this.builder = new CloneBuilderImpl(session);
+        this.builder = session.getCloneBuilder();
     }
 
     private void deleteObjectFromCache(ObjectChangeSet changeSet) {
@@ -56,7 +59,22 @@ public class MergeManagerImpl implements MergeManager {
                 throw new OWLPersistenceException("Cannot find the original object.");
             }
         } else {
-            builder.mergeChanges(original, changeSet);
+            builder.mergeChanges(changeSet);
+        }
+        return clone;
+    }
+
+    @Override
+    public Object mergeChangesFromDetached(ObjectChangeSet changeSet) {
+        Objects.requireNonNull(changeSet);
+        final Object clone = changeSet.getCloneObject();
+        assert clone != null;
+        final Object original = changeSet.getChangedObject();
+        assert original != null;
+
+        final EntityType<?> et = uow.getMetamodel().entity(original.getClass());
+        for (ChangeRecord changeRecord : changeSet.getChanges().values()) {
+            // TODO Use the DetachedInstanceMerger
         }
         return clone;
     }

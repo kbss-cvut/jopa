@@ -21,11 +21,11 @@ import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.PluralAttribute;
 import cz.cvut.kbss.jopa.utils.CollectionFactory;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.MetamodelUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.util.*;
@@ -251,33 +251,11 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
         }
         final Types types = field.getAnnotation(Types.class);
         if (types != null) {
-            checkForNewTypes(orig);
+            MetamodelUtils.checkForModuleSignatureExtension(orig, builder.getMetamodel());
         }
     }
 
     private static Collection<Object> createDefaultCollection(Class<?> cls) {
         return CollectionFactory.createDefaultCollection(PluralAttribute.CollectionType.fromClass(cls));
-    }
-
-    /**
-     * Checks if new types were added to the specified collection. </p>
-     * <p>
-     * If so, they are added to the module extraction signature managed by Metamodel.
-     *
-     * @param collection The collection to check
-     * @see Types
-     */
-    private void checkForNewTypes(Collection<?> collection) {
-        assert collection != null;
-        if (collection.isEmpty()) {
-            return;
-        }
-        final Set<URI> signature = builder.getMetamodel().getModuleExtractionExtraSignature();
-        for (Object elem : collection) {
-            final URI u = EntityPropertiesUtils.getValueAsURI(elem);
-            if (!signature.contains(u)) {
-                builder.getMetamodel().addUriToModuleExtractionSignature(u);
-            }
-        }
     }
 }

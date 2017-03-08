@@ -60,8 +60,7 @@ public class CloneBuilderImpl implements CloneBuilder {
     }
 
     @Override
-    public Object buildClone(Object cloneOwner, Field clonedField, Object original,
-                             Descriptor descriptor) {
+    public Object buildClone(Object cloneOwner, Field clonedField, Object original, Descriptor descriptor) {
         if (cloneOwner == null || original == null || descriptor == null) {
             throw new NullPointerException();
         }
@@ -69,8 +68,7 @@ public class CloneBuilderImpl implements CloneBuilder {
         return buildCloneImpl(cloneOwner, clonedField, original, descriptor);
     }
 
-    private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original,
-                                  Descriptor descriptor) {
+    private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original, Descriptor descriptor) {
         if (isOriginalInUoW(original)) {
             return uow.getCloneForOriginal(original);
         }
@@ -166,7 +164,8 @@ public class CloneBuilderImpl implements CloneBuilder {
     }
 
     @Override
-    public void mergeChanges(Object original, ObjectChangeSet changeSet) {
+    public void mergeChanges(ObjectChangeSet changeSet) {
+        final Object original = changeSet.getChangedObject();
         Map<String, ChangeRecord> changes = changeSet.getChanges();
         final EntityType<?> et = getMetamodel().entity(original.getClass());
         try {

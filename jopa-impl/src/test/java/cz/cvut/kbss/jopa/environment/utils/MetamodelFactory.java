@@ -64,7 +64,8 @@ public class MetamodelFactory {
         when(typesMock.getJavaField()).thenReturn(OWLClassA.getTypesField());
         when(typesMock.getName()).thenReturn(OWLClassA.getTypesField().getName());
         when(typesMock.getDeclaringType()).thenReturn(etMock);
-        when(typesMock.getJavaType()).thenReturn(String.class);
+        when(typesMock.getJavaType()).thenReturn(Set.class);
+        when(typesMock.getElementType()).thenReturn(String.class);
         when(etMock.getFieldSpecification(strAttMock.getName())).thenReturn(strAttMock);
         when(etMock.getFieldSpecification(typesMock.getName())).thenReturn(typesMock);
 
@@ -140,6 +141,7 @@ public class MetamodelFactory {
         when(simpleListMock.isCollection()).thenReturn(Boolean.TRUE);
         when(simpleListMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(simpleListMock.getDeclaringType()).thenReturn(etMock);
+        when(simpleListMock.getJavaType()).thenReturn(List.class);
         when(simpleListMock.getCascadeTypes())
                 .thenReturn(OWLClassC.getSimpleListField().getAnnotation(OWLObjectProperty.class).cascade());
 
@@ -162,6 +164,7 @@ public class MetamodelFactory {
         when(refListMock.isCollection()).thenReturn(Boolean.TRUE);
         when(refListMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(refListMock.getDeclaringType()).thenReturn(etMock);
+        when(refListMock.getJavaType()).thenReturn(List.class);
         when(refListMock.getCascadeTypes())
                 .thenReturn(OWLClassC.getRefListField().getAnnotation(OWLObjectProperty.class).cascade());
 
@@ -230,11 +233,14 @@ public class MetamodelFactory {
         final String setAIri = OWLClassF.getSimpleSetField().getAnnotation(OWLObjectProperty.class).iri();
         when(setAMock.getIRI()).thenReturn(IRI.create(setAIri));
         when(setAMock.getJavaType()).thenReturn(Set.class);
+        when(setAMock.getJavaField()).thenReturn(OWLClassF.getSimpleSetField());
         when(setAMock.isCollection()).thenReturn(Boolean.TRUE);
         when(setAMock.getCollectionType()).thenReturn(PluralAttribute.CollectionType.SET);
         when(setAMock.getBindableJavaType()).thenReturn(OWLClassA.class);
         when(setAMock.getConstraints()).thenReturn(new ParticipationConstraint[]{});
         when(setAMock.getDeclaringType()).thenReturn(etMock);
+        when(etMock.getAttribute(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
+        when(etMock.getFieldSpecification(OWLClassF.getSimpleSetField().getName())).thenReturn(setAMock);
 
         when(strAttMock.getJavaField()).thenReturn(OWLClassF.getStrAttField());
         when(strAttMock.getDeclaringType()).thenReturn(etMock);
@@ -612,7 +618,8 @@ public class MetamodelFactory {
         when(types.getJavaField()).thenReturn(OWLClassP.getTypesField());
         when(types.getName()).thenReturn(OWLClassP.getTypesField().getName());
         when(types.getDeclaringType()).thenReturn(et);
-        when(types.getJavaType()).thenReturn(URI.class);
+        when(types.getJavaType()).thenReturn(Set.class);
+        when(types.getElementType()).thenReturn(URI.class);
         when(et.getFieldSpecification(uriAtt.getName())).thenReturn(uriAtt);
         when(uriAtt.getName()).thenReturn(OWLClassP.getIndividualUriField().getName());
         when(uriAtt.getJavaField()).thenReturn(OWLClassP.getIndividualUriField());

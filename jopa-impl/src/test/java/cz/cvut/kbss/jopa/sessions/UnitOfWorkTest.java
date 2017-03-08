@@ -672,9 +672,8 @@ public class UnitOfWorkTest {
     }
 
     @Test
-    public void testMergeDetachedEvictFromCache() throws Exception {
-        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), CONTEXT_URI))
-                .thenReturn(Boolean.TRUE);
+    public void mergeDetachedEvictsInstanceFromCache() throws Exception {
+        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), CONTEXT_URI)).thenReturn(Boolean.TRUE);
         mergeDetachedTest();
         verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
     }

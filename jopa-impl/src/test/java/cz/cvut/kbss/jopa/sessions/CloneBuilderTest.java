@@ -392,7 +392,7 @@ public class CloneBuilderTest {
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(a, cloneA,
                 defaultDescriptor);
         chSet.addChangeRecord(new ChangeRecordImpl(OWLClassA.getStrAttField().getName(), newStrAtt));
-        builder.mergeChanges(a, chSet);
+        builder.mergeChanges(chSet);
 
         assertEquals(newStrAtt, a.getStringAttribute());
     }
@@ -406,7 +406,7 @@ public class CloneBuilderTest {
                 defaultDescriptor);
         chSet.addChangeRecord(new ChangeRecordImpl(OWLClassB.getPropertiesField().getName(), b
                 .getProperties()));
-        builder.mergeChanges(entityB, chSet);
+        builder.mergeChanges(chSet);
 
         assertNotNull(entityB.getProperties());
         assertEquals(b.getProperties(), entityB.getProperties());
@@ -422,7 +422,7 @@ public class CloneBuilderTest {
                 defaultDescriptor);
         chSet.addChangeRecord(new ChangeRecordImpl(OWLClassC.getRefListField().getName(), c
                 .getReferencedList()));
-        builder.mergeChanges(entityC, chSet);
+        builder.mergeChanges(chSet);
 
         assertNotNull(entityC.getReferencedList());
         for (int i = 0; i < c.getReferencedList().size(); i++) {
@@ -442,7 +442,7 @@ public class CloneBuilderTest {
         chSet.addChangeRecord(new ChangeRecordImpl(OWLClassC.getRefListField().getName(), c
                 .getReferencedList()));
 
-        builder.mergeChanges(entityC, chSet);
+        builder.mergeChanges(chSet);
         assertNotNull(entityC.getReferencedList());
         assertEquals(1, entityC.getReferencedList().size());
         assertEquals(newA, entityC.getReferencedList().get(0));
@@ -481,7 +481,7 @@ public class CloneBuilderTest {
         changeSet.addChangeRecord(
                 new ChangeRecordImpl(OWLClassM.getDateAttributeField().getName(), m.getDateAttribute()));
 
-        builder.mergeChanges(entityM, changeSet);
+        builder.mergeChanges(changeSet);
         assertEquals(m.getBooleanAttribute(), entityM.getBooleanAttribute());
         assertEquals(m.getIntAttribute(), entityM.getIntAttribute());
         assertEquals(m.getLongAttribute(), entityM.getLongAttribute());
@@ -565,7 +565,7 @@ public class CloneBuilderTest {
         final ObjectChangeSet chSet = TestEnvironmentUtils.createObjectChangeSet(entityD, dClone, null);
         chSet.addChangeRecord(new ChangeRecordImpl(OWLClassD.getOwlClassAField().getName(), newValueClone));
         when(uow.getOriginal(newValueClone)).thenReturn(newValue);
-        builder.mergeChanges(entityD, chSet);
+        builder.mergeChanges(chSet);
         assertSame(newValue, entityD.getOwlClassA());
         assertEquals(newValue.getUri(), entityD.getOwlClassA().getUri());
         assertEquals(newValue.getStringAttribute(), entityD.getOwlClassA().getStringAttribute());
@@ -601,7 +601,7 @@ public class CloneBuilderTest {
                 new ChangeRecordImpl(OWLClassQ.getParentStringField().getName(), qClone.getParentString()));
         changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassQ.getOwlClassAField().getName(), qClone.getOwlClassA()));
 
-        builder.mergeChanges(entityQ, changeSet);
+        builder.mergeChanges(changeSet);
         assertEquals(qClone.getStringAttribute(), entityQ.getStringAttribute());
         assertEquals(qClone.getParentString(), entityQ.getParentString());
         assertEquals(qClone.getOwlClassA().getUri(), entityQ.getOwlClassA().getUri());

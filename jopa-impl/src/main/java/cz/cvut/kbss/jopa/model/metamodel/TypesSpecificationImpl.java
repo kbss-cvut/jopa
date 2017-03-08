@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,27 +15,25 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.model.annotations.FetchType;
-import cz.cvut.kbss.jopa.model.metamodel.ManagedType;
-import cz.cvut.kbss.jopa.model.metamodel.TypesSpecification;
 
 import java.lang.reflect.Field;
+import java.util.Set;
 
-public class TypesSpecificationImpl<X, Y> implements
-        TypesSpecification<X, Y> {
+public class TypesSpecificationImpl<X, Y> implements TypesSpecification<X, Y> {
     private final ManagedType<X> declaringType;
     private final FetchType fetchType;
     private final Field javaField;
-    private Class<Y> javaType;
+    private Class<Y> elementType;
     private boolean inferred;
 
     public TypesSpecificationImpl(final ManagedType<X> declaringType,
                                   final FetchType fetchType, final Field javaField,
-                                  final Class<Y> javaType, boolean inferred) {
+                                  final Class<Y> elementType, boolean inferred) {
 
         this.declaringType = declaringType;
         this.fetchType = fetchType;
         this.javaField = javaField;
-        this.javaType = javaType;
+        this.elementType = elementType;
         this.inferred = inferred;
     }
 
@@ -55,8 +53,13 @@ public class TypesSpecificationImpl<X, Y> implements
     }
 
     @Override
-    public Class<Y> getJavaType() {
-        return javaType;
+    public Class<Set> getJavaType() {
+        return Set.class;
+    }
+
+    @Override
+    public Class<Y> getElementType() {
+        return elementType;
     }
 
     @Override
