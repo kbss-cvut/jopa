@@ -19,6 +19,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -27,6 +28,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.core.Is.isA;
@@ -946,5 +948,44 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
         assertEquals(originalString, result.getStringAttribute());
+    }
+
+    @Test
+    public void mergeMergesUpdatedDataPropertyFields() {
+        this.em = getEntityManager("mergeMergesUpdatedDataPropertyFields", true);
+        persist(entityA);
+        final Set<String> newTypes =
+                Generators.createUriTypes().stream().map(URI::toString).collect(Collectors.toSet());
+        entityA.setTypes(newTypes);
+        final String newStringAtt = "newStringAttribute";
+        entityA.setStringAttribute(newStringAtt);
+
+        em.getTransaction().begin();
+        final OWLClassA merged = em.merge(entityA);
+        assertEquals(newStringAtt, merged.getStringAttribute());
+        assertTrue(TestEnvironmentUtils.typesEqual(newTypes, merged.getTypes()));
+        em.getTransaction().commit();
+
+        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
+        assertEquals(newStringAtt, result.getStringAttribute());
+        assertTrue(TestEnvironmentUtils.typesEqual(newTypes, result.getTypes()));
+    }
+
+    @Test
+    public void mergeMergesUpdateToObjectPropertyField() {
+        this.em = getEntityManager("mergeMergesUpdateToObjectPropertyField", true);
+        persist(entityD, entityA, entityA2);
+
+        em.getTransaction().begin();
+        entityD.setOwlClassA(entityA2);
+        final OWLClassD merged = em.merge(entityD);
+        assertEquals(entityA2.getUri(), merged.getOwlClassA().getUri());
+        em.getTransaction().commit();
+
+        final OWLClassD dResult = em.find(OWLClassD.class, entityD.getUri());
+        assertEquals(entityA2.getUri(), dResult.getOwlClassA().getUri());
+        final OWLClassA aReference = em.find(OWLClassA.class, entityA2.getUri());
+        assertSame(dResult.getOwlClassA(), aReference);
+        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
     }
 }

@@ -552,7 +552,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     /**
      * Merge the changes from this Unit of Work's change set into the server session.
      */
-    public void mergeChangesIntoParent() {
+    private void mergeChangesIntoParent() {
         if (hasChanges()) {
             mergeManager.mergeChangesFromChangeSet(getUowChangeSet());
         }
@@ -595,20 +595,20 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
             changeManager.calculateChanges(chSet);
             if (chSet.hasChanges()) {
-                lifecycleListenerCaller.invokePreUpdateListeners(et, entity);
-            }
-            for (ChangeRecord record : chSet.getChanges().values()) {
-                final Field field = et.getFieldSpecification(record.getAttributeName()).getJavaField();
-                storage.merge(entity, field, descriptor);
+                lifecycleListenerCaller.invokePreUpdateListeners(et, clone);
             }
             final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
             merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
+            for (ChangeRecord record : chSet.getChanges().values()) {
+                final Field field = et.getFieldSpecification(record.getAttributeName()).getJavaField();
+                storage.merge(clone, field, descriptor);
+            }
             if (chSet.hasChanges()) {
-                lifecycleListenerCaller.invokePostUpdateListeners(et, entity);
+                lifecycleListenerCaller.invokePostUpdateListeners(et, clone);
             }
             getUowChangeSet().addObjectChangeSet(chSet);
         } catch (OWLEntityExistsException e) {
-            unregisterObject(entity);
+            unregisterObject(clone);
             throw e;
         } catch (IllegalAccessException e) {
             throw new OWLPersistenceException(e);

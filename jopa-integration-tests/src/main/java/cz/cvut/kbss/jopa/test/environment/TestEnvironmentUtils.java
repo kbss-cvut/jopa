@@ -34,4 +34,14 @@ public class TestEnvironmentUtils {
         }
         return true;
     }
+
+    public static <E> boolean typesEqual(Set<E> expected, Set<E> actual) {
+        if (expected == null && actual != null || expected != null && actual == null) {
+            return false;
+        }
+        if (expected == null) {
+            return true;
+        }
+        return expected.size() == actual.size() && expected.containsAll(actual);
+    }
 }
