@@ -15,7 +15,6 @@
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
 
-import cz.cvut.kbss.ontodriver.sesame.config.SesameOntoDriverProperties;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.openrdf.query.*;
 import org.openrdf.repository.RepositoryConnection;
