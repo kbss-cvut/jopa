@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -60,8 +60,7 @@ public class CloneBuilderImpl implements CloneBuilder {
     }
 
     @Override
-    public Object buildClone(Object cloneOwner, Field clonedField, Object original,
-                             Descriptor descriptor) {
+    public Object buildClone(Object cloneOwner, Field clonedField, Object original, Descriptor descriptor) {
         if (cloneOwner == null || original == null || descriptor == null) {
             throw new NullPointerException();
         }
@@ -69,8 +68,7 @@ public class CloneBuilderImpl implements CloneBuilder {
         return buildCloneImpl(cloneOwner, clonedField, original, descriptor);
     }
 
-    private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original,
-                                  Descriptor descriptor) {
+    private Object buildCloneImpl(Object cloneOwner, Field clonedField, Object original, Descriptor descriptor) {
         if (isOriginalInUoW(original)) {
             return uow.getCloneForOriginal(original);
         }
@@ -166,7 +164,8 @@ public class CloneBuilderImpl implements CloneBuilder {
     }
 
     @Override
-    public void mergeChanges(Object original, ObjectChangeSet changeSet) {
+    public void mergeChanges(ObjectChangeSet changeSet) {
+        final Object original = changeSet.getChangedObject();
         Map<String, ChangeRecord> changes = changeSet.getChanges();
         final EntityType<?> et = getMetamodel().entity(original.getClass());
         try {
@@ -225,6 +224,11 @@ public class CloneBuilderImpl implements CloneBuilder {
     @Override
     public void reset() {
         visitedEntities.clear();
+    }
+
+    @Override
+    public void removeVisited(Object instance, Descriptor descriptor) {
+        visitedEntities.remove(descriptor, instance);
     }
 
     IndirectCollection<?> createIndirectCollection(Object c, Object owner, Field f) {

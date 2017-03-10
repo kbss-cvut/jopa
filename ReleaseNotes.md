@@ -1,5 +1,9 @@
 # JOPA - Release Notes
 
+## 0.9.4 - March 10, 2017
+- Fixed issue with merge overwriting values of references in managed objects (Bug #2).
+- Aligned merge implementation with the JPA specification semantics.
+
 ## 0.9.3 - February 28,2017
 - Fixed issue in which second level cache was being bypassed by instances loaded from repository.
 - Create default collection instance (currently `ArrayList`, `HashSet`) when unable to clone the specified instance.

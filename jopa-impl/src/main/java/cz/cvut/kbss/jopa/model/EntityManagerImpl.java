@@ -154,36 +154,31 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     private <T> T mergeInternal(final T entity, final Descriptor descriptor) {
         assert entity != null;
         assert descriptor != null;
-        LOG.trace("Merging {}", entity);
+        LOG.trace("Merging {}.", entity);
         ensureOpen();
 
         switch (getState(entity, descriptor)) {
             case MANAGED_NEW:
             case MANAGED:
-                new OneLevelCascadeExplorer() {
+                new OneLevelMergeCascadeExplorer() {
                     @Override
-                    protected void exploreCascaded(Attribute<?, ?> at, Object o) {
-                        mergeX(at, o, descriptor);
+                    protected void exploreCascaded(Attribute<?, ?> at, Object merged, Object toMerge) {
+                        final Descriptor attDescriptor = descriptor.getAttributeDescriptor(at);
+                        mergeX(at, merged, toMerge, attDescriptor);
                     }
-                }.start(this, entity, CascadeType.MERGE);
+                }.start(this, entity, entity);
                 return entity;
             case NOT_MANAGED:
                 final T merged;
                 merged = getCurrentPersistenceContext().mergeDetached(entity, descriptor);
 
-                new OneLevelCascadeExplorer() {
+                new OneLevelMergeCascadeExplorer() {
                     @Override
-                    protected void exploreCascaded(Attribute<?, ?> at, Object o) {
+                    protected void exploreCascaded(Attribute<?, ?> at, Object merged, Object toMerge) {
                         final Descriptor attDescriptor = descriptor.getAttributeDescriptor(at);
-                        mergeX(at, o, attDescriptor);
+                        mergeX(at, merged, toMerge, attDescriptor);
                     }
-
-                    @Override
-                    protected void exploreNonCascaded(Attribute<?, ?> at, Object o) {
-                        final Object attVal = EntityPropertiesUtils.getAttributeValue(at, o);
-                        EntityPropertiesUtils.setFieldValue(at.getJavaField(), o, attVal);
-                    }
-                }.start(this, merged, CascadeType.MERGE);
+                }.start(this, merged, entity);
                 return merged;
             case REMOVED:
             default:
@@ -191,22 +186,22 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         }
     }
 
-    private void mergeX(Attribute<?, ?> at, Object o, Descriptor descriptor) {
-        Object attVal = EntityPropertiesUtils.getAttributeValue(at, o);
+    private void mergeX(Attribute<?, ?> at, Object merged, Object toMerge, Descriptor descriptor) {
+        Object attVal = EntityPropertiesUtils.getAttributeValue(at, toMerge);
         if (attVal == null) {
             return;
         }
         if (at.isCollection()) {
             Collection c = (Collection) attVal;
-            Collection merged = CollectionFactory.createInstance(c);
+            Collection result = CollectionFactory.createInstance(c);
             for (final Object ox2 : c) {
-                merged.add(mergeInternal(ox2, descriptor));
+                result.add(mergeInternal(ox2, descriptor));
             }
-            attVal = getCurrentPersistenceContext().createIndirectCollection(merged, o, at.getJavaField());
+            attVal = getCurrentPersistenceContext().createIndirectCollection(result, merged, at.getJavaField());
         } else {
             attVal = mergeInternal(attVal, descriptor);
         }
-        EntityPropertiesUtils.setFieldValue(at.getJavaField(), o, attVal);
+        EntityPropertiesUtils.setFieldValue(at.getJavaField(), merged, attVal);
     }
 
     @Override

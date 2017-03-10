@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -21,43 +21,35 @@ import java.util.Map;
 
 class ChangeDetectors implements ChangeDetector {
 
-    private static final ChangeDetector MANAGED_TYPE_DETECTOR = new ManagedTypeChangeDetector();
-
     private final MetamodelProvider metamodelProvider;
 
     private final ChangeDetector mapChangeDetector;
     private final ChangeDetector collectionChangeDetector;
+    private final ChangeDetector managedTypeDector;
 
-    ChangeDetectors(MetamodelProvider metamodelProvider, ChangeManagerImpl changeManager) {
+    ChangeDetectors(MetamodelProvider metamodelProvider) {
         this.metamodelProvider = metamodelProvider;
-        this.mapChangeDetector = new MapChangeDetector(this, changeManager);
-        this.collectionChangeDetector = new CollectionChangeDetector(this, changeManager, metamodelProvider);
+        this.mapChangeDetector = new MapChangeDetector(this);
+        this.collectionChangeDetector = new CollectionChangeDetector(this, metamodelProvider);
+        this.managedTypeDector = new ManagedTypeChangeDetector(metamodelProvider);
     }
 
     @Override
-    public Changed hasChanges(Object clone, Object original) {
+    public boolean hasChanges(Object clone, Object original) {
         if ((clone == null && original != null) || (clone != null && original == null)) {
-            return Changed.TRUE;
+            return true;
         }
         if (clone == null) {
-            return Changed.FALSE;
+            return false;
         }
 
         if (metamodelProvider.isTypeManaged(clone.getClass())) {
-            return MANAGED_TYPE_DETECTOR.hasChanges(clone, original);
+            return managedTypeDector.hasChanges(clone, original);
         } else if (clone instanceof Collection) {
             return collectionChangeDetector.hasChanges(clone, original);
         } else if (clone instanceof Map) {
             return mapChangeDetector.hasChanges(clone, original);
         }
-        return Changed.fromBoolean(!clone.equals(original));
-    }
-
-    private static class ManagedTypeChangeDetector implements ChangeDetector {
-
-        @Override
-        public Changed hasChanges(Object clone, Object original) {
-            return Changed.UNDETERMINED;
-        }
+        return !clone.equals(original);
     }
 }

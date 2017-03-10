@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,7 +27,8 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 public class CollectionChangeDetectorTest {
@@ -43,21 +44,18 @@ public class CollectionChangeDetectorTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        final ChangeManagerImpl changeManager = new ChangeManagerImpl(providerMock);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodel);
         when(providerMock.getMetamodel()).thenReturn(metamodel);
-        this.changeDetector = new CollectionChangeDetector(new ChangeDetectors(providerMock, changeManager),
-                changeManager, providerMock);
+        this.changeDetector = new CollectionChangeDetector(new ChangeDetectors(providerMock), providerMock);
     }
 
     @Test
-    public void hasChangesReturnsNoChangesForTwoSetsOfManagedClassInstances() {
+    public void hasChangesReturnsFalseForTwoSetsOfManagedClassInstances() {
         final Set<OWLClassA> original = initSet();
         final Set<OWLClassA> clone = initSet();
         when(providerMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
-        final Changed changed = changeDetector.hasChanges(clone, original);
-        assertEquals(Changed.FALSE, changed);
+        assertFalse(changeDetector.hasChanges(clone, original));
     }
 
     private Set<OWLClassA> initSet() {
@@ -79,21 +77,47 @@ public class CollectionChangeDetectorTest {
     }
 
     @Test
-    public void hasChangesReturnsChangeWhenCollectionOfManagedInstancesHasUpdatedElement() {
+    public void hasChangesReturnsFalseWhenCollectionOfManagedTypesHasAttributeValueUpdate() {
         final Set<OWLClassA> original = initSet();
         final Set<OWLClassA> clone = initSet();
         when(providerMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
         clone.iterator().next().setStringAttribute("updated");
-        final Changed changed = changeDetector.hasChanges(clone, original);
-        assertEquals(Changed.TRUE, changed);
+        assertFalse(changeDetector.hasChanges(clone, original));
+    }
+
+    @Test
+    public void hasChangesReturnsTrueWhenItemIsReplacedInCollectionOfManagedTypes() {
+        final Set<OWLClassA> original = initSet();
+        final Set<OWLClassA> clone = initSet();
+        when(providerMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
+        final OWLClassA newItem = new OWLClassA(Generators.createIndividualIdentifier());
+        removeItemFromCollection(clone);
+        clone.add(newItem);
+        assertTrue(changeDetector.hasChanges(clone, original));
+    }
+
+    private void removeItemFromCollection(Set<OWLClassA> clone) {
+        final Iterator<OWLClassA> it = clone.iterator();
+        it.next();
+        it.remove();
+    }
+
+    @Test
+    public void hasChangesReturnsTrueWhenItemIsReplacedByNewObjectInCollectionOfManagedTypes() {
+        final Set<OWLClassA> original = initSet();
+        final Set<OWLClassA> clone = initSet();
+        when(providerMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
+        final OWLClassA newItem = new OWLClassA();
+        removeItemFromCollection(clone);
+        clone.add(newItem);
+        assertTrue(changeDetector.hasChanges(clone, original));
     }
 
     @Test
     public void hasChangesReturnsFalseForTwoEmptyCollections() {
         final Set<String> original = new HashSet<>();
         final Set<String> clone = new HashSet<>();
-        final Changed changed = changeDetector.hasChanges(clone, original);
-        assertEquals(Changed.FALSE, changed);
+        assertFalse(changeDetector.hasChanges(clone, original));
     }
 
     @Test
@@ -103,19 +127,15 @@ public class CollectionChangeDetectorTest {
                         Generators.randomInt(400), Generators.randomInt(300));
         final Set<Integer> original = new HashSet<>(lst);
         final Set<Integer> clone = new HashSet<>(lst);
-        final Changed changed = changeDetector.hasChanges(clone, original);
-        assertEquals(Changed.FALSE, changed);
+        assertFalse(changeDetector.hasChanges(clone, original));
     }
 
     @Test
     public void hasChangesReturnsTrueWhenCollectionSizeChanges() {
         final Set<OWLClassA> original = initSet();
         final Set<OWLClassA> clone = initSet();
-        final Iterator<OWLClassA> it = clone.iterator();
-        it.next();
-        it.remove();
-        final Changed changed = changeDetector.hasChanges(clone, original);
-        assertEquals(Changed.TRUE, changed);
+        removeItemFromCollection(clone);
+        assertTrue(changeDetector.hasChanges(clone, original));
     }
 
     @Test
@@ -127,7 +147,6 @@ public class CollectionChangeDetectorTest {
             original.add(Generators.createIndividualIdentifier().toString());
             clone.add(Generators.createIndividualIdentifier().toString());
         }
-        final Changed changed = changeDetector.hasChanges(clone, original);
-        assertEquals(Changed.TRUE, changed);
+        assertTrue(changeDetector.hasChanges(clone, original));
     }
 }

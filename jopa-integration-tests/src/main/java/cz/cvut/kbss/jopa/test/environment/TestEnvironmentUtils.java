@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,20 +19,29 @@ import java.util.Set;
 
 public class TestEnvironmentUtils {
 
-    public static boolean arePropertiesEqual(Map<String, Set<String>> pOne,
-                                             Map<String, Set<String>> pTwo) {
+    public static <K, V> boolean arePropertiesEqual(Map<K, Set<V>> pOne, Map<K, Set<V>> pTwo) {
         if (pOne.size() != pTwo.size()) {
             return false;
         }
-        for (Map.Entry<String, Set<String>> e : pOne.entrySet()) {
+        for (Map.Entry<K, Set<V>> e : pOne.entrySet()) {
             if (!pTwo.containsKey(e.getKey())) {
                 return false;
             }
-            final Set<String> set = pTwo.get(e.getKey());
+            final Set<?> set = pTwo.get(e.getKey());
             if (!e.getValue().equals(set)) {
                 return false;
             }
         }
         return true;
+    }
+
+    public static <E> boolean typesEqual(Set<E> expected, Set<E> actual) {
+        if (expected == null && actual != null || expected != null && actual == null) {
+            return false;
+        }
+        if (expected == null) {
+            return true;
+        }
+        return expected.size() == actual.size() && expected.containsAll(actual);
     }
 }

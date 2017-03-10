@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,76 +15,92 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.EntityType;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
 import java.net.URI;
+import java.util.Objects;
 
 public class MergeManagerImpl implements MergeManager {
 
-	// The UnitOfWork instance for this MergeManager
-	protected UnitOfWorkImpl uow;
+    protected UnitOfWorkImpl uow;
 
-	protected CloneBuilder builder;
+    protected CloneBuilder builder;
 
-	public MergeManagerImpl(UnitOfWorkImpl session) {
-		this.uow = session;
-		this.builder = new CloneBuilderImpl(session);
-	}
+    MergeManagerImpl(UnitOfWorkImpl session) {
+        this.uow = session;
+        this.builder = session.getCloneBuilder();
+    }
 
-	protected void deleteObjectFromCache(ObjectChangeSet changeSet) {
-		Object original = changeSet.getChangedObject();
-		if (original != null) {
-			uow.removeObjectFromCache(original, changeSet.getEntityContext());
-		}
-	}
+    private void deleteObjectFromCache(ObjectChangeSet changeSet) {
+        Object original = changeSet.getChangedObject();
+        if (original != null) {
+            uow.removeObjectFromCache(original, changeSet.getEntityContext());
+        }
+    }
 
-	public Object mergeChangesOnObject(Object clone, ObjectChangeSet changeSet) {
-		if (changeSet == null) {
-			throw new OWLPersistenceException("Change Set in Merge Manager null.");
-		}
-		if (clone == null) {
-			return null;
-		}
+    @Override
+    public Object mergeChangesOnObject(ObjectChangeSet changeSet) {
+        Objects.requireNonNull(changeSet);
+        final Object clone = changeSet.getCloneObject();
+        if (clone == null) {
+            return null;
+        }
 
-		Object original = changeSet.getChangedObject();
-		if (original == null) {
-			// If the original is null, then we may have a new object
-			// but this should not happen since new objects are handled
-			// separately
-			if (uow.isObjectNew(clone)) {
-				mergeNewObject(changeSet);
-			} else {
-				throw new OWLPersistenceException("Cannot find the original object.");
-			}
-		} else {
-			this.builder.mergeChanges(original, changeSet);
-		}
-		return clone;
-	}
+        final Object original = changeSet.getChangedObject();
+        if (original == null) {
+            // If the original is null, then we may have a new object
+            // but this should not happen since new objects are handled separately
+            if (uow.isObjectNew(clone)) {
+                mergeNewObject(changeSet);
+            } else {
+                throw new OWLPersistenceException("Cannot find the original object.");
+            }
+        } else {
+            builder.mergeChanges(changeSet);
+        }
+        return clone;
+    }
 
-	public void mergeChangesFromChangeSet(UnitOfWorkChangeSet changeSet) {
-		for (ObjectChangeSet objectChangeSet : changeSet.getExistingObjectsChanges()) {
-				Object clone = objectChangeSet.getCloneObject();
-				mergeChangesOnObject(clone, objectChangeSet);
-		}
-		changeSet.getNewObjects().forEach(this::mergeNewObject);
-		changeSet.getDeletedObjects().forEach(this::deleteObjectFromCache);
+    @Override
+    public Object mergeChangesFromDetached(ObjectChangeSet changeSet) {
+        Objects.requireNonNull(changeSet);
+        final Object clone = changeSet.getCloneObject();
+        assert clone != null;
+        final Object original = changeSet.getChangedObject();
+        assert original != null;
 
-	}
+        final EntityType<?> et = uow.getMetamodel().entity(original.getClass());
+        for (ChangeRecord changeRecord : changeSet.getChanges().values()) {
+            // TODO Use the DetachedInstanceMerger
+        }
+        return clone;
+    }
 
-	public void mergeNewObject(ObjectChangeSet changeSet) {
-		if (changeSet == null) {
-			return;
-		}
-		Object clone = changeSet.getCloneObject();
-		if (!changeSet.isNew()) {
-			mergeChangesOnObject(clone, changeSet);
-		}
-		// Put the original object into the shared session cache
-		Object newObject = changeSet.getChangedObject();
-		final Object primaryKey = EntityPropertiesUtils.getPrimaryKey(newObject, uow.getMetamodel());
-		final URI context = changeSet.getEntityContext();
-		uow.putObjectIntoCache(primaryKey, newObject, context);
-	}
+    @Override
+    public void mergeChangesFromChangeSet(UnitOfWorkChangeSet changeSet) {
+        for (ObjectChangeSet objectChangeSet : changeSet.getExistingObjectsChanges()) {
+            mergeChangesOnObject(objectChangeSet);
+        }
+        changeSet.getNewObjects().forEach(this::mergeNewObject);
+        changeSet.getDeletedObjects().forEach(this::deleteObjectFromCache);
 
+    }
+
+    @Override
+    public void mergeNewObject(ObjectChangeSet changeSet) {
+        if (changeSet == null) {
+            return;
+        }
+        if (!changeSet.isNew()) {
+            mergeChangesOnObject(changeSet);
+        }
+        // Put the original object into the shared session cache
+        Object newObject = changeSet.getChangedObject();
+        final Object primaryKey = EntityPropertiesUtils.getPrimaryKey(newObject, uow.getMetamodel());
+        final URI context = changeSet.getEntityContext();
+        uow.putObjectIntoCache(primaryKey, newObject, context);
+    }
 }

@@ -24,7 +24,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public class ChangeManagerImpl implements ChangeManager {
 
@@ -37,12 +40,12 @@ public class ChangeManagerImpl implements ChangeManager {
 
     public ChangeManagerImpl(MetamodelProvider metamodelProvider) {
         this.metamodelProvider = metamodelProvider;
-        this.changeDetector = new ChangeDetectors(metamodelProvider, this);
+        this.changeDetector = new ChangeDetectors(metamodelProvider);
         visitedObjects = new IdentityHashMap<>();
     }
 
+    @Override
     public boolean hasChanges(Object original, Object clone) {
-        LOG.trace("Checking for changes...");
         boolean res = hasChangesInternal(original, clone);
         visitedObjects.clear();
         return res;
@@ -67,26 +70,12 @@ public class ChangeManagerImpl implements ChangeManager {
             return false;
         }
         final Class<?> cls = clone.getClass();
-        Map<Object, Object> composedObjects = new HashMap<>();
         for (FieldSpecification<?, ?> fs : getFields(cls)) {
             final Field f = fs.getJavaField();
-            Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
-            Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
-            final Changed ch = valueChanged(origVal, clVal);
-            switch (ch) {
-                case TRUE:
-                    return true;
-                case UNDETERMINED:
-                    visitedObjects.put(clVal, clVal);
-                    composedObjects.put(clVal, origVal);
-                    break;
-                default:
-                    break;
-            }
-        }
-        // First check all primitive values - performance, then do composed
-        for (Object cl : composedObjects.keySet()) {
-            if (hasChangesInternal(cl, composedObjects.get(cl))) {
+            final Object clVal = EntityPropertiesUtils.getFieldValue(f, clone);
+            final Object origVal = EntityPropertiesUtils.getFieldValue(f, original);
+            final boolean valueChanged = valueChanged(origVal, clVal);
+            if (valueChanged) {
                 return true;
             }
         }
@@ -97,13 +86,14 @@ public class ChangeManagerImpl implements ChangeManager {
         return metamodelProvider.getMetamodel().entity(cls).getFieldSpecifications();
     }
 
-    private Changed valueChanged(Object orig, Object clone) {
+    private boolean valueChanged(Object orig, Object clone) {
         return changeDetector.hasChanges(clone, orig);
     }
 
+    @Override
     public boolean calculateChanges(ObjectChangeSet changeSet) throws IllegalAccessException,
-            IllegalArgumentException,
-            OWLInferredAttributeModifiedException {
+                                                                      IllegalArgumentException,
+                                                                      OWLInferredAttributeModifiedException {
         return calculateChangesInternal(Objects.requireNonNull(changeSet));
     }
 
@@ -128,20 +118,10 @@ public class ChangeManagerImpl implements ChangeManager {
                 continue;
             }
             final String attName = f.getName();
-            Changed changed = valueChanged(origVal, clVal);
-            switch (changed) {
-                case TRUE:
-                    changeSet.addChangeRecord(new ChangeRecordImpl(attName, clVal));
-                    changes = true;
-                    break;
-                case UNDETERMINED:
-                    if (hasChanges(origVal, clVal)) {
-                        changeSet.addChangeRecord(new ChangeRecordImpl(attName, clVal));
-                        changes = true;
-                    }
-                    break;
-                default:
-                    break;
+            boolean changed = valueChanged(origVal, clVal);
+            if (changed) {
+                changeSet.addChangeRecord(new ChangeRecordImpl(attName, clVal));
+                changes = true;
             }
         }
         return changes;

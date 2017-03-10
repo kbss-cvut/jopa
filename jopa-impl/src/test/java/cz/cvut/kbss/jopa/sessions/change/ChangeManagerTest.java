@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,17 +15,15 @@
 package cz.cvut.kbss.jopa.sessions.change;
 
 import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
-import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
-import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ChangeManager;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.MetamodelProvider;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -43,21 +41,20 @@ public class ChangeManagerTest {
 
     private static final URI DEFAULT_CONTEXT = URI.create("http://defaultContext");
 
-    private static OWLClassA testA;
-    private static OWLClassB testB;
-    private static OWLClassD testD;
-    private static OWLClassC testC;
-    private static OWLClassO testO;
-    private static OWLClassM testM;
-    private static OWLClassQ testQ;
+    private OWLClassA testA;
+    private OWLClassB testB;
+    private OWLClassD testD;
+    private OWLClassC testC;
+    private OWLClassO testO;
+    private OWLClassM testM;
+    private OWLClassQ testQ;
 
     private OWLClassA testAClone;
     private OWLClassB testBClone;
     private OWLClassC testCClone;
     private OWLClassD testDClone;
 
-    private static Set<String> typesCollection;
-    private static Descriptor defaultDescriptor;
+    private Set<String> typesCollection;
 
     @Mock
     private MetamodelProvider providerMock;
@@ -66,90 +63,10 @@ public class ChangeManagerTest {
 
     private ChangeManager manager;
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        initA();
-        initB();
-        initC();
-        initD();
-        initO();
-        initQ();
-        typesCollection = new HashSet<>();
-        for (int i = 0; i < 10; i++) {
-            typesCollection.add(Integer.toString(i));
-        }
-        OWLClassF testF = new OWLClassF();
-        testF.setUri(URI.create("http://testF"));
-        testM = new OWLClassM();
-        testM.initializeTestValues(false);
-        defaultDescriptor = new EntityDescriptor(DEFAULT_CONTEXT);
-    }
-
-    private static void initA() {
-        testA = new OWLClassA();
-        final URI uri = URI.create("http://testA");
-        testA.setUri(uri);
-        testA.setStringAttribute("TestStringAttribute");
-    }
-
-    private static void initB() {
-        testB = new OWLClassB();
-        testB.setUri(URI.create("http://testB"));
-        testB.setStringAttribute("someString");
-        final Map<String, Set<String>> props = new HashMap<>();
-        props.put("propertyOne", Collections.singleton("valueOne"));
-        props.put("propertyTwo", Collections.singleton("valueTwo"));
-        final Set<String> multiProp = new HashSet<>();
-        multiProp.add("valueThree");
-        multiProp.add("valueFour");
-        props.put("propertyThree", multiProp);
-        testB.setProperties(props);
-    }
-
-    private static void initC() {
-        testC = new OWLClassC();
-        final URI pkC = URI.create("http://testC");
-        testC.setUri(pkC);
-        List<OWLClassA> refList = new ArrayList<>(10);
-        for (int i = 0; i < 10; i++) {
-            OWLClassA a = new OWLClassA();
-            URI pkA = URI.create("http://testARef" + (i + 1));
-            a.setUri(pkA);
-            a.setStringAttribute("stringForA" + (i + 1));
-            refList.add(a);
-        }
-        testC.setReferencedList(refList);
-    }
-
-    private static void initD() {
-        final URI uri2 = URI.create("http://referencedA");
-        final OWLClassA refA = new OWLClassA();
-        refA.setUri(uri2);
-        refA.setStringAttribute("att");
-        testD = new OWLClassD();
-        final URI uri3 = URI.create("http://testD");
-        testD.setUri(uri3);
-        testD.setOwlClassA(refA);
-    }
-
-    private static void initO() {
-        testO = new OWLClassO();
-        testO.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies#testO"));
-        testO.setStringAttribute("String");
-    }
-
-    private static void initQ() {
-        testQ = new OWLClassQ();
-        testQ.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies#testQ"));
-        testQ.setStringAttribute("someString");
-        testQ.setParentString("parentString");
-        testQ.setLabel("label");
-        testQ.setOwlClassA(testA);
-    }
-
     @Before
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
+        initInstances();
         manager = new ChangeManagerImpl(providerMock);
         when(providerMock.isTypeManaged(any(Class.class))).thenAnswer(invocation -> {
             final Class<?> cls = (Class<?>) invocation.getArguments()[0];
@@ -158,7 +75,7 @@ public class ChangeManagerTest {
         when(providerMock.getMetamodel()).thenReturn(metamodelMock);
         final MetamodelMocks mocks = new MetamodelMocks();
         mocks.setMocks(metamodelMock);
-        testA.setTypes(null);
+        typesCollection = Generators.generateTypes(10);
         initClones();
         final List<OWLClassA> clonedList = new ArrayList<>(testC.getReferencedList().size());
         for (OWLClassA a : testC.getReferencedList()) {
@@ -170,10 +87,67 @@ public class ChangeManagerTest {
         testCClone.setReferencedList(clonedList);
     }
 
+    private void initInstances() {
+        this.testA = Generators.generateOwlClassAInstance();
+        initB();
+        initC();
+        initD();
+        this.testM = new OWLClassM();
+        testM.initializeTestValues(false);
+        initO();
+        initQ();
+    }
+
+    private void initB() {
+        testB = new OWLClassB();
+        testB.setUri(Generators.createIndividualIdentifier());
+        testB.setStringAttribute("someString");
+        final Map<String, Set<String>> props = new HashMap<>();
+        props.put("propertyOne", Collections.singleton("valueOne"));
+        props.put("propertyTwo", Collections.singleton("valueTwo"));
+        final Set<String> multiProp = new HashSet<>();
+        multiProp.add("valueThree");
+        multiProp.add("valueFour");
+        props.put("propertyThree", multiProp);
+        testB.setProperties(props);
+    }
+
+    private void initC() {
+        testC = new OWLClassC(Generators.createIndividualIdentifier());
+        List<OWLClassA> refList = new ArrayList<>(10);
+        for (int i = 0; i < 10; i++) {
+            OWLClassA a = new OWLClassA();
+            URI pkA = URI.create("http://testARef" + (i + 1));
+            a.setUri(pkA);
+            a.setStringAttribute("stringForA" + (i + 1));
+            refList.add(a);
+        }
+        testC.setReferencedList(refList);
+    }
+
+    private void initD() {
+        this.testD = new OWLClassD(Generators.createIndividualIdentifier());
+        testD.setOwlClassA(Generators.generateOwlClassAInstance());
+    }
+
+    private void initO() {
+        this.testO = new OWLClassO(Generators.createIndividualIdentifier());
+        testO.setStringAttribute("String");
+    }
+
+    private void initQ() {
+        this.testQ = new OWLClassQ();
+        testQ.setUri(Generators.createIndividualIdentifier());
+        testQ.setStringAttribute("someString");
+        testQ.setParentString("parentString");
+        testQ.setLabel("label");
+        testQ.setOwlClassA(testA);
+    }
+
     private void initClones() {
         this.testAClone = new OWLClassA(testA.getUri());
-        testAClone.setStringAttribute(null);
-        testAClone.setTypes(null);
+        testAClone.setStringAttribute(testA.getStringAttribute());
+        testAClone.setTypes(new HashSet<>(testA.getTypes()));
         final Map<String, Set<String>> cloneProps = new HashMap<>();
         for (Entry<String, Set<String>> e : testB.getProperties().entrySet()) {
             final Set<String> set = e.getValue().stream().collect(Collectors.toSet());
@@ -185,44 +159,46 @@ public class ChangeManagerTest {
         testCClone = new OWLClassC();
         testCClone.setUri(testC.getUri());
         testDClone = new OWLClassD(testD.getUri());
+        final OWLClassA refAClone = new OWLClassA(testD.getOwlClassA().getUri());
+        refAClone.setStringAttribute(testD.getOwlClassA().getStringAttribute());
+        refAClone.setTypes(new HashSet<>(testD.getOwlClassA().getTypes()));
+        testDClone.setOwlClassA(refAClone);
     }
 
     @Test
-    public void testNullHasChanges() {
+    public void hasChangesOnNullReturnsFalse() {
         assertFalse(manager.hasChanges(null, null));
     }
 
     @Test
-    public void testHasSimpleChanges() {
-        testAClone.setStringAttribute("differentStringAtribute");
+    public void hasChangeWithChangedDataPropertyValueReturnsTrue() {
+        testAClone.setStringAttribute("differentStringAttribute");
         assertTrue(manager.hasChanges(testA, testAClone));
     }
 
     @Test
-    public void testHasNoChanges() {
+    public void hasChangeWithoutChangeOnDataPropertyReturnsFalse() {
         testAClone.setStringAttribute(testA.getStringAttribute());
         assertFalse(manager.hasChanges(testA, testA));
     }
 
     @Test
-    public void testReferenceChange() {
-        final OWLClassA ref = new OWLClassA();
-        final URI uri = URI.create("http://newReferenceA");
-        ref.setUri(uri);
+    public void hasChangeOnDifferentObjectPropertyValueReturnsTrue() {
+        final OWLClassA ref = new OWLClassA(Generators.createIndividualIdentifier());
         ref.setStringAttribute(testA.getStringAttribute());
         testDClone.setOwlClassA(ref);
         assertTrue(manager.hasChanges(testD, testDClone));
     }
 
     @Test
-    public void testCollectionEmptyHasChange() {
+    public void hasChangeFromEmptyCollectionToNonEmptyReturnsTrue() {
         testAClone.setTypes(typesCollection);
         testA.setTypes(new HashSet<>());
         assertTrue(manager.hasChanges(testA, testAClone));
     }
 
     @Test
-    public void testCollectionHasChange() {
+    public void hasChangeWhenAddedItemToCollectionReturnsTrue() {
         testA.setTypes(typesCollection);
         Set<String> changed = new HashSet<>();
         Iterator<String> it = typesCollection.iterator();
@@ -236,54 +212,58 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void testCollectionComplexHasChange() {
-        assertEquals(testC.getUri(), testCClone.getUri());
-        assertEquals(testC.getReferencedList().get(0).getUri(),
-                testCClone.getReferencedList().get(0).getUri());
-        assertEquals(testC.getReferencedList().get(5).getStringAttribute(), testCClone
-                .getReferencedList().get(5).getStringAttribute());
-        testCClone.getReferencedList().get(8).setStringAttribute("changedStringAttribute");
+    public void hasChangeWhenItemRemovedFromCollectionReturnsTrue() {
+        final Iterator<OWLClassA> it = testCClone.getReferencedList().iterator();
+        boolean removed = false;
+        while (it.hasNext()) {
+            it.next();
+            if (Generators.randomBoolean() || !removed) {
+                it.remove();
+                removed = true;
+            }
+        }
         assertTrue(manager.hasChanges(testC, testCClone));
     }
 
     @Test
-    public void testHasChangeSetFromNull() {
-        final OWLClassA a = new OWLClassA();
-        a.setUri(testAClone.getUri());
-        // The original has string attribute null
+    public void hasChangeOnDataPropertyWhenOriginalValueWasNullReturnsTrue() {
+        testA.setStringAttribute(null);
         testAClone.setStringAttribute("someString");
-        assertTrue(manager.hasChanges(a, testAClone));
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testCalculateChangesNull() throws Exception {
-        manager.calculateChanges(null);
-        fail("This line should not have been reached.");
+        assertTrue(manager.hasChanges(testA, testAClone));
     }
 
     @Test
-    public void testCalculateChangesNoChanges() throws Exception {
-        final OWLClassA a = new OWLClassA();
-        a.setUri(testA.getUri());
-        a.setStringAttribute(testA.getStringAttribute());
-        final ObjectChangeSet chSet = createChangeSet(testA, a);
+    public void hasChangeAttributeValueChangeOnReferenceReturnsFalse() {
+        testDClone.getOwlClassA().setStringAttribute("updatedString");
+        assertFalse(manager.hasChanges(testD, testDClone));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void calculateChangesThrowsNPXForNullArgument() throws Exception {
+        manager.calculateChanges(null);
+    }
+
+    @Test
+    public void calculateChangesForIdenticalObjectsAddsNoChangesToChangeSet() throws Exception {
+        final ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         final boolean res = manager.calculateChanges(chSet);
         assertFalse(res);
         assertTrue(chSet.getChanges().isEmpty());
     }
 
     @Test
-    public void testCalculateSimpleChanges() throws Exception {
+    public void calculateChangesRegistersChangeOnStringAttribute() throws Exception {
+        testAClone.setStringAttribute("updated");
         ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertFalse(chSet.getChanges().isEmpty());
-        assertTrue(chSet.getChanges().containsKey("stringAttribute"));
+        assertTrue(chSet.getChanges().containsKey(OWLClassA.getStrAttField().getName()));
     }
 
     @Test
-    public void testCalculateChangesPrimitives() throws Exception {
+    public void calculateChangesRegistersChangeOnPrimitiveTypeAttribute() throws Exception {
         final OWLClassM testMClone = new OWLClassM();
         testMClone.setIntAttribute(testM.getIntAttribute() + 117);
         ObjectChangeSet chSet = createChangeSet(testM, testMClone);
@@ -295,7 +275,7 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void testCalculateReferenceChanges() throws Exception {
+    public void calculateChangesRegistersChangeOnObjectPropertyAttribute() throws Exception {
         testDClone.setOwlClassA(testAClone);
         ObjectChangeSet chSet = createChangeSet(testD, testDClone);
         assertTrue(chSet.getChanges().isEmpty());
@@ -307,13 +287,12 @@ public class ChangeManagerTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testCalculateCollectionChanges() throws Exception {
+    public void calculateChangesRegistersChangeInCollection() throws Exception {
         testA.setTypes(typesCollection);
         Set<String> newCollection = new HashSet<>(typesCollection);
-        newCollection.remove("8");
+        newCollection.remove(typesCollection.iterator().next());
         newCollection.add("String");
         testAClone.setTypes(newCollection);
-        testAClone.setStringAttribute(testA.getStringAttribute());
         ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
@@ -324,10 +303,10 @@ public class ChangeManagerTest {
     }
 
     @Test
-    public void testCalculateMultipleChanges() throws Exception {
+    public void calculateChangesRegistersMultipleChanges() throws Exception {
         testA.setTypes(typesCollection);
         Set<String> newCollection = new HashSet<>(typesCollection);
-        newCollection.remove("8");
+        newCollection.remove(typesCollection.iterator().next());
         newCollection.add("String");
         testAClone.setTypes(newCollection);
         testAClone.setStringAttribute("AnotherStringAttribute");
@@ -336,55 +315,48 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(2, chSet.getChanges().size());
-        assertTrue(chSet.getChanges().containsKey("stringAttribute"));
-        assertTrue(chSet.getChanges().containsKey("types"));
+        assertTrue(chSet.getChanges().containsKey(OWLClassA.getStrAttField().getName()));
+        assertTrue(chSet.getChanges().containsKey(OWLClassA.getTypesField().getName()));
     }
 
     @Test
-    public void testCalculateChangesSetNull() throws Exception {
+    public void calculateChangesRegistersChangeWhenValueIsSetToNull() throws Exception {
         ObjectChangeSet chSet = createChangeSet(testA, testAClone);
+        testAClone.setStringAttribute(null);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertFalse(chSet.getChanges().isEmpty());
         assertNotNull(chSet);
-        assertNull(chSet.getChanges().get("stringAttribute").getNewValue());
+        assertNull(chSet.getChanges().get(OWLClassA.getStrAttField().getName()).getNewValue());
     }
 
     @Test
-    public void testCalculateChangeSetFromNull() throws Exception {
-        final OWLClassA a = new OWLClassA();
-        a.setUri(testAClone.getUri());
-        // The original has string attribute null
-        testAClone.setStringAttribute("someString");
-        final ObjectChangeSet chSet = createChangeSet(a, testAClone);
+    public void calculateChangesRegistersChangeWhenValueIsSetToNonNull() throws Exception {
+        testA.setTypes(null);
+        final ObjectChangeSet chSet = createChangeSet(testA, testAClone);
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        assertEquals(1, chSet.getChanges().size());
-        final ChangeRecord rec = chSet.getChanges().get(OWLClassA.getStrAttField().getName());
+        final ChangeRecord rec = chSet.getChanges().get(OWLClassA.getTypesField().getName());
         assertNotNull(rec.getNewValue());
     }
 
     @Test
-    public void testCalculateChangesRemoveItemFromReferenceList() throws Exception {
+    public void calculateChangesRegistersItemRemovalFromReferenceCollection() throws Exception {
         testCClone.getReferencedList().remove(4);
         ObjectChangeSet chSet = createChangeSet(testC, testCClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
-        assertTrue(chSet.getChanges().containsKey("referencedList"));
+        assertTrue(chSet.getChanges().containsKey(OWLClassC.getRefListField().getName()));
         assertEquals(1, chSet.getChanges().size());
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testCalculateChangesAddItemToReferenceList() throws Exception {
-        OWLClassA add = new OWLClassA();
-        final URI pk = URI.create("http://addedA");
-        add.setUri(pk);
-        add.setStringAttribute("string");
-        testCClone.getReferencedList().add(add);
+    public void calculateChangesRegistersItemAdditionToReferenceCollection() throws Exception {
+        testCClone.getReferencedList().add(testA);
         ObjectChangeSet chSet = createChangeSet(testC, testCClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
@@ -392,65 +364,60 @@ public class ChangeManagerTest {
         assertEquals(1, chSet.getChanges().size());
         final ChangeRecord r = chSet.getChanges().get(OWLClassC.getRefListField().getName());
         List<OWLClassA> refs = (List<OWLClassA>) r.getNewValue();
-        assertEquals(add.getUri(), refs.get(10).getUri());
-        assertEquals(add.getStringAttribute(), refs.get(10).getStringAttribute());
+        assertEquals(testA.getUri(), refs.get(10).getUri());
+        assertEquals(testA.getStringAttribute(), refs.get(10).getStringAttribute());
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testCalculateChangesChangeItemInReferenceList() throws Exception {
-        OWLClassA newOne = new OWLClassA();
-        final URI pk = URI.create("http://newOne");
-        newOne.setUri(pk);
-        newOne.setStringAttribute("newOnesString");
+    public void calculateChangesRegistersItemReplacementInReferenceCollection() throws Exception {
         testCClone.getReferencedList().remove(3);
-        testCClone.getReferencedList().add(newOne);
+        testCClone.getReferencedList().add(testA);
         ObjectChangeSet chSet = createChangeSet(testC, testCClone);
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
-        assertTrue(chSet.getChanges().containsKey("referencedList"));
+        assertTrue(chSet.getChanges().containsKey(OWLClassC.getRefListField().getName()));
         assertEquals(1, chSet.getChanges().size());
         final ChangeRecord r = chSet.getChanges().get(OWLClassC.getRefListField().getName());
         List<OWLClassA> refs = (List<OWLClassA>) r.getNewValue();
-        assertTrue(refs.contains(newOne));
+        assertTrue(refs.contains(testA));
     }
 
     @Test
-    public void testCalculateChangesMapAddKey() throws Exception {
+    public void calculateChangesRegistersMapKeyAddition() throws Exception {
         testBClone.getProperties().put("newProperty", Collections.singleton("propVal"));
         final ObjectChangeSet chSet = createChangeSet(testB, testBClone);
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        assertTrue(chSet.getChanges().containsKey("properties"));
+        assertTrue(chSet.getChanges().containsKey(OWLClassB.getPropertiesField().getName()));
     }
 
     @Test
-    public void testCalculateChangesMapChangeValue() throws Exception {
+    public void calculateChangesRegistersMapValueChange() throws Exception {
         final String key = testB.getProperties().keySet().iterator().next();
         testBClone.getProperties().put(key, Collections.singleton("propVal"));
         final ObjectChangeSet chSet = createChangeSet(testB, testBClone);
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        assertTrue(chSet.getChanges().containsKey("properties"));
+        assertTrue(chSet.getChanges().containsKey(OWLClassB.getPropertiesField().getName()));
     }
 
     @Test
-    public void testCalculateChangesMapAddValue() throws Exception {
+    public void calculateChangesRegistersMapValueAddition() throws Exception {
         final String key = testB.getProperties().keySet().iterator().next();
         testBClone.getProperties().get(key).add("addedValue");
         final ObjectChangeSet chSet = createChangeSet(testB, testBClone);
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        assertTrue(chSet.getChanges().containsKey("properties"));
+        assertTrue(chSet.getChanges().containsKey(OWLClassB.getPropertiesField().getName()));
     }
 
     private ObjectChangeSet createChangeSet(Object orig, Object clone) {
-        return TestEnvironmentUtils.createObjectChangeSet(orig, clone,
-                defaultDescriptor.getContext());
+        return TestEnvironmentUtils.createObjectChangeSet(orig, clone, DEFAULT_CONTEXT);
     }
 
     @Test

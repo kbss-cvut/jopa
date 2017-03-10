@@ -29,6 +29,7 @@ import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -52,7 +53,6 @@ public class UnitOfWorkTest {
     private OWLClassB entityB;
     private OWLClassD entityD;
     private OWLClassL entityL;
-    private OWLClassN entityN;
 
     @Mock
     private MetamodelImpl metamodelMock;
@@ -71,13 +71,20 @@ public class UnitOfWorkTest {
 
     private ServerSessionStub serverSessionStub;
 
+    private CloneBuilder cloneBuilder;
+
     private UnitOfWorkImpl uow;
+
+    @BeforeClass
+    public static void setUpBeforeClass() {
+
+    }
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         this.descriptor = new EntityDescriptor(CONTEXT_URI);
-        this.serverSessionStub = spy(new ServerSessionStub(mock(ConnectionWrapper.class)));
+        this.serverSessionStub = spy(new ServerSessionStub(storageMock));
         when(serverSessionStub.getMetamodel()).thenReturn(metamodelMock);
         when(serverSessionStub.getLiveObjectCache()).thenReturn(cacheManagerMock);
         when(emMock.getTransaction()).thenReturn(transactionMock);
@@ -88,31 +95,23 @@ public class UnitOfWorkTest {
         final Field connectionField = UnitOfWorkImpl.class.getDeclaredField("storage");
         connectionField.setAccessible(true);
         connectionField.set(uow, storageMock);
+        final Field cbField = UnitOfWorkImpl.class.getDeclaredField("cloneBuilder");
+        cbField.setAccessible(true);
+        this.cloneBuilder = spy((CloneBuilder) cbField.get(uow));
+        cbField.set(uow, cloneBuilder);
         initEntities();
     }
 
     private void initEntities() {
-        final URI pkOne = URI.create("http://testOne");
-        this.entityA = new OWLClassA();
-        entityA.setUri(pkOne);
-        entityA.setStringAttribute("attribute");
-        entityA.setTypes(new HashSet<>());
-        entityA.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa#entityQ");
-        entityA.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa#entityX");
-        entityA.getTypes().add("http://krizik.felk.cvut.cz/ontologies/jopa#entityW");
-        final URI pkTwo = URI.create("http://testTwo");
-        this.entityB = new OWLClassB();
-        entityB.setUri(pkTwo);
-        final URI pkThree = URI.create("http://testThree");
-        this.entityD = new OWLClassD();
-        entityD.setUri(pkThree);
+        this.entityA = Generators.generateOwlClassAInstance();
+        this.entityB = new OWLClassB(Generators.createIndividualIdentifier());
+        this.entityD = new OWLClassD(Generators.createIndividualIdentifier());
         entityD.setOwlClassA(entityA);
         this.entityL = new OWLClassL();
-        entityL.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#entityL"));
-        this.entityN = new OWLClassN();
-        entityN.setId(Generators.createIndividualIdentifier().toString());
+        entityL.setUri(Generators.createIndividualIdentifier());
     }
 
+    @SuppressWarnings("unchecked")
     @Test(expected = NullPointerException.class)
     public void testReadObjectNullPrimaryKey() {
         try {
@@ -120,6 +119,7 @@ public class UnitOfWorkTest {
         } finally {
             verify(cacheManagerMock, never()).get(any(), any(), any());
         }
+        fail("This line should not have been reached.");
     }
 
     @SuppressWarnings("unchecked")
@@ -449,8 +449,15 @@ public class UnitOfWorkTest {
     public void testUnregisterObject() {
         final OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
         assertTrue(uow.contains(managed));
-        this.uow.unregisterObject(managed);
+        uow.unregisterObject(managed);
         assertFalse(uow.contains(managed));
+    }
+
+    @Test
+    public void unregisterObjectRemovesItFromCloneBuilderCache() {
+        final OWLClassA managed = (OWLClassA) uow.registerExistingObject(entityA, descriptor);
+        uow.unregisterObject(managed);
+        verify(cloneBuilder).removeVisited(entityA, descriptor);
     }
 
     @Test
@@ -678,9 +685,8 @@ public class UnitOfWorkTest {
     }
 
     @Test
-    public void testMergeDetachedEvictFromCache() throws Exception {
-        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), CONTEXT_URI))
-                .thenReturn(Boolean.TRUE);
+    public void mergeDetachedEvictsInstanceFromCache() throws Exception {
+        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), CONTEXT_URI)).thenReturn(Boolean.TRUE);
         mergeDetachedTest();
         verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
     }
@@ -829,11 +835,11 @@ public class UnitOfWorkTest {
         when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
         when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, true)))
                 .thenReturn(entityA);
-        uow.mergeDetached(clone, descriptor);
+        OWLClassA result = uow.mergeDetached(clone, descriptor);
 
         assertTrue(uow.hasChanges());
         final UnitOfWorkChangeSet changeSet = uow.getUowChangeSet();
-        final ObjectChangeSet objectChanges = changeSet.getExistingObjectChanges(entityA);
+        final ObjectChangeSet objectChanges = changeSet.getExistingObjectChanges(result);
         assertNotNull(objectChanges);
         assertEquals(2, objectChanges.getChanges().size());
         final ChangeRecord rOne = objectChanges.getChanges().get(OWLClassA.getStrAttField().getName());
@@ -883,14 +889,35 @@ public class UnitOfWorkTest {
     }
 
     @Test
-    public void findEntityByStringUriTwiceInPersistenceContextReturnsSameInstance() {
-        final URI idUri = URI.create(entityN.getId());
-        when(storageMock.find(new LoadingParameters<>(OWLClassN.class, idUri, descriptor, false)))
-                .thenReturn(entityN);
-        final OWLClassN rOne = uow.readObject(OWLClassN.class, idUri, descriptor);
-        final OWLClassN rTwo = uow.readObject(OWLClassN.class, idUri, descriptor);
-        assertNotNull(rOne);
-        assertNotNull(rTwo);
-        verify(storageMock).find(new LoadingParameters<>(OWLClassN.class, idUri, descriptor, false));
+    public void mergeReturnsInstanceWithReferencesWithOriginalValues() {
+        final OWLClassA aOriginal = new OWLClassA(entityA.getUri());
+        aOriginal.setStringAttribute(entityA.getStringAttribute());
+        aOriginal.setTypes(new HashSet<>(entityA.getTypes()));
+        final OWLClassD dOriginal = new OWLClassD(entityD.getUri());
+        dOriginal.setOwlClassA(aOriginal);
+        entityA.setStringAttribute("differentString");
+        entityA.getTypes().add(Vocabulary.CLASS_BASE + "addedType");
+        when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
+        when(storageMock.find(new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(), descriptor, true)))
+                .thenReturn(dOriginal);
+
+        final OWLClassD result = uow.mergeDetached(entityD, descriptor);
+        assertEquals(aOriginal.getStringAttribute(), result.getOwlClassA().getStringAttribute());
+        assertEquals(aOriginal.getTypes(), result.getOwlClassA().getTypes());
+    }
+
+    @Test
+    public void mergeReturnsInstanceWithUpdatedReferenceWhenItWasChangedInTheDetachedObject() {
+        final OWLClassA aOriginal = Generators.generateOwlClassAInstance();
+        final OWLClassD dOriginal = new OWLClassD(entityD.getUri());
+        dOriginal.setOwlClassA(aOriginal);
+        when(storageMock.contains(entityD.getUri(), OWLClassD.class, descriptor)).thenReturn(true);
+        when(storageMock.find(new LoadingParameters<>(OWLClassD.class, dOriginal.getUri(), descriptor, true)))
+                .thenReturn(dOriginal);
+
+        final OWLClassD result = uow.mergeDetached(entityD, descriptor);
+        assertEquals(entityA.getUri(), result.getOwlClassA().getUri());
+        assertEquals(entityA.getStringAttribute(), result.getOwlClassA().getStringAttribute());
+        assertEquals(entityA.getTypes(), result.getOwlClassA().getTypes());
     }
 }

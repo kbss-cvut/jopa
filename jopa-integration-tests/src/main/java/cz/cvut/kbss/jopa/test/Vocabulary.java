@@ -21,6 +21,8 @@ public class Vocabulary {
 
     public static final String C_OWL_CLASS_A = CLASS_IRI_BASE + "OWLClassA";
     public static final String C_OWL_CLASS_B = CLASS_IRI_BASE + "OWLClassB";
+    public static final String C_OWL_CLASS_D = CLASS_IRI_BASE + "OWLClassD";
+    public static final String C_OWL_CLASS_E = CLASS_IRI_BASE + "OWLClassE";
     public static final String C_OWL_CLASS_M = CLASS_IRI_BASE + "OWLClassM";
     public static final String C_OWL_CLASS_S = CLASS_IRI_BASE + "OWLClassS";
     public static final String C_OWL_CLASS_T = CLASS_IRI_BASE + "OWLClassT";
@@ -38,6 +40,7 @@ public class Vocabulary {
 
     public static final String P_A_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "A-stringAttribute";
     public static final String P_B_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "B-stringAttribute";
+    public static final String P_E_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "E-stringAttribute";
 
     public static final String P_T_INTEGER_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "T-integerAttribute";
     public static final String P_HAS_OWL_CLASS_A = ATTRIBUTE_IRI_BASE + "hasOwlClassA";

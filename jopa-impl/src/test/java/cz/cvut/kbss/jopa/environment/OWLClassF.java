@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,63 +24,70 @@ import java.util.Set;
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassF")
 public class OWLClassF {
 
-	private static final String STR_ATT_FIELD = "secondStringAttribute";
-	private static final String SET_FIELD = "simpleSet";
+    private static final String STR_ATT_FIELD = "secondStringAttribute";
+    private static final String SET_FIELD = "simpleSet";
 
-	@Id
-	private URI uri;
+    @Id
+    private URI uri;
 
-	@Inferred
-	@OWLDataProperty(iri = "http://F-secondStringAttribute")
-	private String secondStringAttribute;
+    @Inferred
+    @OWLDataProperty(iri = "http://F-secondStringAttribute")
+    private String secondStringAttribute;
 
-	@Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#F-hasSimpleNext")
-	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#F-hasSimpleSequence")
-	private Set<OWLClassA> simpleSet;
+    @Sequence(type = SequenceType.simple, ObjectPropertyHasNextIRI = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#F-hasSimpleNext")
+    @OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#F-hasSimpleSequence")
+    private Set<OWLClassA> simpleSet;
 
-	public URI getUri() {
-		return uri;
-	}
+    public OWLClassF() {
+    }
 
-	public void setUri(URI uri) {
-		this.uri = uri;
-	}
+    public OWLClassF(URI uri) {
+        this.uri = uri;
+    }
 
-	public String getSecondStringAttribute() {
-		return secondStringAttribute;
-	}
+    public URI getUri() {
+        return uri;
+    }
 
-	public void setSecondStringAttribute(String secondStringAttribute) {
-		this.secondStringAttribute = secondStringAttribute;
-	}
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
 
-	public Set<OWLClassA> getSimpleSet() {
-		if (simpleSet == null) {
-			this.simpleSet = new HashSet<>();
-		}
-		return simpleSet;
-	}
+    public String getSecondStringAttribute() {
+        return secondStringAttribute;
+    }
 
-	public void setSimpleSet(Set<OWLClassA> simpleSet) {
-		this.simpleSet = simpleSet;
-	}
+    public void setSecondStringAttribute(String secondStringAttribute) {
+        this.secondStringAttribute = secondStringAttribute;
+    }
 
-	public static String getClassIri() {
-		return OWLClassF.class.getAnnotation(OWLClass.class).iri();
-	}
+    public Set<OWLClassA> getSimpleSet() {
+        if (simpleSet == null) {
+            this.simpleSet = new HashSet<>();
+        }
+        return simpleSet;
+    }
 
-	public static Field getStrAttField() throws NoSuchFieldException, SecurityException {
-		return OWLClassF.class.getDeclaredField(STR_ATT_FIELD);
-	}
+    public void setSimpleSet(Set<OWLClassA> simpleSet) {
+        this.simpleSet = simpleSet;
+    }
 
-	public static Field getSimpleSetField() throws NoSuchFieldException, SecurityException {
-		return OWLClassF.class.getDeclaredField(SET_FIELD);
-	}
+    public static String getClassIri() {
+        return OWLClassF.class.getAnnotation(OWLClass.class).iri();
+    }
 
-	@Override
-	public String toString() {
-		String out = "OWLClassF: uri = " + uri;
-		out += ", secondStringAttribute = " + secondStringAttribute;
-		return out;
-	}
+    public static Field getStrAttField() throws NoSuchFieldException, SecurityException {
+        return OWLClassF.class.getDeclaredField(STR_ATT_FIELD);
+    }
+
+    public static Field getSimpleSetField() throws NoSuchFieldException, SecurityException {
+        return OWLClassF.class.getDeclaredField(SET_FIELD);
+    }
+
+    @Override
+    public String toString() {
+        String out = "OWLClassF: uri = " + uri;
+        out += ", secondStringAttribute = " + secondStringAttribute;
+        return out;
+    }
 }

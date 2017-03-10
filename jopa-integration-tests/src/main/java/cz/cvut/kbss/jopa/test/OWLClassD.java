@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -21,46 +21,53 @@ import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 
 import java.net.URI;
 
-@OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassD")
+@OWLClass(iri = Vocabulary.C_OWL_CLASS_D)
 public class OWLClassD {
 
-	@Id
-	private URI uri;
+    @Id
+    private URI uri;
 
-	@OWLObjectProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#hasA", fetch = FetchType.EAGER)
-	// @ParticipationConstraints({
-	// @ParticipationConstraint(owlObjectIRI="http://new.owl#OWLClassA", min=1,
-	// max=1)
-	// })
-	private OWLClassA owlClassA;
+    @OWLObjectProperty(iri = Vocabulary.P_HAS_OWL_CLASS_A, fetch = FetchType.EAGER)
+    // @ParticipationConstraints({
+    // @ParticipationConstraint(owlObjectIRI="http://new.owl#OWLClassA", min=1,
+    // max=1)
+    // })
+    private OWLClassA owlClassA;
 
-	/**
-	 * @param uri
-	 *            the uri to set
-	 */
-	public void setUri(URI uri) {
-		this.uri = uri;
-	}
+    public OWLClassD() {
+    }
 
-	/**
-	 * @return the uri
-	 */
-	public URI getUri() {
-		return uri;
-	}
+    public OWLClassD(URI uri) {
+        this.uri = uri;
+    }
 
-	public void setOwlClassA(OWLClassA owlClassA) {
-		this.owlClassA = owlClassA;
-	}
+    /**
+     * @param uri
+     *            the uri to set
+     */
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
 
-	public OWLClassA getOwlClassA() {
-		return owlClassA;
-	}
+    /**
+     * @return the uri
+     */
+    public URI getUri() {
+        return uri;
+    }
 
-	@Override
-	public String toString() {
-		String out = "OWLClassD: uri = " + uri;
-		out += ", owlClassA = " + owlClassA;
-		return out;
-	}
+    public void setOwlClassA(OWLClassA owlClassA) {
+        this.owlClassA = owlClassA;
+    }
+
+    public OWLClassA getOwlClassA() {
+        return owlClassA;
+    }
+
+    @Override
+    public String toString() {
+        String out = "OWLClassD: uri = " + uri;
+        out += ", owlClassA = " + owlClassA;
+        return out;
+    }
 }

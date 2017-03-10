@@ -139,8 +139,7 @@ public abstract class Generators {
     }
 
     public static OWLClassA generateOwlClassAInstance() {
-        final OWLClassA a = new OWLClassA();
-        a.setUri(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/tests/instance_" + RAND.nextInt()));
+        final OWLClassA a = new OWLClassA(createIndividualIdentifier());
         a.setStringAttribute("stringAttribute" + RAND.nextInt());
         a.setTypes(TYPES);
         return a;

@@ -275,6 +275,7 @@ public class MetamodelImplTest {
         final TypesSpecification<? super OWLClassA, ?> typesSpec = et.getTypes();
         assertNotNull(typesSpec);
         checkBasicProperties(typesSpec, et, typesField.getName(), typesField, FetchType.EAGER, false);
+        assertEquals(Set.class, typesSpec.getJavaType());
     }
 
     @Test
@@ -288,6 +289,7 @@ public class MetamodelImplTest {
         final PropertiesSpecification<? super OWLClassB, ?, ?, ?> propertiesSpec = et.getProperties();
         assertNotNull(propertiesSpec);
         checkBasicProperties(propertiesSpec, et, propertiesField.getName(), propertiesField, FetchType.LAZY, false);
+        assertEquals(Map.class, propertiesSpec.getJavaType());
     }
 
     @Test
@@ -563,7 +565,7 @@ public class MetamodelImplTest {
         final Metamodel m = getMetamodel();
         final EntityType<ClassWithUriTypes> et = m.entity(ClassWithUriTypes.class);
         assertNotNull(et);
-        assertEquals(URI.class, et.getTypes().getJavaType());
+        assertEquals(URI.class, et.getTypes().getElementType());
     }
 
     @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#ClassWithUriTypes")
