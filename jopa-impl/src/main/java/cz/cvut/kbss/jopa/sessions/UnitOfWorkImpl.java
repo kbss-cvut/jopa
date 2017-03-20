@@ -160,7 +160,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return cls.cast(clone);
     }
 
-    private OWLEntityExistsException individualAlreadyManaged(Object identifier) {
+    private static OWLEntityExistsException individualAlreadyManaged(Object identifier) {
         return new OWLEntityExistsException(
                 "An entity with URI " + identifier + " is already present in the current persistence context.");
     }
@@ -214,6 +214,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
     }
 
+    @Override
     public void clear() {
         detachAllManagedInstances();
         cloneMapping.clear();
@@ -232,12 +233,14 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         cloneMapping.keySet().forEach(this::unregisterObjectFromPersistenceContext);
     }
 
+    @Override
     public boolean contains(Object entity) {
         Objects.requireNonNull(entity);
 
         return isObjectManaged(entity);
     }
 
+    @Override
     public void commit() {
         LOG.trace("UnitOfWork commit started.");
         if (!isActive()) {
@@ -248,6 +251,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         LOG.trace("UnitOfWork commit finished.");
     }
 
+    @Override
     public void rollback() {
         LOG.trace("UnitOfWork rollback started.");
         if (!isActive()) {
@@ -297,8 +301,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * If there are any changes, commit them to the ontology.
      */
     private void commitToOntology() {
-        boolean hasChanges = this.hasNew || this.hasChanges || this.hasDeleted;
-        if (hasChanges) {
+        boolean changes = this.hasNew || this.hasChanges || this.hasDeleted;
+        if (changes) {
             calculateChanges();
         }
         validateIntegrityConstraints();
@@ -317,7 +321,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         uowChangeSet.getExistingObjectsChanges().forEach(changeSet -> validator.validate(changeSet, getMetamodel()));
     }
 
-    private Map<Object, Object> createMap() {
+    private static Map<Object, Object> createMap() {
         return new IdentityHashMap<>();
     }
 
@@ -479,6 +483,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         return uowChangeSet;
     }
 
+    @Override
     public boolean isActive() {
         return this.isActive;
     }
@@ -499,10 +504,11 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @param entity Object
      * @return boolean
      */
+    @Override
     public boolean isObjectManaged(Object entity) {
         Objects.requireNonNull(entity);
 
-        return (cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity));
+        return cloneMapping.containsKey(entity) && !getDeletedObjects().containsKey(entity);
     }
 
     /**
@@ -668,6 +674,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * Release this Unit of Work. Releasing an active Unit of Work with uncommitted changes causes all pending changes
      * to be discarded.
      */
+    @Override
     public void release() {
         clear();
         storage.close();
@@ -764,6 +771,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      *
      * @param entity Managed entity to delete
      */
+    @Override
     public void removeObject(Object entity) {
         assert entity != null;
         if (!isObjectManaged(entity)) {
@@ -818,6 +826,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         unregisterEntityFromOntologyContext(object);
     }
 
+    @Override
     public boolean shouldReleaseAfterCommit() {
         return shouldReleaseAfterCommit;
     }
@@ -830,6 +839,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         this.entityManager = entityManager;
     }
 
+    @Override
     public void writeUncommittedChanges() {
         if (!hasChanges()) {
             return;
@@ -989,10 +999,10 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @param entity The entity to check
      */
     private void checkForCollections(Object entity) {
-        // TODO This should iterate over all mapped fields, not just the declared ones
-        Field[] fields = entity.getClass().getDeclaredFields();
-        for (Field f : fields) {
-            setIndirectCollectionIfPresent(entity, f);
+        assert entity != null;
+        final EntityType<?> et = entityType(entity.getClass());
+        for (FieldSpecification<?, ?> fieldSpec : et.getFieldSpecifications()) {
+            setIndirectCollectionIfPresent(entity, fieldSpec.getJavaField());
         }
     }
 

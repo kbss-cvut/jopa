@@ -751,16 +751,16 @@ public class MetamodelFactory {
         when(et.getFieldSpecification(qOwlClassAAtt.getName())).thenReturn(qOwlClassAAtt);
     }
 
-    public static void initOwlClassSMock(EntityTypeImpl<OWLClassS> et, SingularAttribute sNameAtt, Identifier idS)
-            throws
-            Exception {
+    public static void initOwlClassSMock(EntityTypeImpl<OWLClassS> et, SingularAttribute sNameAtt,
+                                         TypesSpecification sTypes, Identifier idS) throws Exception {
         when(et.getIdentifier()).thenReturn(idS);
         when(idS.isGenerated()).thenReturn(true);
         when(et.getJavaType()).thenReturn(OWLClassS.class);
         when(idS.getJavaField()).thenReturn(OWLClassS.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassS.getClassIri()));
-        when(et.getFieldSpecifications()).thenReturn(Collections.singleton(sNameAtt));
+        when(et.getFieldSpecifications()).thenReturn(new HashSet<>(Arrays.asList(sNameAtt, sTypes)));
         when(et.getAttributes()).thenReturn(Collections.singleton(sNameAtt));
+        when(et.getTypes()).thenReturn(sTypes);
         when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
 
         when(sNameAtt.getJavaField()).thenReturn(OWLClassS.getNameField());
@@ -775,7 +775,13 @@ public class MetamodelFactory {
         when(sNameAtt.getDeclaringType()).thenReturn(et);
         when(sNameAtt.getConstraints()).thenReturn(new ParticipationConstraint[0]);
         when(sNameAtt.getCascadeTypes()).thenReturn(new CascadeType[0]);
+        when(sTypes.getJavaField()).thenReturn(OWLClassS.getTypesField());
+        when(sTypes.getName()).thenReturn(OWLClassS.getTypesField().getName());
+        when(sTypes.getDeclaringType()).thenReturn(et);
+        when(sTypes.getJavaType()).thenReturn(Set.class);
+        when(sTypes.getElementType()).thenReturn(String.class);
         when(et.getFieldSpecification(sNameAtt.getName())).thenReturn(sNameAtt);
+        when(et.getFieldSpecification(sTypes.getName())).thenReturn(sTypes);
         when(et.getLifecycleListeners(LifecycleEvent.PRE_PERSIST))
                 .thenReturn(Collections.singletonList(OWLClassS.getPrePersistHook()));
     }
@@ -790,7 +796,10 @@ public class MetamodelFactory {
         when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);
         attributes.add(rStringAtt);
         attributes.add(owlClassAAtt);
-        when(et.getFieldSpecifications()).thenReturn(attributes);
+        final Set fieldSpecs = new HashSet(parentEt.getFieldSpecifications());
+        fieldSpecs.add(rStringAtt);
+        fieldSpecs.add(owlClassAAtt);
+        when(et.getFieldSpecifications()).thenReturn(fieldSpecs);
         when(et.getAttributes()).thenReturn(attributes);
         when(et.getSupertype()).thenReturn((EntityType) parentEt);
         when(parentEt.getSubtypes()).thenReturn(Collections.singleton(et));
@@ -823,7 +832,9 @@ public class MetamodelFactory {
         when(et.getFieldSpecification(owlClassAAtt.getName())).thenReturn(owlClassAAtt);
         for (Attribute att : parentEt.getAttributes()) {
             when(et.getAttribute(att.getName())).thenReturn(att);
-            when(et.getFieldSpecification(att.getName())).thenReturn(att);
+        }
+        for (FieldSpecification fs : parentEt.getFieldSpecifications()) {
+            when(et.getFieldSpecification(fs.getName())).thenReturn(fs);
         }
         final List<Method> prePersist = new ArrayList<>(parentEt.getLifecycleListeners(LifecycleEvent.PRE_PERSIST));
         prePersist.add(OWLClassR.getPrePersistHook());

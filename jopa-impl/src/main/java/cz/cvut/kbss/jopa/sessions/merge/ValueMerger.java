@@ -3,6 +3,7 @@ package cz.cvut.kbss.jopa.sessions.merge;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
+@FunctionalInterface
 public interface ValueMerger {
 
     /**

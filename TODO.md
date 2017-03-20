@@ -2,6 +2,7 @@
 
 ## High Priority
 
+- [ ] EM operations should mark the current transaction for rollback on exception
 - [ ] Inheritance support
     - [x] Mapped superclass
     - [x] Single inheritance
