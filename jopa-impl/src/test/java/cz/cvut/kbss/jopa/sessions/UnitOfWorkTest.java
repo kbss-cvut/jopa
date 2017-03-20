@@ -920,4 +920,13 @@ public class UnitOfWorkTest {
         assertEquals(entityA.getStringAttribute(), result.getOwlClassA().getStringAttribute());
         assertEquals(entityA.getTypes(), result.getOwlClassA().getTypes());
     }
+
+    @Test
+    public void registerReplacesAlsoInheritedCollectionInstancesWithIndirectVersions() {
+        final OWLClassR entityR = new OWLClassR(Generators.createIndividualIdentifier());
+        entityR.setTypes(Generators.generateTypes(5));
+        when(storageMock.find(new LoadingParameters<>(OWLClassR.class, entityR.getUri(), descriptor))).thenReturn(entityR);
+        final OWLClassR clone = uow.readObject(OWLClassR.class, entityR.getUri(), descriptor);
+        assertTrue(clone.getTypes() instanceof IndirectSet);
+    }
 }

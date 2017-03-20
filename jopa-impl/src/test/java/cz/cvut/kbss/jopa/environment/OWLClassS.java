@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.Set;
 
 @Inheritance(strategy = InheritanceType.TWO_STEP)
 @OWLClass(iri = Vocabulary.c_OwlClassS)
@@ -32,6 +33,9 @@ public abstract class OWLClassS implements Serializable {
     @ParticipationConstraints(nonEmpty = true)
     @OWLAnnotationProperty(iri = CommonVocabulary.RDFS_LABEL)
     private String name;
+
+    @Types
+    private Set<String> types;
 
     public OWLClassS() {
     }
@@ -56,6 +60,14 @@ public abstract class OWLClassS implements Serializable {
         this.name = name;
     }
 
+    public Set<String> getTypes() {
+        return types;
+    }
+
+    public void setTypes(Set<String> types) {
+        this.types = types;
+    }
+
     @PrePersist
     private void prePersist() {
         System.out.println("PrePersist called in OWLClassS.");
@@ -72,6 +84,10 @@ public abstract class OWLClassS implements Serializable {
 
     public static Field getNameField() throws NoSuchFieldException {
         return OWLClassS.class.getDeclaredField("name");
+    }
+
+    public static Field getTypesField() throws NoSuchFieldException {
+        return OWLClassS.class.getDeclaredField("types");
     }
 
     public static Method getPrePersistHook() throws Exception {

@@ -83,39 +83,11 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
                 try {
                     getCurrentPersistenceContext().registerNewObject(entity, descriptor);
                 } catch (RuntimeException e) {
-                    if (getTransaction().isActive()) {
-                        getTransaction().setRollbackOnly();
-                    }
+                    markTransactionForRollback();
                     throw e;
                 }
             case MANAGED:
-                new OneLevelCascadeExplorer() {
-                    @Override
-                    protected void exploreCascaded(Attribute<?, ?> at, Object o) {
-                        try {
-                            Object ox = EntityPropertiesUtils.getAttributeValue(at, o);
-                            LOG.trace("object={}, attribute={}, value={}", o, at.getName(), ox);
-                            if (ox == null) {
-                                return;
-                            }
-                            final Descriptor attDescriptor = descriptor.getAttributeDescriptor(at);
-                            if (at.isCollection()) {
-                                for (final Object ox2 : (Collection<?>) ox) {
-                                    persist(ox2, attDescriptor);
-                                }
-                            } else {
-                                persist(ox, attDescriptor);
-                            }
-                        } catch (Exception e) {
-                            if (getTransaction().isActive()) {
-                                getTransaction().setRollbackOnly();
-                            }
-                            throw new OWLPersistenceException(
-                                    "A problem occurred when persisting attribute " + at.getName()
-                                            + " of with value " + o + " of object " + entity, e);
-                        }
-                    }
-                }.start(this, entity, CascadeType.PERSIST);
+                cascadePersist(entity, descriptor);
                 break;
             case REMOVED:
                 getCurrentPersistenceContext().revertObject(entity);
@@ -127,6 +99,40 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
 
     private void checkClassIsValidEntity(Class<?> cls) {
         getMetamodel().entity(cls);
+    }
+
+    private void markTransactionForRollback() {
+        if (getTransaction().isActive()) {
+            getTransaction().setRollbackOnly();
+        }
+    }
+
+    private void cascadePersist(final Object entity, final Descriptor descriptor) {
+        new OneLevelCascadeExplorer() {
+            @Override
+            protected void exploreCascaded(Attribute<?, ?> at, Object o) {
+                try {
+                    Object ox = EntityPropertiesUtils.getAttributeValue(at, o);
+                    LOG.trace("object={}, attribute={}, value={}", o, at.getName(), ox);
+                    if (ox == null) {
+                        return;
+                    }
+                    final Descriptor attDescriptor = descriptor.getAttributeDescriptor(at);
+                    if (at.isCollection()) {
+                        for (final Object ox2 : (Collection<?>) ox) {
+                            persist(ox2, attDescriptor);
+                        }
+                    } else {
+                        persist(ox, attDescriptor);
+                    }
+                } catch (Exception e) {
+                    markTransactionForRollback();
+                    throw new OWLPersistenceException(
+                            "A problem occurred when persisting attribute " + at.getName()
+                                    + " of with value " + o + " of object " + entity, e);
+                }
+            }
+        }.start(this, entity, CascadeType.PERSIST);
     }
 
     @Override

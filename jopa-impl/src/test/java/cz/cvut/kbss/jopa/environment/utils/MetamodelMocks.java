@@ -209,6 +209,8 @@ public class MetamodelMocks {
     private Identifier idS;
     @Mock
     private SingularAttribute<OWLClassS, String> sNameAtt;
+    @Mock
+    private TypesSpecification<OWLClassS, String> sTypes;
 
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -231,7 +233,7 @@ public class MetamodelMocks {
                 .initOWLClassPMock(etP, pTypes, pProperties, pUriAtt, pUrlsAtt, pSimpleList, pReferencedList, idP);
         MetamodelFactory
                 .initOwlClassQMock(etQ, qMappedSuperclass, qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
-        MetamodelFactory.initOwlClassSMock(etS, sNameAtt, idS);
+        MetamodelFactory.initOwlClassSMock(etS, sNameAtt, sTypes, idS);
         MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
     }
 
@@ -678,6 +680,10 @@ public class MetamodelMocks {
 
         public SingularAttribute<OWLClassS, String> rNameAtt() {
             return MetamodelMocks.this.sNameAtt;
+        }
+
+        public TypesSpecification<OWLClassS, String> types() {
+            return MetamodelMocks.this.sTypes;
         }
     }
 }

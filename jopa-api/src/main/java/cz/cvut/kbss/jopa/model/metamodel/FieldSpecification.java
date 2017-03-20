@@ -52,6 +52,7 @@ public interface FieldSpecification<X, E> {
 
     /**
      * Whether this field can contain inferred data.
+     *
      * @return Whether field is inferred
      * @see #includeExplicit()
      */
@@ -59,6 +60,7 @@ public interface FieldSpecification<X, E> {
 
     /**
      * If this field is inferred, can it contain explicit data as well?
+     *
      * @return Whether inferred field can contain explicit knowledge
      * @see #isInferred()
      */
@@ -66,6 +68,7 @@ public interface FieldSpecification<X, E> {
 
     /**
      * Whether values of this field cannot be modified.
+     *
      * @return Read only status of this field
      */
     boolean isReadOnly();

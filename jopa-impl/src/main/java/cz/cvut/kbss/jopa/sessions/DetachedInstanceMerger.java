@@ -28,8 +28,7 @@ class DetachedInstanceMerger {
      */
     Object mergeChangesFromDetachedToManagedInstance(ObjectChangeSet changeSet, Descriptor descriptor) {
         assert changeSet != null;
-        final Object clone = changeSet.getCloneObject();
-        assert clone != null;
+        assert changeSet.getCloneObject() != null;
         final Object original = changeSet.getChangedObject();
         assert original != null;
 

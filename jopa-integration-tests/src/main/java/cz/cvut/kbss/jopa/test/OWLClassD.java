@@ -35,6 +35,7 @@ public class OWLClassD {
     private OWLClassA owlClassA;
 
     public OWLClassD() {
+        // Default public no-arg constructor
     }
 
     public OWLClassD(URI uri) {
@@ -42,8 +43,7 @@ public class OWLClassD {
     }
 
     /**
-     * @param uri
-     *            the uri to set
+     * @param uri the uri to set
      */
     public void setUri(URI uri) {
         this.uri = uri;
