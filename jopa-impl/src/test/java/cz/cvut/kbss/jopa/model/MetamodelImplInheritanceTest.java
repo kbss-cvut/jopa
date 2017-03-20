@@ -17,9 +17,7 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
-import cz.cvut.kbss.jopa.model.annotations.Inheritance;
-import cz.cvut.kbss.jopa.model.annotations.InheritanceType;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.Configuration;
@@ -33,6 +31,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -203,5 +202,37 @@ public class MetamodelImplInheritanceTest {
         assertTrue(subtypeHooks.containsAll(supertypeHooks));
         assertTrue(subtype.hasLifecycleListeners(LifecycleEvent.POST_LOAD));
         assertFalse(subtype.getLifecycleListeners(LifecycleEvent.POST_LOAD).isEmpty());
+    }
+
+    /**
+     * Ref.: https://github.com/kbss-cvut/jopa/issues/3
+     */
+    @Test
+    public void buildingMetamodelSupportsReferenceFromParentEntityToSubEntity() {
+        final MetamodelImpl metamodel = metamodelFor(AnotherChildWithCircular.class);
+        final EntityType<ChildWithCircular> et = metamodel.entity(ChildWithCircular.class);
+        assertNotNull(et);
+        assertNotNull(et.getIdentifier());
+    }
+
+    @MappedSuperclass
+    private static class ParentWithId {
+        @Id
+        private URI id;
+    }
+
+    @MappedSuperclass
+    private static class ParentWithCircular extends ParentWithId {
+
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasChild")
+        private Set<ChildWithCircular> children;
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "ChildWithCircular")
+    private static class ChildWithCircular extends ParentWithCircular {
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "AnotherChildWithCircular")
+    private static class AnotherChildWithCircular extends ParentWithCircular {
     }
 }

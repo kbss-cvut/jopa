@@ -16,7 +16,7 @@ package cz.cvut.kbss.jopa.environment;
 
 public class Vocabulary {
 
-    private static final String ATTRIBUTE_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
+    public static final String ATTRIBUTE_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#";
     public static final String CLASS_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#";
 
     public static final String c_OwlClassA = CLASS_BASE + "OWLClassA";
