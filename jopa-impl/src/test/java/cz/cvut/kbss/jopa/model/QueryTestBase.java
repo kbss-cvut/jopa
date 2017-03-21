@@ -56,6 +56,9 @@ public abstract class QueryTestBase {
     @Mock
     ResultSet resultSetMock;
 
+    @Mock
+    Runnable handler;
+
     SparqlQueryFactory queryFactory;
 
     @Before

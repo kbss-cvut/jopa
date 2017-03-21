@@ -45,7 +45,7 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
     private boolean useBackupOntology;
     private int maxResults;
 
-    private Runnable exceptionHandler;
+    private Runnable rollbackOnlyMarker;
 
     public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
                           final ConnectionWrapper connection, MetamodelProvider metamodelProvider) {
@@ -71,7 +71,17 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
         try {
             stmt.executeUpdate(query.assembleQuery(), uris);
         } catch (OntoDriverException e) {
+            markTransactionForRollback();
             throw queryEvaluationException(e);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+    }
+
+    private void markTransactionForRollback() {
+        if (rollbackOnlyMarker != null) {
+            rollbackOnlyMarker.run();
         }
     }
 
@@ -84,7 +94,11 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
         try {
             list = getResultListImpl(maxResults);
         } catch (OntoDriverException e) {
+            markTransactionForRollback();
             throw queryEvaluationException(e);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
         }
 
         return list;
@@ -109,15 +123,19 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
             }
             return res.get(0);
         } catch (OntoDriverException e) {
+            markTransactionForRollback();
             throw queryEvaluationException(e);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
         }
     }
 
     @Override
     public TypedQuery<X> setMaxResults(int maxResults) {
         if (maxResults < 0) {
-            throw new IllegalArgumentException(
-                    "Cannot set maximum number of results to less than 0.");
+            markTransactionForRollback();
+            throw new IllegalArgumentException("Cannot set maximum number of results to less than 0.");
         }
         this.maxResults = maxResults;
         return this;
@@ -174,37 +192,67 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
 
     @Override
     public TypedQuery<X> setParameter(int position, Object value) {
-        query.setParameter(query.getParameter(position), value);
+        try {
+            query.setParameter(query.getParameter(position), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(int position, String value, String language) {
-        query.setParameter(query.getParameter(position), value, language);
+        try {
+            query.setParameter(query.getParameter(position), value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(String name, Object value) {
-        query.setParameter(query.getParameter(name), value);
+        try {
+            query.setParameter(query.getParameter(name), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(String name, String value, String language) {
-        query.setParameter(query.getParameter(name), value, language);
+        try {
+            query.setParameter(query.getParameter(name), value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
         return this;
     }
 
     @Override
     public <T> TypedQuery<X> setParameter(Parameter<T> parameter, T value) {
-        query.setParameter(parameter, value);
+        try {
+            query.setParameter(parameter, value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
         return this;
     }
 
     @Override
     public TypedQuery<X> setParameter(Parameter<String> parameter, String value, String language) {
-        query.setParameter(parameter, value, language);
+        try {
+            query.setParameter(parameter, value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
         return this;
     }
 
@@ -290,7 +338,12 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
         this.useBackupOntology = useBackupOntology;
     }
 
-    public void registerExceptionHandler(Runnable handler) {
-        this.exceptionHandler = handler;
+    /**
+     * Registers reference to a method which marks current transaction (if active) for rollback on exceptions.
+     *
+     * @param rollbackOnlyMarker The marker to invoke on exceptions
+     */
+    void setRollbackOnlyMarker(Runnable rollbackOnlyMarker) {
+        this.rollbackOnlyMarker = rollbackOnlyMarker;
     }
 }

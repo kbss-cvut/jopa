@@ -312,7 +312,7 @@ public class QueryImpl implements Query {
     }
 
     /**
-     * Registers reference to a method which marks current transaction (if present) for rollback on exceptions.
+     * Registers reference to a method which marks current transaction (if active) for rollback on exceptions.
      *
      * @param rollbackOnlyMarker The marker to invoke on exceptions
      */

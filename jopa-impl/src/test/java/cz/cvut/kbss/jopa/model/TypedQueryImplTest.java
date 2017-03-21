@@ -22,6 +22,7 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.model.query.TypedQuery;
+import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryHolder;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.Before;
@@ -225,5 +226,140 @@ public class TypedQueryImplTest extends QueryTestBase {
         final TypedQuery<OWLClassA> q = queryFactory.createNativeQuery(SELECT_ENTITY_QUERY, OWLClassA.class);
         final List<OWLClassA> result = q.getResultList();
         assertEquals(1, result.size());
+    }
+
+    @Test
+    public void exceptionInExecuteUpdateInvokesRollbackMarker() throws Exception {
+        doThrow(new OntoDriverException()).when(statementMock).executeUpdate(UPDATE_QUERY);
+        final TypedQueryImpl<Void> q = queryFactory.createNativeQuery(UPDATE_QUERY, Void.class);
+        runAndVerifyHandlerInvocation(q, q::executeUpdate);
+    }
+
+    private <T> void runAndVerifyHandlerInvocation(TypedQueryImpl<T> query, Runnable method) {
+        query.setRollbackOnlyMarker(handler);
+        try {
+            method.run();
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    @Test
+    public void runtimeExceptionInExecuteUpdateInvokesRollbackMarker() throws Exception {
+        doThrow(OWLPersistenceException.class).when(statementMock).executeUpdate(UPDATE_QUERY);
+        final TypedQueryImpl<Void> q = queryFactory.createNativeQuery(UPDATE_QUERY, Void.class);
+        runAndVerifyHandlerInvocation(q, q::executeUpdate);
+    }
+
+    @Test
+    public void exceptionInGetResultListInvokesRollbackMarker() throws Exception {
+        doThrow(OntoDriverException.class).when(statementMock).executeQuery(SELECT_ENTITY_QUERY);
+        final TypedQueryImpl<OWLClassA> q = queryFactory.createNativeQuery(SELECT_ENTITY_QUERY, OWLClassA.class);
+        runAndVerifyHandlerInvocation(q, q::getResultList);
+    }
+
+    @Test
+    public void runtimeExceptionInGetResultListInvokesRollbackMarker() throws Exception {
+        doThrow(OWLPersistenceException.class).when(statementMock).executeQuery(SELECT_ENTITY_QUERY);
+        final TypedQueryImpl<OWLClassA> q = queryFactory.createNativeQuery(SELECT_ENTITY_QUERY, OWLClassA.class);
+        runAndVerifyHandlerInvocation(q, q::getResultList);
+    }
+
+    @Test
+    public void exceptionInGetSingleResultInvokesRollbackMarker() throws Exception {
+        doThrow(OntoDriverException.class).when(statementMock).executeQuery(SELECT_ENTITY_QUERY);
+        final TypedQueryImpl<OWLClassA> q = queryFactory.createNativeQuery(SELECT_ENTITY_QUERY, OWLClassA.class);
+        runAndVerifyHandlerInvocation(q, q::getSingleResult);
+    }
+
+    @Test
+    public void runtimeExceptionInGetSingleResultInvokesRollbackMarker() throws Exception {
+        doThrow(OWLPersistenceException.class).when(statementMock).executeQuery(SELECT_ENTITY_QUERY);
+        final TypedQueryImpl<OWLClassA> q = queryFactory.createNativeQuery(SELECT_ENTITY_QUERY, OWLClassA.class);
+        runAndVerifyHandlerInvocation(q, q::getSingleResult);
+    }
+
+    @Test
+    public void exceptionInSetMaxResultsInvokesRollbackMarker() throws Exception {
+        final TypedQueryImpl<OWLClassA> q = queryWithRollbackMarker(SELECT_ENTITY_QUERY, OWLClassA.class);
+        try {
+            q.setMaxResults(-1);
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    private <T> TypedQueryImpl<T> queryWithRollbackMarker(String query, Class<T> cls) {
+        final TypedQueryImpl<T> q = queryFactory.createNativeQuery(query, cls);
+        q.setRollbackOnlyMarker(handler);
+        return q;
+    }
+
+    @Test
+    public void exceptionInSetParameterByPositionInvokesRollbackMarker() {
+        final TypedQueryImpl<OWLClassA> q = queryWithRollbackMarker(SELECT_ENTITY_QUERY, OWLClassA.class);
+        try {
+            q.setParameter(117, 117);
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    @Test
+    public void exceptionInSetStringParameterByPositionInvokesRollbackMarker() {
+        final TypedQueryImpl<OWLClassA> q = queryWithRollbackMarker(SELECT_ENTITY_QUERY, OWLClassA.class);
+        try {
+            q.setParameter(117, "A", "en");
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    @Test
+    public void exceptionInSetParameterByNameInvokesRollbackMarker() {
+        final TypedQueryImpl<OWLClassA> q = queryWithRollbackMarker(SELECT_ENTITY_QUERY, OWLClassA.class);
+        try {
+            q.setParameter("a", 117);
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    @Test
+    public void exceptionInSetStringParameterByNameInvokesRollbackMarker() {
+        final TypedQueryImpl<OWLClassA> q = queryWithRollbackMarker(SELECT_ENTITY_QUERY, OWLClassA.class);
+        try {
+            q.setParameter("a", "A", "en");
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    @Test
+    public void exceptionInSetParameterByParameterInvokesRollbackMarker() {
+        final TypedQueryImpl<OWLClassA> q = queryWithRollbackMarker(SELECT_ENTITY_QUERY, OWLClassA.class);
+        try {
+            q.setParameter(new QueryParameter<>(117), 117);
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    @Test
+    public void exceptionInSetStringParameterByParameterInvokesRollbackMarker() {
+        final TypedQueryImpl<OWLClassA> q = queryWithRollbackMarker(SELECT_ENTITY_QUERY, OWLClassA.class);
+        try {
+            q.setParameter(new QueryParameter<>(117), "A", "en");
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
     }
 }

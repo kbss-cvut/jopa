@@ -34,9 +34,6 @@ public class QueryImplTest extends QueryTestBase {
 
     private static final String SELECT_QUERY = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
 
-    @Mock
-    private Runnable handler;
-
     @Override
     Query createQuery(String query, Class<?> resultType) {
         return queryFactory.createNativeQuery(query);
