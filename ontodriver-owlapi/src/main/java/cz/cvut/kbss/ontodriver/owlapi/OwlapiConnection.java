@@ -26,7 +26,7 @@ import cz.cvut.kbss.ontodriver.owlapi.list.OwlapiLists;
 import java.net.URI;
 import java.util.*;
 
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
+import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
 /**
  * Default implementation of the {@link Connection} interface for OWLAPI driver.
@@ -132,7 +132,7 @@ public class OwlapiConnection implements Connection {
     @Override
     public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(axiom, npxMessage("axiom"));
+        Objects.requireNonNull(axiom, getNPXMessageSupplier("axiom"));
         return adapter.containsAxiom(axiom, context);
     }
 

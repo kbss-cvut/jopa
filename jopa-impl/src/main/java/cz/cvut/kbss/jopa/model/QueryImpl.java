@@ -41,9 +41,8 @@ public class QueryImpl implements Query {
     private Runnable rollbackOnlyMarker;
 
     public QueryImpl(final QueryHolder query, final ConnectionWrapper connection) {
-        this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
-        this.connection = Objects.requireNonNull(connection,
-                ErrorUtils.constructNPXMessage("connection"));
+        this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
+        this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
         this.contexts = new HashSet<>();
         this.useBackupOntology = false;
         this.maxResults = Integer.MAX_VALUE;

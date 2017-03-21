@@ -28,7 +28,7 @@ import cz.cvut.kbss.ontodriver.sesame.query.SesameStatement;
 import java.net.URI;
 import java.util.*;
 
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
+import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
 
 class SesameConnection implements Connection {
@@ -164,7 +164,7 @@ class SesameConnection implements Connection {
     @Override
     public boolean contains(Axiom<?> axiom, URI context) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(axiom, npxMessage("axiom"));
+        Objects.requireNonNull(axiom, getNPXMessageSupplier("axiom"));
         return adapter.contains(axiom, context);
     }
 

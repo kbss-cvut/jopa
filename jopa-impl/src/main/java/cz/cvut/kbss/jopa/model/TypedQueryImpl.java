@@ -49,11 +49,11 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
 
     public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
                           final ConnectionWrapper connection, MetamodelProvider metamodelProvider) {
-        this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
-        this.resultType = Objects.requireNonNull(resultType, ErrorUtils.constructNPXMessage("resultType"));
-        this.connection = Objects.requireNonNull(connection, ErrorUtils.constructNPXMessage("connection"));
+        this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
+        this.resultType = Objects.requireNonNull(resultType, ErrorUtils.getNPXMessageSupplier("resultType"));
+        this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
         this.metamodelProvider = Objects
-                .requireNonNull(metamodelProvider, ErrorUtils.constructNPXMessage("metamodelProvider"));
+                .requireNonNull(metamodelProvider, ErrorUtils.getNPXMessageSupplier("metamodelProvider"));
         this.contexts = new HashSet<>();
         this.maxResults = Integer.MAX_VALUE;
     }

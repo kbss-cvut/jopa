@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -13,6 +13,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.ontodriver.util;
+
+import java.util.function.Supplier;
 
 public class ErrorUtils {
 
@@ -30,14 +32,14 @@ public class ErrorUtils {
     }
 
     /**
-     * Creates message for NullPointerException, specifying name of method argument which was null.
+     * Provides a {@link NullPointerException} message supplier.
      * <p>
-     * The message has the following form: 'Argument argName cannot be null.'
+     * This supplier constructs messages which state than an argument with the specified name cannot be null.
      *
-     * @param argName Name of the argument
-     * @return String message for NPX exception
+     * @param argName Argument name
+     * @return Error message supplier
      */
-    public static String npxMessage(String argName) {
-        return ARGUMENT_NULL.replace(PLACEHOLDER, argName);
+    public static Supplier<String> getNPXMessageSupplier(final String argName) {
+        return () -> ARGUMENT_NULL.replace(PLACEHOLDER, argName);
     }
 }

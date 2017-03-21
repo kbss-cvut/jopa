@@ -52,8 +52,8 @@ public class SparqlQueryFactory implements QueryFactory {
 
     @Override
     public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
-        Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
-        Objects.requireNonNull(resultClass, ErrorUtils.constructNPXMessage("resultClass"));
+        Objects.requireNonNull(sparql, ErrorUtils.getNPXMessageSupplier("sparql"));
+        Objects.requireNonNull(resultClass, ErrorUtils.getNPXMessageSupplier("resultClass"));
 
         final TypedQueryImpl<T> tq = new TypedQueryImpl<>(queryParser.parseQuery(sparql), resultClass, connection, uow);
         tq.setUnitOfWork(uow);
@@ -71,8 +71,8 @@ public class SparqlQueryFactory implements QueryFactory {
 
     @Override
     public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
-        Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
-        Objects.requireNonNull(resultClass, ErrorUtils.constructNPXMessage("resultClass"));
+        Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
+        Objects.requireNonNull(resultClass, ErrorUtils.getNPXMessageSupplier("resultClass"));
 
         // We do not support any more abstract syntax, yet
         return createNativeQuery(query, resultClass);

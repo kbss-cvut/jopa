@@ -74,8 +74,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     public void persist(final Object entity, final Descriptor descriptor) {
         LOG.trace("Persisting {}", entity);
         try {
-            Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-            Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+            Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+            Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
             ensureOpen();
             checkClassIsValidEntity(entity.getClass());
 
@@ -149,8 +149,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public <T> T merge(final T entity, final Descriptor descriptor) {
         try {
-            Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-            Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+            Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+            Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
             ensureOpen();
             checkClassIsValidEntity(entity.getClass());
 
@@ -258,9 +258,9 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor) {
         try {
-            Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
-            Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
-            Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+            Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
+            Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+            Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
             ensureOpen();
             checkClassIsValidEntity(cls);
 

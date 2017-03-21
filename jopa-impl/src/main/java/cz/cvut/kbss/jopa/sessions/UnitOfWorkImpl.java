@@ -119,9 +119,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public <T> T readObject(Class<T> cls, Object primaryKey, Descriptor descriptor) {
-        Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
-        Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
+        Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
         final T result = readObjectInternal(cls, primaryKey, descriptor);
         if (result != null) {
@@ -358,8 +358,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @return The state of the specified entity
      */
     public State getState(Object entity, Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
         if (getDeletedObjects().containsKey(entity)) {
             return State.REMOVED;
@@ -568,8 +568,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public <T> T mergeDetached(T entity, Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
         final Object id = getIdentifier(entity);
         if (!storage.contains(id, entity.getClass(), descriptor)) {
@@ -716,8 +716,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public void registerNewObject(Object entity, Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
         registerNewObjectInternal(entity, descriptor);
     }
@@ -879,8 +879,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public <T> void loadEntityField(T entity, Field field) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-        Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
+        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+        Objects.requireNonNull(field, ErrorUtils.getNPXMessageSupplier("field"));
 
         if (EntityPropertiesUtils.getFieldValue(field, entity) != null) {
             return;
@@ -928,7 +928,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public void removeObjectFromCache(Object toRemove, URI context) {
-        Objects.requireNonNull(toRemove, ErrorUtils.constructNPXMessage("toRemove"));
+        Objects.requireNonNull(toRemove, ErrorUtils.getNPXMessageSupplier("toRemove"));
 
         final Object primaryKey = getIdentifier(toRemove);
         cacheManager.evict(toRemove.getClass(), primaryKey, context);

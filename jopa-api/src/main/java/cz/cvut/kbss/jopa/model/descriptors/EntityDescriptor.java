@@ -46,15 +46,15 @@ public class EntityDescriptor extends Descriptor {
 
     @Override
     public void addAttributeDescriptor(Field attribute, Descriptor descriptor) {
-        Objects.requireNonNull(attribute, ErrorUtils.constructNPXMessage("attribute"));
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        Objects.requireNonNull(attribute, ErrorUtils.getNPXMessageSupplier("attribute"));
+        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
         fieldDescriptors.put(attribute, descriptor);
     }
 
     @Override
     public void addAttributeContext(Field attribute, URI context) {
-        Objects.requireNonNull(attribute, ErrorUtils.constructNPXMessage("attribute"));
+        Objects.requireNonNull(attribute, ErrorUtils.getNPXMessageSupplier("attribute"));
 
         fieldDescriptors.put(attribute, new FieldDescriptor(context, attribute));
     }

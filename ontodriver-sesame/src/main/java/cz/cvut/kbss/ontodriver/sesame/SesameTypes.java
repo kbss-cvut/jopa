@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,7 +24,7 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.Set;
 
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
+import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
 public class SesameTypes implements Types {
 
@@ -42,7 +42,7 @@ public class SesameTypes implements Types {
     @Override
     public Set<Axiom<URI>> getTypes(NamedResource individual, URI context, boolean includeInferred)
             throws OntoDriverException {
-        Objects.requireNonNull(individual, npxMessage("individual"));
+        Objects.requireNonNull(individual, getNPXMessageSupplier("individual"));
         beforeCallback.execute();
         return adapter.getTypesHandler().getTypes(individual, context, includeInferred);
     }
@@ -57,8 +57,8 @@ public class SesameTypes implements Types {
     }
 
     private void verifyValidity(NamedResource individual, Set<URI> types) throws SesameDriverException {
-        Objects.requireNonNull(individual, npxMessage("individual"));
-        Objects.requireNonNull(types, npxMessage("types"));
+        Objects.requireNonNull(individual, getNPXMessageSupplier("individual"));
+        Objects.requireNonNull(types, getNPXMessageSupplier("types"));
         beforeCallback.execute();
     }
 
