@@ -15,7 +15,9 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 
 public class ServerSessionStub extends ServerSession {
 
@@ -58,5 +60,11 @@ public class ServerSessionStub extends ServerSession {
     @Override
     public synchronized UnitOfWorkImpl getPersistenceContext(Object entity) {
         return null;
+    }
+
+    @Override
+    public boolean transactionStarted(EntityTransaction t, AbstractEntityManager em) {
+        // Do nothing
+        return true;
     }
 }

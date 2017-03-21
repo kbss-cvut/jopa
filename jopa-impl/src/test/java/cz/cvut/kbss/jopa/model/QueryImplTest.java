@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,8 +17,10 @@ package cz.cvut.kbss.jopa.model;
 import cz.cvut.kbss.jopa.exceptions.NoUniqueResultException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.query.Query;
+import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import java.util.List;
 
@@ -31,6 +33,9 @@ import static org.mockito.Mockito.*;
 public class QueryImplTest extends QueryTestBase {
 
     private static final String SELECT_QUERY = "SELECT ?x ?y WHERE { ?x ?y ?z .}";
+
+    @Mock
+    private Runnable handler;
 
     @Override
     Query createQuery(String query, Class<?> resultType) {
@@ -125,5 +130,140 @@ public class QueryImplTest extends QueryTestBase {
         doThrow(new OntoDriverException()).when(statementMock).executeUpdate(UPDATE_QUERY);
         final Query q = queryFactory.createNativeQuery(UPDATE_QUERY);
         q.executeUpdate();
+    }
+
+    @Test
+    public void exceptionInExecuteUpdateInvokesRollbackMarker() throws Exception {
+        doThrow(new OntoDriverException()).when(statementMock).executeUpdate(UPDATE_QUERY);
+        final QueryImpl q = queryFactory.createNativeQuery(UPDATE_QUERY);
+        runAndVerifyHandlerInvocation(q, q::executeUpdate);
+    }
+
+    private void runAndVerifyHandlerInvocation(QueryImpl query, Runnable method) {
+        query.setRollbackOnlyMarker(handler);
+        try {
+            method.run();
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    @Test
+    public void runtimeExceptionInExecuteUpdateInvokesRollbackMarker() throws Exception {
+        doThrow(OWLPersistenceException.class).when(statementMock).executeUpdate(UPDATE_QUERY);
+        final QueryImpl q = queryFactory.createNativeQuery(UPDATE_QUERY);
+        runAndVerifyHandlerInvocation(q, q::executeUpdate);
+    }
+
+    @Test
+    public void exceptionInGetResultListInvokesRollbackMarker() throws Exception {
+        doThrow(OntoDriverException.class).when(statementMock).executeQuery(SELECT_QUERY);
+        final QueryImpl q = queryFactory.createNativeQuery(SELECT_QUERY);
+        runAndVerifyHandlerInvocation(q, q::getResultList);
+    }
+
+    @Test
+    public void runtimeExceptionInGetResultListInvokesRollbackMarker() throws Exception {
+        doThrow(OWLPersistenceException.class).when(statementMock).executeQuery(SELECT_QUERY);
+        final QueryImpl q = queryFactory.createNativeQuery(SELECT_QUERY);
+        runAndVerifyHandlerInvocation(q, q::getResultList);
+    }
+
+    @Test
+    public void exceptionInGetSingleResultInvokesRollbackMarker() throws Exception {
+        doThrow(OntoDriverException.class).when(statementMock).executeQuery(SELECT_QUERY);
+        final QueryImpl q = queryFactory.createNativeQuery(SELECT_QUERY);
+        runAndVerifyHandlerInvocation(q, q::getSingleResult);
+    }
+
+    @Test
+    public void runtimeExceptionInGetSingleResultInvokesRollbackMarker() throws Exception {
+        doThrow(OWLPersistenceException.class).when(statementMock).executeQuery(SELECT_QUERY);
+        final QueryImpl q = queryFactory.createNativeQuery(SELECT_QUERY);
+        runAndVerifyHandlerInvocation(q, q::getSingleResult);
+    }
+
+    @Test
+    public void exceptionInSetMaxResultsInvokesRollbackMarker() throws Exception {
+        final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
+        try {
+            q.setMaxResults(-1);
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    private QueryImpl queryWithRollbackMarker(String query) {
+        final QueryImpl q = queryFactory.createNativeQuery(query);
+        q.setRollbackOnlyMarker(handler);
+        return q;
+    }
+
+    @Test
+    public void exceptionInSetParameterByPositionInvokesRollbackMarker() {
+        final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
+        try {
+            q.setParameter(117, 117);
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    @Test
+    public void exceptionInSetStringParameterByPositionInvokesRollbackMarker() {
+        final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
+        try {
+            q.setParameter(117, "A", "en");
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    @Test
+    public void exceptionInSetParameterByNameInvokesRollbackMarker() {
+        final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
+        try {
+            q.setParameter("a", 117);
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    @Test
+    public void exceptionInSetStringParameterByNameInvokesRollbackMarker() {
+        final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
+        try {
+            q.setParameter("a", "A", "en");
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    @Test
+    public void exceptionInSetParameterByParameterInvokesRollbackMarker() {
+        final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
+        try {
+            q.setParameter(new QueryParameter<>(117), 117);
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
+    }
+
+    @Test
+    public void exceptionInSetStringParameterByParameterInvokesRollbackMarker() {
+        final QueryImpl q = queryWithRollbackMarker(SELECT_QUERY);
+        try {
+            q.setParameter(new QueryParameter<>(117), "A", "en");
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        verify(handler).run();
     }
 }

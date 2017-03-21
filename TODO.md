@@ -3,6 +3,7 @@
 ## High Priority
 
 - [ ] EM operations should mark the current transaction for rollback on exception
+- [ ] Rewrite ErrorUtils to provide exception supplier instead of directly constructing the exception message
 - [ ] Inheritance support
     - [x] Mapped superclass
     - [x] Single inheritance

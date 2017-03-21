@@ -56,7 +56,7 @@ public abstract class QueryTestBase {
     @Mock
     ResultSet resultSetMock;
 
-    QueryFactory queryFactory;
+    SparqlQueryFactory queryFactory;
 
     @Before
     public void setUp() throws Exception {

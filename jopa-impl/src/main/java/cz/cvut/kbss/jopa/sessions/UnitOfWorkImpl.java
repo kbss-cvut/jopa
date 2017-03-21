@@ -20,6 +20,8 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.QueryImpl;
+import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
@@ -69,7 +71,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private final MergeManager mergeManager;
     private final CloneBuilder cloneBuilder;
     private final ChangeManager changeManager;
-    private final QueryFactory queryFactory;
+    private final SparqlQueryFactory queryFactory;
     private final CollectionFactory collectionFactory;
 
     private final EntityLifecycleListenerCaller lifecycleListenerCaller = new EntityLifecycleListenerCaller();
@@ -963,32 +965,32 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     @Override
-    public Query createNativeQuery(String sparql) {
+    public QueryImpl createNativeQuery(String sparql) {
         return queryFactory.createNativeQuery(sparql);
     }
 
     @Override
-    public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass) {
+    public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
         return queryFactory.createNativeQuery(sparql, resultClass);
     }
 
     @Override
-    public Query createQuery(String query) {
+    public QueryImpl createQuery(String query) {
         return queryFactory.createQuery(query);
     }
 
     @Override
-    public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass) {
+    public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
         return queryFactory.createQuery(query, resultClass);
     }
 
     @Override
-    public Query createNamedQuery(String name) {
+    public QueryImpl createNamedQuery(String name) {
         return queryFactory.createNamedQuery(name);
     }
 
     @Override
-    public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
+    public <T> TypedQueryImpl<T> createNamedQuery(String name, Class<T> resultClass) {
         return queryFactory.createNamedQuery(name, resultClass);
     }
 

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,21 +14,23 @@
  */
 package cz.cvut.kbss.jopa.exceptions;
 
-@SuppressWarnings("serial")
+/**
+ * Generic exception indicating that something went wrong during execution of a persistence provider operation.
+ */
 public class OWLPersistenceException extends RuntimeException {
 
-	public OWLPersistenceException() {
-	}
+    public OWLPersistenceException() {
+    }
 
-	public OWLPersistenceException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public OWLPersistenceException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public OWLPersistenceException(String message) {
-		super(message);
-	}
+    public OWLPersistenceException(String message) {
+        super(message);
+    }
 
-	public OWLPersistenceException(Throwable cause) {
-		super(cause);
-	}
+    public OWLPersistenceException(Throwable cause) {
+        super(cause);
+    }
 }

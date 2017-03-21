@@ -45,6 +45,8 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
     private boolean useBackupOntology;
     private int maxResults;
 
+    private Runnable exceptionHandler;
+
     public TypedQueryImpl(final QueryHolder query, final Class<X> resultType,
                           final ConnectionWrapper connection, MetamodelProvider metamodelProvider) {
         this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
@@ -286,5 +288,9 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
      */
     public void setUseBackupOntology(boolean useBackupOntology) {
         this.useBackupOntology = useBackupOntology;
+    }
+
+    public void registerExceptionHandler(Runnable handler) {
+        this.exceptionHandler = handler;
     }
 }
