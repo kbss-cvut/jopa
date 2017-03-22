@@ -20,11 +20,6 @@ import java.util.List;
 
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 
 import cz.cvut.kbss.ontodriver.exception.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
@@ -36,6 +31,7 @@ import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Axiom;
+import org.eclipse.rdf4j.model.*;
 
 /**
  * Base class for list handlers.
@@ -87,14 +83,14 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
         }
         final Collection<Statement> statements = new ArrayList<>(listValueDescriptor.getValues()
                                                                                     .size());
-        final URI head = createListHead(listValueDescriptor, statements);
+        final IRI head = createListHead(listValueDescriptor, statements);
         statements.addAll(createListRest(head, listValueDescriptor));
         connector.addStatements(statements);
     }
 
-    abstract URI createListHead(V valueDescriptor, Collection<Statement> listStatements) throws SesameDriverException;
+    abstract IRI createListHead(V valueDescriptor, Collection<Statement> listStatements) throws SesameDriverException;
 
-    abstract List<Statement> createListRest(URI head, V valueDescriptor) throws SesameDriverException;
+    abstract List<Statement> createListRest(IRI head, V valueDescriptor) throws SesameDriverException;
 
     /**
      * Updates list with values specified by the descriptor.
@@ -113,8 +109,8 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
         }
     }
 
-    private boolean isOldListEmpty(Resource owner, URI hasListProperty, boolean includeInferred,
-                                   URI context) throws SesameDriverException {
+    private boolean isOldListEmpty(Resource owner, IRI hasListProperty, boolean includeInferred,
+                                   IRI context) throws SesameDriverException {
         final Collection<Statement> stmts = connector.findStatements(owner, hasListProperty, null,
                 includeInferred, context);
         return stmts.isEmpty();
@@ -139,19 +135,19 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 
     abstract void appendNewNodes(V listDescriptor, MergeResult mergeResult) throws SesameDriverException;
 
-    void removeObsoletes(SesameIterator it) throws SesameDriverException {
+    private void removeObsoletes(SesameIterator it) throws SesameDriverException {
         while (it.hasNext()) {
             it.nextNode();
             it.remove();
         }
     }
 
-    Resource extractListNode(Collection<Statement> stmts, URI nodeAssertion)
+    Resource extractListNode(Collection<Statement> stmts, IRI nodeAssertion)
             throws SesameDriverException {
         if (stmts.size() > 1) {
             throw new IntegrityConstraintViolatedException(
-                    "Invalid number of values found for assertion " + nodeAssertion
-                            + ". Expected 1, got " + stmts.size());
+                    "Invalid number of values found for assertion " + nodeAssertion + ". Expected 1, got " +
+                            stmts.size());
         }
         final Value val = stmts.iterator().next().getObject();
         if (!(val instanceof Resource)) {
@@ -161,24 +157,24 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
         return (Resource) val;
     }
 
-    URI context(ListDescriptor listDescriptor) {
-        return sesameUri(listDescriptor.getContext());
+    IRI context(ListDescriptor listDescriptor) {
+        return sesameIri(listDescriptor.getContext());
     }
 
-    URI owner(ListDescriptor listDescriptor) {
-        return sesameUri(listDescriptor.getListOwner().getIdentifier());
+    IRI owner(ListDescriptor listDescriptor) {
+        return sesameIri(listDescriptor.getListOwner().getIdentifier());
     }
 
-    URI hasList(ListDescriptor listDescriptor) {
-        return sesameUri(listDescriptor.getListProperty().getIdentifier());
+    IRI hasList(ListDescriptor listDescriptor) {
+        return sesameIri(listDescriptor.getListProperty().getIdentifier());
     }
 
-    URI hasNext(ListDescriptor listDescriptor) {
-        return sesameUri(listDescriptor.getNextNode().getIdentifier());
+    IRI hasNext(ListDescriptor listDescriptor) {
+        return sesameIri(listDescriptor.getNextNode().getIdentifier());
     }
 
-    URI sesameUri(java.net.URI uri) {
-        return SesameUtils.toSesameUri(uri, vf);
+    IRI sesameIri(java.net.URI uri) {
+        return SesameUtils.toSesameIri(uri, vf);
     }
 
     /**
@@ -213,9 +209,9 @@ abstract class ListHandler<T extends ListDescriptor, V extends ListValueDescript
 
     static final class MergeResult {
         protected int i;
-        protected Resource previous;
+        Resource previous;
 
-        protected MergeResult(int i, Resource node) {
+        MergeResult(int i, Resource node) {
             this.i = i;
             this.previous = node;
         }

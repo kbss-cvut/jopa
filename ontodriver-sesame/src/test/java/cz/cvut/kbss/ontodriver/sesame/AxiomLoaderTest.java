@@ -22,11 +22,10 @@ import cz.cvut.kbss.ontodriver.sesame.config.Constants;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
 import cz.cvut.kbss.ontodriver.sesame.environment.TestRepositoryProvider;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.junit.*;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-
 import java.net.URI;
 import java.util.*;
 
@@ -165,13 +164,13 @@ public class AxiomLoaderTest {
         final Object value;
         if (property.getType() == Assertion.AssertionType.DATA_PROPERTY) {
             value = new Date();
-            conn.add(vf.createURI(individual), vf.createURI(property.getIdentifier().toString()),
-                    vf.createLiteral((Date) value), vf.createURI(context));
+            conn.add(vf.createIRI(individual), vf.createIRI(property.getIdentifier().toString()),
+                    vf.createLiteral((Date) value), vf.createIRI(context));
 
         } else {
             value = NamedResource.create("http://krizik.felk.cvut.cz/individualInContext" + Generator.randomInt());
-            conn.add(vf.createURI(individual), vf.createURI(property.getIdentifier().toString()),
-                    vf.createURI(value.toString()), vf.createURI(context));
+            conn.add(vf.createIRI(individual), vf.createIRI(property.getIdentifier().toString()),
+                    vf.createIRI(value.toString()), vf.createIRI(context));
         }
         conn.commit();
         conn.close();
@@ -265,7 +264,7 @@ public class AxiomLoaderTest {
                 .createObjectPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/objectProperty"), false);
         final RepositoryConnection conn = connector.unwrap(Repository.class).getConnection();
         conn.begin();
-        conn.add(vf.createURI(individual), vf.createURI(a.getIdentifier().toString()), vf.createLiteral(false));
+        conn.add(vf.createIRI(individual), vf.createIRI(a.getIdentifier().toString()), vf.createLiteral(false));
         conn.commit();
         conn.close();
 
@@ -285,8 +284,8 @@ public class AxiomLoaderTest {
                 .createDataPropertyAssertion(URI.create("http://krizik.felk.cvut.cz/dataProperty"), false);
         final RepositoryConnection conn = connector.unwrap(Repository.class).getConnection();
         conn.begin();
-        conn.add(vf.createURI(individual), vf.createURI(a.getIdentifier().toString()),
-                vf.createURI("http://krizik.felk.cvut.cz/individual"));
+        conn.add(vf.createIRI(individual), vf.createIRI(a.getIdentifier().toString()),
+                vf.createIRI("http://krizik.felk.cvut.cz/individual"));
         conn.commit();
         conn.close();
 

@@ -16,9 +16,9 @@ package cz.cvut.kbss.ontodriver.sesame.connector;
 
 
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import org.openrdf.query.*;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.query.*;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 /**
  * Actual implementation of statement processing.

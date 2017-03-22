@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,13 +18,13 @@ import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openrdf.model.Statement;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
 
 import java.net.URI;
 
@@ -51,7 +51,7 @@ public class EpistemicAxiomRemoverTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.vf = new ValueFactoryImpl();
+        this.vf = SimpleValueFactory.getInstance();
         this.descriptor = new AxiomDescriptor(SUBJECT);
 
         this.axiomRemover = new EpistemicAxiomRemover(connectorMock, vf, "en");
@@ -64,9 +64,9 @@ public class EpistemicAxiomRemoverTest {
 
         axiomRemover.remove(descriptor);
         verify(connectorMock, never())
-                .findStatements(eq(vf.createURI(SUBJECT.toString())), eq(vf.createURI(PROPERTY)), any(), anyBoolean());
+                .findStatements(eq(vf.createIRI(SUBJECT.toString())), eq(vf.createIRI(PROPERTY)), any(), anyBoolean());
         verify(connectorMock, never())
-                .findStatements(eq(vf.createURI(SUBJECT.toString())), eq(vf.createURI(PROPERTY)), any(), anyBoolean(),
+                .findStatements(eq(vf.createIRI(SUBJECT.toString())), eq(vf.createIRI(PROPERTY)), any(), anyBoolean(),
                         anyVararg());
     }
 
@@ -79,8 +79,8 @@ public class EpistemicAxiomRemoverTest {
 
         axiomRemover.remove(descriptor);
 
-        verify(connectorMock).findStatements(vf.createURI(SUBJECT.toString()), vf.createURI(PROPERTY), null, false,
-                vf.createURI(context));
+        verify(connectorMock).findStatements(vf.createIRI(SUBJECT.toString()), vf.createIRI(PROPERTY), null, false,
+                vf.createIRI(context));
         verify(connectorMock).removeStatements(anyCollectionOf(Statement.class));
     }
 
@@ -91,7 +91,7 @@ public class EpistemicAxiomRemoverTest {
 
         axiomRemover.remove(descriptor);
 
-        verify(connectorMock).findStatements(vf.createURI(SUBJECT.toString()), vf.createURI(PROPERTY), null, false);
+        verify(connectorMock).findStatements(vf.createIRI(SUBJECT.toString()), vf.createIRI(PROPERTY), null, false);
         verify(connectorMock).removeStatements(anyCollectionOf(Statement.class));
     }
 }

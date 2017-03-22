@@ -6,16 +6,12 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.9.4</version>
+        <version>0.9.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>jopa-integration-tests-sesame</artifactId>
     <name>JOPA Integration Tests for Sesame</name>
     <description>Integration tests of JOPA and Sesame OntoDriver implementation</description>
-
-    <properties>
-        <org.aspectj.version>1.8.5</org.aspectj.version>
-    </properties>
 
 
     <dependencies>

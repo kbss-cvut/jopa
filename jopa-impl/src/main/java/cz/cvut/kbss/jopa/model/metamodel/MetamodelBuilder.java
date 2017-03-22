@@ -62,22 +62,23 @@ public class MetamodelBuilder {
     private <X> void processManagedType(AbstractIdentifiableType<X> type) {
         final Class<X> cls = type.getJavaType();
         typeMap.put(cls, type);
-        final ClassFieldMetamodelProcessor<X> fieldProcessor = new ClassFieldMetamodelProcessor<>(cls, type, this);
-
-        for (Field f : cls.getDeclaredFields()) {
-            fieldProcessor.processField(f);
-        }
 
         final AbstractIdentifiableType<? super X> supertype = processSupertypes(cls);
         if (supertype != null) {
             type.setSupertype(supertype);
         }
 
+        final ClassFieldMetamodelProcessor<X> fieldProcessor = new ClassFieldMetamodelProcessor<>(cls, type, this);
+
+        for (Field f : cls.getDeclaredFields()) {
+            fieldProcessor.processField(f);
+        }
+
         if (type.getPersistenceType() == Type.PersistenceType.ENTITY) {
             try {
                 type.getIdentifier();
             } catch (IllegalArgumentException e) {
-                throw new MetamodelInitializationException("Missing identifier field in entity class " + cls);
+                throw new MetamodelInitializationException("Missing identifier field in entity " + cls);
             }
             resolveInheritanceType((EntityTypeImpl<X>) type);
         }

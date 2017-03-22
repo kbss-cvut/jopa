@@ -122,8 +122,8 @@ public class TtlCacheManager implements CacheManager {
 
     @Override
     public void add(Object primaryKey, Object entity, URI context) {
-        Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
+        Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
 
         acquireWriteLock();
         try {
@@ -235,8 +235,8 @@ public class TtlCacheManager implements CacheManager {
 
     @Override
     public void evict(Class<?> cls, Object primaryKey, URI context) {
-        Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
-        Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
+        Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
+        Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
 
         acquireWriteLock();
         try {

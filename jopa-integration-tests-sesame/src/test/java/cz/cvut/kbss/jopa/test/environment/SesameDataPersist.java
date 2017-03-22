@@ -16,9 +16,9 @@ package cz.cvut.kbss.jopa.test.environment;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 import java.net.URI;
 import java.util.Collection;
@@ -33,10 +33,10 @@ public class SesameDataPersist {
             connection.begin();
             for (Triple t : data) {
                 if (t.getValue() instanceof URI) {
-                    connection.add(vf.createURI(t.getSubject().toString()), vf.createURI(t.getProperty().toString()),
-                            vf.createURI(t.getValue().toString()));
+                    connection.add(vf.createIRI(t.getSubject().toString()), vf.createIRI(t.getProperty().toString()),
+                            vf.createIRI(t.getValue().toString()));
                 } else {
-                    connection.add(vf.createURI(t.getSubject().toString()), vf.createURI(t.getProperty().toString()),
+                    connection.add(vf.createIRI(t.getSubject().toString()), vf.createIRI(t.getProperty().toString()),
                             SesameUtils.createDataPropertyLiteral(t.getValue(), "en", vf));
                 }
 

@@ -32,7 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.*;
 
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
+import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
 class SelectResultSet extends AbstractResultSet {
 
@@ -294,7 +294,7 @@ class SelectResultSet extends AbstractResultSet {
 
     @Override
     public <T> T getObject(String columnLabel, Class<T> cls) throws OntoDriverException {
-        Objects.requireNonNull(cls, npxMessage("cls"));
+        Objects.requireNonNull(cls, getNPXMessageSupplier("cls"));
         return owlObjectToType(getCurrentValue(columnLabel), cls);
     }
 

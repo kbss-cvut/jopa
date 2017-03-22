@@ -20,6 +20,8 @@ import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.AbstractEntityManager;
 import cz.cvut.kbss.jopa.model.EntityManagerImpl.State;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
+import cz.cvut.kbss.jopa.model.QueryImpl;
+import cz.cvut.kbss.jopa.model.TypedQueryImpl;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
 import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
@@ -69,7 +71,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private final MergeManager mergeManager;
     private final CloneBuilder cloneBuilder;
     private final ChangeManager changeManager;
-    private final QueryFactory queryFactory;
+    private final SparqlQueryFactory queryFactory;
     private final CollectionFactory collectionFactory;
 
     private final EntityLifecycleListenerCaller lifecycleListenerCaller = new EntityLifecycleListenerCaller();
@@ -117,9 +119,9 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public <T> T readObject(Class<T> cls, Object primaryKey, Descriptor descriptor) {
-        Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
-        Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
+        Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
         final T result = readObjectInternal(cls, primaryKey, descriptor);
         if (result != null) {
@@ -356,8 +358,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
      * @return The state of the specified entity
      */
     public State getState(Object entity, Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
         if (getDeletedObjects().containsKey(entity)) {
             return State.REMOVED;
@@ -566,8 +568,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public <T> T mergeDetached(T entity, Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
         final Object id = getIdentifier(entity);
         if (!storage.contains(id, entity.getClass(), descriptor)) {
@@ -714,8 +716,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public void registerNewObject(Object entity, Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
         registerNewObjectInternal(entity, descriptor);
     }
@@ -877,8 +879,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public <T> void loadEntityField(T entity, Field field) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-        Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
+        Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+        Objects.requireNonNull(field, ErrorUtils.getNPXMessageSupplier("field"));
 
         if (EntityPropertiesUtils.getFieldValue(field, entity) != null) {
             return;
@@ -926,7 +928,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
 
     @Override
     public void removeObjectFromCache(Object toRemove, URI context) {
-        Objects.requireNonNull(toRemove, ErrorUtils.constructNPXMessage("toRemove"));
+        Objects.requireNonNull(toRemove, ErrorUtils.getNPXMessageSupplier("toRemove"));
 
         final Object primaryKey = getIdentifier(toRemove);
         cacheManager.evict(toRemove.getClass(), primaryKey, context);
@@ -963,32 +965,32 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     @Override
-    public Query createNativeQuery(String sparql) {
+    public QueryImpl createNativeQuery(String sparql) {
         return queryFactory.createNativeQuery(sparql);
     }
 
     @Override
-    public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass) {
+    public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
         return queryFactory.createNativeQuery(sparql, resultClass);
     }
 
     @Override
-    public Query createQuery(String query) {
+    public QueryImpl createQuery(String query) {
         return queryFactory.createQuery(query);
     }
 
     @Override
-    public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass) {
+    public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
         return queryFactory.createQuery(query, resultClass);
     }
 
     @Override
-    public Query createNamedQuery(String name) {
+    public QueryImpl createNamedQuery(String name) {
         return queryFactory.createNamedQuery(name);
     }
 
     @Override
-    public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
+    public <T> TypedQueryImpl<T> createNamedQuery(String name, Class<T> resultClass) {
         return queryFactory.createNamedQuery(name, resultClass);
     }
 

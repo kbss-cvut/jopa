@@ -1,5 +1,11 @@
 # JOPA - Release Notes
 
+## 0.9.5 - March 22, 2017
+- Fixed issue with mapped superclass referencing its descendants (Bug #3).
+- Fixed issue with cloning content of singleton collections elements.
+- Upgraded Sesame driver from Sesame API 2.8.9 to RDF4J 2.2.
+- Mark transaction for rollback when exception is thrown in persistence context-related operations.
+
 ## 0.9.4 - March 10, 2017
 - Fixed issue with merge overwriting values of references in managed objects (Bug #2).
 - Aligned merge implementation with the JPA specification semantics.

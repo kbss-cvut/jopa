@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,17 +22,16 @@ import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import org.junit.AfterClass;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
 
 import java.util.*;
 
@@ -45,11 +44,11 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ReferencedListHandlerTest extends ListHandlerTestBase {
 
-    protected static final String NODE_CONTENT_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
+    private static final String NODE_CONTENT_PROPERTY = "http://krizik.felk.cvut.cz/ontologies/2008/6/sequences.owl#hasContents";
 
-    private static URI hasListProperty;
-    private static URI nextNodeProperty;
-    private static URI nodeContentProperty;
+    private static IRI hasListProperty;
+    private static IRI nextNodeProperty;
+    private static IRI nodeContentProperty;
 
     private ReferencedListDescriptor listDescriptor;
     private ReferencedListValueDescriptor valueDescriptor;
@@ -65,14 +64,9 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         init();
-        hasListProperty = vf.createURI(LIST_PROPERTY);
-        nextNodeProperty = vf.createURI(NEXT_NODE_PROPERTY);
-        nodeContentProperty = vf.createURI(NODE_CONTENT_PROPERTY);
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        close();
+        hasListProperty = vf.createIRI(LIST_PROPERTY);
+        nextNodeProperty = vf.createIRI(NEXT_NODE_PROPERTY);
+        nodeContentProperty = vf.createIRI(NODE_CONTENT_PROPERTY);
     }
 
     @Before
@@ -111,13 +105,13 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 
     @Test
     public void loadsEmptyListAndReturnsEmptyCollection() throws Exception {
-        when(connector.findStatements(owner, hasListProperty, null, false, (URI[]) null))
-                .thenReturn(Collections.<Statement>emptyList());
+        when(connector.findStatements(owner, hasListProperty, null, false, (IRI[]) null))
+                .thenReturn(Collections.emptyList());
         final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
         assertNotNull(res);
         assertTrue(res.isEmpty());
         verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
-                any(Value.class), any(Boolean.class), eq((URI[]) null));
+                any(Value.class), any(Boolean.class), eq(null));
     }
 
     @Test
@@ -146,27 +140,27 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
         Resource prev = owner;
         final List<Statement> stmts = new ArrayList<>();
         for (java.net.URI item : nodes) {
-            final URI itemUri = vf.createURI(item.toString());
+            final IRI itemUri = vf.createIRI(item.toString());
             Statement node;
             if (i == 0) {
                 node = vf.createStatement(prev, hasListProperty, itemUri);
                 when(
-                        connector.findStatements(eq(prev), eq(hasListProperty), eq((Value) null),
-                                anyBoolean(), eq((URI[]) null))).thenReturn(
+                        connector.findStatements(eq(prev), eq(hasListProperty), eq(null),
+                                anyBoolean(), eq(null))).thenReturn(
                         Collections.singleton(node));
             } else {
                 node = vf.createStatement(prev, nextNodeProperty, itemUri);
                 when(
-                        connector.findStatements(eq(prev), eq(nextNodeProperty), eq((Value) null),
-                                anyBoolean(), eq((URI[]) null))).thenReturn(
+                        connector.findStatements(eq(prev), eq(nextNodeProperty), eq(null),
+                                anyBoolean(), eq(null))).thenReturn(
                         Collections.singleton(node));
             }
             stmts.add(node);
             final Statement content = vf.createStatement(itemUri, nodeContentProperty,
-                    vf.createURI(values.get(i).toString()));
+                    vf.createIRI(values.get(i).toString()));
             when(
                     connector.findStatements(eq(itemUri), eq(nodeContentProperty),
-                            eq((Value) null), anyBoolean(), eq((URI[]) null))).thenReturn(
+                            eq((Value) null), anyBoolean(), eq(null))).thenReturn(
                     Collections.singleton(content));
             stmts.add(content);
             prev = itemUri;
@@ -177,22 +171,21 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 
     @Test(expected = IntegrityConstraintViolatedException.class)
     public void throwsICViolationWhenThereIsNoContentInHeadNode() throws Exception {
-        final URI headNode = vf.createURI("http://krizik.felk.cvut.cz/ontologies/jopa/SEQ0");
+        final IRI headNode = vf.createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/SEQ0");
         when(
-                connector.findStatements(eq(owner), eq(hasListProperty), eq((Value) null),
-                        anyBoolean(), eq((URI[]) null))).thenReturn(
+                connector.findStatements(eq(owner), eq(hasListProperty), eq(null),
+                        anyBoolean(), eq(null))).thenReturn(
                 Collections.singleton(vf.createStatement(owner, hasListProperty, headNode)));
         when(
-                connector.findStatements(eq(headNode), eq(nodeContentProperty), eq((Value) null),
-                        anyBoolean(), eq((URI[]) null))).thenReturn(
-                Collections.<Statement>emptyList());
+                connector.findStatements(eq(headNode), eq(nodeContentProperty), eq(null),
+                        anyBoolean(), eq(null))).thenReturn(Collections.emptyList());
         try {
             final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
             assert res == null;
             fail("This line should not have been reached.");
         } finally {
             verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
-                    any(Value.class), anyBoolean(), any(URI[].class));
+                    any(Value.class), anyBoolean(), any(IRI[].class));
         }
     }
 
@@ -203,9 +196,8 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
         initStatementsForList(listNodes, refList);
         final Resource elem = selectRandomNode(listNodes);
         when(
-                connector.findStatements(eq(elem), eq(nodeContentProperty), eq((Value) null),
-                        anyBoolean(), eq((URI[]) null))).thenReturn(
-                Collections.<Statement>emptyList());
+                connector.findStatements(eq(elem), eq(nodeContentProperty), eq(null),
+                        anyBoolean(), eq(null))).thenReturn(Collections.emptyList());
         final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
         assert res == null;
     }
@@ -214,35 +206,29 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
         // Select a random index, but it shouldn't be 0 (it would be the head),
         // so add 1
         final int rand = new Random().nextInt(nodes.size() - 1) + 1;
-        return vf.createURI(nodes.get(rand).toString());
+        return vf.createIRI(nodes.get(rand).toString());
     }
 
     @Test(expected = IntegrityConstraintViolatedException.class)
-    public void throwsICViolationWhenThereAreMutlipleSuccessorsForNode() throws Exception {
+    public void throwsICViolationWhenThereAreMultipleSuccessorsForNode() throws Exception {
+        runIcViolationTest(nextNodeProperty);
+    }
+
+    private void runIcViolationTest(IRI property) throws Exception {
         final List<NamedResource> refList = initList();
         final List<java.net.URI> listNodes = initListNodes(refList);
         initStatementsForList(listNodes, refList);
         final Resource node = selectRandomNode(listNodes);
         final List<Statement> stmts = Arrays.asList(mock(Statement.class), mock(Statement.class));
         when(
-                connector.findStatements(eq(node), eq(nextNodeProperty), eq((Value) null),
-                        anyBoolean(), eq((URI[]) null))).thenReturn(stmts);
-        final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
-        assert res == null;
+                connector.findStatements(eq(node), eq(property), eq(null),
+                        anyBoolean(), eq(null))).thenReturn(stmts);
+        handler.loadList(listDescriptor);
     }
 
     @Test(expected = IntegrityConstraintViolatedException.class)
     public void throwsICViolationWhenThereAreMultipleReferencesInNode() throws Exception {
-        final List<NamedResource> refList = initList();
-        final List<java.net.URI> listNodes = initListNodes(refList);
-        initStatementsForList(listNodes, refList);
-        final Resource node = selectRandomNode(listNodes);
-        final List<Statement> stmts = Arrays.asList(mock(Statement.class), mock(Statement.class));
-        when(
-                connector.findStatements(eq(node), eq(nodeContentProperty), eq((Value) null),
-                        anyBoolean(), eq((URI[]) null))).thenReturn(stmts);
-        final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
-        assert res == null;
+        runIcViolationTest(nodeContentProperty);
     }
 
     @Test
@@ -311,9 +297,8 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
         final ReferencedListValueDescriptor descriptor = initValues(5);
         when(
                 connector.findStatements(owner, hasListProperty, null, descriptor.getListProperty()
-                                                                                 .isInferred(), (URI[]) null))
-                .thenReturn(
-                        Collections.<Statement>emptyList());
+                                                                                 .isInferred(), (IRI[]) null))
+                .thenReturn(Collections.emptyList());
 
         handler.updateList(descriptor);
         verify(connector, never()).removeStatements(any(Collection.class));

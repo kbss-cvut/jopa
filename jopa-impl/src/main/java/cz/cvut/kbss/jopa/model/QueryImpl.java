@@ -38,10 +38,11 @@ public class QueryImpl implements Query {
     private int maxResults;
     private boolean useBackupOntology;
 
+    private Runnable rollbackOnlyMarker;
+
     public QueryImpl(final QueryHolder query, final ConnectionWrapper connection) {
-        this.query = Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
-        this.connection = Objects.requireNonNull(connection,
-                ErrorUtils.constructNPXMessage("connection"));
+        this.query = Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
+        this.connection = Objects.requireNonNull(connection, ErrorUtils.getNPXMessageSupplier("connection"));
         this.contexts = new HashSet<>();
         this.useBackupOntology = false;
         this.maxResults = Integer.MAX_VALUE;
@@ -56,7 +57,17 @@ public class QueryImpl implements Query {
         try {
             stmt.executeUpdate(query.assembleQuery(), uris);
         } catch (OntoDriverException e) {
+            markTransactionForRollback();
             throw queryEvaluationException(e);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
+    }
+
+    private void markTransactionForRollback() {
+        if (rollbackOnlyMarker != null) {
+            rollbackOnlyMarker.run();
         }
     }
 
@@ -68,7 +79,11 @@ public class QueryImpl implements Query {
             }
             return getResultListImpl(maxResults);
         } catch (OntoDriverException e) {
+            markTransactionForRollback();
             throw queryEvaluationException(e);
+        } catch (RuntimeException e) {
+            rollbackOnlyMarker.run();
+            throw e;
         }
     }
 
@@ -90,7 +105,11 @@ public class QueryImpl implements Query {
             }
             return list.get(0);
         } catch (OntoDriverException e) {
+            markTransactionForRollback();
             throw queryEvaluationException(e);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
         }
     }
 
@@ -145,45 +164,75 @@ public class QueryImpl implements Query {
 
     @Override
     public Query setParameter(int position, Object value) {
-        query.setParameter(query.getParameter(position), value);
+        try {
+            query.setParameter(query.getParameter(position), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
         return this;
     }
 
     @Override
     public Query setParameter(int position, String value, String language) {
-        query.setParameter(query.getParameter(position), value, language);
+        try {
+            query.setParameter(query.getParameter(position), value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
         return this;
     }
 
     @Override
     public Query setParameter(String name, Object value) {
-        query.setParameter(query.getParameter(name), value);
+        try {
+            query.setParameter(query.getParameter(name), value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
         return this;
     }
 
     @Override
     public Query setParameter(String name, String value, String language) {
-        query.setParameter(query.getParameter(name), value, language);
+        try {
+            query.setParameter(query.getParameter(name), value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
         return this;
     }
 
     @Override
     public <T> Query setParameter(Parameter<T> parameter, T value) {
-        query.setParameter(parameter, value);
+        try {
+            query.setParameter(parameter, value);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
         return this;
     }
 
     @Override
     public Query setParameter(Parameter<String> parameter, String value, String language) {
-        query.setParameter(parameter, value, language);
+        try {
+            query.setParameter(parameter, value, language);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
         return this;
     }
 
     @Override
     public Query setMaxResults(int maxResults) {
         if (maxResults < 0) {
-            throw new IllegalArgumentException(
-                    "Cannot set maximum number of results to less than 0.");
+            markTransactionForRollback();
+            throw new IllegalArgumentException("Cannot set maximum number of results to less than 0.");
         }
         this.maxResults = maxResults;
         return this;
@@ -259,5 +308,14 @@ public class QueryImpl implements Query {
     public Query clearContexts() {
         contexts.clear();
         return this;
+    }
+
+    /**
+     * Registers reference to a method which marks current transaction (if active) for rollback on exceptions.
+     *
+     * @param rollbackOnlyMarker The marker to invoke on exceptions
+     */
+    void setRollbackOnlyMarker(Runnable rollbackOnlyMarker) {
+        this.rollbackOnlyMarker = rollbackOnlyMarker;
     }
 }

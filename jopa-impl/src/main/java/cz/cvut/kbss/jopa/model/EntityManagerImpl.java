@@ -55,7 +55,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         this.serverSession = serverSession;
         this.configuration = configuration;
 
-        this.setTransactionWrapper();
+        setTransactionWrapper();
 
         this.open = true;
     }
@@ -73,27 +73,32 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public void persist(final Object entity, final Descriptor descriptor) {
         LOG.trace("Persisting {}", entity);
-        ensureOpen();
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
-        checkClassIsValidEntity(entity.getClass());
+        try {
+            Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+            Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+            ensureOpen();
+            checkClassIsValidEntity(entity.getClass());
 
-        switch (getState(entity, descriptor)) {
-            case NOT_MANAGED:
-                try {
-                    getCurrentPersistenceContext().registerNewObject(entity, descriptor);
-                } catch (RuntimeException e) {
-                    markTransactionForRollback();
-                    throw e;
-                }
-            case MANAGED:
-                cascadePersist(entity, descriptor);
-                break;
-            case REMOVED:
-                getCurrentPersistenceContext().revertObject(entity);
-                break;
-            default:
-                break;
+            switch (getState(entity, descriptor)) {
+                case NOT_MANAGED:
+                    try {
+                        getCurrentPersistenceContext().registerNewObject(entity, descriptor);
+                    } catch (RuntimeException e) {
+                        markTransactionForRollback();
+                        throw e;
+                    }
+                case MANAGED:
+                    cascadePersist(entity, descriptor);
+                    break;
+                case REMOVED:
+                    getCurrentPersistenceContext().revertObject(entity);
+                    break;
+                default:
+                    break;
+            }
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
         }
     }
 
@@ -143,11 +148,17 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
 
     @Override
     public <T> T merge(final T entity, final Descriptor descriptor) {
-        Objects.requireNonNull(entity, ErrorUtils.constructNPXMessage("entity"));
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
-        checkClassIsValidEntity(entity.getClass());
+        try {
+            Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+            Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+            ensureOpen();
+            checkClassIsValidEntity(entity.getClass());
 
-        return mergeInternal(entity, descriptor);
+            return mergeInternal(entity, descriptor);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
     }
 
     /**
@@ -161,7 +172,6 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         assert entity != null;
         assert descriptor != null;
         LOG.trace("Merging {}.", entity);
-        ensureOpen();
 
         switch (getState(entity, descriptor)) {
             case MANAGED_NEW:
@@ -212,25 +222,30 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
 
     @Override
     public void remove(Object object) {
-        ensureOpen();
-        Objects.requireNonNull(object);
-        checkClassIsValidEntity(object.getClass());
+        try {
+            ensureOpen();
+            Objects.requireNonNull(object);
+            checkClassIsValidEntity(object.getClass());
 
-        switch (getState(object)) {
-            case MANAGED_NEW:
-            case MANAGED:
-                getCurrentPersistenceContext().removeObject(object);
-                // Intentional fall-through
-            case REMOVED:
-                new SimpleOneLevelCascadeExplorer() {
-                    @Override
-                    protected void runCascadedForEach(Object ox2) {
-                        remove(ox2);
-                    }
-                }.start(this, object, CascadeType.REMOVE);
-                break;
-            default:
-                throw new IllegalArgumentException("Entity " + object + " is not managed and cannot be removed.");
+            switch (getState(object)) {
+                case MANAGED_NEW:
+                case MANAGED:
+                    getCurrentPersistenceContext().removeObject(object);
+                    // Intentional fall-through
+                case REMOVED:
+                    new SimpleOneLevelCascadeExplorer() {
+                        @Override
+                        protected void runCascadedForEach(Object ox2) {
+                            remove(ox2);
+                        }
+                    }.start(this, object, CascadeType.REMOVE);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Entity " + object + " is not managed and cannot be removed.");
+            }
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
         }
     }
 
@@ -242,75 +257,105 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
 
     @Override
     public <T> T find(Class<T> cls, Object primaryKey, Descriptor descriptor) {
-        Objects.requireNonNull(cls, ErrorUtils.constructNPXMessage("cls"));
-        Objects.requireNonNull(primaryKey, ErrorUtils.constructNPXMessage("primaryKey"));
-        Objects.requireNonNull(descriptor, ErrorUtils.constructNPXMessage("descriptor"));
+        try {
+            Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
+            Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+            Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
+            ensureOpen();
+            checkClassIsValidEntity(cls);
 
-        ensureOpen();
-        checkClassIsValidEntity(cls);
-        LOG.trace("Finding instance of {} with identifier {} in context ", cls, primaryKey, descriptor);
-        final URI uri = (primaryKey instanceof URI) ? (URI) primaryKey : URI.create(primaryKey.toString());
+            LOG.trace("Finding instance of {} with identifier {} in context ", cls, primaryKey, descriptor);
+            final URI uri = (primaryKey instanceof URI) ? (URI) primaryKey : URI.create(primaryKey.toString());
 
-        return getCurrentPersistenceContext().readObject(cls, uri, descriptor);
+            return getCurrentPersistenceContext().readObject(cls, uri, descriptor);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
     }
 
     @Override
     public void flush() {
-        ensureOpen();
-
-        LOG.trace("Flushing changes...");
-        if (!getTransaction().isActive()) {
-            throw new TransactionRequiredException();
+        try {
+            ensureOpen();
+            LOG.trace("Flushing changes...");
+            if (!getTransaction().isActive()) {
+                throw new TransactionRequiredException();
+            }
+            this.getCurrentPersistenceContext().writeUncommittedChanges();
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
         }
-        this.getCurrentPersistenceContext().writeUncommittedChanges();
     }
 
     @Override
     public void refresh(Object entity) {
-        ensureOpen();
-        Objects.requireNonNull(entity);
-        checkClassIsValidEntity(entity.getClass());
+        try {
+            ensureOpen();
+            Objects.requireNonNull(entity);
+            checkClassIsValidEntity(entity.getClass());
 
-        this.getCurrentPersistenceContext().revertObject(entity);
-        new SimpleOneLevelCascadeExplorer() {
-            @Override
-            protected void runCascadedForEach(Object ox2) {
-                refresh(ox2);
-            }
-        }.start(this, entity, CascadeType.REFRESH);
+            this.getCurrentPersistenceContext().revertObject(entity);
+            new SimpleOneLevelCascadeExplorer() {
+                @Override
+                protected void runCascadedForEach(Object ox2) {
+                    refresh(ox2);
+                }
+            }.start(this, entity, CascadeType.REFRESH);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
     }
 
     @Override
     public void clear() {
-        getCurrentPersistenceContext().clear();
+        try {
+            ensureOpen();
+            getCurrentPersistenceContext().clear();
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
     }
 
     @Override
     public void detach(Object entity) {
-        ensureOpen();
+        try {
+            ensureOpen();
 
-        switch (getState(entity)) {
-            case MANAGED_NEW:
-            case MANAGED:
-                getCurrentPersistenceContext().unregisterObject(entity);
-                new SimpleOneLevelCascadeExplorer() {
-                    @Override
-                    protected void runCascadedForEach(Object ox2) {
-                        detach(ox2);
-                    }
-                }.start(this, entity, CascadeType.DETACH);
-                break;
-            default:
-                break;
+            switch (getState(entity)) {
+                case MANAGED_NEW:
+                case MANAGED:
+                    getCurrentPersistenceContext().unregisterObject(entity);
+                    new SimpleOneLevelCascadeExplorer() {
+                        @Override
+                        protected void runCascadedForEach(Object ox2) {
+                            detach(ox2);
+                        }
+                    }.start(this, entity, CascadeType.DETACH);
+                    break;
+                default:
+                    break;
+            }
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
         }
     }
 
     @Override
     public boolean contains(Object entity) {
-        ensureOpen();
-        Objects.requireNonNull(entity);
-        checkClassIsValidEntity(entity.getClass());
-        return getCurrentPersistenceContext().contains(entity);
+        try {
+            ensureOpen();
+            Objects.requireNonNull(entity);
+            checkClassIsValidEntity(entity.getClass());
+            return getCurrentPersistenceContext().contains(entity);
+        } catch (RuntimeException e) {
+            markTransactionForRollback();
+            throw e;
+        }
     }
 
     @Override
@@ -349,32 +394,44 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
 
     @Override
     public Query createQuery(String qlString) {
-        return getCurrentPersistenceContext().createQuery(qlString);
+        final QueryImpl q = getCurrentPersistenceContext().createQuery(qlString);
+        q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        return q;
     }
 
     @Override
     public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass) {
-        return getCurrentPersistenceContext().createQuery(query, resultClass);
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createQuery(query, resultClass);
+        q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        return q;
     }
 
     @Override
     public Query createNativeQuery(String sparql) {
-        return getCurrentPersistenceContext().createNativeQuery(sparql);
+        final QueryImpl q = getCurrentPersistenceContext().createNativeQuery(sparql);
+        q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        return q;
     }
 
     @Override
     public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass) {
-        return getCurrentPersistenceContext().createNativeQuery(sparql, resultClass);
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createNativeQuery(sparql, resultClass);
+        q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        return q;
     }
 
     @Override
     public Query createNamedQuery(String name) {
-        return getCurrentPersistenceContext().createNamedQuery(name);
+        final QueryImpl q = getCurrentPersistenceContext().createNamedQuery(name);
+        q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        return q;
     }
 
     @Override
     public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
-        return getCurrentPersistenceContext().createNamedQuery(name, resultClass);
+        final TypedQueryImpl<T> q = getCurrentPersistenceContext().createNamedQuery(name, resultClass);
+        q.setRollbackOnlyMarker(this::markTransactionForRollback);
+        return q;
     }
 
     @Override

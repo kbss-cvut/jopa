@@ -6,7 +6,7 @@
     <parent>
         <groupId>cz.cvut.kbss.jopa</groupId>
         <artifactId>jopa-all</artifactId>
-        <version>0.9.4</version>
+        <version>0.9.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -61,6 +61,37 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <!-- Inserts application version into constants -->
+                    <plugin>
+                        <groupId>com.google.code.maven-replacer-plugin</groupId>
+                        <artifactId>replacer</artifactId>
+                        <version>1.5.3</version>
+                        <executions>
+                            <execution>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>replace</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <ignoreMissingFile>false</ignoreMissingFile>
+                            <file>${project.basedir}/src/main/java/cz/cvut/kbss/jopa/owl2java/Constants.java</file>
+                            <regex>false</regex>
+                            <token>$VERSION$</token>
+                            <value>${project.parent.version}</value>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <resources>
             <resource>
@@ -94,28 +125,6 @@
                             owl2java.sh
                         </exclude>
                     </excludes>
-                </configuration>
-            </plugin>
-
-            <!-- Inserts application version into constants -->
-            <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
-                <version>1.5.3</version>
-                <executions>
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <ignoreMissingFile>false</ignoreMissingFile>
-                    <file>${project.basedir}/src/main/java/cz/cvut/kbss/jopa/owl2java/Constants.java</file>
-                    <regex>false</regex>
-                    <token>$VERSION$</token>
-                    <value>${project.parent.version}</value>
                 </configuration>
             </plugin>
         </plugins>

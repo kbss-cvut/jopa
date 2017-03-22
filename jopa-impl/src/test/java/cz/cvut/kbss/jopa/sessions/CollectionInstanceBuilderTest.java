@@ -2,6 +2,9 @@ package cz.cvut.kbss.jopa.sessions;
 
 import cz.cvut.kbss.jopa.adapters.IndirectList;
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
+import cz.cvut.kbss.jopa.environment.OWLClassA;
+import cz.cvut.kbss.jopa.environment.OWLClassJ;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
@@ -18,6 +21,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class CollectionInstanceBuilderTest {
@@ -132,5 +136,20 @@ public class CollectionInstanceBuilderTest {
         private TestQueue(CollectionOwner owner) {
             this.owner = owner;
         }
+    }
+
+    @Test
+    public void buildingSingletonSetCloneRegistersElementCloneInUoW() throws Exception {
+        final OWLClassJ owner = new OWLClassJ(Generators.createIndividualIdentifier());
+        final OWLClassA aOrig = Generators.generateOwlClassAInstance();
+        final OWLClassA aClone = new OWLClassA(aOrig);
+        owner.setOwlClassA(Collections.singleton(aOrig));
+        when(uowMock.registerExistingObject(aOrig, descriptor)).thenReturn(aClone);
+        when(uowMock.isTypeManaged(OWLClassA.class)).thenReturn(true);
+        final Set<OWLClassA> clone = (Set<OWLClassA>) builder
+                .buildClone(owner, OWLClassJ.getOwlClassAField(), owner.getOwlClassA(), descriptor);
+        assertEquals(owner.getOwlClassA().size(), clone.size());
+        assertSame(aClone, clone.iterator().next());
+        verify(uowMock).registerExistingObject(aOrig, descriptor);
     }
 }

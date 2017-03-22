@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,14 +16,14 @@ package cz.cvut.kbss.ontodriver.sesame.query;
 
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResult;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -43,7 +43,7 @@ public class SelectResultSetTest {
     @Mock
     private Statement statementMock;
 
-    private ValueFactory valueFactory = new ValueFactoryImpl();
+    private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
     private ResultSet resultSet;
 
@@ -61,21 +61,20 @@ public class SelectResultSetTest {
     public void getObjectOnLiteralReturnsCorrespondingJavaLiteral() throws Exception {
         final String x = "String";
         when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createLiteral(x));
-        final Boolean y = false;
-        when(bindingSetMock.getValue("y")).thenReturn(valueFactory.createLiteral(y));
+        when(bindingSetMock.getValue("y")).thenReturn(valueFactory.createLiteral(false));
         final Integer z = 117;
         when(bindingSetMock.getValue("z")).thenReturn(valueFactory.createLiteral(z));
 
         resultSet.next();
         assertEquals(x, resultSet.getObject(0));
-        assertEquals(y, resultSet.getObject("y"));
+        assertFalse((Boolean) resultSet.getObject("y"));
         assertEquals(z, resultSet.getObject(2));
     }
 
     @Test
     public void getObjectOnSesameUriReturnsJavaUri() throws Exception {
         final URI x = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#John117");
-        when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createURI(x.toString()));
+        when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createIRI(x.toString()));
 
         resultSet.next();
         assertEquals(x, resultSet.getObject(0));
@@ -92,7 +91,7 @@ public class SelectResultSetTest {
     @Test
     public void getObjectTypedOnUriReturnsUriWhenAskedForUri() throws Exception {
         final URI x = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#John117");
-        when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createURI(x.toString()));
+        when(bindingSetMock.getValue("x")).thenReturn(valueFactory.createIRI(x.toString()));
 
         resultSet.next();
         assertEquals(x, resultSet.getObject(0, URI.class));

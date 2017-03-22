@@ -42,7 +42,7 @@ public class SparqlQueryFactory implements QueryFactory {
     }
 
     @Override
-    public Query createNativeQuery(String sparql) {
+    public QueryImpl createNativeQuery(String sparql) {
         Objects.requireNonNull(sparql);
 
         final QueryImpl q = new QueryImpl(queryParser.parseQuery(sparql), connection);
@@ -51,9 +51,9 @@ public class SparqlQueryFactory implements QueryFactory {
     }
 
     @Override
-    public <T> TypedQuery<T> createNativeQuery(String sparql, Class<T> resultClass) {
-        Objects.requireNonNull(sparql, ErrorUtils.constructNPXMessage("sparql"));
-        Objects.requireNonNull(resultClass, ErrorUtils.constructNPXMessage("resultClass"));
+    public <T> TypedQueryImpl<T> createNativeQuery(String sparql, Class<T> resultClass) {
+        Objects.requireNonNull(sparql, ErrorUtils.getNPXMessageSupplier("sparql"));
+        Objects.requireNonNull(resultClass, ErrorUtils.getNPXMessageSupplier("resultClass"));
 
         final TypedQueryImpl<T> tq = new TypedQueryImpl<>(queryParser.parseQuery(sparql), resultClass, connection, uow);
         tq.setUnitOfWork(uow);
@@ -62,7 +62,7 @@ public class SparqlQueryFactory implements QueryFactory {
     }
 
     @Override
-    public Query createQuery(String query) {
+    public QueryImpl createQuery(String query) {
         Objects.requireNonNull(query);
 
         // We do not support any more abstract syntax, yet
@@ -70,22 +70,22 @@ public class SparqlQueryFactory implements QueryFactory {
     }
 
     @Override
-    public <T> TypedQuery<T> createQuery(String query, Class<T> resultClass) {
-        Objects.requireNonNull(query, ErrorUtils.constructNPXMessage("query"));
-        Objects.requireNonNull(resultClass, ErrorUtils.constructNPXMessage("resultClass"));
+    public <T> TypedQueryImpl<T> createQuery(String query, Class<T> resultClass) {
+        Objects.requireNonNull(query, ErrorUtils.getNPXMessageSupplier("query"));
+        Objects.requireNonNull(resultClass, ErrorUtils.getNPXMessageSupplier("resultClass"));
 
         // We do not support any more abstract syntax, yet
         return createNativeQuery(query, resultClass);
     }
 
     @Override
-    public Query createNamedQuery(String name) {
+    public QueryImpl createNamedQuery(String name) {
         final String query = uow.getNamedQueryManager().getQuery(name);
         return createNativeQuery(query);
     }
 
     @Override
-    public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
+    public <T> TypedQueryImpl<T> createNamedQuery(String name, Class<T> resultClass) {
         final String query = uow.getNamedQueryManager().getQuery(name);
         return createNativeQuery(query, resultClass);
     }

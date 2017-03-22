@@ -39,8 +39,8 @@ public class AxiomValueDescriptor extends AxiomDescriptor {
      * @throws NullPointerException if either of the arguments is {@code null}
      */
     public AxiomValueDescriptor addAssertionValue(Assertion assertion, Value<?> value) {
-        Objects.requireNonNull(assertion, ErrorUtils.npxMessage("assertion"));
-        Objects.requireNonNull(value, ErrorUtils.npxMessage("value"));
+        Objects.requireNonNull(assertion, ErrorUtils.getNPXMessageSupplier("assertion"));
+        Objects.requireNonNull(value, ErrorUtils.getNPXMessageSupplier("value"));
 
         final List<Value<?>> assertionValues = getAssertionList(assertion);
         assertionValues.add(value);

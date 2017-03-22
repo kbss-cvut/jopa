@@ -41,7 +41,7 @@ class CardinalityConstraintsValidator extends IntegrityConstraintsValidator {
      * @param value      The value to validate
      */
     public void validate(Object identifier, Field field, Object value) {
-        Objects.requireNonNull(field, ErrorUtils.constructNPXMessage("field"));
+        Objects.requireNonNull(field, ErrorUtils.getNPXMessageSupplier("field"));
         final ParticipationConstraints constraints = field.getAnnotation(ParticipationConstraints.class);
         if (constraints == null) {
             return;

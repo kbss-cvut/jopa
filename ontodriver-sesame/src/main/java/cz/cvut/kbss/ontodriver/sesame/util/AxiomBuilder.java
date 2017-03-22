@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,56 +15,46 @@
 package cz.cvut.kbss.ontodriver.sesame.util;
 
 import cz.cvut.kbss.ontodriver.model.*;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class AxiomBuilder {
 
     private final NamedResource subject;
-    private final Map<URI, Assertion> propertyToAssertion;
+    private final Map<IRI, Assertion> propertyToAssertion;
 
     private final Assertion unspecifiedProperty;
 
-    public AxiomBuilder(NamedResource subject, Map<URI, Assertion> propertyToAssertion, Assertion unspecifiedProperty) {
+    public AxiomBuilder(NamedResource subject, Map<IRI, Assertion> propertyToAssertion, Assertion unspecifiedProperty) {
         this.subject = subject;
         this.propertyToAssertion = propertyToAssertion;
         this.unspecifiedProperty = unspecifiedProperty;
     }
 
     public Axiom<?> statementToAxiom(Statement statement) {
-        Assertion assertion = resolveAssertion(statement.getPredicate());
+        final Assertion assertion = resolveAssertion(statement.getPredicate());
 
-        final Value<?> val = resolveValue(statement, assertion);
-        if (val == null) {
-            return null;
-        }
-        return new AxiomImpl<>(subject, assertion, val);
+        return statementToAxiom(statement, assertion);
     }
 
-    private Value<?> resolveValue(Statement stmt, Assertion assertion) {
+    private Optional<Value<?>> resolveValue(Statement stmt, Assertion assertion) {
         if (assertion == null || SesameUtils.isBlankNode(stmt.getObject())) {
-            return null;
+            return Optional.empty();
         }
-        Value<?> val = createValue(assertion.getType(), stmt.getObject());
-        if (val == null) {
-            return null;
-        }
-        return val;
+        return createValue(assertion.getType(), stmt.getObject());
     }
 
     public Axiom<?> statementToAxiom(Statement statement, Assertion assertion) {
-        final Value<?> val = resolveValue(statement, assertion);
-        if (val == null) {
-            return null;
-        }
-        return new AxiomImpl<>(subject, assertion, val);
+        final Optional<Value<?>> val = resolveValue(statement, assertion);
+        return val.map(v -> new AxiomImpl<>(subject, assertion, v)).orElse(null);
     }
 
-    private Assertion resolveAssertion(URI predicate) {
+    private Assertion resolveAssertion(IRI predicate) {
         Assertion assertion = propertyToAssertion.get(predicate);
         if (assertion == null) {
             if (unspecifiedProperty != null) {
@@ -80,31 +70,31 @@ public class AxiomBuilder {
         return assertion;
     }
 
-    private Value<?> createValue(Assertion.AssertionType assertionType, org.openrdf.model.Value value) {
+    private Optional<Value<?>> createValue(Assertion.AssertionType assertionType, org.eclipse.rdf4j.model.Value value) {
         switch (assertionType) {
             case DATA_PROPERTY:
                 if (!(value instanceof Literal)) {
-                    return null;
+                    return Optional.empty();
                 }
-                return new Value<>(SesameUtils.getDataPropertyValue((Literal) value));
+                return Optional.of(new Value<>(SesameUtils.getDataPropertyValue((Literal) value)));
             case CLASS:
                 if (!(value instanceof Resource)) {
-                    return null;
+                    return Optional.empty();
                 }
-                return new Value<>(SesameUtils.toJavaUri((Resource) value));
+                return Optional.of(new Value<>(SesameUtils.toJavaUri((Resource) value)));
             case OBJECT_PROPERTY:
                 if (!(value instanceof Resource)) {
-                    return null;
+                    return Optional.empty();
                 }
-                return new Value<>(NamedResource.create(value.stringValue()));
+                return Optional.of(new Value<>(NamedResource.create(value.stringValue())));
             case ANNOTATION_PROPERTY:   // Intentional fall-through
             case PROPERTY:
-                return resolveValue(value);
+                return Optional.of(resolveValue(value));
         }
-        return null;
+        return Optional.empty();
     }
 
-    private Value<?> resolveValue(org.openrdf.model.Value object) {
+    private Value<?> resolveValue(org.eclipse.rdf4j.model.Value object) {
         if (object instanceof Literal) {
             return new Value<>(SesameUtils.getDataPropertyValue((Literal) object));
         } else {

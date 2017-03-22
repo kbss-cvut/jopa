@@ -16,8 +16,11 @@ package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassC;
+import cz.cvut.kbss.jopa.environment.OWLClassH;
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
+import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
@@ -27,6 +30,7 @@ import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.jopa.sessions.cache.DisabledCacheManager;
+import cz.cvut.kbss.jopa.transactions.EntityTransaction;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Before;
 import org.junit.Rule;
@@ -194,5 +198,156 @@ public class EntityManagerImplTest {
         em.close();
         assertFalse(em.isOpen());
         verify(emfMock).entityManagerClosed(em);
+    }
+
+    @Test
+    public void exceptionInPersistMarksTransactionForRollbackOnly() {
+        final EntityTransaction tx = em.getTransaction();
+        doThrow(OWLPersistenceException.class).when(uow).registerNewObject(any(), any());
+        try {
+            tx.begin();
+            em.persist(Generators.generateOwlClassAInstance());
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        assertTrue(tx.isRollbackOnly());
+    }
+
+    @Test
+    public void exceptionInCascadePersistMarksTransactionForRollbackOnly() {
+        final OWLClassH h = new OWLClassH(Generators.createIndividualIdentifier());
+        h.setOwlClassA(Generators.generateOwlClassAInstance());
+        final EntityTransaction tx = em.getTransaction();
+        doThrow(OWLPersistenceException.class).when(uow).registerNewObject(eq(h.getOwlClassA()), any());
+        try {
+            tx.begin();
+            em.persist(h);
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        assertTrue(tx.isRollbackOnly());
+    }
+
+    @Test
+    public void exceptionInFindMarksTransactionForRollbackOnly() {
+        final EntityTransaction tx = em.getTransaction();
+        doThrow(OWLPersistenceException.class).when(uow).readObject(any(), any(), any());
+        try {
+            tx.begin();
+            em.find(OWLClassA.class, Generators.createIndividualIdentifier());
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        assertTrue(tx.isRollbackOnly());
+    }
+
+    @Test
+    public void exceptionInMergeMarksTransactionForRollbackOnly() {
+        final EntityTransaction tx = em.getTransaction();
+        doThrow(OWLPersistenceException.class).when(uow).mergeDetached(any(), any());
+        try {
+            tx.begin();
+            em.merge(Generators.generateOwlClassAInstance());
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        assertTrue(tx.isRollbackOnly());
+    }
+
+    @Test
+    public void exceptionInMergeCascadingMarksTransactionForRollbackOnly() {
+        final OWLClassH h = new OWLClassH(Generators.createIndividualIdentifier());
+        h.setOwlClassA(Generators.generateOwlClassAInstance());
+        final EntityTransaction tx = em.getTransaction();
+        doReturn(h).when(uow).mergeDetached(eq(h), any());
+        doThrow(OWLPersistenceException.class).when(uow).mergeDetached(eq(h.getOwlClassA()), any());
+        try {
+            tx.begin();
+            em.merge(h);
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        assertTrue(tx.isRollbackOnly());
+    }
+
+    @Test
+    public void exceptionInRemoveMarksTransactionForRollbackOnly() {
+        doThrow(OWLPersistenceException.class).when(uow).removeObject(any());
+        final EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            assertFalse(tx.isRollbackOnly());
+            em.remove(Generators.generateOwlClassAInstance());
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        assertTrue(tx.isRollbackOnly());
+    }
+
+    @Test
+    public void exceptionInFlushMarksTransactionForRollbackOnly() {
+        doThrow(OWLPersistenceException.class).when(uow).writeUncommittedChanges();
+        final EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            em.flush();
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        assertTrue(tx.isRollbackOnly());
+    }
+
+    @Test
+    public void exceptionInRefreshMarksTransactionForRollbackOnly() {
+        doThrow(OWLPersistenceException.class).when(uow).revertObject(any());
+        final EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            em.refresh(Generators.generateOwlClassAInstance());
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        assertTrue(tx.isRollbackOnly());
+    }
+
+    @Test
+    public void exceptionInDetachMarksTransactionForRollbackOnly() {
+        final OWLClassA a = Generators.generateOwlClassAInstance();
+        doReturn(EntityManagerImpl.State.MANAGED).when(uow).getState(a);
+        doThrow(OWLPersistenceException.class).when(uow).unregisterObject(a);
+        final EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            em.detach(a);
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        assertTrue(tx.isRollbackOnly());
+    }
+
+    @Test
+    public void exceptionInContainsMarksTransactionForRollbackOnly() {
+        doThrow(OWLPersistenceException.class).when(uow).contains(any());
+        final EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            em.contains(Generators.generateOwlClassAInstance());
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        assertTrue(tx.isRollbackOnly());
+    }
+
+    @Test
+    public void exceptionInClearMarksTransactionForRollbackOnly() {
+        doThrow(OWLPersistenceException.class).when(uow).clear();
+        final EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            em.clear();
+        } catch (RuntimeException e) {
+            // Swallow the exception
+        }
+        assertTrue(tx.isRollbackOnly());
     }
 }

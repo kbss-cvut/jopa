@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,16 +24,15 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
-import org.junit.AfterClass;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
 
 import java.util.*;
 
@@ -45,8 +44,8 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings({"unchecked"})
 public class SimpleListHandlerTest extends ListHandlerTestBase {
 
-    protected static URI hasSimpleListProperty;
-    protected static URI nextNodeProperty;
+    private static IRI hasSimpleListProperty;
+    private static IRI nextNodeProperty;
 
     @Mock
     private Connector connector;
@@ -61,8 +60,8 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         init();
-        hasSimpleListProperty = vf.createURI(LIST_PROPERTY);
-        nextNodeProperty = vf.createURI(NEXT_NODE_PROPERTY);
+        hasSimpleListProperty = vf.createIRI(LIST_PROPERTY);
+        nextNodeProperty = vf.createIRI(NEXT_NODE_PROPERTY);
     }
 
     @Before
@@ -87,11 +86,6 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         this.handler = new SimpleListHandler(connector, vf);
     }
 
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        close();
-    }
-
     @Test
     public void staticFactoryMethodForSimpleLists() throws Exception {
         final ListHandler<?, ?> h = ListHandler.createForSimpleList(connector, vf);
@@ -101,13 +95,13 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 
     @Test
     public void loadsEmptyListAndReturnsEmptyCollection() throws Exception {
-        when(connector.findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null))
-                .thenReturn(Collections.<Statement>emptyList());
+        when(connector.findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null))
+                .thenReturn(Collections.emptyList());
         final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
         assertNotNull(res);
         assertTrue(res.isEmpty());
         verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
-                any(Value.class), any(Boolean.class), eq((URI[]) null));
+                any(Value.class), any(Boolean.class), eq(null));
     }
 
     @Test
@@ -116,7 +110,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         initStatementsForList(simpleList);
 
         final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
-        verify(connector).findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null);
+        verify(connector).findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null);
         assertEquals(simpleList.size(), res.size());
         int i = 0;
         for (Axiom<?> ax : res) {
@@ -131,10 +125,10 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         final List<Statement> statements = new ArrayList<>(simpleList.size());
         for (NamedResource elem : simpleList) {
             Statement stmt;
-            final Resource value = vf.createURI(elem.toString());
-            final URI property = subject == owner ? hasSimpleListProperty : nextNodeProperty;
+            final Resource value = vf.createIRI(elem.toString());
+            final IRI property = subject == owner ? hasSimpleListProperty : nextNodeProperty;
             stmt = vf.createStatement(subject, property, value);
-            when(connector.findStatements(subject, property, null, false, (URI[]) null))
+            when(connector.findStatements(subject, property, null, false, (IRI[]) null))
                     .thenReturn(Collections.singleton(stmt));
             statements.add(stmt);
             subject = value;
@@ -147,14 +141,13 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         final Collection<Statement> stmts = new HashSet<>();
         stmts.add(mock(Statement.class));
         stmts.add(mock(Statement.class));
-        when(connector.findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null))
-                .thenReturn(stmts);
+        when(connector.findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null)).thenReturn(stmts);
 
         try {
             handler.loadList(listDescriptor);
         } finally {
             verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
-                    any(Value.class), any(Boolean.class), any(URI[].class));
+                    any(Value.class), any(Boolean.class), any(IRI[].class));
         }
     }
 
@@ -164,41 +157,37 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         stmts.add(mock(Statement.class));
         stmts.add(mock(Statement.class));
         final Resource firstElem = vf
-                .createURI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
+                .createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
         final Statement firstStmt = vf.createStatement(owner, hasSimpleListProperty, firstElem);
 
-        when(connector.findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null))
+        when(connector.findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null))
                 .thenReturn(Collections.singleton(firstStmt));
-        when(connector.findStatements(firstElem, nextNodeProperty, null, false, (URI[]) null))
-                .thenReturn(stmts);
+        when(connector.findStatements(firstElem, nextNodeProperty, null, false, (IRI[]) null)).thenReturn(stmts);
 
         try {
             handler.loadList(listDescriptor);
         } finally {
-            verify(connector).findStatements(owner, hasSimpleListProperty, null, false,
-                    (URI[]) null);
+            verify(connector).findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null);
         }
     }
 
     @Test(expected = IntegrityConstraintViolatedException.class)
     public void throwsICViolationExceptionWhenLiteralIsFoundInList() throws Exception {
         final Resource firstElem = vf
-                .createURI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
+                .createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
         final Statement firstStmt = vf.createStatement(owner, hasSimpleListProperty, firstElem);
-        when(connector.findStatements(owner, hasSimpleListProperty, null, false, (URI[]) null))
+        when(connector.findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null))
                 .thenReturn(Collections.singleton(firstStmt));
         final Statement nextStmt = vf.createStatement(firstElem, nextNodeProperty,
                 vf.createLiteral(System.currentTimeMillis()));
-        when(connector.findStatements(firstElem, nextNodeProperty, null, false, (URI[]) null))
+        when(connector.findStatements(firstElem, nextNodeProperty, null, false, (IRI[]) null))
                 .thenReturn(Collections.singleton(nextStmt));
 
         try {
             handler.loadList(listDescriptor);
         } finally {
-            verify(connector).findStatements(owner, hasSimpleListProperty, null, false,
-                    (URI[]) null);
-            verify(connector)
-                    .findStatements(firstElem, nextNodeProperty, null, false, (URI[]) null);
+            verify(connector).findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null);
+            verify(connector).findStatements(firstElem, nextNodeProperty, null, false, (IRI[]) null);
         }
     }
 
@@ -231,8 +220,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
                 Assertion.createObjectPropertyAssertion(java.net.URI.create(NEXT_NODE_PROPERTY),
                         false));
         for (int i = 0; i < count; i++) {
-            desc.addValue(NamedResource
-                    .create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA_" + i));
+            desc.addValue(NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa/entityA_" + i));
         }
         return desc;
     }
@@ -254,8 +242,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         final SimpleListValueDescriptor descriptor = initValues(5);
         when(
                 connector.findStatements(owner, hasSimpleListProperty, null, descriptor
-                        .getListProperty().isInferred(), (URI[]) null)).thenReturn(
-                Collections.<Statement>emptyList());
+                        .getListProperty().isInferred(), (IRI[]) null)).thenReturn(Collections.emptyList());
 
         handler.updateList(descriptor);
         verify(connector, never()).removeStatements(any(Collection.class));
@@ -324,7 +311,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
             assertTrue(foundAsSubject);
             for (Statement add : added) {
                 if (add.getObject().stringValue().equals(uri.toString())) {
-                    fail("Found uri which shouln't have been added. " + uri);
+                    fail("Found uri which shouldn't have been added. " + uri);
                 }
             }
             // Make sure that all the retained nodes were added

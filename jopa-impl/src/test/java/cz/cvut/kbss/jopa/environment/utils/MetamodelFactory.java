@@ -758,7 +758,7 @@ public class MetamodelFactory {
         when(et.getJavaType()).thenReturn(OWLClassS.class);
         when(idS.getJavaField()).thenReturn(OWLClassS.getUriField());
         when(et.getIRI()).thenReturn(IRI.create(OWLClassS.getClassIri()));
-        when(et.getFieldSpecifications()).thenReturn(new HashSet<>(Arrays.asList(sNameAtt, sTypes)));
+        when(et.getFieldSpecifications()).thenReturn(new HashSet(Arrays.asList(sNameAtt, sTypes)));
         when(et.getAttributes()).thenReturn(Collections.singleton(sNameAtt));
         when(et.getTypes()).thenReturn(sTypes);
         when(et.getPersistenceType()).thenReturn(Type.PersistenceType.ENTITY);

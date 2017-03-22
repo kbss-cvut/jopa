@@ -153,15 +153,20 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
                 tg.addAll(source);
                 break;
             }
-            Object clone;
-            if (builder.isTypeManaged(obj.getClass())) {
-                clone = uow.registerExistingObject(obj, descriptor);
-            } else {
-                clone = builder.buildClone(cloneOwner, field, obj, descriptor);
-            }
-            tg.add(clone);
+            tg.add(cloneCollectionElement(cloneOwner, field, descriptor, obj));
         }
     }
+
+    private Object cloneCollectionElement(Object cloneOwner, Field field, Descriptor descriptor, Object obj) {
+        Object clone;
+        if (builder.isTypeManaged(obj.getClass())) {
+            clone = uow.registerExistingObject(obj, descriptor);
+        } else {
+            clone = builder.buildClone(cloneOwner, field, obj, descriptor);
+        }
+        return clone;
+    }
+
 
     private Collection<?> buildInstanceOfSpecialCollection(Object cloneOwner, Field field, Descriptor repository,
                                                            Collection<?> container) {
@@ -181,14 +186,9 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
             } else {
                 return null;
             }
-            Object element = container.iterator().next();
-            if (!CloneBuilderImpl.isImmutable(element.getClass())) {
-                element = builder.buildClone(element, repository);
-                if (element instanceof Collection || element instanceof Map) {
-                    element = builder.createIndirectCollection(element, cloneOwner, field);
-                }
-            }
-            params[0] = element;
+            final Object element = container.iterator().next();
+            params[0] = CloneBuilderImpl.isImmutable(element.getClass()) ? element :
+                        cloneCollectionElement(cloneOwner, field, repository, element);
         }
         try {
             if (!c.isAccessible()) {

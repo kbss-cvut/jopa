@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,11 +16,11 @@ package cz.cvut.kbss.ontodriver.sesame.connector;
 
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import info.aduna.iteration.Iterations;
-import org.openrdf.model.*;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.common.iteration.Iterations;
+import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 import java.util.Collection;
 import java.util.List;
@@ -161,14 +161,27 @@ class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
-    public Collection<Statement> findStatements(Resource subject, URI property, Value value,
-                                                boolean includeInferred, URI... contexts) throws SesameDriverException {
+    public Collection<Statement> findStatements(Resource subject, IRI property, Value value,
+                                                boolean includeInferred, IRI... contexts) throws SesameDriverException {
         verifyTransactionActive();
         try {
             final Collection<Statement> statements = Iterations
                     .asList(connection.getStatements(subject, property, value, includeInferred, contexts));
             localModel.enhanceStatements(statements, subject, property, value, contexts);
             return statements;
+        } catch (RepositoryException e) {
+            rollback();
+            throw new SesameDriverException(e);
+        }
+    }
+
+    @Override
+    public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred,
+                                     IRI... contexts) throws SesameDriverException {
+        verifyTransactionActive();
+        try {
+            return connection.hasStatement(subject, property, value, includeInferred, contexts) ||
+                    localModel.contains(subject, property, value, contexts);
         } catch (RepositoryException e) {
             rollback();
             throw new SesameDriverException(e);

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,7 +22,7 @@ import cz.cvut.kbss.ontodriver.util.StatementHolder;
 
 import java.util.Objects;
 
-import static cz.cvut.kbss.ontodriver.util.ErrorUtils.npxMessage;
+import static cz.cvut.kbss.ontodriver.util.ErrorUtils.getNPXMessageSupplier;
 
 public class OwlapiPreparedStatement extends OwlapiStatement implements PreparedStatement {
 
@@ -54,8 +54,8 @@ public class OwlapiPreparedStatement extends OwlapiStatement implements Prepared
     @Override
     public void setObject(String binding, Object value) throws OntoDriverException {
         ensureOpen();
-        Objects.requireNonNull(binding, npxMessage("binding"));
-        Objects.requireNonNull(value, npxMessage("value"));
+        Objects.requireNonNull(binding, getNPXMessageSupplier("binding"));
+        Objects.requireNonNull(value, getNPXMessageSupplier("value"));
         statementHolder.setParameter(binding, value.toString());
     }
 

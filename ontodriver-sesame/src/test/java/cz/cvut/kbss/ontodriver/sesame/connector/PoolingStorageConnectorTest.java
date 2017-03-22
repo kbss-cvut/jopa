@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,24 +14,24 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import cz.cvut.kbss.ontodriver.sesame.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.sesame.Transaction;
 import cz.cvut.kbss.ontodriver.sesame.TransactionState;
+import cz.cvut.kbss.ontodriver.sesame.environment.TestUtils;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import info.aduna.iteration.CloseableIteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.query.BooleanQuery;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openrdf.model.*;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -275,13 +275,13 @@ public class PoolingStorageConnectorTest {
 
     @Test
     public void findStatementsReusesRepositoryConnectionDuringTransaction() throws Exception {
-        final ValueFactory vf = new ValueFactoryImpl();
+        final ValueFactory vf = SimpleValueFactory.getInstance();
         final RepositoryConnection conn = mock(RepositoryConnection.class);
-        when(conn.getStatements(any(Resource.class), any(URI.class), any(Value.class), anyBoolean()))
+        when(conn.getStatements(any(Resource.class), any(IRI.class), any(Value.class), anyBoolean()))
                 .thenReturn(new RepositoryResult<>(mock(CloseableIteration.class)));
         when(centralMock.acquireConnection()).thenReturn(conn);
-        final Resource res = vf.createURI(TestUtils.randomUri());
-        final URI property = vf.createURI(TestUtils.randomUri());
+        final Resource res = vf.createIRI(TestUtils.randomUri());
+        final IRI property = vf.createIRI(TestUtils.randomUri());
         connector.begin();
         connector.findStatements(res, property, null, false);
         verify(centralMock).acquireConnection();
@@ -290,17 +290,17 @@ public class PoolingStorageConnectorTest {
 
     @Test(expected = SesameDriverException.class)
     public void exceptionInFindStatementsCausesTransactionRollback() throws Exception {
-        final ValueFactory vf = new ValueFactoryImpl();
+        final ValueFactory vf = SimpleValueFactory.getInstance();
         final RepositoryConnection conn = mock(RepositoryConnection.class);
-        when(conn.getStatements(any(Resource.class), any(URI.class), any(Value.class), anyBoolean()))
+        when(conn.getStatements(any(Resource.class), any(IRI.class), any(Value.class), anyBoolean()))
                 .thenThrow(new RepositoryException());
         when(centralMock.acquireConnection()).thenReturn(conn);
-        final Resource res = vf.createURI(TestUtils.randomUri());
-        final URI property = vf.createURI(TestUtils.randomUri());
+        final Resource res = vf.createIRI(TestUtils.randomUri());
+        final IRI property = vf.createIRI(TestUtils.randomUri());
         final Connector spy = spy(connector);
         doCallRealMethod().when(spy).begin();
         spy.begin();
-        when(spy.findStatements(any(Resource.class), any(URI.class), any(Value.class), anyBoolean()))
+        when(spy.findStatements(any(Resource.class), any(IRI.class), any(Value.class), anyBoolean()))
                 .thenCallRealMethod();
         try {
             spy.findStatements(res, property, null, false);

@@ -14,19 +14,17 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import java.util.List;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import java.util.List;
 
 /**
  * This class wraps the Sesame TupleQueryResult returned by QueryExecutor to be
  * able to close the repository connection once the result is closed.
- * 
- * @author ledvima1
  * 
  */
 class QueryResult implements TupleQueryResult {

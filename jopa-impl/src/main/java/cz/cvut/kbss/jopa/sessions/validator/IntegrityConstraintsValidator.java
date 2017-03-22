@@ -51,8 +51,8 @@ public abstract class IntegrityConstraintsValidator {
      * @param <T>      Entity class type
      */
     public <T> void validate(T instance, EntityType<T> et, boolean skipLazy) {
-        Objects.requireNonNull(instance, ErrorUtils.constructNPXMessage("instance"));
-        Objects.requireNonNull(et, ErrorUtils.constructNPXMessage("et"));
+        Objects.requireNonNull(instance, ErrorUtils.getNPXMessageSupplier("instance"));
+        Objects.requireNonNull(et, ErrorUtils.getNPXMessageSupplier("et"));
 
         final Object id = EntityPropertiesUtils.getPrimaryKey(instance, et);
         for (Attribute<? super T, ?> att : et.getAttributes()) {
@@ -71,8 +71,8 @@ public abstract class IntegrityConstraintsValidator {
      * @param metamodel Metamodel of the persistence unit
      */
     public void validate(ObjectChangeSet changeSet, Metamodel metamodel) {
-        Objects.requireNonNull(changeSet, ErrorUtils.constructNPXMessage("changeSet"));
-        Objects.requireNonNull(metamodel, ErrorUtils.constructNPXMessage("metamodel"));
+        Objects.requireNonNull(changeSet, ErrorUtils.getNPXMessageSupplier("changeSet"));
+        Objects.requireNonNull(metamodel, ErrorUtils.getNPXMessageSupplier("metamodel"));
 
         final EntityType<?> et = metamodel.entity(changeSet.getObjectClass());
         final Object id = EntityPropertiesUtils.getPrimaryKey(changeSet.getCloneObject(), et);

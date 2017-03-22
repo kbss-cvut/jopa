@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,16 +14,16 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.ValueFactory;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
 
 import java.net.URI;
 import java.util.*;
@@ -52,7 +52,8 @@ class AxiomSaver {
         }
     }
 
-    void persistAxioms(NamedResource subject, Map<Assertion, Set<Value<?>>> values, URI context) throws SesameDriverException {
+    void persistAxioms(NamedResource subject, Map<Assertion, Set<Value<?>>> values, URI context)
+            throws SesameDriverException {
         final List<Statement> statements = new ArrayList<>();
         for (Map.Entry<Assertion, Set<Value<?>>> entry : values.entrySet()) {
             statements.addAll(createSesameStatements(subject, entry.getKey(), entry.getValue(), context));
@@ -63,28 +64,29 @@ class AxiomSaver {
     }
 
     private Collection<? extends Statement> createSesameStatements(NamedResource subject,
-                                                                   Assertion assertion, Collection<Value<?>> assertionValues, URI assertionContext)
+                                                                   Assertion assertion,
+                                                                   Collection<Value<?>> assertionValues,
+                                                                   URI assertionContext)
             throws SesameDriverException {
         final List<Statement> statements = new ArrayList<>(assertionValues.size());
 
-        final org.openrdf.model.Resource subjectUri = SesameUtils.toSesameUri(
-                subject.getIdentifier(), valueFactory);
-        final org.openrdf.model.URI property = SesameUtils.toSesameUri(assertion.getIdentifier(),
+        final Resource subjectUri = SesameUtils.toSesameIri(subject.getIdentifier(), valueFactory);
+        final org.eclipse.rdf4j.model.IRI property = SesameUtils.toSesameIri(assertion.getIdentifier(),
                 valueFactory);
-        final org.openrdf.model.URI context = assertionContext != null ? SesameUtils.toSesameUri(
-                assertionContext, valueFactory) : null;
+        final org.eclipse.rdf4j.model.IRI context =
+                assertionContext != null ? SesameUtils.toSesameIri(assertionContext, valueFactory) : null;
         for (Value<?> val : assertionValues) {
             if (val == Value.nullValue()) {
                 continue;
             }
-            org.openrdf.model.Value value = valueConverter.toSesameValue(assertion, val);
+            org.eclipse.rdf4j.model.Value value = valueConverter.toSesameValue(assertion, val);
             statements.add(createStatement(subjectUri, property, value, context));
         }
         return statements;
     }
 
-    private Statement createStatement(Resource subject, org.openrdf.model.URI property,
-                                      org.openrdf.model.Value value, org.openrdf.model.URI context) {
+    private Statement createStatement(Resource subject, org.eclipse.rdf4j.model.IRI property,
+                                      org.eclipse.rdf4j.model.Value value, org.eclipse.rdf4j.model.IRI context) {
         if (context != null) {
             return valueFactory.createStatement(subject, property, value, context);
         } else {

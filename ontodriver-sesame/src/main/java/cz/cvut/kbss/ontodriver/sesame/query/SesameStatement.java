@@ -19,8 +19,8 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 
 import java.net.URI;
 import java.util.Objects;
