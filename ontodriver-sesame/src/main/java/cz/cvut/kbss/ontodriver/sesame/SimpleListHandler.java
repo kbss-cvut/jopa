@@ -19,10 +19,10 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,22 +40,22 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         return new SimpleListIterator(listDescriptor, connector, vf);
     }
 
-    URI createListHead(SimpleListValueDescriptor listValueDescriptor, Collection<Statement> listStatements) {
-        final URI firstNode = sesameUri(listValueDescriptor.getValues().get(0).getIdentifier());
+    IRI createListHead(SimpleListValueDescriptor listValueDescriptor, Collection<Statement> listStatements) {
+        final IRI firstNode = sesameIri(listValueDescriptor.getValues().get(0).getIdentifier());
         listStatements.add(vf.createStatement(owner(listValueDescriptor), hasList(listValueDescriptor),
                 firstNode, context(listValueDescriptor)));
         return firstNode;
     }
 
-    List<Statement> createListRest(URI head, SimpleListValueDescriptor listValueDescriptor) {
+    List<Statement> createListRest(IRI head, SimpleListValueDescriptor listValueDescriptor) {
         final List<Statement> statements = new ArrayList<>(listValueDescriptor.getValues().size());
-        URI previous = head;
-        final URI nextNodeProp = hasNext(listValueDescriptor);
-        final URI context = context(listValueDescriptor);
+        IRI previous = head;
+        final IRI nextNodeProp = hasNext(listValueDescriptor);
+        final IRI context = context(listValueDescriptor);
         final Iterator<NamedResource> it = listValueDescriptor.getValues().iterator();
         it.next();
         while (it.hasNext()) {
-            final URI object = sesameUri(it.next().getIdentifier());
+            final IRI object = sesameIri(it.next().getIdentifier());
             statements.add(vf.createStatement(previous, nextNodeProp, object, context));
             previous = object;
         }
@@ -69,16 +69,15 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
      */
     @Override
     void clearList(SimpleListValueDescriptor listValueDescriptor) throws SesameDriverException {
-        final URI context = context(listValueDescriptor);
+        final IRI context = context(listValueDescriptor);
         final Collection<Statement> toRemove = new ArrayList<>();
-        URI currentProperty = hasList(listValueDescriptor);
-        final URI hasNext = hasNext(listValueDescriptor);
+        IRI currentProperty = hasList(listValueDescriptor);
+        final IRI hasNext = hasNext(listValueDescriptor);
         final boolean includeInferred = listValueDescriptor.getNextNode().isInferred();
         Collection<Statement> stmts;
         Resource subject = owner(listValueDescriptor);
         do {
-            stmts = connector.findStatements(subject, currentProperty, null, includeInferred,
-                    context);
+            stmts = connector.findStatements(subject, currentProperty, null, includeInferred, context);
             if (!stmts.isEmpty()) {
                 subject = extractListNode(stmts, hasNext);
                 toRemove.addAll(stmts);
@@ -96,7 +95,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
             node = it.nextNode();
             final NamedResource newNode = listDescriptor.getValues().get(i);
             if (!node.stringValue().equals(newNode.getIdentifier().toString())) {
-                node = sesameUri(newNode.getIdentifier());
+                node = sesameIri(newNode.getIdentifier());
                 it.replaceCurrentWith(newNode);
             }
             i++;
@@ -109,12 +108,11 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         int i = mergeResult.i;
         final Collection<Statement> toAdd = new ArrayList<>(listDescriptor.getValues().size() - i);
         Resource previous = mergeResult.previous;
-        final URI nextNode = sesameUri(listDescriptor.getNextNode().getIdentifier());
-        final URI context = context(listDescriptor);
+        final IRI nextNode = sesameIri(listDescriptor.getNextNode().getIdentifier());
+        final IRI context = context(listDescriptor);
         while (i < listDescriptor.getValues().size()) {
-            final Resource newNode = sesameUri(listDescriptor.getValues().get(i).getIdentifier());
-            final Statement stmt = vf.createStatement(previous,
-                    nextNode, newNode, context);
+            final Resource newNode = sesameIri(listDescriptor.getValues().get(i).getIdentifier());
+            final Statement stmt = vf.createStatement(previous, nextNode, newNode, context);
             toAdd.add(stmt);
             previous = newNode;
             i++;

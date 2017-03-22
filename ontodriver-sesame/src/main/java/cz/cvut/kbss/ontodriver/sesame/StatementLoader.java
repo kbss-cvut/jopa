@@ -22,10 +22,7 @@ import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.AxiomBuilder;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
+import org.eclipse.rdf4j.model.*;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -54,7 +51,7 @@ class StatementLoader {
         this.includeInferred = includeInferred;
     }
 
-    Collection<Axiom<?>> loadAxioms(Map<URI, Assertion> properties)
+    Collection<Axiom<?>> loadAxioms(Map<IRI, Assertion> properties)
             throws SesameDriverException {
         this.loadAll = properties.values().contains(Assertion.createUnspecifiedPropertyAssertion(includeInferred));
         if (properties.size() < Constants.DEFAULT_LOAD_ALL_THRESHOLD && !loadAll) {
@@ -67,8 +64,8 @@ class StatementLoader {
     private Collection<Axiom<?>> loadOneByOne(Collection<Assertion> assertions) throws SesameDriverException {
         final Collection<Axiom<?>> result = new HashSet<>();
         for (Assertion a : assertions) {
-            final URI context = SesameUtils.toSesameUri(descriptor.getAssertionContext(a), vf);
-            final URI property = SesameUtils.toSesameUri(a.getIdentifier(), vf);
+            final IRI context = SesameUtils.toSesameIri(descriptor.getAssertionContext(a), vf);
+            final IRI property = SesameUtils.toSesameIri(a.getIdentifier(), vf);
 
             final Collection<Statement> statements;
             if (context != null) {
@@ -86,7 +83,7 @@ class StatementLoader {
         return result;
     }
 
-    private Collection<Axiom<?>> loadAll(Map<URI, Assertion> properties) throws SesameDriverException {
+    private Collection<Axiom<?>> loadAll(Map<IRI, Assertion> properties) throws SesameDriverException {
         final Collection<Statement> statements = connector.findStatements(subject, null, null, includeInferred);
         final Collection<Axiom<?>> result = new HashSet<>(statements.size());
         final Assertion unspecified = Assertion.createUnspecifiedPropertyAssertion(includeInferred);
@@ -106,7 +103,7 @@ class StatementLoader {
         return result;
     }
 
-    private Assertion getAssertion(Map<URI, Assertion> properties, Statement s) {
+    private Assertion getAssertion(Map<IRI, Assertion> properties, Statement s) {
         if (properties.containsKey(s.getPredicate())) {
             return properties.get(s.getPredicate());
         }

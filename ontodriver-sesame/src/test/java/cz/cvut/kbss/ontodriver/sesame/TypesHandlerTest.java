@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,20 +17,17 @@ package cz.cvut.kbss.ontodriver.sesame;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import org.junit.AfterClass;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.memory.MemoryStore;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -48,7 +45,6 @@ public class TypesHandlerTest {
     private static final String TYPE_BASE = "http://krizik.felk.cvut.cz/ontologies/jopa/type";
     private static final NamedResource NAMED_PK = NamedResource.create(STR_PK);
 
-    private static Repository repo;
     private static ValueFactory vf;
 
     @Mock
@@ -58,10 +54,7 @@ public class TypesHandlerTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        final MemoryStore mStore = new MemoryStore();
-        repo = new SailRepository(mStore);
-        repo.initialize();
-        vf = repo.getValueFactory();
+        vf = SimpleValueFactory.getInstance();
     }
 
     @Before
@@ -70,15 +63,11 @@ public class TypesHandlerTest {
         this.handler = new TypesHandler(connectorMock, vf);
     }
 
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        repo.shutDown();
-    }
-
     @Test
     public void getsTypesWithoutContext() throws Exception {
         final Collection<Statement> statements = initStatements(null);
-        when(connectorMock.findStatements(vf.createURI(STR_PK), RDF.TYPE, null, false, (URI[]) null)).thenReturn(statements);
+        when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, false, (IRI[]) null))
+                .thenReturn(statements);
         final Set<Axiom<java.net.URI>> res = handler.getTypes(NamedResource.create(STR_PK), null, false);
         assertEquals(statements.size(), res.size());
         final Set<java.net.URI> uris = new HashSet<>();
@@ -90,11 +79,11 @@ public class TypesHandlerTest {
         }
     }
 
-    private Collection<Statement> initStatements(URI context) {
+    private Collection<Statement> initStatements(IRI context) {
         final Collection<Statement> statements = new HashSet<>();
-        final URI subject = vf.createURI(STR_PK);
+        final IRI subject = vf.createIRI(STR_PK);
         for (int i = 0; i < 6; i++) {
-            final Statement stmt = vf.createStatement(subject, RDF.TYPE, vf.createURI(TYPE_BASE + i), context);
+            final Statement stmt = vf.createStatement(subject, RDF.TYPE, vf.createIRI(TYPE_BASE + i), context);
             statements.add(stmt);
         }
         return statements;
@@ -102,10 +91,11 @@ public class TypesHandlerTest {
 
     @Test
     public void getsTypesIncludingInferredAndInContext() throws Exception {
-        final URI context = vf.createURI("http://krizik.felk.cvut.cz/ontologies/contextOne");
+        final IRI context = vf.createIRI("http://krizik.felk.cvut.cz/ontologies/contextOne");
         final Collection<Statement> statements = initStatements(context);
-        when(connectorMock.findStatements(vf.createURI(STR_PK), RDF.TYPE, null, true, context)).thenReturn(statements);
-        final Set<Axiom<java.net.URI>> res = handler.getTypes(NAMED_PK, java.net.URI.create(context.stringValue()), true);
+        when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, true, context)).thenReturn(statements);
+        final Set<Axiom<java.net.URI>> res = handler
+                .getTypes(NAMED_PK, java.net.URI.create(context.stringValue()), true);
         assertEquals(statements.size(), res.size());
         final Set<java.net.URI> uris = new HashSet<>();
         for (Axiom<java.net.URI> u : res) {
@@ -114,12 +104,13 @@ public class TypesHandlerTest {
         for (Statement stmt : statements) {
             assertTrue(uris.contains(java.net.URI.create(stmt.getObject().stringValue())));
         }
-        verify(connectorMock).findStatements(vf.createURI(STR_PK), RDF.TYPE, null, true, context);
+        verify(connectorMock).findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, true, context);
     }
 
     @Test
     public void getsEmptyTypes() throws Exception {
-        when(connectorMock.findStatements(vf.createURI(STR_PK), RDF.TYPE, null, false, (URI[]) null)).thenReturn(Collections.<Statement>emptySet());
+        when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, false, (IRI[]) null))
+                .thenReturn(Collections.<Statement>emptySet());
         final Set<Axiom<java.net.URI>> res = handler.getTypes(NamedResource.create(STR_PK), null, true);
         assertTrue(res.isEmpty());
     }

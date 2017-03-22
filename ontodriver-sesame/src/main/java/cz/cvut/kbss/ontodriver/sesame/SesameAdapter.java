@@ -27,11 +27,11 @@ import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -150,8 +150,8 @@ class SesameAdapter implements Closeable, Wrapper {
 
     private boolean isIdentifierUnique(URI identifier, URI classUri) throws SesameDriverException {
         final Collection<Statement> stmts = connector.findStatements(
-                SesameUtils.toSesameUri(identifier, valueFactory), RDF.TYPE,
-                SesameUtils.toSesameUri(classUri, valueFactory), true);
+                SesameUtils.toSesameIri(identifier, valueFactory), RDF.TYPE,
+                SesameUtils.toSesameIri(classUri, valueFactory), true);
         return stmts.isEmpty();
     }
 
@@ -159,20 +159,20 @@ class SesameAdapter implements Closeable, Wrapper {
         startTransactionIfNotActive();
         Value value;
         if (SesameUtils.isResourceIdentifier(axiom.getValue().getValue())) {
-            value = valueFactory.createURI(axiom.getValue().stringValue());
+            value = valueFactory.createIRI(axiom.getValue().stringValue());
         } else {
             value = SesameUtils.createDataPropertyLiteral(axiom.getValue().getValue(), language,
                     valueFactory);
         }
-        final org.openrdf.model.URI sesameContext = SesameUtils.toSesameUri(context, valueFactory);
+        final org.eclipse.rdf4j.model.IRI sesameContext = SesameUtils.toSesameIri(context, valueFactory);
         return !findStatements(
-                SesameUtils.toSesameUri(axiom.getSubject().getIdentifier(), valueFactory),
-                SesameUtils.toSesameUri(axiom.getAssertion().getIdentifier(), valueFactory), value,
+                SesameUtils.toSesameIri(axiom.getSubject().getIdentifier(), valueFactory),
+                SesameUtils.toSesameIri(axiom.getAssertion().getIdentifier(), valueFactory), value,
                 axiom.getAssertion().isInferred(), sesameContext).isEmpty();
     }
 
-    private Collection<Statement> findStatements(Resource subject, org.openrdf.model.URI property, Value value,
-                                                 boolean includeInferred, org.openrdf.model.URI context)
+    private Collection<Statement> findStatements(Resource subject, org.eclipse.rdf4j.model.IRI property, Value value,
+                                                 boolean includeInferred, org.eclipse.rdf4j.model.IRI context)
             throws SesameDriverException {
         if (context != null) {
             return connector.findStatements(subject, property, value, includeInferred, context);

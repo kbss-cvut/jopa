@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,14 +14,14 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
+import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import cz.cvut.kbss.ontodriver.model.*;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 import java.net.URI;
 import java.util.*;
@@ -36,7 +36,8 @@ class TypesHandler {
         this.valueFactory = valueFactory;
     }
 
-    Set<Axiom<URI>> getTypes(NamedResource individual, URI context, boolean includeInferred) throws SesameDriverException {
+    Set<Axiom<URI>> getTypes(NamedResource individual, URI context, boolean includeInferred)
+            throws SesameDriverException {
         final Collection<Statement> statements = getTypesStatements(individual, context, includeInferred);
         if (statements.isEmpty()) {
             return Collections.emptySet();
@@ -44,13 +45,15 @@ class TypesHandler {
         return resolveTypes(individual, includeInferred, statements);
     }
 
-    private Collection<Statement> getTypesStatements(NamedResource individual, URI context, boolean includeInferred) throws SesameDriverException {
-        final Resource subject = SesameUtils.toSesameUri(individual.getIdentifier(), valueFactory);
-        final org.openrdf.model.URI contextUri = SesameUtils.toSesameUri(context, valueFactory);
+    private Collection<Statement> getTypesStatements(NamedResource individual, URI context, boolean includeInferred)
+            throws SesameDriverException {
+        final Resource subject = SesameUtils.toSesameIri(individual.getIdentifier(), valueFactory);
+        final org.eclipse.rdf4j.model.IRI contextUri = SesameUtils.toSesameIri(context, valueFactory);
         return connector.findStatements(subject, RDF.TYPE, null, includeInferred, contextUri);
     }
 
-    private Set<Axiom<URI>> resolveTypes(NamedResource individual, boolean includeInferred, Collection<Statement> statements) {
+    private Set<Axiom<URI>> resolveTypes(NamedResource individual, boolean includeInferred,
+                                         Collection<Statement> statements) {
         final Set<Axiom<URI>> types = new HashSet<>(statements.size());
         final Assertion clsAssertion = Assertion.createClassAssertion(includeInferred);
         for (Statement stmt : statements) {
@@ -71,11 +74,12 @@ class TypesHandler {
     }
 
     private Collection<Statement> prepareSesameStatements(NamedResource individual, URI context, Set<URI> types) {
-        final org.openrdf.model.URI subject = SesameUtils.toSesameUri(individual.getIdentifier(), valueFactory);
-        final org.openrdf.model.URI contextUri = SesameUtils.toSesameUri(context, valueFactory);
+        final org.eclipse.rdf4j.model.IRI subject = SesameUtils.toSesameIri(individual.getIdentifier(), valueFactory);
+        final org.eclipse.rdf4j.model.IRI contextUri = SesameUtils.toSesameIri(context, valueFactory);
         final Collection<Statement> statements = new ArrayList<>(types.size());
         for (URI type : types) {
-            statements.add(valueFactory.createStatement(subject, RDF.TYPE, valueFactory.createURI(type.toString()), contextUri));
+            statements.add(valueFactory
+                    .createStatement(subject, RDF.TYPE, valueFactory.createIRI(type.toString()), contextUri));
         }
         return statements;
     }

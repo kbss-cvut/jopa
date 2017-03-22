@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,11 +14,11 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
 
 class SesameValueConverter {
 
@@ -47,18 +47,18 @@ class SesameValueConverter {
         }
     }
 
-    private org.openrdf.model.URI getValueAsSesameUri(cz.cvut.kbss.ontodriver.model.Value<?> val)
+    private org.eclipse.rdf4j.model.IRI getValueAsSesameUri(cz.cvut.kbss.ontodriver.model.Value<?> val)
             throws SesameDriverException {
         try {
-            return vf.createURI(val.getValue().toString());
+            return vf.createIRI(val.getValue().toString());
         } catch (IllegalArgumentException e) {
             throw new SesameDriverException(e);
         }
     }
 
-    private org.openrdf.model.Value resolvePropertyValue(cz.cvut.kbss.ontodriver.model.Value<?> val) {
+    private org.eclipse.rdf4j.model.Value resolvePropertyValue(cz.cvut.kbss.ontodriver.model.Value<?> val) {
         if (SesameUtils.isResourceIdentifier(val.getValue())) {
-            return vf.createURI(val.getValue().toString());
+            return vf.createIRI(val.getValue().toString());
         } else {
             return SesameUtils.createDataPropertyLiteral(val.getValue(), language, vf);
         }

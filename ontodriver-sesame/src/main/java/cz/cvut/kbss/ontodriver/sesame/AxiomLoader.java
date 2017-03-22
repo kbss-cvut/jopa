@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,10 +22,10 @@ import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.AxiomBuilder;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,9 +35,9 @@ class AxiomLoader {
     private final Connector connector;
     private final ValueFactory valueFactory;
 
-    private Map<URI, Assertion> propertyToAssertion;
-    private Map<URI, Assertion> explicitAssertions;
-    private Map<URI, Assertion> inferredAssertions;
+    private Map<IRI, Assertion> propertyToAssertion;
+    private Map<IRI, Assertion> explicitAssertions;
+    private Map<IRI, Assertion> inferredAssertions;
 
     AxiomLoader(Connector connector, ValueFactory valueFactory) {
         this.connector = connector;
@@ -51,7 +51,7 @@ class AxiomLoader {
 
     private Collection<Axiom<?>> findStatements(AxiomDescriptor descriptor) throws SesameDriverException {
         final Collection<Axiom<?>> result = new HashSet<>();
-        final Resource subject = SesameUtils.toSesameUri(descriptor.getSubject().getIdentifier(), valueFactory);
+        final Resource subject = SesameUtils.toSesameIri(descriptor.getSubject().getIdentifier(), valueFactory);
         final Assertion unspecified = processAssertions(descriptor);
         final AxiomBuilder axiomBuilder = new AxiomBuilder(descriptor.getSubject(), propertyToAssertion, unspecified);
         final StatementLoader statementLoader = new StatementLoader(descriptor, connector, subject, axiomBuilder);
@@ -77,7 +77,7 @@ class AxiomLoader {
         this.inferredAssertions = new HashMap<>(descriptor.getAssertions().size());
         Assertion unspecified = null;
         for (Assertion a : descriptor.getAssertions()) {
-            final URI property = SesameUtils.toSesameUri(a.getIdentifier(), valueFactory);
+            final IRI property = SesameUtils.toSesameIri(a.getIdentifier(), valueFactory);
             propertyToAssertion.put(property, a);
             if (a.equals(Assertion.createUnspecifiedPropertyAssertion(a.isInferred()))) {
                 unspecified = a;
@@ -91,10 +91,10 @@ class AxiomLoader {
         return unspecified;
     }
 
-    public Collection<Axiom<?>> loadAxioms(NamedResource individual, boolean includeInferred, java.net.URI context)
+    Collection<Axiom<?>> loadAxioms(NamedResource individual, boolean includeInferred, java.net.URI context)
             throws SesameDriverException {
-        final URI sesameContext = SesameUtils.toSesameUri(context, valueFactory);
-        final URI subject = SesameUtils.toSesameUri(individual.getIdentifier(), valueFactory);
+        final IRI sesameContext = SesameUtils.toSesameIri(context, valueFactory);
+        final IRI subject = SesameUtils.toSesameIri(individual.getIdentifier(), valueFactory);
         final AxiomBuilder axiomBuilder = new AxiomBuilder(individual, Collections.emptyMap(),
                 Assertion.createUnspecifiedPropertyAssertion(includeInferred));
         final Collection<Statement> statements;

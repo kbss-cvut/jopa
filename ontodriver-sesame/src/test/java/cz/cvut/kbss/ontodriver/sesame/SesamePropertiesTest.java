@@ -21,16 +21,17 @@ import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.sail.memory.MemoryStore;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,7 +50,7 @@ public class SesamePropertiesTest {
     @Mock
     private Connector connectorMock;
 
-    private URI subject;
+    private IRI subject;
 
     private ValueFactory vf;
     private MemoryStore store;
@@ -59,20 +60,13 @@ public class SesamePropertiesTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        this.store = new MemoryStore();
-        store.initialize();
-        this.vf = store.getValueFactory();
-        this.subject = vf.createURI(SUBJECT.getIdentifier().toString());
+        this.vf = SimpleValueFactory.getInstance();
+        this.subject = vf.createIRI(SUBJECT.getIdentifier().toString());
         final SesameAdapter adapterMock = mock(SesameAdapter.class);
         when(adapterMock.getConnector()).thenReturn(connectorMock);
         when(adapterMock.getValueFactory()).thenReturn(vf);
         when(adapterMock.getLanguage()).thenReturn(LANG);
         this.properties = new SesameProperties(adapterMock, () -> {}, () -> {});
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        store.shutDown();
     }
 
     @Test
@@ -84,7 +78,7 @@ public class SesamePropertiesTest {
         assertEquals(statements.size(), result.size());
         for (Axiom<?> ax : result) {
             assertEquals(SUBJECT, ax.getSubject());
-            final Statement stmt = vf.createStatement(subject, vf.createURI(ax.getAssertion().getIdentifier().toString()),
+            final Statement stmt = vf.createStatement(subject, vf.createIRI(ax.getAssertion().getIdentifier().toString()),
                     SesameUtils.createDataPropertyLiteral(ax.getValue().getValue(), LANG, vf));
             assertTrue(statements.contains(stmt));
         }
@@ -117,7 +111,7 @@ public class SesamePropertiesTest {
     private Collection<Statement> statementsForProperties(Map<Assertion, Set<Value<?>>> properties) {
         final Collection<Statement> stmts = new HashSet<>();
         for (Assertion a : properties.keySet()) {
-            final URI property = vf.createURI(a.getIdentifier().toString());
+            final IRI property = vf.createIRI(a.getIdentifier().toString());
             stmts.addAll(properties.get(a).stream().map(v -> vf
                     .createStatement(subject, property, SesameUtils.createDataPropertyLiteral(v.getValue(), LANG, vf)))
                                    .collect(Collectors.toList()));

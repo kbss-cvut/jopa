@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,12 +16,12 @@ package cz.cvut.kbss.ontodriver.sesame.environment;
 
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 import java.util.*;
 
@@ -43,9 +43,9 @@ public class Generator {
             for (int j = 0; j < individualCount; j++) {
                 final String ind = cls + "_instance-" + RAND.nextInt();
                 data.individuals.add(ind);
-                final URI indUri = vf.createURI(ind);
+                final IRI indUri = vf.createIRI(ind);
                 generatePropertiesWithValues(indUri, data, connection);
-                connection.add(indUri, RDF.TYPE, vf.createURI(cls));
+                connection.add(indUri, RDF.TYPE, vf.createIRI(cls));
                 data.addValue(ind, Assertion.createClassAssertion(false), java.net.URI.create(cls));
             }
         }
@@ -55,13 +55,13 @@ public class Generator {
         return data;
     }
 
-    private static void generatePropertiesWithValues(URI individual, GeneratedData data,
+    private static void generatePropertiesWithValues(IRI individual, GeneratedData data,
                                                      RepositoryConnection connection) throws RepositoryException {
         final ValueFactory vf = connection.getValueFactory();
         final int propCount = randomPositiveInt(20);
         for (int i = 0; i < propCount; i++) {
             final String property = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes#property" + RAND.nextInt();
-            final URI propertyUri = vf.createURI(property);
+            final IRI propertyUri = vf.createIRI(property);
             final int valueCount = randomPositiveInt(5);
             final boolean isOp = RAND.nextBoolean();
             for (int j = 0; j < valueCount; j++) {
@@ -69,7 +69,7 @@ public class Generator {
                     final Assertion a = Assertion.createObjectPropertyAssertion(java.net.URI.create(property), false);
                     final String object =
                             "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassXY_instance" + RAND.nextInt();
-                    connection.add(individual, propertyUri, vf.createURI(object));
+                    connection.add(individual, propertyUri, vf.createIRI(object));
                     data.addValue(individual.toString(), a, NamedResource.create(object));
                 } else {
                     final Assertion a = Assertion.createDataPropertyAssertion(java.net.URI.create(property), false);

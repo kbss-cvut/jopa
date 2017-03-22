@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,23 +14,22 @@
  */
 package cz.cvut.kbss.ontodriver.sesame;
 
-import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
+import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
 
 import java.util.*;
 
 /**
- * This class performs an epistemic remove of axioms described by the axiom
- * descriptor. </p>
+ * This class performs an epistemic remove of axioms described by the axiom descriptor.
  * <p/>
  * Epistemic remove means that only information known to the application is
  * deleted. The assertions in the descriptor represent this information. Thus,
@@ -52,20 +51,19 @@ class EpistemicAxiomRemover {
     }
 
     void remove(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
-        final Resource individual = SesameUtils.toSesameUri(axiomDescriptor.getSubject()
-                                                                           .getIdentifier(), valueFactory);
+        final Resource individual = SesameUtils.toSesameIri(axiomDescriptor.getSubject().getIdentifier(), valueFactory);
         final Collection<Statement> toRemove = new HashSet<>();
         for (Assertion a : axiomDescriptor.getAssertions()) {
             if (a.isInferred()) {
                 continue;
             }
-            final URI contextUri = SesameUtils.toSesameUri(axiomDescriptor.getAssertionContext(a), valueFactory);
+            final IRI contextUri = SesameUtils.toSesameIri(axiomDescriptor.getAssertionContext(a), valueFactory);
             if (contextUri != null) {
                 toRemove.addAll(connector.findStatements(individual,
-                        SesameUtils.toSesameUri(a.getIdentifier(), valueFactory), null, a.isInferred(), contextUri));
+                        SesameUtils.toSesameIri(a.getIdentifier(), valueFactory), null, a.isInferred(), contextUri));
             } else {
                 toRemove.addAll(connector.findStatements(individual,
-                        SesameUtils.toSesameUri(a.getIdentifier(), valueFactory), null, a.isInferred()));
+                        SesameUtils.toSesameIri(a.getIdentifier(), valueFactory), null, a.isInferred()));
             }
         }
         connector.removeStatements(toRemove);
@@ -73,14 +71,14 @@ class EpistemicAxiomRemover {
 
     void remove(NamedResource individual, Map<Assertion, Set<Value<?>>> values, java.net.URI context)
             throws SesameDriverException {
-        final URI sesameContext = SesameUtils.toSesameUri(context, valueFactory);
-        final Resource subject = SesameUtils.toSesameUri(individual.getIdentifier(), valueFactory);
+        final IRI sesameContext = SesameUtils.toSesameIri(context, valueFactory);
+        final Resource subject = SesameUtils.toSesameIri(individual.getIdentifier(), valueFactory);
         final Collection<Statement> toRemove = new ArrayList<>();
         final SesameValueConverter valueConverter = new SesameValueConverter(valueFactory, language);
         for (Map.Entry<Assertion, Set<Value<?>>> entry : values.entrySet()) {
-            final URI property = SesameUtils.toSesameUri(entry.getKey().getIdentifier(), valueFactory);
+            final IRI property = SesameUtils.toSesameIri(entry.getKey().getIdentifier(), valueFactory);
             for (Value<?> val : entry.getValue()) {
-                final org.openrdf.model.Value sesameValue = valueConverter.toSesameValue(entry.getKey(), val);
+                final org.eclipse.rdf4j.model.Value sesameValue = valueConverter.toSesameValue(entry.getKey(), val);
                 if (sesameContext != null) {
                     toRemove.add(valueFactory.createStatement(subject, property, sesameValue, sesameContext));
                 } else {

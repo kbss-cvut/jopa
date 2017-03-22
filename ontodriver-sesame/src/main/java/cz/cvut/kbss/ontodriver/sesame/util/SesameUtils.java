@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,13 +15,12 @@
 package cz.cvut.kbss.ontodriver.sesame.util;
 
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import org.openrdf.model.*;
-import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.XMLSchema;
+import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.slf4j.LoggerFactory;
 
-import java.net.*;
+import java.net.URL;
 import java.util.Date;
 
 /**
@@ -46,7 +45,7 @@ public final class SesameUtils {
     public static Object getDataPropertyValue(Literal literal) {
         assert literal != null;
 
-        final URI datatype = literal.getDatatype();
+        final IRI datatype = literal.getDatatype();
         if (datatype == null || datatype.equals(XMLSchema.STRING)
                 || datatype.equals(XMLSchema.NORMALIZEDSTRING) || datatype.equals(RDF.LANGSTRING)) {
             return literal.stringValue();
@@ -151,10 +150,10 @@ public final class SesameUtils {
      *
      * @param javaUri The uri to convert
      * @param factory ValueFactory used for the conversion
-     * @return Sesame URI
+     * @return Sesame IRI
      */
-    public static URI toSesameUri(java.net.URI javaUri, ValueFactory factory) {
-        return (javaUri != null ? factory.createURI(javaUri.toString()) : null);
+    public static IRI toSesameIri(java.net.URI javaUri, ValueFactory factory) {
+        return (javaUri != null ? factory.createIRI(javaUri.toString()) : null);
     }
 
     public static java.net.URI toJavaUri(Resource resource) {

@@ -16,11 +16,11 @@ package cz.cvut.kbss.ontodriver.sesame.connector;
 
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import info.aduna.iteration.Iterations;
-import org.openrdf.model.*;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.eclipse.rdf4j.common.iteration.Iterations;
+import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 import java.util.Collection;
 import java.util.List;
@@ -161,8 +161,8 @@ class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
-    public Collection<Statement> findStatements(Resource subject, URI property, Value value,
-                                                boolean includeInferred, URI... contexts) throws SesameDriverException {
+    public Collection<Statement> findStatements(Resource subject, IRI property, Value value,
+                                                boolean includeInferred, IRI... contexts) throws SesameDriverException {
         verifyTransactionActive();
         try {
             final Collection<Statement> statements = Iterations

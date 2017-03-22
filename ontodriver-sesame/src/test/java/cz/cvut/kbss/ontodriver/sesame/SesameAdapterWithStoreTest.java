@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -24,18 +24,17 @@ import cz.cvut.kbss.ontodriver.model.Value;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
 import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.connector.ConnectorFactory;
-import info.aduna.iteration.Iterations;
+import org.eclipse.rdf4j.common.iteration.Iterations;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
 
 import java.net.URI;
 import java.util.List;
@@ -97,9 +96,8 @@ public class SesameAdapterWithStoreTest {
         adapter.persist(dTwo);
         adapter.commit();
 
-        final RepositoryConnection connection = repo.getConnection();
-        try {
-            final Resource subj = vf.createURI(SUBJECT.getIdentifier().toString());
+        try (RepositoryConnection connection = repo.getConnection()) {
+            final Resource subj = vf.createIRI(SUBJECT.getIdentifier().toString());
             final List<Statement> classAssertions = Iterations.asList(connection
                     .getStatements(subj, RDF.TYPE, null, false));
             final Set<URI> types = classAssertions.stream().map(s -> URI.create(s.getObject().stringValue())).collect(
@@ -107,13 +105,11 @@ public class SesameAdapterWithStoreTest {
             assertTrue(types.contains(tOne));
             assertTrue(types.contains(tTwo));
             final RepositoryResult<Statement> aStringProp = connection
-                    .getStatements(subj, vf.createURI(pOne), null, false);
+                    .getStatements(subj, vf.createIRI(pOne), null, false);
             assertTrue(aStringProp.hasNext());
             final RepositoryResult<Statement> bStringProp = connection
-                    .getStatements(subj, vf.createURI(pTwo), null, false);
+                    .getStatements(subj, vf.createIRI(pTwo), null, false);
             assertTrue(bStringProp.hasNext());
-        } finally {
-            connection.close();
         }
     }
 }

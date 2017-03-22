@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -20,15 +20,15 @@ import cz.cvut.kbss.ontodriver.sesame.SesameDataSource;
 import cz.cvut.kbss.ontodriver.sesame.config.SesameConfigParam;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryCreationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.config.RepositoryConfig;
+import org.eclipse.rdf4j.repository.manager.RepositoryManager;
+import org.eclipse.rdf4j.repository.manager.RepositoryProvider;
+import org.eclipse.rdf4j.repository.sail.config.SailRepositoryConfig;
+import org.eclipse.rdf4j.sail.config.SailImplConfig;
+import org.eclipse.rdf4j.sail.nativerdf.config.NativeStoreConfig;
 import org.junit.After;
 import org.junit.Test;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.config.RepositoryConfig;
-import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.repository.manager.RepositoryProvider;
-import org.openrdf.repository.sail.config.SailRepositoryConfig;
-import org.openrdf.sail.config.SailImplConfig;
-import org.openrdf.sail.nativerdf.config.NativeStoreConfig;
 
 import java.io.File;
 import java.net.URI;
@@ -109,8 +109,7 @@ public class StorageConnectorTest {
         SailImplConfig backend = new NativeStoreConfig();
         final SailRepositoryConfig repoType = new SailRepositoryConfig(backend);
         final RepositoryConfig config = new RepositoryConfig(repoId, repoType);
-        final RepositoryManager repoManager = RepositoryProvider
-                .getRepositoryManagerOfRepository(repoUri.toASCIIString());
+        final RepositoryManager repoManager = RepositoryProvider.getRepositoryManagerOfRepository(repoUri.toString());
         repoManager.addRepositoryConfig(config);
         final Repository repo = repoManager.getRepository(repoId);
         repo.initialize();

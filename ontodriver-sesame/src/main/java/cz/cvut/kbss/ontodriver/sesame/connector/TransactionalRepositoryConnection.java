@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,12 +14,16 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
-import info.aduna.iteration.Iteration;
-import org.openrdf.IsolationLevel;
-import org.openrdf.model.*;
-import org.openrdf.query.*;
-import org.openrdf.repository.*;
-import org.openrdf.rio.*;
+
+import org.eclipse.rdf4j.IsolationLevel;
+import org.eclipse.rdf4j.common.iteration.Iteration;
+import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.query.*;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.rio.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -136,13 +140,13 @@ class TransactionalRepositoryConnection implements RepositoryConnection {
     }
 
     @Override
-    public RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj, boolean includeInferred,
+    public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj, boolean includeInferred,
                                                      Resource... contexts) throws RepositoryException {
         return wrappedConnection.getStatements(subj, pred, obj, includeInferred, contexts);
     }
 
     @Override
-    public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred, Resource... contexts)
+    public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred, Resource... contexts)
             throws RepositoryException {
         return wrappedConnection.hasStatement(subj, pred, obj, includeInferred, contexts);
     }
@@ -154,7 +158,7 @@ class TransactionalRepositoryConnection implements RepositoryConnection {
     }
 
     @Override
-    public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred, RDFHandler handler,
+    public void exportStatements(Resource subj, IRI pred, Value obj, boolean includeInferred, RDFHandler handler,
                                  Resource... contexts) throws RepositoryException, RDFHandlerException {
         wrappedConnection.exportStatements(subj, pred, obj, includeInferred, handler, contexts);
     }
@@ -185,7 +189,7 @@ class TransactionalRepositoryConnection implements RepositoryConnection {
     }
 
     @Override
-    public boolean isActive() throws UnknownTransactionStateException, RepositoryException {
+    public boolean isActive() throws RepositoryException {
         return wrappedConnection.isActive();
     }
 
@@ -244,7 +248,7 @@ class TransactionalRepositoryConnection implements RepositoryConnection {
     }
 
     @Override
-    public void add(Resource subject, URI predicate, Value object, Resource... contexts) throws RepositoryException {
+    public void add(Resource subject, IRI predicate, Value object, Resource... contexts) throws RepositoryException {
         wrappedConnection.add(subject, predicate, object, contexts);
     }
 
@@ -265,7 +269,7 @@ class TransactionalRepositoryConnection implements RepositoryConnection {
     }
 
     @Override
-    public void remove(Resource subject, URI predicate, Value object, Resource... contexts) throws RepositoryException {
+    public void remove(Resource subject, IRI predicate, Value object, Resource... contexts) throws RepositoryException {
         wrappedConnection.remove(subject, predicate, object, contexts);
     }
 

@@ -14,18 +14,13 @@
  */
 package cz.cvut.kbss.ontodriver.sesame.connector;
 
+import cz.cvut.kbss.ontodriver.Closeable;
+import cz.cvut.kbss.ontodriver.Wrapper;
+import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import org.eclipse.rdf4j.model.*;
+
 import java.util.Collection;
 import java.util.List;
-
-import cz.cvut.kbss.ontodriver.Wrapper;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-
-import cz.cvut.kbss.ontodriver.Closeable;
-import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 
 public interface Connector extends Closeable, StatementExecutor, Wrapper {
 
@@ -81,8 +76,8 @@ public interface Connector extends Closeable, StatementExecutor, Wrapper {
      * @return Collection of matching statements
      * @throws SesameDriverException If a repository access error occurs
      */
-    Collection<Statement> findStatements(Resource subject, URI property, Value value,
-                                         boolean includeInferred, URI... contexts) throws SesameDriverException;
+    Collection<Statement> findStatements(Resource subject, IRI property, Value value,
+                                         boolean includeInferred, IRI... contexts) throws SesameDriverException;
 
     /**
      * Adds the specified statements to the underlying repository.

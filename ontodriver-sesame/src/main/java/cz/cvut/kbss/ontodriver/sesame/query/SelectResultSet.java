@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,12 +18,13 @@ import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
-import org.openrdf.model.Literal;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.TupleQueryResult;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.URI;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -216,8 +217,8 @@ public class SelectResultSet extends AbstractResultSet {
         }
         if (val instanceof Literal) {
             return SesameUtils.getDataPropertyValue((Literal) val);
-        } else if (val instanceof URI) {
-            return SesameUtils.toJavaUri((URI) val);
+        } else if (val instanceof IRI) {
+            return SesameUtils.toJavaUri((IRI) val);
         } else {
             return val.toString();
         }
@@ -245,8 +246,8 @@ public class SelectResultSet extends AbstractResultSet {
         Object ob = null;
         if (val instanceof Literal) {
             ob = SesameUtils.getDataPropertyValue((Literal) val);
-        } else if (val instanceof URI) {
-            ob = SesameUtils.toJavaUri((URI) val);
+        } else if (val instanceof IRI) {
+            ob = SesameUtils.toJavaUri((IRI) val);
         }
         if (ob != null && cls.isAssignableFrom(ob.getClass())) {
             return cls.cast(ob);
@@ -290,11 +291,9 @@ public class SelectResultSet extends AbstractResultSet {
             }
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
-            throw new SesameDriverException("Unable to create instance of type " + cls
-                    + " with value " + val, e);
+            throw new SesameDriverException("Unable to create instance of type " + cls + " with value " + val, e);
         }
-        throw new SesameDriverException("No suitable constructor for value " + val
-                + " found in type " + cls);
+        throw new SesameDriverException("No suitable constructor for value " + val + " found in type " + cls);
     }
 
     @Override
