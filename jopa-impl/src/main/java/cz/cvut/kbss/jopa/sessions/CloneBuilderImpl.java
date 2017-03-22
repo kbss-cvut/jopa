@@ -279,8 +279,7 @@ public class CloneBuilderImpl implements CloneBuilder {
                 return mapBuilder;
             } else if (toClone instanceof Collection) {
                 if (collectionBuilder == null) {
-                    this.collectionBuilder = new CollectionInstanceBuilder(CloneBuilderImpl.this,
-                            uow);
+                    this.collectionBuilder = new CollectionInstanceBuilder(CloneBuilderImpl.this, uow);
                 }
                 return collectionBuilder;
             } else {

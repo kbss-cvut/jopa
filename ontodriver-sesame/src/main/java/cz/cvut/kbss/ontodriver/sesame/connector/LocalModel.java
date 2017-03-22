@@ -41,6 +41,10 @@ class LocalModel {
         statements.removeAll(removed);
     }
 
+    boolean contains(Resource subject, IRI property, Value object, IRI... contexts) {
+        return addedStatements.contains(subject, property, object, contexts);
+    }
+
     void addStatements(Collection<Statement> statements) {
         removedStatements.removeAll(statements);
         addedStatements.addAll(statements);

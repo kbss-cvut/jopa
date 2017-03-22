@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -28,7 +28,6 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import cz.cvut.kbss.ontodriver.util.IdentifierUtils;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -149,10 +148,9 @@ class SesameAdapter implements Closeable, Wrapper {
     }
 
     private boolean isIdentifierUnique(URI identifier, URI classUri) throws SesameDriverException {
-        final Collection<Statement> stmts = connector.findStatements(
+        return !connector.containsStatement(
                 SesameUtils.toSesameIri(identifier, valueFactory), RDF.TYPE,
                 SesameUtils.toSesameIri(classUri, valueFactory), true);
-        return stmts.isEmpty();
     }
 
     boolean contains(Axiom<?> axiom, URI context) throws SesameDriverException {
@@ -165,20 +163,18 @@ class SesameAdapter implements Closeable, Wrapper {
                     valueFactory);
         }
         final org.eclipse.rdf4j.model.IRI sesameContext = SesameUtils.toSesameIri(context, valueFactory);
-        return !findStatements(
-                SesameUtils.toSesameIri(axiom.getSubject().getIdentifier(), valueFactory),
-                SesameUtils.toSesameIri(axiom.getAssertion().getIdentifier(), valueFactory), value,
-                axiom.getAssertion().isInferred(), sesameContext).isEmpty();
-    }
-
-    private Collection<Statement> findStatements(Resource subject, org.eclipse.rdf4j.model.IRI property, Value value,
-                                                 boolean includeInferred, org.eclipse.rdf4j.model.IRI context)
-            throws SesameDriverException {
-        if (context != null) {
-            return connector.findStatements(subject, property, value, includeInferred, context);
+        if (sesameContext != null) {
+            return connector.containsStatement(
+                    SesameUtils.toSesameIri(axiom.getSubject().getIdentifier(), valueFactory),
+                    SesameUtils.toSesameIri(axiom.getAssertion().getIdentifier(), valueFactory), value,
+                    axiom.getAssertion().isInferred(), sesameContext);
         } else {
-            return connector.findStatements(subject, property, value, includeInferred);
+            return connector.containsStatement(
+                    SesameUtils.toSesameIri(axiom.getSubject().getIdentifier(), valueFactory),
+                    SesameUtils.toSesameIri(axiom.getAssertion().getIdentifier(), valueFactory), value,
+                    axiom.getAssertion().isInferred());
         }
+
     }
 
     Collection<Axiom<?>> find(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
@@ -212,7 +208,7 @@ class SesameAdapter implements Closeable, Wrapper {
     }
 
     ListHandler<ReferencedListDescriptor, ReferencedListValueDescriptor> getReferencedListHandler() throws
-                                                                                                    SesameDriverException {
+            SesameDriverException {
         startTransactionIfNotActive();
         return ListHandler.createForReferencedList(connector, valueFactory);
     }

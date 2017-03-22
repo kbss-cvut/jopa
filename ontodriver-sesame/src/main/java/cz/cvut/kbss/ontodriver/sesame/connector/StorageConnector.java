@@ -21,10 +21,7 @@ import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryCreationException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.RepositoryNotFoundException;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import org.eclipse.rdf4j.common.iteration.Iterations;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -220,37 +217,25 @@ class StorageConnector extends AbstractConnector {
 
     @Override
     public boolean executeBooleanQuery(String query) throws SesameDriverException {
-        RepositoryConnection connection = null;
-        try {
-            connection = acquireConnection();
+        try (final RepositoryConnection connection = acquireConnection()) {
             return new ConnectionStatementExecutor(connection).executeBooleanQuery(query);
-        } finally {
-            releaseConnection(connection);
         }
     }
 
     @Override
     public void executeUpdate(String query) throws SesameDriverException {
-        RepositoryConnection connection = null;
-        try {
-            connection = acquireConnection();
+        try (final RepositoryConnection connection = acquireConnection()) {
             new ConnectionStatementExecutor(connection).executeUpdate(query);
-        } finally {
-            releaseConnection(connection);
         }
     }
 
     @Override
     public List<Resource> getContexts() throws SesameDriverException {
-        RepositoryConnection connection = null;
-        try {
-            connection = acquireConnection();
+        try (final RepositoryConnection connection = acquireConnection()) {
             final RepositoryResult<Resource> res = connection.getContextIDs();
             return Iterations.asList(res);
         } catch (RepositoryException e) {
             throw new SesameDriverException(e);
-        } finally {
-            releaseConnection(connection);
         }
     }
 
@@ -331,16 +316,22 @@ class StorageConnector extends AbstractConnector {
                                                 Value value, boolean includeInferred,
                                                 org.eclipse.rdf4j.model.IRI... contexts)
             throws SesameDriverException {
-        RepositoryConnection connection = null;
-        try {
-            connection = acquireConnection();
+        try (final RepositoryConnection connection = acquireConnection()) {
             final RepositoryResult<Statement> m = connection
                     .getStatements(subject, property, null, includeInferred, contexts);
             return Iterations.asList(m);
         } catch (RepositoryException e) {
             throw new SesameDriverException(e);
-        } finally {
-            releaseConnection(connection);
+        }
+    }
+
+    @Override
+    public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred,
+                                     IRI... contexts) throws SesameDriverException {
+        try (final RepositoryConnection connection = acquireConnection()) {
+            return connection.hasStatement(subject, property, null, includeInferred, contexts);
+        } catch (RepositoryException e) {
+            throw new SesameDriverException(e);
         }
     }
 

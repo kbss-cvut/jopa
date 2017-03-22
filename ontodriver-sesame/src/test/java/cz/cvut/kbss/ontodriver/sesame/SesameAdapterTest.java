@@ -592,12 +592,12 @@ public class SesameAdapterTest {
     public void testGenerateIdentifier_ClassWithHash() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz#class");
         when(
-                connectorMock.findStatements(any(Resource.class), eq(RDF.TYPE),
-                        eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(Collections.emptyList());
+                connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
+                        eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(false);
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
-        verify(connectorMock).findStatements(vf.createIRI(res.toString()), RDF.TYPE,
+        verify(connectorMock).containsStatement(vf.createIRI(res.toString()), RDF.TYPE,
                 vf.createIRI(clsUri.toString()), true);
     }
 
@@ -605,13 +605,13 @@ public class SesameAdapterTest {
     public void testGenerateIdentifier_ClassWithoutHash() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz/class");
         when(
-                connectorMock.findStatements(any(Resource.class), eq(RDF.TYPE),
-                        eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(Collections.emptyList());
+                connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
+                        eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(false);
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
         assertTrue(res.toString().contains("#"));
-        verify(connectorMock).findStatements(vf.createIRI(res.toString()), RDF.TYPE,
+        verify(connectorMock).containsStatement(vf.createIRI(res.toString()), RDF.TYPE,
                 vf.createIRI(clsUri.toString()), true);
     }
 
@@ -619,22 +619,21 @@ public class SesameAdapterTest {
     public void testGenerateIdentifier_ClassEndsWithSlash() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz/class/");
         when(
-                connectorMock.findStatements(any(Resource.class), eq(RDF.TYPE),
-                        eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(Collections.emptyList());
+                connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
+                        eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(false);
         final URI res = adapter.generateIdentifier(clsUri);
         assertNotNull(res);
         assertTrue(res.toString().contains(clsUri.toString()));
-        verify(connectorMock).findStatements(vf.createIRI(res.toString()), RDF.TYPE,
+        verify(connectorMock).containsStatement(vf.createIRI(res.toString()), RDF.TYPE,
                 vf.createIRI(clsUri.toString()), true);
     }
 
     @Test(expected = IdentifierGenerationException.class)
     public void testGenerateIdentifierNeverUnique() throws Exception {
         final URI clsUri = URI.create("http://someClass.cz#class");
-        final Collection<Statement> statements = Collections.singletonList(mock(Statement.class));
         when(
-                connectorMock.findStatements(any(Resource.class), eq(RDF.TYPE),
-                        eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(statements);
+                connectorMock.containsStatement(any(Resource.class), eq(RDF.TYPE),
+                        eq(vf.createIRI(clsUri.toString())), eq(true))).thenReturn(true);
         final URI res = adapter.generateIdentifier(clsUri);
         assert res == null;
     }
@@ -662,15 +661,13 @@ public class SesameAdapterTest {
     @Test
     public void testContainsClassAssertion() throws Exception {
         final Axiom<URI> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
-                new Value<>(URI
-                        .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
-        final Set<Statement> result = new HashSet<>();
-        result.add(mock(Statement.class));
-        when(connectorMock.findStatements(eq(subjectIri), eq(RDF.TYPE), eq(vf.createIRI(ax.getValue().stringValue())),
-                anyBoolean())).thenReturn(result);
+                new Value<>(URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
+        when(connectorMock
+                .containsStatement(eq(subjectIri), eq(RDF.TYPE), eq(vf.createIRI(ax.getValue().stringValue())),
+                        anyBoolean())).thenReturn(true);
 
         assertTrue(adapter.contains(ax, null));
-        verify(connectorMock).findStatements(subjectIri, RDF.TYPE,
+        verify(connectorMock).containsStatement(subjectIri, RDF.TYPE,
                 vf.createIRI(ax.getValue().stringValue()), ax.getAssertion().isInferred());
     }
 
@@ -680,15 +677,13 @@ public class SesameAdapterTest {
         final Axiom<URI> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(URI
                         .create("http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA")));
-        final Set<Statement> result = new HashSet<>();
-        result.add(mock(Statement.class));
         when(
-                connectorMock.findStatements(eq(subjectIri), eq(RDF.TYPE),
+                connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE),
                         eq(vf.createIRI(ax.getValue().stringValue())), anyBoolean(),
-                        any(org.eclipse.rdf4j.model.IRI.class))).thenReturn(result);
+                        any(org.eclipse.rdf4j.model.IRI.class))).thenReturn(true);
 
         assertTrue(adapter.contains(ax, context));
-        verify(connectorMock).findStatements(subjectIri, RDF.TYPE,
+        verify(connectorMock).containsStatement(subjectIri, RDF.TYPE,
                 vf.createIRI(ax.getValue().stringValue()), ax.getAssertion().isInferred(),
                 vf.createIRI(context.toString()));
     }
@@ -699,15 +694,14 @@ public class SesameAdapterTest {
         final int val = 10;
         final Axiom<Integer> ax = new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(val));
-        final Set<Statement> result = new HashSet<>();
         when(
-                connectorMock.findStatements(eq(subjectIri), eq(RDF.TYPE),
+                connectorMock.containsStatement(eq(subjectIri), eq(RDF.TYPE),
                         eq(vf.createLiteral(val)), anyBoolean(), any(org.eclipse.rdf4j.model.IRI.class)))
-                .thenReturn(result);
+                .thenReturn(false);
 
         assertFalse(adapter.contains(ax, context));
         verify(connectorMock)
-                .findStatements(subjectIri, RDF.TYPE, vf.createLiteral(val), ax.getAssertion().isInferred(),
+                .containsStatement(subjectIri, RDF.TYPE, vf.createLiteral(val), ax.getAssertion().isInferred(),
                         vf.createIRI(context.toString()));
     }
 
@@ -840,13 +834,13 @@ public class SesameAdapterTest {
     @Test
     public void containsOnDefaultContextCallsConnectorWithoutContextArgument() throws Exception {
         when(connectorMock
-                .findStatements(any(Resource.class), any(org.eclipse.rdf4j.model.IRI.class),
+                .containsStatement(any(Resource.class), any(org.eclipse.rdf4j.model.IRI.class),
                         any(org.eclipse.rdf4j.model.Value.class), anyBoolean(), anyVararg()))
-                .thenReturn(Collections.emptyList());
+                .thenReturn(false);
         final String cls = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassA";
         adapter.contains(new AxiomImpl<>(SUBJECT, Assertion.createClassAssertion(false),
                 new Value<>(URI.create(cls))), null);
-        verify(connectorMock).findStatements(vf.createIRI(SUBJECT.toString()), RDF.TYPE, vf.createIRI(cls), false);
+        verify(connectorMock).containsStatement(vf.createIRI(SUBJECT.toString()), RDF.TYPE, vf.createIRI(cls), false);
     }
 
     @Test
