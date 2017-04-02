@@ -14,12 +14,15 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.environment.listener.AnotherListener;
+import cz.cvut.kbss.jopa.environment.listener.ConcreteListener;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 
+@EntityListeners({ConcreteListener.class, AnotherListener.class})
 @OWLClass(iri = Vocabulary.C_OWLClassR)
 public class OWLClassR extends OWLClassS {
 

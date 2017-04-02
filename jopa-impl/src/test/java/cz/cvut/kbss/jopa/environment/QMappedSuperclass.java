@@ -15,10 +15,12 @@
 package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
+import cz.cvut.kbss.jopa.environment.listener.MappedSuperclassListener;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.net.URI;
 
+@EntityListeners(MappedSuperclassListener.class)
 @MappedSuperclass
 public class QMappedSuperclass {
 
