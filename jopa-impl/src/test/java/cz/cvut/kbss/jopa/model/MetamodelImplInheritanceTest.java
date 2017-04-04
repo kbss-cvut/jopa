@@ -18,7 +18,6 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
 import cz.cvut.kbss.jopa.model.annotations.*;
-import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.Constants;
@@ -30,7 +29,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.*;
 
@@ -188,20 +186,6 @@ public class MetamodelImplInheritanceTest {
 
     @OWLClass(iri = Vocabulary.CLASS_BASE + "AnotherSubtype")
     private static class AnotherSubclass extends OWLClassS {
-    }
-
-    @Test
-    public void buildingMetamodelDiscoversEntityLifecycleListenersInHierarchy() {
-        final MetamodelImpl metamodel = metamodelFor(OWLClassR.class, OWLClassS.class);
-        final EntityTypeImpl<OWLClassS> supertype = metamodel.entity(OWLClassS.class);
-        final List<Method> supertypeHooks = supertype.getLifecycleListeners(LifecycleEvent.PRE_PERSIST);
-        assertFalse(supertypeHooks.isEmpty());
-        assertFalse(supertype.hasLifecycleListeners(LifecycleEvent.POST_LOAD));
-        final EntityTypeImpl<OWLClassR> subtype = metamodel.entity(OWLClassR.class);
-        final List<Method> subtypeHooks = subtype.getLifecycleListeners(LifecycleEvent.PRE_PERSIST);
-        assertTrue(subtypeHooks.containsAll(supertypeHooks));
-        assertTrue(subtype.hasLifecycleListeners(LifecycleEvent.POST_LOAD));
-        assertFalse(subtype.getLifecycleListeners(LifecycleEvent.POST_LOAD).isEmpty());
     }
 
     /**

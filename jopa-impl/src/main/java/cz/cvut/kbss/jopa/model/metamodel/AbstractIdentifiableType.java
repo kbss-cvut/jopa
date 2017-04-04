@@ -37,8 +37,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
 
     private final Map<String, Attribute<X, ?>> declaredAttributes = new HashMap<>();
 
-    // Lifecycle hooks declared on this type
-    private final Map<LifecycleEvent, Method> lifecycleHooks = new EnumMap<>(LifecycleEvent.class);
+    private EntityLifecycleListenerManager lifecycleListenerManager = EntityLifecycleListenerManager.empty();
 
     AbstractIdentifiableType(Class<X> javaType) {
         this.javaType = javaType;
@@ -66,10 +65,6 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         this.properties = a;
     }
 
-    void addLifecycleListener(LifecycleEvent event, Method listener) {
-        lifecycleHooks.put(event, listener);
-    }
-
     public void setIdentifier(final Identifier identifier) {
         this.identifier = identifier;
     }
@@ -86,7 +81,7 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
     }
 
     @Override
-    public IdentifiableType<? super X> getSupertype() {
+    public AbstractIdentifiableType<? super X> getSupertype() {
         return supertype;
     }
 
@@ -416,19 +411,11 @@ public abstract class AbstractIdentifiableType<X> implements IdentifiableType<X>
         return javaType;
     }
 
-    public List<Method> getLifecycleListeners(LifecycleEvent event) {
-        final List<Method> hooks = supertype != null ? supertype.getLifecycleListeners(event) : new ArrayList<>();
-        if (lifecycleHooks.containsKey(event)) {
-            hooks.add(lifecycleHooks.get(event));
-        }
-        return hooks;
+    public EntityLifecycleListenerManager getLifecycleListenerManager() {
+        return lifecycleListenerManager;
     }
 
-    public boolean hasLifecycleListeners(LifecycleEvent event) {
-        return hasDeclaredLifecycleListener(event) || (supertype != null && supertype.hasLifecycleListeners(event));
-    }
-
-    public boolean hasDeclaredLifecycleListener(LifecycleEvent event) {
-        return lifecycleHooks.containsKey(event);
+    public void setLifecycleListenerManager(EntityLifecycleListenerManager lifecycleListenerManager) {
+        this.lifecycleListenerManager = lifecycleListenerManager;
     }
 }

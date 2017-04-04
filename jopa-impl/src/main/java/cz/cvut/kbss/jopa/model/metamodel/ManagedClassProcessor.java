@@ -18,15 +18,13 @@ import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 /**
  * Utility methods for processing managed types for metamodel construction.
  */
 class ManagedClassProcessor {
+
+    private static final EntityLifecycleCallbackResolver lifecycleCallbackResolver = new EntityLifecycleCallbackResolver();
 
     private ManagedClassProcessor() {
     }
@@ -40,7 +38,8 @@ class ManagedClassProcessor {
         } else {
             throw new MetamodelInitializationException("Type " + cls + " is not a managed type.");
         }
-        resolveLifecycleHooks(type);
+        final EntityLifecycleListenerManager callbackManager = lifecycleCallbackResolver.resolve(type);
+        type.setLifecycleListenerManager(callbackManager);
         return type;
     }
 
@@ -84,36 +83,5 @@ class ManagedClassProcessor {
 
     private static boolean isMappedSuperclassType(Class<?> cls) {
         return cls.getDeclaredAnnotation(MappedSuperclass.class) != null;
-    }
-
-    private static <T> void resolveLifecycleHooks(AbstractIdentifiableType<T> type) {
-        final Class<T> cls = type.getJavaType();
-        for (Method m : cls.getDeclaredMethods()) {
-            for (LifecycleEvent hookType : LifecycleEvent.values()) {
-                if (m.getDeclaredAnnotation(hookType.getAnnotation()) != null) {
-                    verifyCallbackNotAlreadyDefined(type, hookType);
-                    verifyListenerSignature(type, m);
-                    type.addLifecycleListener(hookType, m);
-                }
-            }
-        }
-    }
-
-    private static <T> void verifyCallbackNotAlreadyDefined(AbstractIdentifiableType<T> type, LifecycleEvent hookType) {
-        if (type.hasDeclaredLifecycleListener(hookType)) {
-            throw MetamodelInitializationException.multipleListenersForSameLifecycleEvent(type.getJavaType(), hookType);
-        }
-    }
-
-    private static <T> void verifyListenerSignature(AbstractIdentifiableType<T> type, Method listener) {
-        if (listener.getParameterCount() > 0) {
-            throw MetamodelInitializationException.invalidArgumentsForLifecycleListener(type.getJavaType(), listener);
-        }
-        if (!listener.getReturnType().equals(Void.TYPE)) {
-            throw MetamodelInitializationException.invalidReturnTypeForLifecycleListener(type.getJavaType(), listener);
-        }
-        if (Modifier.isFinal(listener.getModifiers()) || Modifier.isStatic(listener.getModifiers())) {
-            throw MetamodelInitializationException.invalidLifecycleListenerModifier(type.getJavaType(), listener);
-        }
     }
 }
