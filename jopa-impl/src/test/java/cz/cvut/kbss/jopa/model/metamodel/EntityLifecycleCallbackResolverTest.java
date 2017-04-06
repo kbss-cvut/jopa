@@ -3,19 +3,19 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
+import cz.cvut.kbss.jopa.environment.listener.ParentListener;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.model.EntityManager;
 import cz.cvut.kbss.jopa.model.IRI;
-import cz.cvut.kbss.jopa.model.annotations.OWLClass;
-import cz.cvut.kbss.jopa.model.annotations.PostLoad;
-import cz.cvut.kbss.jopa.model.annotations.PostPersist;
-import cz.cvut.kbss.jopa.model.annotations.PrePersist;
+import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -141,5 +141,44 @@ public class EntityLifecycleCallbackResolverTest {
         final Field parentField = EntityLifecycleListenerManager.class.getDeclaredField("parent");
         parentField.setAccessible(true);
         assertEquals(parent.getLifecycleListenerManager(), parentField.get(result));
+    }
+
+    @Test
+    public void resolveCreatesInstanceOfEntityListenerDeclaredBySpecifiedEntityType() throws Exception {
+        final AbstractIdentifiableType<OWLClassS> et = typeFor(OWLClassS.class);
+        final EntityLifecycleListenerManager result = resolver.resolve(et);
+        assertEquals(1, result.getEntityListeners().size());
+        assertTrue(result.getEntityListeners().get(0) instanceof ParentListener);
+    }
+
+    @Test
+    public void resolveThrowsMetamodelInitializationExceptionWhenUnableToInstantiateEntityListener() throws Exception {
+        thrown.expect(MetamodelInitializationException.class);
+        thrown.expectMessage("Unable to instantiate entity listener of type " + InvalidListener.class
+                + ". The listener has to have a public no-arg constructor.");
+        final AbstractIdentifiableType<EntityWithInvalidListener> et = typeFor(EntityWithInvalidListener.class);
+        resolver.resolve(et);
+    }
+
+    private static class InvalidListener {
+        private InvalidListener() {
+        }
+    }
+
+    @EntityListeners(InvalidListener.class)
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithInvalidListener")
+    private static class EntityWithInvalidListener {
+    }
+
+    @Test
+    public void resolveRegistersCallbacksDeclaredInEntityListener() throws Exception {
+        final AbstractIdentifiableType<OWLClassS> et = typeFor(OWLClassS.class);
+        final EntityLifecycleListenerManager result = resolver.resolve(et);
+        assertEquals(1, result.getEntityListenerCallbacks().size());
+        final Map<LifecycleEvent, Method> callbacks = result.getEntityListenerCallbacks().values().iterator().next();
+        assertTrue(callbacks.containsKey(LifecycleEvent.PRE_PERSIST));
+        assertEquals(ParentListener.getPrePersistMethod(), callbacks.get(LifecycleEvent.PRE_PERSIST));
+        assertTrue(callbacks.containsKey(LifecycleEvent.POST_PERSIST));
+        assertEquals(ParentListener.getPostPersistMethod(), callbacks.get(LifecycleEvent.POST_PERSIST));
     }
 }

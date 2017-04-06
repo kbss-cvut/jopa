@@ -5,9 +5,7 @@ import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.*;
 
 public class EntityLifecycleListenerManager {
 
@@ -17,9 +15,9 @@ public class EntityLifecycleListenerManager {
 
     private final Map<LifecycleEvent, Method> lifecycleCallbacks = new EnumMap<>(LifecycleEvent.class);
 
-    private Object entityListener;
+    private List<Object> entityListeners;
 
-    private Map<LifecycleEvent, Method> entityListenerMethods;
+    private Map<Object, Map<LifecycleEvent, Method>> entityListenerCallbacks;
 
     /**
      * Gets default instance of this manager, which contains no listeners and does nothing on invocation.
@@ -114,8 +112,12 @@ public class EntityLifecycleListenerManager {
         this.parent = parent;
     }
 
-    public void setEntityListener(Object entityListener) {
-        this.entityListener = entityListener;
+    public void addEntityListener(Object entityListener) {
+        Objects.requireNonNull(entityListener);
+        if (entityListeners == null) {
+            this.entityListeners = new ArrayList<>();
+        }
+        entityListeners.add(entityListener);
     }
 
     public void addLifecycleCallback(LifecycleEvent event, Method callback) {
@@ -130,5 +132,13 @@ public class EntityLifecycleListenerManager {
 
     public boolean hasLifecycleCallback(LifecycleEvent event) {
         return lifecycleCallbacks.containsKey(event);
+    }
+
+    List<Object> getEntityListeners() {
+        return entityListeners != null ? Collections.unmodifiableList(entityListeners) : Collections.emptyList();
+    }
+
+    Map<Object, Map<LifecycleEvent, Method>> getEntityListenerCallbacks() {
+        return Collections.unmodifiableMap(entityListenerCallbacks);
     }
 }
