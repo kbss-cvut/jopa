@@ -1,5 +1,6 @@
 package cz.cvut.kbss.jopa.model.metamodel;
 
+import cz.cvut.kbss.jopa.environment.OWLClassA;
 import cz.cvut.kbss.jopa.environment.OWLClassR;
 import cz.cvut.kbss.jopa.environment.OWLClassS;
 import cz.cvut.kbss.jopa.environment.Vocabulary;
@@ -46,8 +47,9 @@ public class EntityLifecycleCallbackResolverTest {
     public void resolveThrowsMetamodelInitializationExceptionWhenMultipleListenersForOnePhaseAreDeclaredOnType()
             throws Exception {
         thrown.expect(MetamodelInitializationException.class);
-        thrown.expectMessage("Type " + ClassWithMultipleListeners.class.getName() +
-                " has multiple lifecycle callback methods for the same lifecycle event " + PostLoad.class.getName());
+        thrown.expectMessage("The type [" + ClassWithMultipleListeners.class.getName() +
+                "] has multiple lifecycle callbacks for the lifecycle event [" + LifecycleEvent.POST_LOAD +
+                "].");
         resolver.resolve(typeFor(ClassWithMultipleListeners.class));
     }
 
@@ -67,7 +69,7 @@ public class EntityLifecycleCallbackResolverTest {
         thrown.expect(MetamodelInitializationException.class);
         thrown.expectMessage("The callback method [takesArguments] in type [" +
                 ClassWithLifecycleListenerTakingArguments.class.getName() +
-                "] has an incorrect signature. It should not have any arguments.");
+                "] has incorrect signature. It should not have any arguments.");
         resolver.resolve(typeFor(ClassWithLifecycleListenerTakingArguments.class));
     }
 
@@ -84,7 +86,7 @@ public class EntityLifecycleCallbackResolverTest {
         thrown.expect(MetamodelInitializationException.class);
         thrown.expectMessage("The callback method [returnsData] in type [" +
                 ClassWithNonVoidLifecycleListener.class.getName() +
-                "] has an incorrect signature. Its return type should be void.");
+                "] has incorrect signature. Its return type should be void.");
         resolver.resolve(typeFor(ClassWithNonVoidLifecycleListener.class));
     }
 
@@ -102,7 +104,7 @@ public class EntityLifecycleCallbackResolverTest {
         thrown.expect(MetamodelInitializationException.class);
         thrown.expectMessage("The callback method [finalListener] in type [" +
                 ClassWithFinalLifecycleListener.class.getName() +
-                "] has an incorrect signature. It should not be static or final.");
+                "] has incorrect signature. It should not be static or final.");
         resolver.resolve(typeFor(ClassWithFinalLifecycleListener.class));
     }
 
@@ -119,7 +121,7 @@ public class EntityLifecycleCallbackResolverTest {
         thrown.expect(MetamodelInitializationException.class);
         thrown.expectMessage("The callback method [staticListener] in type [" +
                 ClassWithStaticLifecycleListener.class.getName() +
-                "] has an incorrect signature. It should not be static or final.");
+                "] has incorrect signature. It should not be static or final.");
         resolver.resolve(typeFor(ClassWithStaticLifecycleListener.class));
     }
 
@@ -180,5 +182,135 @@ public class EntityLifecycleCallbackResolverTest {
         assertEquals(ParentListener.getPrePersistMethod(), callbacks.get(LifecycleEvent.PRE_PERSIST));
         assertTrue(callbacks.containsKey(LifecycleEvent.POST_PERSIST));
         assertEquals(ParentListener.getPostPersistMethod(), callbacks.get(LifecycleEvent.POST_PERSIST));
+    }
+
+    @Test
+    public void resolveThrowsMetamodelInitializationExceptionWhenEntityListenerCallbackHasInvalidNumberOfParameters() {
+        thrown.expect(MetamodelInitializationException.class);
+        thrown.expectMessage("The callback method [invalidArgumentCount] in entity listener [" +
+                ListenerWithInvalidArgumentCount.class.getName() +
+                "] has incorrect signature. It should take exactly one argument.");
+        final AbstractIdentifiableType<EntityWithListenerWithInvalidArgumentCount> et = typeFor(
+                EntityWithListenerWithInvalidArgumentCount.class);
+        resolver.resolve(et);
+    }
+
+    private static class ListenerWithInvalidArgumentCount {
+        public ListenerWithInvalidArgumentCount() {
+        }
+
+        @PostLoad
+        public void invalidArgumentCount(Object one, Object two) {
+        }
+    }
+
+    @EntityListeners(ListenerWithInvalidArgumentCount.class)
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithListenerWithInvalidArgumentCount")
+    private static class EntityWithListenerWithInvalidArgumentCount {
+    }
+
+    @Test
+    public void resolveThrowsMetamodelInitializationExceptionWhenEntityListenerCallbackIsNotVoid() {
+        thrown.expect(MetamodelInitializationException.class);
+        thrown.expectMessage("The callback method [nonVoid] in entity listener [" +
+                ListenerWithNonVoidCallback.class.getName() +
+                "] has incorrect signature. Its return type should be void.");
+        final AbstractIdentifiableType<EntityWithListenerWithNonVoidCallback> et = typeFor(
+                EntityWithListenerWithNonVoidCallback.class);
+        resolver.resolve(et);
+    }
+
+    private static class ListenerWithNonVoidCallback {
+        public ListenerWithNonVoidCallback() {
+        }
+
+        @PostLoad
+        public int nonVoid(Object arg) {
+            return 117;
+        }
+    }
+
+    @EntityListeners(ListenerWithNonVoidCallback.class)
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithListenerWithNonVoidCallback")
+    private static class EntityWithListenerWithNonVoidCallback {
+    }
+
+    @Test
+    public void resolveThrowsMetamodelInitializationExceptionWhenEntityListenerCallbackIsStatic() {
+        thrown.expect(MetamodelInitializationException.class);
+        thrown.expectMessage("The callback method [staticCallback] in entity listener [" +
+                ListenerWithStaticCallback.class.getName() +
+                "] has incorrect signature. It should not be static or final.");
+        final AbstractIdentifiableType<EntityWithListenerWithStaticCallback> et = typeFor(
+                EntityWithListenerWithStaticCallback.class);
+        resolver.resolve(et);
+    }
+
+    private static class ListenerWithStaticCallback {
+        public ListenerWithStaticCallback() {
+        }
+
+        @PostLoad
+        public static void staticCallback(Object arg) {
+        }
+    }
+
+    @EntityListeners(ListenerWithStaticCallback.class)
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithListenerWithStaticCallback")
+    private static class EntityWithListenerWithStaticCallback {
+    }
+
+    @Test
+    public void resolveThrowsMetamodelInitializationExceptionWhenEntityListenerHasMultipleCallbacksForSameEvent() {
+        thrown.expect(MetamodelInitializationException.class);
+        thrown.expectMessage("The entity listener [" + ListenerWithMultipleCallbacksForSameEvent.class.getName() +
+                "] has multiple callbacks for the lifecycle event [" + LifecycleEvent.POST_LOAD + "].");
+        final AbstractIdentifiableType<EntityWithListenerWithMultipleConflictingCallbacks> et = typeFor(
+                EntityWithListenerWithMultipleConflictingCallbacks.class);
+        resolver.resolve(et);
+    }
+
+    private static class ListenerWithMultipleCallbacksForSameEvent {
+        public ListenerWithMultipleCallbacksForSameEvent() {
+        }
+
+        @PostLoad
+        public void firstCallback(Object arg) {
+        }
+
+        @PostLoad
+        public void secondCallback(Object arg) {
+        }
+    }
+
+    @EntityListeners(ListenerWithMultipleCallbacksForSameEvent.class)
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithListenerWithMultipleConflictingCallbacks")
+    private static class EntityWithListenerWithMultipleConflictingCallbacks {
+    }
+
+    @Test
+    public void resolveThrowsMetamodelInitializationExceptionWhenEntityListenerCallbackHasInvalidParameterType() {
+        thrown.expect(MetamodelInitializationException.class);
+        thrown.expectMessage("The callback method [callback] in entity listener [" +
+                ListenerWithInvalidParameterTypeCallback.class.getName() +
+                "] has incorrect signature. Its parameter should be of type [" + Object.class.getName() + "] or [" +
+                EntityWithListenerWithInvalidParameterTypeCallback.class.getName() + "].");
+        final AbstractIdentifiableType<EntityWithListenerWithInvalidParameterTypeCallback> et = typeFor(
+                EntityWithListenerWithInvalidParameterTypeCallback.class);
+        resolver.resolve(et);
+    }
+
+    private static class ListenerWithInvalidParameterTypeCallback {
+        public ListenerWithInvalidParameterTypeCallback() {
+        }
+
+        @PostLoad
+        public void callback(OWLClassA arg) {
+        }
+    }
+
+    @EntityListeners(ListenerWithInvalidParameterTypeCallback.class)
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "EntityWithListenerWithInvalidParameterTypeCallback")
+    private static class EntityWithListenerWithInvalidParameterTypeCallback {
     }
 }

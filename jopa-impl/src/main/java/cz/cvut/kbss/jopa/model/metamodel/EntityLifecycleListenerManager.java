@@ -108,11 +108,11 @@ public class EntityLifecycleListenerManager {
         invokeListeners(instance, LifecycleEvent.POST_UPDATE);
     }
 
-    public void setParent(EntityLifecycleListenerManager parent) {
+    void setParent(EntityLifecycleListenerManager parent) {
         this.parent = parent;
     }
 
-    public void addEntityListener(Object entityListener) {
+    void addEntityListener(Object entityListener) {
         Objects.requireNonNull(entityListener);
         if (entityListeners == null) {
             this.entityListeners = new ArrayList<>();
@@ -120,17 +120,17 @@ public class EntityLifecycleListenerManager {
         entityListeners.add(entityListener);
     }
 
-    public void addLifecycleCallback(LifecycleEvent event, Method callback) {
-        assert event != null;
-        assert callback != null;
+    void addLifecycleCallback(LifecycleEvent event, Method callback) {
+        Objects.requireNonNull(event);
+        Objects.requireNonNull(callback);
         lifecycleCallbacks.put(event, callback);
     }
 
-    public Map<LifecycleEvent, Method> getLifecycleCallbacks() {
+    Map<LifecycleEvent, Method> getLifecycleCallbacks() {
         return Collections.unmodifiableMap(lifecycleCallbacks);
     }
 
-    public boolean hasLifecycleCallback(LifecycleEvent event) {
+    boolean hasLifecycleCallback(LifecycleEvent event) {
         return lifecycleCallbacks.containsKey(event);
     }
 
@@ -139,6 +139,23 @@ public class EntityLifecycleListenerManager {
     }
 
     Map<Object, Map<LifecycleEvent, Method>> getEntityListenerCallbacks() {
-        return Collections.unmodifiableMap(entityListenerCallbacks);
+        return entityListenerCallbacks != null ? Collections.unmodifiableMap(entityListenerCallbacks) :
+               Collections.emptyMap();
+    }
+
+    void addEntityListenerCallback(Object listener, LifecycleEvent event, Method callback) {
+        Objects.requireNonNull(listener);
+        Objects.requireNonNull(event);
+        Objects.requireNonNull(callback);
+        if (entityListenerCallbacks == null) {
+            this.entityListenerCallbacks = new HashMap<>();
+        }
+        entityListenerCallbacks.putIfAbsent(listener, new EnumMap<>(LifecycleEvent.class));
+        entityListenerCallbacks.get(listener).put(event, callback);
+    }
+
+    boolean hasEntityListenerCallback(Object listener, LifecycleEvent event) {
+        return entityListenerCallbacks != null && entityListenerCallbacks.containsKey(listener) &&
+                entityListenerCallbacks.get(listener).containsKey(event);
     }
 }

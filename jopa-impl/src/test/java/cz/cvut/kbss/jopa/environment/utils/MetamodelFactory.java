@@ -799,7 +799,10 @@ public class MetamodelFactory {
         when(et.getFieldSpecification(sNameAtt.getName())).thenReturn(sNameAtt);
         when(et.getFieldSpecification(sTypes.getName())).thenReturn(sTypes);
         final EntityLifecycleListenerManager listenerManager = new EntityLifecycleListenerManager();
-        listenerManager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, OWLClassS.getPrePersistHook());
+        final Method addCallback = EntityLifecycleListenerManager.class
+                .getDeclaredMethod("addLifecycleCallback", LifecycleEvent.class, Method.class);
+        addCallback.setAccessible(true);
+        addCallback.invoke(listenerManager, LifecycleEvent.PRE_PERSIST, OWLClassS.getPrePersistHook());
         when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
     }
 
@@ -854,14 +857,20 @@ public class MetamodelFactory {
             when(et.getFieldSpecification(fs.getName())).thenReturn(fs);
         }
         final EntityLifecycleListenerManager listenerManager = new EntityLifecycleListenerManager();
-        listenerManager.setParent(parentEt.getLifecycleListenerManager());
-        listenerManager.addLifecycleCallback(LifecycleEvent.PRE_PERSIST, OWLClassR.getPrePersistHook());
-        listenerManager.addLifecycleCallback(LifecycleEvent.POST_PERSIST, OWLClassR.getPostPersistHook());
-        listenerManager.addLifecycleCallback(LifecycleEvent.PRE_UPDATE, OWLClassR.getPreUpdateHook());
-        listenerManager.addLifecycleCallback(LifecycleEvent.POST_UPDATE, OWLClassR.getPostUpdateHook());
-        listenerManager.addLifecycleCallback(LifecycleEvent.PRE_REMOVE, OWLClassR.getPreRemoveHook());
-        listenerManager.addLifecycleCallback(LifecycleEvent.POST_REMOVE, OWLClassR.getPostRemoveHook());
-        listenerManager.addLifecycleCallback(LifecycleEvent.POST_LOAD, OWLClassR.getPostLoadHook());
+        final Method setParent = EntityLifecycleListenerManager.class
+                .getDeclaredMethod("setParent", EntityLifecycleListenerManager.class);
+        setParent.setAccessible(true);
+        setParent.invoke(listenerManager, parentEt.getLifecycleListenerManager());
+        final Method addCallback = EntityLifecycleListenerManager.class
+                .getDeclaredMethod("addLifecycleCallback", LifecycleEvent.class, Method.class);
+        addCallback.setAccessible(true);
+        addCallback.invoke(listenerManager, LifecycleEvent.PRE_PERSIST, OWLClassR.getPrePersistHook());
+        addCallback.invoke(listenerManager, LifecycleEvent.POST_PERSIST, OWLClassR.getPostPersistHook());
+        addCallback.invoke(listenerManager, LifecycleEvent.PRE_UPDATE, OWLClassR.getPreUpdateHook());
+        addCallback.invoke(listenerManager, LifecycleEvent.POST_UPDATE, OWLClassR.getPostUpdateHook());
+        addCallback.invoke(listenerManager, LifecycleEvent.PRE_REMOVE, OWLClassR.getPreRemoveHook());
+        addCallback.invoke(listenerManager, LifecycleEvent.POST_REMOVE, OWLClassR.getPostRemoveHook());
+        addCallback.invoke(listenerManager, LifecycleEvent.POST_LOAD, OWLClassR.getPostLoadHook());
         when(et.getLifecycleListenerManager()).thenReturn(listenerManager);
     }
 }

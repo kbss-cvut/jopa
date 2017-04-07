@@ -42,7 +42,7 @@ class EntityLifecycleCallbackResolver {
             for (LifecycleEvent hookType : LifecycleEvent.values()) {
                 if (m.getDeclaredAnnotation(hookType.getAnnotation()) != null) {
                     verifyCallbackNotAlreadyDefined(hookType);
-                    verifyListenerSignature(m);
+                    verifyLifecycleCallbackSignature(m);
                     manager.addLifecycleCallback(hookType, m);
                 }
             }
@@ -51,12 +51,12 @@ class EntityLifecycleCallbackResolver {
 
     private void verifyCallbackNotAlreadyDefined(LifecycleEvent hookType) {
         if (manager.hasLifecycleCallback(hookType)) {
-            throw MetamodelInitializationException
-                    .multipleListenersForSameLifecycleEvent(managedType.getJavaType(), hookType);
+            throw new MetamodelInitializationException("The type [" + managedType.getJavaType().getName() +
+                    "] has multiple lifecycle callbacks for the lifecycle event [" + hookType + "].");
         }
     }
 
-    private void verifyListenerSignature(Method listener) {
+    private void verifyLifecycleCallbackSignature(Method listener) {
         if (listener.getParameterCount() > 0) {
             throw MetamodelInitializationException
                     .invalidArgumentsForLifecycleListener(managedType.getJavaType(), listener);
@@ -80,10 +80,49 @@ class EntityLifecycleCallbackResolver {
             try {
                 final Object listener = listenerType.newInstance();
                 manager.addEntityListener(listener);
+                resolveEntityListenerCallbacks(listener, listenerType);
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new MetamodelInitializationException("Unable to instantiate entity listener of type "
                         + listenerType + ". The listener has to have a public no-arg constructor.");
             }
+        }
+    }
+
+    private void resolveEntityListenerCallbacks(Object listener, Class<?> listenerType) {
+        for (Method m : listenerType.getDeclaredMethods()) {
+            for (LifecycleEvent hookType : LifecycleEvent.values()) {
+                if (m.getDeclaredAnnotation(hookType.getAnnotation()) != null) {
+                    verifyEntityListenerCallbackNotAlreadyDefined(listener, listenerType, hookType);
+                    verifyEntityListenerCallbackSignature(listenerType, m);
+                    manager.addEntityListenerCallback(listener, hookType, m);
+                }
+            }
+        }
+    }
+
+    private void verifyEntityListenerCallbackNotAlreadyDefined(Object listener, Class<?> listenerType,
+                                                               LifecycleEvent event) {
+        if (manager.hasEntityListenerCallback(listener, event)) {
+            throw new MetamodelInitializationException("The entity listener [" + listenerType.getName() +
+                    "] has multiple callbacks for the lifecycle event [" + event + "].");
+        }
+    }
+
+    private void verifyEntityListenerCallbackSignature(Class<?> listenerType, Method callback) {
+        if (callback.getParameterCount() != 1) {
+            throw MetamodelInitializationException
+                    .invalidArgumentsForEntityListenerCallback(listenerType, callback);
+        }
+        final Class<?> paramType = callback.getParameterTypes()[0];
+        if (!paramType.isAssignableFrom(Object.class) && !paramType.isAssignableFrom(managedType.getJavaType())) {
+            throw MetamodelInitializationException
+                    .invalidEntityListenerCallbackParameterType(managedType.getJavaType(), listenerType, callback);
+        }
+        if (!callback.getReturnType().equals(Void.TYPE)) {
+            throw MetamodelInitializationException.invalidReturnTypeForEntityListenerCallback(listenerType, callback);
+        }
+        if (Modifier.isFinal(callback.getModifiers()) || Modifier.isStatic(callback.getModifiers())) {
+            throw MetamodelInitializationException.invalidEntityListenerCallbackModifier(listenerType, callback);
         }
     }
 }
