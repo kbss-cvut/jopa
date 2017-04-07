@@ -56,18 +56,18 @@ class EntityLifecycleCallbackResolver {
         }
     }
 
-    private void verifyLifecycleCallbackSignature(Method listener) {
-        if (listener.getParameterCount() > 0) {
+    private void verifyLifecycleCallbackSignature(Method callback) {
+        if (callback.getParameterCount() > 0) {
             throw MetamodelInitializationException
-                    .invalidArgumentsForLifecycleListener(managedType.getJavaType(), listener);
+                    .invalidArgumentsForLifecycleListener(managedType.getJavaType(), callback);
         }
-        if (!listener.getReturnType().equals(Void.TYPE)) {
+        if (!callback.getReturnType().equals(Void.TYPE)) {
             throw MetamodelInitializationException
-                    .invalidReturnTypeForLifecycleListener(managedType.getJavaType(), listener);
+                    .invalidReturnTypeForLifecycleListener(managedType.getJavaType(), callback);
         }
-        if (Modifier.isFinal(listener.getModifiers()) || Modifier.isStatic(listener.getModifiers())) {
+        if (Modifier.isFinal(callback.getModifiers()) || Modifier.isStatic(callback.getModifiers())) {
             throw MetamodelInitializationException
-                    .invalidLifecycleListenerModifier(managedType.getJavaType(), listener);
+                    .invalidLifecycleListenerModifier(managedType.getJavaType(), callback);
         }
     }
 

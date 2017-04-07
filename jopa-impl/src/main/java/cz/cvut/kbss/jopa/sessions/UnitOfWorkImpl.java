@@ -122,7 +122,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         final T result = readObjectInternal(cls, primaryKey, descriptor);
         if (result != null) {
             final EntityTypeImpl<?> et = entityType(cls);
-            et.getLifecycleListenerManager().invokePostLoadListeners(result);
+            et.getLifecycleListenerManager().invokePostLoadCallbacks(result);
         }
         return result;
     }
@@ -526,12 +526,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                     + ". Is it registered in this UoW?");
         }
         final EntityTypeImpl<?> et = entityType(entity.getClass());
-        et.getLifecycleListenerManager().invokePreUpdateListeners(entity);
+        et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
         storage.merge(entity, f, descriptor);
         createChangeRecord(entity, f, descriptor);
         setHasChanges();
         setIndirectCollectionIfPresent(entity, f);
-        et.getLifecycleListenerManager().invokePostUpdateListeners(entity);
+        et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
     }
 
     private void createChangeRecord(Object clone, Field field, Descriptor descriptor) {
@@ -599,7 +599,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(clone, entity, descriptor);
             changeManager.calculateChanges(chSet);
             if (chSet.hasChanges()) {
-                et.getLifecycleListenerManager().invokePreUpdateListeners(clone);
+                et.getLifecycleListenerManager().invokePreUpdateCallbacks(clone);
             }
             final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
             merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
@@ -608,7 +608,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                 storage.merge(clone, field, descriptor);
             }
             if (chSet.hasChanges()) {
-                et.getLifecycleListenerManager().invokePostUpdateListeners(clone);
+                et.getLifecycleListenerManager().invokePostUpdateCallbacks(clone);
             }
             getUowChangeSet().addObjectChangeSet(chSet);
         } catch (OWLEntityExistsException e) {
@@ -707,7 +707,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         } catch (IllegalAccessException | IllegalArgumentException e) {
             throw new OWLPersistenceException(e);
         }
-        entityType(object.getClass()).getLifecycleListenerManager().invokePostLoadListeners(object);
+        entityType(object.getClass()).getLifecycleListenerManager().invokePostLoadCallbacks(object);
     }
 
     @Override
@@ -727,7 +727,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private void registerNewObjectInternal(Object entity, Descriptor descriptor) {
         assert entity != null;
         final EntityTypeImpl<?> eType = entityType(entity.getClass());
-        eType.getLifecycleListenerManager().invokePrePersistListeners(entity);
+        eType.getLifecycleListenerManager().invokePrePersistCallbacks(entity);
         Object id = getIdentifier(entity);
         if (id == null) {
             EntityPropertiesUtils.verifyIdentifierIsGenerated(entity, eType);
@@ -746,7 +746,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         newObjectsKeyToClone.put(id, entity);
         checkForCollections(entity);
         this.hasNew = true;
-        eType.getLifecycleListenerManager().invokePostPersistListeners(entity);
+        eType.getLifecycleListenerManager().invokePostPersistCallbacks(entity);
     }
 
     private void verifyCanPersist(Object id, Object instance, EntityType<?> et, Descriptor descriptor) {
@@ -777,7 +777,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
                     "Cannot remove entity which is not managed in the current persistence context.");
         }
         final EntityTypeImpl<?> et = entityType(entity.getClass());
-        et.getLifecycleListenerManager().invokePreRemoveListeners(entity);
+        et.getLifecycleListenerManager().invokePreRemoveCallbacks(entity);
         final Object primaryKey = getIdentifier(entity);
         final Descriptor descriptor = getDescriptor(entity);
 
@@ -789,7 +789,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             this.hasDeleted = true;
         }
         storage.remove(primaryKey, et.getJavaType(), descriptor);
-        et.getLifecycleListenerManager().invokePostRemoveListeners(entity);
+        et.getLifecycleListenerManager().invokePostRemoveCallbacks(entity);
     }
 
     /**
