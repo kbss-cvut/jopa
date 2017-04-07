@@ -191,7 +191,7 @@ public class EntityLifecycleListenerManager {
 
     void addEntityListener(Object entityListener) {
         assert entityListener != null;
-        
+
         if (entityListeners == null) {
             this.entityListeners = new ArrayList<>();
         }

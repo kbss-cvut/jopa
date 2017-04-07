@@ -57,37 +57,30 @@ public class OWLClassR extends OWLClassS {
 
     @PrePersist
     public void prePersist() {
-        System.out.println("PrePersist called.");
     }
 
     @PostPersist
     public void postPersist() {
-        System.out.println("PostPersist called.");
     }
 
     @PreUpdate
     public void preUpdate() {
-        System.out.println("PreUpdate called.");
     }
 
     @PostUpdate
     public void postUpdate() {
-        System.out.println("PostUpdate called.");
     }
 
     @PreRemove
     public void preRemove() {
-        System.out.println("PreRemove called.");
     }
 
     @PostRemove
     public void postRemove() {
-        System.out.println("PostRemove called.");
     }
 
     @PostLoad
     public void postLoad() {
-        System.out.println("PostLoad called.");
     }
 
     @Override

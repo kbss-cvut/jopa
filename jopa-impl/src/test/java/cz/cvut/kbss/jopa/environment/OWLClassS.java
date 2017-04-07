@@ -70,9 +70,9 @@ public abstract class OWLClassS implements Serializable {
         this.types = types;
     }
 
+    @SuppressWarnings("unused")
     @PrePersist
     private void prePersist() {
-        System.out.println("PrePersist called in OWLClassS.");
     }
 
 
