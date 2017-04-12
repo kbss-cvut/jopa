@@ -39,7 +39,3 @@
 - [ ] Research whether we could replace aspectj with cglib-generated proxies
 
 ### Currently in Progress
-
-- [ ] Add support for entity lifecycle hooks (postLoad, prePersist etc.)
-    - [x] Internal
-    - [ ] External
