@@ -22,7 +22,7 @@ class LongParameterValue extends ParameterValue {
 
     private final long value;
 
-    public LongParameterValue(Long value) {
+    LongParameterValue(Long value) {
         this.value = Objects.requireNonNull(value);
     }
 

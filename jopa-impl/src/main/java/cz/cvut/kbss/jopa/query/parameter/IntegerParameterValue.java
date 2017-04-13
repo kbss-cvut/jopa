@@ -22,7 +22,7 @@ class IntegerParameterValue extends ParameterValue {
 
     private final int value;
 
-    public IntegerParameterValue(Integer value) {
+    IntegerParameterValue(Integer value) {
         this.value = Objects.requireNonNull(value);
     }
 

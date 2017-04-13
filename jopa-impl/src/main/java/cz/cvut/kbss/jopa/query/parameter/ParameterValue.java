@@ -22,8 +22,6 @@ import java.util.Objects;
 
 /**
  * Query parameter value holder.
- *
- * @author kidney
  */
 public abstract class ParameterValue {
 

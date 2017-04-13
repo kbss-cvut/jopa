@@ -23,7 +23,7 @@ class DateParameterValue extends ParameterValue {
 
     private final Date value;
 
-    public DateParameterValue(Date value) {
+    DateParameterValue(Date value) {
         this.value = Objects.requireNonNull(value);
     }
 

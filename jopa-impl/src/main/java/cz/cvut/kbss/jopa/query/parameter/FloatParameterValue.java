@@ -22,7 +22,7 @@ class FloatParameterValue extends ParameterValue {
 
     private final float value;
 
-    public FloatParameterValue(Float value) {
+    FloatParameterValue(Float value) {
         this.value = Objects.requireNonNull(value);
     }
 
