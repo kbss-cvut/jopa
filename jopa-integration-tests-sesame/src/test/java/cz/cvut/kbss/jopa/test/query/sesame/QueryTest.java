@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -101,5 +102,13 @@ public class QueryTest extends QueryRunner {
 
         final OWLClassA result = em.find(OWLClassA.class, instance.getUri());
         assertTrue(result.getTypes().contains(newType.toString()));
+    }
+
+    @Test
+    public void settingStringParameterEscapesTheParameterValue() {
+        final String query = "SELECT ?x WHERE { ?x rdfs:comment ?comment . }";
+        final String paramValue = "string\nWith\nNewlines";
+        final List result = em.createNativeQuery(query).setParameter("comment", paramValue, "en").getResultList();
+        assertTrue(result.isEmpty());   // The point here is that no exception is thrown and a result is returned
     }
 }
