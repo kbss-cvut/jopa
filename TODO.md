@@ -18,7 +18,6 @@
 - [ ] Add a `@Context` annotation, which would specify that a field/entity should always be loaded from the specified context.
     - This could be overwritten with a descriptor passed to EM
 - [ ] Add support for `orphanRemoval` attribute in object properties
-- [ ] Add support for namespace definition - on class and package level
 - [ ] Modify OntoDriver API to support Fetch joins
 
 
@@ -39,3 +38,4 @@
 - [ ] Research whether we could replace aspectj with cglib-generated proxies
 
 ### Currently in Progress
+- [ ] Add support for namespace definition - on class and package level
