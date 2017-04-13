@@ -15,13 +15,19 @@
 package cz.cvut.kbss.jopa.environment.utils;
 
 import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.listener.AnotherListener;
+import cz.cvut.kbss.jopa.environment.listener.ConcreteListener;
+import cz.cvut.kbss.jopa.environment.listener.ParentListener;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.*;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -202,6 +208,10 @@ public class MetamodelMocks {
     private SingularAttribute<OWLClassR, String> rStringAtt;
     @Mock
     private SingularAttribute<OWLClassR, OWLClassA> rOwlClassAAtt;
+    @Mock
+    private ConcreteListener concreteListenerMock;
+    @Mock
+    private AnotherListener anotherListenerMock;
 
     @Mock
     private EntityTypeImpl<OWLClassS> etS;
@@ -211,6 +221,8 @@ public class MetamodelMocks {
     private SingularAttribute<OWLClassS, String> sNameAtt;
     @Mock
     private TypesSpecification<OWLClassS, String> sTypes;
+    @Mock
+    private ParentListener parentListenerMock;
 
     public MetamodelMocks() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -234,7 +246,9 @@ public class MetamodelMocks {
         MetamodelFactory
                 .initOwlClassQMock(etQ, qMappedSuperclass, qStringAtt, qParentStringAtt, qLabelAtt, qOwlClassAAtt, idQ);
         MetamodelFactory.initOwlClassSMock(etS, sNameAtt, sTypes, idS);
+        MetamodelFactory.initOwlClassSListeners(etS, parentListenerMock);
         MetamodelFactory.initOwlClassRMock(etR, rStringAtt, rOwlClassAAtt, etS);
+        MetamodelFactory.initOwlClassRListeners(etR, etS, concreteListenerMock, anotherListenerMock);
     }
 
     public void setMocks(Metamodel metamodel) {
@@ -327,6 +341,10 @@ public class MetamodelMocks {
 
     public OWLClassRMetamodel forOwlClassR() {
         return new OWLClassRMetamodel();
+    }
+
+    public OWLClassSMetamodel forOwlClassS() {
+        return new OWLClassSMetamodel();
     }
 
     public class OWLClassAMetamodel {
@@ -666,6 +684,14 @@ public class MetamodelMocks {
         public SingularAttribute<OWLClassR, OWLClassA> rOwlClassAAtt() {
             return MetamodelMocks.this.rOwlClassAAtt;
         }
+
+        public ConcreteListener concreteListener() {
+            return MetamodelMocks.this.concreteListenerMock;
+        }
+
+        public AnotherListener anotherListener() {
+            return MetamodelMocks.this.anotherListenerMock;
+        }
     }
 
     public class OWLClassSMetamodel {
@@ -684,6 +710,10 @@ public class MetamodelMocks {
 
         public TypesSpecification<OWLClassS, String> types() {
             return MetamodelMocks.this.sTypes;
+        }
+
+        public ParentListener parentListener() {
+            return MetamodelMocks.this.parentListenerMock;
         }
     }
 }

@@ -15,7 +15,6 @@
 package cz.cvut.kbss.jopa.exception;
 
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.lifecycle.LifecycleEvent;
 
 import java.lang.reflect.Method;
 
@@ -23,6 +22,9 @@ import java.lang.reflect.Method;
  * Indicates an error when building application persistence metamodel.
  */
 public class MetamodelInitializationException extends OWLPersistenceException {
+
+    private static final String VOID_RETURN_TYPE_MSG = " Its return type should be void.";
+    private static final String INVALID_MODIFIER_MSG = " It should not be static or final.";
 
     public MetamodelInitializationException(String message, Throwable cause) {
         super(message, cause);
@@ -36,13 +38,6 @@ public class MetamodelInitializationException extends OWLPersistenceException {
         super(cause);
     }
 
-    public static MetamodelInitializationException multipleListenersForSameLifecycleEvent(Class<?> type,
-                                                                                          LifecycleEvent event) {
-        return new MetamodelInitializationException("Type " + type.getName() +
-                " has multiple lifecycle callback methods for the same lifecycle event " +
-                event.getAnnotation().getName());
-    }
-
     public static MetamodelInitializationException invalidArgumentsForLifecycleListener(Class<?> type,
                                                                                         Method listener) {
         return new MetamodelInitializationException(
@@ -51,17 +46,48 @@ public class MetamodelInitializationException extends OWLPersistenceException {
 
     private static String incorrectLifecycleListenerSignatureMessage(Class<?> type, Method listener) {
         return "The callback method [" + listener.getName() + "] in type [" + type.getName() +
-                "] has an incorrect signature.";
+                "] has incorrect signature.";
     }
 
     public static MetamodelInitializationException invalidReturnTypeForLifecycleListener(Class<?> type,
                                                                                          Method listener) {
         return new MetamodelInitializationException(
-                incorrectLifecycleListenerSignatureMessage(type, listener) + " Its return type should be void.");
+                incorrectLifecycleListenerSignatureMessage(type, listener) + VOID_RETURN_TYPE_MSG);
     }
 
     public static MetamodelInitializationException invalidLifecycleListenerModifier(Class<?> type, Method listener) {
         return new MetamodelInitializationException(
-                incorrectLifecycleListenerSignatureMessage(type, listener) + " It should not be static or final.");
+                incorrectLifecycleListenerSignatureMessage(type, listener) + INVALID_MODIFIER_MSG);
+    }
+
+    public static MetamodelInitializationException invalidArgumentsForEntityListenerCallback(Class<?> type,
+                                                                                             Method callback) {
+        return new MetamodelInitializationException(incorrectEntityListenerCallbackSignatureMessage(type, callback) +
+                " It should take exactly one argument.");
+    }
+
+    private static String incorrectEntityListenerCallbackSignatureMessage(Class<?> type, Method callback) {
+        return "The callback method [" + callback.getName() + "] in entity listener [" + type.getName() +
+                "] has incorrect signature.";
+    }
+
+    public static MetamodelInitializationException invalidReturnTypeForEntityListenerCallback(Class<?> type,
+                                                                                              Method callback) {
+        return new MetamodelInitializationException(
+                incorrectEntityListenerCallbackSignatureMessage(type, callback) + VOID_RETURN_TYPE_MSG);
+    }
+
+    public static MetamodelInitializationException invalidEntityListenerCallbackModifier(Class<?> type,
+                                                                                         Method callback) {
+        return new MetamodelInitializationException(
+                incorrectEntityListenerCallbackSignatureMessage(type, callback) + INVALID_MODIFIER_MSG);
+    }
+
+    public static MetamodelInitializationException invalidEntityListenerCallbackParameterType(Class<?> managedType,
+                                                                                              Class<?> type,
+                                                                                              Method callback) {
+        return new MetamodelInitializationException(
+                incorrectEntityListenerCallbackSignatureMessage(type, callback) + " Its parameter should be of type [" +
+                        Object.class.getName() + "] or [" + managedType.getName() + "].");
     }
 }

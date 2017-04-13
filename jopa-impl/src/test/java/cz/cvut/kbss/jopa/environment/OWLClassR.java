@@ -14,12 +14,15 @@
  */
 package cz.cvut.kbss.jopa.environment;
 
+import cz.cvut.kbss.jopa.environment.listener.AnotherListener;
+import cz.cvut.kbss.jopa.environment.listener.ConcreteListener;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 
+@EntityListeners({ConcreteListener.class, AnotherListener.class})
 @OWLClass(iri = Vocabulary.C_OWLClassR)
 public class OWLClassR extends OWLClassS {
 
@@ -54,37 +57,30 @@ public class OWLClassR extends OWLClassS {
 
     @PrePersist
     public void prePersist() {
-        System.out.println("PrePersist called.");
     }
 
     @PostPersist
     public void postPersist() {
-        System.out.println("PostPersist called.");
     }
 
     @PreUpdate
     public void preUpdate() {
-        System.out.println("PreUpdate called.");
     }
 
     @PostUpdate
     public void postUpdate() {
-        System.out.println("PostUpdate called.");
     }
 
     @PreRemove
     public void preRemove() {
-        System.out.println("PreRemove called.");
     }
 
     @PostRemove
     public void postRemove() {
-        System.out.println("PostRemove called.");
     }
 
     @PostLoad
     public void postLoad() {
-        System.out.println("PostLoad called.");
     }
 
     @Override
