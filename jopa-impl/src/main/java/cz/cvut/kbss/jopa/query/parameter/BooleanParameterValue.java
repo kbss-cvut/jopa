@@ -22,7 +22,7 @@ class BooleanParameterValue extends ParameterValue {
 
     private final boolean value;
 
-    public BooleanParameterValue(Boolean value) {
+    BooleanParameterValue(Boolean value) {
         this.value = Objects.requireNonNull(value);
     }
 

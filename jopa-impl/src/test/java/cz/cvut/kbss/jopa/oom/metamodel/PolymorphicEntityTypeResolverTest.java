@@ -220,7 +220,7 @@ public class PolymorphicEntityTypeResolverTest {
                         AbstractSubtype.class, IRI.create(abstractTypeIri)));
         doReturn(Collections.singleton(etS)).when(etAbstract).getSubtypes();
         // We are abusing the type erasure here a little
-        when(etS.getSupertype()).thenReturn((IdentifiableType) etAbstract);
+        when(etS.getSupertype()).thenReturn((AbstractIdentifiableType) etAbstract);
 
         final Collection<Axiom<URI>> types = getTypeAxioms(OWLClassS.getClassIri(), abstractTypeIri);
         assertEquals(etS, execute(etAbstract, types));

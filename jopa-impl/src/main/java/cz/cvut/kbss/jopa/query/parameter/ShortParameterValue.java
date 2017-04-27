@@ -22,7 +22,7 @@ class ShortParameterValue extends ParameterValue {
 
     private final short value;
 
-    public ShortParameterValue(Short value) {
+    ShortParameterValue(Short value) {
         this.value = Objects.requireNonNull(value);
     }
 

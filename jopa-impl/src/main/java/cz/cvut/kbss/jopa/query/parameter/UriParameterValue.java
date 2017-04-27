@@ -23,7 +23,7 @@ class UriParameterValue extends ParameterValue {
 
     private final URI uri;
 
-    public UriParameterValue(URI uri) {
+    UriParameterValue(URI uri) {
         this.uri = uri;
     }
 

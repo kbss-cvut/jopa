@@ -22,7 +22,7 @@ class DoubleParameterValue extends ParameterValue {
 
     private final double value;
 
-    public DoubleParameterValue(Double value) {
+    DoubleParameterValue(Double value) {
         this.value = Objects.requireNonNull(value);
     }
 

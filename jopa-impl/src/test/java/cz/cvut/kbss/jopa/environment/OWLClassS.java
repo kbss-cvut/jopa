@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.environment;
 
 import cz.cvut.kbss.jopa.CommonVocabulary;
+import cz.cvut.kbss.jopa.environment.listener.ParentListener;
 import cz.cvut.kbss.jopa.model.annotations.*;
 
 import java.io.Serializable;
@@ -23,6 +24,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Set;
 
+@EntityListeners(ParentListener.class)
 @Inheritance(strategy = InheritanceType.TWO_STEP)
 @OWLClass(iri = Vocabulary.c_OwlClassS)
 public abstract class OWLClassS implements Serializable {
@@ -68,9 +70,9 @@ public abstract class OWLClassS implements Serializable {
         this.types = types;
     }
 
+    @SuppressWarnings("unused")
     @PrePersist
     private void prePersist() {
-        System.out.println("PrePersist called in OWLClassS.");
     }
 
 

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,9 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Objects;
@@ -64,7 +62,7 @@ public class EntityLoader {
 
 
     /**
-     * Using code from https://github.com/ddopson/java-class-enumerator
+     * Inspired by https://github.com/ddopson/java-class-enumerator
      */
     private Set<Class<?>> discoverEntities(String scanPath) {
         final Set<Class<?>> all = new HashSet<>();
@@ -73,10 +71,17 @@ public class EntityLoader {
             Enumeration<URL> urls = loader.getResources(scanPath.replace('.', '/'));
             while (urls.hasMoreElements()) {
                 final URL url = urls.nextElement();
-                if (url.toString().startsWith("jar:")) {
+                if (isJar(url.toString())) {
                     processJarFile(url, scanPath, all);
                 } else {
                     processDirectory(new File(getUrlAsUri(url).getPath()), scanPath, all);
+                }
+            }
+            // Scan jar files on classpath
+            URL[] urlsSet = ((URLClassLoader) loader).getURLs();
+            for (URL url : urlsSet) {
+                if (isJar(url.toString())) {
+                    processJarFile(url, scanPath, all);
                 }
             }
         } catch (IOException e) {
@@ -86,6 +91,10 @@ public class EntityLoader {
             LOG.warn("No entity classes found in package " + scanPath);
         }
         return all;
+    }
+
+    private boolean isJar(String filePath) {
+        return filePath.startsWith("jar:") || filePath.endsWith(JAR_FILE_SUFFIX);
     }
 
     private static URI getUrlAsUri(URL url) {
@@ -111,7 +120,8 @@ public class EntityLoader {
                 final String entryName = entry.getName();
                 String className = null;
                 if (entryName.endsWith(CLASS_FILE_SUFFIX) && entryName.startsWith(relPath)) {
-                    className = entryName.replace('/', '.').replace('\\', '.').replace(CLASS_FILE_SUFFIX, "");
+                    className = entryName.replace('/', '.').replace('\\', '.');
+                    className = className.substring(0, className.length() - CLASS_FILE_SUFFIX.length());
                 }
                 if (className != null) {
                     processClass(className, entityClasses);
@@ -133,7 +143,8 @@ public class EntityLoader {
         }
     }
 
-    private void processDirectory(File dir, String packageName, Set<Class<?>> entityClasses) {
+    private void processDirectory(File dir, String packageName, Set<Class<?>> entityClasses)
+            throws MalformedURLException {
         LOG.trace("Scanning directory {} for entity classes.", dir);
         // Get the list of the files contained in the package
         final String[] files = dir.list();
@@ -152,7 +163,9 @@ public class EntityLoader {
             }
             final File subDir = new File(dir, fileName);
             if (subDir.isDirectory()) {
-                processDirectory(subDir, packageName + '.' + fileName, entityClasses);
+                processDirectory(subDir, packageName + (!packageName.isEmpty() ? '.' : "") + fileName, entityClasses);
+            } else if (isJar(subDir.getAbsolutePath())) {
+                processJarFile(subDir.toURI().toURL(), packageName, entityClasses);
             }
         }
     }

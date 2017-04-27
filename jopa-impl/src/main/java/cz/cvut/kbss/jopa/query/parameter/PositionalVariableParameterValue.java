@@ -23,7 +23,7 @@ public class PositionalVariableParameterValue extends ParameterValue {
 
     private final Integer position;
 
-    public PositionalVariableParameterValue(Integer position) {
+    PositionalVariableParameterValue(Integer position) {
         this.position = position;
     }
 

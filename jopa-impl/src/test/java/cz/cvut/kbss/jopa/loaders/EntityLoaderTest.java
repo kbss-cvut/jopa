@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,10 +19,7 @@ import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.utils.Configuration;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -92,5 +89,18 @@ public class EntityLoaderTest {
                 JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss");
         final Set<Class<?>> result = entityLoader.discoverEntityClasses(new Configuration(properties));
         assertTrue(result.containsAll(ENTITY_CLASSES));
+    }
+
+    /**
+     * Bug #5.
+     */
+    @Test
+    public void entityLoadHandlesEntityNameContainingClassStringWhenProcessingJar() throws Exception {
+        final Map<String, String> properties = Collections.singletonMap(
+                JOPAPersistenceProperties.SCAN_PACKAGE, "cz.cvut.kbss.jopa.test.jar");
+        final Set<Class<?>> result = entityLoader.discoverEntityClasses(new Configuration(properties));
+        final Optional<Class<?>> cls = result.stream().filter(c -> c.getName().contains("classInName"))
+                                             .findAny();
+        assertTrue(cls.isPresent());
     }
 }
