@@ -1,5 +1,10 @@
 # JOPA - Release Notes
 
+## 0.9.6 - April 27, 2017
+- Fixed issue with loading classes containing 'class' in name (Bug #5).
+- Implemented support for `EntityListener`s.
+- Escape string parameters in SPARQL native queries.
+
 ## 0.9.5 - March 22, 2017
 - Fixed issue with mapped superclass referencing its descendants (Bug #3).
 - Fixed issue with cloning content of singleton collections elements.
