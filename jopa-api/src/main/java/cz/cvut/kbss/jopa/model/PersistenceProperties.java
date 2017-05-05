@@ -21,7 +21,7 @@ public class PersistenceProperties {
      */
     public static final String JPA_PERSISTENCE_PROVIDER = "javax.persistence.provider";
 
-    private PersistenceProperties() {
+    protected PersistenceProperties() {
         throw new AssertionError();
     }
 }

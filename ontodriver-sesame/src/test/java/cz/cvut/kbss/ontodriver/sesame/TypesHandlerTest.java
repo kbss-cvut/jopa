@@ -66,7 +66,7 @@ public class TypesHandlerTest {
     @Test
     public void getsTypesWithoutContext() throws Exception {
         final Collection<Statement> statements = initStatements(null);
-        when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, false, (IRI[]) null))
+        when(connectorMock.findStatements(vf.createIRI(STR_PK), RDF.TYPE, null, false))
                 .thenReturn(statements);
         final Set<Axiom<java.net.URI>> res = handler.getTypes(NamedResource.create(STR_PK), null, false);
         assertEquals(statements.size(), res.size());
