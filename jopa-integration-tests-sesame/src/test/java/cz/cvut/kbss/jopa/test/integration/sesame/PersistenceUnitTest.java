@@ -70,7 +70,7 @@ public class PersistenceUnitTest extends PersistenceUnitTestRunner {
     public void multiplePersistenceUnitsOnLocalNativeStoreCanExistSimultaneously() throws Exception {
         final File dir = Files.createTempDirectory("sesame-native-test").toFile();
         dir.deleteOnExit();
-        final int count = Generators.randomPositiveInt(5);
+        final int count = Generators.randomPositiveInt(2, 5);
         final List<EntityManagerFactory> emfs = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             emfs.add(buildLocalNativeEmf("testPu" + i, dir));

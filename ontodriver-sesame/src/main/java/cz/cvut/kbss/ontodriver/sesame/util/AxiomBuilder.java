@@ -98,7 +98,7 @@ public class AxiomBuilder {
         if (object instanceof Literal) {
             return new Value<>(SesameUtils.getDataPropertyValue((Literal) object));
         } else {
-            return new Value<>(SesameUtils.toJavaUri((Resource) object));
+            return new Value<>(NamedResource.create(object.stringValue()));
         }
     }
 }

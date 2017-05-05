@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
  */
 public abstract class Generators {
 
+    private static final int DEFAULT_MIN = 5;
     private static final int DEFAULT_SIZE = 10;
     private static final Set<String> TYPES = getTypes();
 
@@ -40,7 +41,7 @@ public abstract class Generators {
     }
 
     public static List<OWLClassA> createSimpleList() {
-        return createSimpleList(randomPositiveInt(DEFAULT_SIZE));
+        return createSimpleList(randomPositiveInt(DEFAULT_MIN, DEFAULT_SIZE));
     }
 
     public static List<OWLClassA> createSimpleList(int size) {
@@ -52,7 +53,7 @@ public abstract class Generators {
     }
 
     public static List<OWLClassA> createReferencedList() {
-        return createReferencedList(randomPositiveInt(DEFAULT_SIZE));
+        return createReferencedList(randomPositiveInt(DEFAULT_MIN, DEFAULT_SIZE));
     }
 
     public static List<OWLClassA> createReferencedList(int size) {
@@ -68,7 +69,7 @@ public abstract class Generators {
     }
 
     public static Set<OWLClassA> createSimpleSet() {
-        return createSimpleSet(randomPositiveInt(DEFAULT_SIZE));
+        return createSimpleSet(randomPositiveInt(DEFAULT_MIN, DEFAULT_SIZE));
     }
 
     public static Set<OWLClassA> createSimpleSet(int size) {
@@ -80,7 +81,7 @@ public abstract class Generators {
     }
 
     public static Map<String, Set<String>> createProperties() {
-        return createProperties(randomPositiveInt(DEFAULT_SIZE));
+        return createProperties(randomPositiveInt(DEFAULT_MIN, DEFAULT_SIZE));
     }
 
     public static Map<String, Set<String>> createProperties(int size) {
@@ -101,7 +102,7 @@ public abstract class Generators {
     }
 
     public static Map<URI, Set<Object>> createTypedProperties() {
-        return createTypedProperties(randomPositiveInt(DEFAULT_SIZE));
+        return createTypedProperties(randomPositiveInt(DEFAULT_MIN, DEFAULT_SIZE));
     }
 
     public static Map<URI, Set<Object>> createTypedProperties(int size) {
@@ -186,19 +187,22 @@ public abstract class Generators {
     }
 
     /**
-     * Gets a random int greater than <b>2</b>.
+     * Gets a random int between {@code min} and {@code max}.
      *
-     * @param max upper bound (exclusive). Has to be greater than 2.
+     *
+     * @param min lower bound (inclusive)
+     * @param max upper bound (exclusive)
      * @return Random positive integer
      */
-    public static int randomPositiveInt(int max) {
-        if (max <= 2) {
-            throw new IllegalArgumentException("Upper bound has to be greater than 2.");
+    public static int randomPositiveInt(int min, int max) {
+        assert min >= 0;
+        if (max <= min) {
+            throw new IllegalArgumentException("Upper bound has to be greater than the lower bound.");
         }
         int rand;
         do {
             rand = RANDOM.nextInt(max);
-        } while (rand < 2);
+        } while (rand < min);
         return rand;
     }
 
@@ -207,7 +211,7 @@ public abstract class Generators {
     }
 
     public static Set<URI> createUriTypes() {
-        final int count = randomPositiveInt(DEFAULT_SIZE);
+        final int count = randomPositiveInt(DEFAULT_MIN, DEFAULT_SIZE);
         final Set<URI> result = new HashSet<>();
         for (int i = 0; i < count; i++) {
             result.add(URI.create(TYPE_URI_BASE + randomInt(Integer.MAX_VALUE)));

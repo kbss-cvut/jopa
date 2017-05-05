@@ -89,7 +89,7 @@ public abstract class TypedQueryRunner extends BaseQueryRunner {
         final String query = "SELECT ?x WHERE { ?x a ?type ; ?hasA ?y . }";
         final List<OWLClassD> ds = new ArrayList<>();
         ds.addAll(QueryTestEnvironment.getData(OWLClassD.class));
-        final OWLClassA a = ds.get(Generators.randomPositiveInt(ds.size())).getOwlClassA();
+        final OWLClassA a = ds.get(Generators.randomPositiveInt(2, ds.size())).getOwlClassA();
         final TypedQuery<OWLClassD> q = getEntityManager().createNativeQuery(query, OWLClassD.class)
                                                           .setParameter("type", URI.create(Vocabulary.C_OWL_CLASS_D))
                                                           .setParameter("hasA",

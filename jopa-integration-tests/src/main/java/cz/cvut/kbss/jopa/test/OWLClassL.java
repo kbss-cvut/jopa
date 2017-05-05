@@ -20,9 +20,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Created by ledvima1 on 12.12.14.
- */
 @OWLClass(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/entities#OWLClassL")
 public class OWLClassL {
 
