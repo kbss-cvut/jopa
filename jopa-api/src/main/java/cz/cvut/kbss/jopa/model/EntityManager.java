@@ -249,7 +249,7 @@ public interface EntityManager {
      * @return {@code true} if consistent, {@code false} otherwise
      */
     @NonJPA
-    public boolean isConsistent(URI context);
+    boolean isConsistent(URI context);
 
     // TODO JPA 2.0 public LockModeType getLockMode(Object entity)
     // TODO JPA 2.0 setProperty

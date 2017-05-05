@@ -85,7 +85,7 @@ public aspect BeanListenerAspect {
             JOPAPersistenceProvider.loadReference(object, field);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             LOG.error(e.getMessage(), e);
-            throw new OWLPersistenceException();
+            throw new OWLPersistenceException(e);
         }
     }
 }
