@@ -16,7 +16,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
-import cz.cvut.kbss.jopa.model.*;
+import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.*;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import org.slf4j.Logger;
@@ -38,11 +38,13 @@ class ClassFieldMetamodelProcessor<X> {
 
     private final Class<X> cls;
     private final AbstractIdentifiableType<X> et;
+    private final TypeBuilderContext<X> context;
     private final MetamodelBuilder metamodelBuilder;
 
-    ClassFieldMetamodelProcessor(Class<X> cls, AbstractIdentifiableType<X> et, MetamodelBuilder metamodelBuilder) {
-        this.cls = cls;
-        this.et = et;
+    ClassFieldMetamodelProcessor(TypeBuilderContext<X> context, MetamodelBuilder metamodelBuilder) {
+        this.cls = context.getType().getJavaType();
+        this.context = context;
+        this.et = context.getType();
         this.metamodelBuilder = metamodelBuilder;
     }
 
@@ -73,7 +75,7 @@ class ClassFieldMetamodelProcessor<X> {
             return;
         }
 
-        final PropertyAttributes propertyAtt = PropertyAttributes.create(field, mappingValidator);
+        final PropertyAttributes propertyAtt = PropertyAttributes.create(field, mappingValidator, context);
         propertyAtt.resolve(field, metamodelBuilder, fieldValueCls);
 
         if (propertyAtt.isKnownOwlProperty()) {
