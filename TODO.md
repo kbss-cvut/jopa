@@ -38,4 +38,3 @@
 - [ ] Research whether we could replace aspectj with cglib-generated proxies
 
 ### Currently in Progress
-- [ ] Add support for namespace definition - on class and package level
