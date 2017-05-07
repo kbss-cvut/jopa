@@ -17,22 +17,29 @@ package cz.cvut.kbss.jopa.model.metamodel;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.model.IRI;
 import cz.cvut.kbss.jopa.model.annotations.MappedSuperclass;
+import cz.cvut.kbss.jopa.model.annotations.Namespace;
+import cz.cvut.kbss.jopa.model.annotations.Namespaces;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.utils.NamespaceResolver;
+
+import java.lang.reflect.AnnotatedElement;
 
 /**
  * Utility methods for processing managed types for metamodel construction.
  */
 class ManagedClassProcessor {
 
-    private static final EntityLifecycleCallbackResolver lifecycleCallbackResolver = new EntityLifecycleCallbackResolver();
+    private static final EntityLifecycleCallbackResolver lifecycleCallbackResolver =
+            new EntityLifecycleCallbackResolver();
 
     private ManagedClassProcessor() {
     }
 
-    static <T> AbstractIdentifiableType<T> processManagedType(Class<T> cls) {
+    static <T> TypeBuilderContext<T> processManagedType(Class<T> cls) {
+        final NamespaceResolver resolver = detectNamespaces(cls);
         final AbstractIdentifiableType<T> type;
         if (isEntityType(cls)) {
-            type = processEntityType(cls);
+            type = processEntityType(cls, resolver);
         } else if (isMappedSuperclassType(cls)) {
             type = processMappedSuperclassType(cls);
         } else {
@@ -40,16 +47,38 @@ class ManagedClassProcessor {
         }
         final EntityLifecycleListenerManager callbackManager = lifecycleCallbackResolver.resolve(type);
         type.setLifecycleListenerManager(callbackManager);
-        return type;
+        return new TypeBuilderContext<>(type, resolver);
     }
 
-    private static <T> EntityTypeImpl<T> processEntityType(Class<T> cls) {
+    private static <T> NamespaceResolver detectNamespaces(Class<T> cls) {
+        final NamespaceResolver resolver = new NamespaceResolver();
+        if (cls.getPackage() != null) {
+            resolveNamespaces(cls.getPackage(), resolver);
+        }
+        resolveNamespaces(cls, resolver);
+        return resolver;
+    }
+
+    private static void resolveNamespaces(AnnotatedElement target, NamespaceResolver namespaceResolver) {
+        final Namespaces namespaces = target.getDeclaredAnnotation(Namespaces.class);
+        if (namespaces != null) {
+            for (Namespace ns : namespaces.value()) {
+                namespaceResolver.registerNamespace(ns.prefix(), ns.namespace());
+            }
+        }
+        final Namespace namespace = target.getDeclaredAnnotation(Namespace.class);
+        if (namespace != null) {
+            namespaceResolver.registerNamespace(namespace.prefix(), namespace.namespace());
+        }
+    }
+
+    private static <T> EntityTypeImpl<T> processEntityType(Class<T> cls, NamespaceResolver namespaceResolver) {
         final OWLClass c = cls.getDeclaredAnnotation(OWLClass.class);
         assert c != null;
 
         checkForNoArgConstructor(cls);
 
-        return new EntityTypeImpl<>(cls.getSimpleName(), cls, IRI.create(c.iri()));
+        return new EntityTypeImpl<>(cls.getSimpleName(), cls, IRI.create(namespaceResolver.resolveFullIri(c.iri())));
     }
 
     private static <T> void checkForNoArgConstructor(Class<T> cls) {

@@ -49,14 +49,14 @@ public class ManagedClassProcessorTest {
 
     @Test
     public void processManagedTypeReturnsEntityTypeForEntity() {
-        final AbstractIdentifiableType<OWLClassA> res = ManagedClassProcessor.processManagedType(OWLClassA.class);
-        assertTrue(res instanceof EntityType);
+        final TypeBuilderContext<OWLClassA> res = ManagedClassProcessor.processManagedType(OWLClassA.class);
+        assertTrue(res.getType() instanceof EntityType);
     }
 
     @Test
     public void processManagedTypeReturnsMappedSuperclassTypeForMappedSuperclass() {
-        final AbstractIdentifiableType<QMappedSuperclass> res = ManagedClassProcessor
+        final TypeBuilderContext<QMappedSuperclass> res = ManagedClassProcessor
                 .processManagedType(QMappedSuperclass.class);
-        assertTrue(res instanceof MappedSuperclassType);
+        assertTrue(res.getType() instanceof MappedSuperclassType);
     }
 }
