@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import cz.cvut.kbss.jopa.model.ic.AtomicSubClassConstraint;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
@@ -35,6 +36,11 @@ public class ICSatisfiabilityChecker implements IntegrityConstraintVisitor {
 	public ICSatisfiabilityChecker(final OWLReasoner r, final OWLDataFactory f) {
 		this.f = f;
 		this.r = r;
+	}
+
+	@Override
+	public void visit(AtomicSubClassConstraint cpc) {
+		result = r.isEntailed(f.getOWLSubClassOfAxiom(cpc.getSubClass(),cpc.getSupClass()));
 	}
 
 	public void visit(DataParticipationConstraint cpc) {

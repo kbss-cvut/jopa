@@ -14,19 +14,30 @@
  */
 package cz.cvut.kbss.jopa.model.ic;
 
-public interface IntegrityConstraintVisitor {
+import org.semanticweb.owlapi.model.OWLClass;
 
-	void visit(final AtomicSubClassConstraint cpc);
+public class AtomicSubClassConstraintImpl implements AtomicSubClassConstraint {
 
-	void visit(final DataParticipationConstraint cpc);
+	final OWLClass sub;
+	final OWLClass sup;
 
-	void visit(final ObjectParticipationConstraint cpc);
+	AtomicSubClassConstraintImpl(OWLClass sub, OWLClass sup) {
+		this.sub = sub;
+		this.sup = sup;
+	}
 
-	void visit(final ObjectDomainConstraint cpc);
+	@Override
+	public OWLClass getSupClass() {
+		return sup;
+	}
 
-	void visit(final ObjectRangeConstraint cpc);
+	@Override
+	public OWLClass getSubClass() {
+		return sub;
+	}
 
-	void visit(final DataDomainConstraint cpc);
-
-	void visit(final DataRangeConstraint cpc);
+	@Override
+	public void accept(IntegrityConstraintVisitor visitor) {
+		visitor.visit(this);
+	}
 }

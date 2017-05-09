@@ -21,6 +21,11 @@ import org.semanticweb.owlapi.model.OWLObjectProperty;
 
 public class IntegrityConstraintFactory {
 
+	public static AtomicSubClassConstraint SubClassConstraint(
+		final OWLClass sub, final OWLClass sup) {
+		return new AtomicSubClassConstraintImpl(sub, sup);
+	}
+
 	public static DataParticipationConstraint MinDataParticipationConstraint(
 			final OWLClass s, final OWLDataProperty p, final OWLDatatype o,
 			final int card) {

@@ -217,6 +217,28 @@ public class OWL2JavaTransformerTest {
                 "@ParticipationConstraint(owlObjectIRI = \"" + XSDVocabulary.STRING.getIRI().toString() + "\""));
     }
 
+    @Test
+    public void transformGeneratesSubClass() throws Exception {
+        final File targetDir = getTempDirectory();
+        assertEquals(0, targetDir.listFiles().length);
+        transformer.setOntology(IC_ONTOLOGY_IRI, mappingFilePath, true);
+        transformer.transform(CONTEXT, PACKAGE, targetDir.getAbsolutePath(), true);
+        final List<String> generatedClass = getGeneratedClass(targetDir, "Organization");
+
+        final String classDeclaration = getExtendsClassDeclaration(generatedClass);
+        assertTrue(classDeclaration.contains("extends Agent"));
+    }
+
+    private String getExtendsClassDeclaration(List<String> classFileLines) throws Exception {
+        int i;
+        for (i = 0; i < classFileLines.size(); i++) {
+            if (classFileLines.get(i).startsWith("public class")) {
+                break;
+            }
+        }
+        return classFileLines.get(i+1);
+    }
+
     private List<String> getGeneratedClass(File directory, String className) throws Exception {
         final File path = new File(
                 directory.getAbsolutePath() + File.separator + PACKAGE.replace(".", File.separator) + File.separator +

@@ -14,8 +14,11 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -126,6 +129,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
     // private Map<OWLObjectProperty, DataRangeConstraint> drConstraints = new
     // HashMap<OWLObjectProperty, DataRangeConstraint>();
 
+    private Map<OWLClass, List<IntegrityConstraint>> cConstraints = new HashMap<>();
     private Map<OWLClass, Map<OWLObjectProperty, Set<IntegrityConstraint>>> opConstraints = new HashMap<>();
     private Map<OWLClass, Map<OWLDataProperty, Set<IntegrityConstraint>>> dpConstraints = new HashMap<>();
 
@@ -355,19 +359,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 
     public void visit(OWLSubClassOfAxiom axiom) {
         try {
-            if (!axiom.getSubClass().isAnonymous()
-                    && !axiom.getSuperClass().isAnonymous()) {
-                // OWLClass supC = superClasses.get(axiom.getSubClass());
-                // if (supC == null) {
-                // superClasses.put(axiom.getSubClass().asOWLClass(), axiom
-                // .getSuperClass().asOWLClass());
-                // } else {
-                // notSupported(
-                // "Multiple inheritance not allowed in Java OO model",
-                // axiom);
-                // }
-                notSupported(axiom);
-            } else if (!axiom.getSubClass().isAnonymous()) {
+            if (!axiom.getSubClass().isAnonymous()) {
                 processParticipationConstraint(axiom.getSubClass().asOWLClass(),
                         axiom.getSuperClass());
             } else {
@@ -459,22 +451,26 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         Map<OWLObjectProperty, Set<IntegrityConstraint>> setOP2 = opConstraints
                 .get(subjClass);
         if (setOP2 == null) {
-            setOP2 = new HashMap<OWLObjectProperty, Set<IntegrityConstraint>>();
+            setOP2 = new HashMap<>();
             opConstraints.put(subjClass, setOP2);
         }
+        final Map<OWLObjectProperty, Set<IntegrityConstraint>> mapOP = setOP2;
+
         Map<OWLDataProperty, Set<IntegrityConstraint>> setDP2 = dpConstraints
                 .get(subjClass);
         if (setDP2 == null) {
-            setDP2 = new HashMap<OWLDataProperty, Set<IntegrityConstraint>>();
+            setDP2 = new HashMap<>();
             dpConstraints.put(subjClass, setDP2);
         }
-
-        // final Map<OWLObjectProperty, Set<ObjectParticipationConstraint>>
-        // mapOP = setOP2;
-        // final Map<OWLDataProperty, Set<DataParticipationConstraint>> mapDP =
-        // setDP2;
-        final Map<OWLObjectProperty, Set<IntegrityConstraint>> mapOP = setOP2;
         final Map<OWLDataProperty, Set<IntegrityConstraint>> mapDP = setDP2;
+
+        List<IntegrityConstraint> setCx = cConstraints
+            .get(subjClass);
+        if (setCx == null) {
+            setCx = new ArrayList<>();
+            cConstraints.put(subjClass, setCx);
+        }
+        final List<IntegrityConstraint> setC = setCx;
 
         final OWLClassExpressionVisitor v = new OWLClassExpressionVisitor() {
 
@@ -486,7 +482,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 
                     Set<IntegrityConstraint> dpc = mapDP.get(dp);
                     if (dpc == null) {
-                        dpc = new HashSet<IntegrityConstraint>();
+                        dpc = new HashSet<>();
                         mapDP.put(dp, dpc);
                     }
 
@@ -506,7 +502,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 
                     Set<IntegrityConstraint> dpc = mapDP.get(dp);
                     if (dpc == null) {
-                        dpc = new HashSet<IntegrityConstraint>();
+                        dpc = new HashSet<>();
                         mapDP.put(dp, dpc);
                     }
 
@@ -790,29 +786,19 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
             }
 
             public void visit(OWLClass arg0) {
-                notSupported(arg0);
+                setC.add(IntegrityConstraintFactory.SubClassConstraint(subjClass, arg0));
             }
         };
         superClass.accept(v);
     }
 
-    // public OWLClass getSuperClass(final OWLClass subClass) {
-    // OWLClass superClass = superClasses.get(subClass);
-    // // if (superClass == null) {
-    // // superClass = f.getOWLThing();
-    // // }
-    // return superClass;
-    // }
-
-    interface ClassDataPropertyComputer {
-
-        public Card getCard();
-
-        public OWLDatatype getFiller();
-
-        public Set<DataParticipationConstraint> getParticipationConstraints();
+    public List<IntegrityConstraint> getClassIntegrityConstraints(final OWLClass cls) {
+        if (cConstraints.containsKey(cls)) {
+            return cConstraints.get(cls);
+        } else {
+            return Collections.emptyList();
+        }
     }
-
 
     public ClassDataPropertyComputer getClassDataPropertyComputer(
             final OWLClass clazz, final OWLDataProperty prop,

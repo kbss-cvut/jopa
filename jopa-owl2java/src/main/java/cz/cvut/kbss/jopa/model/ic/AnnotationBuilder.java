@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.model.ic;
 
+import cz.cvut.kbss.jopa.model.annotations.OWLClass;
 import java.lang.annotation.Annotation;
 
 import com.sun.codemodel.JAnnotationUse;
@@ -36,7 +37,11 @@ public class AnnotationBuilder implements IntegrityConstraintVisitor {
 		return annotation;
 	}
 
-	
+
+	@Override
+	public void visit(AtomicSubClassConstraint cpc) {
+	}
+
 	public void visit(DataParticipationConstraint cpc) {
 		a.annotate(ParticipationConstraint.class).param("owlObjectIRI",
 						cpc.getObject().getIRI().toString()).param(
