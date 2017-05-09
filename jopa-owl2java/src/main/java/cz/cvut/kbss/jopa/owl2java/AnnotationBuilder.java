@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import com.sun.codemodel.JAnnotationUse;
 import cz.cvut.kbss.jopa.ic.api.AtomicSubClassConstraint;
 import cz.cvut.kbss.jopa.ic.api.DataDomainConstraint;
 import cz.cvut.kbss.jopa.ic.api.DataParticipationConstraint;
@@ -22,61 +23,62 @@ import cz.cvut.kbss.jopa.ic.api.IntegrityConstraintVisitor;
 import cz.cvut.kbss.jopa.ic.api.ObjectDomainConstraint;
 import cz.cvut.kbss.jopa.ic.api.ObjectParticipationConstraint;
 import cz.cvut.kbss.jopa.ic.api.ObjectRangeConstraint;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import cz.cvut.kbss.jopa.model.annotations.DomainOf;
+import cz.cvut.kbss.jopa.model.annotations.ParticipationConstraint;
+import cz.cvut.kbss.jopa.model.annotations.RangeOf;
+import java.lang.annotation.Annotation;
 
-public class ICSatisfiabilityChecker implements IntegrityConstraintVisitor {
+public class AnnotationBuilder implements IntegrityConstraintVisitor {
 
-    private OWLReasoner r;
-    private OWLDataFactory f;
+    private JAnnotationUse a;
 
-    private boolean result;
+    private Annotation annotation = null;
 
-    public ICSatisfiabilityChecker(final OWLReasoner r, final OWLDataFactory f) {
-        this.f = f;
-        this.r = r;
+    AnnotationBuilder(final JAnnotationUse a) {
+        this.a = a;
     }
+
+    public Annotation getAnnotation() {
+        return annotation;
+    }
+
 
     @Override
     public void visit(AtomicSubClassConstraint cpc) {
-        result = r.isEntailed(f.getOWLSubClassOfAxiom(cpc.getSubClass(), cpc.getSupClass()));
     }
 
     public void visit(DataParticipationConstraint cpc) {
-        result = r.isSatisfiable(f.getOWLObjectIntersectionOf(cpc.getSubject(),
-            f.getOWLDataMaxCardinality(cpc.getMax(), cpc.getPredicate(),
-                cpc.getObject()), f.getOWLDataMinCardinality(cpc
-                .getMin(), cpc.getPredicate())));
+        a.annotate(ParticipationConstraint.class).param("owlObjectIRI",
+            cpc.getObject().getIRI().toString()).param(
+            "min", cpc.getMin()).param("max", cpc.getMax());
     }
+
 
     public void visit(ObjectParticipationConstraint cpc) {
-        result = r.isSatisfiable(f.getOWLObjectIntersectionOf(cpc.getSubject(),
-            f.getOWLObjectMaxCardinality(cpc.getMax(), cpc.getPredicate(),
-                cpc.getObject()), f.getOWLObjectMinCardinality(cpc
-                .getMin(), cpc.getPredicate())));
+        a.annotate(ParticipationConstraint.class).param("owlObjectIRI",
+            cpc.getObject().getIRI().toString()).param(
+            "min", cpc.getMin()).param("max", cpc.getMax());
     }
 
-    public boolean getResult() {
-        return result;
-    }
 
     public void visit(ObjectDomainConstraint cpc) {
-        // TODO Auto-generated method stub
-
+        a.annotate(DomainOf.class).param("owlPropertyIRI()",
+            cpc.getProperty().getIRI().toString());
     }
+
 
     public void visit(ObjectRangeConstraint cpc) {
-        // TODO Auto-generated method stub
-
+        a.annotate(RangeOf.class).param("owlPropertyIRI()",
+            cpc.getProperty().getIRI().toString());
     }
+
 
     public void visit(DataDomainConstraint cpc) {
-        // TODO Auto-generated method stub
-
+        a.annotate(DomainOf.class).param("owlPropertyIRI()",
+            cpc.getProperty().getIRI().toString());
     }
 
-    public void visit(DataRangeConstraint cpc) {
-        // TODO Auto-generated method stub
 
+    public void visit(DataRangeConstraint cpc) {
     }
 }

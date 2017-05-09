@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,6 +14,19 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import cz.cvut.kbss.jopa.ic.api.AtomicSubClassConstraint;
+import cz.cvut.kbss.jopa.ic.api.DataDomainConstraint;
+import cz.cvut.kbss.jopa.ic.api.DataParticipationConstraint;
+import cz.cvut.kbss.jopa.ic.api.DataRangeConstraint;
+import cz.cvut.kbss.jopa.ic.api.IntegrityConstraint;
+import cz.cvut.kbss.jopa.ic.api.IntegrityConstraintFactory;
+import cz.cvut.kbss.jopa.ic.api.IntegrityConstraintVisitor;
+import cz.cvut.kbss.jopa.ic.api.ObjectDomainConstraint;
+import cz.cvut.kbss.jopa.ic.api.ObjectParticipationConstraint;
+import cz.cvut.kbss.jopa.ic.api.ObjectRangeConstraint;
+import cz.cvut.kbss.jopa.ic.impl.IntegrityConstraintFactoryImpl;
+import cz.cvut.kbss.jopa.model.SequencesVocabulary;
+import cz.cvut.kbss.jopa.owl2java.OWL2JavaTransformer.Card;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,8 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
@@ -34,20 +45,11 @@ import org.semanticweb.owlapi.model.OWLAxiomVisitor;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLClassExpressionVisitor;
-import org.semanticweb.owlapi.model.OWLDataAllValuesFrom;
-import org.semanticweb.owlapi.model.OWLDataExactCardinality;
 import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLDataHasValue;
-import org.semanticweb.owlapi.model.OWLDataMaxCardinality;
-import org.semanticweb.owlapi.model.OWLDataMinCardinality;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLDataPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLDataPropertyDomainAxiom;
-import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
 import org.semanticweb.owlapi.model.OWLDataPropertyRangeAxiom;
-import org.semanticweb.owlapi.model.OWLDataRange;
-import org.semanticweb.owlapi.model.OWLDataSomeValuesFrom;
 import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLDatatypeDefinitionAxiom;
 import org.semanticweb.owlapi.model.OWLDeclarationAxiom;
@@ -70,22 +72,10 @@ import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLNegativeDataPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLNegativeObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLObjectAllValuesFrom;
-import org.semanticweb.owlapi.model.OWLObjectComplementOf;
-import org.semanticweb.owlapi.model.OWLObjectExactCardinality;
-import org.semanticweb.owlapi.model.OWLObjectHasSelf;
-import org.semanticweb.owlapi.model.OWLObjectHasValue;
-import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
-import org.semanticweb.owlapi.model.OWLObjectMaxCardinality;
-import org.semanticweb.owlapi.model.OWLObjectMinCardinality;
-import org.semanticweb.owlapi.model.OWLObjectOneOf;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLObjectPropertyDomainAxiom;
-import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLObjectPropertyRangeAxiom;
-import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
-import org.semanticweb.owlapi.model.OWLObjectUnionOf;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLReflexiveObjectPropertyAxiom;
 import org.semanticweb.owlapi.model.OWLSameIndividualAxiom;
@@ -97,14 +87,6 @@ import org.semanticweb.owlapi.model.OWLSubPropertyChainOfAxiom;
 import org.semanticweb.owlapi.model.OWLSymmetricObjectPropertyAxiom;
 import org.semanticweb.owlapi.model.OWLTransitiveObjectPropertyAxiom;
 import org.semanticweb.owlapi.model.SWRLRule;
-
-import cz.cvut.kbss.jopa.model.ic.DataParticipationConstraint;
-import cz.cvut.kbss.jopa.model.ic.DataRangeConstraint;
-import cz.cvut.kbss.jopa.model.ic.IntegrityConstraint;
-import cz.cvut.kbss.jopa.model.ic.IntegrityConstraintFactory;
-import cz.cvut.kbss.jopa.model.ic.ObjectParticipationConstraint;
-import cz.cvut.kbss.jopa.model.ic.ObjectRangeConstraint;
-import cz.cvut.kbss.jopa.owl2java.OWL2JavaTransformer.Card;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,23 +124,21 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 
     private ContextDefinition ctx;
 
+    private IntegrityConstraintFactory integrityConstraintFactory = new IntegrityConstraintFactoryImpl();
+
     public IntegrityConstraintParserImpl(final OWLDataFactory f, final ContextDefinition ctx) {
         this.ctx = ctx;
         this.f = f;
+    }
+
+    private static void notSupported(final OWLObject o) {
+        LOG.info("Ignoring Unsupported Axiom : {}", o);
     }
 
     public void parse() {
         for (final OWLAxiom a : ctx.axioms) {
             a.accept(this);
         }
-    }
-
-    private static void notSupported(String message, final OWLObject o) {
-        LOG.info(message + " : " + o);
-    }
-
-    private static void notSupported(final OWLObject o) {
-        notSupported("Ignoring Unsupported Axiom", o);
     }
 
     public void visit(OWLAnnotationPropertyRangeAxiom axiom) {
@@ -276,18 +256,18 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
             // ic.addAll(processParticipationConstraint(f.getOWLThing(), f
             // .getOWLObjectMaxCardinality(1, axiom.getProperty())));
 
-            OWLObjectProperty op = ensureObjectProperty(axiom.getProperty());
-            OWLClass clz = ensureClass(axiom.getRange());
+            OWLObjectProperty op = Utils.ensureObjectProperty(axiom.getProperty());
+            OWLClass clz = Utils.ensureClass(axiom.getRange());
             // ObjectRangeConstraint c = orConstraints.get(op);
             // if (c == null) {
-            // orConstraints.put(op, IntegrityConstraintFactory
+            // orConstraints.put(op, IntegrityConstraintFactoryImpl
             // .ObjectPropertyRangeConstraint(f.getOWLThing(), op, clz));
             // } else {
             // notSupported("Multiple ranges not supported", axiom);
             // }
 
             processParticipationConstraint(f.getOWLThing(),
-                    f.getOWLObjectAllValuesFrom(op, clz));
+                f.getOWLObjectAllValuesFrom(op, clz));
         } catch (UnsupportedICException e) {
             notSupported(axiom);
         }
@@ -322,7 +302,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         // odConstraints.put(op, c);
         // }
         //
-        // c.add(IntegrityConstraintFactory
+        // c.add(IntegrityConstraintFactoryImpl
         // .ObjectPropertyDomainConstraint(op, clz));
         notSupported(axiom);
     }
@@ -336,7 +316,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         // ddConstraints.put(op, c);
         // }
         //
-        // c.add(IntegrityConstraintFactory.DataPropertyDomainConstraint(op,
+        // c.add(IntegrityConstraintFactoryImpl.DataPropertyDomainConstraint(op,
         // clz));
         notSupported(axiom);
     }
@@ -361,7 +341,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         try {
             if (!axiom.getSubClass().isAnonymous()) {
                 processParticipationConstraint(axiom.getSubClass().asOWLClass(),
-                        axiom.getSuperClass());
+                    axiom.getSuperClass());
             } else {
                 notSupported(axiom);
             }
@@ -399,57 +379,9 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         });
     }
 
-    private OWLDatatype ensureDatatype(final OWLDataRange r)
-            throws UnsupportedICException {
-        if (!r.isDatatype()) {
-            throw new UnsupportedICException("Data ranges not supported: " + r);
-        }
-
-        if (!r.asOWLDatatype().isBuiltIn()) {
-            throw new UnsupportedICException(
-                    "Only built in datatypes are supported: " + r);
-        }
-
-        return r.asOWLDatatype();
-    }
-
-    private static OWLClass ensureClass(final OWLClassExpression r) {
-        if (!r.isAnonymous()) {
-            return r.asOWLClass();
-        }
-        throw new UnsupportedICException("Only named classes are supported: " + r);
-    }
-
-    // private void ensureNamedIndividual(final OWLIndividual r)
-    // throws RuntimeException {
-    // if (r.isAnonymous()) {
-    // throw new RuntimeException("Anonymous individuals not supported: "
-    // + r);
-    // }
-    // }
-
-    private static OWLDataProperty ensureDataProperty(final OWLDataPropertyExpression e) {
-        if (e.isAnonymous()) {
-            throw new UnsupportedICException(
-                    "Data property expressions not supported: " + e);
-        }
-
-        return e.asOWLDataProperty();
-    }
-
-    private static OWLObjectProperty ensureObjectProperty(
-            final OWLObjectPropertyExpression e) throws UnsupportedICException {
-        if (e.isAnonymous()) {
-            throw new UnsupportedICException(
-                    "Object property expressions not supported: " + e);
-        }
-
-        return e.asOWLObjectProperty();
-    }
-
     private void processParticipationConstraint(final OWLClass subjClass, final OWLClassExpression superClass) {
         Map<OWLObjectProperty, Set<IntegrityConstraint>> setOP2 = opConstraints
-                .get(subjClass);
+            .get(subjClass);
         if (setOP2 == null) {
             setOP2 = new HashMap<>();
             opConstraints.put(subjClass, setOP2);
@@ -457,7 +389,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         final Map<OWLObjectProperty, Set<IntegrityConstraint>> mapOP = setOP2;
 
         Map<OWLDataProperty, Set<IntegrityConstraint>> setDP2 = dpConstraints
-                .get(subjClass);
+            .get(subjClass);
         if (setDP2 == null) {
             setDP2 = new HashMap<>();
             dpConstraints.put(subjClass, setDP2);
@@ -472,324 +404,65 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         }
         final List<IntegrityConstraint> setC = setCx;
 
-        final OWLClassExpressionVisitor v = new OWLClassExpressionVisitor() {
+        final IntegrityConstraintPopulator icp = new IntegrityConstraintPopulator(subjClass, integrityConstraintFactory);
+        superClass.accept(icp);
 
-            public void visit(OWLDataMaxCardinality arg0) {
-                try {
-                    final OWLDatatype dt = ensureDatatype(arg0.getFiller());
-                    final OWLDataProperty dp = ensureDataProperty(arg0
-                            .getProperty());
+        icp.getIntegrityConstraints().forEach((ic) -> {
+            ic.accept(new IntegrityConstraintVisitor() {
+                @Override
+                public void visit(AtomicSubClassConstraint cpc) {
+                    setC.add(cpc);
+                }
 
-                    Set<IntegrityConstraint> dpc = mapDP.get(dp);
-                    if (dpc == null) {
-                        dpc = new HashSet<>();
-                        mapDP.put(dp, dpc);
+                @Override
+                public void visit(DataParticipationConstraint cpc) {
+                    if (!mapDP.containsKey(cpc.getPredicate())) {
+                        mapDP.put(cpc.getPredicate(), new HashSet<>());
                     }
-
-                    dpc.add(IntegrityConstraintFactory
-                            .MaxDataParticipationConstraint(subjClass, dp, dt,
-                                    arg0.getCardinality()));
-                } catch (UnsupportedICException e) {
-                    notSupported(arg0);
+                    mapDP.get(cpc.getPredicate()).add(cpc);
                 }
-            }
 
-            public void visit(OWLDataExactCardinality arg0) {
-                try {
-                    final OWLDatatype dt = ensureDatatype(arg0.getFiller());
-                    final OWLDataProperty dp = ensureDataProperty(arg0
-                            .getProperty());
-
-                    Set<IntegrityConstraint> dpc = mapDP.get(dp);
-                    if (dpc == null) {
-                        dpc = new HashSet<>();
-                        mapDP.put(dp, dpc);
+                @Override
+                public void visit(ObjectParticipationConstraint cpc) {
+                    if (!mapOP.containsKey(cpc.getPredicate())) {
+                        mapOP.put(cpc.getPredicate(), new HashSet<>());
                     }
-
-                    dpc.add(IntegrityConstraintFactory.DataParticipationConstraint(
-                            subjClass, dp, dt, arg0.getCardinality(),
-                            arg0.getCardinality()));
-                } catch (UnsupportedICException e) {
-                    notSupported(arg0);
+                    mapOP.get(cpc.getPredicate()).add(cpc);
                 }
-            }
 
-            // private void processDataCardinality(final int minCardinality,
-            // final int maxCardinality, OWLDataProperty p,
-            // final OWLDatatype c) {
-            //
-            // final Set<OWLDatatype> validRanges = new HashSet<OWLDatatype>();
-            //
-            // for (final OWLDatatype cc : o.getDatatypesInSignature()) {
-            // if (r.isEntailed(f.getOWLDataPropertyRangeAxiom(p, cc))) {
-            // validRanges.add(cc);
-            // }
-            // }
-            //
-            // if (validRanges.isEmpty()) {
-            // validRanges.add(c);
-            // }
-            //
-            // // infer cardinality
-            // for (final OWLDatatype cc : validRanges) {
-            // if ((maxCardinality > 1)
-            // && r.isEntailed(f.getOWLSubClassOfAxiom(subjClass,
-            // f.getOWLDataMaxCardinality(1, p
-            // .asOWLDataProperty(), cc)))
-            // || r.isEntailed(f
-            // .getOWLFunctionalDataPropertyAxiom(p
-            // .asOWLDataProperty()))) {
-            //
-            // set.add(IntegrityConstraintFactory
-            // .datatypeParticipationConstraint(subjClass, p,
-            // cc, minCardinality, 1));
-            // } else {
-            // // must be consistent
-            //
-            // set.add(IntegrityConstraintFactory
-            // .datatypeParticipationConstraint(subjClass, p,
-            // cc, minCardinality, maxCardinality));
-            // }
-            // }
-            // }
-
-            public void visit(OWLDataMinCardinality arg0) {
-                try {
-                    final OWLDatatype dt = ensureDatatype(arg0.getFiller());
-                    final OWLDataProperty dp = ensureDataProperty(arg0
-                            .getProperty());
-
-                    Set<IntegrityConstraint> dpc = mapDP.get(dp);
-                    if (dpc == null) {
-                        dpc = new HashSet<IntegrityConstraint>();
-                        mapDP.put(dp, dpc);
+                @Override
+                public void visit(ObjectDomainConstraint cpc) {
+                    if (!mapOP.containsKey(cpc.getProperty())) {
+                        mapOP.put(cpc.getProperty(), new HashSet<>());
                     }
-
-                    dpc.add(IntegrityConstraintFactory
-                            .MinDataParticipationConstraint(subjClass, dp, dt,
-                                    arg0.getCardinality()));
-                } catch (UnsupportedICException e) {
-                    notSupported(arg0);
+                    mapOP.get(cpc.getProperty()).add(cpc);
                 }
-            }
 
-            public void visit(OWLDataHasValue arg0) {
-                notSupported(arg0);
-                // ensureDataProperty(arg0.getProperty());
-                //
-                // set.add(IntegrityConstraintFactory
-                // .datatypeParticipationConstraint(subjClass, arg0
-                // .getProperty().asOWLDataProperty(), f
-                // .getOWLDataOneOf(arg0.getValue()), 1, 1));
-            }
-
-            public void visit(OWLDataAllValuesFrom arg0) {
-                try {
-                    OWLDataProperty op = ensureDataProperty(arg0.getProperty());
-                    OWLDatatype clz = ensureDatatype(arg0.getFiller());
-
-                    Set<IntegrityConstraint> opc = mapDP.get(op);
-                    if (opc == null) {
-                        opc = new HashSet<IntegrityConstraint>();
-                        mapDP.put(op, opc);
+                @Override
+                public void visit(ObjectRangeConstraint cpc) {
+                    if (!mapOP.containsKey(cpc.getProperty())) {
+                        mapOP.put(cpc.getProperty(), new HashSet<>());
                     }
-                    opc.add(IntegrityConstraintFactory.DataPropertyRangeConstraint(
-                            subjClass, op, clz));
-                } catch (UnsupportedICException e) {
-                    notSupported(arg0);
+                    mapOP.get(cpc.getProperty()).add(cpc);
                 }
-            }
 
-            public void visit(OWLDataSomeValuesFrom arg0) {
-                try {
-                    final OWLDatatype dt = ensureDatatype(arg0.getFiller());
-                    final OWLDataProperty dp = ensureDataProperty(arg0
-                            .getProperty());
-
-                    Set<IntegrityConstraint> dpc = mapDP.get(dp);
-                    if (dpc == null) {
-                        dpc = new HashSet<IntegrityConstraint>();
-                        mapDP.put(dp, dpc);
+                @Override
+                public void visit(DataDomainConstraint cpc) {
+                    if (!mapDP.containsKey(cpc.getProperty())) {
+                        mapDP.put(cpc.getProperty(), new HashSet<>());
                     }
-
-                    dpc.add(IntegrityConstraintFactory
-                            .MinDataParticipationConstraint(subjClass, dp, dt, 1));
-                } catch (UnsupportedICException e) {
-                    notSupported(arg0);
+                    mapDP.get(cpc.getProperty()).add(cpc);
                 }
-            }
 
-            public void visit(OWLObjectOneOf arg0) {
-                notSupported(arg0);
-            }
-
-            public void visit(OWLObjectHasSelf arg0) {
-                notSupported(arg0);
-            }
-
-            public void visit(OWLObjectMaxCardinality arg0) {
-                try {
-                    OWLClass c = ensureClass(arg0.getFiller());
-                    OWLObjectProperty p = ensureObjectProperty(arg0.getProperty());
-
-                    Set<IntegrityConstraint> opc = mapOP.get(p);
-                    if (opc == null) {
-                        opc = new HashSet<IntegrityConstraint>();
-                        mapOP.put(p, opc);
+                @Override
+                public void visit(DataRangeConstraint cpc) {
+                    if (!mapDP.containsKey(cpc.getProperty())) {
+                        mapDP.put(cpc.getProperty(), new HashSet<>());
                     }
-
-                    opc.add(IntegrityConstraintFactory
-                            .MaxObjectParticipationConstraint(subjClass, p, c,
-                                    arg0.getCardinality()));
-                } catch (UnsupportedICException e) {
-                    notSupported(arg0);
+                    mapDP.get(cpc.getProperty()).add(cpc);
                 }
-            }
-
-            public void visit(OWLObjectExactCardinality arg0) {
-                try {
-                    OWLClass c = ensureClass(arg0.getFiller());
-                    OWLObjectProperty p = ensureObjectProperty(arg0.getProperty());
-
-                    Set<IntegrityConstraint> opc = mapOP.get(p);
-                    if (opc == null) {
-                        opc = new HashSet<IntegrityConstraint>();
-                        mapOP.put(p, opc);
-                    }
-
-                    opc.add(IntegrityConstraintFactory
-                            .ObjectParticipationConstraint(subjClass, p, c,
-                                    arg0.getCardinality(), arg0.getCardinality()));
-                } catch (UnsupportedICException e) {
-                    notSupported(arg0);
-                }
-            }
-
-            // private void processObjectMinCardinality(final int cardinality,
-            // OWLObjectProperty p, final OWLClass c) {
-            //
-            // // infer range
-            // final NodeSet<OWLClass> nSet = r.getObjectPropertyRanges(p,
-            // false);
-            //
-            // final Set<OWLClass> validRanges = new HashSet<OWLClass>();
-            //
-            // for (final OWLClass cc : nSet.getFlattened()) {
-            // if (r.isEntailed(f.getOWLSubClassOfAxiom(cc, c))) {
-            // validRanges.add(cc);
-            // }
-            // }
-            //
-            // if (validRanges.isEmpty()) {
-            // validRanges.add(c);
-            // }
-            //
-            // // infer cardinality
-            // for (final OWLClass cc : validRanges) {
-            // if (r.isEntailed(f.getOWLSubClassOfAxiom(subjClass, f
-            // .getOWLObjectMaxCardinality(cardinality, p
-            // .asOWLObjectProperty(), cc)))
-            // || r.isEntailed(f
-            // .getOWLFunctionalObjectPropertyAxiom(p
-            // .asOWLObjectProperty()))) {
-            // set.add(IntegrityConstraintFactory
-            // .classParticipationConstraint(subjClass, p, cc,
-            // cardinality, cardinality));
-            // } else {
-            // // must be consistent
-            // set.add(IntegrityConstraintFactory
-            // .classParticipationConstraint(subjClass, p, cc,
-            // cardinality, Integer.MAX_VALUE));
-            // }
-            // }
-            // }
-
-            public void visit(OWLObjectMinCardinality arg0) {
-                try {
-                    OWLClass c = ensureClass(arg0.getFiller());
-                    OWLObjectProperty p = ensureObjectProperty(arg0.getProperty());
-
-                    Set<IntegrityConstraint> opc = mapOP.get(p);
-                    if (opc == null) {
-                        opc = new HashSet<IntegrityConstraint>();
-                        mapOP.put(p, opc);
-                    }
-
-                    opc.add(IntegrityConstraintFactory
-                            .MinObjectParticipationConstraint(subjClass, p, c,
-                                    arg0.getCardinality()));
-                } catch (UnsupportedICException e) {
-                    notSupported(arg0);
-                }
-            }
-
-            public void visit(OWLObjectHasValue arg0) {
-                notSupported(arg0);
-                // ensureObjectProperty(arg0.getProperty());
-                // ensureNamedIndividual(arg0.getValue());
-                //
-                // set.add(IntegrityConstraintFactory
-                // .classParticipationConstraint(subjClass, arg0
-                // .getProperty().asOWLObjectProperty(), f
-                // .getOWLObjectOneOf(arg0.getValue()
-                // .asOWLNamedIndividual()), 1, 1));
-            }
-
-            public void visit(OWLObjectAllValuesFrom arg0) {
-                try {
-                    // System.out.println("Found ICX: " + c);
-                    OWLObjectProperty op = ensureObjectProperty(arg0.getProperty());
-                    OWLClass clz = ensureClass(arg0.getFiller());
-
-                    Set<IntegrityConstraint> opc = mapOP.get(op);
-                    if (opc == null) {
-                        opc = new HashSet<IntegrityConstraint>();
-                        mapOP.put(op, opc);
-                    }
-                    opc.add(IntegrityConstraintFactory
-                            .ObjectPropertyRangeConstraint(subjClass, op, clz));
-                } catch (UnsupportedICException e) {
-                    notSupported(arg0);
-                }
-            }
-
-            public void visit(OWLObjectSomeValuesFrom arg0) {
-                try {
-                    OWLClass c = ensureClass(arg0.getFiller());
-                    OWLObjectProperty p = ensureObjectProperty(arg0.getProperty());
-
-                    Set<IntegrityConstraint> opc = mapOP.get(p);
-                    if (opc == null) {
-                        opc = new HashSet<IntegrityConstraint>();
-                        mapOP.put(p, opc);
-                    }
-
-                    opc.add(IntegrityConstraintFactory
-                            .MinObjectParticipationConstraint(subjClass, p, c, 1));
-                } catch (UnsupportedICException e) {
-                    notSupported(arg0);
-                }
-            }
-
-            public void visit(OWLObjectComplementOf arg0) {
-                notSupported(arg0);
-            }
-
-            public void visit(OWLObjectUnionOf arg0) {
-                notSupported(arg0);
-            }
-
-            public void visit(OWLObjectIntersectionOf arg0) {
-                for (final OWLClassExpression e : arg0.getOperands()) {
-                    e.accept(this);
-                }
-            }
-
-            public void visit(OWLClass arg0) {
-                setC.add(IntegrityConstraintFactory.SubClassConstraint(subjClass, arg0));
-            }
-        };
-        superClass.accept(v);
+            });
+        });
     }
 
     public List<IntegrityConstraint> getClassIntegrityConstraints(final OWLClass cls) {
@@ -801,12 +474,12 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
     }
 
     public ClassDataPropertyComputer getClassDataPropertyComputer(
-            final OWLClass clazz, final OWLDataProperty prop,
-            final OWLOntology merged) {
+        final OWLClass clazz, final OWLDataProperty prop,
+        final OWLOntology merged) {
         final Set<IntegrityConstraint> ics = new HashSet<IntegrityConstraint>();
 
         final Map<OWLDataProperty, Set<IntegrityConstraint>> constraints = dpConstraints
-                .get(clazz);
+            .get(clazz);
         if (constraints != null && constraints.containsKey(prop)) {
             ics.addAll(constraints.get(prop));
         }
@@ -820,15 +493,15 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
 
                 for (DataParticipationConstraint opc : getParticipationConstraints()) {
                     if (!(clazz.equals(opc.getSubject()) && prop.equals(opc
-                            .getPredicate()))) {
+                        .getPredicate()))) {
                         continue;
                     }
 
                     OWLDatatype dt1 = getFiller();
                     OWLDatatype dt2 = opc.getObject();
                     if (dt1.equals(dt2)
-                            || dt2.equals(OWLManager.getOWLDataFactory()
-                                                    .getTopDatatype())) {
+                        || dt2.equals(OWLManager.getOWLDataFactory()
+                        .getTopDatatype())) {
                         if (opc.getMax() == 1) {
                             return Card.ONE;
                         }
@@ -872,7 +545,7 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         ClassObjectPropertyComputer(final OWLClass clazz, final OWLObjectProperty prop,
                                     final OWLOntology merged) {
             final Map<OWLObjectProperty, Set<IntegrityConstraint>> constraints = opConstraints
-                    .get(clazz);
+                .get(clazz);
             ics = new HashSet<>();
             if (constraints != null && constraints.containsKey(prop)) {
                 OWLClass filler = null;
@@ -894,24 +567,24 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
                 final OWLDataFactory f = merged.getOWLOntologyManager().getOWLDataFactory();
 
                 if (filler.getSuperClasses(merged).contains(
-                        f.getOWLClass(org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.c_List)))) {
+                    f.getOWLClass(org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.c_List)))) {
                     object = new ClassObjectPropertyComputer(filler, f.getOWLObjectProperty(
-                            org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.p_element)), merged)
-                            .getObject();
+                        org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.p_element)), merged)
+                        .getObject();
                     card = Card.LIST;
                 } else if (filler.getSuperClasses(merged).contains(
-                        f.getOWLClass(org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.c_OWLSimpleList)))) {
+                    f.getOWLClass(org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.c_OWLSimpleList)))) {
                     object = new ClassObjectPropertyComputer(filler, f.getOWLObjectProperty(
-                            org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.p_hasNext)), merged)
-                            .getObject();
+                        org.semanticweb.owlapi.model.IRI.create(SequencesVocabulary.p_hasNext)), merged)
+                        .getObject();
                     card = Card.SIMPLELIST; // TODO referenced
                 } else {
                     card = Card.MULTIPLE;
                     for (ObjectParticipationConstraint opc : ics) {
                         OWLClass dt2 = opc.getObject();
                         if (filler.equals(dt2)
-                                || dt2.equals(OWLManager.getOWLDataFactory()
-                                                        .getOWLThing())) {
+                            || dt2.equals(OWLManager.getOWLDataFactory()
+                            .getOWLThing())) {
                             if (opc.getMax() == 1) {
                                 card = Card.ONE;
                                 break;
@@ -937,5 +610,3 @@ public class IntegrityConstraintParserImpl implements OWLAxiomVisitor {
         }
     }
 }
-
-

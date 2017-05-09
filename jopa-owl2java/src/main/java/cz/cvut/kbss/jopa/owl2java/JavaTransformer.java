@@ -29,6 +29,9 @@ import com.sun.codemodel.JMod;
 import com.sun.codemodel.JType;
 import com.sun.codemodel.JVar;
 import cz.cvut.kbss.jopa.CommonVocabulary;
+import cz.cvut.kbss.jopa.ic.api.AtomicSubClassConstraint;
+import cz.cvut.kbss.jopa.ic.api.DataParticipationConstraint;
+import cz.cvut.kbss.jopa.ic.api.ObjectParticipationConstraint;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLAnnotationProperty;
 import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
@@ -39,9 +42,6 @@ import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.annotations.Sequence;
 import cz.cvut.kbss.jopa.model.annotations.SequenceType;
 import cz.cvut.kbss.jopa.model.annotations.Types;
-import cz.cvut.kbss.jopa.model.ic.AtomicSubClassConstraint;
-import cz.cvut.kbss.jopa.model.ic.DataParticipationConstraint;
-import cz.cvut.kbss.jopa.model.ic.ObjectParticipationConstraint;
 import static cz.cvut.kbss.jopa.owl2java.Constants.*;
 import cz.cvut.kbss.jopa.owlapi.DatatypeTransformer;
 import java.io.File;
@@ -120,6 +120,23 @@ public class JavaTransformer {
     private Map<OWLEntity, JFieldRef> entities = new HashMap<>();
 
     private Map<OWLClass, JDefinedClass> classes = new HashMap<>();
+
+    private static String validJavaIDForIRI(final IRI iri) {
+        if (iri.getFragment() != null) {
+            return validJavaID(iri.getFragment());
+        } else {
+            int x = iri.toString().lastIndexOf("/");
+            return validJavaID(iri.toString().substring(x + 1));
+        }
+    }
+
+    private static String validJavaID(final String s) {
+        String res = s.trim().replace("-", "_").replace("'", "_quote_").replace(".", "_dot_").replace(',', '_');
+        if (Arrays.binarySearch(KEYWORDS, res) >= 0) {
+            res = "_" + res;
+        }
+        return res;
+    }
 
     private JFieldVar addField(final String name, final JDefinedClass cls,
                                final JType fieldType) {
@@ -317,7 +334,7 @@ public class JavaTransformer {
             final JDefinedClass subj = ensureCreated(context, pkg, cm, clazz, ontology);
 
             context.parser.getClassIntegrityConstraints(clazz).forEach((ic) -> {
-                if ( ic instanceof AtomicSubClassConstraint) {
+                if (ic instanceof AtomicSubClassConstraint) {
                     final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
                     subj._extends(ensureCreated(context, pkg, cm, icc.getSupClass(), ontology));
                 }
@@ -382,24 +399,6 @@ public class JavaTransformer {
 
             entities.put(c, voc.staticRef(fv1));
         }
-    }
-
-    private static String validJavaIDForIRI(final IRI iri) {
-        if (iri.getFragment() != null) {
-            return validJavaID(iri.getFragment());
-        } else {
-            int x = iri.toString().lastIndexOf("/");
-            return validJavaID(iri.toString().substring(x + 1));
-        }
-    }
-
-
-    private static String validJavaID(final String s) {
-        String res = s.trim().replace("-", "_").replace("'", "_quote_").replace(".", "_dot_").replace(',', '_');
-        if (Arrays.binarySearch(KEYWORDS, res) >= 0) {
-            res = "_" + res;
-        }
-        return res;
     }
 
     private String javaClassId(OWLOntology ontology, OWLClass owlClass, ContextDefinition ctx) {

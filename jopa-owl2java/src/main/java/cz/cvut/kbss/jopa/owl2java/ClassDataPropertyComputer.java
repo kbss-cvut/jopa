@@ -1,6 +1,6 @@
 package cz.cvut.kbss.jopa.owl2java;
 
-import cz.cvut.kbss.jopa.model.ic.DataParticipationConstraint;
+import cz.cvut.kbss.jopa.ic.api.DataParticipationConstraint;
 import java.util.Set;
 import org.semanticweb.owlapi.model.OWLDatatype;
 

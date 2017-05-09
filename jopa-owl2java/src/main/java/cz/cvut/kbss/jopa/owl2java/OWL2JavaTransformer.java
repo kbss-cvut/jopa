@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,56 +16,46 @@ package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.model.SequencesVocabulary;
 import cz.cvut.kbss.jopa.util.MappingFileParser;
+import java.io.File;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.OWLAnnotationValueVisitor;
+import org.semanticweb.owlapi.model.OWLAnonymousIndividual;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLEntity;
+import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.net.URI;
-import java.util.*;
-
 public class OWL2JavaTransformer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
-
     public static final String P_IS_INTEGRITY_CONSTRAINT_FOR = "http://krizik.felk.cvut.cz/ontologies/2009/ic.owl#isIntegrityConstraintFor";
-
+    private static final Logger LOG = LoggerFactory.getLogger(OWL2JavaTransformer.class);
     private static final ContextDefinition DEFAULT_CONTEXT = new ContextDefinition("<DEFAULT>");
 
     private static final List<IRI> skipped = Arrays
-            .asList(IRI.create(SequencesVocabulary.c_Collection), IRI.create(SequencesVocabulary.c_List),
-                    IRI.create(SequencesVocabulary.c_OWLSimpleList),
-                    IRI.create(SequencesVocabulary.c_OWLReferencedList));
-
+        .asList(IRI.create(SequencesVocabulary.c_Collection), IRI.create(SequencesVocabulary.c_List),
+            IRI.create(SequencesVocabulary.c_OWLSimpleList),
+            IRI.create(SequencesVocabulary.c_OWLReferencedList));
+    private final ValidContextAnnotationValueVisitor v = new ValidContextAnnotationValueVisitor();
     private OWLOntology ontology;
-
     private Map<String, ContextDefinition> contexts = new HashMap<>();
 
     public Collection<String> listContexts() {
         return contexts.keySet();
     }
-
-    private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {
-        private String name = null;
-
-        String getName() {
-            return name;
-        }
-
-        public void visit(IRI iri) {
-        }
-
-        public void visit(OWLAnonymousIndividual individual) {
-        }
-
-        public void visit(OWLLiteral literal) {
-            name = literal.getLiteral();
-        }
-    }
-
-    private final ValidContextAnnotationValueVisitor v = new ValidContextAnnotationValueVisitor();
 
     private OWLOntology getWholeOntology(final String owlOntologyName, final String mappingFile) {
         // reader
@@ -93,7 +83,7 @@ public class OWL2JavaTransformer {
         try {
             m.loadOntology(org.semanticweb.owlapi.model.IRI.create(owlOntologyName));
             return new OWLOntologyMerger(m)
-                    .createMergedOntology(m, org.semanticweb.owlapi.model.IRI.create(owlOntologyName + "-generated"));
+                .createMergedOntology(m, org.semanticweb.owlapi.model.IRI.create(owlOntologyName + "-generated"));
         } catch (OWLOntologyCreationException e) {
             LOG.error(e.getMessage(), e);
             throw new IllegalArgumentException("Unable to load ontology " + owlOntologyName, e);
@@ -173,14 +163,10 @@ public class OWL2JavaTransformer {
         return contexts;
     }
 
-    enum Card {
-        NO, ONE, MULTIPLE, LIST, SIMPLELIST, REFERENCEDLIST
-    }
-
     private void verifyContextExistence(String context) {
         if (!contexts.containsKey(context)) {
             throw new IllegalArgumentException(
-                    "Context " + context + " not found. Existing contexts: " + listContexts());
+                "Context " + context + " not found. Existing contexts: " + listContexts());
         }
     }
 
@@ -216,6 +202,28 @@ public class OWL2JavaTransformer {
         }
         ContextDefinition def = (context == null) ? DEFAULT_CONTEXT : contexts.get(context);
         new JavaTransformer().
-                generateVocabulary(ontology, def, pkg, targetDir, withOWLAPI);
+            generateVocabulary(ontology, def, pkg, targetDir, withOWLAPI);
+    }
+
+    enum Card {
+        NO, ONE, MULTIPLE, LIST, SIMPLELIST, REFERENCEDLIST
+    }
+
+    private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {
+        private String name = null;
+
+        String getName() {
+            return name;
+        }
+
+        public void visit(IRI iri) {
+        }
+
+        public void visit(OWLAnonymousIndividual individual) {
+        }
+
+        public void visit(OWLLiteral literal) {
+            name = literal.getLiteral();
+        }
     }
 }
