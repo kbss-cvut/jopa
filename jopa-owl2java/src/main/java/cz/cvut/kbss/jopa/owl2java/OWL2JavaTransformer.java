@@ -30,6 +30,7 @@ import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationValueVisitor;
 import org.semanticweb.owlapi.model.OWLAnonymousIndividual;
 import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -91,6 +92,8 @@ public class OWL2JavaTransformer {
     }
 
     private void addAxiomToContext(final ContextDefinition ctx, final OWLAxiom axiom) {
+        final OWLDataFactory f = ontology.getOWLOntologyManager().getOWLDataFactory();
+
         for (final OWLEntity e : axiom.getSignature()) {
             if (e.isOWLClass() && !skipped.contains(e.getIRI())) {
                 ctx.classes.add(e.asOWLClass());
@@ -127,12 +130,18 @@ public class OWL2JavaTransformer {
             }
         }
 
-        DEFAULT_CONTEXT.parser.parse();
+        parse(DEFAULT_CONTEXT.parser, DEFAULT_CONTEXT);
         for (final ContextDefinition ctx : contexts.values()) {
-            ctx.parser.parse();
+            parse(ctx.parser, ctx);
         }
 
         LOG.info("Integrity constraints successfully parsed.");
+    }
+
+    private void parse(final IntegrityConstraintParser parser, final  ContextDefinition ctx ) {
+        for (final OWLAxiom a : ctx.axioms) {
+            a.accept(parser);
+        }
     }
 
     private ContextDefinition getContextDefinition(String icContextName) {
@@ -203,10 +212,6 @@ public class OWL2JavaTransformer {
         ContextDefinition def = (context == null) ? DEFAULT_CONTEXT : contexts.get(context);
         new JavaTransformer().
             generateVocabulary(ontology, def, pkg, targetDir, withOWLAPI);
-    }
-
-    enum Card {
-        NO, ONE, MULTIPLE, LIST, SIMPLELIST, REFERENCEDLIST
     }
 
     private class ValidContextAnnotationValueVisitor implements OWLAnnotationValueVisitor {

@@ -16,20 +16,23 @@ package cz.cvut.kbss.jopa.owl2java;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
 
 class ContextDefinition {
 
-    final Set<OWLClass> classes = new HashSet<>();
-    final Set<org.semanticweb.owlapi.model.OWLObjectProperty> objectProperties = new HashSet<>();
-    final Set<org.semanticweb.owlapi.model.OWLDataProperty> dataProperties = new HashSet<>();
-    final Set<org.semanticweb.owlapi.model.OWLAnnotationProperty> annotationProperties = new HashSet<>();
-    final Set<org.semanticweb.owlapi.model.OWLNamedIndividual> individuals = new HashSet<>();
     final Set<OWLAxiom> axioms = new HashSet<>();
-    final IntegrityConstraintParserImpl parser = new IntegrityConstraintParserImpl(OWLManager.getOWLDataFactory(),
-        this);
+    final Set<OWLClass> classes = new HashSet<>();
+    final Set<OWLObjectProperty> objectProperties = new HashSet<>();
+    final Set<OWLDataProperty> dataProperties = new HashSet<>();
+    final Set<OWLAnnotationProperty> annotationProperties = new HashSet<>();
+    final Set<OWLNamedIndividual> individuals = new HashSet<>();
+    final IntegrityConstraintParser parser = new IntegrityConstraintParser();
+
     private final String name;
 
     ContextDefinition(String name) {

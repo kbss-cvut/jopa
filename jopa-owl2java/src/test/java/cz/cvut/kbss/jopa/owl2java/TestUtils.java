@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,13 +14,12 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import org.semanticweb.owlapi.model.OWLAxiom;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
+import org.semanticweb.owlapi.model.OWLAxiom;
 
 public class TestUtils {
 
@@ -45,15 +44,21 @@ public class TestUtils {
         defaultContextField.setAccessible(true);
         final ContextDefinition defaultContext = (ContextDefinition) defaultContextField.get(null);
         final Method addAxiomMethod = OWL2JavaTransformer.class
-                .getDeclaredMethod("addAxiomToContext", ContextDefinition.class, OWLAxiom.class);
+            .getDeclaredMethod("addAxiomToContext", ContextDefinition.class, OWLAxiom.class);
         addAxiomMethod.setAccessible(true);
         addAxiomMethod.invoke(transformer, defaultContext, axiom);
         final Method getContextMethod = OWL2JavaTransformer.class
-                .getDeclaredMethod("getContextDefinition", String.class);
+            .getDeclaredMethod("getContextDefinition", String.class);
         getContextMethod.setAccessible(true);
         final ContextDefinition testContext = (ContextDefinition) getContextMethod.invoke(transformer, CONTEXT);
         addAxiomMethod.invoke(transformer, testContext, axiom);
-        defaultContext.parser.parse();
-        testContext.parser.parse();
+        parse(defaultContext.parser,defaultContext);
+        parse(testContext.parser,testContext);
+    }
+
+    private static void parse(final IntegrityConstraintParser parser, final ContextDefinition ctx) {
+        for (final OWLAxiom a : ctx.axioms) {
+            a.accept(parser);
+        }
     }
 }

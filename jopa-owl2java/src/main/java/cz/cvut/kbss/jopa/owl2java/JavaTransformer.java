@@ -210,13 +210,16 @@ public class JavaTransformer {
                                          final OWLClass clazz,
                                          final JDefinedClass subj,
                                          final org.semanticweb.owlapi.model.OWLObjectProperty prop) {
-        final IntegrityConstraintParserImpl.ClassObjectPropertyComputer comp = context.parser.new ClassObjectPropertyComputer(
-            clazz, prop,
-            ontology);
+        final ClassObjectPropertyComputer comp = new ClassObjectPropertyComputer(
+            clazz,
+            prop,
+            context.parser,
+            ontology
+           );
 
-        if (!OWL2JavaTransformer.Card.NO.equals(comp.getCard())) {
+        if (!Card.NO.equals(comp.getCard())) {
             JClass filler = ensureCreated(context, pkg, cm,
-                comp.getObject(), ontology);
+                comp.getFiller(), ontology);
             final String fieldName = validJavaIDForIRI(prop.getIRI());
 
             switch (comp.getCard()) {
@@ -233,7 +236,7 @@ public class JavaTransformer {
 
             final JFieldVar fv = addField(fieldName, subj, filler);
 
-            if (comp.getCard().equals(OWL2JavaTransformer.Card.SIMPLELIST)) {
+            if (comp.getCard().equals(Card.SIMPLELIST)) {
                 fv.annotate(Sequence.class)
                     .param("type", SequenceType.simple);
             }
@@ -274,10 +277,14 @@ public class JavaTransformer {
                                        final OWLClass clazz,
                                        final JDefinedClass subj,
                                        final org.semanticweb.owlapi.model.OWLDataProperty prop) {
-        final ClassDataPropertyComputer comp = context.parser
-            .getClassDataPropertyComputer(clazz, prop, ontology);
+        final ClassDataPropertyComputer comp = new ClassDataPropertyComputer(
+            clazz,
+            prop,
+            context.parser,
+            ontology
+            );
 
-        if (!OWL2JavaTransformer.Card.NO.equals(comp.getCard())) {
+        if (!Card.NO.equals(comp.getCard())) {
 
             final JType obj = cm._ref(DatatypeTransformer
                 .transformOWLType(comp.getFiller()));
@@ -287,10 +294,10 @@ public class JavaTransformer {
 
             JFieldVar fv;
 
-            if (OWL2JavaTransformer.Card.MULTIPLE.equals(comp.getCard())) {
+            if (Card.MULTIPLE.equals(comp.getCard())) {
                 fv = addField(fieldName, subj, cm.ref(java.util.Set.class)
                     .narrow(obj));
-            } else if (OWL2JavaTransformer.Card.ONE.equals(comp.getCard())) {
+            } else if (Card.ONE.equals(comp.getCard())) {
                 fv = addField(fieldName, subj, obj);
             } else {
                 assert false : "Unknown cardinality type";

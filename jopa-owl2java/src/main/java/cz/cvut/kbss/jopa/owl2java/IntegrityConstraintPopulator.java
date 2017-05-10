@@ -98,7 +98,7 @@ public class IntegrityConstraintPopulator implements OWLClassExpressionVisitor {
 
     public void visit(OWLDataHasValue arg0) {
         notSupported(arg0);
-        //IntegrityConstraintParserImpl.ensureDataProperty(arg0.getProperty());
+        //IntegrityConstraintParser.ensureDataProperty(arg0.getProperty());
         //
         // set.add(IntegrityConstraintFactoryImpl
         // .datatypeParticipationConstraint(subjClass, arg0
