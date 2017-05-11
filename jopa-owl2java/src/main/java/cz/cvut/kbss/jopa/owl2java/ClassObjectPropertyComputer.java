@@ -20,10 +20,10 @@ public class ClassObjectPropertyComputer {
 
     public ClassObjectPropertyComputer(final OWLClass clazz,
                                        final OWLObjectProperty prop,
-                                       final IntegrityConstraintParser parser,
+                                       final IntegrityConstraintSet set,
                                        final OWLOntology merged
     ) {
-        parser.getClassObjectIntegrityConstraints(clazz,prop).forEach(ic -> {
+        set.getClassObjectIntegrityConstraints(clazz, prop).forEach(ic -> {
             if (ic instanceof ObjectParticipationConstraint) {
                 constraints.add((ObjectParticipationConstraint) ic);
             } else if (ic instanceof ObjectRangeConstraint) {
@@ -46,7 +46,7 @@ public class ClassObjectPropertyComputer {
                 f.getOWLClass(IRI.create(SequencesVocabulary.c_List)))) {
                 this.filler = new ClassObjectPropertyComputer(object,
                     f.getOWLObjectProperty(IRI.create(SequencesVocabulary.p_element)),
-                    parser,
+                    set,
                     merged
                 )
                     .getFiller();
@@ -55,7 +55,7 @@ public class ClassObjectPropertyComputer {
                 f.getOWLClass(IRI.create(SequencesVocabulary.c_OWLSimpleList)))) {
                 this.filler = new ClassObjectPropertyComputer(object,
                     f.getOWLObjectProperty(IRI.create(SequencesVocabulary.p_hasNext)),
-                    parser,
+                    set,
                     merged
                 )
                     .getFiller();

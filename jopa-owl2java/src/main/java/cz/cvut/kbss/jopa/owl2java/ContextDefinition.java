@@ -31,11 +31,20 @@ class ContextDefinition {
     final Set<OWLDataProperty> dataProperties = new HashSet<>();
     final Set<OWLAnnotationProperty> annotationProperties = new HashSet<>();
     final Set<OWLNamedIndividual> individuals = new HashSet<>();
-    final IntegrityConstraintParser parser = new IntegrityConstraintParser();
+
+    IntegrityConstraintSet set;
 
     private final String name;
 
     ContextDefinition(String name) {
         this.name = name;
+    }
+
+    public void parse() {
+        final IntegrityConstraintParser parser = new IntegrityConstraintParser();
+        for (final OWLAxiom a : axioms) {
+            a.accept(parser);
+        }
+        this.set = parser.getClassIntegrityConstraintSet();
     }
 }

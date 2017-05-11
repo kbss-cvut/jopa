@@ -213,7 +213,7 @@ public class JavaTransformer {
         final ClassObjectPropertyComputer comp = new ClassObjectPropertyComputer(
             clazz,
             prop,
-            context.parser,
+            context.set,
             ontology
            );
 
@@ -280,7 +280,7 @@ public class JavaTransformer {
         final ClassDataPropertyComputer comp = new ClassDataPropertyComputer(
             clazz,
             prop,
-            context.parser,
+            context.set,
             ontology
             );
 
@@ -340,7 +340,7 @@ public class JavaTransformer {
             LOG.info("  Generating class '{}'.", clazz);
             final JDefinedClass subj = ensureCreated(context, pkg, cm, clazz, ontology);
 
-            context.parser.getClassIntegrityConstraints(clazz).forEach((ic) -> {
+            context.set.getClassIntegrityConstraints(clazz).forEach((ic) -> {
                 if (ic instanceof AtomicSubClassConstraint) {
                     final AtomicSubClassConstraint icc = (AtomicSubClassConstraint) ic;
                     subj._extends(ensureCreated(context, pkg, cm, icc.getSupClass(), ontology));

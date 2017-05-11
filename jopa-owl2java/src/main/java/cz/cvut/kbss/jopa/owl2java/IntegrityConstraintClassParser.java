@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.owl2java;
 
 import cz.cvut.kbss.jopa.ic.api.IntegrityConstraint;
 import cz.cvut.kbss.jopa.ic.api.IntegrityConstraintFactory;
+import cz.cvut.kbss.jopa.ic.impl.IntegrityConstraintFactoryImpl;
 import java.util.HashSet;
 import java.util.Set;
 import org.semanticweb.owlapi.model.OWLClass;
@@ -31,19 +32,18 @@ import org.semanticweb.owlapi.model.OWLObjectUnionOf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IntegrityConstraintPopulator implements OWLClassExpressionVisitor {
+public class IntegrityConstraintClassParser implements OWLClassExpressionVisitor {
 
-    private static final Logger log = LoggerFactory.getLogger(IntegrityConstraintPopulator.class);
+    private static final Logger log = LoggerFactory.getLogger(IntegrityConstraintClassParser.class);
 
     private final Set<IntegrityConstraint> integrityConstraints = new HashSet<>();
 
     private OWLClass subjClass;
 
-    private IntegrityConstraintFactory integrityConstraintFactory;
+    private IntegrityConstraintFactory integrityConstraintFactory = new IntegrityConstraintFactoryImpl();
 
-    public IntegrityConstraintPopulator(final OWLClass subjClass, final IntegrityConstraintFactory integrityConstraintFactory) {
+    public IntegrityConstraintClassParser(final OWLClass subjClass) {
         this.subjClass = subjClass;
-        this.integrityConstraintFactory = integrityConstraintFactory;
     }
 
     private static void notSupported(final OWLObject o) {

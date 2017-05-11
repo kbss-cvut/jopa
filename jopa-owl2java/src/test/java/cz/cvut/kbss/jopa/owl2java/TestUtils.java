@@ -52,13 +52,7 @@ public class TestUtils {
         getContextMethod.setAccessible(true);
         final ContextDefinition testContext = (ContextDefinition) getContextMethod.invoke(transformer, CONTEXT);
         addAxiomMethod.invoke(transformer, testContext, axiom);
-        parse(defaultContext.parser,defaultContext);
-        parse(testContext.parser,testContext);
-    }
-
-    private static void parse(final IntegrityConstraintParser parser, final ContextDefinition ctx) {
-        for (final OWLAxiom a : ctx.axioms) {
-            a.accept(parser);
-        }
+        defaultContext.parse();
+        testContext.parse();
     }
 }

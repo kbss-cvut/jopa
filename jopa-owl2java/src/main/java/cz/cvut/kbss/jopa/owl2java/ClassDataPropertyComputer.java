@@ -19,10 +19,10 @@ public class ClassDataPropertyComputer {
     public ClassDataPropertyComputer(
         final OWLClass clazz,
         final OWLDataProperty prop,
-        final IntegrityConstraintParser parser,
+        final IntegrityConstraintSet set,
         final OWLOntology ontology
     ) {
-        parser.getClassDataIntegrityConstraints(clazz, prop).forEach(integrityConstraint -> {
+        set.getClassDataIntegrityConstraints(clazz, prop).forEach(integrityConstraint -> {
             if (integrityConstraint instanceof DataParticipationConstraint) {
                 this.constraints.add((DataParticipationConstraint) integrityConstraint);
             } else if (integrityConstraint instanceof DataRangeConstraint) {

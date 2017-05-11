@@ -130,18 +130,12 @@ public class OWL2JavaTransformer {
             }
         }
 
-        parse(DEFAULT_CONTEXT.parser, DEFAULT_CONTEXT);
+        DEFAULT_CONTEXT.parse();
         for (final ContextDefinition ctx : contexts.values()) {
-            parse(ctx.parser, ctx);
+            ctx.parse();
         }
 
         LOG.info("Integrity constraints successfully parsed.");
-    }
-
-    private void parse(final IntegrityConstraintParser parser, final  ContextDefinition ctx ) {
-        for (final OWLAxiom a : ctx.axioms) {
-            a.accept(parser);
-        }
     }
 
     private ContextDefinition getContextDefinition(String icContextName) {
