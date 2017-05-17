@@ -1,6 +1,8 @@
 package cz.cvut.kbss.jopa.test.integration;
 
+import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.Vocabulary;
 import cz.cvut.kbss.jopa.test.environment.Generators;
@@ -19,6 +21,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
@@ -71,5 +74,21 @@ public class CacheTest extends IntegrationTestBase {
                 Assertion.createDataPropertyAssertion(URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), false),
                 new Value<>("stringAttribute")));
         return axioms;
+    }
+
+    @Test
+    public void loadedInstanceAddedToCacheDoesNotContainIndirectCollection() throws Exception {
+        final URI id = Generators.generateUri();
+        final Collection<Axiom<?>> axioms = axiomsForA(id);
+        axioms.add(new AxiomImpl<>(NamedResource.create(id), Assertion.createClassAssertion(false),
+                new Value<>(NamedResource.create(Vocabulary.C_OWL_CLASS_Q))));
+        when(connectionMock.find(any(AxiomDescriptor.class))).thenReturn(axioms);
+        final OWLClassA a = em.find(OWLClassA.class, id);
+        assertNotNull(a);
+        final CacheManager cacheManager = (CacheManager) em.getEntityManagerFactory().getCache();
+        final OWLClassA result = cacheManager.get(OWLClassA.class, id, null);
+        assertNotNull(result);
+        assertNotNull(result.getTypes());
+        assertFalse(result.getTypes() instanceof IndirectSet);
     }
 }
