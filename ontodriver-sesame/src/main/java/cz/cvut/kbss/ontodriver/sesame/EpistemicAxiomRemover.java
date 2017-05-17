@@ -58,13 +58,8 @@ class EpistemicAxiomRemover {
                 continue;
             }
             final IRI contextUri = SesameUtils.toSesameIri(axiomDescriptor.getAssertionContext(a), valueFactory);
-            if (contextUri != null) {
-                toRemove.addAll(connector.findStatements(individual,
-                        SesameUtils.toSesameIri(a.getIdentifier(), valueFactory), null, a.isInferred(), contextUri));
-            } else {
-                toRemove.addAll(connector.findStatements(individual,
-                        SesameUtils.toSesameIri(a.getIdentifier(), valueFactory), null, a.isInferred()));
-            }
+            toRemove.addAll(connector.findStatements(individual,
+                    SesameUtils.toSesameIri(a.getIdentifier(), valueFactory), null, a.isInferred(), contextUri));
         }
         connector.removeStatements(toRemove);
     }

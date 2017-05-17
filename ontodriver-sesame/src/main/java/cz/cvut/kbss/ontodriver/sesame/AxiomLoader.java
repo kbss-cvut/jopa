@@ -97,12 +97,8 @@ class AxiomLoader {
         final IRI subject = SesameUtils.toSesameIri(individual.getIdentifier(), valueFactory);
         final AxiomBuilder axiomBuilder = new AxiomBuilder(individual, Collections.emptyMap(),
                 Assertion.createUnspecifiedPropertyAssertion(includeInferred));
-        final Collection<Statement> statements;
-        if (sesameContext != null) {
-            statements = connector.findStatements(subject, null, null, includeInferred, sesameContext);
-        } else {
-            statements = connector.findStatements(subject, null, null, includeInferred);
-        }
+        final Collection<Statement> statements = connector
+                .findStatements(subject, null, null, includeInferred, sesameContext);
         return statements.stream().map(axiomBuilder::statementToAxiom).collect(Collectors.toSet());
     }
 }

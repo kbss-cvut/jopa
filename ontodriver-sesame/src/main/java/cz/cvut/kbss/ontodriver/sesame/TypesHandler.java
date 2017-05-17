@@ -49,11 +49,7 @@ class TypesHandler {
             throws SesameDriverException {
         final Resource subject = SesameUtils.toSesameIri(individual.getIdentifier(), valueFactory);
         final org.eclipse.rdf4j.model.IRI contextUri = SesameUtils.toSesameIri(context, valueFactory);
-        if (contextUri != null) {
-            return connector.findStatements(subject, RDF.TYPE, null, includeInferred, contextUri);
-        } else {
-            return connector.findStatements(subject, RDF.TYPE, null, includeInferred);
-        }
+        return connector.findStatements(subject, RDF.TYPE, null, includeInferred, contextUri);
     }
 
     private Set<Axiom<URI>> resolveTypes(NamedResource individual, boolean includeInferred,

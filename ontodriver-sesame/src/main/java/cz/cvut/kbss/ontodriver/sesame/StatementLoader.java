@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,7 +22,10 @@ import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
 import cz.cvut.kbss.ontodriver.sesame.util.AxiomBuilder;
 import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
-import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -68,11 +71,7 @@ class StatementLoader {
             final IRI property = SesameUtils.toSesameIri(a.getIdentifier(), vf);
 
             final Collection<Statement> statements;
-            if (context != null) {
-                statements = connector.findStatements(subject, property, null, includeInferred, context);
-            } else {
-                statements = connector.findStatements(subject, property, null, includeInferred);
-            }
+            statements = connector.findStatements(subject, property, null, includeInferred, context);
             for (Statement s : statements) {
                 final Axiom<?> axiom = axiomBuilder.statementToAxiom(s, a);
                 if (axiom != null) {

@@ -163,17 +163,10 @@ class SesameAdapter implements Closeable, Wrapper {
                     valueFactory);
         }
         final org.eclipse.rdf4j.model.IRI sesameContext = SesameUtils.toSesameIri(context, valueFactory);
-        if (sesameContext != null) {
-            return connector.containsStatement(
-                    SesameUtils.toSesameIri(axiom.getSubject().getIdentifier(), valueFactory),
-                    SesameUtils.toSesameIri(axiom.getAssertion().getIdentifier(), valueFactory), value,
-                    axiom.getAssertion().isInferred(), sesameContext);
-        } else {
-            return connector.containsStatement(
-                    SesameUtils.toSesameIri(axiom.getSubject().getIdentifier(), valueFactory),
-                    SesameUtils.toSesameIri(axiom.getAssertion().getIdentifier(), valueFactory), value,
-                    axiom.getAssertion().isInferred());
-        }
+        return connector.containsStatement(
+                SesameUtils.toSesameIri(axiom.getSubject().getIdentifier(), valueFactory),
+                SesameUtils.toSesameIri(axiom.getAssertion().getIdentifier(), valueFactory), value,
+                axiom.getAssertion().isInferred(), sesameContext);
 
     }
 

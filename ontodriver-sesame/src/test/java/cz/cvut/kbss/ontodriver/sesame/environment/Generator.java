@@ -23,6 +23,7 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
+import java.net.URI;
 import java.util.*;
 
 public class Generator {
@@ -103,6 +104,10 @@ public class Generator {
 
     public static boolean randomBoolean() {
         return RAND.nextBoolean();
+    }
+
+    public static URI generateUri() {
+        return URI.create("http://krizik.felk.cvut.cz/ontologies/jopa/individual-" + randomInt());
     }
 
     public static class GeneratedData {

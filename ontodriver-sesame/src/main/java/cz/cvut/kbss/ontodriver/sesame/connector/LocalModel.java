@@ -33,16 +33,25 @@ class LocalModel {
     }
 
     void enhanceStatements(Collection<Statement> statements, Resource subject, IRI property,
-                           Value object, IRI... contexts) {
-        final IRI[] ctxs = contexts != null ? contexts : new IRI[0];
-        final Collection<Statement> added = addedStatements.filter(subject, property, object, ctxs);
+                           Value object, IRI context) {
+        final Collection<Statement> added, removed;
+        if (context != null) {
+            added = addedStatements.filter(subject, property, object, context);
+            removed = removedStatements.filter(subject, property, object, context);
+        } else {
+            added = addedStatements.filter(subject, property, object);
+            removed = removedStatements.filter(subject, property, object);
+        }
         statements.addAll(added);
-        final Collection<Statement> removed = removedStatements.filter(subject, property, object, ctxs);
         statements.removeAll(removed);
     }
 
-    boolean contains(Resource subject, IRI property, Value object, IRI... contexts) {
-        return addedStatements.contains(subject, property, object, contexts);
+    boolean contains(Resource subject, IRI property, Value object, IRI context) {
+        if (context != null) {
+            return addedStatements.contains(subject, property, object, context);
+        } else {
+            return addedStatements.contains(subject, property, object);
+        }
     }
 
     void addStatements(Collection<Statement> statements) {

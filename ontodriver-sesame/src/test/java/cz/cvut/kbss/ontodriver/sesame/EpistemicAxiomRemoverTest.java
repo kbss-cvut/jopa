@@ -64,10 +64,11 @@ public class EpistemicAxiomRemoverTest {
 
         axiomRemover.remove(descriptor);
         verify(connectorMock, never())
-                .findStatements(eq(vf.createIRI(SUBJECT.toString())), eq(vf.createIRI(PROPERTY)), any(), anyBoolean());
+                .findStatements(eq(vf.createIRI(SUBJECT.toString())), eq(vf.createIRI(PROPERTY)), any(), anyBoolean(),
+                        any());
         verify(connectorMock, never())
                 .findStatements(eq(vf.createIRI(SUBJECT.toString())), eq(vf.createIRI(PROPERTY)), any(), anyBoolean(),
-                        anyVararg());
+                        any());
     }
 
     @Test
@@ -91,7 +92,8 @@ public class EpistemicAxiomRemoverTest {
 
         axiomRemover.remove(descriptor);
 
-        verify(connectorMock).findStatements(vf.createIRI(SUBJECT.toString()), vf.createIRI(PROPERTY), null, false);
+        verify(connectorMock)
+                .findStatements(vf.createIRI(SUBJECT.toString()), vf.createIRI(PROPERTY), null, false, null);
         verify(connectorMock).removeStatements(anyCollectionOf(Statement.class));
     }
 }
