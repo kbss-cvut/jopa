@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,14 +14,15 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi.query;
 
-import cz.cvut.kbss.ontodriver.owlapi.OwlapiConnection;
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
+import cz.cvut.kbss.ontodriver.owlapi.OwlapiConnection;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +37,8 @@ public class OwlapiStatementTest {
     private StatementExecutorFactory executorFactoryMock;
     @Mock
     private OwlapiConnection connectionMock;
+    @Mock
+    private ResultSet resultSetMock;
 
     private OwlapiStatement statement;
 
@@ -44,6 +47,7 @@ public class OwlapiStatementTest {
         MockitoAnnotations.initMocks(this);
         when(executorFactoryMock.getStatementExecutor(any(Statement.StatementOntology.class))).thenReturn(executorMock);
         this.statement = new OwlapiStatement(executorFactoryMock, connectionMock);
+        when(executorMock.executeQuery(anyString(), eq(statement))).thenReturn(resultSetMock);
     }
 
     @Test
@@ -78,5 +82,26 @@ public class OwlapiStatementTest {
     public void executeUpdateOnClosedThrowsException() throws Exception {
         statement.close();
         statement.executeUpdate(UPDATE);
+    }
+
+    @Test
+    public void closeClosesExistingResultSet() throws Exception {
+        statement.executeQuery(QUERY);
+        statement.close();
+        verify(resultSetMock).close();
+    }
+
+    @Test
+    public void executeQueryClosesCurrentResultSet() throws Exception {
+        statement.executeQuery(QUERY);
+        statement.executeQuery(QUERY);
+        verify(resultSetMock).close();
+    }
+
+    @Test
+    public void executeUpdateClosesCurrentResultSet() throws Exception {
+        statement.executeQuery(QUERY);
+        statement.executeUpdate(UPDATE);
+        verify(resultSetMock).close();
     }
 }

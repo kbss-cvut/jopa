@@ -41,7 +41,9 @@ public class OwlapiPreparedStatement extends OwlapiStatement implements Prepared
     @Override
     public ResultSet executeQuery() throws OntoDriverException {
         ensureOpen();
-        return getExecutor().executeQuery(statementHolder.assembleStatement(), this);
+        closeExistingResultSet();
+        this.resultSet = getExecutor().executeQuery(statementHolder.assembleStatement(), this);
+        return resultSet;
     }
 
     @Override
