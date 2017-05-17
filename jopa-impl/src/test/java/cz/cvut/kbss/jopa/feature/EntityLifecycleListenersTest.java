@@ -74,6 +74,11 @@ public class EntityLifecycleListenersTest {
     @Test
     public void prePersistLifecycleListenerIsCalledBeforeInstanceIsInsertedIntoPersistenceContext() {
         final OWLClassR rInstance = spy(new OWLClassR());
+        doAnswer(invocationOnMock -> {
+            final OWLClassR instance = (OWLClassR) invocationOnMock.getArguments()[1];
+            instance.setUri(Generators.createIndividualIdentifier());
+            return null;
+        }).when(storageMock).persist(null, rInstance, descriptor);
         uow.registerNewObject(rInstance, descriptor);
         final InOrder inOrder = inOrder(rInstance, parentListenerMock, concreteListenerMock, anotherListenerMock,
                 storageMock);
@@ -101,6 +106,11 @@ public class EntityLifecycleListenersTest {
     @Test
     public void postPersistEntityLifecycleListenerIsCalledAfterStoragePersistOccurs() {
         final OWLClassR rInstance = spy(new OWLClassR());
+        doAnswer(invocationOnMock -> {
+            final OWLClassR instance = (OWLClassR) invocationOnMock.getArguments()[1];
+            instance.setUri(Generators.createIndividualIdentifier());
+            return null;
+        }).when(storageMock).persist(null, rInstance, descriptor);
         uow.registerNewObject(rInstance, descriptor);
         final InOrder inOrder = inOrder(rInstance, concreteListenerMock, storageMock);
         inOrder.verify(storageMock).persist(any(Object.class), eq(rInstance), eq(descriptor));

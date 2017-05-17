@@ -738,6 +738,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             // If the ID was null, extract it from the entity. It is present now
             id = getIdentifier(entity);
         }
+        assert id != null;
         // Original is null until commit
         cloneMapping.put(entity, entity);
         getNewObjectsCloneToOriginal().put(entity, null);

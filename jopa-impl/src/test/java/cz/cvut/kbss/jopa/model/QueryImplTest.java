@@ -20,7 +20,6 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import java.util.List;
 

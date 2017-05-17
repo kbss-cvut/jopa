@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,7 +19,6 @@ import cz.cvut.kbss.jopa.model.query.Parameter;
 import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
-import cz.cvut.kbss.jopa.sessions.QueryFactory;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
@@ -36,9 +35,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyVararg;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 public abstract class QueryTestBase {
 
@@ -66,6 +66,10 @@ public abstract class QueryTestBase {
         MockitoAnnotations.initMocks(this);
         when(connectionWrapperMock.createStatement()).thenReturn(statementMock);
         when(statementMock.executeQuery(anyString(), anyVararg())).thenReturn(resultSetMock);
+        doAnswer((invocationOnMock) -> {
+            resultSetMock.close();
+            return null;
+        }).when(statementMock).close();
         this.queryFactory = new SparqlQueryFactory(uowMock, connectionWrapperMock);
     }
 
@@ -190,5 +194,22 @@ public abstract class QueryTestBase {
         assertEquals(value, q.getParameterValue(p));
         q.getResultList();
         verify(statementMock).executeQuery(query.replace("$", "\"Hooray\"@en"));
+    }
+
+    @Test
+    public void closesStatementAndResultSetUponSelectFinish() throws Exception {
+        final String query = "SELECT ?x ?y ?z WHERE { ?x ?y ?z .}";
+        final Query q = createQuery(query, Object.class);
+        q.getResultList();
+        verify(statementMock).close();
+        verify(resultSetMock).close();
+    }
+
+    @Test
+    public void closesStatementUponUpdateFinish() throws Exception {
+        final String query = "INSERT DATA { ?x ?y ?z .}";
+        final Query q = createQuery(query, Void.class);
+        q.executeUpdate();
+        verify(statementMock).close();
     }
 }

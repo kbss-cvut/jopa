@@ -25,11 +25,15 @@ import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.*;
 
 public class QueryImpl implements Query {
+
+    private static final Logger LOG = LoggerFactory.getLogger(QueryImpl.class);
 
     private final QueryHolder query;
     private final Set<URI> contexts;
@@ -51,10 +55,10 @@ public class QueryImpl implements Query {
     @Override
     public void executeUpdate() {
         final Statement stmt = connection.createStatement();
-        setTargetOntology(stmt);
-        URI[] uris = new URI[contexts.size()];
-        uris = contexts.toArray(uris);
         try {
+            setTargetOntology(stmt);
+            URI[] uris = new URI[contexts.size()];
+            uris = contexts.toArray(uris);
             stmt.executeUpdate(query.assembleQuery(), uris);
         } catch (OntoDriverException e) {
             markTransactionForRollback();
@@ -62,6 +66,12 @@ public class QueryImpl implements Query {
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
+        } finally {
+            try {
+                stmt.close();
+            } catch (Exception e) {
+                LOG.error("Unable to close statement after update execution.", e);
+            }
         }
     }
 
@@ -252,10 +262,11 @@ public class QueryImpl implements Query {
         assert maxResults > 0;
 
         final Statement stmt = connection.createStatement();
-        setTargetOntology(stmt);
-        URI[] uris = new URI[contexts.size()];
-        uris = contexts.toArray(uris);
-        try (ResultSet rs = stmt.executeQuery(query.assembleQuery(), uris)) {
+        try {
+            setTargetOntology(stmt);
+            URI[] uris = new URI[contexts.size()];
+            uris = contexts.toArray(uris);
+            final ResultSet rs = stmt.executeQuery(query.assembleQuery(), uris);
             final int columnCount = rs.getColumnCount();
             int cnt = 0;
             final List<Object> res = new ArrayList<>();
@@ -270,6 +281,12 @@ public class QueryImpl implements Query {
                 cnt++;
             }
             return res;
+        } finally {
+            try {
+                stmt.close();
+            } catch (Exception e) {
+                LOG.error("Unable to close statement after query evaluation.", e);
+            }
         }
     }
 
