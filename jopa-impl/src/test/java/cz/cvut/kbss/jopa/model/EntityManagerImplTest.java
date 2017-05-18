@@ -14,18 +14,20 @@
  */
 package cz.cvut.kbss.jopa.model;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassC;
-import cz.cvut.kbss.jopa.environment.OWLClassH;
-import cz.cvut.kbss.jopa.environment.OWLClassJ;
+import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.model.annotations.CascadeType;
 import cz.cvut.kbss.jopa.model.annotations.Id;
 import cz.cvut.kbss.jopa.model.annotations.OWLClass;
+import cz.cvut.kbss.jopa.model.annotations.OWLObjectProperty;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
+import cz.cvut.kbss.jopa.model.metamodel.Attribute;
+import cz.cvut.kbss.jopa.model.metamodel.EntityLifecycleListenerManager;
+import cz.cvut.kbss.jopa.model.metamodel.EntityTypeImpl;
+import cz.cvut.kbss.jopa.model.metamodel.Identifier;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.ServerSessionStub;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
@@ -38,6 +40,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
@@ -349,5 +352,133 @@ public class EntityManagerImplTest {
             // Swallow the exception
         }
         assertTrue(tx.isRollbackOnly());
+    }
+
+    /**
+     * Bug #4
+     */
+    @Test
+    public void mergeIsAbleToBreakCascadingCycle() throws Exception {
+        Mockito.reset(metamodelMock);
+        final CascadeCycleOne cOne = new CascadeCycleOne(Generators.createIndividualIdentifier());
+        final CascadeCycleTwo cTwo = new CascadeCycleTwo(Generators.createIndividualIdentifier());
+        cOne.two = cTwo;
+        cTwo.one = cOne;
+        metamodelForCascadingTest();
+        final CascadeCycleOne cloneOne = new CascadeCycleOne(cOne.uri);
+        final CascadeCycleTwo cloneTwo = new CascadeCycleTwo(cTwo.uri);
+        cloneOne.two = cloneTwo;
+        cloneTwo.one = cloneOne;
+        doReturn(EntityManagerImpl.State.NOT_MANAGED).when(uow).getState(cOne);
+        doReturn(EntityManagerImpl.State.NOT_MANAGED).when(uow).getState(cTwo);
+        doReturn(EntityManagerImpl.State.MANAGED).when(uow).getState(cloneOne);
+        doReturn(EntityManagerImpl.State.MANAGED).when(uow).getState(cloneTwo);
+        doReturn(cloneOne).when(uow).mergeDetached(eq(cOne), any());
+        doReturn(cloneTwo).when(uow).mergeDetached(eq(cTwo), any());
+        doReturn(cloneOne).when(uow).getCloneForOriginal(cOne);
+        doReturn(cloneTwo).when(uow).getCloneForOriginal(cTwo);
+        em.merge(cOne);
+        verify(uow).mergeDetached(eq(cOne), any());
+        verify(uow).mergeDetached(eq(cTwo), any());
+    }
+
+    private void metamodelForCascadingTest() throws Exception {
+        final EntityTypeImpl<CascadeCycleOne> etOne = mock(EntityTypeImpl.class);
+        final Identifier idOne = mock(Identifier.class);
+        when(idOne.getJavaField()).thenReturn(CascadeCycleOne.class.getDeclaredField("uri"));
+        when(etOne.getIdentifier()).thenReturn(idOne);
+        final Attribute<CascadeCycleOne, CascadeCycleTwo> attOne = mock(Attribute.class);
+        when(attOne.getCascadeTypes())
+                .thenReturn(new CascadeType[]{CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE});
+        when(attOne.getJavaField()).thenReturn(CascadeCycleOne.class.getDeclaredField("two"));
+        when(attOne.getName()).thenReturn("two");
+        when(attOne.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(etOne.getAttributes()).thenReturn(Collections.singleton(attOne));
+        when(etOne.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        final EntityTypeImpl<CascadeCycleTwo> etTwo = mock(EntityTypeImpl.class);
+        final Identifier idTwo = mock(Identifier.class);
+        when(idTwo.getJavaField()).thenReturn(CascadeCycleTwo.class.getDeclaredField("uri"));
+        when(etTwo.getIdentifier()).thenReturn(idTwo);
+        final Attribute<CascadeCycleTwo, CascadeCycleOne> attTwo = mock(Attribute.class);
+        when(attTwo.getCascadeTypes())
+                .thenReturn(new CascadeType[]{CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE});
+        when(attTwo.getJavaField()).thenReturn(CascadeCycleTwo.class.getDeclaredField("one"));
+        when(attTwo.getName()).thenReturn("one");
+        when(attTwo.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.OBJECT);
+        when(etTwo.getAttributes()).thenReturn(Collections.singleton(attTwo));
+        when(etTwo.getLifecycleListenerManager()).thenReturn(EntityLifecycleListenerManager.empty());
+        when(metamodelMock.entity(CascadeCycleOne.class)).thenReturn(etOne);
+        when(metamodelMock.entity(CascadeCycleTwo.class)).thenReturn(etTwo);
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "CascadeCycleOne")
+    private static class CascadeCycleOne {
+        @Id
+        private URI uri;
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasTwo", cascade = {CascadeType.MERGE,
+                CascadeType.PERSIST, CascadeType.REMOVE})
+        private CascadeCycleTwo two;
+
+        private CascadeCycleOne(URI uri) {
+            this.uri = uri;
+        }
+    }
+
+    @OWLClass(iri = Vocabulary.CLASS_BASE + "CascadeCycleTwo")
+    private static class CascadeCycleTwo {
+        @Id
+        private URI uri;
+        @OWLObjectProperty(iri = Vocabulary.ATTRIBUTE_BASE + "hasOne", cascade = {CascadeType.PERSIST,
+                CascadeType.MERGE, CascadeType.REMOVE})
+        private CascadeCycleOne one;
+
+        private CascadeCycleTwo(URI uri) {
+            this.uri = uri;
+        }
+    }
+
+    @Test
+    public void mergeOfNewInstancesIsAbleToBreakCascadingCycle() throws Exception {
+        Mockito.reset(metamodelMock);
+        final CascadeCycleOne cOne = new CascadeCycleOne(Generators.createIndividualIdentifier());
+        final CascadeCycleTwo cTwo = new CascadeCycleTwo(Generators.createIndividualIdentifier());
+        cOne.two = cTwo;
+        cTwo.one = cOne;
+        metamodelForCascadingTest();
+        doReturn(EntityManagerImpl.State.NOT_MANAGED).doReturn(EntityManagerImpl.State.MANAGED_NEW).when(uow)
+                                                     .getState(cOne);
+        doReturn(EntityManagerImpl.State.NOT_MANAGED).doReturn(EntityManagerImpl.State.MANAGED_NEW).when(uow)
+                                                     .getState(cTwo);
+        doReturn(cOne).when(uow).mergeDetached(eq(cOne), any());
+        doReturn(cTwo).when(uow).mergeDetached(eq(cTwo), any());
+        doReturn(cOne).when(uow).getCloneForOriginal(cOne);
+        doReturn(cTwo).when(uow).getCloneForOriginal(cTwo);
+        em.merge(cOne);
+        verify(uow).mergeDetached(eq(cOne), any());
+        verify(uow).mergeDetached(eq(cTwo), any());
+    }
+
+    @Test
+    public void removeIsAbleToBreakCascadingCycle() throws Exception {
+        Mockito.reset(metamodelMock);
+        final CascadeCycleOne cOne = new CascadeCycleOne(Generators.createIndividualIdentifier());
+        final CascadeCycleTwo cTwo = new CascadeCycleTwo(Generators.createIndividualIdentifier());
+        cOne.two = cTwo;
+        cTwo.one = cOne;
+        metamodelForCascadingTest();
+        final CascadeCycleOne cloneOne = new CascadeCycleOne(cOne.uri);
+        final CascadeCycleTwo cloneTwo = new CascadeCycleTwo(cTwo.uri);
+        cloneOne.two = cloneTwo;
+        cloneTwo.one = cloneOne;
+        doReturn(EntityManagerImpl.State.MANAGED).doReturn(EntityManagerImpl.State.REMOVED).when(uow)
+                                                 .getState(cloneOne);
+        doReturn(EntityManagerImpl.State.MANAGED).doReturn(EntityManagerImpl.State.REMOVED).when(uow)
+                                                 .getState(cloneTwo);
+        doReturn(cOne).when(uow).getOriginal(cloneOne);
+        doReturn(cTwo).when(uow).getOriginal(cloneTwo);
+        doNothing().when(uow).removeObject(any());
+        em.remove(cloneOne);
+        verify(uow).removeObject(cloneOne);
+        verify(uow).removeObject(cloneTwo);
     }
 }

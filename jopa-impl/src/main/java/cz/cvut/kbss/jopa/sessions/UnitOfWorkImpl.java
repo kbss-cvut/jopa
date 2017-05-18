@@ -423,14 +423,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Finds clone for the specified original. This method assumes that the original is managed in this persistence
-     * context (UnitOfWork). However, if not, this method just goes through all the managed objects and if it does not
-     * find match, returns null.
+     * Finds clone of the specified original.
      *
-     * @param original The original object whose clone we are looking for.
-     * @return The clone or null, if there is none.
+     * @param original The original object whose clone we are looking for
+     * @return The clone or null, if there is none
      */
-    Object getCloneForOriginal(Object original) {
+    public Object getCloneForOriginal(Object original) {
         for (Entry<Object, Object> entry : cloneToOriginals.entrySet()) {
             // We use IdentityMap, so we can use ==
             if (entry.getValue() == original) {
