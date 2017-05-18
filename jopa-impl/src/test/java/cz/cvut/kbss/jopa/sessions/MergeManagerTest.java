@@ -50,6 +50,8 @@ public class MergeManagerTest {
     @Mock
     private MetamodelImpl metamodel;
 
+    private MetamodelMocks metamodelMocks;
+
     private UnitOfWorkChangeSet uowChangeSet;
 
     private MergeManagerImpl mm;
@@ -65,8 +67,8 @@ public class MergeManagerTest {
         this.uowChangeSet = new UnitOfWorkChangeSetImpl();
         when(uow.getMetamodel()).thenReturn(metamodel);
         when(uow.getCloneBuilder()).thenReturn(cloneBuilder);
-        final MetamodelMocks mocks = new MetamodelMocks();
-        mocks.setMocks(metamodel);
+        this.metamodelMocks = new MetamodelMocks();
+        metamodelMocks.setMocks(metamodel);
         this.mm = new MergeManagerImpl(uow);
     }
 
@@ -82,7 +84,8 @@ public class MergeManagerTest {
         final OWLClassB clone = new OWLClassB(orig.getUri());
         final ObjectChangeSet chs = createChangeSet(orig, clone);
         clone.setStringAttribute("AnotherStringAttribute");
-        chs.addChangeRecord(new ChangeRecordImpl(OWLClassB.getStrAttField().getName(), clone.getStringAttribute()));
+        chs.addChangeRecord(
+                new ChangeRecordImpl(metamodelMocks.forOwlClassB().stringAttribute(), clone.getStringAttribute()));
         mm.mergeChangesOnObject(chs);
         verify(cloneBuilder).mergeChanges(chs);
     }
@@ -96,8 +99,8 @@ public class MergeManagerTest {
         cloneOne.setStringAttribute("testAtt");
         uowChangeSet.addDeletedObjectChangeSet(createChangeSet(objTwo, cloneTwo));
         final ObjectChangeSet ochs = createChangeSet(objOne, cloneOne);
-        ochs.addChangeRecord(new ChangeRecordImpl(OWLClassB.getStrAttField().getName(), cloneOne
-                .getStringAttribute()));
+        ochs.addChangeRecord(
+                new ChangeRecordImpl(metamodelMocks.forOwlClassB().stringAttribute(), cloneOne.getStringAttribute()));
         uowChangeSet.addObjectChangeSet(ochs);
         mm.mergeChangesFromChangeSet(uowChangeSet);
         verify(uow).removeObjectFromCache(objTwo, defaultDescriptor.getContext());

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -59,6 +59,8 @@ public class CloneBuilderTest {
     @Mock
     private MetamodelImpl metamodel;
 
+    private MetamodelMocks metamodelMocks;
+
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
 
@@ -93,8 +95,8 @@ public class CloneBuilderTest {
                     Descriptor desc = (Descriptor) invocation.getArguments()[1];
                     return builder.buildClone(obj, desc);
                 });
-        final MetamodelMocks mocks = new MetamodelMocks();
-        mocks.setMocks(metamodel);
+        this.metamodelMocks = new MetamodelMocks();
+        metamodelMocks.setMocks(metamodel);
         this.builder = new CloneBuilderImpl(uow);
         initValues();
         final CollectionFactory cf = new CollectionFactory(uow);
@@ -391,7 +393,8 @@ public class CloneBuilderTest {
         cloneA.setStringAttribute(newStrAtt);
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(a, cloneA,
                 defaultDescriptor);
-        chSet.addChangeRecord(new ChangeRecordImpl(OWLClassA.getStrAttField().getName(), newStrAtt));
+        chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassA().stringAttribute(),
+                newStrAtt));
         builder.mergeChanges(chSet);
 
         assertEquals(newStrAtt, a.getStringAttribute());
@@ -404,8 +407,8 @@ public class CloneBuilderTest {
         b.setProperties(Generators.generateStringProperties());
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityB, b,
                 defaultDescriptor);
-        chSet.addChangeRecord(new ChangeRecordImpl(OWLClassB.getPropertiesField().getName(), b
-                .getProperties()));
+        chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassB().propertiesSpec(),
+                b.getProperties()));
         builder.mergeChanges(chSet);
 
         assertNotNull(entityB.getProperties());
@@ -420,8 +423,8 @@ public class CloneBuilderTest {
         c.setReferencedList(Generators.createReferencedList(5));
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c,
                 defaultDescriptor);
-        chSet.addChangeRecord(new ChangeRecordImpl(OWLClassC.getRefListField().getName(), c
-                .getReferencedList()));
+        chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassC().referencedListAtt(),
+                c.getReferencedList()));
         builder.mergeChanges(chSet);
 
         assertNotNull(entityC.getReferencedList());
@@ -439,8 +442,8 @@ public class CloneBuilderTest {
         c.setReferencedList(Collections.singletonList(newA));
         final ObjectChangeSet chSet = ChangeSetFactory.createObjectChangeSet(entityC, c,
                 defaultDescriptor);
-        chSet.addChangeRecord(new ChangeRecordImpl(OWLClassC.getRefListField().getName(), c
-                .getReferencedList()));
+        chSet.addChangeRecord(
+                new ChangeRecordImpl(metamodelMocks.forOwlClassC().referencedListAtt(), c.getReferencedList()));
 
         builder.mergeChanges(chSet);
         assertNotNull(entityC.getReferencedList());
@@ -467,19 +470,20 @@ public class CloneBuilderTest {
         final ObjectChangeSet changeSet = ChangeSetFactory.createObjectChangeSet(entityM, m, defaultDescriptor);
         m.setBooleanAttribute(!m.getBooleanAttribute());
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(OWLClassM.getBooleanAttributeField().getName(), m.getBooleanAttribute()));
+                new ChangeRecordImpl(metamodelMocks.forOwlClassM().booleanAttribute(), m.getBooleanAttribute()));
         m.setIntAttribute(11111);
         changeSet
-                .addChangeRecord(new ChangeRecordImpl(OWLClassM.getIntAttributeField().getName(), m.getIntAttribute()));
+                .addChangeRecord(
+                        new ChangeRecordImpl(metamodelMocks.forOwlClassM().integerAttribute(), m.getIntAttribute()));
         m.setLongAttribute(999L);
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(OWLClassM.getLongAttributeField().getName(), m.getLongAttribute()));
+                new ChangeRecordImpl(metamodelMocks.forOwlClassM().longAttribute(), m.getLongAttribute()));
         m.setDoubleAttribute(1.1);
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(OWLClassM.getDoubleAttributeField().getName(), m.getDoubleAttribute()));
+                new ChangeRecordImpl(metamodelMocks.forOwlClassM().doubleAttribute(), m.getDoubleAttribute()));
         m.setDateAttribute(new Date(System.currentTimeMillis() + 10000L));
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(OWLClassM.getDateAttributeField().getName(), m.getDateAttribute()));
+                new ChangeRecordImpl(metamodelMocks.forOwlClassM().dateAttribute(), m.getDateAttribute()));
 
         builder.mergeChanges(changeSet);
         assertEquals(m.getBooleanAttribute(), entityM.getBooleanAttribute());
@@ -563,7 +567,7 @@ public class CloneBuilderTest {
         dClone.setOwlClassA(newValueClone);
 
         final ObjectChangeSet chSet = TestEnvironmentUtils.createObjectChangeSet(entityD, dClone, null);
-        chSet.addChangeRecord(new ChangeRecordImpl(OWLClassD.getOwlClassAField().getName(), newValueClone));
+        chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassD().owlClassAAtt(), newValueClone));
         when(uow.getOriginal(newValueClone)).thenReturn(newValue);
         builder.mergeChanges(chSet);
         assertSame(newValue, entityD.getOwlClassA());
@@ -596,10 +600,11 @@ public class CloneBuilderTest {
         qClone.setOwlClassA(newA);
         final ObjectChangeSet changeSet = TestEnvironmentUtils.createObjectChangeSet(entityQ, qClone, null);
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(OWLClassQ.getStringAttributeField().getName(), qClone.getStringAttribute()));
+                new ChangeRecordImpl(metamodelMocks.forOwlClassQ().qStringAtt(), qClone.getStringAttribute()));
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(OWLClassQ.getParentStringField().getName(), qClone.getParentString()));
-        changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassQ.getOwlClassAField().getName(), qClone.getOwlClassA()));
+                new ChangeRecordImpl(metamodelMocks.forOwlClassQ().qParentStringAtt(), qClone.getParentString()));
+        changeSet.addChangeRecord(
+                new ChangeRecordImpl(metamodelMocks.forOwlClassQ().qOwlClassAAtt(), qClone.getOwlClassA()));
 
         builder.mergeChanges(changeSet);
         assertEquals(qClone.getStringAttribute(), entityQ.getStringAttribute());

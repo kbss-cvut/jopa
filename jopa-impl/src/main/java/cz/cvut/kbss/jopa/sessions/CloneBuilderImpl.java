@@ -166,13 +166,9 @@ public class CloneBuilderImpl implements CloneBuilder {
     @Override
     public void mergeChanges(ObjectChangeSet changeSet) {
         final Object original = changeSet.getChangedObject();
-        Map<String, ChangeRecord> changes = changeSet.getChanges();
-        final EntityType<?> et = getMetamodel().entity(original.getClass());
         try {
-            for (String att : changes.keySet()) {
-                final ChangeRecord change = changes.get(att);
-                final FieldSpecification<?, ?> fs = et.getFieldSpecification(att);
-                Field f = fs.getJavaField();
+            for (ChangeRecord change : changeSet.getChanges()) {
+                Field f = change.getAttribute().getJavaField();
                 if (isImmutable(f.getType())) {
                     EntityPropertiesUtils.setFieldValue(f, original, change.getNewValue());
                     continue;

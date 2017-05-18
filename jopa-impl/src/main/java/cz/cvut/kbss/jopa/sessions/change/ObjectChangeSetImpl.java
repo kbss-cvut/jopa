@@ -14,12 +14,15 @@
  */
 package cz.cvut.kbss.jopa.sessions.change;
 
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class ObjectChangeSetImpl implements ObjectChangeSet {
 
@@ -33,7 +36,7 @@ public class ObjectChangeSetImpl implements ObjectChangeSet {
     private Object cloneObject;
 
     // A map of attributeName-ChangeRecord pairs to easily find the attributes to change
-    private final Map<String, ChangeRecord> attributesToChange = new HashMap<>();
+    private final Map<FieldSpecification<?, ?>, ChangeRecord> attributesToChange = new HashMap<>();
 
     // Does this change set represent a new object
     private boolean isNew;
@@ -47,25 +50,16 @@ public class ObjectChangeSetImpl implements ObjectChangeSet {
         this.context = context;
     }
 
-    /**
-     * Add a change record to this change set
-     *
-     * @param record ChangeRecord
-     */
+    @Override
     public void addChangeRecord(ChangeRecord record) {
         if (record == null)
             return;
-        String attributeName = record.getAttributeName();
-        attributesToChange.put(attributeName, record);
+        attributesToChange.put(record.getAttribute(), record);
     }
 
-    /**
-     * Returns the map with attribute names and changes made to them.
-     *
-     * @return java.util.Map
-     */
-    public Map<String, ChangeRecord> getChanges() {
-        return attributesToChange;
+    @Override
+    public Set<ChangeRecord> getChanges() {
+        return new HashSet<>(attributesToChange.values());
     }
 
     @Override
@@ -73,14 +67,17 @@ public class ObjectChangeSetImpl implements ObjectChangeSet {
         return !attributesToChange.isEmpty();
     }
 
+    @Override
     public Class<?> getObjectClass() {
         return objectClass;
     }
 
+    @Override
     public Object getChangedObject() {
         return changedObject;
     }
 
+    @Override
     public Object getCloneObject() {
         return cloneObject;
     }
@@ -89,15 +86,12 @@ public class ObjectChangeSetImpl implements ObjectChangeSet {
         this.cloneObject = cloneObject;
     }
 
+    @Override
     public void setNew(boolean isNew) {
         this.isNew = isNew;
     }
 
-    /**
-     * Returns true if this change set represents a new object
-     *
-     * @return boolean
-     */
+    @Override
     public boolean isNew() {
         return isNew;
     }

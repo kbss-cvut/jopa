@@ -842,12 +842,18 @@ public class UnitOfWorkTest {
         final ObjectChangeSet objectChanges = changeSet.getExistingObjectChanges(result);
         assertNotNull(objectChanges);
         assertEquals(2, objectChanges.getChanges().size());
-        final ChangeRecord rOne = objectChanges.getChanges().get(OWLClassA.getStrAttField().getName());
-        assertNotNull(rOne);
-        assertEquals(clone.getStringAttribute(), rOne.getNewValue());
-        final ChangeRecord rTwo = objectChanges.getChanges().get(OWLClassA.getTypesField().getName());
-        assertNotNull(rTwo);
-        assertEquals(clone.getTypes(), rTwo.getNewValue());
+        final String strAttName = OWLClassA.getStrAttField().getName();
+        final Optional<ChangeRecord> rOne = objectChanges.getChanges().stream()
+                                                         .filter(ch -> ch.getAttribute().getName().equals(strAttName))
+                                                         .findAny();
+        assertTrue(rOne.isPresent());
+        assertEquals(clone.getStringAttribute(), rOne.get().getNewValue());
+        final String typesAttName = OWLClassA.getTypesField().getName();
+        final Optional<ChangeRecord> rTwo = objectChanges.getChanges().stream()
+                                                         .filter(ch -> ch.getAttribute().getName().equals(typesAttName))
+                                                         .findAny();
+        assertTrue(rTwo.isPresent());
+        assertEquals(clone.getTypes(), rTwo.get().getNewValue());
     }
 
     @Test
@@ -925,7 +931,8 @@ public class UnitOfWorkTest {
     public void registerReplacesAlsoInheritedCollectionInstancesWithIndirectVersions() {
         final OWLClassR entityR = new OWLClassR(Generators.createIndividualIdentifier());
         entityR.setTypes(Generators.generateTypes(5));
-        when(storageMock.find(new LoadingParameters<>(OWLClassR.class, entityR.getUri(), descriptor))).thenReturn(entityR);
+        when(storageMock.find(new LoadingParameters<>(OWLClassR.class, entityR.getUri(), descriptor)))
+                .thenReturn(entityR);
         final OWLClassR clone = uow.readObject(OWLClassR.class, entityR.getUri(), descriptor);
         assertTrue(clone.getTypes() instanceof IndirectSet);
     }

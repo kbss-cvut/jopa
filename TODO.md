@@ -23,7 +23,6 @@
 
 ## Low Priority
 
-- [ ] Consider using `FieldSpecification` instead of attribute name in `ChangeRecord`
 - [ ] How to enhance query results with transactional changes? Sesame
     - First check how SQL queries in JPA behave
 - [ ] Add possibility to generate integrity constraints from the object model

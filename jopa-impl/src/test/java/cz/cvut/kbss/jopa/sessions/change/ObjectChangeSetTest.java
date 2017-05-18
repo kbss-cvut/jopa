@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,14 +14,18 @@
  */
 package cz.cvut.kbss.jopa.sessions.change;
 
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URI;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ObjectChangeSetTest {
 
@@ -45,12 +49,15 @@ public class ObjectChangeSetTest {
     @Test
     public void testAddChangeRecord() {
         final String attName = "testAtt";
-        ChangeRecord record = new ChangeRecordImpl(attName, testObject);
+        final FieldSpecification<?, ?> fs = mock(FieldSpecification.class);
+        when(fs.getName()).thenReturn(attName);
+        ChangeRecord record = new ChangeRecordImpl(fs, testObject);
         ObjectChangeSet chs = new ObjectChangeSetImpl(testObject, testClone, CONTEXT);
         chs.addChangeRecord(record);
-        assertNotNull(chs.getChanges().get(attName));
-        Object res = chs.getChanges().get(attName).getNewValue();
-        assertEquals(testObject, res);
+        final Optional<ChangeRecord> result = chs.getChanges().stream().filter(ch -> ch.getAttribute().equals(fs))
+                                                 .findAny();
+        assertTrue(result.isPresent());
+        assertEquals(testObject, result.get().getNewValue());
     }
 
     @Test

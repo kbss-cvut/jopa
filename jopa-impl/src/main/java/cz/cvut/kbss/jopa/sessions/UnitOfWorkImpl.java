@@ -526,19 +526,19 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         final EntityTypeImpl<?> et = entityType(entity.getClass());
         et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
         storage.merge(entity, f, descriptor);
-        createChangeRecord(entity, f, descriptor);
+        createChangeRecord(entity, et.getFieldSpecification(f.getName()), descriptor);
         setHasChanges();
         setIndirectCollectionIfPresent(entity, f);
         et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
     }
 
-    private void createChangeRecord(Object clone, Field field, Descriptor descriptor) {
+    private void createChangeRecord(Object clone, FieldSpecification<?, ?> fieldSpec, Descriptor descriptor) {
         final Object orig = getOriginal(clone);
         if (orig == null) {
             return;
         }
-        final ChangeRecord record = new ChangeRecordImpl(field.getName(),
-                EntityPropertiesUtils.getFieldValue(field, clone));
+        final ChangeRecord record = new ChangeRecordImpl(fieldSpec,
+                EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(), clone));
         registerChangeRecord(clone, orig, descriptor, record);
     }
 
@@ -601,8 +601,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             }
             final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
             merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
-            for (ChangeRecord record : chSet.getChanges().values()) {
-                final Field field = et.getFieldSpecification(record.getAttributeName()).getJavaField();
+            for (ChangeRecord record : chSet.getChanges()) {
+                final Field field = record.getAttribute().getJavaField();
                 storage.merge(clone, field, descriptor);
             }
             if (chSet.hasChanges()) {
@@ -759,6 +759,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     private boolean isIndividualManaged(Object identifier, Object entity) {
+        // Allows persisting the same individual into different contexts
         return keysToClones.containsKey(identifier) ||
                 newObjectsKeyToClone.containsKey(identifier) && !cloneMapping.containsKey(entity);
     }

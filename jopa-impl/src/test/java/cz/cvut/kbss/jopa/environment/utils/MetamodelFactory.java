@@ -470,6 +470,7 @@ public class MetamodelFactory {
                         enumAtt, intSetAtt)));
 
         when(booleanAtt.getJavaField()).thenReturn(OWLClassM.getBooleanAttributeField());
+        when(booleanAtt.getName()).thenReturn(OWLClassM.getBooleanAttributeField().getName());
         when(booleanAtt.getJavaType()).thenReturn(OWLClassM.getBooleanAttributeField().getType());
         when(booleanAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_booleanAttribute));
         when(booleanAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
@@ -479,6 +480,7 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(OWLClassM.getBooleanAttributeField().getName())).thenReturn(booleanAtt);
 
         when(intAtt.getJavaField()).thenReturn(OWLClassM.getIntAttributeField());
+        when(intAtt.getName()).thenReturn(OWLClassM.getIntAttributeField().getName());
         when(intAtt.getJavaType()).thenReturn(OWLClassM.getIntAttributeField().getType());
         when(intAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_intAttribute));
         when(intAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
@@ -488,6 +490,7 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(OWLClassM.getIntAttributeField().getName())).thenReturn(intAtt);
 
         when(longAtt.getJavaField()).thenReturn(OWLClassM.getLongAttributeField());
+        when(longAtt.getName()).thenReturn(OWLClassM.getLongAttributeField().getName());
         when(longAtt.getJavaType()).thenReturn(OWLClassM.getLongAttributeField().getType());
         when(longAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_longAttribute));
         when(longAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
@@ -498,6 +501,7 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(OWLClassM.getLongAttributeField().getName())).thenReturn(longAtt);
 
         when(doubleAtt.getJavaField()).thenReturn(OWLClassM.getDoubleAttributeField());
+        when(doubleAtt.getName()).thenReturn(OWLClassM.getDoubleAttributeField().getName());
         when(doubleAtt.getJavaType()).thenReturn(OWLClassM.getDoubleAttributeField().getType());
         when(doubleAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_doubleAttribute));
         when(doubleAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
@@ -507,6 +511,7 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(OWLClassM.getDoubleAttributeField().getName())).thenReturn(doubleAtt);
 
         when(dateAtt.getJavaField()).thenReturn(OWLClassM.getDateAttributeField());
+        when(dateAtt.getName()).thenReturn(OWLClassM.getDateAttributeField().getName());
         when(dateAtt.getJavaType()).thenReturn(OWLClassM.getDateAttributeField().getType());
         when(dateAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_dateAttribute));
         when(dateAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
@@ -516,6 +521,7 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(OWLClassM.getDateAttributeField().getName())).thenReturn(dateAtt);
 
         when(enumAtt.getJavaField()).thenReturn(OWLClassM.getEnumAttributeField());
+        when(enumAtt.getName()).thenReturn(OWLClassM.getEnumAttributeField().getName());
         when(enumAtt.getJavaType()).thenReturn(OWLClassM.getEnumAttributeField().getType());
         when(enumAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_enumAttribute));
         when(enumAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);
@@ -525,6 +531,7 @@ public class MetamodelFactory {
         when(etMock.getFieldSpecification(OWLClassM.getEnumAttributeField().getName())).thenReturn(enumAtt);
 
         when(intSetAtt.getJavaField()).thenReturn(OWLClassM.getIntegerSetField());
+        when(intSetAtt.getName()).thenReturn(OWLClassM.getIntegerSetField().getName());
         when(intSetAtt.getJavaType()).thenReturn(OWLClassM.getIntegerSetField().getType());
         when(intSetAtt.getIRI()).thenReturn(IRI.create(Vocabulary.p_m_IntegerSet));
         when(intSetAtt.getPersistentAttributeType()).thenReturn(Attribute.PersistentAttributeType.DATA);

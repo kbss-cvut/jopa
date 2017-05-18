@@ -24,7 +24,6 @@ import cz.cvut.kbss.jopa.sessions.ObjectChangeSet;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 
-import java.util.Map;
 import java.util.Objects;
 
 public abstract class IntegrityConstraintsValidator {
@@ -76,9 +75,8 @@ public abstract class IntegrityConstraintsValidator {
 
         final EntityType<?> et = metamodel.entity(changeSet.getObjectClass());
         final Object id = EntityPropertiesUtils.getPrimaryKey(changeSet.getCloneObject(), et);
-        for (Map.Entry<String, ChangeRecord> entry : changeSet.getChanges().entrySet()) {
-            final FieldSpecification<?, ?> fieldSpec = et.getFieldSpecification(entry.getKey());
-            validate(id, fieldSpec, entry.getValue().getNewValue());
+        for (ChangeRecord change : changeSet.getChanges()) {
+            validate(id, change.getAttribute(), change.getNewValue());
         }
     }
 
