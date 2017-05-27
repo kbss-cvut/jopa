@@ -23,6 +23,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -181,5 +182,32 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertNotNull(resultOne);
         assertNotNull(resultTwo);
         assertSame(resultOne, resultTwo);
+    }
+
+    @Test
+    public void retrieveLoadsUnmappedPropertiesTogetherWithObjectPropertyValues() {
+        this.em = getEntityManager("retrieveLoadsUnmappedPropertiesTogetherWithObjectPropertyValues", false);
+        final OWLClassV v = new OWLClassV();
+        v.setProperties(Generators.createProperties());
+        v.setThings(new HashSet<>());
+        for (int i = 0; i < Generators.randomPositiveInt(5, 10); i++) {
+            final Thing thing = new Thing();
+            thing.setName("thing" + i);
+            thing.setDescription("description of a thing. Number " + i);
+            thing.setTypes(Collections.singleton(Vocabulary.C_OWL_CLASS_A));
+            v.getThings().add(thing);
+        }
+        em.getTransaction().begin();
+        em.persist(v);
+        v.getThings().forEach(em::persist);
+        em.getTransaction().commit();
+        em.clear();
+
+        final OWLClassV result = em.find(OWLClassV.class, v.getUri());
+        assertNotNull(result);
+        assertEquals(v.getProperties(), result.getProperties());
+        final Set<String> expectedUris = v.getThings().stream().map(Thing::getUri).collect(Collectors.toSet());
+        assertEquals(v.getThings().size(), result.getThings().size());
+        result.getThings().forEach(t -> assertTrue(expectedUris.contains(t.getUri())));
     }
 }

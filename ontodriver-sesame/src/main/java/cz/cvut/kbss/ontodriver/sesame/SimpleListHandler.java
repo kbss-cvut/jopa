@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -40,6 +40,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         return new SimpleListIterator(listDescriptor, connector, vf);
     }
 
+    @Override
     IRI createListHead(SimpleListValueDescriptor listValueDescriptor, Collection<Statement> listStatements) {
         final IRI firstNode = sesameIri(listValueDescriptor.getValues().get(0).getIdentifier());
         listStatements.add(vf.createStatement(owner(listValueDescriptor), hasList(listValueDescriptor),
@@ -47,6 +48,7 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
         return firstNode;
     }
 
+    @Override
     List<Statement> createListRest(IRI head, SimpleListValueDescriptor listValueDescriptor) {
         final List<Statement> statements = new ArrayList<>(listValueDescriptor.getValues().size());
         IRI previous = head;
@@ -88,7 +90,8 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
     }
 
     @Override
-    MergeResult mergeWithOriginalList(SimpleListValueDescriptor listDescriptor, SesameIterator it) throws SesameDriverException {
+    MergeResult mergeWithOriginalList(SimpleListValueDescriptor listDescriptor, SesameIterator it) throws
+                                                                                                   SesameDriverException {
         int i = 0;
         Resource node = null;
         while (it.hasNext() && i < listDescriptor.getValues().size()) {
@@ -104,7 +107,8 @@ class SimpleListHandler extends ListHandler<SimpleListDescriptor, SimpleListValu
     }
 
     @Override
-    void appendNewNodes(SimpleListValueDescriptor listDescriptor, MergeResult mergeResult) throws SesameDriverException {
+    void appendNewNodes(SimpleListValueDescriptor listDescriptor, MergeResult mergeResult) throws
+                                                                                           SesameDriverException {
         int i = mergeResult.i;
         final Collection<Statement> toAdd = new ArrayList<>(listDescriptor.getValues().size() - i);
         Resource previous = mergeResult.previous;

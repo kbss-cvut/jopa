@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -43,7 +43,8 @@ public interface QueryHolder {
      * Gets a parameter with the specified name.
      *
      * @param name Parameter name
-     * @return Parameter object or {@code null}, if there is none with matching name
+     * @return Parameter object
+     * @throws IllegalArgumentException If the parameter of the specified name does not exist
      */
     Parameter<?> getParameter(String name);
 
@@ -51,7 +52,8 @@ public interface QueryHolder {
      * Gets a parameter with the specified position.
      *
      * @param position Parameter position
-     * @return Parameter object or {@code null}, if there is none at matching position
+     * @return Parameter object
+     * @throws IllegalArgumentException If the parameter at the specified position does not exist
      */
     Parameter<?> getParameter(int position);
 

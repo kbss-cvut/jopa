@@ -105,7 +105,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
 
     @Test
     public void loadsEmptyListAndReturnsEmptyCollection() throws Exception {
-        when(connector.findStatements(owner, hasListProperty, null, false, (IRI[]) null))
+        when(connector.findStatements(owner, hasListProperty, null, false))
                 .thenReturn(Collections.emptyList());
         final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
         assertNotNull(res);
@@ -160,7 +160,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
                     vf.createIRI(values.get(i).toString()));
             when(
                     connector.findStatements(eq(itemUri), eq(nodeContentProperty),
-                            eq((Value) null), anyBoolean(), eq(null))).thenReturn(
+                            eq(null), anyBoolean(), eq(null))).thenReturn(
                     Collections.singleton(content));
             stmts.add(content);
             prev = itemUri;
@@ -185,7 +185,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
             fail("This line should not have been reached.");
         } finally {
             verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
-                    any(Value.class), anyBoolean(), any(IRI[].class));
+                    any(Value.class), anyBoolean());
         }
     }
 
@@ -296,8 +296,7 @@ public class ReferencedListHandlerTest extends ListHandlerTestBase {
     public void insertsListOnUpdateWhenThereWereNoValuesBefore() throws Exception {
         final ReferencedListValueDescriptor descriptor = initValues(5);
         when(
-                connector.findStatements(owner, hasListProperty, null, descriptor.getListProperty()
-                                                                                 .isInferred(), (IRI[]) null))
+                connector.findStatements(owner, hasListProperty, null, descriptor.getListProperty().isInferred()))
                 .thenReturn(Collections.emptyList());
 
         handler.updateList(descriptor);

@@ -25,8 +25,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class SesameStatementTest {
@@ -61,5 +60,34 @@ public class SesameStatementTest {
         assertNotNull(rs);
         assertTrue(rs instanceof AskResultSet);
         verify(executorMock).executeBooleanQuery(ASK_BOOLEAN_QUERY);
+    }
+
+    @Test
+    public void closeClosesCurrentResultSet() throws Exception {
+        when(executorMock.executeSelectQuery(SELECT_ENTITY_QUERY)).thenReturn(mock(TupleQueryResult.class));
+        final ResultSet rs = statement.executeQuery(SELECT_ENTITY_QUERY);
+        assertTrue(rs.isOpen());
+        statement.close();
+        assertFalse(rs.isOpen());
+    }
+
+    @Test
+    public void executeQueryClosesCurrentResultSet() throws Exception {
+        when(executorMock.executeSelectQuery(SELECT_ENTITY_QUERY)).thenReturn(mock(TupleQueryResult.class));
+        final ResultSet rsOne = statement.executeQuery(SELECT_ENTITY_QUERY);
+        assertTrue(rsOne.isOpen());
+        final ResultSet rsTwo = statement.executeQuery(ASK_BOOLEAN_QUERY);
+        assertTrue(rsTwo.isOpen());
+        assertFalse(rsOne.isOpen());
+        assertNotSame(rsOne, rsTwo);
+    }
+
+    @Test
+    public void executeUpdateClosesCurrentResultSet() throws Exception {
+        when(executorMock.executeSelectQuery(SELECT_ENTITY_QUERY)).thenReturn(mock(TupleQueryResult.class));
+        final ResultSet rsOne = statement.executeQuery(SELECT_ENTITY_QUERY);
+        assertTrue(rsOne.isOpen());
+        statement.executeUpdate("INSERT DATA { ?x ?y ?z .}");
+        assertFalse(rsOne.isOpen());
     }
 }

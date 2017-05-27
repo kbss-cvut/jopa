@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,32 +14,35 @@
  */
 package cz.cvut.kbss.jopa.sessions.change;
 
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
 
 public class ChangeRecordImpl implements ChangeRecord {
 
-    private final String attributeName;
+    private final FieldSpecification<?, ?> attribute;
 
     private final Object newValue;
 
-    public ChangeRecordImpl(String attributeName, Object attValue) {
-        assert attributeName != null;
-        this.attributeName = attributeName;
-        this.newValue = attValue;
+    public ChangeRecordImpl(FieldSpecification<?, ?> att, Object value) {
+        assert att != null;
+        this.attribute = att;
+        this.newValue = value;
     }
 
+    @Override
     public Object getNewValue() {
-        return this.newValue;
+        return newValue;
     }
 
-    public String getAttributeName() {
-        return this.attributeName;
+    @Override
+    public FieldSpecification<?, ?> getAttribute() {
+        return attribute;
     }
 
     @Override
     public String toString() {
         return "ChangeRecordImpl{" +
-                "attributeName='" + attributeName + '\'' +
+                "attributeName='" + attribute.getName() + '\'' +
                 ", newValue=" + newValue +
                 '}';
     }

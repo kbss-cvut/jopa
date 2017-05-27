@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,28 +14,37 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLClass;
-
 import java.util.HashSet;
 import java.util.Set;
+import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
 
 class ContextDefinition {
 
-    private final String name;
-    final Set<OWLClass> classes = new HashSet<>();
-    final Set<org.semanticweb.owlapi.model.OWLObjectProperty> objectProperties = new HashSet<>();
-    final Set<org.semanticweb.owlapi.model.OWLDataProperty> dataProperties = new HashSet<>();
-    final Set<org.semanticweb.owlapi.model.OWLAnnotationProperty> annotationProperties = new HashSet<>();
-    final Set<org.semanticweb.owlapi.model.OWLNamedIndividual> individuals = new HashSet<>();
-
     final Set<OWLAxiom> axioms = new HashSet<>();
+    final Set<OWLClass> classes = new HashSet<>();
+    final Set<OWLObjectProperty> objectProperties = new HashSet<>();
+    final Set<OWLDataProperty> dataProperties = new HashSet<>();
+    final Set<OWLAnnotationProperty> annotationProperties = new HashSet<>();
+    final Set<OWLNamedIndividual> individuals = new HashSet<>();
 
-    final IntegrityConstraintParserImpl parser = new IntegrityConstraintParserImpl(OWLManager.getOWLDataFactory(),
-            this);
+    IntegrityConstraintSet set;
+
+    private final String name;
 
     ContextDefinition(String name) {
         this.name = name;
+    }
+
+    public void parse() {
+        final IntegrityConstraintParser parser = new IntegrityConstraintParser();
+        for (final OWLAxiom a : axioms) {
+            a.accept(parser);
+        }
+        this.set = parser.getClassIntegrityConstraintSet();
     }
 }

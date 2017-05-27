@@ -93,7 +93,7 @@ public class EntityLoader {
         return all;
     }
 
-    private boolean isJar(String filePath) {
+    private static boolean isJar(String filePath) {
         return filePath.startsWith("jar:") || filePath.endsWith(JAR_FILE_SUFFIX);
     }
 

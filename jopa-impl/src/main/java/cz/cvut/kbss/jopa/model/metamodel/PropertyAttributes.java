@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -22,6 +22,8 @@ import java.lang.reflect.Field;
 abstract class PropertyAttributes {
 
     final FieldMappingValidator validator;
+
+    TypeBuilderContext<?> typeBuilderContext;
 
     Type<?> type = null;
     Attribute.PersistentAttributeType persistentAttributeType = null;
@@ -82,16 +84,19 @@ abstract class PropertyAttributes {
         }
     }
 
-    static PropertyAttributes create(Field field, FieldMappingValidator validator) {
+    static PropertyAttributes create(Field field, FieldMappingValidator validator, TypeBuilderContext<?> context) {
+        final PropertyAttributes instance;
         if (field.getAnnotation(OWLObjectProperty.class) != null) {
-            return new ObjectPropertyAttributes(validator);
+            instance = new ObjectPropertyAttributes(validator);
         } else if (field.getAnnotation(OWLDataProperty.class) != null) {
-            return new DataPropertyAttributes(validator);
+            instance = new DataPropertyAttributes(validator);
         } else if (field.getAnnotation(OWLAnnotationProperty.class) != null) {
-            return new AnnotationPropertyAttributes(validator);
+            instance = new AnnotationPropertyAttributes(validator);
         } else {
-            return new NonPropertyAttributes(validator);
+            instance = new NonPropertyAttributes(validator);
         }
+        instance.typeBuilderContext = context;
+        return instance;
     }
 
     private static class NonPropertyAttributes extends PropertyAttributes {

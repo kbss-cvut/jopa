@@ -58,7 +58,7 @@ class ReferencedListIterator extends AbstractSesameIterator {
 
     @Override
     public boolean hasNext() throws SesameDriverException {
-        return (!next.isEmpty());
+        return !next.isEmpty();
     }
 
     @Override

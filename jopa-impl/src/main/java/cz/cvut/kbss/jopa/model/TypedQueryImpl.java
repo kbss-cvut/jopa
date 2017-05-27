@@ -28,11 +28,15 @@ import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.*;
 
 public class TypedQueryImpl<X> implements TypedQuery<X> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TypedQueryImpl.class);
 
     private final QueryHolder query;
     private final Set<URI> contexts;
@@ -65,10 +69,10 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
     @Override
     public void executeUpdate() {
         final Statement stmt = connection.createStatement();
+        try {
         URI[] uris = new URI[contexts.size()];
         uris = contexts.toArray(uris);
         setTargetOntology(stmt);
-        try {
             stmt.executeUpdate(query.assembleQuery(), uris);
         } catch (OntoDriverException e) {
             markTransactionForRollback();
@@ -76,6 +80,12 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
+        } finally {
+            try {
+                stmt.close();
+            } catch (Exception e) {
+                LOG.error("Unable to close statement after update execution.", e);
+            }
         }
     }
 
@@ -259,10 +269,11 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
     private List<X> getResultListImpl(int maxResults) throws OntoDriverException {
         assert maxResults > 0;
         final Statement stmt = connection.createStatement();
-        setTargetOntology(stmt);
-        URI[] arr = new URI[contexts.size()];
-        arr = contexts.toArray(arr);
-        try (ResultSet rs = stmt.executeQuery(query.assembleQuery(), arr)) {
+        try {
+            setTargetOntology(stmt);
+            URI[] arr = new URI[contexts.size()];
+            arr = contexts.toArray(arr);
+            final ResultSet rs = stmt.executeQuery(query.assembleQuery(), arr);
             final List<X> res = new ArrayList<>();
             // TODO register this as observer on the result set so that additional results can be loaded asynchronously
             int cnt = 0;
@@ -278,6 +289,12 @@ public class TypedQueryImpl<X> implements TypedQuery<X> {
                 cnt++;
             }
             return res;
+        } finally {
+            try {
+                stmt.close();
+            } catch (Exception e) {
+                LOG.error("Unable to close statement after query evaluation.", e);
+            }
         }
     }
 

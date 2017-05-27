@@ -92,7 +92,6 @@ public interface Attribute<X, Y> extends FieldSpecification<X, Y> {
      * @return corresponding java.lang.reflect.Member
      */
     @UnusedJPA
-    @Deprecated
     java.lang.reflect.Member getJavaMember();
 
     /**

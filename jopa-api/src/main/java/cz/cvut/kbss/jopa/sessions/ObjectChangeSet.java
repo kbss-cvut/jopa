@@ -15,7 +15,7 @@
 package cz.cvut.kbss.jopa.sessions;
 
 import java.net.URI;
-import java.util.Map;
+import java.util.Set;
 
 public interface ObjectChangeSet {
 
@@ -36,11 +36,11 @@ public interface ObjectChangeSet {
     Class<?> getObjectClass();
 
     /**
-     * Gets changes mapped by attribute names.
+     * Gets changes held in this change set.
      *
-     * @return Map of changes keyed by attribute names
+     * @return Set of changes
      */
-    Map<String, ChangeRecord> getChanges();
+    Set<ChangeRecord> getChanges();
 
     /**
      * Whether this change set contains an changes.

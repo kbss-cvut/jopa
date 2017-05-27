@@ -19,9 +19,6 @@ package cz.cvut.kbss.ontodriver.owlapi.exception;
  */
 public class InvalidOntologyIriException extends RuntimeException {
 
-    public InvalidOntologyIriException() {
-    }
-
     public InvalidOntologyIriException(String message) {
         super(message);
     }

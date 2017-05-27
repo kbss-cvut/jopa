@@ -95,7 +95,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
 
     @Test
     public void loadsEmptyListAndReturnsEmptyCollection() throws Exception {
-        when(connector.findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null))
+        when(connector.findStatements(owner, hasSimpleListProperty, null, false))
                 .thenReturn(Collections.emptyList());
         final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
         assertNotNull(res);
@@ -110,7 +110,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         initStatementsForList(simpleList);
 
         final Collection<Axiom<NamedResource>> res = handler.loadList(listDescriptor);
-        verify(connector).findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null);
+        verify(connector).findStatements(owner, hasSimpleListProperty, null, false, null);
         assertEquals(simpleList.size(), res.size());
         int i = 0;
         for (Axiom<?> ax : res) {
@@ -128,7 +128,7 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
             final Resource value = vf.createIRI(elem.toString());
             final IRI property = subject == owner ? hasSimpleListProperty : nextNodeProperty;
             stmt = vf.createStatement(subject, property, value);
-            when(connector.findStatements(subject, property, null, false, (IRI[]) null))
+            when(connector.findStatements(subject, property, null, false, null))
                     .thenReturn(Collections.singleton(stmt));
             statements.add(stmt);
             subject = value;
@@ -141,13 +141,14 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         final Collection<Statement> stmts = new HashSet<>();
         stmts.add(mock(Statement.class));
         stmts.add(mock(Statement.class));
-        when(connector.findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null)).thenReturn(stmts);
+        when(connector.findStatements(owner, hasSimpleListProperty, null, false, null)).thenReturn(stmts);
 
         try {
             handler.loadList(listDescriptor);
         } finally {
-            verify(connector, never()).findStatements(any(Resource.class), eq(nextNodeProperty),
-                    any(Value.class), any(Boolean.class), any(IRI[].class));
+            verify(connector, never())
+                    .findStatements(any(Resource.class), eq(nextNodeProperty), any(Value.class), any(Boolean.class),
+                            any());
         }
     }
 
@@ -160,14 +161,14 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
                 .createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
         final Statement firstStmt = vf.createStatement(owner, hasSimpleListProperty, firstElem);
 
-        when(connector.findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null))
+        when(connector.findStatements(owner, hasSimpleListProperty, null, false, null))
                 .thenReturn(Collections.singleton(firstStmt));
-        when(connector.findStatements(firstElem, nextNodeProperty, null, false, (IRI[]) null)).thenReturn(stmts);
+        when(connector.findStatements(firstElem, nextNodeProperty, null, false, null)).thenReturn(stmts);
 
         try {
             handler.loadList(listDescriptor);
         } finally {
-            verify(connector).findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null);
+            verify(connector).findStatements(owner, hasSimpleListProperty, null, false, null);
         }
     }
 
@@ -176,18 +177,18 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
         final Resource firstElem = vf
                 .createIRI("http://krizik.felk.cvut.cz/ontologies/jopa/firstElem");
         final Statement firstStmt = vf.createStatement(owner, hasSimpleListProperty, firstElem);
-        when(connector.findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null))
+        when(connector.findStatements(owner, hasSimpleListProperty, null, false, null))
                 .thenReturn(Collections.singleton(firstStmt));
         final Statement nextStmt = vf.createStatement(firstElem, nextNodeProperty,
                 vf.createLiteral(System.currentTimeMillis()));
-        when(connector.findStatements(firstElem, nextNodeProperty, null, false, (IRI[]) null))
+        when(connector.findStatements(firstElem, nextNodeProperty, null, false, null))
                 .thenReturn(Collections.singleton(nextStmt));
 
         try {
             handler.loadList(listDescriptor);
         } finally {
-            verify(connector).findStatements(owner, hasSimpleListProperty, null, false, (IRI[]) null);
-            verify(connector).findStatements(firstElem, nextNodeProperty, null, false, (IRI[]) null);
+            verify(connector).findStatements(owner, hasSimpleListProperty, null, false, null);
+            verify(connector).findStatements(firstElem, nextNodeProperty, null, false, null);
         }
     }
 
@@ -241,8 +242,8 @@ public class SimpleListHandlerTest extends ListHandlerTestBase {
     public void insertsListOnUpdateWhenThereWereNoValuesBefore() throws Exception {
         final SimpleListValueDescriptor descriptor = initValues(5);
         when(
-                connector.findStatements(owner, hasSimpleListProperty, null, descriptor
-                        .getListProperty().isInferred(), (IRI[]) null)).thenReturn(Collections.emptyList());
+                connector.findStatements(owner, hasSimpleListProperty, null, descriptor.getListProperty().isInferred()))
+                .thenReturn(Collections.emptyList());
 
         handler.updateList(descriptor);
         verify(connector, never()).removeStatements(any(Collection.class));

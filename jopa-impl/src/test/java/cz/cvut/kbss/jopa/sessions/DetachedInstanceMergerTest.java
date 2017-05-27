@@ -30,13 +30,15 @@ public class DetachedInstanceMergerTest {
     @Mock
     private MetamodelImpl metamodel;
 
+    private MetamodelMocks metamodelMocks;
+
     private DetachedInstanceMerger merger;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        final MetamodelMocks mocks = new MetamodelMocks();
-        mocks.setMocks(metamodel);
+        this.metamodelMocks = new MetamodelMocks();
+        metamodelMocks.setMocks(metamodel);
         when(uow.getMetamodel()).thenReturn(metamodel);
         this.descriptor = new EntityDescriptor();
 
@@ -51,7 +53,7 @@ public class DetachedInstanceMergerTest {
         final String updatedString = "updatedString";
         detached.setStringAttribute(updatedString);
         final ObjectChangeSet changeSet = createChangeSet(original, detached);
-        changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassA.getStrAttField().getName(), updatedString));
+        changeSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassA().stringAttribute(), updatedString));
 
         final OWLClassA result = (OWLClassA) merger.mergeChangesFromDetachedToManagedInstance(changeSet, descriptor);
         assertEquals(updatedString, result.getStringAttribute());
@@ -63,7 +65,7 @@ public class DetachedInstanceMergerTest {
         final OWLClassA detached = new OWLClassA(original.getUri());
         detached.setTypes(original.getTypes());
         final ObjectChangeSet changeSet = createChangeSet(original, detached);
-        changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassA.getStrAttField().getName(), null));
+        changeSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassA().stringAttribute(), null));
 
         final OWLClassA result = (OWLClassA) merger.mergeChangesFromDetachedToManagedInstance(changeSet, descriptor);
         assertNull(result.getStringAttribute());
@@ -80,7 +82,7 @@ public class DetachedInstanceMergerTest {
         newRefOrig.setStringAttribute(newRef.getStringAttribute());
         newRefOrig.setTypes(new HashSet<>(newRef.getTypes()));
         final ObjectChangeSet chSet = createChangeSet(orig, clone);
-        chSet.addChangeRecord(new ChangeRecordImpl(OWLClassD.getOwlClassAField().getName(), newRef));
+        chSet.addChangeRecord(new ChangeRecordImpl(metamodelMocks.forOwlClassD().owlClassAAtt(), newRef));
         when(uow.readObject(OWLClassA.class, newRef.getUri(), descriptor)).thenReturn(newRefOrig);
         when(uow.isTypeManaged(OWLClassA.class)).thenReturn(true);
 

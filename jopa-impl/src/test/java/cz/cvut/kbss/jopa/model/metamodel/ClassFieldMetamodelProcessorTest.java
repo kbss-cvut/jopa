@@ -16,6 +16,7 @@ package cz.cvut.kbss.jopa.model.metamodel;
 
 import cz.cvut.kbss.jopa.environment.OWLClassJ;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
+import cz.cvut.kbss.jopa.utils.NamespaceResolver;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -23,8 +24,7 @@ import java.lang.reflect.Field;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class ClassFieldMetamodelProcessorTest {
 
@@ -33,8 +33,10 @@ public class ClassFieldMetamodelProcessorTest {
     @Test(expected = MetamodelInitializationException.class)
     public void processingNonTransientFieldWithoutPropertyInfoThrowsException() throws Exception {
         final EntityTypeImpl<InvalidClass> etMock = mock(EntityTypeImpl.class);
-        final ClassFieldMetamodelProcessor<InvalidClass> processor = new ClassFieldMetamodelProcessor<>(
-                InvalidClass.class, etMock, metamodelBuilder);
+        when(etMock.getJavaType()).thenReturn(InvalidClass.class);
+        final ClassFieldMetamodelProcessor<InvalidClass> processor =
+                new ClassFieldMetamodelProcessor<>(new TypeBuilderContext<>(etMock, new NamespaceResolver()),
+                        metamodelBuilder);
         final Field field = InvalidClass.class.getDeclaredField("invalidAttribute");
         processor.processField(field);
     }
@@ -56,8 +58,10 @@ public class ClassFieldMetamodelProcessorTest {
     public void processPluralFieldWithNonEmptyCardinalityConstraintAddsTheConstraintToAttributeSpecification()
             throws Exception {
         final EntityTypeImpl<OWLClassJ> etMock = mock(EntityTypeImpl.class);
-        final ClassFieldMetamodelProcessor<OWLClassJ> processor = new ClassFieldMetamodelProcessor<>(OWLClassJ.class,
-                etMock, metamodelBuilder);
+        when(etMock.getJavaType()).thenReturn(OWLClassJ.class);
+        final ClassFieldMetamodelProcessor<OWLClassJ> processor =
+                new ClassFieldMetamodelProcessor<>(new TypeBuilderContext<>(etMock, new NamespaceResolver()),
+                        metamodelBuilder);
         final Field field = OWLClassJ.getOwlClassAField();
         processor.processField(field);
         final ArgumentCaptor<Attribute> captor = ArgumentCaptor.forClass(Attribute.class);

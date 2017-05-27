@@ -27,9 +27,9 @@ import java.util.Objects;
 
 public class SesameStatement implements Statement {
 
-    protected StatementOntology targetOntology = StatementOntology.TRANSACTIONAL;
-    protected final StatementExecutor queryExecutor;
-    protected ResultSet resultSet;
+    private StatementOntology targetOntology = StatementOntology.TRANSACTIONAL;
+    private final StatementExecutor queryExecutor;
+    private ResultSet resultSet;
 
     private boolean open;
 
@@ -42,17 +42,18 @@ public class SesameStatement implements Statement {
     public ResultSet executeQuery(String sparql, URI... contexts) throws OntoDriverException {
         ensureOpen();
         validateQueryParams(sparql);
-        determineResult(sparql);
+        closeCurrentResultSet();
+        this.resultSet = determineResult(sparql);
         return resultSet;
     }
 
-    private void determineResult(String sparql) throws SesameDriverException {
+    private ResultSet determineResult(String sparql) throws SesameDriverException {
         if (isAskQuery(sparql)) {
-            this.resultSet = new AskResultSet(queryExecutor.executeBooleanQuery(sparql), this);
+            return new AskResultSet(queryExecutor.executeBooleanQuery(sparql), this);
         } else {
             final TupleQueryResult tqr = queryExecutor.executeSelectQuery(sparql);
             try {
-                this.resultSet = new SelectResultSet(tqr, this);
+                return new SelectResultSet(tqr, this);
             } catch (QueryEvaluationException e) {
                 throw new SesameDriverException(e);
             }
@@ -67,6 +68,7 @@ public class SesameStatement implements Statement {
     public void executeUpdate(String sparql, URI... contexts) throws OntoDriverException {
         ensureOpen();
         validateQueryParams(sparql);
+        closeCurrentResultSet();
         queryExecutor.executeUpdate(sparql);
     }
 
@@ -87,11 +89,16 @@ public class SesameStatement implements Statement {
         }
     }
 
+    @Override
     public void close() throws Exception {
         if (!open) {
             return;
         }
         this.open = false;
+        closeCurrentResultSet();
+    }
+
+    private void closeCurrentResultSet() throws OntoDriverException {
         if (resultSet != null) {
             resultSet.close();
             this.resultSet = null;
@@ -118,7 +125,7 @@ public class SesameStatement implements Statement {
         return targetOntology == StatementOntology.CENTRAL;
     }
 
-    protected void ensureOpen() {
+    void ensureOpen() {
         if (!open) {
             throw new IllegalStateException("This statement is closed.");
         }

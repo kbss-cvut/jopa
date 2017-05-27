@@ -117,10 +117,9 @@ public class ChangeManagerImpl implements ChangeManager {
             if (clVal == null && origVal == null) {
                 continue;
             }
-            final String attName = f.getName();
             boolean changed = valueChanged(origVal, clVal);
             if (changed) {
-                changeSet.addChangeRecord(new ChangeRecordImpl(attName, clVal));
+                changeSet.addChangeRecord(new ChangeRecordImpl(fs, clVal));
                 changes = true;
             }
         }

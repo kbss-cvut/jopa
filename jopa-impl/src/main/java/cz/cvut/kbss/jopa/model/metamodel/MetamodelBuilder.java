@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -54,12 +54,13 @@ public class MetamodelBuilder {
 
         LOG.debug("Processing OWL class: {}", cls);
 
-        final AbstractIdentifiableType<X> et = ManagedClassProcessor.processManagedType(cls);
+        final TypeBuilderContext<X> et = ManagedClassProcessor.processManagedType(cls);
 
         processManagedType(et);
     }
 
-    private <X> void processManagedType(AbstractIdentifiableType<X> type) {
+    private <X> void processManagedType(TypeBuilderContext<X> context) {
+        final AbstractIdentifiableType<X> type = context.getType();
         final Class<X> cls = type.getJavaType();
         typeMap.put(cls, type);
 
@@ -68,7 +69,7 @@ public class MetamodelBuilder {
             type.setSupertype(supertype);
         }
 
-        final ClassFieldMetamodelProcessor<X> fieldProcessor = new ClassFieldMetamodelProcessor<>(cls, type, this);
+        final ClassFieldMetamodelProcessor<X> fieldProcessor = new ClassFieldMetamodelProcessor<>(context, this);
 
         for (Field f : cls.getDeclaredFields()) {
             fieldProcessor.processField(f);
@@ -92,9 +93,9 @@ public class MetamodelBuilder {
             if (typeMap.containsKey(managedSupertype)) {
                 return (AbstractIdentifiableType<? super X>) typeMap.get(managedSupertype);
             }
-            final AbstractIdentifiableType<? super X> type = ManagedClassProcessor.processManagedType(managedSupertype);
-            processManagedType(type);
-            return type;
+            final TypeBuilderContext<? super X> context = ManagedClassProcessor.processManagedType(managedSupertype);
+            processManagedType(context);
+            return context.getType();
         }
         return null;
     }

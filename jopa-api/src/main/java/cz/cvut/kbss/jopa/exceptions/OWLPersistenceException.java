@@ -19,9 +19,6 @@ package cz.cvut.kbss.jopa.exceptions;
  */
 public class OWLPersistenceException extends RuntimeException {
 
-    public OWLPersistenceException() {
-    }
-
     public OWLPersistenceException(String message, Throwable cause) {
         super(message, cause);
     }

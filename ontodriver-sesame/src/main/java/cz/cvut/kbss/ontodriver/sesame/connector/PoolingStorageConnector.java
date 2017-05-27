@@ -161,13 +161,25 @@ class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
+    public Collection<Statement> findStatements(Resource subject, IRI property, Value value, boolean includeInferred)
+            throws SesameDriverException {
+        return findStatements(subject, property, value, includeInferred, null);
+    }
+
+    @Override
     public Collection<Statement> findStatements(Resource subject, IRI property, Value value,
-                                                boolean includeInferred, IRI... contexts) throws SesameDriverException {
+                                                boolean includeInferred, IRI context) throws SesameDriverException {
         verifyTransactionActive();
         try {
-            final Collection<Statement> statements = Iterations
-                    .asList(connection.getStatements(subject, property, value, includeInferred, contexts));
-            localModel.enhanceStatements(statements, subject, property, value, contexts);
+            final Collection<Statement> statements;
+            if (context != null) {
+                statements = Iterations
+                        .asList(connection.getStatements(subject, property, value, includeInferred, context));
+            } else {
+                statements = Iterations
+                        .asList(connection.getStatements(subject, property, value, includeInferred));
+            }
+            localModel.enhanceStatements(statements, subject, property, value, context);
             return statements;
         } catch (RepositoryException e) {
             rollback();
@@ -176,12 +188,23 @@ class PoolingStorageConnector extends AbstractConnector {
     }
 
     @Override
-    public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred,
-                                     IRI... contexts) throws SesameDriverException {
+    public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred)
+            throws SesameDriverException {
+        return containsStatement(subject, property, value, includeInferred, null);
+    }
+
+    @Override
+    public boolean containsStatement(Resource subject, IRI property, Value value, boolean includeInferred, IRI context)
+            throws SesameDriverException {
         verifyTransactionActive();
         try {
-            return connection.hasStatement(subject, property, value, includeInferred, contexts) ||
-                    localModel.contains(subject, property, value, contexts);
+            final boolean connectionHas;
+            if (context != null) {
+                connectionHas = connection.hasStatement(subject, property, value, includeInferred, context);
+            } else {
+                connectionHas = connection.hasStatement(subject, property, value, includeInferred);
+            }
+            return connectionHas || localModel.contains(subject, property, value, context);
         } catch (RepositoryException e) {
             rollback();
             throw new SesameDriverException(e);

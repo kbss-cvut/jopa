@@ -23,21 +23,21 @@ import java.util.Objects;
 /**
  * Query parameter value holder.
  */
-public abstract class ParameterValue {
+public interface ParameterValue {
 
     /**
      * Gets the value held by this wrapper.
      *
      * @return The parameter value
      */
-    public abstract Object getValue();
+    Object getValue();
 
     /**
      * Gets this parameter value as a string which can be inserted directly into a query.
      *
      * @return Value as query string
      */
-    public abstract String getQueryString();
+    String getQueryString();
 
     /**
      * Returns a new variable parameter specification.
@@ -48,7 +48,7 @@ public abstract class ParameterValue {
      * @param name Parameter (variable) name
      * @return Parameter value object
      */
-    public static ParameterValue createVariableValue(String name) {
+    static ParameterValue createVariableValue(String name) {
         return new NamedVariableParameterValue(name);
     }
 
@@ -61,7 +61,7 @@ public abstract class ParameterValue {
      * @param position Parameter (variable) position
      * @return Parameter value object
      */
-    public static ParameterValue createVariableValue(Integer position) {
+    static ParameterValue createVariableValue(Integer position) {
         return new PositionalVariableParameterValue(position);
     }
 
@@ -74,7 +74,7 @@ public abstract class ParameterValue {
      * @param language Language tag of the value, e.g. en, cz. Optional
      * @return Parameter value object
      */
-    public static ParameterValue create(String value, String language) {
+    static ParameterValue create(String value, String language) {
         return new StringParameterValue(value, language);
     }
 
@@ -84,7 +84,7 @@ public abstract class ParameterValue {
      * @param value The value
      * @return Parameter value object
      */
-    public static ParameterValue create(Object value) {
+    static ParameterValue create(Object value) {
         Objects.requireNonNull(value);
         if (value instanceof URI) {
             return new UriParameterValue((URI) value);

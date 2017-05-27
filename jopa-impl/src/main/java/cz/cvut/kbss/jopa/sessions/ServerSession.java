@@ -93,6 +93,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
         this.storageAccessor = new DefaultStorageAccessor(storageProperties, properties);
     }
 
+    @Override
     protected ConnectionWrapper acquireConnection() {
         return new ConnectionWrapper(storageAccessor.acquireConnection());
     }
@@ -102,6 +103,7 @@ public class ServerSession extends AbstractSession implements Wrapper {
         return new UnitOfWorkImpl(this);
     }
 
+    @Override
     public CacheManager getLiveObjectCache() {
         return liveObjectCache;
     }

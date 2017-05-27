@@ -794,7 +794,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
-        for (int i = 0; i < Generators.randomPositiveInt(10); i++) {
+        for (int i = 0; i < Generators.randomPositiveInt(5, 10); i++) {
             final URI u = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Added-" + i);
             // Insert at random position
             update.getSimpleList().add(Generators.randomInt(update.getSimpleList().size()), u);
@@ -814,7 +814,7 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
 
         final OWLClassP update = em.find(OWLClassP.class, entityP.getUri());
         em.getTransaction().begin();
-        for (int i = 0; i < Generators.randomPositiveInt(10); i++) {
+        for (int i = 0; i < Generators.randomPositiveInt(5, 10); i++) {
             final URI u = URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#Added-" + i);
             // We might even overwrite items set in previous iterations, but it does not matter. JOPA should handle it
             update.getReferencedList().set(Generators.randomInt(update.getReferencedList().size()), u);

@@ -18,7 +18,7 @@ import cz.cvut.kbss.jopa.CommonVocabulary;
 
 import java.util.Objects;
 
-class IntegerParameterValue extends ParameterValue {
+class IntegerParameterValue implements ParameterValue {
 
     private final int value;
 

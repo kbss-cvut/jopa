@@ -156,8 +156,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         assert entity != null;
         assert descriptor != null;
 
-        @SuppressWarnings("unchecked")
-        final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
+        @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         try {
             if (primaryKey == null) {
                 primaryKey = generateIdentifier(et);
@@ -214,9 +213,9 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         try {
             final Map<URI, Map<URI, Object>> persists = pendingPersists.getInstances();
             if (!persists.isEmpty()) {
-                for (URI ctx : persists.keySet()) {
-                    for (Entry<URI, Object> e : persists.get(ctx).entrySet()) {
-                        verifyInstanceExistInOntology(ctx, e.getKey(), e.getValue());
+                for (Entry<URI, Map<URI, Object>> entry : persists.entrySet()) {
+                    for (Entry<URI, Object> e : entry.getValue().entrySet()) {
+                        verifyInstanceExistInOntology(entry.getKey(), e.getKey(), e.getValue());
                     }
                 }
             }
@@ -253,8 +252,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     @Override
     public <T> void updateFieldValue(T entity, Field field, Descriptor descriptor) {
-        @SuppressWarnings("unchecked")
-        final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
+        @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI pkUri = EntityPropertiesUtils.getPrimaryKey(entity, et);
 
         entityBreaker.setCascadeResolver(new PersistCascadeResolver(this));

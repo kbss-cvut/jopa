@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,14 +14,13 @@
  */
 package cz.cvut.kbss.jopa.owl2java;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class OWL2Java {
 
@@ -40,28 +39,28 @@ public class OWL2Java {
             {
                 accepts(Param.MAPPING_FILE.arg, Param.MAPPING_FILE.description).withRequiredArg().ofType(String.class);
                 accepts(Param.PACKAGE.arg, Param.PACKAGE.description).withRequiredArg().ofType(String.class)
-                                                                     .defaultsTo("generated");
+                    .defaultsTo("generated");
                 accepts(Param.CONTEXT.arg, Param.CONTEXT.description).withOptionalArg().ofType(String.class);
                 accepts(Param.WITH_IRIS.arg, Param.WITH_IRIS.description).withRequiredArg().ofType(Boolean.class)
-                                                                         .defaultsTo(false);
+                    .defaultsTo(false);
                 accepts(Param.TARGET_DIR.arg, Param.TARGET_DIR.description).withRequiredArg().ofType(String.class)
-                        .defaultsTo("");
+                    .defaultsTo("");
                 accepts(Param.WHOLE_ONTOLOGY_AS_IC.arg, Param.WHOLE_ONTOLOGY_AS_IC.description).withOptionalArg().ofType(Boolean.class)
-                        .defaultsTo(false);
+                    .defaultsTo(false);
             }
         });
         map.put(Command.vocabulary, new OptionParser() {
             {
                 accepts(Param.MAPPING_FILE.arg, Param.MAPPING_FILE.description).withRequiredArg().ofType(String.class);
                 accepts(Param.PACKAGE.arg, Param.PACKAGE.description).withRequiredArg().ofType(String.class)
-                        .defaultsTo("generated");
+                    .defaultsTo("generated");
                 accepts(Param.CONTEXT.arg, Param.CONTEXT.description).withRequiredArg().ofType(String.class);
                 accepts(Param.WITH_IRIS.arg, Param.WITH_IRIS.description).withRequiredArg().ofType(Boolean.class)
-                                                                         .defaultsTo(false);
+                    .defaultsTo(false);
                 accepts(Param.TARGET_DIR.arg, Param.TARGET_DIR.description).withRequiredArg().ofType(String.class)
-                                                                           .defaultsTo("");
+                    .defaultsTo("");
                 accepts(Param.WHOLE_ONTOLOGY_AS_IC.arg, Param.WHOLE_ONTOLOGY_AS_IC.description).withOptionalArg().ofType(Boolean.class)
-                        .defaultsTo(false);
+                    .defaultsTo(false);
             }
         });
         map.put(Command.list, new OptionParser() {
@@ -76,29 +75,12 @@ public class OWL2Java {
         });
     }
 
-    private enum Command {
-        help, list, transform, vocabulary, version
-    }
-
-    private enum Param {
-        MAPPING_FILE("m", "mapping file"), CONTEXT("c", "context name"), WITH_IRIS("w", "with OWLAPI IRIs"), TARGET_DIR(
-                "d", "output directory"), PACKAGE("p", "package"), WHOLE_ONTOLOGY_AS_IC("i","interpret whole ontology as integrity constraints; this option supersedes the '-c' option.");
-
-        private final String arg;
-        private final String description;
-
-        Param(String arg, String description) {
-            this.arg = arg;
-            this.description = description;
-        }
-    }
-
     private static void printHelp(Command cc) {
         switch (cc) {
             case help:
                 System.out
-                        .println(
-                                "Help command gives hints on how to use other commands. Try 'OWL2Java help <command>' for more specific info.");
+                    .println(
+                        "Help command gives hints on how to use other commands. Try 'OWL2Java help <command>' for more specific info.");
                 System.out.println("");
                 System.out.println("Syntax: OWL2Java help <command>");
                 System.out.println("");
@@ -107,23 +89,23 @@ public class OWL2Java {
                 System.out.println("Lists all available IC contexts.");
                 System.out.println("");
                 System.out
-                        .println("Syntax: OWL2Java list <ontology_iri> [ <options> ].");
+                    .println("Syntax: OWL2Java list <ontology_iri> [ <options> ].");
                 System.out.println("");
                 break;
             case transform:
                 System.out
-                        .println("Transforms all ICs into annotated Java classes.");
+                    .println("Transforms all ICs into annotated Java classes.");
                 System.out.println("");
                 System.out
-                        .println("Syntax: OWL2Java transform <ontology_iri> [ <options> ].");
+                    .println("Syntax: OWL2Java transform <ontology_iri> [ <options> ].");
                 System.out.println("");
                 break;
             case vocabulary:
                 System.out
-                        .println("Generates vocabulary based on the ICs.");
+                    .println("Generates vocabulary based on the ICs.");
                 System.out.println("");
                 System.out
-                        .println("Syntax: OWL2Java vocabulary <ontology_iri> [ <options> ].");
+                    .println("Syntax: OWL2Java vocabulary <ontology_iri> [ <options> ].");
                 System.out.println("");
                 break;
             case version:
@@ -157,7 +139,7 @@ public class OWL2Java {
 
         if ((c = getCommandOrNull(args[0])) == null) {
             System.err
-                    .println("Invalid command " + args[0] + ", try 'OWL2Java help' for the list of available commands");
+                .println("Invalid command " + args[0] + ", try 'OWL2Java help' for the list of available commands");
             return;
         }
 
@@ -174,7 +156,7 @@ public class OWL2Java {
                         printHelp(cc);
                     } else {
                         System.err.println("Invalid command " + args[0] + " " + args[1] +
-                                ", try 'OWL2Java help' for the list of available commands.");
+                            ", try 'OWL2Java help' for the list of available commands.");
                         return;
                     }
                 } else {
@@ -217,9 +199,9 @@ public class OWL2Java {
     private static boolean verifyArgumentCount(OptionSet os) {
         if (os.nonOptionArguments().size() != 2) {
             System.err
-                    .println("Exactly one ontology IRI has to be specified, got "
-                            + (os.nonOptionArguments().size() - 1)
-                            + ", try 'OWL2Java help' for the list of available commands");
+                .println("Exactly one ontology IRI has to be specified, got "
+                    + (os.nonOptionArguments().size() - 1)
+                    + ", try 'OWL2Java help' for the list of available commands");
             return false;
         }
         return true;
@@ -235,8 +217,8 @@ public class OWL2Java {
         final OWL2JavaTransformer oj = getTransformer(os);
 
         oj.transform(whole ? null : os.valueOf(Param.CONTEXT.arg).toString(),
-                os.valueOf(Param.PACKAGE.arg).toString(), os.valueOf(Param.TARGET_DIR.arg).toString(),
-                (Boolean) os.valueOf(Param.WITH_IRIS.arg));
+            os.valueOf(Param.PACKAGE.arg).toString(), os.valueOf(Param.TARGET_DIR.arg).toString(),
+            (Boolean) os.valueOf(Param.WITH_IRIS.arg));
     }
 
     private static boolean verifyTransformOptions(OptionSet os) {
@@ -246,7 +228,7 @@ public class OWL2Java {
 
         if (!os.has(Param.CONTEXT.arg)) {
             System.err.println("The parameter '-" + Param.CONTEXT.arg +
-                    "' is obligatory. Try the 'help' command for more details.");
+                "' is obligatory. Try the 'help' command for more details.");
             return false;
         }
         return true;
@@ -261,6 +243,23 @@ public class OWL2Java {
 
 
         transformer.generateVocabulary(whole ? null : os.valueOf(Param.CONTEXT.arg).toString(), os.valueOf(Param.PACKAGE.arg).toString(),
-                os.valueOf(Param.TARGET_DIR.arg).toString(), (Boolean) os.valueOf(Param.WITH_IRIS.arg));
+            os.valueOf(Param.TARGET_DIR.arg).toString(), (Boolean) os.valueOf(Param.WITH_IRIS.arg));
+    }
+
+    private enum Command {
+        help, list, transform, vocabulary, version
+    }
+
+    private enum Param {
+        MAPPING_FILE("m", "mapping file"), CONTEXT("c", "context name"), WITH_IRIS("w", "with OWLAPI IRIs"), TARGET_DIR(
+            "d", "output directory"), PACKAGE("p", "package"), WHOLE_ONTOLOGY_AS_IC("i", "interpret whole ontology as integrity constraints; this option supersedes the '-c' option.");
+
+        private final String arg;
+        private final String description;
+
+        Param(String arg, String description) {
+            this.arg = arg;
+            this.description = description;
+        }
     }
 }

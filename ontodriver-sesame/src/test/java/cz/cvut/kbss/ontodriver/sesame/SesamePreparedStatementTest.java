@@ -15,6 +15,7 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.PreparedStatement;
+import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.sesame.connector.StatementExecutor;
 import cz.cvut.kbss.ontodriver.sesame.query.SesamePreparedStatement;
@@ -24,6 +25,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,6 +48,10 @@ public class SesamePreparedStatementTest {
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorEmptyStatement() throws Exception {
         initStatement("");
+    }
+
+    private void initStatement(final String query) throws OntoDriverException {
+        this.statement = new SesamePreparedStatement(executorMock, query);
     }
 
     @Test
@@ -74,7 +80,15 @@ public class SesamePreparedStatementTest {
         verify(executorMock).executeUpdate(expected);
     }
 
-    private void initStatement(final String query) throws OntoDriverException {
-        this.statement = new SesamePreparedStatement(executorMock, query);
+    @Test
+    public void executeQueryClosesCurrentResultSet() throws Exception {
+        final String query = "SELECT ?x ?y ?z WHERE { ?x ?y ?z . }";
+        initStatement(query);
+        final ResultSet rsOne = statement.executeQuery();
+        assertTrue(rsOne.isOpen());
+        final ResultSet rsTwo = statement.executeQuery();
+        assertTrue(rsTwo.isOpen());
+        assertFalse(rsOne.isOpen());
+        assertNotSame(rsOne, rsTwo);
     }
 }

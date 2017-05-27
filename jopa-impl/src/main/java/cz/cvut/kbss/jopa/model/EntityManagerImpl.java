@@ -33,13 +33,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class EntityManagerImpl extends AbstractEntityManager implements Wrapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(EntityManagerImpl.class);
+
+    private static final Object MAP_VALUE = new Object();
 
     private EntityManagerFactoryImpl emf;
 
@@ -50,7 +50,9 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     private ServerSession serverSession;
     private final Configuration configuration;
 
-    public EntityManagerImpl(EntityManagerFactoryImpl emf, Configuration configuration, ServerSession serverSession) {
+    private final Map<Object, Object> cascadingRegistry = new IdentityHashMap<>();
+
+    EntityManagerImpl(EntityManagerFactoryImpl emf, Configuration configuration, ServerSession serverSession) {
         this.emf = emf;
         this.serverSession = serverSession;
         this.configuration = configuration;
@@ -87,6 +89,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
                         markTransactionForRollback();
                         throw e;
                     }
+                    // Intentional fall-through
                 case MANAGED:
                     cascadePersist(entity, descriptor);
                     break;
@@ -104,6 +107,18 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
 
     private void checkClassIsValidEntity(Class<?> cls) {
         getMetamodel().entity(cls);
+    }
+
+    private void registerProcessedInstance(Object instance) {
+        cascadingRegistry.put(instance, MAP_VALUE);
+    }
+
+    private boolean isCascadingCycle(Object instance) {
+        return cascadingRegistry.containsKey(instance);
+    }
+
+    private void resetCascadingRegistry() {
+        cascadingRegistry.clear();
     }
 
     private void markTransactionForRollback() {
@@ -158,6 +173,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
+        } finally {
+            resetCascadingRegistry();
         }
     }
 
@@ -172,34 +189,36 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         assert entity != null;
         assert descriptor != null;
         LOG.trace("Merging {}.", entity);
+        if (isCascadingCycle(entity)) {
+            LOG.warn("Merge cascading cycle detected in entity {}.", entity);
+            return (T) getCurrentPersistenceContext().getCloneForOriginal(entity);
+        }
 
         switch (getState(entity, descriptor)) {
             case MANAGED_NEW:
             case MANAGED:
-                new OneLevelMergeCascadeExplorer() {
-                    @Override
-                    protected void exploreCascaded(Attribute<?, ?> at, Object merged, Object toMerge) {
-                        final Descriptor attDescriptor = descriptor.getAttributeDescriptor(at);
-                        mergeX(at, merged, toMerge, attDescriptor);
-                    }
-                }.start(this, entity, entity);
+                registerProcessedInstance(entity);
+                cascadeMerge(entity, entity, descriptor);
                 return entity;
             case NOT_MANAGED:
-                final T merged;
-                merged = getCurrentPersistenceContext().mergeDetached(entity, descriptor);
-
-                new OneLevelMergeCascadeExplorer() {
-                    @Override
-                    protected void exploreCascaded(Attribute<?, ?> at, Object merged, Object toMerge) {
-                        final Descriptor attDescriptor = descriptor.getAttributeDescriptor(at);
-                        mergeX(at, merged, toMerge, attDescriptor);
-                    }
-                }.start(this, merged, entity);
+                final T merged = getCurrentPersistenceContext().mergeDetached(entity, descriptor);
+                registerProcessedInstance(entity);
+                cascadeMerge(merged, entity, descriptor);
                 return merged;
             case REMOVED:
             default:
                 throw new IllegalArgumentException();
         }
+    }
+
+    private <T> void cascadeMerge(T merged, T toMerge, Descriptor descriptor) {
+        new OneLevelMergeCascadeExplorer() {
+            @Override
+            protected void exploreCascaded(Attribute<?, ?> at, Object merged, Object toMerge) {
+                final Descriptor attDescriptor = descriptor.getAttributeDescriptor(at);
+                mergeX(at, merged, toMerge, attDescriptor);
+            }
+        }.start(this, merged, toMerge);
     }
 
     private void mergeX(Attribute<?, ?> at, Object merged, Object toMerge, Descriptor descriptor) {
@@ -226,11 +245,16 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
             ensureOpen();
             Objects.requireNonNull(object);
             checkClassIsValidEntity(object.getClass());
+            if (isCascadingCycle(object)) {
+                LOG.warn("Remove cascading cycle detected in instance {}.", object);
+                return;
+            }
 
             switch (getState(object)) {
                 case MANAGED_NEW:
                 case MANAGED:
                     getCurrentPersistenceContext().removeObject(object);
+                    registerProcessedInstance(object);
                     // Intentional fall-through
                 case REMOVED:
                     new SimpleOneLevelCascadeExplorer() {
@@ -246,6 +270,8 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
         } catch (RuntimeException e) {
             markTransactionForRollback();
             throw e;
+        } finally {
+            resetCascadingRegistry();
         }
     }
 

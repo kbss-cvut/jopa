@@ -423,14 +423,12 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     /**
-     * Finds clone for the specified original. This method assumes that the original is managed in this persistence
-     * context (UnitOfWork). However, if not, this method just goes through all the managed objects and if it does not
-     * find match, returns null.
+     * Finds clone of the specified original.
      *
-     * @param original The original object whose clone we are looking for.
-     * @return The clone or null, if there is none.
+     * @param original The original object whose clone we are looking for
+     * @return The clone or null, if there is none
      */
-    Object getCloneForOriginal(Object original) {
+    public Object getCloneForOriginal(Object original) {
         for (Entry<Object, Object> entry : cloneToOriginals.entrySet()) {
             // We use IdentityMap, so we can use ==
             if (entry.getValue() == original) {
@@ -528,19 +526,19 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         final EntityTypeImpl<?> et = entityType(entity.getClass());
         et.getLifecycleListenerManager().invokePreUpdateCallbacks(entity);
         storage.merge(entity, f, descriptor);
-        createChangeRecord(entity, f, descriptor);
+        createChangeRecord(entity, et.getFieldSpecification(f.getName()), descriptor);
         setHasChanges();
         setIndirectCollectionIfPresent(entity, f);
         et.getLifecycleListenerManager().invokePostUpdateCallbacks(entity);
     }
 
-    private void createChangeRecord(Object clone, Field field, Descriptor descriptor) {
+    private void createChangeRecord(Object clone, FieldSpecification<?, ?> fieldSpec, Descriptor descriptor) {
         final Object orig = getOriginal(clone);
         if (orig == null) {
             return;
         }
-        final ChangeRecord record = new ChangeRecordImpl(field.getName(),
-                EntityPropertiesUtils.getFieldValue(field, clone));
+        final ChangeRecord record = new ChangeRecordImpl(fieldSpec,
+                EntityPropertiesUtils.getFieldValue(fieldSpec.getJavaField(), clone));
         registerChangeRecord(clone, orig, descriptor, record);
     }
 
@@ -603,8 +601,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             }
             final DetachedInstanceMerger merger = new DetachedInstanceMerger(this);
             merger.mergeChangesFromDetachedToManagedInstance(chSet, descriptor);
-            for (ChangeRecord record : chSet.getChanges().values()) {
-                final Field field = et.getFieldSpecification(record.getAttributeName()).getJavaField();
+            for (ChangeRecord record : chSet.getChanges()) {
+                final Field field = record.getAttribute().getJavaField();
                 storage.merge(clone, field, descriptor);
             }
             if (chSet.hasChanges()) {
@@ -738,6 +736,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             // If the ID was null, extract it from the entity. It is present now
             id = getIdentifier(entity);
         }
+        assert id != null;
         // Original is null until commit
         cloneMapping.put(entity, entity);
         getNewObjectsCloneToOriginal().put(entity, null);
@@ -760,6 +759,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     }
 
     private boolean isIndividualManaged(Object identifier, Object entity) {
+        // Allows persisting the same individual into different contexts
         return keysToClones.containsKey(identifier) ||
                 newObjectsKeyToClone.containsKey(identifier) && !cloneMapping.containsKey(entity);
     }

@@ -19,7 +19,7 @@ import java.net.URI;
 /**
  * Parameter value that will be put as an IRI into the query. I.e. it will be enclosed in < and >.
  */
-class UriParameterValue extends ParameterValue {
+class UriParameterValue implements ParameterValue {
 
     private final URI uri;
 

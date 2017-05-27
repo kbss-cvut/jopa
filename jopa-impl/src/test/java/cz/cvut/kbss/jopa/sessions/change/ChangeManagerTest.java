@@ -18,6 +18,7 @@ import cz.cvut.kbss.jopa.environment.*;
 import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.environment.utils.MetamodelMocks;
 import cz.cvut.kbss.jopa.environment.utils.TestEnvironmentUtils;
+import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.sessions.ChangeManager;
 import cz.cvut.kbss.jopa.sessions.ChangeRecord;
@@ -31,7 +32,6 @@ import org.mockito.MockitoAnnotations;
 import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -61,6 +61,8 @@ public class ChangeManagerTest {
     @Mock
     private Metamodel metamodelMock;
 
+    private MetamodelMocks metamodelMocks;
+
     private ChangeManager manager;
 
     @Before
@@ -73,8 +75,8 @@ public class ChangeManagerTest {
             return TestEnvironmentUtils.getManagedTypes().contains(cls);
         });
         when(providerMock.getMetamodel()).thenReturn(metamodelMock);
-        final MetamodelMocks mocks = new MetamodelMocks();
-        mocks.setMocks(metamodelMock);
+        this.metamodelMocks = new MetamodelMocks();
+        metamodelMocks.setMocks(metamodelMock);
         typesCollection = Generators.generateTypes(10);
         initClones();
         final List<OWLClassA> clonedList = new ArrayList<>(testC.getReferencedList().size());
@@ -150,7 +152,7 @@ public class ChangeManagerTest {
         testAClone.setTypes(new HashSet<>(testA.getTypes()));
         final Map<String, Set<String>> cloneProps = new HashMap<>();
         for (Entry<String, Set<String>> e : testB.getProperties().entrySet()) {
-            final Set<String> set = e.getValue().stream().collect(Collectors.toSet());
+            final Set<String> set = new HashSet<>(e.getValue());
             cloneProps.put(e.getKey(), set);
         }
         testBClone = new OWLClassB(testB.getUri());
@@ -259,7 +261,13 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertFalse(chSet.getChanges().isEmpty());
-        assertTrue(chSet.getChanges().containsKey(OWLClassA.getStrAttField().getName()));
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassA().stringAttribute(), chSet);
+    }
+
+    private void verifyChangeSetContainsChangeOfAttribute(FieldSpecification<?, ?> att, ObjectChangeSet changeSet) {
+        final Optional<ChangeRecord> result = changeSet.getChanges().stream()
+                                                       .filter(ch -> ch.getAttribute().equals(att)).findAny();
+        assertTrue(result.isPresent());
     }
 
     @Test
@@ -271,7 +279,7 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertFalse(chSet.getChanges().isEmpty());
-        assertTrue(chSet.getChanges().containsKey(OWLClassM.getIntAttributeField().getName()));
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassM().integerAttribute(), chSet);
     }
 
     @Test
@@ -282,7 +290,7 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        assertEquals(testAClone, chSet.getChanges().get(OWLClassD.getOwlClassAField().getName()).getNewValue());
+        assertEquals(testAClone, chSet.getChanges().iterator().next().getNewValue());
     }
 
     @SuppressWarnings("unchecked")
@@ -298,8 +306,7 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        assertTrue(((Set<String>) chSet.getChanges().
-                get(OWLClassA.getTypesField().getName()).getNewValue()).contains("String"));
+        assertTrue(((Set<String>) chSet.getChanges().iterator().next().getNewValue()).contains("String"));
     }
 
     @Test
@@ -315,8 +322,8 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(2, chSet.getChanges().size());
-        assertTrue(chSet.getChanges().containsKey(OWLClassA.getStrAttField().getName()));
-        assertTrue(chSet.getChanges().containsKey(OWLClassA.getTypesField().getName()));
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassA().stringAttribute(), chSet);
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassA().typesSpec(), chSet);
     }
 
     @Test
@@ -328,7 +335,7 @@ public class ChangeManagerTest {
         assertTrue(res);
         assertFalse(chSet.getChanges().isEmpty());
         assertNotNull(chSet);
-        assertNull(chSet.getChanges().get(OWLClassA.getStrAttField().getName()).getNewValue());
+        assertNull(chSet.getChanges().iterator().next().getNewValue());
     }
 
     @Test
@@ -338,8 +345,7 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        final ChangeRecord rec = chSet.getChanges().get(OWLClassA.getTypesField().getName());
-        assertNotNull(rec.getNewValue());
+        assertNotNull(chSet.getChanges().iterator().next().getNewValue());
     }
 
     @Test
@@ -349,7 +355,7 @@ public class ChangeManagerTest {
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
-        assertTrue(chSet.getChanges().containsKey(OWLClassC.getRefListField().getName()));
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassC().referencedListAtt(), chSet);
         assertEquals(1, chSet.getChanges().size());
     }
 
@@ -362,7 +368,7 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        final ChangeRecord r = chSet.getChanges().get(OWLClassC.getRefListField().getName());
+        final ChangeRecord r = chSet.getChanges().iterator().next();
         List<OWLClassA> refs = (List<OWLClassA>) r.getNewValue();
         assertEquals(testA.getUri(), refs.get(10).getUri());
         assertEquals(testA.getStringAttribute(), refs.get(10).getStringAttribute());
@@ -377,9 +383,9 @@ public class ChangeManagerTest {
         assertTrue(chSet.getChanges().isEmpty());
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
-        assertTrue(chSet.getChanges().containsKey(OWLClassC.getRefListField().getName()));
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassC().referencedListAtt(), chSet);
         assertEquals(1, chSet.getChanges().size());
-        final ChangeRecord r = chSet.getChanges().get(OWLClassC.getRefListField().getName());
+        final ChangeRecord r = chSet.getChanges().iterator().next();
         List<OWLClassA> refs = (List<OWLClassA>) r.getNewValue();
         assertTrue(refs.contains(testA));
     }
@@ -391,7 +397,7 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        assertTrue(chSet.getChanges().containsKey(OWLClassB.getPropertiesField().getName()));
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassB().propertiesSpec(), chSet);
     }
 
     @Test
@@ -402,7 +408,7 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        assertTrue(chSet.getChanges().containsKey(OWLClassB.getPropertiesField().getName()));
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassB().propertiesSpec(), chSet);
     }
 
     @Test
@@ -413,7 +419,7 @@ public class ChangeManagerTest {
         final boolean res = manager.calculateChanges(chSet);
         assertTrue(res);
         assertEquals(1, chSet.getChanges().size());
-        assertTrue(chSet.getChanges().containsKey(OWLClassB.getPropertiesField().getName()));
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassB().propertiesSpec(), chSet);
     }
 
     private ObjectChangeSet createChangeSet(Object orig, Object clone) {
@@ -512,16 +518,17 @@ public class ChangeManagerTest {
         final ObjectChangeSet changeSet = createChangeSet(testQ, testQClone);
         final boolean res = manager.calculateChanges(changeSet);
         assertTrue(res);
-        final Map<String, ChangeRecord> changes = changeSet.getChanges();
+        final Set<ChangeRecord> changes = changeSet.getChanges();
         assertEquals(3, changes.size());
-        assertTrue(changes.containsKey(OWLClassQ.getLabelField().getName()));
-        assertEquals(testQClone.getLabel(), changes.get(OWLClassQ.getLabelField().getName()).getNewValue());
-        assertTrue(changes.containsKey(OWLClassQ.getStringAttributeField().getName()));
-        assertEquals(testQClone.getStringAttribute(),
-                changes.get(OWLClassQ.getStringAttributeField().getName()).getNewValue());
-        assertTrue(changes.containsKey(OWLClassQ.getParentStringField().getName()));
-        assertEquals(testQClone.getParentString(),
-                changes.get(OWLClassQ.getParentStringField().getName()).getNewValue());
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassQ().qLabelAtt(), changeSet);
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassQ().qStringAtt(), changeSet);
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassQ().qParentStringAtt(), changeSet);
+        changes.stream().filter(ch -> ch.getAttribute().equals(metamodelMocks.forOwlClassQ().qLabelAtt()))
+               .forEach(ch -> assertEquals(testQClone.getLabel(), ch.getNewValue()));
+        changes.stream().filter(ch -> ch.getAttribute().equals(metamodelMocks.forOwlClassQ().qStringAtt()))
+               .forEach(ch -> assertEquals(testQClone.getStringAttribute(), ch.getNewValue()));
+        changes.stream().filter(ch -> ch.getAttribute().equals(metamodelMocks.forOwlClassQ().qParentStringAtt()))
+               .forEach(ch -> assertEquals(testQClone.getParentString(), ch.getNewValue()));
     }
 
     @Test
@@ -538,9 +545,9 @@ public class ChangeManagerTest {
         final ObjectChangeSet changeSet = createChangeSet(testQ, testQClone);
         final boolean res = manager.calculateChanges(changeSet);
         assertTrue(res);
-        final Map<String, ChangeRecord> changes = changeSet.getChanges();
+        final Set<ChangeRecord> changes = changeSet.getChanges();
         assertEquals(1, changes.size());
-        assertTrue(changes.containsKey(OWLClassQ.getOwlClassAField().getName()));
-        assertEquals(newA, changes.get(OWLClassQ.getOwlClassAField().getName()).getNewValue());
+        verifyChangeSetContainsChangeOfAttribute(metamodelMocks.forOwlClassQ().qOwlClassAAtt(), changeSet);
+        assertEquals(newA, changes.iterator().next().getNewValue());
     }
 }

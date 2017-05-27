@@ -19,13 +19,11 @@
 - [ ] Add a `@Context` annotation, which would specify that a field/entity should always be loaded from the specified context.
     - This could be overwritten with a descriptor passed to EM
 - [ ] Add support for `orphanRemoval` attribute in object properties
-- [ ] Add support for namespace definition - on class and package level
 - [ ] Modify OntoDriver API to support Fetch joins
 
 
 ## Low Priority
 
-- [ ] Consider using `FieldSpecification` instead of attribute name in `ChangeRecord`
 - [ ] How to enhance query results with transactional changes? Sesame
     - First check how SQL queries in JPA behave
 - [ ] Add possibility to generate integrity constraints from the object model

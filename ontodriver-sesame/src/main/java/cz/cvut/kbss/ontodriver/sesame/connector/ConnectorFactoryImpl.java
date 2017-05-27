@@ -28,6 +28,7 @@ final class ConnectorFactoryImpl implements ConnectorFactory {
         this.open = true;
     }
 
+    @Override
     public Connector createStorageConnector(Configuration configuration) throws SesameDriverException {
         if (!open) {
             throw new IllegalStateException("The factory is closed!");
@@ -46,6 +47,7 @@ final class ConnectorFactoryImpl implements ConnectorFactory {
         this.centralConnector = new StorageConnector(configuration);
     }
 
+    @Override
     public synchronized void close() throws OntoDriverException {
         if (!open) {
             return;
@@ -57,6 +59,7 @@ final class ConnectorFactoryImpl implements ConnectorFactory {
         this.open = false;
     }
 
+    @Override
     public boolean isOpen() {
         return open;
     }

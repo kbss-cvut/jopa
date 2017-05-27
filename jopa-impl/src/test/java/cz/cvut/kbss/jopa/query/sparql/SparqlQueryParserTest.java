@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -20,8 +20,7 @@ import cz.cvut.kbss.jopa.query.QueryParameter;
 import cz.cvut.kbss.jopa.query.QueryParser;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class SparqlQueryParserTest {
 
@@ -219,5 +218,25 @@ public class SparqlQueryParserTest {
         final QueryHolder holder = queryParser.parseQuery(query);
         assertEquals(1, holder.getParameters().size());
         assertEquals(query, holder.assembleQuery());
+    }
+
+    /**
+     * Bug #6.
+     */
+    @Test
+    public void parsesQueryWithVariableWithoutTrailingSpace() {
+        final String query = "SELECT ?x WHERE {?x a ?type}";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertEquals(2, holder.getParameters().size());
+        assertNotNull(holder.getParameter("x"));
+        assertNotNull(holder.getParameter("type"));
+    }
+
+    @Test
+    public void parsesQueryWithStringLiteralInSingleQuotes() {
+        final String query = "SELECT ?x WHERE {?x a ?type; ?x rdfs:label \'label\'@en.}";
+        final QueryHolder holder = queryParser.parseQuery(query);
+        assertNotNull(holder.getParameter("x"));
+        assertNotNull(holder.getParameter("type"));
     }
 }

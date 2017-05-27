@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -25,8 +25,6 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -42,9 +40,11 @@ import static org.mockito.Mockito.*;
 
 public class SesamePropertiesTest {
 
-    private static final NamedResource SUBJECT = NamedResource.create("http://krizik.felk.cvut.cz/ontologies/jopa#Entity");
+    private static final NamedResource SUBJECT = NamedResource
+            .create("http://krizik.felk.cvut.cz/ontologies/jopa#Entity");
     private static final Assertion ASSERTION =
-            Assertion.createDataPropertyAssertion(java.net.URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#assertionOne"), false);
+            Assertion.createDataPropertyAssertion(
+                    java.net.URI.create("http://krizik.felk.cvut.cz/ontologies/jopa#assertionOne"), false);
     private static final String LANG = "en";
 
     @Mock
@@ -53,7 +53,6 @@ public class SesamePropertiesTest {
     private IRI subject;
 
     private ValueFactory vf;
-    private MemoryStore store;
 
     private Properties properties;
 
@@ -66,20 +65,23 @@ public class SesamePropertiesTest {
         when(adapterMock.getConnector()).thenReturn(connectorMock);
         when(adapterMock.getValueFactory()).thenReturn(vf);
         when(adapterMock.getLanguage()).thenReturn(LANG);
-        this.properties = new SesameProperties(adapterMock, () -> {}, () -> {});
+        this.properties = new SesameProperties(adapterMock, () -> {
+        }, () -> {
+        });
     }
 
     @Test
     public void testGetProperties() throws Exception {
         final Collection<Statement> statements = statementsForProperties(initProperties());
-        when(connectorMock.findStatements(subject, null, null, false)).thenReturn(statements);
+        when(connectorMock.findStatements(subject, null, null, false, null)).thenReturn(statements);
 
         final Collection<Axiom<?>> result = properties.getProperties(SUBJECT, null, false);
         assertEquals(statements.size(), result.size());
         for (Axiom<?> ax : result) {
             assertEquals(SUBJECT, ax.getSubject());
-            final Statement stmt = vf.createStatement(subject, vf.createIRI(ax.getAssertion().getIdentifier().toString()),
-                    SesameUtils.createDataPropertyLiteral(ax.getValue().getValue(), LANG, vf));
+            final Statement stmt = vf
+                    .createStatement(subject, vf.createIRI(ax.getAssertion().getIdentifier().toString()),
+                            SesameUtils.createDataPropertyLiteral(ax.getValue().getValue(), LANG, vf));
             assertTrue(statements.contains(stmt));
         }
     }

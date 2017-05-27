@@ -19,6 +19,10 @@ import java.util.Set;
 
 public class TestEnvironmentUtils {
 
+    private TestEnvironmentUtils() {
+        throw new AssertionError();
+    }
+
     public static <K, V> boolean arePropertiesEqual(Map<K, Set<V>> pOne, Map<K, Set<V>> pTwo) {
         if (pOne.size() != pTwo.size()) {
             return false;

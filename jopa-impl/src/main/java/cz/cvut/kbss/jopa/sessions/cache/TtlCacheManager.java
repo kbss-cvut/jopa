@@ -292,13 +292,12 @@ public class TtlCacheManager implements CacheManager {
                 }
                 TtlCacheManager.this.sweepRunning = true;
                 final long currentTime = System.currentTimeMillis();
-                final long timeToLive = TtlCacheManager.this.timeToLive;
                 final List<URI> toEvict = new ArrayList<>();
                 // Mark the objects for eviction (can't evict them now, it would
                 // cause ConcurrentModificationException)
                 for (Entry<URI, Long> e : cache.ttls.entrySet()) {
                     final long lm = e.getValue();
-                    if (lm + timeToLive < currentTime) {
+                    if (lm + TtlCacheManager.this.timeToLive < currentTime) {
                         toEvict.add(e.getKey());
                     }
                 }
@@ -315,12 +314,14 @@ public class TtlCacheManager implements CacheManager {
 
         private final Map<URI, Long> ttls = new HashMap<>();
 
+        @Override
         void put(Object identifier, Object entity, URI context) {
             super.put(identifier, entity, context);
             final URI ctx = context != null ? context : defaultContext;
             updateTimeToLive(ctx);
         }
 
+        @Override
         <T> T get(Class<T> cls, Object identifier, URI context) {
             assert cls != null;
             assert identifier != null;
@@ -339,12 +340,14 @@ public class TtlCacheManager implements CacheManager {
             ttls.put(context, System.currentTimeMillis());
         }
 
+        @Override
         void evict(URI context) {
             final URI ctx = context != null ? context : defaultContext;
             super.evict(ctx);
             ttls.remove(context);
         }
 
+        @Override
         void evict(Class<?> cls) {
             for (Entry<URI, Map<Object, Map<Class<?>, Object>>> e : repoCache.entrySet()) {
                 final Map<Object, Map<Class<?>, Object>> m = e.getValue();

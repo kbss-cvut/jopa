@@ -61,7 +61,7 @@ public abstract class PersistenceUnitTestRunner extends BaseRunner {
 
     private List<EntityManager> initPersistenceUnits() {
         final List<EntityManager> ems = new ArrayList<>();
-        for (int i = 0; i < Generators.randomPositiveInt(5); i++) {
+        for (int i = 0; i < Generators.randomPositiveInt(2, 5); i++) {
             ems.add(getEntityManager("MultiplePUsTest" + i, false));
         }
         return ems;

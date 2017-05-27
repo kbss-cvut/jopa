@@ -62,7 +62,9 @@ public class IntegrityConstraintsValidatorTest {
         clone.setStringAttribute("newString");
         final OWLClassN orig = createInstanceWithMissingRequiredField();
         final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, null);
-        changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassN.getStringAttributeField().getName(), "newString"));
+        changeSet.addChangeRecord(new ChangeRecordImpl(
+                metamodel.entity(OWLClassN.class).getFieldSpecification(OWLClassN.getStringAttributeField().getName()),
+                "newString"));
 
         validator.validate(changeSet, metamodel);
     }
@@ -94,7 +96,9 @@ public class IntegrityConstraintsValidatorTest {
         final OWLClassN clone = createInstanceWithMissingRequiredField();
         final OWLClassN orig = createInstanceWithMissingRequiredField();
         final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, null);
-        changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassN.getStringAttributeField().getName(), null));
+        changeSet.addChangeRecord(new ChangeRecordImpl(
+                metamodel.entity(OWLClassN.class).getFieldSpecification(OWLClassN.getStringAttributeField().getName()),
+                null));
 
         validator.validate(changeSet, metamodel);
     }
@@ -130,7 +134,9 @@ public class IntegrityConstraintsValidatorTest {
         }
         final ObjectChangeSet changeSet = new ObjectChangeSetImpl(orig, clone, null);
         changeSet.addChangeRecord(
-                new ChangeRecordImpl(OWLClassL.getReferencedListField().getName(), clone.getReferencedList()));
+                new ChangeRecordImpl(metamodel.entity(OWLClassL.class)
+                                              .getFieldSpecification(OWLClassL.getReferencedListField().getName()),
+                        clone.getReferencedList()));
 
         validator.validate(changeSet, metamodel);
     }
@@ -157,7 +163,9 @@ public class IntegrityConstraintsValidatorTest {
         clone.setOwlClassA(Collections.emptySet());
         final ObjectChangeSet changeSet = ChangeSetFactory
                 .createObjectChangeSet(original, clone, new EntityDescriptor());
-        changeSet.addChangeRecord(new ChangeRecordImpl(OWLClassJ.getOwlClassAField().getName(), clone.getOwlClassA()));
+        changeSet.addChangeRecord(new ChangeRecordImpl(
+                metamodel.entity(OWLClassJ.class).getFieldSpecification(OWLClassJ.getOwlClassAField().getName()),
+                clone.getOwlClassA()));
         validator.validate(changeSet, metamodel);
     }
 }
