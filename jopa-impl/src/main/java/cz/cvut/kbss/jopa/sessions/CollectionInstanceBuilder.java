@@ -61,16 +61,16 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
     @Override
     Object buildClone(Object cloneOwner, Field field, Object collection, Descriptor repository)
             throws OWLPersistenceException {
-        assert (collection instanceof Collection);
+        assert collection instanceof Collection;
         Collection<?> container = (Collection<?>) collection;
         if (container instanceof IndirectCollection<?>) {
             container = (Collection<?>) ((IndirectCollection<?>) container).getReferencedCollection();
         }
-        if (Collections.EMPTY_LIST == container) {
-            return Collections.EMPTY_LIST;
+        if (Collections.emptyList() == container) {
+            return Collections.emptyList();
         }
-        if (Collections.EMPTY_SET == container) {
-            return Collections.EMPTY_SET;
+        if (Collections.emptySet() == container) {
+            return Collections.emptySet();
         }
         Collection<?> clone = cloneUsingDefaultConstructor(cloneOwner, field, container, repository);
         if (clone == null) {
@@ -230,7 +230,7 @@ class CollectionInstanceBuilder extends AbstractInstanceBuilder {
 
     @Override
     void mergeChanges(Field field, Object target, Object originalValue, Object cloneValue) {
-        assert (originalValue == null || originalValue instanceof Collection);
+        assert originalValue == null || originalValue instanceof Collection;
         assert cloneValue instanceof Collection;
 
         Collection<Object> clone = (Collection<Object>) cloneValue;

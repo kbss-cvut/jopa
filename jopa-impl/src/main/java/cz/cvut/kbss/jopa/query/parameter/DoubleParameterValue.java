@@ -18,7 +18,7 @@ import cz.cvut.kbss.jopa.CommonVocabulary;
 
 import java.util.Objects;
 
-class DoubleParameterValue extends ParameterValue {
+class DoubleParameterValue implements ParameterValue {
 
     private final double value;
 

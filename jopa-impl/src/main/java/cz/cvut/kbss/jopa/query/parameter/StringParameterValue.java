@@ -16,7 +16,7 @@ package cz.cvut.kbss.jopa.query.parameter;
 
 import java.util.Objects;
 
-class StringParameterValue extends ParameterValue {
+class StringParameterValue implements ParameterValue {
 
     private final String value;
     private final String language;

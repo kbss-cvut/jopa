@@ -43,6 +43,7 @@ public class ReferencedListHandler extends
         return new ReferencedListIterator(listDescriptor, connector, vf);
     }
 
+    @Override
     IRI createListHead(ReferencedListValueDescriptor listValueDescriptor,
                        Collection<Statement> statements) throws SesameDriverException {
         final IRI owner = owner(listValueDescriptor);
@@ -73,6 +74,7 @@ public class ReferencedListHandler extends
         return node;
     }
 
+    @Override
     List<Statement> createListRest(IRI headNode, ReferencedListValueDescriptor listValueDescriptor)
             throws SesameDriverException {
         final IRI owner = owner(listValueDescriptor);

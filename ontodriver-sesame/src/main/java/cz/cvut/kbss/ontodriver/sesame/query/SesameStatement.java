@@ -89,6 +89,7 @@ public class SesameStatement implements Statement {
         }
     }
 
+    @Override
     public void close() throws Exception {
         if (!open) {
             return;

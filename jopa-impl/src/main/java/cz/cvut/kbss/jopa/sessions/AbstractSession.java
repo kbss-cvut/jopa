@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractSession implements Session, MetamodelProvider {
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractSession.class);
 
+    @Override
     public UnitOfWork acquireUnitOfWork() {
         UnitOfWork uow = new UnitOfWorkImpl(this);
         LOG.trace("UnitOfWork acquired.");
@@ -39,16 +40,8 @@ public abstract class AbstractSession implements Session, MetamodelProvider {
      * This method just releases the live object cache. Subclasses are free to
      * make additional cleanup.
      */
+    @Override
     public void release() {
-        releaseObjectCache();
-    }
-
-    /**
-     * Release the current liveObjectCache. This method is called whenever any
-     * attribute of a cached objects changes during a transaction because then
-     * our cache is no more actual.
-     */
-    public void releaseObjectCache() {
         getLiveObjectCache().evictAll();
     }
 

@@ -23,11 +23,6 @@ package cz.cvut.kbss.jopa.oom.exceptions;
  */
 public class UnpersistedChangeException extends RuntimeException {
 
-    private static final long serialVersionUID = 5768896830313833357L;
-
-    public UnpersistedChangeException() {
-    }
-
     public UnpersistedChangeException(String message) {
         super(message);
     }

@@ -19,7 +19,7 @@ import cz.cvut.kbss.jopa.CommonVocabulary;
 import java.util.Date;
 import java.util.Objects;
 
-class DateParameterValue extends ParameterValue {
+class DateParameterValue implements ParameterValue {
 
     private final Date value;
 

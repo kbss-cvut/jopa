@@ -53,7 +53,7 @@ class SimpleListIterator extends AbstractSesameIterator {
 
     @Override
     public boolean hasNext() {
-        return (!next.isEmpty());
+        return !next.isEmpty();
     }
 
     @Override

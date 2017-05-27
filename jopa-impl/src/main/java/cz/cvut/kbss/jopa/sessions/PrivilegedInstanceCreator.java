@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,29 +19,25 @@ import java.security.PrivilegedExceptionAction;
 
 /**
  * Builds new instance with privileged access using the specified constructor.
- * 
- * @author kidney
- * 
  */
-public class PrivilegedInstanceCreator implements
-		PrivilegedExceptionAction<Object> {
+public class PrivilegedInstanceCreator implements PrivilegedExceptionAction<Object> {
 
-	private Constructor<?> constructor;
-	private Object[] params;
+    private Constructor<?> constructor;
+    private Object[] params;
 
-	public PrivilegedInstanceCreator(Constructor<?> constructor) {
-		this.constructor = constructor;
-		this.params = null;
-	}
+    PrivilegedInstanceCreator(Constructor<?> constructor) {
+        this.constructor = constructor;
+        this.params = null;
+    }
 
-	public PrivilegedInstanceCreator(Constructor<?> constructor,
-			Object... params) {
-		this.constructor = constructor;
-		this.params = params;
-	}
+    PrivilegedInstanceCreator(Constructor<?> constructor, Object... params) {
+        this.constructor = constructor;
+        this.params = params;
+    }
 
-	public Object run() throws Exception {
-		return constructor.newInstance(params);
-	}
+    @Override
+    public Object run() throws Exception {
+        return constructor.newInstance(params);
+    }
 
 }

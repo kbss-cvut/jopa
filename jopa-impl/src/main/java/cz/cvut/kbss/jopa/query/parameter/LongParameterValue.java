@@ -18,7 +18,7 @@ import cz.cvut.kbss.jopa.CommonVocabulary;
 
 import java.util.Objects;
 
-class LongParameterValue extends ParameterValue {
+class LongParameterValue implements ParameterValue {
 
     private final long value;
 

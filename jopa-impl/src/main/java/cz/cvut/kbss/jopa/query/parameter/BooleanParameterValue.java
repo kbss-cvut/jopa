@@ -18,7 +18,7 @@ import cz.cvut.kbss.jopa.CommonVocabulary;
 
 import java.util.Objects;
 
-class BooleanParameterValue extends ParameterValue {
+class BooleanParameterValue implements ParameterValue {
 
     private final boolean value;
 

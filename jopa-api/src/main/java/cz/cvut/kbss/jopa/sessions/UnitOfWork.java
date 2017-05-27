@@ -174,6 +174,7 @@ public interface UnitOfWork extends Session {
      * Release the current unit of work. Calling this method disregards any
      * changes made to clones.
      */
+    @Override
     void release();
 
     /**

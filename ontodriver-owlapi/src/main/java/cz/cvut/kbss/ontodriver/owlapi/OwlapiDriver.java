@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -57,12 +57,10 @@ class OwlapiDriver implements Closeable, ConnectionListener {
             try {
                 c.removeListener(this);
                 c.close();
+            } catch (OntoDriverException e) {
+                throw e;
             } catch (Exception e) {
-                if (e instanceof OntoDriverException) {
-                    throw (OntoDriverException) e;
-                } else {
-                    throw new OwlapiDriverException(e);
-                }
+                throw new OwlapiDriverException(e);
             }
         }
         connectorFactory.close();

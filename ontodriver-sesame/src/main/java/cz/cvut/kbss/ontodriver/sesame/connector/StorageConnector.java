@@ -171,7 +171,7 @@ class StorageConnector extends AbstractConnector {
     }
 
     private static boolean isFileUri(URI uri) {
-        return (uri.getScheme() != null && uri.getScheme().equals(FILE_SCHEME));
+        return uri.getScheme() != null && uri.getScheme().equals(FILE_SCHEME);
     }
 
     private static boolean isRemoteRepository(URI uri) {
@@ -186,7 +186,7 @@ class StorageConnector extends AbstractConnector {
 
     @Override
     public TupleQueryResult executeSelectQuery(String query) throws SesameDriverException {
-        RepositoryConnection connection = acquireConnection();
+        final RepositoryConnection connection = acquireConnection();
         return new ConnectionStatementExecutor(connection).executeSelectQuery(query);
         // The connection is released by the result set once it is closed
     }

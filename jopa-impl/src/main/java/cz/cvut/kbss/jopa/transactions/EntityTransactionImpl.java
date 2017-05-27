@@ -139,7 +139,7 @@ public class EntityTransactionImpl implements EntityTransaction {
      * Roll back any changes if we forgot to commit or roll it back manually
      */
     @Override
-    public void finalize() throws Throwable {
+    protected void finalize() throws Throwable {
         if (isActive()) {
             rollback();
         }
