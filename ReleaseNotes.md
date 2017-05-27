@@ -1,5 +1,13 @@
 # JOPA - Release Notes
 
+## 0.9.7 - May 27, 2017
+- Fixed issue with handling cascading cycles (Bug #4).
+- Fixed issue with parsing queries without spaces after variables (Bug #6).
+- Fixed issue with loading unmapped properties in Sesame driver.
+- Added support for namespace specification.
+- Added support for generating subclasses in OWL2Java.
+- Improved handling of query result sets.
+
 ## 0.9.6 - April 27, 2017
 - Fixed issue with loading classes containing 'class' in name (Bug #5).
 - Implemented support for `EntityListener`s.
