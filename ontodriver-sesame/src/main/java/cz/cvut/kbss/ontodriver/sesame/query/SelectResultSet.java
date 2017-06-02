@@ -16,11 +16,10 @@ package cz.cvut.kbss.ontodriver.sesame.query;
 
 import cz.cvut.kbss.ontodriver.Statement;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
-import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import cz.cvut.kbss.ontodriver.sesame.exceptions.SesameDriverException;
+import cz.cvut.kbss.ontodriver.sesame.util.SesameUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.URI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -30,6 +29,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+// TODO Resolve mapping of data values with language tag
 public class SelectResultSet extends AbstractResultSet {
 
     private final TupleQueryResult result;
@@ -216,7 +216,7 @@ public class SelectResultSet extends AbstractResultSet {
             return null;
         }
         if (val instanceof Literal) {
-            return SesameUtils.getDataPropertyValue((Literal) val);
+            return SesameUtils.getDataPropertyValue((Literal) val, null).get();
         } else if (val instanceof IRI) {
             return SesameUtils.toJavaUri((IRI) val);
         } else {
@@ -245,7 +245,7 @@ public class SelectResultSet extends AbstractResultSet {
         }
         Object ob = null;
         if (val instanceof Literal) {
-            ob = SesameUtils.getDataPropertyValue((Literal) val);
+            ob = SesameUtils.getDataPropertyValue((Literal) val, null).get();
         } else if (val instanceof IRI) {
             ob = SesameUtils.toJavaUri((IRI) val);
         }
@@ -260,12 +260,12 @@ public class SelectResultSet extends AbstractResultSet {
      * Searches for a suitable constructor and creates a new instance of class {@code cls}. </p>
      * <p>
      * The type has to have single-argument constructor, which takes either {@code Value} or its subtypes or type of
-     * instance returned by {@link SesameUtils#getDataPropertyValue(Literal)}.
+     * instance returned by {@link SesameUtils#getDataPropertyValue(Literal, String)}.
      *
      * @param cls The return type
      * @param val Raw value
      * @param ob  Either raw value (if it is a resource) or instance returned by {@link
-     *            SesameUtils#getDataPropertyValue(Literal)} on passing the literal {@code val}
+     *            SesameUtils#getDataPropertyValue(Literal, String)} on passing the literal {@code val}
      * @return The new instance
      * @throws OntoDriverException If no suitable constructor is found or the instance cannot be created
      */
@@ -322,7 +322,7 @@ public class SelectResultSet extends AbstractResultSet {
 
     private String getStringImpl(Value val) {
         if (val instanceof Literal) {
-            return SesameUtils.getDataPropertyValue((Literal) val).toString();
+            return SesameUtils.getDataPropertyValue((Literal) val, null).get().toString();
         } else {
             return val.toString();
         }
@@ -353,7 +353,7 @@ public class SelectResultSet extends AbstractResultSet {
         if (!(val instanceof Literal)) {
             throw new OntoDriverException("Expected value " + val + " to be a literal.");
         }
-        return SesameUtils.getDataPropertyValue((Literal) val);
+        return SesameUtils.getDataPropertyValue((Literal) val, null).get();
     }
 
     private Object getLiteralValue(String columnName) throws OntoDriverException {
@@ -361,7 +361,7 @@ public class SelectResultSet extends AbstractResultSet {
         if (!(val instanceof Literal)) {
             throw new OntoDriverException("Expected value " + val + " to be a literal.");
         }
-        return SesameUtils.getDataPropertyValue((Literal) val);
+        return SesameUtils.getDataPropertyValue((Literal) val, null).get();
     }
 
     private Value getCurrent(int columnIndex) {

@@ -172,7 +172,7 @@ class SesameAdapter implements Closeable, Wrapper {
 
     Collection<Axiom<?>> find(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
         startTransactionIfNotActive();
-        return new AxiomLoader(connector, valueFactory).loadAxioms(axiomDescriptor);
+        return new AxiomLoader(connector, valueFactory, language).loadAxioms(axiomDescriptor);
     }
 
     void persist(AxiomValueDescriptor axiomDescriptor) throws SesameDriverException {

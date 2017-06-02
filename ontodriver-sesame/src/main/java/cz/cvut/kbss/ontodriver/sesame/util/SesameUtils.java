@@ -22,11 +22,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * Utility methods for the Sesame driver.
- *
- * @author ledvima1
  */
 public final class SesameUtils {
 
@@ -35,42 +34,52 @@ public final class SesameUtils {
     }
 
     /**
-     * Gets value of the specified data property literal as the corresponding Java object. Primitives are returned
-     * boxed.
+     * Gets value of the specified data property literal as the corresponding Java object.
+     * <p>
+     * Primitives are returned boxed. String literals with incorrect language tag result in empty value. If language is
+     * not specified, all string literals are accepted.
      *
-     * @param literal DataProperty value
-     * @return Java value corresponding to the XML Schema datatype of the literal
+     * @param literal  DataProperty value
+     * @param language Language for string-based literals, possibly {@code null}
+     * @return Java value corresponding to the XML Schema datatype of the literal wrapped in an {@link Optional} object
+     * for cases when string literal has not matching language
      * @throws IllegalArgumentException If literal's datatype is not supported
      */
-    public static Object getDataPropertyValue(Literal literal) {
+    public static Optional<Object> getDataPropertyValue(Literal literal, String language) {
         assert literal != null;
 
         final IRI datatype = literal.getDatatype();
-        if (datatype == null || datatype.equals(XMLSchema.STRING)
-                || datatype.equals(XMLSchema.NORMALIZEDSTRING) || datatype.equals(RDF.LANGSTRING)) {
-            return literal.stringValue();
+        assert datatype != null;
+
+        if (datatype.equals(XMLSchema.STRING) || datatype.equals(XMLSchema.NORMALIZEDSTRING) ||
+                datatype.equals(RDF.LANGSTRING)) {
+            if (language == null || !literal.getLanguage().isPresent() ||
+                    literal.getLanguage().get().equals(language)) {
+                return Optional.of(literal.stringValue());
+            }
+            return Optional.empty();
         } else if (datatype.equals(XMLSchema.INT) || datatype.equals(XMLSchema.UNSIGNED_INT)) {
-            return literal.intValue();
+            return Optional.of(literal.intValue());
         } else if (datatype.equals(XMLSchema.INTEGER)
                 || datatype.equals(XMLSchema.POSITIVE_INTEGER)
                 || datatype.equals(XMLSchema.NON_NEGATIVE_INTEGER)
                 || datatype.equals(XMLSchema.NEGATIVE_INTEGER)
                 || datatype.equals(XMLSchema.NON_POSITIVE_INTEGER)) {
-            return literal.intValue();
+            return Optional.of(literal.intValue());
         } else if (datatype.equals(XMLSchema.BOOLEAN)) {
-            return literal.booleanValue();
+            return Optional.of(literal.booleanValue());
         } else if (datatype.equals(XMLSchema.LONG) || datatype.equals(XMLSchema.UNSIGNED_LONG)) {
-            return literal.longValue();
+            return Optional.of(literal.longValue());
         } else if (datatype.equals(XMLSchema.DECIMAL)) {
-            return literal.decimalValue();
+            return Optional.of(literal.decimalValue());
         } else if (datatype.equals(XMLSchema.DOUBLE)) {
-            return literal.doubleValue();
+            return Optional.of(literal.doubleValue());
         } else if (datatype.equals(XMLSchema.SHORT) || datatype.equals(XMLSchema.UNSIGNED_SHORT)) {
-            return literal.shortValue();
+            return Optional.of(literal.shortValue());
         } else if (datatype.equals(XMLSchema.BYTE) || datatype.equals(XMLSchema.UNSIGNED_BYTE)) {
-            return literal.byteValue();
+            return Optional.of(literal.byteValue());
         } else if (datatype.equals(XMLSchema.DATE) || datatype.equals(XMLSchema.DATETIME)) {
-            return literal.calendarValue().toGregorianCalendar().getTime();
+            return Optional.of(literal.calendarValue().toGregorianCalendar().getTime());
         } else {
             throw new IllegalArgumentException("Unsupported datatype " + datatype);
         }

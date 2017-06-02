@@ -73,8 +73,7 @@ public class AxiomDescriptor {
     public void setAssertionContext(Assertion assertion, URI context) {
         Objects.requireNonNull(assertion);
         if (!assertions.contains(assertion)) {
-            throw new IllegalArgumentException("Assertion " + assertion
-                    + " is not present in this loading descriptor.");
+            throw new IllegalArgumentException("Assertion " + assertion + " is not present in this descriptor.");
         }
         assertionContexts.put(assertion, context);
     }

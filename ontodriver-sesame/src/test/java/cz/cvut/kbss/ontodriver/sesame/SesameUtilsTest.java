@@ -23,11 +23,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.Optional;
+
 import static org.junit.Assert.*;
 
-/**
- * @author ledvima1
- */
 public class SesameUtilsTest {
 
     private static final String LANG = "en";
@@ -55,8 +54,31 @@ public class SesameUtilsTest {
     @Test
     public void enumLiteralIsReturnedAsStringValue() throws Exception {
         final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
-        final Object result = SesameUtils.getDataPropertyValue(literal);
-        assertEquals(Severity.LOW.toString(), result);
+        final Optional<Object> result = SesameUtils.getDataPropertyValue(literal, LANG);
+        assertEquals(Severity.LOW.toString(), result.get());
+    }
+
+    @Test
+    public void stringLiteralWithLanguageTagNotMatchingExpectedReturnsEmptyOptional() {
+        final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
+        final Optional<Object> result = SesameUtils.getDataPropertyValue(literal, "cs");
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    public void stringLiteralIsReturnedWhenItsLanguageMatches() {
+        final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
+        final Optional<Object> result = SesameUtils.getDataPropertyValue(literal, LANG);
+        assertTrue(result.isPresent());
+        assertEquals(Severity.LOW.toString(), result.get());
+    }
+
+    @Test
+    public void stringLiteralIsReturnedWhenNoLanguageIsSpecified() {
+        final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
+        final Optional<Object> result = SesameUtils.getDataPropertyValue(literal, null);
+        assertTrue(result.isPresent());
+        assertEquals(Severity.LOW.toString(), result.get());
     }
 
     @Test

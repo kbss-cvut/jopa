@@ -30,10 +30,14 @@ public class AxiomBuilder {
 
     private final Assertion unspecifiedProperty;
 
-    public AxiomBuilder(NamedResource subject, Map<IRI, Assertion> propertyToAssertion, Assertion unspecifiedProperty) {
+    private final String language;
+
+    public AxiomBuilder(NamedResource subject, Map<IRI, Assertion> propertyToAssertion, Assertion unspecifiedProperty,
+                        String language) {
         this.subject = subject;
         this.propertyToAssertion = propertyToAssertion;
         this.unspecifiedProperty = unspecifiedProperty;
+        this.language = language;
     }
 
     public Axiom<?> statementToAxiom(Statement statement) {
@@ -76,7 +80,8 @@ public class AxiomBuilder {
                 if (!(value instanceof Literal)) {
                     return Optional.empty();
                 }
-                return Optional.of(new Value<>(SesameUtils.getDataPropertyValue((Literal) value)));
+                final Optional<Object> val = SesameUtils.getDataPropertyValue((Literal) value, language);
+                return val.map(Value::new);
             case CLASS:
                 if (!(value instanceof Resource)) {
                     return Optional.empty();
@@ -89,16 +94,16 @@ public class AxiomBuilder {
                 return Optional.of(new Value<>(NamedResource.create(value.stringValue())));
             case ANNOTATION_PROPERTY:   // Intentional fall-through
             case PROPERTY:
-                return Optional.of(resolveValue(value));
+                return resolveValue(value);
         }
         return Optional.empty();
     }
 
-    private Value<?> resolveValue(org.eclipse.rdf4j.model.Value object) {
+    private Optional<Value<?>> resolveValue(org.eclipse.rdf4j.model.Value object) {
         if (object instanceof Literal) {
-            return new Value<>(SesameUtils.getDataPropertyValue((Literal) object));
+            return SesameUtils.getDataPropertyValue((Literal) object, language).map(Value::new);
         } else {
-            return new Value<>(NamedResource.create(object.stringValue()));
+            return Optional.of(new Value<>(NamedResource.create(object.stringValue())));
         }
     }
 }

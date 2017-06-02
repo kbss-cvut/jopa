@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -23,9 +23,14 @@ import cz.cvut.kbss.ontodriver.sesame.connector.Connector;
 import cz.cvut.kbss.ontodriver.sesame.environment.Generator;
 import cz.cvut.kbss.ontodriver.sesame.environment.TestRepositoryProvider;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.net.URI;
 import java.util.*;
 
@@ -46,7 +51,7 @@ public class AxiomLoaderTest {
     public void setUp() throws Exception {
         this.connector = repositoryProvider.createConnector(false);
         final Repository repository = connector.unwrap(Repository.class);
-        this.axiomLoader = new AxiomLoader(connector, repository.getValueFactory());
+        this.axiomLoader = new AxiomLoader(connector, repository.getValueFactory(), "en");
         this.generatedData = Generator.initTestData(repository);
         this.vf = connector.unwrap(Repository.class).getValueFactory();
     }
@@ -296,5 +301,26 @@ public class AxiomLoaderTest {
         final AxiomDescriptor descTwo = new AxiomDescriptor(NamedResource.create(individual));
         descTwo.addAssertion(Assertion.createObjectPropertyAssertion(a.getIdentifier(), false));
         assertFalse(axiomLoader.loadAxioms(descTwo).isEmpty());
+    }
+
+    @Test
+    public void loadAxiomsLoadsStringLiteralWithCorrectLanguage() throws Exception {
+        final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
+        final RepositoryConnection conn = connector.unwrap(Repository.class).getConnection();
+        conn.begin();
+        conn.add(vf.createStatement(vf.createIRI(individual), RDFS.LABEL, vf.createLiteral("a", "en")));
+        conn.add(vf.createStatement(vf.createIRI(individual), RDFS.LABEL, vf.createLiteral("b", "cs")));
+        conn.commit();
+        conn.close();
+
+        // Language is en
+        connector.begin();
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(individual));
+        descriptor
+                .addAssertion(Assertion.createAnnotationPropertyAssertion(URI.create(RDFS.LABEL.stringValue()), false));
+        final Collection<Axiom<?>> axioms = axiomLoader.loadAxioms(descriptor);
+        assertEquals(1, axioms.size());
+        final Axiom<?> ax = axioms.iterator().next();
+        assertEquals("a", ax.getValue().getValue());
     }
 }
