@@ -18,21 +18,18 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Defines base descriptor, which is used to specify context information for entities and their fields.
  * <p>
  * The descriptor hierarchy is a classical <b>Composite</b> pattern.
- *
- * @author ledvima1
  */
 public abstract class Descriptor {
 
     protected final URI context;
+
+    protected String language;
 
     protected Descriptor() {
         this(null);
@@ -51,6 +48,26 @@ public abstract class Descriptor {
      */
     public URI getContext() {
         return context;
+    }
+
+    /**
+     * Gets the language set for this descriptor.
+     *
+     * @return Language tag (e.g. en, cs).
+     */
+    public Optional<String> getLanguage() {
+        return Optional.ofNullable(language);
+    }
+
+    /**
+     * Sets language tag of this descriptor.
+     * <p>
+     * Applies to any possible sub-descriptors as well.
+     *
+     * @param languageTag The language tag to use, possibly null, meaning no language preference should be used
+     */
+    public void setLanguage(String languageTag) {
+        this.language = languageTag;
     }
 
     /**
@@ -89,6 +106,17 @@ public abstract class Descriptor {
     public abstract void addAttributeContext(Field attribute, URI context);
 
     /**
+     * Sets language to be used when working (retrieving, persisting) with values of the specified attribute.
+     * <p>
+     * Note that setting language in this manner will not have any effect on descriptors of the
+     * specified attribute previously retrieved from this descriptor.
+     *
+     * @param attribute   The attribute concerned
+     * @param languageTag Language tag to use, possibly {@code null}
+     */
+    public abstract void setAttributeLanguage(Field attribute, String languageTag);
+
+    /**
      * Gets all contexts present in this descriptor.
      * <p>
      * If any of the descriptors specifies the default context, an empty set is returned.
@@ -100,7 +128,7 @@ public abstract class Descriptor {
     public Set<URI> getAllContexts() {
         Set<URI> contexts = new HashSet<>();
         contexts = getContextsInternal(contexts, new HashSet<>());
-        return contexts != null ? contexts : Collections.<URI>emptySet();
+        return contexts != null ? contexts : Collections.emptySet();
     }
 
     /**

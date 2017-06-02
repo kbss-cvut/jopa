@@ -19,6 +19,8 @@
     - This could be overwritten with a descriptor passed to EM
 - [ ] Add support for `orphanRemoval` attribute in object properties
 - [ ] Modify OntoDriver API to support Fetch joins
+- [ ] Allow static (annotation, attribute of `@OWLDataProperty`) specification of language of String attributes. 
+        This can be overridden on EM operation level (in descriptor).
 
 
 ## Low Priority
@@ -37,3 +39,5 @@
 - [ ] Research whether we could replace aspectj with cglib-generated proxies
 
 ### Currently in Progress
+
+- [ ] Allow specification of language for string attributes of an entity.

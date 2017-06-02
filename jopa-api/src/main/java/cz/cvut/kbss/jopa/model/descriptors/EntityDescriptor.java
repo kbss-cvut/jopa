@@ -60,10 +60,25 @@ public class EntityDescriptor extends Descriptor {
     }
 
     @Override
+    public void setLanguage(String languageTag) {
+        super.setLanguage(languageTag);
+        fieldDescriptors.values().forEach(d -> d.setLanguage(languageTag));
+    }
+
+    @Override
+    public void setAttributeLanguage(Field attribute, String languageTag) {
+        Objects.requireNonNull(attribute);
+
+        fieldDescriptors.putIfAbsent(attribute, new FieldDescriptor(null, attribute));
+        fieldDescriptors.get(attribute).setLanguage(languageTag);
+    }
+
+    @Override
     public Descriptor getAttributeDescriptor(FieldSpecification<?, ?> attribute) {
         Descriptor d = getFieldDescriptor(attribute.getJavaField());
         if (d == null) {
             d = createDescriptor(attribute, context);
+            d.setLanguage(language);
         }
         return d;
     }

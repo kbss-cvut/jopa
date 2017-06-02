@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -19,14 +19,23 @@ import java.util.Objects;
 
 public class Triple {
 
-    private URI subject;
-    private URI property;
-    private Object value;
+    private final URI subject;
+    private final URI property;
+    private final Object value;
+    private final String language;
 
     public Triple(URI subject, URI property, Object value) {
         this.subject = Objects.requireNonNull(subject);
         this.property = Objects.requireNonNull(property);
         this.value = Objects.requireNonNull(value);
+        this.language = "en";
+    }
+
+    public Triple(URI subject, URI property, Object value, String language) {
+        this.subject = Objects.requireNonNull(subject);
+        this.property = Objects.requireNonNull(property);
+        this.value = Objects.requireNonNull(value);
+        this.language = Objects.requireNonNull(language);
     }
 
     public URI getSubject() {
@@ -41,6 +50,10 @@ public class Triple {
         return value;
     }
 
+    public String getLanguage() {
+        return language;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -48,9 +61,8 @@ public class Triple {
 
         Triple triple = (Triple) o;
 
-        if (!subject.equals(triple.subject)) return false;
-        if (!property.equals(triple.property)) return false;
-        return value.equals(triple.value);
+        return subject.equals(triple.subject) && property.equals(triple.property) && language.equals(triple.language) &&
+                value.equals(triple.value);
 
     }
 
@@ -59,6 +71,7 @@ public class Triple {
         int result = subject.hashCode();
         result = 31 * result + property.hashCode();
         result = 31 * result + value.hashCode();
+        result = 31 * result + language.hashCode();
         return result;
     }
 }

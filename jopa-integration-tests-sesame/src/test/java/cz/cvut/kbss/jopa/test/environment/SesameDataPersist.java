@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -27,8 +27,7 @@ public class SesameDataPersist {
 
     public void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
         final Repository repository = em.unwrap(Repository.class);
-        final RepositoryConnection connection = repository.getConnection();
-        try {
+        try (final RepositoryConnection connection = repository.getConnection()) {
             final ValueFactory vf = connection.getValueFactory();
             connection.begin();
             for (Triple t : data) {
@@ -37,13 +36,11 @@ public class SesameDataPersist {
                             vf.createIRI(t.getValue().toString()));
                 } else {
                     connection.add(vf.createIRI(t.getSubject().toString()), vf.createIRI(t.getProperty().toString()),
-                            SesameUtils.createDataPropertyLiteral(t.getValue(), "en", vf));
+                            SesameUtils.createDataPropertyLiteral(t.getValue(), t.getLanguage(), vf));
                 }
 
             }
             connection.commit();
-        } finally {
-            connection.close();
         }
     }
 }

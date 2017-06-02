@@ -14,8 +14,11 @@
  */
 package cz.cvut.kbss.jopa.test.runner;
 
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.Triple;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -197,5 +200,24 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final Set<String> expectedUris = v.getThings().stream().map(Thing::getUri).collect(Collectors.toSet());
         assertEquals(v.getThings().size(), result.getThings().size());
         result.getThings().forEach(t -> assertTrue(expectedUris.contains(t.getUri())));
+    }
+
+    @Test
+    public void retrieveGetsStringAttributeWithCorrectLanguageWhenItIsSpecifiedInDescriptor() throws Exception {
+        this.em = getEntityManager("retrieveGetsStringAttributeWithCorrectLanguageWhenItIsSpecifiedInDescriptor",
+                false);
+        persist(entityA);
+        final String value = "v cestine";
+        final String lang = "cs";
+        persistTestData(Collections
+                .singleton(new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, lang)), em);
+
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setLanguage(lang);
+
+        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
+        assertNotNull(result);
+        assertEquals(value, result.getStringAttribute());
+        assertEquals(entityA.getTypes(), result.getTypes());
     }
 }
