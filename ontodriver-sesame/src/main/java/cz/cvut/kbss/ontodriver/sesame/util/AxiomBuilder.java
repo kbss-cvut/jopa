@@ -77,11 +77,10 @@ public class AxiomBuilder {
     private Optional<Value<?>> createValue(Assertion.AssertionType assertionType, org.eclipse.rdf4j.model.Value value) {
         switch (assertionType) {
             case DATA_PROPERTY:
-                if (!(value instanceof Literal)) {
+                if (!(value instanceof Literal) || !SesameUtils.doesLanguageMatch((Literal) value, language)) {
                     return Optional.empty();
                 }
-                final Optional<Object> val = SesameUtils.getDataPropertyValue((Literal) value, language);
-                return val.map(Value::new);
+                return Optional.of(new Value<>(SesameUtils.getDataPropertyValue((Literal) value)));
             case CLASS:
                 if (!(value instanceof Resource)) {
                     return Optional.empty();
@@ -101,7 +100,10 @@ public class AxiomBuilder {
 
     private Optional<Value<?>> resolveValue(org.eclipse.rdf4j.model.Value object) {
         if (object instanceof Literal) {
-            return SesameUtils.getDataPropertyValue((Literal) object, language).map(Value::new);
+            if (!SesameUtils.doesLanguageMatch((Literal) object, language)) {
+                return Optional.empty();
+            }
+            return Optional.of(new Value<>(SesameUtils.getDataPropertyValue((Literal) object)));
         } else {
             return Optional.of(new Value<>(NamedResource.create(object.stringValue())));
         }

@@ -323,4 +323,24 @@ public class AxiomLoaderTest {
         final Axiom<?> ax = axioms.iterator().next();
         assertEquals("a", ax.getValue().getValue());
     }
+
+    @Test
+    public void loadAxiomsLoadsStringLiteralWithCorrectLanguageForUnspecifiedPropertyType() throws Exception {
+        final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
+        final RepositoryConnection conn = connector.unwrap(Repository.class).getConnection();
+        conn.begin();
+        conn.add(vf.createStatement(vf.createIRI(individual), RDFS.LABEL, vf.createLiteral("a", "en")));
+        conn.add(vf.createStatement(vf.createIRI(individual), RDFS.LABEL, vf.createLiteral("b", "cs")));
+        conn.commit();
+        conn.close();
+
+        // Language is en
+        connector.begin();
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(individual));
+        descriptor.addAssertion(Assertion.createPropertyAssertion(URI.create(RDFS.LABEL.stringValue()), false));
+        final Collection<Axiom<?>> axioms = axiomLoader.loadAxioms(descriptor);
+        assertEquals(1, axioms.size());
+        final Axiom<?> ax = axioms.iterator().next();
+        assertEquals("a", ax.getValue().getValue());
+    }
 }

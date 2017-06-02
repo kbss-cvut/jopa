@@ -15,10 +15,7 @@
 package cz.cvut.kbss.ontodriver.owlapi.util;
 
 import cz.cvut.kbss.ontodriver.model.NamedResource;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLLiteral;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.net.URI;
@@ -34,6 +31,10 @@ import java.util.Objects;
 public class OwlapiUtils {
 
     private static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+
+    private OwlapiUtils() {
+        throw new AssertionError("Can't create instance.");
+    }
 
     /**
      * Creates OWLLiteral from the specified Java instance.
@@ -110,6 +111,26 @@ public class OwlapiUtils {
             }
 
         throw new IllegalArgumentException("Unsupported datatype: " + literal.getDatatype());
+    }
+
+    /**
+     * Checks whether the specified literal matches to the specified language.
+     * <p>
+     * If the literal is not a string, it automatically matches. If it is a string, it matches if {@code language} is
+     * not specified, it is without language tag or if the language tag matches the specified language.
+     *
+     * @param literal  Literal to check
+     * @param language Expected language, possibly {@code null}
+     * @return {@code true} if the literal matches the language, {@code false} otherwise
+     */
+    public static boolean doesLanguageMatch(OWLLiteral literal, String language) {
+        assert literal != null;
+
+        final OWLDatatype datatype = literal.getDatatype();
+        if (datatype.isBuiltIn() && datatype.isString() || datatype.isRDFPlainLiteral()) {
+            return language == null || literal.getLang().isEmpty() || literal.getLang().equals(language);
+        }
+        return true;
     }
 
     /**

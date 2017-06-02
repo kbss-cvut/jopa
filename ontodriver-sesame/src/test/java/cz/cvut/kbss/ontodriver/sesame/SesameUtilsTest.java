@@ -23,8 +23,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Optional;
-
 import static org.junit.Assert.*;
 
 public class SesameUtilsTest {
@@ -54,31 +52,32 @@ public class SesameUtilsTest {
     @Test
     public void enumLiteralIsReturnedAsStringValue() throws Exception {
         final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
-        final Optional<Object> result = SesameUtils.getDataPropertyValue(literal, LANG);
-        assertEquals(Severity.LOW.toString(), result.get());
+        final Object result = SesameUtils.getDataPropertyValue(literal);
+        assertEquals(Severity.LOW.toString(), result);
     }
 
     @Test
-    public void stringLiteralWithLanguageTagNotMatchingExpectedReturnsEmptyOptional() {
+    public void doesLanguageMatchReturnsFalseForNonMatchingLanguageTag() {
         final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
-        final Optional<Object> result = SesameUtils.getDataPropertyValue(literal, "cs");
-        assertFalse(result.isPresent());
+        assertFalse(SesameUtils.doesLanguageMatch(literal, "cs"));
     }
 
     @Test
-    public void stringLiteralIsReturnedWhenItsLanguageMatches() {
+    public void doesLanguageMatchReturnsTrueForMatchingLanguageTag() {
         final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
-        final Optional<Object> result = SesameUtils.getDataPropertyValue(literal, LANG);
-        assertTrue(result.isPresent());
-        assertEquals(Severity.LOW.toString(), result.get());
+        assertTrue(SesameUtils.doesLanguageMatch(literal, LANG));
     }
 
     @Test
-    public void stringLiteralIsReturnedWhenNoLanguageIsSpecified() {
+    public void doesLanguageMatchReturnsTrueWhenNoLanguageIsSpecified() {
         final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
-        final Optional<Object> result = SesameUtils.getDataPropertyValue(literal, null);
-        assertTrue(result.isPresent());
-        assertEquals(Severity.LOW.toString(), result.get());
+        assertTrue(SesameUtils.doesLanguageMatch(literal, null));
+    }
+
+    @Test
+    public void doesLanguageMatchReturnsTrueWhenLiteralHasNoLanguage() {
+        final Literal literal = vf.createLiteral(Severity.LOW.toString());
+        assertTrue(SesameUtils.doesLanguageMatch(literal, LANG));
     }
 
     @Test

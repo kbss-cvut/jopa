@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.Date;
-import java.util.Optional;
 
 /**
  * Utility methods for the Sesame driver.
@@ -36,16 +35,13 @@ public final class SesameUtils {
     /**
      * Gets value of the specified data property literal as the corresponding Java object.
      * <p>
-     * Primitives are returned boxed. String literals with incorrect language tag result in empty value. If language is
-     * not specified, all string literals are accepted.
+     * Primitives are returned boxed.
      *
-     * @param literal  DataProperty value
-     * @param language Language for string-based literals, possibly {@code null}
-     * @return Java value corresponding to the XML Schema datatype of the literal wrapped in an {@link Optional} object
-     * for cases when string literal has not matching language
+     * @param literal DataProperty value
+     * @return Java value corresponding to the XML Schema datatype
      * @throws IllegalArgumentException If literal's datatype is not supported
      */
-    public static Optional<Object> getDataPropertyValue(Literal literal, String language) {
+    public static Object getDataPropertyValue(Literal literal) {
         assert literal != null;
 
         final IRI datatype = literal.getDatatype();
@@ -53,36 +49,53 @@ public final class SesameUtils {
 
         if (datatype.equals(XMLSchema.STRING) || datatype.equals(XMLSchema.NORMALIZEDSTRING) ||
                 datatype.equals(RDF.LANGSTRING)) {
-            if (language == null || !literal.getLanguage().isPresent() ||
-                    literal.getLanguage().get().equals(language)) {
-                return Optional.of(literal.stringValue());
-            }
-            return Optional.empty();
+            return literal.stringValue();
         } else if (datatype.equals(XMLSchema.INT) || datatype.equals(XMLSchema.UNSIGNED_INT)) {
-            return Optional.of(literal.intValue());
+            return literal.intValue();
         } else if (datatype.equals(XMLSchema.INTEGER)
                 || datatype.equals(XMLSchema.POSITIVE_INTEGER)
                 || datatype.equals(XMLSchema.NON_NEGATIVE_INTEGER)
                 || datatype.equals(XMLSchema.NEGATIVE_INTEGER)
                 || datatype.equals(XMLSchema.NON_POSITIVE_INTEGER)) {
-            return Optional.of(literal.intValue());
+            return literal.intValue();
         } else if (datatype.equals(XMLSchema.BOOLEAN)) {
-            return Optional.of(literal.booleanValue());
+            return literal.booleanValue();
         } else if (datatype.equals(XMLSchema.LONG) || datatype.equals(XMLSchema.UNSIGNED_LONG)) {
-            return Optional.of(literal.longValue());
+            return literal.longValue();
         } else if (datatype.equals(XMLSchema.DECIMAL)) {
-            return Optional.of(literal.decimalValue());
+            return literal.decimalValue();
         } else if (datatype.equals(XMLSchema.DOUBLE)) {
-            return Optional.of(literal.doubleValue());
+            return literal.doubleValue();
         } else if (datatype.equals(XMLSchema.SHORT) || datatype.equals(XMLSchema.UNSIGNED_SHORT)) {
-            return Optional.of(literal.shortValue());
+            return literal.shortValue();
         } else if (datatype.equals(XMLSchema.BYTE) || datatype.equals(XMLSchema.UNSIGNED_BYTE)) {
-            return Optional.of(literal.byteValue());
+            return literal.byteValue();
         } else if (datatype.equals(XMLSchema.DATE) || datatype.equals(XMLSchema.DATETIME)) {
-            return Optional.of(literal.calendarValue().toGregorianCalendar().getTime());
+            return literal.calendarValue().toGregorianCalendar().getTime();
         } else {
             throw new IllegalArgumentException("Unsupported datatype " + datatype);
         }
+    }
+
+    /**
+     * Checks whether the language of the specified string literal matches the expected one.
+     * <p>
+     * If the literal is not a string, it always matches.
+     *
+     * @param literal  Literal to check
+     * @param language Expected language, can be {@code null}
+     * @return {@code false} if the literal is a string literal and its language does not match the expected one, {@code
+     * true} otherwise
+     */
+    public static boolean doesLanguageMatch(Literal literal, String language) {
+        assert literal != null;
+        final IRI datatype = literal.getDatatype();
+        if (datatype.equals(XMLSchema.STRING) || datatype.equals(XMLSchema.NORMALIZEDSTRING) ||
+                datatype.equals(RDF.LANGSTRING)) {
+            return language == null || !literal.getLanguage().isPresent() ||
+                    literal.getLanguage().get().equals(language);
+        }
+        return true;
     }
 
     /**

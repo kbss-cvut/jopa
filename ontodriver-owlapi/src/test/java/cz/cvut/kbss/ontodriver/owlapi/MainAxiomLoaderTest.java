@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,10 +14,10 @@
  */
 package cz.cvut.kbss.ontodriver.owlapi;
 
-import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
-import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
 import cz.cvut.kbss.ontodriver.model.*;
+import cz.cvut.kbss.ontodriver.owlapi.connector.OntologySnapshot;
+import cz.cvut.kbss.ontodriver.owlapi.exception.ReasonerNotAvailableException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -36,15 +36,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class MainAxiomLoaderTest {
 
     private static final NamedResource SUBJECT = NamedResource.create("http://krizik.felk.cvut.cz/Individual");
+    private static final String LANG = "en";
 
     @Mock
     private OwlapiAdapter adapterMock;
@@ -69,6 +68,7 @@ public class MainAxiomLoaderTest {
         MockitoAnnotations.initMocks(this);
         final OntologySnapshot snapshot = new OntologySnapshot(ontologyMock, managerMock, dataFactory,
                 reasonerMock);
+        when(adapterMock.getLanguage()).thenReturn(LANG);
         this.axiomLoader = new MainAxiomLoader(adapterMock, snapshot);
         this.individual = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
         when(ontologyMock.containsIndividualInSignature(individual.getIRI())).thenReturn(true);
@@ -281,4 +281,44 @@ public class MainAxiomLoaderTest {
             assertEquals(opInferred, ax.getAssertion());
         }
     }
+
+    @Test
+    public void loadsStringLiteralValueForExplicitAnnotationPropertyWithCorrectLanguageTag() throws Exception {
+        final Set<OWLAnnotationAssertionAxiom> axioms = new HashSet<>();
+        final String propertyUri = "http://www.w3.org/2000/01/rdf-schema#label";
+        final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
+        final OWLAnnotationProperty property = dataFactory.getOWLAnnotationProperty(IRI.create(propertyUri));
+        axioms.add(dataFactory.getOWLAnnotationAssertionAxiom(property, individual.getIRI(),
+                dataFactory.getOWLLiteral("a", LANG)));
+        axioms.add(dataFactory.getOWLAnnotationAssertionAxiom(property, individual.getIRI(),
+                dataFactory.getOWLLiteral("b", "cs")));
+        when(ontologyMock.getAnnotationAssertionAxioms(individual.getIRI())).thenReturn(axioms);
+
+        final Collection<Axiom<?>> result = axiomLoader
+                .findAxioms(descriptor(Assertion.createAnnotationPropertyAssertion(URI.create(propertyUri), false)));
+        assertEquals(1, result.size());
+        final Axiom<?> ax = result.iterator().next();
+        assertEquals("a", ax.getValue().getValue());
+    }
+
+    @Test
+    public void loadsStringLiteralValueForExplicitDataPropertyWithCorrectLanguageTag() throws Exception {
+        final Set<OWLDataPropertyAssertionAxiom> axioms = new HashSet<>();
+        final String propertyUri = "http://krizik.felk.cvut.cz/dataPropertyOne";
+        final OWLNamedIndividual individual = dataFactory.getOWLNamedIndividual(IRI.create(SUBJECT.getIdentifier()));
+        final OWLDataProperty property = dataFactory.getOWLDataProperty(IRI.create(propertyUri));
+        axioms.add(dataFactory
+                .getOWLDataPropertyAssertionAxiom(property, individual, dataFactory.getOWLLiteral("a", LANG)));
+        axioms.add(dataFactory
+                .getOWLDataPropertyAssertionAxiom(property, individual, dataFactory.getOWLLiteral("b", "cs")));
+        when(ontologyMock.getDataPropertyAssertionAxioms(individual)).thenReturn(axioms);
+
+        final Collection<Axiom<?>> result = axiomLoader
+                .findAxioms(descriptor(Assertion.createDataPropertyAssertion(URI.create(propertyUri), false)));
+        assertEquals(1, result.size());
+        final Axiom<?> ax = result.iterator().next();
+        assertEquals("a", ax.getValue().getValue());
+    }
+
+    // TODO Do the language checks also for inferred values
 }
