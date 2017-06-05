@@ -296,9 +296,13 @@ public class MainAxiomLoaderTest {
 
         final Collection<Axiom<?>> result = axiomLoader
                 .findAxioms(descriptor(Assertion.createAnnotationPropertyAssertion(URI.create(propertyUri), false)));
+        checkLoadedAxiomsForStringValue(result, "a");
+    }
+
+    private void checkLoadedAxiomsForStringValue(Collection<Axiom<?>> result, String expected) {
         assertEquals(1, result.size());
         final Axiom<?> ax = result.iterator().next();
-        assertEquals("a", ax.getValue().getValue());
+        assertEquals(expected, ax.getValue().getValue());
     }
 
     @Test
@@ -315,10 +319,20 @@ public class MainAxiomLoaderTest {
 
         final Collection<Axiom<?>> result = axiomLoader
                 .findAxioms(descriptor(Assertion.createDataPropertyAssertion(URI.create(propertyUri), false)));
-        assertEquals(1, result.size());
-        final Axiom<?> ax = result.iterator().next();
-        assertEquals("a", ax.getValue().getValue());
+        checkLoadedAxiomsForStringValue(result, "a");
     }
 
-    // TODO Do the language checks also for inferred values
+    @Test
+    public void loadsStringLiteralValueForInferredDataPropertyWithCorrectLanguageTag() throws Exception {
+        final String propertyUri = "http://www.w3.org/2000/01/rdf-schema#label";
+        final OWLDataProperty dp = dataFactory.getOWLDataProperty(IRI.create(propertyUri));
+        final Set<OWLLiteral> values = new HashSet<>();
+        values.add(dataFactory.getOWLLiteral("a", LANG));
+        values.add(dataFactory.getOWLLiteral("b", "cs"));
+        when(reasonerMock.getDataPropertyValues(individual, dp)).thenReturn(values);
+
+        final Collection<Axiom<?>> result = axiomLoader
+                .findAxioms(descriptor(Assertion.createDataPropertyAssertion(URI.create(propertyUri), true)));
+        checkLoadedAxiomsForStringValue(result, "a");
+    }
 }
