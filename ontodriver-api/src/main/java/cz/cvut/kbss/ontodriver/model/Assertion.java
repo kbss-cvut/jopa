@@ -27,7 +27,7 @@ import java.net.URI;
  */
 public abstract class Assertion extends NamedResource {
 
-    private static final long serialVersionUID = 2641835840569464452L;
+    protected final String language;
 
     private final boolean inferred;
 
@@ -42,6 +42,13 @@ public abstract class Assertion extends NamedResource {
     protected Assertion(URI identifier, boolean isInferred) {
         super(identifier);
         this.inferred = isInferred;
+        this.language = null;
+    }
+
+    protected Assertion(URI identifier, String language, boolean isInferred) {
+        super(identifier);
+        this.inferred = isInferred;
+        this.language = language;
     }
 
     /**
@@ -71,6 +78,17 @@ public abstract class Assertion extends NamedResource {
      * @return Assertion type
      */
     public abstract AssertionType getType();
+
+    /**
+     * Gets the language tag carried by this assertion.
+     * <p>
+     * The language tag applies only to string-based literals.
+     *
+     * @return Language tag, e.g. {@code en}, can be {@code null}
+     */
+    public String getLanguage() {
+        return language;
+    }
 
     @Override
     public int hashCode() {
@@ -122,6 +140,19 @@ public abstract class Assertion extends NamedResource {
     }
 
     /**
+     * Creates a property assertion without specifying the assertion identifier.
+     * <p>
+     * Note that the returned instances are all equal as long as their inferred status is the same.
+     *
+     * @param language   Language tag, optional
+     * @param isInferred Whether the assertion uses inferred values
+     * @return Assertion
+     */
+    public static Assertion createUnspecifiedPropertyAssertion(String language, boolean isInferred) {
+        return new PropertyAssertion(language, isInferred);
+    }
+
+    /**
      * Creates new property assertion without specifying what kind of property it is.
      *
      * @param assertionIdentifier Assertion identifier
@@ -133,14 +164,25 @@ public abstract class Assertion extends NamedResource {
     }
 
     /**
+     * Creates new property assertion without specifying what kind of property it is.
+     *
+     * @param assertionIdentifier Assertion identifier
+     * @param language            Language tag, optional
+     * @param isInferred          Whether the assertion uses inferred values
+     * @return Assertion
+     */
+    public static Assertion createPropertyAssertion(URI assertionIdentifier, String language, boolean isInferred) {
+        return new PropertyAssertion(assertionIdentifier, language, isInferred);
+    }
+
+    /**
      * Creates new object property assertion.
      *
      * @param assertionIdentifier Assertion identifier
      * @param isInferred          Whether the assertion uses inferred values
      * @return Assertion
      */
-    public static Assertion createObjectPropertyAssertion(URI assertionIdentifier,
-                                                          boolean isInferred) {
+    public static Assertion createObjectPropertyAssertion(URI assertionIdentifier, boolean isInferred) {
         return new ObjectPropertyAssertion(assertionIdentifier, isInferred);
     }
 
@@ -156,14 +198,38 @@ public abstract class Assertion extends NamedResource {
     }
 
     /**
+     * Creates new data property assertion.
+     *
+     * @param assertionIdentifier Assertion identifier
+     * @param language            Language tag, optional
+     * @param isInferred          Whether the assertion uses inferred values
+     * @return Assertion
+     */
+    public static Assertion createDataPropertyAssertion(URI assertionIdentifier, String language, boolean isInferred) {
+        return new DataPropertyAssertion(assertionIdentifier, language, isInferred);
+    }
+
+    /**
      * Creates new annotation property assertion.
      *
      * @param assertionIdentifier Assertion identifier
      * @param isInferred          Whether the assertion uses inferred values
      * @return Assertion
      */
-    public static Assertion createAnnotationPropertyAssertion(URI assertionIdentifier,
-                                                              boolean isInferred) {
+    public static Assertion createAnnotationPropertyAssertion(URI assertionIdentifier, boolean isInferred) {
         return new AnnotationPropertyAssertion(assertionIdentifier, isInferred);
+    }
+
+    /**
+     * Creates new annotation property assertion.
+     *
+     * @param assertionIdentifier Assertion identifier
+     * @param language            Language tag, optional
+     * @param isInferred          Whether the assertion uses inferred values
+     * @return Assertion
+     */
+    public static Assertion createAnnotationPropertyAssertion(URI assertionIdentifier, String language,
+                                                              boolean isInferred) {
+        return new AnnotationPropertyAssertion(assertionIdentifier, language, isInferred);
     }
 }

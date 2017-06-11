@@ -21,34 +21,25 @@ class PropertyAssertion extends Assertion {
 
     private static final URI UNSPECIFIED_PROPERTY = URI.create("http://" + new Random().nextInt());
 
-    private String language;
-
     PropertyAssertion(boolean isInferred) {
         super(UNSPECIFIED_PROPERTY, isInferred);
+    }
+
+    PropertyAssertion(String language, boolean isInferred) {
+        super(UNSPECIFIED_PROPERTY, language, isInferred);
     }
 
     PropertyAssertion(URI identifier, boolean isInferred) {
         super(identifier, isInferred);
     }
 
+    PropertyAssertion(URI identifier, String language, boolean isInferred) {
+        super(identifier, language, isInferred);
+    }
+
     @Override
     public AssertionType getType() {
         return AssertionType.PROPERTY;
-    }
-
-    /**
-     * Gets the language tag carried by this assertion.
-     * <p>
-     * The language tag applies only to string-based literals.
-     *
-     * @return Language tag, e.g. {@code en}, can be {@code null}
-     */
-    public String getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
     }
 
     @Override

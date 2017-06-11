@@ -50,7 +50,7 @@ public class AxiomBuilder {
         if (assertion == null || SesameUtils.isBlankNode(stmt.getObject())) {
             return Optional.empty();
         }
-        return createValue(assertion.getType(), stmt.getObject());
+        return createValue(assertion, stmt.getObject());
     }
 
     public Axiom<?> statementToAxiom(Statement statement, Assertion assertion) {
@@ -74,10 +74,11 @@ public class AxiomBuilder {
         return assertion;
     }
 
-    private Optional<Value<?>> createValue(Assertion.AssertionType assertionType, org.eclipse.rdf4j.model.Value value) {
+    private Optional<Value<?>> createValue(Assertion assertion, org.eclipse.rdf4j.model.Value value) {
+        final Assertion.AssertionType assertionType = assertion.getType();
         switch (assertionType) {
             case DATA_PROPERTY:
-                if (!(value instanceof Literal) || !SesameUtils.doesLanguageMatch((Literal) value, language)) {
+                if (!(value instanceof Literal) || !languageMatches(assertion, (Literal) value)) {
                     return Optional.empty();
                 }
                 return Optional.of(new Value<>(SesameUtils.getDataPropertyValue((Literal) value)));
@@ -93,19 +94,25 @@ public class AxiomBuilder {
                 return Optional.of(new Value<>(NamedResource.create(value.stringValue())));
             case ANNOTATION_PROPERTY:   // Intentional fall-through
             case PROPERTY:
-                return resolveValue(value);
+                return resolveValue(assertion, value);
         }
         return Optional.empty();
     }
 
-    private Optional<Value<?>> resolveValue(org.eclipse.rdf4j.model.Value object) {
-        if (object instanceof Literal) {
-            if (!SesameUtils.doesLanguageMatch((Literal) object, language)) {
+    private boolean languageMatches(Assertion assertion, Literal literal) {
+        // TODO What if the user specifies language per PU, but wants to override it for an attribute?
+        return SesameUtils
+                .doesLanguageMatch(literal, assertion.getLanguage() != null ? assertion.getLanguage() : language);
+    }
+
+    private Optional<Value<?>> resolveValue(Assertion assertion, org.eclipse.rdf4j.model.Value value) {
+        if (value instanceof Literal) {
+            if (!languageMatches(assertion, (Literal) value)) {
                 return Optional.empty();
             }
-            return Optional.of(new Value<>(SesameUtils.getDataPropertyValue((Literal) object)));
+            return Optional.of(new Value<>(SesameUtils.getDataPropertyValue((Literal) value)));
         } else {
-            return Optional.of(new Value<>(NamedResource.create(object.stringValue())));
+            return Optional.of(new Value<>(NamedResource.create(value.stringValue())));
         }
     }
 }

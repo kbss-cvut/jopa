@@ -15,6 +15,7 @@
 package cz.cvut.kbss.ontodriver.sesame;
 
 import cz.cvut.kbss.ontodriver.descriptor.AxiomDescriptor;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.Axiom;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
@@ -306,12 +307,7 @@ public class AxiomLoaderTest {
     @Test
     public void loadAxiomsLoadsStringLiteralWithCorrectLanguage() throws Exception {
         final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
-        final RepositoryConnection conn = connector.unwrap(Repository.class).getConnection();
-        conn.begin();
-        conn.add(vf.createStatement(vf.createIRI(individual), RDFS.LABEL, vf.createLiteral("a", "en")));
-        conn.add(vf.createStatement(vf.createIRI(individual), RDFS.LABEL, vf.createLiteral("b", "cs")));
-        conn.commit();
-        conn.close();
+        persistLanguageTaggedStrings(individual);
 
         // Language is en
         connector.begin();
@@ -324,15 +320,19 @@ public class AxiomLoaderTest {
         assertEquals("a", ax.getValue().getValue());
     }
 
-    @Test
-    public void loadAxiomsLoadsStringLiteralWithCorrectLanguageForUnspecifiedPropertyType() throws Exception {
-        final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
+    private void persistLanguageTaggedStrings(String individual) throws OntoDriverException {
         final RepositoryConnection conn = connector.unwrap(Repository.class).getConnection();
         conn.begin();
         conn.add(vf.createStatement(vf.createIRI(individual), RDFS.LABEL, vf.createLiteral("a", "en")));
         conn.add(vf.createStatement(vf.createIRI(individual), RDFS.LABEL, vf.createLiteral("b", "cs")));
         conn.commit();
         conn.close();
+    }
+
+    @Test
+    public void loadAxiomsLoadsStringLiteralWithCorrectLanguageForUnspecifiedPropertyType() throws Exception {
+        final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
+        persistLanguageTaggedStrings(individual);
 
         // Language is en
         connector.begin();
@@ -342,5 +342,38 @@ public class AxiomLoaderTest {
         assertEquals(1, axioms.size());
         final Axiom<?> ax = axioms.iterator().next();
         assertEquals("a", ax.getValue().getValue());
+    }
+
+    @Test
+    public void loadsStringLiteralWithCorrectLanguageTagWhenItIsSpecifiedInAssertion() throws Exception {
+        final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
+        persistLanguageTaggedStrings(individual);
+
+        connector.begin();
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(individual));
+        final Assertion assertion =
+                Assertion.createDataPropertyAssertion(URI.create(RDFS.LABEL.stringValue()), "cs", false);
+        descriptor.addAssertion(assertion);
+        final Collection<Axiom<?>> axioms = axiomLoader.loadAxioms(descriptor);
+        assertEquals(1, axioms.size());
+        final Axiom<?> ax = axioms.iterator().next();
+        assertEquals("b", ax.getValue().getValue());
+    }
+
+    @Test
+    public void loadsStringLiteralWithCorrectLanguageTagWhenItIsSpecifiedInAssertionOfUnspecifiedProperty() throws
+                                                                                                            Exception {
+        final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
+        persistLanguageTaggedStrings(individual);
+
+        connector.begin();
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(individual));
+        final Assertion assertion =
+                Assertion.createPropertyAssertion(URI.create(RDFS.LABEL.stringValue()), "cs", false);
+        descriptor.addAssertion(assertion);
+        final Collection<Axiom<?>> axioms = axiomLoader.loadAxioms(descriptor);
+        assertEquals(1, axioms.size());
+        final Axiom<?> ax = axioms.iterator().next();
+        assertEquals("b", ax.getValue().getValue());
     }
 }

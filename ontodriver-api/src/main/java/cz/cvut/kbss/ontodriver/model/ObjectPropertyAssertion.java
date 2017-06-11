@@ -28,6 +28,16 @@ final class ObjectPropertyAssertion extends Assertion {
         return AssertionType.OBJECT_PROPERTY;
     }
 
+    /**
+     * Always returns {@code null}, because language is irrelevant for object properties.
+     *
+     * @return {@code null}
+     */
+    @Override
+    public String getLanguage() {
+        return null;
+    }
+
     @Override
     public int hashCode() {
         int prime = 31;

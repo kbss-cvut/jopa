@@ -16,10 +16,14 @@ package cz.cvut.kbss.ontodriver.model;
 
 import java.net.URI;
 
-final class AnnotationPropertyAssertion extends PropertyAssertion {
+final class AnnotationPropertyAssertion extends Assertion {
 
     AnnotationPropertyAssertion(URI assertionIdentifier, boolean isInferred) {
         super(assertionIdentifier, isInferred);
+    }
+
+    AnnotationPropertyAssertion(URI assertionIdentifier, String language, boolean isInferred) {
+        super(assertionIdentifier, language, isInferred);
     }
 
     @Override
@@ -36,5 +40,10 @@ final class AnnotationPropertyAssertion extends PropertyAssertion {
     @Override
     public boolean equals(Object obj) {
         return this == obj || super.equals(obj) && getClass() == obj.getClass();
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + (language != null ? " @" + language : "");
     }
 }
