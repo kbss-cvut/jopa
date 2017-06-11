@@ -28,6 +28,7 @@ import java.net.URI;
 public abstract class Assertion extends NamedResource {
 
     protected final String language;
+    private final boolean hasLanguage;
 
     private final boolean inferred;
 
@@ -43,12 +44,14 @@ public abstract class Assertion extends NamedResource {
         super(identifier);
         this.inferred = isInferred;
         this.language = null;
+        this.hasLanguage = false;
     }
 
     protected Assertion(URI identifier, String language, boolean isInferred) {
         super(identifier);
         this.inferred = isInferred;
         this.language = language;
+        this.hasLanguage = true;
     }
 
     /**
@@ -88,6 +91,15 @@ public abstract class Assertion extends NamedResource {
      */
     public String getLanguage() {
         return language;
+    }
+
+    /**
+     * Checks whether a language tag was set for this assertion.
+     *
+     * @return {@code true} if a language tag was set, {@code false} otherwise
+     */
+    public boolean hasLanguage() {
+        return hasLanguage;
     }
 
     @Override
@@ -167,7 +179,7 @@ public abstract class Assertion extends NamedResource {
      * Creates new property assertion without specifying what kind of property it is.
      *
      * @param assertionIdentifier Assertion identifier
-     * @param language            Language tag, optional
+     * @param language            Language tag. Passing {@code null} explicitly specifies that any language tag is supported
      * @param isInferred          Whether the assertion uses inferred values
      * @return Assertion
      */
@@ -201,7 +213,7 @@ public abstract class Assertion extends NamedResource {
      * Creates new data property assertion.
      *
      * @param assertionIdentifier Assertion identifier
-     * @param language            Language tag, optional
+     * @param language            Language tag. Passing {@code null} explicitly specifies that any language tag is supported
      * @param isInferred          Whether the assertion uses inferred values
      * @return Assertion
      */
@@ -224,7 +236,7 @@ public abstract class Assertion extends NamedResource {
      * Creates new annotation property assertion.
      *
      * @param assertionIdentifier Assertion identifier
-     * @param language            Language tag, optional
+     * @param language            Language tag. Passing {@code null} explicitly specifies that any language tag is supported
      * @param isInferred          Whether the assertion uses inferred values
      * @return Assertion
      */

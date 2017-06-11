@@ -100,9 +100,7 @@ public class AxiomBuilder {
     }
 
     private boolean languageMatches(Assertion assertion, Literal literal) {
-        // TODO What if the user specifies language per PU, but wants to override it for an attribute?
-        return SesameUtils
-                .doesLanguageMatch(literal, assertion.getLanguage() != null ? assertion.getLanguage() : language);
+        return SesameUtils.doesLanguageMatch(literal, assertion.hasLanguage() ? assertion.getLanguage() : language);
     }
 
     private Optional<Value<?>> resolveValue(Assertion assertion, org.eclipse.rdf4j.model.Value value) {

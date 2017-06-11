@@ -38,6 +38,16 @@ final class ObjectPropertyAssertion extends Assertion {
         return null;
     }
 
+    /**
+     * Always returns {@code false}.
+     *
+     * @return {@code false}
+     */
+    @Override
+    public boolean hasLanguage() {
+        return false;
+    }
+
     @Override
     public int hashCode() {
         int prime = 31;

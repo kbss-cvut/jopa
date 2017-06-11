@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -375,5 +376,22 @@ public class AxiomLoaderTest {
         assertEquals(1, axioms.size());
         final Axiom<?> ax = axioms.iterator().next();
         assertEquals("b", ax.getValue().getValue());
+    }
+
+    @Test
+    public void loadsStringLiteralWithAllLanguagesWhenLanguageTagIsExplicitlySetToNull() throws Exception {
+        final String individual = generatedData.individuals.get(Generator.randomIndex(generatedData.individuals));
+        persistLanguageTaggedStrings(individual);
+
+        connector.begin();
+        final AxiomDescriptor descriptor = new AxiomDescriptor(NamedResource.create(individual));
+        final Assertion assertion =
+                Assertion.createDataPropertyAssertion(URI.create(RDFS.LABEL.stringValue()), null, false);
+        descriptor.addAssertion(assertion);
+        final Collection<Axiom<?>> axioms = axiomLoader.loadAxioms(descriptor);
+        assertEquals(2, axioms.size());
+        final Set<String> values = axioms.stream().map(ax -> ax.getValue().stringValue()).collect(Collectors.toSet());
+        assertTrue(values.contains("a"));
+        assertTrue(values.contains("b"));
     }
 }
