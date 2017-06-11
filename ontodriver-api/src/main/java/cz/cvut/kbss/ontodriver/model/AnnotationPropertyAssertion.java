@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -18,31 +18,23 @@ import java.net.URI;
 
 final class AnnotationPropertyAssertion extends PropertyAssertion {
 
-	private static final long serialVersionUID = 6708237135179035172L;
+    AnnotationPropertyAssertion(URI assertionIdentifier, boolean isInferred) {
+        super(assertionIdentifier, isInferred);
+    }
 
-	AnnotationPropertyAssertion(URI assertionIdentifier, boolean isInferred) {
-		super(assertionIdentifier, isInferred);
-	}
+    @Override
+    public AssertionType getType() {
+        return AssertionType.ANNOTATION_PROPERTY;
+    }
 
-	@Override
-	public AssertionType getType() {
-		return AssertionType.ANNOTATION_PROPERTY;
-	}
+    @Override
+    public int hashCode() {
+        int prime = 31;
+        return prime * super.hashCode();
+    }
 
-	@Override
-	public int hashCode() {
-		int prime = 31;
-		return prime * super.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || super.equals(obj) && getClass() == obj.getClass();
+    }
 }
