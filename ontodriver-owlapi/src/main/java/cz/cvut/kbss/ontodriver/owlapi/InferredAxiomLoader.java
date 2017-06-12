@@ -81,7 +81,8 @@ public class InferredAxiomLoader implements AxiomLoader {
 
     private Collection<Axiom<?>> inferDataPropertyValues(OWLNamedIndividual individual, Assertion dpAssertion) {
         final Set<OWLLiteral> literals = reasoner.getDataPropertyValues(individual, dataProperty(dpAssertion));
-        return literals.stream().filter(lit -> OwlapiUtils.doesLanguageMatch(lit, adapter.getLanguage()))
+        final String lang = dpAssertion.hasLanguage() ? dpAssertion.getLanguage() : adapter.getLanguage();
+        return literals.stream().filter(lit -> OwlapiUtils.doesLanguageMatch(lit, lang))
                        .map(owlLiteral -> new AxiomImpl<>(subject, dpAssertion,
                                new Value<>(OwlapiUtils.owlLiteralToValue(owlLiteral)))).collect(Collectors.toSet());
     }

@@ -22,9 +22,7 @@ import cz.cvut.kbss.ontodriver.owlapi.util.OwlapiUtils;
 import org.semanticweb.owlapi.model.*;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class ExplicitAxiomLoader implements AxiomLoader {
@@ -38,8 +36,7 @@ class ExplicitAxiomLoader implements AxiomLoader {
     private final AxiomAdapter axiomAdapter;
     private final String language;
 
-    private Set<Assertion> assertions;
-    private Set<URI> assertionUris;
+    private Map<URI, Assertion> assertionMap;
 
     ExplicitAxiomLoader(OwlapiAdapter adapter, OntologySnapshot snapshot) {
         this.adapter = adapter;
@@ -51,8 +48,8 @@ class ExplicitAxiomLoader implements AxiomLoader {
 
     @Override
     public Collection<Axiom<?>> loadAxioms(NamedResource subject, Set<Assertion> assertions) {
-        this.assertions = assertions;
-        this.assertionUris = assertions.stream().map(NamedResource::getIdentifier).collect(Collectors.toSet());
+        this.assertionMap = new HashMap<>(assertions.size());
+        assertions.forEach(a -> assertionMap.put(a.getIdentifier(), a));
         final OWLNamedIndividual individual = OwlapiUtils.getIndividual(subject, dataFactory);
         final Collection<Axiom<?>> axioms = new ArrayList<>();
         if (assertions.contains(Assertion.createClassAssertion(false))) {
@@ -73,16 +70,28 @@ class ExplicitAxiomLoader implements AxiomLoader {
 
     private Collection<Axiom<?>> dataPropertyValuesToAxioms(NamedResource subject,
                                                             Collection<OWLDataPropertyAssertionAxiom> axioms) {
-        return axioms.stream().filter(axiom -> {
-            final OWLLiteral value = axiom.getObject();
-            final boolean propertyExists = doesPropertyExist(axiom.getProperty().asOWLDataProperty().getIRI());
-            return propertyExists && OwlapiUtils.doesLanguageMatch(value, language);
-        }).map(axiom -> axiomAdapter.toAxiom(subject, axiom, false))
+        return axioms.stream().filter(this::shouldLoadDataPropertyValue)
+                     .map(axiom -> axiomAdapter.toAxiom(subject, axiom, false))
                      .collect(Collectors.toList());
     }
 
+    private boolean shouldLoadDataPropertyValue(OWLDataPropertyAssertionAxiom axiom) {
+        final OWLLiteral value = axiom.getObject();
+        final IRI dpIri = axiom.getProperty().asOWLDataProperty().getIRI();
+        final boolean propertyExists = doesPropertyExist(dpIri);
+        if (!propertyExists) {
+            return false;
+        }
+        final URI dpUri = dpIri.toURI();
+        // Note: I don't really like the fact that we are basing this on a randomly generated identifier of the unspecified
+        // property. Perhaps the strategy of using unspecified properties should be revisited.
+        final Assertion assertion = assertionMap.containsKey(dpUri) ? assertionMap.get(dpUri) :
+                                    assertionMap.get(UNSPECIFIED_ASSERTION.getIdentifier());
+        return OwlapiUtils.doesLanguageMatch(value, assertion.hasLanguage() ? assertion.getLanguage() : language);
+    }
+
     private boolean doesPropertyExist(IRI o) {
-        return assertions.contains(UNSPECIFIED_ASSERTION) || assertionUris.contains(o.toURI());
+        return assertionMap.containsKey(o.toURI()) || assertionMap.containsKey(UNSPECIFIED_ASSERTION.getIdentifier());
     }
 
     private Collection<Axiom<?>> objectPropertyValuesToAxioms(NamedResource subject,
@@ -95,13 +104,23 @@ class ExplicitAxiomLoader implements AxiomLoader {
 
     private Collection<Axiom<?>> annotationPropertyValuesToAxioms(NamedResource subject,
                                                                   Collection<OWLAnnotationAssertionAxiom> axioms) {
-        return axioms.stream().filter(axiom -> {
-            final OWLAnnotationValue value = axiom.getValue();
-            final boolean propertyExists = doesPropertyExist(axiom.getProperty().asOWLAnnotationProperty().getIRI());
-            return propertyExists && (!value.asLiteral().isPresent() ||
-                    OwlapiUtils.doesLanguageMatch(value.asLiteral().get(), language));
-        }).map(axiom -> axiomAdapter.toAxiom(subject, axiom, false))
+        return axioms.stream().filter(this::shouldLoadAnnotationPropertyValue)
+                     .map(axiom -> axiomAdapter.toAxiom(subject, axiom, false))
                      .collect(Collectors.toList());
+    }
+
+    private boolean shouldLoadAnnotationPropertyValue(OWLAnnotationAssertionAxiom axiom) {
+        final OWLAnnotationValue value = axiom.getValue();
+        final IRI apIri = axiom.getProperty().asOWLAnnotationProperty().getIRI();
+        final boolean propertyExists = doesPropertyExist(apIri);
+        if (!propertyExists) {
+            return false;
+        }
+        final URI apUri = apIri.toURI();
+        final Assertion assertion = assertionMap.containsKey(apUri) ? assertionMap.get(apUri) :
+                                    assertionMap.get(UNSPECIFIED_ASSERTION.getIdentifier());
+        return !value.asLiteral().isPresent() || OwlapiUtils.doesLanguageMatch(value.asLiteral().get(),
+                assertion.hasLanguage() ? assertion.getLanguage() : language);
     }
 
     @Override
