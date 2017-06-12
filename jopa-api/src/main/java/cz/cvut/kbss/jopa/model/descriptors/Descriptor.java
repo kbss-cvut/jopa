@@ -29,7 +29,8 @@ public abstract class Descriptor {
 
     protected final URI context;
 
-    protected String language;
+    private String language;
+    private boolean hasLanguage;
 
     protected Descriptor() {
         this(null);
@@ -53,10 +54,23 @@ public abstract class Descriptor {
     /**
      * Gets the language set for this descriptor.
      *
-     * @return Language tag (e.g. en, cs).
+     * @return Language tag (e.g. en, cs), can be {@code null}, meaning any language is supported or the language tag
+     * has not been set (see {@link #hasLanguage()})
      */
-    public Optional<String> getLanguage() {
-        return Optional.ofNullable(language);
+    public String getLanguage() {
+        return language;
+    }
+
+    /**
+     * Gets information about whether language tag has been set on this descriptor.
+     * <p>
+     * The language tag can be explicitly set to {@code null}, meaning any language is supported. This can be used
+     * to override PU-level language setting.
+     *
+     * @return {@code true} if a language tag has been set on this descriptor, {@code false} otherwise
+     */
+    public boolean hasLanguage() {
+        return hasLanguage;
     }
 
     /**
@@ -68,6 +82,7 @@ public abstract class Descriptor {
      */
     public void setLanguage(String languageTag) {
         this.language = languageTag;
+        this.hasLanguage = true;
     }
 
     /**

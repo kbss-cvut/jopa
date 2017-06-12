@@ -244,4 +244,24 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         assertEquals(entityN.getAnnotationProperty(), result.getAnnotationProperty());
         assertEquals(csString, result.getStringAttribute());
     }
+
+    @Test
+    public void retrieveAllowsToOverridePULevelLanguageSpecification() throws Exception {
+        this.em = getEntityManager("retrieveAllowsToOverridePULevelLanguageSpecification", false);
+        entityA.setStringAttribute(null);
+        // PU-level language is en
+        persist(entityA);
+        final String value = "cestina";
+        persistTestData(Collections
+                .singleton(new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, "cs")), em);
+
+        final OWLClassA resOne = em.find(OWLClassA.class, entityA.getUri());
+        assertNull(resOne.getStringAttribute());
+        em.clear();
+
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setLanguage("cs");
+        final OWLClassA resTwo = em.find(OWLClassA.class, entityA.getUri(), descriptor);
+        assertEquals(value, resTwo.getStringAttribute());
+    }
 }

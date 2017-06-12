@@ -78,7 +78,9 @@ public class EntityDescriptor extends Descriptor {
         Descriptor d = getFieldDescriptor(attribute.getJavaField());
         if (d == null) {
             d = createDescriptor(attribute, context);
-            d.setLanguage(language);
+            if (hasLanguage()) {
+                d.setLanguage(getLanguage());
+            }
         }
         return d;
     }

@@ -43,11 +43,11 @@ public class EntityDescriptorTest {
         final Attribute<TestClass, String> att = mock(Attribute.class);
         when(att.getJavaField()).thenReturn(TestClass.stringAttField());
         descriptor.setLanguage(LANG);
-        assertTrue(descriptor.getLanguage().isPresent());
+        assertTrue(descriptor.hasLanguage());
 
         final Descriptor result = descriptor.getAttributeDescriptor(att);
-        assertTrue(result.getLanguage().isPresent());
-        assertEquals(LANG, result.getLanguage().get());
+        assertTrue(result.hasLanguage());
+        assertEquals(LANG, result.getLanguage());
     }
 
     @Test
@@ -59,8 +59,8 @@ public class EntityDescriptorTest {
         final String newLang = "cs";
         descriptor.setLanguage(newLang);
         final Descriptor result = descriptor.getAttributeDescriptor(att);
-        assertTrue(result.getLanguage().isPresent());
-        assertEquals(newLang, result.getLanguage().get());
+        assertTrue(result.hasLanguage());
+        assertEquals(newLang, result.getLanguage());
     }
 
     @Test
@@ -73,8 +73,8 @@ public class EntityDescriptorTest {
         descriptor.setAttributeLanguage(att.getJavaField(), newLang);
 
         final Descriptor result = descriptor.getAttributeDescriptor(att);
-        assertTrue(result.getLanguage().isPresent());
-        assertEquals(newLang, result.getLanguage().get());
+        assertTrue(result.hasLanguage());
+        assertEquals(newLang, result.getLanguage());
     }
 
     @Test
@@ -118,5 +118,23 @@ public class EntityDescriptorTest {
         private static Field intAttField() throws NoSuchFieldException {
             return TestClass.class.getDeclaredField("intAtt");
         }
+    }
+
+    @Test
+    public void hasLanguageReturnsTrueForLanguageSetExplicitlyToNull() {
+        final Descriptor descriptor = new EntityDescriptor();
+        assertFalse(descriptor.hasLanguage());
+        descriptor.setLanguage(null);
+        assertTrue(descriptor.hasLanguage());
+        assertNull(descriptor.getLanguage());
+    }
+
+    @Test
+    public void gettingFieldDescriptorFromEntityDescriptorLeavesItsHasLanguageStatusEmpty() throws Exception {
+        final Descriptor descriptor = new EntityDescriptor();
+        final Attribute<TestClass, String> att = mock(Attribute.class);
+        when(att.getJavaField()).thenReturn(TestClass.stringAttField());
+        final Descriptor fieldDescriptor = descriptor.getAttributeDescriptor(att);
+        assertFalse(fieldDescriptor.hasLanguage());
     }
 }

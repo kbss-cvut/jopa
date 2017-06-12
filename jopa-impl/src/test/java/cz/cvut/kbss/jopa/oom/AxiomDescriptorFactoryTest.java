@@ -306,4 +306,31 @@ public class AxiomDescriptorFactoryTest {
         assertEquals(1, assertions.size());
         assertEquals("cs", assertions.iterator().next().getLanguage());
     }
+
+    @Test
+    public void createForEntityLoadingAllowsOverridingPULevelLanguageSetting() {
+        configuration.set(JOPAPersistenceProperties.LANG, "en");
+        descriptor.setLanguage(null);
+        final AxiomDescriptor res = factory.createForEntityLoading(loadingParameters(OWLClassA.class, descriptor),
+                metamodelMocks.forOwlClassA().entityType());
+        final Set<Assertion> assertions = res.getAssertions();
+        assertions.stream().filter(a -> a.getType() != Assertion.AssertionType.CLASS && a.getType() !=
+                Assertion.AssertionType.OBJECT_PROPERTY).forEach(a -> {
+            assertTrue(a.hasLanguage());
+            assertNull(a.getLanguage());
+        });
+    }
+
+    @Test
+    public void createForFieldLoadingAllowsOverridingPULevelLanguageSetting() throws Exception {
+        configuration.set(JOPAPersistenceProperties.LANG, "en");
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setAttributeLanguage(OWLClassA.getStrAttField(), null);
+        final AxiomDescriptor res = factory.createForFieldLoading(PK, OWLClassA.getStrAttField(), descriptor,
+                metamodelMocks.forOwlClassA().entityType());
+        final Set<Assertion> assertions = res.getAssertions();
+        assertEquals(1, assertions.size());
+        assertTrue(assertions.iterator().next().hasLanguage());
+        assertNull(assertions.iterator().next().getLanguage());
+    }
 }

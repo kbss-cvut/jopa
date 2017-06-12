@@ -90,12 +90,12 @@ class AxiomDescriptorFactory {
                 return Assertion.createObjectPropertyAssertion(att.getIRI().toURI(), att.isInferred());
             case DATA:
                 return Assertion
-                        .createDataPropertyAssertion(att.getIRI().toURI(), descriptor.getLanguage().orElse(puLanguage),
-                                att.isInferred());
+                        .createDataPropertyAssertion(att.getIRI().toURI(),
+                                descriptor.hasLanguage() ? descriptor.getLanguage() : puLanguage, att.isInferred());
             case ANNOTATION:
                 return Assertion
                         .createAnnotationPropertyAssertion(att.getIRI().toURI(),
-                                descriptor.getLanguage().orElse(puLanguage), att.isInferred());
+                                descriptor.hasLanguage() ? descriptor.getLanguage() : puLanguage, att.isInferred());
             default:
                 throw new IllegalArgumentException(
                         "Illegal persistent attribute type " + att.getPersistentAttributeType());
