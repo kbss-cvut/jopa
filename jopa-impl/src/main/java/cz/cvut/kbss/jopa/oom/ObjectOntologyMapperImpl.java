@@ -67,7 +67,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         this.cache = uow.getLiveObjectCache();
         this.storageConnection = Objects.requireNonNull(connection);
         this.metamodel = uow.getMetamodel();
-        this.descriptorFactory = new AxiomDescriptorFactory();
+        this.descriptorFactory = new AxiomDescriptorFactory(uow.getConfiguration());
         this.instanceRegistry = new InstanceRegistry();
         this.pendingPersists = new PendingChangeRegistry();
         this.entityBuilder = new EntityConstructor(this);
@@ -156,8 +156,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
         assert entity != null;
         assert descriptor != null;
 
-        @SuppressWarnings("unchecked")
-        final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
+        @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         try {
             if (primaryKey == null) {
                 primaryKey = generateIdentifier(et);
@@ -253,8 +252,7 @@ public class ObjectOntologyMapperImpl implements ObjectOntologyMapper, EntityMap
 
     @Override
     public <T> void updateFieldValue(T entity, Field field, Descriptor descriptor) {
-        @SuppressWarnings("unchecked")
-        final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
+        @SuppressWarnings("unchecked") final EntityType<T> et = (EntityType<T>) getEntityType(entity.getClass());
         final URI pkUri = EntityPropertiesUtils.getPrimaryKey(entity, et);
 
         entityBreaker.setCascadeResolver(new PersistCascadeResolver(this));

@@ -41,6 +41,9 @@ public class Vocabulary {
     public static final String p_m_enumAttribute = ATTRIBUTE_IRI_BASE + "m-enumAttribute";
     public static final String p_m_IntegerSet = ATTRIBUTE_IRI_BASE + "m-pluralIntAttribute";
 
+    public static final String P_N_STR_ANNOTATION_PROPERTY = ATTRIBUTE_IRI_BASE + "annotationProperty";
+    public static final String P_N_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "N-stringAttribute";
+
     public static final String P_A_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "A-stringAttribute";
     public static final String P_B_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "B-stringAttribute";
     public static final String P_E_STRING_ATTRIBUTE = ATTRIBUTE_IRI_BASE + "E-stringAttribute";

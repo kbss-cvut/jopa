@@ -77,6 +77,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
     private final CacheManager cacheManager;
 
     public UnitOfWorkImpl(AbstractSession parent) {
+        super(parent.getConfiguration());
         this.parent = Objects.requireNonNull(parent);
         this.cloneMapping = createMap();
         this.cloneToOriginals = createMap();
@@ -1108,11 +1109,6 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             entityManager.removeCurrentPersistenceContext();
             throw e;
         }
-    }
-
-    @Override
-    public Configuration getConfiguration() {
-        return entityManager.getConfiguration();
     }
 
     @Override

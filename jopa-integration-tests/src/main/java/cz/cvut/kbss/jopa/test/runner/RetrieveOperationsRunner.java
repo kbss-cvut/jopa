@@ -21,6 +21,7 @@ import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.Triple;
 import org.junit.Test;
 import org.slf4j.Logger;
+import sun.security.krb5.internal.crypto.Des;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -215,9 +216,32 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final Descriptor descriptor = new EntityDescriptor();
         descriptor.setLanguage(lang);
 
-        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
+        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri(), descriptor);
         assertNotNull(result);
         assertEquals(value, result.getStringAttribute());
         assertEquals(entityA.getTypes(), result.getTypes());
+    }
+
+    @Test
+    public void retrieveGetsStringAttributesWithDifferentLanguageTagsSpecifiedInDescriptor() throws Exception {
+        this.em = getEntityManager("retrieveGetsStringAttributesWithDifferentLanguageTagsSpecifiedInDescriptor", false);
+        entityN.setAnnotationProperty("english annotation");
+        entityN.setStringAttribute("english string");
+        persist(entityN);
+        final String csAnnotation = "anotace cesky";
+        final String csString = "retezec cesky";
+        final Set<Triple> testData = new HashSet<>();
+        testData.add(new Triple(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STR_ANNOTATION_PROPERTY),
+                csAnnotation, "cs"));
+        testData.add(
+                new Triple(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STRING_ATTRIBUTE), csString, "cs"));
+        persistTestData(testData, em);
+
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setAttributeLanguage(OWLClassN.class.getDeclaredField("annotationProperty"), "en");
+        descriptor.setAttributeLanguage(OWLClassN.class.getDeclaredField("stringAttribute"), "cs");
+        final OWLClassN result = em.find(OWLClassN.class, entityN.getId(), descriptor);
+        assertEquals(entityN.getAnnotationProperty(), result.getAnnotationProperty());
+        assertEquals(csString, result.getStringAttribute());
     }
 }
