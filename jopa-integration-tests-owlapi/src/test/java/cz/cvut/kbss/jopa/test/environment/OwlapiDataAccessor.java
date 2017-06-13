@@ -22,7 +22,9 @@ import org.semanticweb.owlapi.model.*;
 import java.net.URI;
 import java.util.Collection;
 
-public class OwlapiDataPersist {
+import static org.junit.Assert.assertTrue;
+
+public class OwlapiDataAccessor {
 
     public void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
         final OWLOntology ontology = em.unwrap(OWLOntology.class);
@@ -48,6 +50,32 @@ public class OwlapiDataPersist {
                 axiom = new AddAxiom(ontology, df.getOWLDataPropertyAssertionAxiom(dp, ind, value));
             }
             manager.applyChange(axiom);
+        }
+    }
+
+    public void verifyDataPresence(Collection<Triple> data, EntityManager em) throws Exception {
+        final OWLOntology ontology = em.unwrap(OWLOntology.class);
+        final OWLDataFactory df = ontology.getOWLOntologyManager().getOWLDataFactory();
+        for (Triple t : data) {
+            final OWLNamedIndividual ind = df.getOWLNamedIndividual(IRI.create(t.getSubject()));
+            final OWLAxiom axiom;
+            if (t.getProperty().toString().equals(CommonVocabulary.RDF_TYPE)) {
+                final OWLClass cls = df.getOWLClass(IRI.create(t.getValue().toString()));
+                axiom = df.getOWLClassAssertionAxiom(cls, ind);
+            } else if (t.getValue() instanceof URI) {
+                final OWLObjectProperty op = df.getOWLObjectProperty(IRI.create(t.getProperty()));
+                final OWLNamedIndividual obj = df.getOWLNamedIndividual(IRI.create((URI) t.getValue()));
+                axiom = df.getOWLObjectPropertyAssertionAxiom(op, ind, obj);
+            } else if (t.getProperty().toString().equals(CommonVocabulary.RDFS_LABEL)) {
+                final OWLAnnotationProperty ap = df.getOWLAnnotationProperty(IRI.create(t.getProperty()));
+                final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(t.getValue(), df, t.getLanguage());
+                axiom = df.getOWLAnnotationAssertionAxiom(ap, ind.getIRI(), value);
+            } else {
+                final OWLDataProperty dp = df.getOWLDataProperty(IRI.create(t.getProperty()));
+                final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(t.getValue(), df, t.getLanguage());
+                axiom = df.getOWLDataPropertyAssertionAxiom(dp, ind, value);
+            }
+            assertTrue(ontology.containsAxiom(axiom));
         }
     }
 }

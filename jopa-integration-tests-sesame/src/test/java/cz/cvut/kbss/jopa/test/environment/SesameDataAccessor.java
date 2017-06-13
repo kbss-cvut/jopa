@@ -23,7 +23,9 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import java.net.URI;
 import java.util.Collection;
 
-public class SesameDataPersist {
+import static org.junit.Assert.assertTrue;
+
+public class SesameDataAccessor {
 
     public void persistTestData(Collection<Triple> data, EntityManager em) throws Exception {
         final Repository repository = em.unwrap(Repository.class);
@@ -41,6 +43,25 @@ public class SesameDataPersist {
 
             }
             connection.commit();
+        }
+    }
+
+    public void verifyDataPresence(Collection<Triple> data, EntityManager em) throws Exception {
+        final Repository repository = em.unwrap(Repository.class);
+        try (final RepositoryConnection connection = repository.getConnection()) {
+            final ValueFactory vf = connection.getValueFactory();
+            for (Triple t : data) {
+                final boolean found;
+                if (t.getValue() instanceof URI) {
+                    found = connection.hasStatement(vf.createIRI(t.getSubject().toString()),
+                            vf.createIRI(t.getProperty().toString()), vf.createIRI(t.getValue().toString()), false);
+                } else {
+                    found = connection.hasStatement(vf.createIRI(t.getSubject().toString()),
+                            vf.createIRI(t.getProperty().toString()),
+                            SesameUtils.createDataPropertyLiteral(t.getValue(), t.getLanguage(), vf), false);
+                }
+                assertTrue(found);
+            }
         }
     }
 }

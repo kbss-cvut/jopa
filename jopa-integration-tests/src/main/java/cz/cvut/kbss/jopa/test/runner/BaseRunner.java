@@ -166,4 +166,6 @@ public abstract class BaseRunner {
                                                       Map<String, String> properties);
 
     protected abstract void persistTestData(Collection<Triple> data, EntityManager em) throws Exception;
+
+    protected abstract void verifyStatementsPresent(Collection<Triple> expected, EntityManager em) throws Exception;
 }

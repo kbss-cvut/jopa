@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,8 +17,11 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
+import cz.cvut.kbss.jopa.test.environment.Triple;
 import cz.cvut.kbss.ontodriver.exception.PrimaryKeyNotSetException;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -494,5 +497,20 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         final OWLClassM result = em.find(OWLClassM.class, entityM.getKey());
         assertNotNull(result);
         assertEquals(entityM.getIntegerSet(), result.getIntegerSet());
+    }
+
+    @Test
+    public void persistSetsStringLiteralLanguageTagAccordingToDescriptor() throws Exception {
+        this.em = getEntityManager("persistSetsStringLiteralLanguageTagAccordingToDescriptor", false);
+        em.getTransaction().begin();
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setAttributeLanguage(OWLClassA.class.getDeclaredField("stringAttribute"), "cs");
+        em.persist(entityA, descriptor);
+        em.getTransaction().commit();
+
+        verifyStatementsPresent(Collections.singleton(
+                new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
+                        "cs")), em);
+        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
     }
 }
