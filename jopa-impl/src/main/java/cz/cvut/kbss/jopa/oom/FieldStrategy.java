@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,6 +14,7 @@
  */
 package cz.cvut.kbss.jopa.oom;
 
+import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
 import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
@@ -140,6 +141,16 @@ abstract class FieldStrategy<T extends FieldSpecification<? super X, ?>, X> {
 
     URI getAttributeContext() {
         return attributeDescriptor.getContext();
+    }
+
+    /**
+     * Gets the language tag that should be used when mapping this field to an assertion.
+     *
+     * @return Language tag, possibly {@code null}
+     */
+    String getLanguage() {
+        return attributeDescriptor.hasLanguage() ? attributeDescriptor.getLanguage() :
+               mapper.getConfiguration().get(JOPAPersistenceProperties.LANG);
     }
 
     /**
