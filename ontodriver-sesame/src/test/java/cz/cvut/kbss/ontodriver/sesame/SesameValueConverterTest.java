@@ -98,4 +98,54 @@ public class SesameValueConverterTest {
     public void conversionThrowsExceptionWhenObjectPropertyValueIsNotUri() throws Exception {
         converter.toSesameValue(assertion(Assertion.AssertionType.OBJECT_PROPERTY), value(117));
     }
+
+    @Test
+    public void convertsStringLiteralIntoValueWithLanguageTagSpecifiedInAssertion() throws Exception {
+        final String value = "hodnota v cestine";
+        final Assertion dpAssertion = Assertion.createDataPropertyAssertion(PROPERTY, "cs", false);
+        final Value res = converter.toSesameValue(dpAssertion, value(value));
+        assertTrue(res instanceof Literal);
+        final Literal literal = (Literal) res;
+        assertTrue(literal.getLanguage().isPresent());
+        assertEquals("cs", literal.getLanguage().get());
+        assertEquals(value, literal.stringValue());
+    }
+
+    @Test
+    public void convertsStringLiteralIntoValueWithLanguageSpecifiedInConfigurationWhenAssertionHasNoLanguage()
+            throws Exception {
+        final String value = "hodnota v cestine";
+        final Assertion dpAssertion = Assertion.createDataPropertyAssertion(PROPERTY, false);
+        final Value res = converter.toSesameValue(dpAssertion, value(value));
+        assertTrue(res instanceof Literal);
+        final Literal literal = (Literal) res;
+        assertTrue(literal.getLanguage().isPresent());
+        assertEquals(LANG, literal.getLanguage().get());
+        assertEquals(value, literal.stringValue());
+    }
+
+    @Test
+    public void convertsAnnotationLiteralIntoValueWithLanguageTagSpecifiedInAssertion() throws Exception {
+        final String value = "hodnota v cestine";
+        final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(PROPERTY, "cs", false);
+        final Value res = converter.toSesameValue(apAssertion, value(value));
+        assertTrue(res instanceof Literal);
+        final Literal literal = (Literal) res;
+        assertTrue(literal.getLanguage().isPresent());
+        assertEquals("cs", literal.getLanguage().get());
+        assertEquals(value, literal.stringValue());
+    }
+
+    @Test
+    public void convertsAnnotationLiteralIntoValueWithLanguageTagSpecifiedGloballyWhenAssertionHasNoLanguage()
+            throws Exception {
+        final String value = "hodnota v cestine";
+        final Assertion apAssertion = Assertion.createAnnotationPropertyAssertion(PROPERTY, false);
+        final Value res = converter.toSesameValue(apAssertion, value(value));
+        assertTrue(res instanceof Literal);
+        final Literal literal = (Literal) res;
+        assertTrue(literal.getLanguage().isPresent());
+        assertEquals(LANG, literal.getLanguage().get());
+        assertEquals(value, literal.stringValue());
+    }
 }

@@ -513,4 +513,37 @@ public abstract class CreateOperationsRunner extends BaseRunner {
                         "cs")), em);
         assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
     }
+
+    @Test
+    public void persistSetsStringLiteralLanguageTagToGloballyConfiguredValueWhenDescriptorDoesNotSpecifyIt()
+            throws Exception {
+        this.em = getEntityManager(
+                "persistSetsStringLiteralLanguageTagToGloballyConfiguredValueWhenDescriptorDoesNotSpecifyIt", false);
+        em.getTransaction().begin();
+        em.persist(entityA);
+        em.getTransaction().commit();
+
+        verifyStatementsPresent(Collections.singleton(
+                new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
+                        "en")), em);
+        assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
+
+    @Test
+    public void persistAllowsOverridingGlobalLanguageWithLocalEmptyTag() throws Exception {
+        this.em = getEntityManager("persistAllowsOverridingGlobalLanguageWithLocalEmptyTag", false);
+        em.getTransaction().begin();
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setAttributeLanguage(OWLClassA.class.getDeclaredField("stringAttribute"), null);
+        em.persist(entityA, descriptor);
+        em.getTransaction().commit();
+
+        verifyStatementsPresent(Collections.singleton(
+                new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), entityA.getStringAttribute(),
+                        null)), em);
+        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri());
+        assertNotNull(result);
+        // The string attribute should be loaded even though PU language is set to en, because the persisted value has no lang tag
+        assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
+    }
 }

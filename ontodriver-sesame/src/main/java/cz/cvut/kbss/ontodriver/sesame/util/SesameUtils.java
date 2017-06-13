@@ -102,7 +102,7 @@ public final class SesameUtils {
      * Creates Sesame literal from the specified value, which can be used as data property object.
      *
      * @param value    The value to transform
-     * @param language Language to add to string literals
+     * @param language Language to add to string literals, optional
      * @param vf       Sesame value factory
      * @return Sesame Literal
      * @throws IllegalArgumentException If the type of the value is not supported
@@ -113,7 +113,7 @@ public final class SesameUtils {
         if (value instanceof Integer) {
             return vf.createLiteral((Integer) value);
         } else if (value instanceof String) {
-            return vf.createLiteral((String) value, language);
+            return language != null ? vf.createLiteral((String) value, language) : vf.createLiteral((String) value);
         } else if (value instanceof Byte) {
             return vf.createLiteral((Byte) value);
         } else if (value instanceof Short) {

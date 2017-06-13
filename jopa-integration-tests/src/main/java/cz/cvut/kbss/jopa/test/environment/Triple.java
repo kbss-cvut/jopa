@@ -35,7 +35,7 @@ public class Triple {
         this.subject = Objects.requireNonNull(subject);
         this.property = Objects.requireNonNull(property);
         this.value = Objects.requireNonNull(value);
-        this.language = Objects.requireNonNull(language);
+        this.language = language;
     }
 
     public URI getSubject() {

@@ -87,4 +87,21 @@ public class SesameUtilsTest {
         assertEquals(Severity.MEDIUM.toString(), literal.stringValue());
         assertTrue(literal.getDatatype() == null || literal.getDatatype().equals(XMLSchema.STRING));
     }
+
+    @Test
+    public void createDataPropertyLiteralAttachesLanguageTagToStringLiteral() {
+        final String value = "literal";
+        final Literal result = SesameUtils.createDataPropertyLiteral(value, LANG, vf);
+        assertTrue(result.getLanguage().isPresent());
+        assertEquals(LANG, result.getLanguage().get());
+        assertEquals(value, result.stringValue());
+    }
+
+    @Test
+    public void createDataPropertyLiteralCreatesStringWithoutLanguageTagWhenNullIsPassedIn() {
+        final String value = "literal";
+        final Literal result = SesameUtils.createDataPropertyLiteral(value, null, vf);
+        assertFalse(result.getLanguage().isPresent());
+        assertEquals(value, result.stringValue());
+    }
 }
