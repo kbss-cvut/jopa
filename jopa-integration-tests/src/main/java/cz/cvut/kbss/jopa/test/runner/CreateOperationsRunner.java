@@ -28,10 +28,7 @@ import org.slf4j.Logger;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -545,5 +542,30 @@ public abstract class CreateOperationsRunner extends BaseRunner {
         assertNotNull(result);
         // The string attribute should be loaded even though PU language is set to en, because the persisted value has no lang tag
         assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
+    }
+
+    @Test
+    public void persistAllowsToSpecifyLanguageTagPerEntityAndOverrideItOnAttributeLevel() throws Exception {
+        this.em = getEntityManager("persistAllowsToSpecifyLanguageTagPerEntityAndOverrideItOnAttributeLevel", false);
+        entityN.setStringAttribute("retezec v cestine");
+        entityN.setAnnotationProperty("entity descriptor ist in Deutsch");
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setLanguage("de");
+        descriptor.setAttributeLanguage(OWLClassN.class.getDeclaredField("stringAttribute"), "cs");
+
+        em.getTransaction().begin();
+        em.persist(entityN, descriptor);
+        em.getTransaction().commit();
+
+        final Set<Triple> statements = new HashSet<>(4);
+        statements.add(new Triple(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STR_ANNOTATION_PROPERTY),
+                entityN.getAnnotationProperty(), "de"));
+        statements.add(new Triple(URI.create(entityN.getId()), URI.create(Vocabulary.P_N_STRING_ATTRIBUTE),
+                entityN.getStringAttribute(), "cs"));
+        verifyStatementsPresent(statements, em);
+
+        final OWLClassN result = em.find(OWLClassN.class, entityN.getId(), descriptor);
+        assertEquals(entityN.getAnnotationProperty(), result.getAnnotationProperty());
+        assertEquals(entityN.getStringAttribute(), result.getStringAttribute());
     }
 }

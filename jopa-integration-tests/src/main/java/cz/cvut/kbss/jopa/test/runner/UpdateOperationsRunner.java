@@ -17,6 +17,8 @@ package cz.cvut.kbss.jopa.test.runner;
 import cz.cvut.kbss.jopa.exceptions.IntegrityConstraintViolatedException;
 import cz.cvut.kbss.jopa.exceptions.OWLInferredAttributeModifiedException;
 import cz.cvut.kbss.jopa.exceptions.RollbackException;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
 import cz.cvut.kbss.jopa.test.environment.TestEnvironmentUtils;
@@ -987,5 +989,24 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassA aReference = em.find(OWLClassA.class, entityA2.getUri());
         assertSame(dResult.getOwlClassA(), aReference);
         assertNotNull(em.find(OWLClassA.class, entityA.getUri()));
+    }
+
+    @Test
+    public void updateSupportsSavingStringLiteralWithDifferentLanguageTag() throws Exception {
+        this.em = getEntityManager("updateSupportsSavingStringLiteralWithDifferentLanguageTag", false);
+        persist(entityA);
+
+        entityA.setStringAttribute("hodnota v cestine");
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setAttributeLanguage(OWLClassA.class.getDeclaredField("stringAttribute"), "cs");
+        em.getTransaction().begin();
+        em.merge(entityA, descriptor);
+        em.getTransaction().commit();
+
+        final OWLClassA resultOne = em.find(OWLClassA.class, entityA.getUri());
+        assertNull(resultOne.getStringAttribute());
+        em.clear();
+        final OWLClassA resultTwo = em.find(OWLClassA.class, entityA.getUri(), descriptor);
+        assertEquals(entityA.getStringAttribute(), resultTwo.getStringAttribute());
     }
 }

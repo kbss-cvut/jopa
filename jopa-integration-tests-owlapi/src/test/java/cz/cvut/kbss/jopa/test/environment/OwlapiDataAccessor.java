@@ -58,24 +58,21 @@ public class OwlapiDataAccessor {
         final OWLDataFactory df = ontology.getOWLOntologyManager().getOWLDataFactory();
         for (Triple t : data) {
             final OWLNamedIndividual ind = df.getOWLNamedIndividual(IRI.create(t.getSubject()));
-            final OWLAxiom axiom;
             if (t.getProperty().toString().equals(CommonVocabulary.RDF_TYPE)) {
                 final OWLClass cls = df.getOWLClass(IRI.create(t.getValue().toString()));
-                axiom = df.getOWLClassAssertionAxiom(cls, ind);
+                assertTrue(ontology.containsAxiom(df.getOWLClassAssertionAxiom(cls, ind)));
             } else if (t.getValue() instanceof URI) {
                 final OWLObjectProperty op = df.getOWLObjectProperty(IRI.create(t.getProperty()));
                 final OWLNamedIndividual obj = df.getOWLNamedIndividual(IRI.create((URI) t.getValue()));
-                axiom = df.getOWLObjectPropertyAssertionAxiom(op, ind, obj);
-            } else if (t.getProperty().toString().equals(CommonVocabulary.RDFS_LABEL)) {
+                assertTrue(ontology.containsAxiom(df.getOWLObjectPropertyAssertionAxiom(op, ind, obj)));
+            } else {
                 final OWLAnnotationProperty ap = df.getOWLAnnotationProperty(IRI.create(t.getProperty()));
                 final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(t.getValue(), df, t.getLanguage());
-                axiom = df.getOWLAnnotationAssertionAxiom(ap, ind.getIRI(), value);
-            } else {
+                final OWLAxiom apAxiom = df.getOWLAnnotationAssertionAxiom(ap, ind.getIRI(), value);
                 final OWLDataProperty dp = df.getOWLDataProperty(IRI.create(t.getProperty()));
-                final OWLLiteral value = OwlapiUtils.createOWLLiteralFromValue(t.getValue(), df, t.getLanguage());
-                axiom = df.getOWLDataPropertyAssertionAxiom(dp, ind, value);
+                final OWLAxiom dpAxiom = df.getOWLDataPropertyAssertionAxiom(dp, ind, value);
+                assertTrue(ontology.containsAxiom(apAxiom) || ontology.containsAxiom(dpAxiom));
             }
-            assertTrue(ontology.containsAxiom(axiom));
         }
     }
 }
