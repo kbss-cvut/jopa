@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -17,7 +17,6 @@ package cz.cvut.kbss.jopa.oom;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
 import cz.cvut.kbss.jopa.model.MetamodelImpl;
 import cz.cvut.kbss.jopa.model.metamodel.EntityType;
-import cz.cvut.kbss.jopa.model.metamodel.Metamodel;
 import cz.cvut.kbss.jopa.oom.exceptions.EntityReconstructionException;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.sessions.LoadingParameters;
@@ -64,10 +63,8 @@ abstract class EntityInstanceLoader {
     abstract <T> T loadEntity(LoadingParameters<T> loadingParameters);
 
     <T> T loadInstance(LoadingParameters<T> loadingParameters, EntityType<? extends T> et) {
-        if (cache.contains(et.getJavaType(), loadingParameters.getIdentifier(),
-                loadingParameters.getDescriptor().getContext())) {
-            return cache.get(et.getJavaType(), loadingParameters.getIdentifier(),
-                    loadingParameters.getDescriptor().getContext());
+        if (cache.contains(et.getJavaType(), loadingParameters.getIdentifier(), loadingParameters.getDescriptor())) {
+            return cache.get(et.getJavaType(), loadingParameters.getIdentifier(), loadingParameters.getDescriptor());
         }
         final AxiomDescriptor axiomDescriptor = descriptorFactory.createForEntityLoading(loadingParameters, et);
         try {

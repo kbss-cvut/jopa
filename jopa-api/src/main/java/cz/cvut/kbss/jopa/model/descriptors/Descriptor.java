@@ -156,28 +156,23 @@ public abstract class Descriptor {
     protected abstract Set<URI> getContextsInternal(Set<URI> contexts, Set<Descriptor> visited);
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((context == null) ? 0 : context.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Descriptor)) return false;
+
+        Descriptor that = (Descriptor) o;
+
+        if (hasLanguage != that.hasLanguage) return false;
+        if (context != null ? !context.equals(that.context) : that.context != null) return false;
+        return language != null ? language.equals(that.language) : that.language == null;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Descriptor other = (Descriptor) obj;
-        if (context == null) {
-            if (other.context != null)
-                return false;
-        } else if (!context.equals(other.context))
-            return false;
-        return true;
+    public int hashCode() {
+        int result = context != null ? context.hashCode() : 0;
+        result = 31 * result + (language != null ? language.hashCode() : 0);
+        result = 31 * result + (hasLanguage ? 1 : 0);
+        return result;
     }
 
     @Override

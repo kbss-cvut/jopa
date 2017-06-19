@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import org.slf4j.Logger;
@@ -87,26 +88,27 @@ public class LruCacheManager implements CacheManager {
     }
 
     @Override
-    public void add(Object primaryKey, Object entity, URI context) {
+    public void add(Object primaryKey, Object entity, Descriptor descriptor) {
         Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
         Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
         writeLock.lock();
         try {
-            entityCache.put(primaryKey, entity, context);
+            entityCache.put(primaryKey, entity, descriptor);
         } finally {
             writeLock.unlock();
         }
     }
 
     @Override
-    public <T> T get(Class<T> cls, Object primaryKey, URI context) {
-        if (cls == null || primaryKey == null) {
+    public <T> T get(Class<T> cls, Object primaryKey, Descriptor descriptor) {
+        if (cls == null || primaryKey == null || descriptor == null) {
             return null;
         }
         readLock.lock();
         try {
-            return entityCache.get(cls, primaryKey, context);
+            return entityCache.get(cls, primaryKey, descriptor);
         } finally {
             readLock.unlock();
         }
@@ -140,39 +142,26 @@ public class LruCacheManager implements CacheManager {
     }
 
     @Override
-    public boolean contains(Class<?> cls, Object primaryKey) {
-        if (cls == null || primaryKey == null) {
+    public boolean contains(Class<?> cls, Object identifier, Descriptor descriptor) {
+        if (cls == null || identifier == null || descriptor == null) {
             return false;
         }
         readLock.lock();
         try {
-            return entityCache.contains(cls, primaryKey);
+            return entityCache.contains(cls, identifier, descriptor);
         } finally {
             readLock.unlock();
         }
     }
 
     @Override
-    public boolean contains(Class<?> cls, Object primaryKey, URI context) {
-        if (cls == null || primaryKey == null) {
-            return false;
-        }
-        readLock.lock();
-        try {
-            return entityCache.contains(cls, primaryKey, context);
-        } finally {
-            readLock.unlock();
-        }
-    }
-
-    @Override
-    public void evict(Class<?> cls, Object primaryKey, URI context) {
+    public void evict(Class<?> cls, Object identifier, URI context) {
         Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
-        Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+        Objects.requireNonNull(identifier, ErrorUtils.getNPXMessageSupplier("primaryKey"));
 
         writeLock.lock();
         try {
-            entityCache.evict(cls, primaryKey, context);
+            entityCache.evict(cls, identifier, context);
         } finally {
             writeLock.unlock();
         }
@@ -226,16 +215,16 @@ public class LruCacheManager implements CacheManager {
         }
 
         @Override
-        void put(Object identifier, Object entity, URI context) {
-            final URI ctx = context != null ? context : defaultContext;
-            super.put(identifier, entity, ctx);
+        void put(Object identifier, Object entity, Descriptor descriptor) {
+            final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : defaultContext;
+            super.put(identifier, entity, descriptor);
             cache.put(new LruCache.CacheNode(ctx, entity.getClass(), identifier), NULL_VALUE);
         }
 
         @Override
-        <T> T get(Class<T> cls, Object identifier, URI context) {
-            final URI ctx = context != null ? context : defaultContext;
-            T result = super.get(cls, identifier, ctx);
+        <T> T get(Class<T> cls, Object identifier, Descriptor descriptor) {
+            final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : defaultContext;
+            T result = super.get(cls, identifier, descriptor);
             if (result != null) {
                 cache.get(new LruCache.CacheNode(ctx, cls, identifier));
             }

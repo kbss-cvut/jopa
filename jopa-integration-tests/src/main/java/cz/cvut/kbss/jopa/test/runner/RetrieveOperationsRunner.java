@@ -264,4 +264,24 @@ public abstract class RetrieveOperationsRunner extends BaseRunner {
         final OWLClassA resTwo = em.find(OWLClassA.class, entityA.getUri(), descriptor);
         assertEquals(value, resTwo.getStringAttribute());
     }
+
+    @Test
+    public void retrieveLoadsStringLiteralWithCorrectLanguageTagWhenCachedValueHasDifferentLanguageTag()
+            throws Exception {
+        this.em = getEntityManager(
+                "retrieveLoadsStringLiteralWithCorrectLanguageTagWhenCachedValueHasDifferentLanguageTag", true);
+        persist(entityA);   // persisted with @en
+        final String value = "cestina";
+        persistTestData(Collections
+                .singleton(new Triple(entityA.getUri(), URI.create(Vocabulary.P_A_STRING_ATTRIBUTE), value, "cs")), em);
+
+        final OWLClassA resOne = em.find(OWLClassA.class, entityA.getUri());
+        assertEquals(entityA.getStringAttribute(), resOne.getStringAttribute());
+        em.clear();
+
+        final Descriptor descriptor = new EntityDescriptor();
+        descriptor.setLanguage("cs");
+        final OWLClassA resTwo = em.find(OWLClassA.class, entityA.getUri(), descriptor);
+        assertEquals(value, resTwo.getStringAttribute());
+    }
 }

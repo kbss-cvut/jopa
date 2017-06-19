@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.utils.ErrorUtils;
 import org.slf4j.Logger;
@@ -121,13 +122,14 @@ public class TtlCacheManager implements CacheManager {
     }
 
     @Override
-    public void add(Object primaryKey, Object entity, URI context) {
+    public void add(Object primaryKey, Object entity, Descriptor descriptor) {
         Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
         Objects.requireNonNull(entity, ErrorUtils.getNPXMessageSupplier("entity"));
+        Objects.requireNonNull(descriptor, ErrorUtils.getNPXMessageSupplier("descriptor"));
 
         acquireWriteLock();
         try {
-            cache.put(primaryKey, entity, context);
+            cache.put(primaryKey, entity, descriptor);
         } finally {
             releaseWriteLock();
         }
@@ -156,13 +158,13 @@ public class TtlCacheManager implements CacheManager {
     }
 
     @Override
-    public <T> T get(Class<T> cls, Object primaryKey, URI context) {
-        if (cls == null || primaryKey == null) {
+    public <T> T get(Class<T> cls, Object primaryKey, Descriptor descriptor) {
+        if (cls == null || primaryKey == null || descriptor == null) {
             return null;
         }
         acquireReadLock();
         try {
-            return cache.get(cls, primaryKey, context);
+            return cache.get(cls, primaryKey, descriptor);
         } finally {
             releaseReadLock();
         }
@@ -196,26 +198,13 @@ public class TtlCacheManager implements CacheManager {
     }
 
     @Override
-    public boolean contains(Class<?> cls, Object primaryKey) {
-        if (cls == null || primaryKey == null) {
+    public boolean contains(Class<?> cls, Object primaryKey, Descriptor descriptor) {
+        if (cls == null || primaryKey == null || descriptor == null) {
             return false;
         }
         acquireReadLock();
         try {
-            return cache.contains(cls, primaryKey);
-        } finally {
-            releaseReadLock();
-        }
-    }
-
-    @Override
-    public boolean contains(Class<?> cls, Object primaryKey, URI context) {
-        if (cls == null || primaryKey == null) {
-            return false;
-        }
-        acquireReadLock();
-        try {
-            return cache.contains(cls, primaryKey, context);
+            return cache.contains(cls, primaryKey, descriptor);
         } finally {
             releaseReadLock();
         }
@@ -234,13 +223,13 @@ public class TtlCacheManager implements CacheManager {
     }
 
     @Override
-    public void evict(Class<?> cls, Object primaryKey, URI context) {
+    public void evict(Class<?> cls, Object identifier, URI context) {
         Objects.requireNonNull(cls, ErrorUtils.getNPXMessageSupplier("cls"));
-        Objects.requireNonNull(primaryKey, ErrorUtils.getNPXMessageSupplier("primaryKey"));
+        Objects.requireNonNull(identifier, ErrorUtils.getNPXMessageSupplier("primaryKey"));
 
         acquireWriteLock();
         try {
-            cache.evict(cls, primaryKey, context);
+            cache.evict(cls, identifier, context);
         } finally {
             releaseWriteLock();
         }
@@ -315,18 +304,20 @@ public class TtlCacheManager implements CacheManager {
 
         private final Map<URI, Long> ttls = new HashMap<>();
 
-        void put(Object identifier, Object entity, URI context) {
-            super.put(identifier, entity, context);
-            final URI ctx = context != null ? context : defaultContext;
+        @Override
+        void put(Object identifier, Object entity, Descriptor descriptor) {
+            super.put(identifier, entity, descriptor);
+            final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : defaultContext;
             updateTimeToLive(ctx);
         }
 
-        <T> T get(Class<T> cls, Object identifier, URI context) {
+        @Override
+        <T> T get(Class<T> cls, Object identifier, Descriptor descriptor) {
             assert cls != null;
             assert identifier != null;
 
-            final URI ctx = context != null ? context : defaultContext;
-            T result = super.get(cls, identifier, ctx);
+            final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : defaultContext;
+            T result = super.get(cls, identifier, descriptor);
             if (result != null) {
                 updateTimeToLive(ctx);
             }

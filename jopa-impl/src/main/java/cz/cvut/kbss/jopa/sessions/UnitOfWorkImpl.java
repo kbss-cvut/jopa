@@ -32,7 +32,10 @@ import cz.cvut.kbss.jopa.sessions.change.ChangeManagerImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeRecordImpl;
 import cz.cvut.kbss.jopa.sessions.change.ChangeSetFactory;
 import cz.cvut.kbss.jopa.sessions.validator.IntegrityConstraintsValidator;
-import cz.cvut.kbss.jopa.utils.*;
+import cz.cvut.kbss.jopa.utils.CollectionFactory;
+import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
+import cz.cvut.kbss.jopa.utils.ErrorUtils;
+import cz.cvut.kbss.jopa.utils.Wrapper;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -616,7 +619,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         } catch (IllegalAccessException e) {
             throw new OWLPersistenceException(e);
         }
-        if (cacheManager.contains(et.getJavaType(), iri, descriptor.getContext())) {
+        if (cacheManager.contains(et.getJavaType(), iri, descriptor)) {
             cacheManager.evict(et.getJavaType(), iri, descriptor.getContext());
         }
         setHasChanges();
@@ -914,8 +917,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         } else {
             if (isTypeManaged(field.getType())) {
                 clone = registerExistingObject(fieldValueOrig, fieldDescriptor);
-                final URI fieldContext = fieldDescriptor.getContext();
-                putObjectIntoCache(getIdentifier(clone), fieldValueOrig, fieldContext);
+                putObjectIntoCache(getIdentifier(clone), fieldValueOrig, fieldDescriptor);
             } else {
                 clone = cloneBuilder.buildClone(entity, field, fieldValueOrig, fieldDescriptor);
             }
@@ -1060,8 +1062,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
     }
 
-    void putObjectIntoCache(Object primaryKey, Object entity, URI context) {
-        cacheManager.add(primaryKey, entity, context);
+    void putObjectIntoCache(Object primaryKey, Object entity, Descriptor descriptor) {
+        cacheManager.add(primaryKey, entity, descriptor);
     }
 
     private Object getIdentifier(Object entity) {

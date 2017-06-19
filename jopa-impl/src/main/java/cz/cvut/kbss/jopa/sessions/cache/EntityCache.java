@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -13,6 +13,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package cz.cvut.kbss.jopa.sessions.cache;
+
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 
 import java.net.URI;
 import java.util.Collections;
@@ -26,19 +28,21 @@ class EntityCache {
     private static final String DEFAULT_CONTEXT_BASE = "http://defaultContext";
 
     final Map<URI, Map<Object, Map<Class<?>, Object>>> repoCache;
+    final Map<Object, Descriptor> descriptors;
     final URI defaultContext;
 
     EntityCache() {
         repoCache = new HashMap<>();
+        this.descriptors = new HashMap<>();
         this.defaultContext = URI.create(DEFAULT_CONTEXT_BASE + System.currentTimeMillis());
     }
 
-    void put(Object identifier, Object entity, URI context) {
+    void put(Object identifier, Object entity, Descriptor descriptor) {
         assert identifier != null;
         assert entity != null;
 
         final Class<?> cls = entity.getClass();
-        final URI ctx = context != null ? context : defaultContext;
+        final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : defaultContext;
 
         Map<Object, Map<Class<?>, Object>> ctxMap;
         if (!repoCache.containsKey(ctx)) {
@@ -55,32 +59,24 @@ class EntityCache {
             individualMap = ctxMap.get(identifier);
         }
         individualMap.put(cls, entity);
+        descriptors.put(entity, descriptor);
     }
 
-    <T> T get(Class<T> cls, Object identifier, URI context) {
+    <T> T get(Class<T> cls, Object identifier, Descriptor descriptor) {
         assert cls != null;
         assert identifier != null;
 
-        final URI ctx = context != null ? context : defaultContext;
+        final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : defaultContext;
         final Map<Class<?>, Object> m = getMapForId(ctx, identifier);
         return cls.cast(m.getOrDefault(cls, null));
     }
 
-    boolean contains(Class<?> cls, Object identifier) {
+    boolean contains(Class<?> cls, Object identifier, Descriptor descriptor) {
         assert cls != null;
         assert identifier != null;
-        final Map<Class<?>, Object> m = getMapForId(defaultContext, identifier);
-        return m.containsKey(cls);
-    }
+        assert descriptor != null;
 
-    boolean contains(Class<?> cls, Object identifier, URI context) {
-        assert cls != null;
-        assert identifier != null;
-        if (context == null) {
-            return contains(cls, identifier);
-        }
-
-        final Map<Class<?>, Object> m = getMapForId(context, identifier);
+        final Map<Class<?>, Object> m = getMapForId(descriptor.getContext(), identifier);
         return m.containsKey(cls);
     }
 

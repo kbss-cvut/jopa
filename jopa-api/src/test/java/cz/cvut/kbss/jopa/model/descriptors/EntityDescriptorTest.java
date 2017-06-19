@@ -1,10 +1,8 @@
 package cz.cvut.kbss.jopa.model.descriptors;
 
-import cz.cvut.kbss.jopa.model.annotations.OWLDataProperty;
 import cz.cvut.kbss.jopa.model.metamodel.Attribute;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 import java.net.URI;
 
 import static org.junit.Assert.*;
@@ -102,24 +100,6 @@ public class EntityDescriptorTest {
         assertNotEquals(dOne.hashCode(), dTwo.hashCode());
     }
 
-    @SuppressWarnings("unused")
-    private static class TestClass {
-
-        @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes/stringAtt")
-        private String stringAtt;
-
-        @OWLDataProperty(iri = "http://krizik.felk.cvut.cz/ontologies/jopa/attributes/intAtt")
-        private Integer intAtt;
-
-        private static Field stringAttField() throws NoSuchFieldException {
-            return TestClass.class.getDeclaredField("stringAtt");
-        }
-
-        private static Field intAttField() throws NoSuchFieldException {
-            return TestClass.class.getDeclaredField("intAtt");
-        }
-    }
-
     @Test
     public void hasLanguageReturnsTrueForLanguageSetExplicitlyToNull() {
         final Descriptor descriptor = new EntityDescriptor();
@@ -136,5 +116,53 @@ public class EntityDescriptorTest {
         when(att.getJavaField()).thenReturn(TestClass.stringAttField());
         final Descriptor fieldDescriptor = descriptor.getAttributeDescriptor(att);
         assertFalse(fieldDescriptor.hasLanguage());
+    }
+
+    @Test
+    public void twoDescriptorsWithDifferentLanguageTagsAreNotEqual() throws Exception {
+        final Descriptor dOne = new EntityDescriptor(CONTEXT_ONE);
+        final Descriptor dTwo = new EntityDescriptor(CONTEXT_ONE);
+        dOne.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
+        dTwo.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
+        dOne.setLanguage("en");
+        dTwo.setLanguage("cs");
+        assertNotEquals(dOne, dTwo);
+        assertNotEquals(dOne.hashCode(), dTwo.hashCode());
+    }
+
+    @Test
+    public void twoDescriptorsWithDifferentAttributeLanguageTagsAreNotEqual() throws Exception {
+        final Descriptor dOne = new EntityDescriptor();
+        final Descriptor dTwo = new EntityDescriptor();
+        dOne.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
+        dTwo.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
+        dOne.setLanguage("en");
+        dTwo.setLanguage("en");
+        dOne.setAttributeLanguage(TestClass.stringAttField(), "en");
+        dTwo.setAttributeLanguage(TestClass.stringAttField(), "cs");
+        assertNotEquals(dOne, dTwo);
+        assertNotEquals(dOne.hashCode(), dTwo.hashCode());
+    }
+
+    @Test
+    public void twoDescriptorsWithSameAttributeLanguageTagsAreEqual() throws Exception {
+        final Descriptor dOne = new EntityDescriptor();
+        final Descriptor dTwo = new EntityDescriptor();
+        dOne.setAttributeLanguage(TestClass.stringAttField(), "en");
+        dTwo.setAttributeLanguage(TestClass.stringAttField(), "en");
+        assertEquals(dOne, dTwo);
+        assertEquals(dOne.hashCode(), dTwo.hashCode());
+    }
+
+    @Test
+    public void twoDescriptorsWithNullLanguageTagSetAreEqual() throws Exception {
+        final Descriptor dOne = new EntityDescriptor();
+        final Descriptor dTwo = new EntityDescriptor();
+        dOne.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
+        dTwo.addAttributeContext(TestClass.stringAttField(), CONTEXT_TWO);
+        dOne.setLanguage(null);
+        dTwo.setLanguage(null);
+        assertEquals(dOne, dTwo);
+        assertEquals(dOne.hashCode(), dTwo.hashCode());
     }
 }
