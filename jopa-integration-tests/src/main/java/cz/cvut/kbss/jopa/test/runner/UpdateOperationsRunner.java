@@ -1009,4 +1009,45 @@ public abstract class UpdateOperationsRunner extends BaseRunner {
         final OWLClassA resultTwo = em.find(OWLClassA.class, entityA.getUri(), descriptor);
         assertEquals(entityA.getStringAttribute(), resultTwo.getStringAttribute());
     }
+
+    @Test
+    public void mergeDetachedRemovesObsoleteDescriptorInSecondLevelCache() throws Exception {
+        this.em = getEntityManager("mergeDetachedReplacesObsoleteDescriptorInSecondLevelCache", true);
+        final Descriptor descriptorOne = new EntityDescriptor();
+        descriptorOne.setLanguage("en");
+        em.getTransaction().begin();
+        em.persist(entityA, descriptorOne);
+        em.getTransaction().commit();
+        assertTrue(em.getEntityManagerFactory().getCache().contains(OWLClassA.class, entityA.getUri(), descriptorOne));
+
+        final Descriptor descriptorTwo = new EntityDescriptor();
+        descriptorTwo.setLanguage("cs");
+        assertNotEquals(descriptorOne, descriptorTwo);
+        entityA.setStringAttribute("cesky");
+        em.getTransaction().begin();
+        em.merge(entityA, descriptorTwo);
+        em.getTransaction().commit();
+
+        assertFalse(em.getEntityManagerFactory().getCache().contains(OWLClassA.class, entityA.getUri(), descriptorOne));
+        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri(), descriptorTwo);
+        assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
+        assertTrue(em.getEntityManagerFactory().getCache().contains(OWLClassA.class, entityA.getUri(), descriptorTwo));
+    }
+
+    @Test
+    public void mergeUpdatesCacheEventWhenDescriptorContainsOnlyAttributeLanguageSetting() throws Exception {
+        this.em = getEntityManager("mergeUpdatesCacheEventWhenDescriptorContainsOnlyAttributeLanguageSetting", true);
+        persist(entityA);
+
+        final Descriptor descriptorTwo = new EntityDescriptor();
+        descriptorTwo.setAttributeLanguage(OWLClassA.class.getDeclaredField("stringAttribute"), "cs");
+        entityA.setStringAttribute("cesky");
+        em.getTransaction().begin();
+        em.merge(entityA, descriptorTwo);
+        em.getTransaction().commit();
+
+        final OWLClassA result = em.find(OWLClassA.class, entityA.getUri(), descriptorTwo);
+        assertEquals(entityA.getStringAttribute(), result.getStringAttribute());
+        assertTrue(em.getEntityManagerFactory().getCache().contains(OWLClassA.class, entityA.getUri(), descriptorTwo));
+    }
 }

@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.test.runner;
 
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.oom.exceptions.AmbiguousEntityTypeException;
 import cz.cvut.kbss.jopa.test.*;
 import cz.cvut.kbss.jopa.test.environment.Generators;
@@ -239,8 +240,10 @@ public abstract class RetrieveOperationsWithInheritanceRunner extends BaseInheri
         sameIndividual.setUri(entityT.getUri());
         sameIndividual.setName(entityT.getName());
         persist(sameIndividual);
-        assertTrue(em.getEntityManagerFactory().getCache().contains(OWLClassT.class, entityT.getUri()));
-        assertTrue(em.getEntityManagerFactory().getCache().contains(OWLClassU.class, sameIndividual.getUri()));
+        assertTrue(em.getEntityManagerFactory().getCache()
+                     .contains(OWLClassT.class, entityT.getUri(), new EntityDescriptor()));
+        assertTrue(em.getEntityManagerFactory().getCache()
+                     .contains(OWLClassU.class, sameIndividual.getUri(), new EntityDescriptor()));
         thrown.expect(AmbiguousEntityTypeException.class);
 
         em.find(OWLClassS.class, entityT.getUri());

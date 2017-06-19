@@ -2,6 +2,7 @@ package cz.cvut.kbss.jopa.test.integration;
 
 import cz.cvut.kbss.jopa.adapters.IndirectSet;
 import cz.cvut.kbss.jopa.model.EntityManager;
+import cz.cvut.kbss.jopa.model.descriptors.EntityDescriptor;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import cz.cvut.kbss.jopa.test.OWLClassA;
 import cz.cvut.kbss.jopa.test.Vocabulary;
@@ -86,7 +87,7 @@ public class CacheTest extends IntegrationTestBase {
         final OWLClassA a = em.find(OWLClassA.class, id);
         assertNotNull(a);
         final CacheManager cacheManager = (CacheManager) em.getEntityManagerFactory().getCache();
-        final OWLClassA result = cacheManager.get(OWLClassA.class, id, null);
+        final OWLClassA result = cacheManager.get(OWLClassA.class, id, new EntityDescriptor());
         assertNotNull(result);
         assertNotNull(result.getTypes());
         assertFalse(result.getTypes() instanceof IndirectSet);
