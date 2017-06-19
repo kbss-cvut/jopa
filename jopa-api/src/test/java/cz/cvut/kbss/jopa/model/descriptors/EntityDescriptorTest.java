@@ -165,4 +165,13 @@ public class EntityDescriptorTest {
         assertEquals(dOne, dTwo);
         assertEquals(dOne.hashCode(), dTwo.hashCode());
     }
+
+    @Test
+    public void anyLanguageSetsLanguageTagToSupportAny() {
+        final Descriptor descriptor = new EntityDescriptor();
+        assertFalse(descriptor.hasLanguage());
+        descriptor.anyLanguage();
+        assertTrue(descriptor.hasLanguage());
+        assertNull(descriptor.getLanguage());
+    }
 }

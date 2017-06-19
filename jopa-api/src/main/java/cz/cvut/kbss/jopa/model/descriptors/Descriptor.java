@@ -18,7 +18,10 @@ import cz.cvut.kbss.jopa.model.metamodel.FieldSpecification;
 
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Defines base descriptor, which is used to specify context information for entities and their fields.
@@ -78,11 +81,24 @@ public abstract class Descriptor {
      * <p>
      * Applies to any possible sub-descriptors as well.
      *
-     * @param languageTag The language tag to use, possibly null, meaning no language preference should be used
+     * @param languageTag The language tag to use, possibly {@code null}, meaning no language preference should be used
+     * @see #anyLanguage()
      */
     public void setLanguage(String languageTag) {
         this.language = languageTag;
         this.hasLanguage = true;
+    }
+
+    /**
+     * Configures this descriptor to support any language tag (including no language tags).
+     * <p>
+     * This is useful for overriding previously set language tag expectations (either on PU level or parent descriptor
+     * level).
+     * <p>
+     * This does the same as calling {@link #setLanguage(String)} with {@code null} argument, but is more explicit.
+     */
+    public void anyLanguage() {
+        setLanguage(null);
     }
 
     /**
