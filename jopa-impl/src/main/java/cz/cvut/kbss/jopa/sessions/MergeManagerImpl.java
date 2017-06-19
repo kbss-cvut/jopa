@@ -56,6 +56,8 @@ public class MergeManagerImpl implements MergeManager {
             }
         } else {
             builder.mergeChanges(changeSet);
+            final Object identifier = EntityPropertiesUtils.getPrimaryKey(original, uow.getMetamodel());
+            uow.putObjectIntoCache(identifier, original, changeSet.getEntityDescriptor());
         }
         return clone;
     }
@@ -77,10 +79,11 @@ public class MergeManagerImpl implements MergeManager {
         }
         if (!changeSet.isNew()) {
             mergeChangesOnObject(changeSet);
+            return;
         }
         // Put the original object into the shared session cache
         Object newObject = changeSet.getChangedObject();
-        final Object primaryKey = EntityPropertiesUtils.getPrimaryKey(newObject, uow.getMetamodel());
-        uow.putObjectIntoCache(primaryKey, newObject, changeSet.getEntityDescriptor());
+        final Object identifier = EntityPropertiesUtils.getPrimaryKey(newObject, uow.getMetamodel());
+        uow.putObjectIntoCache(identifier, newObject, changeSet.getEntityDescriptor());
     }
 }

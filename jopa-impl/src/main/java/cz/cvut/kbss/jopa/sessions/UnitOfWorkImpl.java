@@ -612,7 +612,7 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
             if (chSet.hasChanges()) {
                 et.getLifecycleListenerManager().invokePostUpdateCallbacks(clone);
             }
-            getUowChangeSet().addObjectChangeSet(chSet);
+            getUowChangeSet().addObjectChangeSet(copyChangeSet(chSet, original, clone, descriptor));
         } catch (OWLEntityExistsException e) {
             unregisterObject(clone);
             throw e;
@@ -625,6 +625,13 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         setHasChanges();
         checkForCollections(clone);
         return et.getJavaType().cast(clone);
+    }
+
+    private ObjectChangeSet copyChangeSet(ObjectChangeSet changeSet, Object original, Object clone,
+                                          Descriptor descriptor) {
+        final ObjectChangeSet newChangeSet = ChangeSetFactory.createObjectChangeSet(original, clone, descriptor);
+        changeSet.getChanges().forEach(newChangeSet::addChangeRecord);
+        return newChangeSet;
     }
 
     @Override
@@ -1062,8 +1069,8 @@ public class UnitOfWorkImpl extends AbstractSession implements UnitOfWork, Query
         }
     }
 
-    void putObjectIntoCache(Object primaryKey, Object entity, Descriptor descriptor) {
-        cacheManager.add(primaryKey, entity, descriptor);
+    void putObjectIntoCache(Object identifier, Object entity, Descriptor descriptor) {
+        cacheManager.add(identifier, entity, descriptor);
     }
 
     private Object getIdentifier(Object entity) {
