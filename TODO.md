@@ -39,5 +39,3 @@
 - [ ] Research whether we could replace aspectj with cglib-generated proxies
 
 ### Currently in Progress
-
-- [ ] Allow specification of language for string attributes of an entity.
