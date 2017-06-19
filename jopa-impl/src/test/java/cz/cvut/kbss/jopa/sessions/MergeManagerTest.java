@@ -115,7 +115,7 @@ public class MergeManagerTest {
         final ObjectChangeSet ochs = createChangeSet(objOne, clone);
         uowChangeSet.addNewObjectChangeSet(ochs);
         mm.mergeChangesFromChangeSet(uowChangeSet);
-        verify(uow).putObjectIntoCache(objOne.getUri(), objOne, defaultDescriptor.getContext());
+        verify(uow).putObjectIntoCache(objOne.getUri(), objOne, defaultDescriptor);
     }
 
     @Test
@@ -124,7 +124,7 @@ public class MergeManagerTest {
         final OWLClassB clone = new OWLClassB(newOne.getUri());
         final ObjectChangeSet ochs = createChangeSet(newOne, clone);
         mm.mergeNewObject(ochs);
-        verify(uow).putObjectIntoCache(newOne.getUri(), newOne, defaultDescriptor.getContext());
+        verify(uow).putObjectIntoCache(newOne.getUri(), newOne, defaultDescriptor);
     }
 
     private static ObjectChangeSet createChangeSet(Object orig, Object clone) {

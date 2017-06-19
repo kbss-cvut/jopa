@@ -83,7 +83,7 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptor));
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), descriptor(CONTEXT_ONE)));
         assertFalse(manager.contains(testA.getClass(), testA.getUri(), descriptor(CONTEXT_TWO)));
-        final Object res = manager.get(testA.getClass(), testA.getUri(), null);
+        final Object res = manager.get(testA.getClass(), testA.getUri(), descriptor);
         assertNotNull(res);
         assertSame(testA, res);
     }
@@ -314,5 +314,99 @@ public abstract class AbstractCacheManagerTest<T extends CacheManager> {
         assertFalse(manager.contains(OWLClassM.class, testM.getKey(), descriptor));
     }
 
-    // TODO Test that the cache manager takes descriptor into account
+    @Test
+    public void containsReturnsFalseWhenDescriptorsDoNotMatch() {
+        final Descriptor descriptorOne = new EntityDescriptor();
+        manager.add(testA.getUri(), testA, descriptorOne);
+        final Descriptor descriptorTwo = new EntityDescriptor();
+        descriptorTwo.setLanguage("cs");
+        assertTrue(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
+        assertFalse(manager.contains(OWLClassA.class, testA.getUri(), descriptorTwo));
+    }
+
+    @Test
+    public void getReturnsNullWhenDescriptorsDoNotMatch() throws Exception {
+        final Descriptor descriptorOne = new EntityDescriptor();
+        descriptorOne.setLanguage("en");
+        manager.add(testA.getUri(), testA, descriptorOne);
+        final Descriptor descriptorTwo = new EntityDescriptor();
+        descriptorTwo.setLanguage("en");
+        descriptorTwo.setAttributeLanguage(OWLClassA.getStrAttField(), "cs");
+        assertNotNull(manager.get(OWLClassA.class, testA.getUri(), descriptorOne));
+        assertNull(manager.get(OWLClassA.class, testA.getUri(), descriptorTwo));
+    }
+
+    @Test
+    public void addReplacesInstanceTogetherWithDescriptor() throws Exception {
+        final Descriptor descriptorOne = new EntityDescriptor();
+        descriptorOne.setLanguage("en");
+        final Descriptor descriptorTwo = new EntityDescriptor();
+        descriptorTwo.setLanguage("cs");
+        manager.add(testA.getUri(), testA, descriptorOne);
+        assertTrue(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
+        assertFalse(manager.contains(OWLClassA.class, testA.getUri(), descriptorTwo));
+        manager.add(testA.getUri(), testA, descriptorTwo);
+        assertFalse(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
+        assertTrue(manager.contains(OWLClassA.class, testA.getUri(), descriptorTwo));
+    }
+
+    @Test
+    public void addRemovesOldDescriptorWhenInstanceIsReplacedByAnother() throws Exception {
+        final Descriptor descriptorOne = new EntityDescriptor();
+        descriptorOne.setLanguage("en");
+        final Descriptor descriptorTwo = new EntityDescriptor();
+        descriptorTwo.setLanguage("cs");
+        manager.add(testA.getUri(), testA, descriptorOne);
+        assertTrue(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
+        assertFalse(manager.contains(OWLClassA.class, testA.getUri(), descriptorTwo));
+        final OWLClassA newA = new OWLClassA(testA.getUri());
+        manager.add(newA.getUri(), newA, descriptorTwo);
+        assertFalse(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
+        assertTrue(manager.contains(OWLClassA.class, newA.getUri(), descriptorTwo));
+        final Map<?, ?> descriptors = extractDescriptors();
+        assertFalse(descriptors.containsKey(testA));
+        assertTrue(descriptors.containsKey(newA));
+    }
+
+    abstract Map<?, ?> extractDescriptors() throws Exception;
+
+    @Test
+    public void evictRemovesInstanceDescriptor() throws Exception {
+        final Descriptor descriptorOne = new EntityDescriptor();
+        descriptorOne.setLanguage("en");
+        manager.add(testA.getUri(), testA, descriptorOne);
+        assertTrue(extractDescriptors().containsKey(testA));
+        manager.evict(OWLClassA.class, testA.getUri(), null);
+        assertFalse(extractDescriptors().containsKey(testA));
+    }
+
+    @Test
+    public void evictByClassRemovesInstanceDescriptors() throws Exception {
+        final Descriptor descriptorOne = new EntityDescriptor();
+        descriptorOne.setLanguage("en");
+        manager.add(testA.getUri(), testA, descriptor(CONTEXT_ONE));
+        final OWLClassA anotherA = new OWLClassA(Generators.createIndividualIdentifier());
+        manager.add(anotherA.getUri(), anotherA, descriptor(null));
+        assertTrue(extractDescriptors().containsKey(testA));
+        assertTrue(extractDescriptors().containsKey(anotherA));
+        manager.evict(OWLClassA.class);
+        assertFalse(extractDescriptors().containsKey(testA));
+        assertFalse(extractDescriptors().containsKey(anotherA));
+    }
+
+    @Test
+    public void evictByContextRemovesInstanceDescriptors() throws Exception {
+        final Descriptor descriptorOne = new EntityDescriptor(CONTEXT_ONE);
+        manager.add(testA.getUri(), testA, descriptorOne);
+        final Descriptor descriptorTwo = new EntityDescriptor();
+        descriptorTwo.setLanguage("en");
+        manager.add(testB.getUri(), testB, descriptorTwo);
+        assertTrue(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
+        assertTrue(manager.contains(OWLClassB.class, testB.getUri(), descriptorTwo));
+        manager.evict(CONTEXT_ONE);
+        assertFalse(manager.contains(OWLClassA.class, testA.getUri(), descriptorOne));
+        assertTrue(manager.contains(OWLClassB.class, testB.getUri(), descriptorTwo));
+        assertFalse(extractDescriptors().containsKey(testA));
+        assertTrue(extractDescriptors().containsKey(testB));
+    }
 }

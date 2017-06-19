@@ -340,7 +340,10 @@ public class TtlCacheManager implements CacheManager {
             for (Entry<URI, Map<Object, Map<Class<?>, Object>>> e : repoCache.entrySet()) {
                 final Map<Object, Map<Class<?>, Object>> m = e.getValue();
                 for (Entry<Object, Map<Class<?>, Object>> indNode : m.entrySet()) {
-                    indNode.getValue().remove(cls);
+                    final Object instance = indNode.getValue().remove(cls);
+                    if (instance != null) {
+                        descriptors.remove(instance);
+                    }
                 }
                 if (m.isEmpty()) {
                     ttls.remove(e.getKey());

@@ -180,7 +180,7 @@ public class UnitOfWorkTest {
         uow.commit();
 
         ArgumentCaptor<Object> pks = ArgumentCaptor.forClass(Object.class);
-        verify(cacheManagerMock, times(3)).add(pks.capture(), any(Object.class), eq(CONTEXT_URI));
+        verify(cacheManagerMock, times(3)).add(pks.capture(), any(Object.class), eq(descriptor));
         final Set<URI> uris = pks.getAllValues().stream().map(pk -> URI.create(pk.toString())).collect(
                 Collectors.toSet());
         assertTrue(uris.contains(entityA.getUri()));
@@ -217,8 +217,7 @@ public class UnitOfWorkTest {
         uow.commit();
 
         assertEquals(d.getOwlClassA().getUri(), newA.getUri());
-        verify(cacheManagerMock).add(eq(newA.getUri()), any(Object.class),
-                eq(CONTEXT_URI));
+        verify(cacheManagerMock).add(eq(newA.getUri()), any(Object.class), eq(descriptor));
     }
 
     @Test
@@ -686,7 +685,7 @@ public class UnitOfWorkTest {
 
     @Test
     public void mergeDetachedEvictsInstanceFromCache() throws Exception {
-        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), CONTEXT_URI)).thenReturn(Boolean.TRUE);
+        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(Boolean.TRUE);
         mergeDetachedTest();
         verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
     }

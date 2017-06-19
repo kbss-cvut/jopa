@@ -58,6 +58,9 @@ class EntityCache {
         } else {
             individualMap = ctxMap.get(identifier);
         }
+        if (individualMap.containsKey(cls)) {
+            descriptors.remove(individualMap.get(cls));
+        }
         individualMap.put(cls, entity);
         descriptors.put(entity, descriptor);
     }
@@ -68,7 +71,9 @@ class EntityCache {
 
         final URI ctx = descriptor.getContext() != null ? descriptor.getContext() : defaultContext;
         final Map<Class<?>, Object> m = getMapForId(ctx, identifier);
-        return cls.cast(m.getOrDefault(cls, null));
+        final Object result = m.get(cls);
+
+        return result != null && descriptors.get(result).equals(descriptor) ? cls.cast(result) : null;
     }
 
     boolean contains(Class<?> cls, Object identifier, Descriptor descriptor) {
@@ -77,15 +82,23 @@ class EntityCache {
         assert descriptor != null;
 
         final Map<Class<?>, Object> m = getMapForId(descriptor.getContext(), identifier);
-        return m.containsKey(cls);
+        if (!m.containsKey(cls)) {
+            return false;
+        }
+        final Object result = m.get(cls);
+        assert descriptors.containsKey(result);
+
+        return descriptors.get(result).equals(descriptor);
     }
 
     void evict(Class<?> cls, Object identifier, URI context) {
         assert cls != null;
         assert identifier != null;
 
-        final URI ctx = context != null ? context : defaultContext;
-        final Map<Class<?>, Object> m = getMapForId(ctx, identifier);
+        final Map<Class<?>, Object> m = getMapForId(context, identifier);
+        if (m.containsKey(cls)) {
+            descriptors.remove(m.get(cls));
+        }
         m.remove(cls);
     }
 
@@ -96,24 +109,31 @@ class EntityCache {
         if (!repoCache.containsKey(context)) {
             return;
         }
-        repoCache.get(context).clear();
+        final Map<Object, Map<Class<?>, Object>> contextCache = repoCache.remove(context);
+        contextCache.values().forEach(instances -> instances.values().forEach(descriptors::remove));
     }
 
     void evict(Class<?> cls) {
         for (Map.Entry<URI, Map<Object, Map<Class<?>, Object>>> e : repoCache.entrySet()) {
             final Map<Object, Map<Class<?>, Object>> m = e.getValue();
-            m.forEach((key, value) -> value.remove(cls));
+            m.forEach((key, value) -> {
+                if (value.containsKey(cls)) {
+                    descriptors.remove(value.get(cls));
+                    value.remove(cls);
+                }
+            });
         }
     }
 
     private Map<Class<?>, Object> getMapForId(URI context, Object identifier) {
-        assert context != null;
         assert identifier != null;
 
-        if (!repoCache.containsKey(context)) {
+        final URI ctx = context != null ? context : defaultContext;
+
+        if (!repoCache.containsKey(ctx)) {
             return Collections.emptyMap();
         }
-        final Map<Object, Map<Class<?>, Object>> ctxMap = repoCache.get(context);
+        final Map<Object, Map<Class<?>, Object>> ctxMap = repoCache.get(ctx);
         return ctxMap.getOrDefault(identifier, Collections.emptyMap());
     }
 }

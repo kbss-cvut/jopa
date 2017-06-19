@@ -131,11 +131,21 @@ public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManage
         manager.get(testA.getClass(), testA.getUri(), descriptorOne);
         manager.get(aTwo.getClass(), aTwo.getUri(), descriptorTwo);
         final OWLClassA newA = new OWLClassA(URI.create("http://newA"));
-        manager.add(newA.getUri(), newA, null);
+        manager.add(newA.getUri(), newA, descriptor(null));
 
         assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
         assertTrue(manager.contains(aTwo.getClass(), aTwo.getUri(), descriptorTwo));
         assertTrue(manager.contains(newA.getClass(), newA.getUri(), descriptor(null)));
         assertFalse(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
+    }
+
+    @Override
+    Map<?, ?> extractDescriptors() throws Exception {
+        final Field cacheField = LruCacheManager.class.getDeclaredField("entityCache");
+        cacheField.setAccessible(true);
+        final EntityCache cache = (EntityCache) cacheField.get(manager);
+        final Field descriptorsField = EntityCache.class.getDeclaredField("descriptors");
+        descriptorsField.setAccessible(true);
+        return (Map<?, ?>) descriptorsField.get(cache);
     }
 }

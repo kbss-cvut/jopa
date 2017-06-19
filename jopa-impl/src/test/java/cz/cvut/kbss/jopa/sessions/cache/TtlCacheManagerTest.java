@@ -119,4 +119,14 @@ public class TtlCacheManagerTest extends AbstractCacheManagerTest<TtlCacheManage
         manager.close();
         assertTrue(scheduler.isShutdown());
     }
+
+    @Override
+    Map<?, ?> extractDescriptors() throws Exception {
+        final Field cacheField = TtlCacheManager.class.getDeclaredField("cache");
+        cacheField.setAccessible(true);
+        final EntityCache cache = (EntityCache) cacheField.get(manager);
+        final Field descriptorsField = EntityCache.class.getDeclaredField("descriptors");
+        descriptorsField.setAccessible(true);
+        return (Map<?, ?>) descriptorsField.get(cache);
+    }
 }

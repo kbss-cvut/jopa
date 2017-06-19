@@ -240,16 +240,16 @@ public class LruCacheManager implements CacheManager {
 
         @Override
         void evict(URI context) {
-            if (context == null) {
-                context = defaultContext;
-            }
-            if (!repoCache.containsKey(context)) {
+            final URI ctx = context != null ? context : defaultContext;
+            if (!repoCache.containsKey(ctx)) {
                 return;
             }
-            final URI ctx = context;
-            final Map<Object, Map<Class<?>, Object>> ctxContent = repoCache.get(context);
+            final Map<Object, Map<Class<?>, Object>> ctxContent = repoCache.get(ctx);
             for (Map.Entry<Object, Map<Class<?>, Object>> e : ctxContent.entrySet()) {
-                e.getValue().forEach((cls, instance) -> cache.remove(new LruCache.CacheNode(ctx, cls, e.getKey())));
+                e.getValue().forEach((cls, instance) -> {
+                    descriptors.remove(instance);
+                    cache.remove(new LruCache.CacheNode(ctx, cls, e.getKey()));
+                });
             }
             ctxContent.clear();
         }
@@ -258,10 +258,13 @@ public class LruCacheManager implements CacheManager {
         void evict(Class<?> cls) {
             for (Map.Entry<URI, Map<Object, Map<Class<?>, Object>>> e : repoCache.entrySet()) {
                 final URI ctx = e.getKey();
-                for (Map.Entry<Object, Map<Class<?>, Object>> indNode : e.getValue().entrySet()) {
-                    indNode.getValue().remove(cls);
-                    cache.remove(new LruCache.CacheNode(ctx, cls, indNode.getKey()));
-                }
+                e.getValue().forEach((id, indNode) -> {
+                    final Object instance = indNode.remove(cls);
+                    if (instance != null) {
+                        descriptors.remove(instance);
+                    }
+                    cache.remove(new LruCache.CacheNode(ctx, cls, id));
+                });
             }
         }
     }
