@@ -50,7 +50,7 @@ class SesameProperties implements Properties {
     public Collection<Axiom<?>> getProperties(NamedResource individual, URI context, boolean includeInferred)
             throws SesameDriverException {
         beforeCallback.execute();
-        return new AxiomLoader(connector, valueFactory).loadAxioms(individual, includeInferred, context);
+        return new AxiomLoader(connector, valueFactory, language).loadAxioms(individual, includeInferred, context);
     }
 
     @Override

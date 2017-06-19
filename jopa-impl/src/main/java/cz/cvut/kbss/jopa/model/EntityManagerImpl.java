@@ -528,7 +528,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
     @Override
     public UnitOfWorkImpl getCurrentPersistenceContext() {
         if (this.persistenceContext == null) {
-            this.persistenceContext = (UnitOfWorkImpl) this.serverSession.acquireUnitOfWork();
+            this.persistenceContext = (UnitOfWorkImpl) serverSession.acquireUnitOfWork();
             persistenceContext.setEntityManager(this);
         }
         return this.persistenceContext;

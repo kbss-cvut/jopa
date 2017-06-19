@@ -24,6 +24,7 @@ import cz.cvut.kbss.jopa.model.metamodel.Type;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.sessions.cache.CacheFactory;
 import cz.cvut.kbss.jopa.transactions.EntityTransaction;
+import cz.cvut.kbss.jopa.utils.Configuration;
 import cz.cvut.kbss.jopa.utils.Wrapper;
 import cz.cvut.kbss.ontodriver.OntologyStorageProperties;
 import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
@@ -50,15 +51,17 @@ public class ServerSession extends AbstractSession implements Wrapper {
     private Map<UnitOfWork, Set<Object>> uowsToEntities;
 
     ServerSession() {
+        super(new Configuration(Collections.emptyMap()));
         this.metamodel = null;
         this.managedClasses = null;
     }
 
-    public ServerSession(OntologyStorageProperties storageProperties, Map<String, String> properties,
+    public ServerSession(OntologyStorageProperties storageProperties, Configuration configuration,
                          MetamodelImpl metamodel) {
+        super(configuration);
         this.metamodel = metamodel;
         this.managedClasses = processTypes(metamodel.getEntities());
-        initialize(storageProperties, properties, metamodel);
+        initialize(storageProperties, configuration, metamodel);
     }
 
     /**
@@ -78,19 +81,19 @@ public class ServerSession extends AbstractSession implements Wrapper {
      * cache.
      *
      * @param storageProperties Storage properties
-     * @param properties        Map of setup properties
+     * @param configuration     Session configuration
      * @param metamodel         Metamodel of the managed classes and their attributes.
      */
-    private void initialize(OntologyStorageProperties storageProperties,
-                            Map<String, String> properties, Metamodel metamodel) {
-        assert properties != null;
+    private void initialize(OntologyStorageProperties storageProperties, Configuration configuration,
+                            Metamodel metamodel) {
+        assert configuration != null;
         assert metamodel != null;
         this.runningTransactions = new HashMap<>();
         this.activePersistenceContexts = new IdentityHashMap<>();
         this.uowsToEntities = new HashMap<>();
-        this.liveObjectCache = CacheFactory.createCache(properties);
+        this.liveObjectCache = CacheFactory.createCache(configuration.getProperties());
         liveObjectCache.setInferredClasses(metamodel.getInferredClasses());
-        this.storageAccessor = new DefaultStorageAccessor(storageProperties, properties);
+        this.storageAccessor = new DefaultStorageAccessor(storageProperties, configuration.getProperties());
     }
 
     @Override

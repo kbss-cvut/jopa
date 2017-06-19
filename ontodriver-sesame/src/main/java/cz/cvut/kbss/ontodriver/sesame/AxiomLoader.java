@@ -39,10 +39,13 @@ class AxiomLoader {
     private Map<IRI, Assertion> explicitAssertions;
     private Map<IRI, Assertion> inferredAssertions;
 
-    AxiomLoader(Connector connector, ValueFactory valueFactory) {
+    private final String language;
+
+    AxiomLoader(Connector connector, ValueFactory valueFactory, String language) {
         this.connector = connector;
         this.valueFactory = valueFactory;
         this.propertyToAssertion = new HashMap<>();
+        this.language = language;
     }
 
     Collection<Axiom<?>> loadAxioms(AxiomDescriptor axiomDescriptor) throws SesameDriverException {
@@ -53,7 +56,8 @@ class AxiomLoader {
         final Collection<Axiom<?>> result = new HashSet<>();
         final Resource subject = SesameUtils.toSesameIri(descriptor.getSubject().getIdentifier(), valueFactory);
         final Assertion unspecified = processAssertions(descriptor);
-        final AxiomBuilder axiomBuilder = new AxiomBuilder(descriptor.getSubject(), propertyToAssertion, unspecified);
+        final AxiomBuilder axiomBuilder = new AxiomBuilder(descriptor.getSubject(), propertyToAssertion, unspecified,
+                language);
         final StatementLoader statementLoader = new StatementLoader(descriptor, connector, subject, axiomBuilder);
         if (unspecified == null || !unspecified.isInferred()) {
             statementLoader.setIncludeInferred(false);
@@ -96,7 +100,7 @@ class AxiomLoader {
         final IRI sesameContext = SesameUtils.toSesameIri(context, valueFactory);
         final IRI subject = SesameUtils.toSesameIri(individual.getIdentifier(), valueFactory);
         final AxiomBuilder axiomBuilder = new AxiomBuilder(individual, Collections.emptyMap(),
-                Assertion.createUnspecifiedPropertyAssertion(includeInferred));
+                Assertion.createUnspecifiedPropertyAssertion(includeInferred), language);
         final Collection<Statement> statements = connector
                 .findStatements(subject, null, null, includeInferred, sesameContext);
         return statements.stream().map(axiomBuilder::statementToAxiom).collect(Collectors.toSet());

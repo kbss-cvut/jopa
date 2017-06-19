@@ -17,7 +17,6 @@ package cz.cvut.kbss.jopa.sessions;
 import cz.cvut.kbss.jopa.exceptions.OWLPersistenceException;
 import cz.cvut.kbss.jopa.utils.EntityPropertiesUtils;
 
-import java.net.URI;
 import java.util.Objects;
 
 public class MergeManagerImpl implements MergeManager {
@@ -57,6 +56,8 @@ public class MergeManagerImpl implements MergeManager {
             }
         } else {
             builder.mergeChanges(changeSet);
+            final Object identifier = EntityPropertiesUtils.getPrimaryKey(original, uow.getMetamodel());
+            uow.putObjectIntoCache(identifier, original, changeSet.getEntityDescriptor());
         }
         return clone;
     }
@@ -78,11 +79,11 @@ public class MergeManagerImpl implements MergeManager {
         }
         if (!changeSet.isNew()) {
             mergeChangesOnObject(changeSet);
+            return;
         }
         // Put the original object into the shared session cache
         Object newObject = changeSet.getChangedObject();
-        final Object primaryKey = EntityPropertiesUtils.getPrimaryKey(newObject, uow.getMetamodel());
-        final URI context = changeSet.getEntityContext();
-        uow.putObjectIntoCache(primaryKey, newObject, context);
+        final Object identifier = EntityPropertiesUtils.getPrimaryKey(newObject, uow.getMetamodel());
+        uow.putObjectIntoCache(identifier, newObject, changeSet.getEntityDescriptor());
     }
 }

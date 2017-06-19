@@ -180,7 +180,7 @@ public class UnitOfWorkTest {
         uow.commit();
 
         ArgumentCaptor<Object> pks = ArgumentCaptor.forClass(Object.class);
-        verify(cacheManagerMock, times(3)).add(pks.capture(), any(Object.class), eq(CONTEXT_URI));
+        verify(cacheManagerMock, times(3)).add(pks.capture(), any(Object.class), eq(descriptor));
         final Set<URI> uris = pks.getAllValues().stream().map(pk -> URI.create(pk.toString())).collect(
                 Collectors.toSet());
         assertTrue(uris.contains(entityA.getUri()));
@@ -217,8 +217,7 @@ public class UnitOfWorkTest {
         uow.commit();
 
         assertEquals(d.getOwlClassA().getUri(), newA.getUri());
-        verify(cacheManagerMock).add(eq(newA.getUri()), any(Object.class),
-                eq(CONTEXT_URI));
+        verify(cacheManagerMock).add(eq(newA.getUri()), any(Object.class), eq(descriptor));
     }
 
     @Test
@@ -686,7 +685,7 @@ public class UnitOfWorkTest {
 
     @Test
     public void mergeDetachedEvictsInstanceFromCache() throws Exception {
-        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), CONTEXT_URI)).thenReturn(Boolean.TRUE);
+        when(cacheManagerMock.contains(OWLClassA.class, entityA.getUri(), descriptor)).thenReturn(Boolean.TRUE);
         mergeDetachedTest();
         verify(cacheManagerMock).evict(OWLClassA.class, entityA.getUri(), CONTEXT_URI);
     }
@@ -839,7 +838,7 @@ public class UnitOfWorkTest {
 
         assertTrue(uow.hasChanges());
         final UnitOfWorkChangeSet changeSet = uow.getUowChangeSet();
-        final ObjectChangeSet objectChanges = changeSet.getExistingObjectChanges(result);
+        final ObjectChangeSet objectChanges = changeSet.getExistingObjectChanges(entityA);
         assertNotNull(objectChanges);
         assertEquals(2, objectChanges.getChanges().size());
         final String strAttName = OWLClassA.getStrAttField().getName();
@@ -935,5 +934,20 @@ public class UnitOfWorkTest {
                 .thenReturn(entityR);
         final OWLClassR clone = uow.readObject(OWLClassR.class, entityR.getUri(), descriptor);
         assertTrue(clone.getTypes() instanceof IndirectSet);
+    }
+
+    @Test
+    public void commitPutsIntoCacheInstanceMergedAsDetachedDuringTransaction() {
+        final OWLClassA original = new OWLClassA(entityA.getUri());
+        original.setStringAttribute("originalStringAttribute");
+        when(storageMock.contains(entityA.getUri(), OWLClassA.class, descriptor)).thenReturn(true);
+        when(storageMock.find(new LoadingParameters<>(OWLClassA.class, entityA.getUri(), descriptor, true)))
+                .thenReturn(original);
+
+        final OWLClassA merged = uow.mergeDetached(entityA, descriptor);
+        assertNotNull(merged);
+        assertEquals(entityA.getStringAttribute(), merged.getStringAttribute());
+        uow.commit();
+        verify(cacheManagerMock).add(entityA.getUri(), original, descriptor);
     }
 }

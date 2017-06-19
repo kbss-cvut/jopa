@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -16,12 +16,12 @@ package cz.cvut.kbss.jopa.oom;
 
 import cz.cvut.kbss.jopa.exceptions.OWLEntityExistsException;
 import cz.cvut.kbss.jopa.exceptions.StorageAccessException;
-import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.Connection;
 import cz.cvut.kbss.ontodriver.descriptor.AxiomValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.ReferencedListValueDescriptor;
 import cz.cvut.kbss.ontodriver.descriptor.SimpleListValueDescriptor;
 import cz.cvut.kbss.ontodriver.exception.OWLIndividualExistsException;
+import cz.cvut.kbss.ontodriver.exception.OntoDriverException;
 import cz.cvut.kbss.ontodriver.model.Assertion;
 import cz.cvut.kbss.ontodriver.model.NamedResource;
 import cz.cvut.kbss.ontodriver.model.Value;
@@ -31,8 +31,6 @@ import java.util.*;
 
 /**
  * Gathers axiom values in descriptor for persist or update.
- *
- * @author ledvima1
  */
 class AxiomValueGatherer {
 
@@ -52,7 +50,7 @@ class AxiomValueGatherer {
     }
 
     void addValue(Assertion assertion, Value<?> value, URI context) {
-        addValues(assertion, Collections.<Value<?>>singleton(value), context);
+        addValues(assertion, Collections.singleton(value), context);
     }
 
     void addValues(Assertion assertion, Collection<Value<?>> values, URI context) {

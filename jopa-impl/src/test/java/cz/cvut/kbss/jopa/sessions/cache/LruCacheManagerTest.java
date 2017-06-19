@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,11 +15,9 @@
 package cz.cvut.kbss.jopa.sessions.cache;
 
 import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassB;
-import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -29,30 +27,13 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class LruCacheManagerTest {
-
-    private static final URI CONTEXT_ONE = URI.create("http://jopa-unit-tests");
-    private static final URI CONTEXT_TWO = URI.create("http://jopa-unit-testsTwo");
-    private static OWLClassA testA;
-    private static OWLClassB testB;
-
-    private CacheManagerTestRunner testRunner = new CacheManagerTestRunner();
-
-    private LruCacheManager manager;
-
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        testA = new OWLClassA(Generators.createIndividualIdentifier());
-        testA.setStringAttribute("testAttribute");
-        testB = new OWLClassB(Generators.createIndividualIdentifier());
-        testB.setStringAttribute("stringAttribute");
-    }
+public class LruCacheManagerTest extends AbstractCacheManagerTest<LruCacheManager> {
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
         this.manager = new LruCacheManager();
     }
-
 
     @Test
     public void testInitWithDefaultCapacity() {
@@ -76,76 +57,6 @@ public class LruCacheManagerTest {
         assertEquals(LruCacheManager.DEFAULT_CAPACITY, manager.getCapacity());
     }
 
-    @Test
-    public void testAdd() {
-        testRunner.testAdd(manager);
-    }
-
-    @Test
-    public void testAddToDefault() {
-        testRunner.testAddToDefault(manager);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testAddNull() {
-        testRunner.testAddNull(manager);
-    }
-
-    @Test
-    public void testAddWithDuplicateIRI() {
-        testRunner.testAddWithDuplicateIRI(manager);
-    }
-
-    @Test
-    public void testAddWithDuplicateIRIToDifferentContexts() {
-        testRunner.testAddWithDuplicateIRIToDifferentContexts(manager);
-    }
-
-    @Test
-    public void testContainsDefault() {
-        testRunner.testContainsDefault(manager);
-    }
-
-    @Test
-    public void testContainsWithContext() {
-        testRunner.testContainsWithContext(manager);
-    }
-
-    @Test
-    public void testContainsNull() {
-        testRunner.testContainsNull(manager);
-    }
-
-    @Test
-    public void testGetObject() {
-        testRunner.testGetObject(manager);
-    }
-
-    @Test
-    public void testGetObjectWithWrongContext() {
-        testRunner.testGetObjectWithWrongContext(manager);
-    }
-
-    @Test
-    public void testGetObjectNull() {
-        testRunner.testGetObjectNull(manager);
-    }
-
-    @Test
-    public void testGetObjectUnknownClass() {
-        testRunner.testGetObjectUnknownClass(manager);
-    }
-
-    @Test
-    public void testGetObjectUnknownPrimaryKey() {
-        testRunner.testGetObjectUnknownPrimaryKey(manager);
-    }
-
-    @Test
-    public void testEvictAll() {
-        testRunner.testEvictAll(manager);
-    }
-
     private LruCache getLruCache() throws Exception {
         final Field entityCacheField = LruCacheManager.class.getDeclaredField("entityCache");
         entityCacheField.setAccessible(true);
@@ -158,102 +69,83 @@ public class LruCacheManagerTest {
 
     @Test
     public void testEvictByClass() throws Exception {
-        Class<?> evicted = testRunner.testEvictByClass(manager);
+        Class<?> evicted = evictByClass();
         for (LruCache.CacheNode node : getLruCache().keySet()) {
             assertFalse(node.getCls().isAssignableFrom(evicted));
         }
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testEvictByClassNull() {
-        testRunner.testEvictByClassNull(manager);
-    }
-
     @Test
     public void testEvictByContext() throws Exception {
-        URI evicted = testRunner.testEvictByContext(manager);
+        URI evicted = evictByContext();
         for (LruCache.CacheNode node : getLruCache().keySet()) {
             assertNotEquals(evicted, node.getContext());
         }
     }
 
     @Test
-    public void testEvictByContextNull() {
-        testRunner.testEvictByContextNull(manager);
-    }
-
-    @Test
-    public void testEvictByContextUnknownContext() {
-        testRunner.testEvictByContextUnknownContext(manager);
-    }
-
-    @Test
-    public void testEvictInferredClass() {
-        testRunner.testEvictInferredClass(manager);
-    }
-
-    @Test
     public void testEvictByContextAndPrimaryKey() throws Exception {
         final LruCache lruCache = getLruCache();
-        manager.add(testA.getUri(), testA, CONTEXT_TWO);
+        final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
+        final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
+        manager.add(testA.getUri(), testA, descriptorTwo);
         final OWLClassA duplicate = new OWLClassA();
         duplicate.setUri(testA.getUri());
         duplicate.setStringAttribute("Duplicate entity.");
-        manager.add(duplicate.getUri(), duplicate, CONTEXT_ONE);
-        assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
-        assertTrue(manager.contains(duplicate.getClass(), duplicate.getUri(), CONTEXT_ONE));
+        manager.add(duplicate.getUri(), duplicate, descriptorOne);
+        assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorTwo));
+        assertTrue(manager.contains(duplicate.getClass(), duplicate.getUri(), descriptorOne));
         final int size = lruCache.size();
 
         manager.evict(duplicate.getClass(), duplicate.getUri(), CONTEXT_ONE);
-        assertFalse(manager.contains(duplicate.getClass(), duplicate.getUri(), CONTEXT_ONE));
-        assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_TWO));
+        assertFalse(manager.contains(duplicate.getClass(), duplicate.getUri(), descriptorOne));
+        assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorTwo));
         assertEquals(size - 1, lruCache.size());
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testEvictByContextAndPrimaryKeyNull() {
-        testRunner.testEvictByContextAndPrimaryKeyNull(manager);
-    }
-
-    @Test
-    public void cacheAddWithStringIdentifier() throws Exception {
-        testRunner.cacheAddWithStringIdentifier(manager);
-    }
-
-    @Test
-    public void cacheEvictWithStringIdentifier() throws Exception {
-        testRunner.cacheEvictWithStringIdentifier(manager);
     }
 
     @Test
     public void entryGetsEvictedWhenCacheIsFull() throws Exception {
+        final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
+        final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
         this.manager = new LruCacheManager(
                 Collections.singletonMap(JOPAPersistenceProperties.LRU_CACHE_CAPACITY, "2"));
-        manager.add(testA.getUri(), testA, CONTEXT_ONE);
-        assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
+        manager.add(testA.getUri(), testA, descriptorOne);
+        assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
 
-        manager.add(testB.getUri(), testB, CONTEXT_TWO);
-        assertFalse(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
-        assertTrue(manager.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
+        manager.add(testB.getUri(), testB, descriptorTwo);
+        assertFalse(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
+        assertTrue(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
     }
 
     @Test
     public void leastRecentlyUsedEntryGetsEvictedWhenCacheIsFull() throws Exception {
+        final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
+        final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
         this.manager = new LruCacheManager(
                 Collections.singletonMap(JOPAPersistenceProperties.LRU_CACHE_CAPACITY, "4"));
-        manager.add(testA.getUri(), testA, CONTEXT_ONE);
-        manager.add(testB.getUri(), testB, CONTEXT_TWO);
+        manager.add(testA.getUri(), testA, descriptorOne);
+        manager.add(testB.getUri(), testB, descriptorTwo);
         final OWLClassA aTwo = new OWLClassA(URI.create("http://aTwo"));
-        manager.add(aTwo.getUri(), aTwo, CONTEXT_TWO);
+        manager.add(aTwo.getUri(), aTwo, descriptorTwo);
 
-        manager.get(testA.getClass(), testA.getUri(), CONTEXT_ONE);
-        manager.get(aTwo.getClass(), aTwo.getUri(), CONTEXT_TWO);
+        manager.get(testA.getClass(), testA.getUri(), descriptorOne);
+        manager.get(aTwo.getClass(), aTwo.getUri(), descriptorTwo);
         final OWLClassA newA = new OWLClassA(URI.create("http://newA"));
-        manager.add(newA.getUri(), newA, null);
+        manager.add(newA.getUri(), newA, descriptor(null));
 
-        assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
-        assertTrue(manager.contains(aTwo.getClass(), aTwo.getUri(), CONTEXT_TWO));
-        assertTrue(manager.contains(newA.getClass(), newA.getUri(), null));
-        assertFalse(manager.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
+        assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
+        assertTrue(manager.contains(aTwo.getClass(), aTwo.getUri(), descriptorTwo));
+        assertTrue(manager.contains(newA.getClass(), newA.getUri(), descriptor(null)));
+        assertFalse(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
+    }
+
+    @Override
+    Map<?, ?> extractDescriptors() throws Exception {
+        final Field cacheField = LruCacheManager.class.getDeclaredField("entityCache");
+        cacheField.setAccessible(true);
+        final EntityCache cache = (EntityCache) cacheField.get(manager);
+        final Field descriptorsField = EntityCache.class.getDeclaredField("descriptors");
+        descriptorsField.setAccessible(true);
+        return (Map<?, ?>) descriptorsField.get(cache);
     }
 }

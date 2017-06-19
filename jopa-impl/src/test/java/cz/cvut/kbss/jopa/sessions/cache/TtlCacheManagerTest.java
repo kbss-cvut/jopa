@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -14,17 +14,13 @@
  */
 package cz.cvut.kbss.jopa.sessions.cache;
 
-import cz.cvut.kbss.jopa.environment.OWLClassA;
-import cz.cvut.kbss.jopa.environment.OWLClassB;
-import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.model.JOPAPersistenceProperties;
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
 import cz.cvut.kbss.jopa.sessions.CacheManager;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
-import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,27 +28,11 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static org.junit.Assert.*;
 
-public class TtlCacheManagerTest {
-
-    private static final URI CONTEXT_ONE = URI.create("http://jopa-unit-tests");
-    private static final URI CONTEXT_TWO = URI.create("http://jopa-unit-testsTwo");
-    private static OWLClassA testA;
-    private static OWLClassB testB;
-
-    private CacheManagerTestRunner testRunner = new CacheManagerTestRunner();
-
-    private CacheManager manager;
-
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        testA = new OWLClassA(Generators.createIndividualIdentifier());
-        testA.setStringAttribute("testAttribute");
-        testB = new OWLClassB(Generators.createIndividualIdentifier());
-        testB.setStringAttribute("stringAttribute");
-    }
+public class TtlCacheManagerTest extends AbstractCacheManagerTest<TtlCacheManager> {
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
         this.manager = new TtlCacheManager(Collections.emptyMap());
     }
 
@@ -90,143 +70,37 @@ public class TtlCacheManagerTest {
     }
 
     @Test
-    public void testAdd() {
-        testRunner.testAdd(manager);
-    }
-
-    @Test
-    public void testAddToDefault() {
-        testRunner.testAddToDefault(manager);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testAddNull() {
-        testRunner.testAddNull(manager);
-    }
-
-    @Test
-    public void testAddWithDuplicateIRI() {
-        testRunner.testAddWithDuplicateIRI(manager);
-    }
-
-    @Test
-    public void testAddWithDuplicateIRIToDifferentContexts() {
-        testRunner.testAddWithDuplicateIRIToDifferentContexts(manager);
-    }
-
-    @Test
-    public void testContainsDefault() {
-        testRunner.testContainsDefault(manager);
-    }
-
-    @Test
-    public void testContainsWithContext() {
-        testRunner.testContainsWithContext(manager);
-    }
-
-    @Test
-    public void testContainsNull() {
-        testRunner.testContainsNull(manager);
-    }
-
-    @Test
-    public void testGetObject() {
-        testRunner.testGetObject(manager);
-    }
-
-    @Test
-    public void testGetObjectWithWrongContext() {
-        testRunner.testGetObjectWithWrongContext(manager);
-    }
-
-    @Test
-    public void testGetObjectNull() {
-        testRunner.testGetObjectNull(manager);
-    }
-
-    @Test
-    public void testGetObjectUnknownClass() {
-        testRunner.testGetObjectUnknownClass(manager);
-    }
-
-    @Test
-    public void testGetObjectUnknownPrimaryKey() {
-        testRunner.testGetObjectUnknownPrimaryKey(manager);
-    }
-
-    @Test
-    public void testEvictAll() {
-        testRunner.testEvictAll(manager);
-    }
-
-    @Test
-    public void testEvictByClass() {
-        testRunner.testEvictByClass(manager);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testEvictByClassNull() {
-        testRunner.testEvictByClassNull(manager);
-    }
-
-    @Test
-    public void testEvictByContext() {
-        testRunner.testEvictByContext(manager);
-    }
-
-    @Test
-    public void testEvictByContextNull() {
-       testRunner.testEvictByContextNull(manager);
-    }
-
-    @Test
-    public void testEvictByContextUnknownContext() {
-        testRunner.testEvictByContextUnknownContext(manager);
-    }
-
-    @Test
-    public void testEvictInferredClass() {
-        testRunner.testEvictInferredClass(manager);
-    }
-
-    @Test
-    public void testEvictByContextAndPrimaryKey() {
-        testRunner.testEvictByContextAndPrimaryKey(manager);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testEvictByContextAndPrimaryKeyNull() {
-        testRunner.testEvictByContextAndPrimaryKeyNull(manager);
-    }
-
-    @Test
     public void testEvictWithSweeper() throws Exception {
         initSweepableManager();
-        manager.add(testA.getUri(), testA, CONTEXT_ONE);
-        manager.add(testB.getUri(), testB, CONTEXT_TWO);
-        assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
-        assertTrue(manager.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
+        final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
+        final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
+        manager.add(testA.getUri(), testA, descriptorOne);
+        manager.add(testB.getUri(), testB, descriptorTwo);
+        assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
+        assertTrue(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
         // Give it enough time to sweep the cache
         Thread.sleep(5000);
-        assertFalse(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
-        assertFalse(manager.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
+        assertFalse(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
+        assertFalse(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
     }
 
     @Test
     public void testRefreshTTL() throws Exception {
         initSweepableManager();
-        manager.add(testA.getUri(), testA, CONTEXT_ONE);
-        manager.add(testB.getUri(), testB, CONTEXT_TWO);
-        assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
-        assertTrue(manager.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
+        final Descriptor descriptorOne = descriptor(CONTEXT_ONE);
+        final Descriptor descriptorTwo = descriptor(CONTEXT_TWO);
+        manager.add(testA.getUri(), testA, descriptorOne);
+        manager.add(testB.getUri(), testB, descriptorTwo);
+        assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
+        assertTrue(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
         // The cycle ensures that testA is refreshed and stays in the cache
         // while testB will be evicted because its TTL is exhausted
         for (int i = 0; i < 5; i++) {
             Thread.sleep(1000);
-            assertNotNull(manager.get(testA.getClass(), testA.getUri(), CONTEXT_ONE));
+            assertNotNull(manager.get(testA.getClass(), testA.getUri(), descriptorOne));
         }
-        assertTrue(manager.contains(testA.getClass(), testA.getUri(), CONTEXT_ONE));
-        assertFalse(manager.contains(testB.getClass(), testB.getUri(), CONTEXT_TWO));
+        assertTrue(manager.contains(testA.getClass(), testA.getUri(), descriptorOne));
+        assertFalse(manager.contains(testB.getClass(), testB.getUri(), descriptorTwo));
     }
 
     private void initSweepableManager() {
@@ -246,13 +120,13 @@ public class TtlCacheManagerTest {
         assertTrue(scheduler.isShutdown());
     }
 
-    @Test
-    public void cacheAddWithStringIdentifier() throws Exception {
-        testRunner.cacheAddWithStringIdentifier(manager);
-    }
-
-    @Test
-    public void cacheEvictWithStringIdentifier() throws Exception {
-        testRunner.cacheEvictWithStringIdentifier(manager);
+    @Override
+    Map<?, ?> extractDescriptors() throws Exception {
+        final Field cacheField = TtlCacheManager.class.getDeclaredField("cache");
+        cacheField.setAccessible(true);
+        final EntityCache cache = (EntityCache) cacheField.get(manager);
+        final Field descriptorsField = EntityCache.class.getDeclaredField("descriptors");
+        descriptorsField.setAccessible(true);
+        return (Map<?, ?>) descriptorsField.get(cache);
     }
 }

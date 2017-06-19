@@ -14,11 +14,14 @@
  */
 package cz.cvut.kbss.jopa.sessions;
 
+import cz.cvut.kbss.jopa.model.descriptors.Descriptor;
+
 import java.net.URI;
 
 /**
- * Interface used to interact with the second-level cache. If a cache is not in
- * use, the methods of this interface have no effect, except for contains, which
+ * Interface used to interact with the second-level cache.
+ * <p>
+ * If a cache is not in use, the methods of this interface have no effect, except for contains, which
  * returns false.
  * <p>
  * Taken from JPA 2.
@@ -27,40 +30,25 @@ public interface Cache {
 
     /**
      * Checks whether the cache contains data for the given entity.
-     * <p>
-     * This method searches all the available contexts and returns true on
-     * finding the first occurrence of matching entity.
-     *
-     * @param cls        entity class
-     * @param primaryKey primary key
-     * @return {@code boolean} indicating whether the entity is in the cache
-     * @see #contains(Class, Object, URI)
-     */
-    boolean contains(Class<?> cls, Object primaryKey);
-
-    /**
-     * Checks whether the cache contains data for the given entity (in the given
-     * context only).
      *
      * @param cls        Entity class
-     * @param primaryKey Primary key
-     * @param context    Context URI
+     * @param identifier Instance identifier
+     * @param descriptor Specifies instance context and additional possible information, e.g. language tags
      * @return {@code boolean} indicating whether the entity is in the cache
      */
-    boolean contains(Class<?> cls, Object primaryKey, URI context);
+    boolean contains(Class<?> cls, Object identifier, Descriptor descriptor);
 
     /**
      * Removes the data for the given entity from the cache.
      *
      * @param cls        Entity class
-     * @param primaryKey Primary key
-     * @param context    Context URI
+     * @param identifier Instance identifier
+     * @param context    Context URI, possibly {@code null}, meaning the default context
      */
-    void evict(Class<?> cls, Object primaryKey, URI context);
+    void evict(Class<?> cls, Object identifier, URI context);
 
     /**
-     * Removes the data for entities of the specified class (and its subclasses)
-     * from the cache.
+     * Removes the data for entities of the specified class (and its subclasses) from the cache.
      * <p>
      * This method removes the entities from all available contexts.
      *
@@ -69,10 +57,9 @@ public interface Cache {
     void evict(Class<?> cls);
 
     /**
-     * Removes the data for entities of the specified repository context from
-     * the cache.
+     * Removes the data for entities of the specified repository context from the cache.
      *
-     * @param context URI of {@code Context}
+     * @param context URI of the context to evict, possibly {@code null}, meaning the default context
      */
     void evict(URI context);
 

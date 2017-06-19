@@ -23,12 +23,12 @@ public interface Session {
 	 * 
 	 * @return UnitOfWork
 	 */
-	public UnitOfWork acquireUnitOfWork();
+	UnitOfWork acquireUnitOfWork();
 
 	/**
 	 * Release this session and all its children.
 	 */
-	public void release();
+	void release();
 
 	/**
 	 * Remove the given object from the session's live object cache. This is
@@ -39,5 +39,5 @@ public interface Session {
 	 * @param context
 	 *            Entity context URI
 	 */
-	public void removeObjectFromCache(Object object, URI context);
+	void removeObjectFromCache(Object object, URI context);
 }

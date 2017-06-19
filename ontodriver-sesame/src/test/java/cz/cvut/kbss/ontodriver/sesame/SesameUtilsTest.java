@@ -25,9 +25,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-/**
- * @author ledvima1
- */
 public class SesameUtilsTest {
 
     private static final String LANG = "en";
@@ -60,10 +57,51 @@ public class SesameUtilsTest {
     }
 
     @Test
+    public void doesLanguageMatchReturnsFalseForNonMatchingLanguageTag() {
+        final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
+        assertFalse(SesameUtils.doesLanguageMatch(literal, "cs"));
+    }
+
+    @Test
+    public void doesLanguageMatchReturnsTrueForMatchingLanguageTag() {
+        final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
+        assertTrue(SesameUtils.doesLanguageMatch(literal, LANG));
+    }
+
+    @Test
+    public void doesLanguageMatchReturnsTrueWhenNoLanguageIsSpecified() {
+        final Literal literal = vf.createLiteral(Severity.LOW.toString(), LANG);
+        assertTrue(SesameUtils.doesLanguageMatch(literal, null));
+    }
+
+    @Test
+    public void doesLanguageMatchReturnsTrueWhenLiteralHasNoLanguage() {
+        final Literal literal = vf.createLiteral(Severity.LOW.toString());
+        assertTrue(SesameUtils.doesLanguageMatch(literal, LANG));
+    }
+
+    @Test
     public void enumValueIsReturnedAsStringLiteral() throws Exception {
         final Literal literal = SesameUtils.createDataPropertyLiteral(Severity.MEDIUM, LANG, vf);
         assertNotNull(literal);
         assertEquals(Severity.MEDIUM.toString(), literal.stringValue());
         assertTrue(literal.getDatatype() == null || literal.getDatatype().equals(XMLSchema.STRING));
+    }
+
+    @Test
+    public void createDataPropertyLiteralAttachesLanguageTagToStringLiteral() {
+        final String value = "literal";
+        final Literal result = SesameUtils.createDataPropertyLiteral(value, LANG, vf);
+        assertTrue(result.getLanguage().isPresent());
+        assertEquals(LANG, result.getLanguage().get());
+        assertEquals(value, result.stringValue());
+    }
+
+    @Test
+    public void createDataPropertyLiteralCreatesStringWithoutLanguageTagWhenNullIsPassedIn() {
+        final String value = "literal";
+        final Literal result = SesameUtils.createDataPropertyLiteral(value, null, vf);
+        assertFalse(result.getLanguage().isPresent());
+        assertEquals(value, result.stringValue());
     }
 }

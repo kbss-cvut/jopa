@@ -98,13 +98,13 @@ public class MergeManagerTest {
         OWLClassB cloneTwo = new OWLClassB(objTwo.getUri());
         cloneOne.setStringAttribute("testAtt");
         uowChangeSet.addDeletedObjectChangeSet(createChangeSet(objTwo, cloneTwo));
-        final ObjectChangeSet ochs = createChangeSet(objOne, cloneOne);
-        ochs.addChangeRecord(
+        final ObjectChangeSet changeSet = createChangeSet(objOne, cloneOne);
+        changeSet.addChangeRecord(
                 new ChangeRecordImpl(metamodelMocks.forOwlClassB().stringAttribute(), cloneOne.getStringAttribute()));
-        uowChangeSet.addObjectChangeSet(ochs);
+        uowChangeSet.addObjectChangeSet(changeSet);
         mm.mergeChangesFromChangeSet(uowChangeSet);
         verify(uow).removeObjectFromCache(objTwo, defaultDescriptor.getContext());
-        verify(cloneBuilder).mergeChanges(ochs);
+        verify(cloneBuilder).mergeChanges(changeSet);
     }
 
     @Test
@@ -112,10 +112,10 @@ public class MergeManagerTest {
         final OWLClassB objOne = new OWLClassB(Generators.createIndividualIdentifier());
         objOne.setStringAttribute("ABeautifulAttribute");
         final OWLClassB clone = new OWLClassB(objOne.getUri());
-        final ObjectChangeSet ochs = createChangeSet(objOne, clone);
-        uowChangeSet.addNewObjectChangeSet(ochs);
+        final ObjectChangeSet changeSet = createChangeSet(objOne, clone);
+        uowChangeSet.addNewObjectChangeSet(changeSet);
         mm.mergeChangesFromChangeSet(uowChangeSet);
-        verify(uow).putObjectIntoCache(objOne.getUri(), objOne, defaultDescriptor.getContext());
+        verify(uow).putObjectIntoCache(objOne.getUri(), objOne, defaultDescriptor);
     }
 
     @Test
@@ -124,7 +124,7 @@ public class MergeManagerTest {
         final OWLClassB clone = new OWLClassB(newOne.getUri());
         final ObjectChangeSet ochs = createChangeSet(newOne, clone);
         mm.mergeNewObject(ochs);
-        verify(uow).putObjectIntoCache(newOne.getUri(), newOne, defaultDescriptor.getContext());
+        verify(uow).putObjectIntoCache(newOne.getUri(), newOne, defaultDescriptor);
     }
 
     private static ObjectChangeSet createChangeSet(Object orig, Object clone) {
