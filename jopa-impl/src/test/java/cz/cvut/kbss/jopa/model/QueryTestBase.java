@@ -20,6 +20,7 @@ import cz.cvut.kbss.jopa.model.query.Query;
 import cz.cvut.kbss.jopa.query.sparql.SparqlQueryFactory;
 import cz.cvut.kbss.jopa.sessions.ConnectionWrapper;
 import cz.cvut.kbss.jopa.sessions.UnitOfWorkImpl;
+import cz.cvut.kbss.jopa.utils.Procedure;
 import cz.cvut.kbss.ontodriver.ResultSet;
 import cz.cvut.kbss.ontodriver.Statement;
 import org.junit.Before;
@@ -57,7 +58,7 @@ public abstract class QueryTestBase {
     ResultSet resultSetMock;
 
     @Mock
-    Runnable handler;
+    Procedure handler;
 
     SparqlQueryFactory queryFactory;
 

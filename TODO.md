@@ -2,6 +2,7 @@
 
 ## High Priority
 
+- [ ] Modify Query API to support language tag specification and improve context handling
 - [ ] Inheritance support
     - [x] Mapped superclass
     - [x] Single inheritance

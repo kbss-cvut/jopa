@@ -211,8 +211,13 @@ public class IndirectSetTest {
     }
 
     @Test
-    public void equalsWorksForIndirectSetAndRegularSet() {
+    public void equalsWorksForRegularSetAndIndirectSet() {
         assertEquals(backupSet, target);
+    }
+
+    @Test
+    public void equalsWorksForIndirectSetAndRegularSet() {
+        assertEquals(target, backupSet);
     }
 
     @Test

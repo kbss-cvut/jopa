@@ -1,11 +1,11 @@
 /**
  * Copyright (C) 2016 Czech Technical University in Prague
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -15,6 +15,7 @@
 package cz.cvut.kbss.jopa.model;
 
 import cz.cvut.kbss.jopa.environment.*;
+import cz.cvut.kbss.jopa.environment.utils.Generators;
 import cz.cvut.kbss.jopa.exception.InvalidFieldMappingException;
 import cz.cvut.kbss.jopa.exception.MetamodelInitializationException;
 import cz.cvut.kbss.jopa.loaders.EntityLoader;
@@ -23,6 +24,7 @@ import cz.cvut.kbss.jopa.model.annotations.Properties;
 import cz.cvut.kbss.jopa.model.metamodel.*;
 import cz.cvut.kbss.jopa.query.NamedQueryManager;
 import cz.cvut.kbss.jopa.utils.Configuration;
+import cz.cvut.kbss.ontodriver.config.OntoDriverProperties;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -633,5 +635,37 @@ public class MetamodelImplTest {
         final Set<Class<?>> types = entities.stream().map(Type::getJavaType).collect(Collectors.toSet());
         assertTrue(types.contains(OWLClassQ.class));
         assertTrue(types.contains(OWLClassA.class));
+    }
+
+    @Test
+    public void getModuleExtractionSignatureExtractsUrisFromConfiguration() {
+        final Set<String> signature = Generators.generateTypes(5);
+        conf.set(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE, String.join("|", signature));
+
+        final MetamodelImpl metamodel = getMetamodel();
+        final Set<URI> result = metamodel.getModuleExtractionExtraSignature();
+        assertEquals(signature.size(), result.size());
+        result.forEach(uri -> assertTrue(signature.contains(uri.toString())));
+    }
+
+    @Test
+    public void getModuleExtractionSignatureReturnsEmptyCollectionForNoSignature() {
+        final MetamodelImpl metamodel = getMetamodel();
+        assertTrue(metamodel.getModuleExtractionExtraSignature().isEmpty());
+    }
+
+    @Test
+    public void addingUriToModuleExtractionSignatureReflectsInFutureInvocationOfGetModuleExtractionSignature() {
+        final Set<String> signature = Generators.generateTypes(5);
+        conf.set(OntoDriverProperties.MODULE_EXTRACTION_SIGNATURE, String.join("|", signature));
+
+        final MetamodelImpl metamodel = getMetamodel();
+        Set<URI> result = metamodel.getModuleExtractionExtraSignature();
+        assertEquals(signature.size(), result.size());
+        final URI toAdd = Generators.createIndividualIdentifier();
+        metamodel.addUriToModuleExtractionSignature(toAdd);
+        result = metamodel.getModuleExtractionExtraSignature();
+        assertEquals(signature.size() + 1, result.size());
+        assertTrue(result.contains(toAdd));
     }
 }

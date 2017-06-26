@@ -83,12 +83,7 @@ public class EntityManagerImpl extends AbstractEntityManager implements Wrapper 
 
             switch (getState(entity, descriptor)) {
                 case NOT_MANAGED:
-                    try {
-                        getCurrentPersistenceContext().registerNewObject(entity, descriptor);
-                    } catch (RuntimeException e) {
-                        markTransactionForRollback();
-                        throw e;
-                    }
+                    getCurrentPersistenceContext().registerNewObject(entity, descriptor);
                     // Intentional fall-through
                 case MANAGED:
                     cascadePersist(entity, descriptor);

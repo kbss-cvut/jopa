@@ -31,9 +31,7 @@ public class JOPAPersistenceProvider implements PersistenceProvider, ProviderUti
 
     private static Set<EntityManagerFactoryImpl> emfs = new HashSet<>();
 
-    public JOPAPersistenceProvider() {
-    }
-
+    @Override
     public EntityManagerFactoryImpl createEntityManagerFactory(String emName, Map<String, String> properties) {
         final EntityManagerFactoryImpl emf = new EntityManagerFactoryImpl(properties);
         emfs.add(emf);
